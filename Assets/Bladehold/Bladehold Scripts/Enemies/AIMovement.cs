@@ -79,6 +79,14 @@ public class AIMovement : MonoBehaviour
     {
         isDead = true;
         StopAgent();
+
+        // Corpse: take the agent off the NavMesh entirely so it stops occupying it
+        // and shoving live goblins around. Disable after StopAgent/ResetPath, which
+        // need the agent still enabled and on the NavMesh.
+        if (agent != null)
+        {
+            agent.enabled = false;
+        }
     }
 
     private void HandlePlayerDied()
