@@ -13,8 +13,15 @@ public static class SaveSystem
 
     private static string FilePath => Path.Combine(Application.persistentDataPath, _fileName);
 
+    // A single in-memory SaveData shared by every owner (Wallet, SkillTreeService, …). Without this each
+    // caller would hold its own copy and the last one to Save() would clobber the others' fields. Statics
+    // persist across scene reloads within a play session and reset when play stops, mirroring how the
+    // persisted progress should behave.
+    private static SaveData _cache;
+
     public static void Save(SaveData data)
     {
+        _cache = data;
         try
         {
             string json = JsonUtility.ToJson(data, true);
@@ -28,20 +35,28 @@ public static class SaveSystem
 
     public static SaveData Load()
     {
+        if (_cache != null)
+        {
+            return _cache;
+        }
+
         if (!File.Exists(FilePath))
         {
-            return new SaveData();
+            _cache = new SaveData();
+            return _cache;
         }
 
         try
         {
             string json = File.ReadAllText(FilePath);
-            return JsonUtility.FromJson<SaveData>(json) ?? new SaveData();
+            _cache = JsonUtility.FromJson<SaveData>(json) ?? new SaveData();
         }
         catch (Exception e)
         {
             Debug.LogError($"Failed to read save file at '{FilePath}': {e.Message}");
-            return new SaveData();
+            _cache = new SaveData();
         }
+
+        return _cache;
     }
 }

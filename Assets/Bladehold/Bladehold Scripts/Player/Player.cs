@@ -20,6 +20,12 @@ public class Player : MonoBehaviour
     /// <summary>The player's coin purse, so pickups and UI can reach it through the singleton.</summary>
     public Wallet Wallet { get; private set; }
 
+    /// <summary>
+    ///     The player's stat aggregation layer, so weapons, movement and the upgrade tree can read and
+    ///     modify effective stats through the singleton. Null if the player has no <see cref="PlayerStats" />.
+    /// </summary>
+    public PlayerStats Stats { get; private set; }
+
     private void Awake()
     {
         if (Instance == null)
@@ -28,6 +34,7 @@ public class Player : MonoBehaviour
             Health = GetComponent<Health>();
             Damageable = GetComponent<IDamageable>();
             Wallet = GetComponent<Wallet>();
+            Stats = GetComponent<PlayerStats>();
         }
         else
         {

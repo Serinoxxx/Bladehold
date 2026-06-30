@@ -40,4 +40,29 @@ public class Wallet : MonoBehaviour
 
         OnCoinsChanged?.Invoke(coins);
     }
+
+    /// <summary>
+    ///     Attempts to spend <paramref name="amount" /> coins. Returns false (and changes nothing) if the
+    ///     purse can't cover it. On success the total is persisted immediately and <see cref="OnCoinsChanged" />
+    ///     fires. Used by the upgrade tree to buy skill nodes.
+    /// </summary>
+    public bool TrySpend(int amount)
+    {
+        if (amount <= 0)
+        {
+            return true;
+        }
+        if (coins < amount)
+        {
+            return false;
+        }
+
+        coins -= amount;
+
+        saveData.totalGold = coins;
+        SaveSystem.Save(saveData);
+
+        OnCoinsChanged?.Invoke(coins);
+        return true;
+    }
 }
