@@ -50,6 +50,7 @@ public class WaveSpawner : MonoBehaviour
     private int aliveCount;        // goblins currently alive
 
     private Health playerHealth;
+    private PlayerStats stats;
     private bool playerDead = false;
     private bool anyError = false;
 
@@ -109,6 +110,16 @@ public class WaveSpawner : MonoBehaviour
         {
             playerHealth = player.Health;
             playerHealth.OnDied += HandlePlayerDied;
+        }
+
+        // Golden Goblin is entirely Reincarnate-upgrade-granted, so the bases start at 0 (no chance, no bonus)
+        // until a node raises them. Optional: the game still works with no PlayerStats, golden goblins just
+        // never spawn.
+        stats = player != null ? player.Stats : null;
+        if (stats != null)
+        {
+            stats.SetBase(StatType.GoldenGoblinChance, 0f);
+            stats.SetBase(StatType.GoldenGoblinGoldBonusPercent, 0f);
         }
 
         StartCoroutine(RunWaves());
@@ -203,6 +214,13 @@ public class WaveSpawner : MonoBehaviour
 
         Vector3 position = ResolveSpawnPosition();
         GameObject goblin = Instantiate(goblinPrefab, position, Quaternion.identity);
+
+        // Rolled before Start runs on the goblin, so GoldenGoblin.Start sees the flag and applies its visual.
+        float goldenChance = stats != null ? stats.GetValue(StatType.GoldenGoblinChance) : 0f;
+        if (goldenChance > 0f && UnityEngine.Random.value < goldenChance)
+        {
+            goblin.GetComponent<GoldenGoblin>()?.MarkGolden();
+        }
 
         Health health = goblin.GetComponent<Health>();
         if (health == null)

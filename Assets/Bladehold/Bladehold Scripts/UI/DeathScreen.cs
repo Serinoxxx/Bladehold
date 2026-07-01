@@ -24,6 +24,10 @@ public class DeathScreen : MonoBehaviour
     [SerializeField] private Button restartCurrentWaveButton;
     [Tooltip("Optional label on the restart-current-wave button, set to e.g. \"Restart Wave 3\".")]
     [SerializeField] private TMP_Text restartCurrentWaveLabel;
+    [Tooltip("Optional: reincarnates — banks Reincarnate Points, resets the gold skill tree and wave to 1, restarts. Leave unassigned to omit the option.")]
+    [SerializeField] private Button reincarnateButton;
+    [Tooltip("Optional label on the reincarnate button, set to e.g. \"Reincarnate (+7 pts)\".")]
+    [SerializeField] private TMP_Text reincarnatePreviewLabel;
     [Tooltip("Seconds to fade the screen in.")]
     [SerializeField] private float fadeDuration = 1f;
 
@@ -73,6 +77,10 @@ public class DeathScreen : MonoBehaviour
         {
             restartCurrentWaveButton.onClick.AddListener(RestartFromCurrentWave);
         }
+        if (reincarnateButton != null)
+        {
+            reincarnateButton.onClick.AddListener(HandleReincarnate);
+        }
 
         playerHealth = player.Health;
         playerHealth.OnDied += HandlePlayerDied;
@@ -91,6 +99,10 @@ public class DeathScreen : MonoBehaviour
         if (restartCurrentWaveButton != null)
         {
             restartCurrentWaveButton.onClick.RemoveListener(RestartFromCurrentWave);
+        }
+        if (reincarnateButton != null)
+        {
+            reincarnateButton.onClick.RemoveListener(HandleReincarnate);
         }
     }
 
@@ -121,6 +133,16 @@ public class DeathScreen : MonoBehaviour
             if (hasWave && restartCurrentWaveLabel != null)
             {
                 restartCurrentWaveLabel.text = $"Restart Wave {WaveSpawner.Instance.CurrentWave}";
+            }
+        }
+
+        if (reincarnateButton != null)
+        {
+            bool hasService = ReincarnateService.Instance != null;
+            reincarnateButton.gameObject.SetActive(hasService);
+            if (hasService && reincarnatePreviewLabel != null)
+            {
+                reincarnatePreviewLabel.text = $"Reincarnate (+{ReincarnateService.Instance.PreviewPointsForReincarnate()} pts)";
             }
         }
 
@@ -159,6 +181,14 @@ public class DeathScreen : MonoBehaviour
             RunState.StartingWave = WaveSpawner.Instance.CurrentWave;
         }
         Reload();
+    }
+
+    private void HandleReincarnate()
+    {
+        if (ReincarnateService.Instance != null)
+        {
+            ReincarnateService.Instance.Reincarnate();
+        }
     }
 
     private void Reload()

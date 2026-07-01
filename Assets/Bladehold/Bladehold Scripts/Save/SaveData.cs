@@ -14,7 +14,18 @@ public class SaveData
 
     /// <summary>
     ///     Ids of every skill-tree node the player has purchased. Re-applied as stat modifiers on each run
-    ///     by <see cref="SkillTreeService" />, making upgrades permanent meta-progression like gold.
+    ///     by <see cref="SkillTreeService" />, making upgrades permanent meta-progression like gold. Cleared
+    ///     by <see cref="ReincarnateService.Reincarnate" /> when the player reincarnates.
     /// </summary>
     public List<string> purchasedNodeIds = new List<string>();
+
+    /// <summary>The player's accumulated Reincarnate Points, persisted across runs and never reset.</summary>
+    public int reincarnatePoints;
+
+    /// <summary>
+    ///     Ids of every Reincarnate-tree node purchased. Re-applied as stat modifiers on each run by
+    ///     <see cref="ReincarnateService" />, exactly like <see cref="purchasedNodeIds" /> — but these survive
+    ///     reincarnating, since the point tree is the permanent progression layer.
+    /// </summary>
+    public List<string> purchasedReincarnateNodeIds = new List<string>();
 }

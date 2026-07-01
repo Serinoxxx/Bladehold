@@ -14,6 +14,9 @@ public class DamageNumberSpawner : MonoBehaviour
     [SerializeField] private Health health;
     [SerializeField] private DamageNumber popupPrefab;
 
+    [Tooltip("Used instead of Popup Prefab on a critical hit, if assigned. Leave empty to use the normal popup for crits too.")]
+    [SerializeField] private DamageNumber critPopupPrefab;
+
     // World-space offset from this transform where the popup appears (roughly head height by default).
     [SerializeField] private Vector3 spawnOffset = new Vector3(0f, 2f, 0f);
 
@@ -59,7 +62,8 @@ public class DamageNumberSpawner : MonoBehaviour
     private void HandleDamaged(Damage damage)
     {
         // Spawn at the character and let the popup follow it as it rises/fades.
-        DamageNumber popup = popupPrefab.Spawn(transform.position + spawnOffset, damage.value);
+        DamageNumber prefab = damage.isCritical && critPopupPrefab != null ? critPopupPrefab : popupPrefab;
+        DamageNumber popup = prefab.Spawn(transform.position + spawnOffset, damage.value);
         popup.SetFollowedTarget(transform);
     }
 }

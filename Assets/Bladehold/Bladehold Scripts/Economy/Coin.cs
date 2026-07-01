@@ -16,6 +16,9 @@ public class Coin : MonoBehaviour
 
     private bool collected;
 
+    /// <summary>How many coins this pickup is worth.</summary>
+    public int Amount => amount;
+
     /// <summary>Sets how many coins this pickup is worth (called by whatever spawns it).</summary>
     public void SetAmount(int value)
     {

@@ -12,6 +12,10 @@ using UnityEngine;
 ///     CSV columns (one node per row): <c>id, displayName, description, cost, stat, kind, amount, prereqs, x, y</c>
 ///     <list type="bullet">
 ///         <item><c>stat</c>/<c>kind</c>/<c>amount</c> blank → a connector/unlock-only node (no stat effect).</item>
+///         <item>
+///             <c>stat</c>/<c>kind</c>/<c>amount</c> may each hold ';'-separated lists of equal length to apply
+///             several effects atomically (e.g. a node bumping both a chance and a bonus-% stat at once).
+///         </item>
 ///         <item><c>prereqs</c> is semicolon-separated; blank → a root node visible from the start.</item>
 ///         <item>Fields may be wrapped in double quotes to contain commas; "" is an escaped quote.</item>
 ///     </list>
@@ -129,19 +133,34 @@ public class SkillTreeSO : ScriptableObject
         string statRaw = f[4].Trim();
         if (!string.IsNullOrEmpty(statRaw))
         {
-            node.hasEffect = true;
-            if (!Enum.TryParse(statRaw, true, out node.stat))
-            {
-                Debug.LogError($"SkillTreeSO '{name}': line {lineNumber} has unknown stat '{statRaw}'. Treating node as effect-less.");
-                node.hasEffect = false;
-            }
-            else if (!Enum.TryParse(f[5].Trim(), true, out node.kind))
-            {
-                Debug.LogError($"SkillTreeSO '{name}': line {lineNumber} has unknown modifier kind '{f[5]}'. Defaulting to Flat.");
-                node.kind = ModifierKind.Flat;
-            }
+            string[] statParts = statRaw.Split(';');
+            string[] kindParts = f[5].Split(';');
+            string[] amountParts = f[6].Split(';');
 
-            node.amount = ParseFloat(f[6], 0f, lineNumber, "amount");
+            if (kindParts.Length != statParts.Length || amountParts.Length != statParts.Length)
+            {
+                Debug.LogError($"SkillTreeSO '{name}': line {lineNumber} has mismatched stat/kind/amount effect counts. Treating node as effect-less.");
+            }
+            else
+            {
+                for (int e = 0; e < statParts.Length; e++)
+                {
+                    if (!Enum.TryParse(statParts[e].Trim(), true, out StatType effectStat))
+                    {
+                        Debug.LogError($"SkillTreeSO '{name}': line {lineNumber} has unknown stat '{statParts[e]}'. Skipping that effect.");
+                        continue;
+                    }
+
+                    if (!Enum.TryParse(kindParts[e].Trim(), true, out ModifierKind effectKind))
+                    {
+                        Debug.LogError($"SkillTreeSO '{name}': line {lineNumber} has unknown modifier kind '{kindParts[e]}'. Defaulting to Flat.");
+                        effectKind = ModifierKind.Flat;
+                    }
+
+                    float effectAmount = ParseFloat(amountParts[e], 0f, lineNumber, "amount");
+                    node.effects.Add(new SkillEffect { stat = effectStat, kind = effectKind, amount = effectAmount });
+                }
+            }
         }
 
         string prereqRaw = f[7].Trim();

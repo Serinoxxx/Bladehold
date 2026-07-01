@@ -1,25 +1,26 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
-///     Owns skill-tree state: which nodes are purchased, buying them (spending gold and applying the stat
-///     modifier), and persistence. Purchased node ids live in <see cref="SaveData" />, so upgrades are
-///     permanent meta-progression like gold — on every run this re-applies each purchased node's modifier to
-///     <see cref="PlayerStats" /> in <c>Start</c>.
+///     Owns the Reincarnate meta-tree: the permanent point currency, which nodes are purchased, and the
+///     Reincarnate action itself. Mirrors <see cref="SkillTreeService" /> almost exactly — same
+///     <see cref="SkillTreeSO" />/<see cref="SkillNode" /> data model, same reveal/purchase rules — but spends
+///     Reincarnate Points instead of gold, and its purchases survive reincarnating rather than being reset by
+///     it (the regular gold tree is the one that resets).
 ///
-///     Scene singleton (<see cref="Instance" />) like Player/GameStats/WaveSpawner. The tree UI reads state
-///     through it and calls <see cref="TryPurchase" />; <see cref="OnTreeChanged" /> notifies the UI to refresh.
+///     Scene singleton (<see cref="Instance" />) like <see cref="SkillTreeService" />. Reincarnate Points and
+///     purchased node ids live in <see cref="SaveData" />, re-applied to <see cref="PlayerStats" /> in
+///     <c>Start</c> every run, just like the gold tree.
 /// </summary>
-public class SkillTreeService : MonoBehaviour, ISkillTreeService
+public class ReincarnateService : MonoBehaviour, ISkillTreeService
 {
-    public static SkillTreeService Instance;
+    public static ReincarnateService Instance;
 
     [SerializeField] private SkillTreeSO tree;
     [Tooltip("Optional; defaults to Player.Instance.Stats.")]
     [SerializeField] private PlayerStats stats;
-    [Tooltip("Optional; defaults to Player.Instance.Wallet.")]
-    [SerializeField] private Wallet wallet;
 
     private SaveData saveData;
     private readonly HashSet<string> purchased = new HashSet<string>();
@@ -29,6 +30,9 @@ public class SkillTreeService : MonoBehaviour, ISkillTreeService
     public event Action OnTreeChanged;
 
     public SkillTreeSO Tree => tree;
+
+    /// <summary>The player's current Reincarnate Point balance.</summary>
+    public int Points => saveData != null ? saveData.reincarnatePoints : 0;
 
     private void Awake()
     {
@@ -46,7 +50,7 @@ public class SkillTreeService : MonoBehaviour, ISkillTreeService
     {
         if (tree == null)
         {
-            Debug.LogError("SkillTreeSO is not assigned in the inspector.");
+            Debug.LogError("SkillTreeSO (Reincarnate tree) is not assigned in the inspector.");
             anyError = true;
         }
 
@@ -54,19 +58,10 @@ public class SkillTreeService : MonoBehaviour, ISkillTreeService
         {
             stats = Player.Instance != null ? Player.Instance.Stats : null;
         }
-        if (wallet == null)
-        {
-            wallet = Player.Instance != null ? Player.Instance.Wallet : null;
-        }
 
         if (stats == null)
         {
-            Debug.LogError("SkillTreeService could not find PlayerStats (set it or ensure Player.Instance.Stats exists).");
-            anyError = true;
-        }
-        if (wallet == null)
-        {
-            Debug.LogError("SkillTreeService could not find a Wallet (set it or ensure Player.Instance.Wallet exists).");
+            Debug.LogError("ReincarnateService could not find PlayerStats (set it or ensure Player.Instance.Stats exists).");
             anyError = true;
         }
 
@@ -75,9 +70,10 @@ public class SkillTreeService : MonoBehaviour, ISkillTreeService
             return;
         }
 
-        // Re-apply persisted purchases to this run's stats.
+        // Re-apply persisted purchases to this run's stats — the Reincarnate tree is never wiped by
+        // reincarnating, only the regular gold tree is.
         saveData = SaveSystem.Load();
-        foreach (string id in saveData.purchasedNodeIds)
+        foreach (string id in saveData.purchasedReincarnateNodeIds)
         {
             SkillNode node = tree.GetById(id);
             if (node == null)
@@ -102,7 +98,6 @@ public class SkillTreeService : MonoBehaviour, ISkillTreeService
 
     public bool IsPurchased(string id) => purchased.Contains(id);
 
-    /// <summary>A node is revealed if it is a root (no prereqs) or any prerequisite has been purchased.</summary>
     public bool IsRevealed(SkillNode node)
     {
         if (node == null) return false;
@@ -114,20 +109,14 @@ public class SkillTreeService : MonoBehaviour, ISkillTreeService
         return false;
     }
 
-    /// <summary>True if the node can be bought right now: revealed, not already owned, and affordable.</summary>
     public bool CanPurchase(SkillNode node)
     {
         if (anyError || node == null) return false;
         if (purchased.Contains(node.id)) return false;
         if (!IsRevealed(node)) return false;
-        return wallet.Coins >= node.cost;
+        return Points >= node.cost;
     }
 
-    /// <summary>
-    ///     Buys the node: spends its cost, records it (persisted), and applies its stat modifier. Returns
-    ///     false (changing nothing) if it can't be bought. Idempotent per id — a node can be owned once, but
-    ///     duplicate-effect nodes have distinct ids so their buffs still stack.
-    /// </summary>
     public bool TryPurchase(string id)
     {
         if (anyError) return false;
@@ -138,18 +127,40 @@ public class SkillTreeService : MonoBehaviour, ISkillTreeService
             return false;
         }
 
-        if (!wallet.TrySpend(node.cost))
-        {
-            return false;
-        }
-
+        saveData.reincarnatePoints -= node.cost;
         purchased.Add(id);
-        saveData.purchasedNodeIds.Add(id);
+        saveData.purchasedReincarnateNodeIds.Add(id);
         SaveSystem.Save(saveData);
 
         ApplyEffect(node);
         OnTreeChanged?.Invoke();
         return true;
+    }
+
+    /// <summary>Reincarnate Points banked if the player reincarnates right now (highest wave reached this run).</summary>
+    public int PreviewPointsForReincarnate()
+    {
+        return WaveSpawner.Instance != null ? WaveSpawner.Instance.CurrentWave : 0;
+    }
+
+    /// <summary>
+    ///     Banks the points earned this run, resets the regular gold skill tree (its purchases are cleared so
+    ///     next run's <see cref="SkillTreeService" /> comes back empty), sends the next run back to wave 1,
+    ///     and reloads the scene. Reincarnate-tree purchases are untouched — they're permanent.
+    /// </summary>
+    public void Reincarnate()
+    {
+        if (anyError) return;
+
+        saveData.reincarnatePoints += PreviewPointsForReincarnate();
+        saveData.purchasedNodeIds.Clear();
+        SaveSystem.Save(saveData);
+
+        RunState.StartingWave = 1;
+
+        // Ensure normal speed resumes even if something paused time on death, mirroring DeathScreen.Reload().
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     private void ApplyEffect(SkillNode node)

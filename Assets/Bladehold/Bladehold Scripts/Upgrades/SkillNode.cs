@@ -1,9 +1,18 @@
 using System.Collections.Generic;
 
+/// <summary>One stat modifier a <see cref="SkillNode" /> applies when purchased.</summary>
+public struct SkillEffect
+{
+    public StatType stat;
+    public ModifierKind kind;
+    public float amount;
+}
+
 /// <summary>
 ///     One node in the skill tree, parsed from a row of the CSV by <see cref="SkillTreeSO" />. A node may
-///     grant a stat modifier (<see cref="hasEffect" /> true) or be a pure connector/unlock node (effect
-///     columns blank). Duplicate effects across different ids are intentional — buying both stacks the buff.
+///     grant one or more stat modifiers (<see cref="effects" /> non-empty) or be a pure connector/unlock node
+///     (effect columns blank). Duplicate effects across different ids are intentional — buying both stacks
+///     the buff.
 /// </summary>
 public class SkillNode
 {
@@ -13,20 +22,15 @@ public class SkillNode
     public string displayName;
     public string description;
 
-    /// <summary>Gold cost to purchase.</summary>
+    /// <summary>Cost to purchase, in whichever currency the owning service spends (gold, Reincarnate Points, ...).</summary>
     public int cost;
 
-    /// <summary>Whether this node applies a stat modifier when purchased.</summary>
-    public bool hasEffect;
-
-    /// <summary>The stat this node modifies (only meaningful when <see cref="hasEffect" />).</summary>
-    public StatType stat;
-
-    /// <summary>How the modifier combines (Flat or Percent).</summary>
-    public ModifierKind kind;
-
-    /// <summary>The modifier amount (e.g. 1 for +1, 0.05 for +5%).</summary>
-    public float amount;
+    /// <summary>
+    ///     Stat modifiers applied together when this node is purchased. Empty for a pure connector/unlock
+    ///     node. Usually one entry; a node can carry several (e.g. a Golden Goblin tier bumping both its
+    ///     spawn chance and its bonus gold at once) via the CSV's ';'-separated stat/kind/amount columns.
+    /// </summary>
+    public List<SkillEffect> effects = new List<SkillEffect>();
 
     /// <summary>Ids of prerequisite nodes. Empty = a root, visible from the start. Otherwise revealed once ANY prereq is purchased.</summary>
     public List<string> prereqs = new List<string>();

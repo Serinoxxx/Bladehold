@@ -15,25 +15,28 @@ public class SkillNodeView : MonoBehaviour
     [SerializeField] private TMP_Text costText;
     [SerializeField] private Image background;
 
+    [Tooltip("Appended after the cost number, e.g. \" pts\" for a Reincarnate Points tree. Leave blank for gold.")]
+    [SerializeField] private string costSuffix = "";
+
     [Header("State colors")]
     [SerializeField] private Color availableColor = new Color(0.9f, 0.8f, 0.3f);
     [SerializeField] private Color lockedColor = new Color(0.4f, 0.4f, 0.4f);
     [SerializeField] private Color purchasedColor = new Color(0.3f, 0.8f, 0.4f);
 
     private SkillNode node;
-    private SkillTreeService service;
+    private ISkillTreeService service;
     private Action<string> onClicked;
 
     public SkillNode Node => node;
 
-    public void Bind(SkillNode node, SkillTreeService service, Action<string> onClicked)
+    public void Bind(SkillNode node, ISkillTreeService service, Action<string> onClicked)
     {
         this.node = node;
         this.service = service;
         this.onClicked = onClicked;
 
         if (nameText != null) nameText.text = node.displayName;
-        if (costText != null) costText.text = node.cost.ToString();
+        if (costText != null) costText.text = node.cost + costSuffix;
 
         if (button != null)
         {
@@ -90,7 +93,7 @@ public class SkillNodeView : MonoBehaviour
         }
         if (costText != null)
         {
-            costText.text = purchased ? "Owned" : node.cost.ToString();
+            costText.text = purchased ? "Owned" : node.cost + costSuffix;
         }
     }
 }

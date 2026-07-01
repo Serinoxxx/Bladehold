@@ -35,6 +35,9 @@ public class PlayerAttack : MonoBehaviour
     /// <summary>Charge of the swing in progress (or the last one), 0..1. Useful for VFX/feedback.</summary>
     public float LastChargeFraction { get; private set; }
 
+    /// <summary>True while the attack button is held and the swing is charging up.</summary>
+    public bool IsCharging => charging;
+
     /// <summary>
     ///     Damage multiplier for the current swing: <c>1 + chargeFraction × ChargeDamageBonus</c>. The sword's
     ///     <see cref="DamageTrigger" /> multiplies its damage by this when its hitbox activates.

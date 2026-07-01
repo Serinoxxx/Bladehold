@@ -14,10 +14,12 @@ using UnityEngine.UI;
 /// </summary>
 public class SkillTreeView : MonoBehaviour
 {
-    [Tooltip("Optional; defaults to SkillTreeService.Instance.")]
-    [SerializeField] private SkillTreeService service;
+    [Tooltip("Optional; defaults to SkillTreeService.Instance. Assign explicitly to render a different tree (e.g. ReincarnateService).")]
+    [SerializeField] private MonoBehaviour serviceBehaviour;
     [Tooltip("Optional; defaults to Player.Instance.Wallet (for live gold display and refresh).")]
     [SerializeField] private Wallet wallet;
+
+    private ISkillTreeService service;
 
     [Header("Layout")]
     [Tooltip("Container the node views and connectors are parented to (e.g. a ScrollRect's content).")]
@@ -37,6 +39,7 @@ public class SkillTreeView : MonoBehaviour
 
     private void Start()
     {
+        service = serviceBehaviour as ISkillTreeService;
         if (service == null)
         {
             service = SkillTreeService.Instance;
