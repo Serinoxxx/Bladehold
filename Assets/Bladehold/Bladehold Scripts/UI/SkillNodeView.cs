@@ -6,8 +6,9 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
-///     The view for a single skill-tree node: a button showing the node's name and cost, tinted by state
-///     (hidden / locked / available / purchased). Instantiated and positioned by <see cref="SkillTreeView" />,
+///     The view for a single skill-tree node: a button showing the node's name and cost, with a border
+///     tinted by state (hidden / locked / available / purchased), a tick on purchased nodes, and a lock on
+///     teased ones. Instantiated and positioned by <see cref="SkillTreeView" />,
 ///     which also feeds it the <see cref="SkillTreeService" /> and a click callback. Raises
 ///     <see cref="HoverEntered" />/<see cref="HoverExited" /> for the tree's <see cref="SkillTooltip" /> and
 ///     plays optional <see cref="MMF_Player" /> feedbacks on spawn (enable), hover, and successful purchase
@@ -18,9 +19,14 @@ public class SkillNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     [SerializeField] private Button button;
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private TMP_Text costText;
-    [SerializeField] private Image background;
+    [Tooltip("Border ring tinted by node state; the background image keeps its authored color.")]
+    [SerializeField] private Image border;
     [Tooltip("Optional: shows the node's CSV-authored icon (resolved through the tree's SkillTreeSO). Hidden when the node has none.")]
     [SerializeField] private Image icon;
+    [Tooltip("Shown on purchased nodes.")]
+    [SerializeField] private GameObject purchasedTick;
+    [Tooltip("Shown on teased nodes — the one-step-ahead preview that can't be bought yet.")]
+    [SerializeField] private GameObject teasedLock;
 
     [Header("Feedbacks (optional)")]
     [Tooltip("Played when a prereq purchase reveals this node (not on initial tree build — the death screen is alpha-hidden but active then, and every node would fire at scene load).")]
@@ -156,9 +162,17 @@ public class SkillNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
         bool canBuy = service.CanPurchase(node);
 
-        if (background != null)
+        if (border != null)
         {
-            background.color = purchased ? purchasedColor : teased ? teasedColor : (canBuy ? availableColor : lockedColor);
+            border.color = purchased ? purchasedColor : teased ? teasedColor : (canBuy ? availableColor : lockedColor);
+        }
+        if (purchasedTick != null && purchasedTick.activeSelf != purchased)
+        {
+            purchasedTick.SetActive(purchased);
+        }
+        if (teasedLock != null && teasedLock.activeSelf != teased)
+        {
+            teasedLock.SetActive(teased);
         }
         if (icon != null && icon.enabled)
         {
