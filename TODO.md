@@ -177,16 +177,16 @@ Skill Tree Editor window, and the four new skill lines is done. See
       `Image` for the icon and assign it to the new `icon` field on `SkillNodeView` (hidden
       automatically when a node has no icon).
 
-- [ ] **Player prefab** (`Assets/Bladehold/Bladehold Prefabs/Player.prefab`):
-  - [ ] Add a `VampiricBlade` component on the player root; assign `swordTrigger` to the sword's
+- [x] **Player prefab** (`Assets/Bladehold/Bladehold Prefabs/Player.prefab`):
+  - [x] Add a `VampiricBlade` component on the player root; assign `swordTrigger` to the sword's
         `DamageTrigger` explicitly (no auto-wire — the Death Nova hitbox is also a `DamageTrigger`;
         health/stats default to `Player.Instance`).
-  - [ ] Add a `DamageBlocker` component on the player root (next to `Health`); optionally assign a
+  - [x] Add a `DamageBlocker` component on the player root (next to `Health`); optionally assign a
         `blockFeedback` `MMF_Player` (shield flash/clank SFX) so blocks are readable.
-  - [ ] Add an `AttackCancelsSprint` component on the player root (auto-finds the `InputReader` and
+  - [x] Add an `AttackCancelsSprint` component on the player root (auto-finds the `InputReader` and
         `SamplePlayerAnimationController` via `OnValidate`).
 
-- [ ] **Icons**: open **Bladehold > Skill Tree Editor**, pick each `SkillTreeSO`, and drag sprites
+- [x] **Icons**: open **Bladehold > Skill Tree Editor**, pick each `SkillTreeSO`, and drag sprites
       onto the new rows (`sprint_*`, `ampknock_*`, `vamp_*`, `solid_*` currently have blank icons);
       dropping a sprite adds it to the tree's `icons` list and sets the node's icon name in one step.
 
@@ -196,9 +196,9 @@ Skill Tree Editor window, and the four new skill lines is done. See
 
 ## Manual verification (skill icons + new skill lines)
 
-- [ ] Nodes with an icon show it on the death screen; icon-less nodes look unchanged; console shows
+- [x] Nodes with an icon show it on the death screen; icon-less nodes look unchanged; console shows
       a line-numbered error for a typo'd icon name.
-- [ ] Edit a node and Save in the Skill Tree Editor → CSV file updates on disk and the tree renders
+- [x] Edit a node and Save in the Skill Tree Editor → CSV file updates on disk and the tree renders
       the change on next death screen.
 - [ ] Buy Vampiric Blade, hit goblins → health visibly refills by ~1% of damage dealt per tier
       (crit/charged hits heal more); no healing while dead.

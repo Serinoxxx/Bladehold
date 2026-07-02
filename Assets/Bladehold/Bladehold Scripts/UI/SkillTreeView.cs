@@ -30,6 +30,8 @@ public class SkillTreeView : MonoBehaviour
     [SerializeField] private RectTransform connectorPrefab;
     [Tooltip("Pixels between adjacent (x, y) grid steps.")]
     [SerializeField] private float spacing = 160f;
+    [Tooltip("Empty space (px) between the outermost nodes and the content edge, so edge nodes aren't flush against the viewport when scrolled to the extremes.")]
+    [SerializeField] private float contentPadding = 200f;
 
     [Header("Optional gold readout")]
     [SerializeField] private TMP_Text goldText;
@@ -186,10 +188,11 @@ public class SkillTreeView : MonoBehaviour
     }
 
     /// <summary>
-    ///     Sizes <see cref="content" /> to the authored tree's actual extent (plus one node of padding)
-    ///     instead of an arbitrarily large fixed rect, so the ScrollRect's drag/scroll limits match the
-    ///     tree. Anchors/pivots content to top-left and shifts every node via <see cref="treeOffset" /> so
-    ///     the (possibly negative) grid coordinates land inside content's [0, width] x [-height, 0] rect.
+    ///     Sizes <see cref="content" /> to the authored tree's actual extent (plus one node, plus
+    ///     <see cref="contentPadding" /> of breathing room on every side) instead of an arbitrarily large
+    ///     fixed rect, so the ScrollRect's drag/scroll limits match the tree. Anchors/pivots content to
+    ///     top-left and shifts every node via <see cref="treeOffset" /> so the (possibly negative) grid
+    ///     coordinates land inside content's [0, width] x [-height, 0] rect.
     /// </summary>
     private void FitContentToTree(IReadOnlyList<SkillNode> nodes)
     {
@@ -211,13 +214,13 @@ public class SkillTreeView : MonoBehaviour
             maxY = Mathf.Max(maxY, pos.y);
         }
 
-        treeOffset = new Vector2(-minX + nodeSize.x * 0.5f, -maxY - nodeSize.y * 0.5f);
+        treeOffset = new Vector2(-minX + nodeSize.x * 0.5f + contentPadding, -maxY - nodeSize.y * 0.5f - contentPadding);
 
         content.anchorMin = new Vector2(0f, 1f);
         content.anchorMax = new Vector2(0f, 1f);
         content.pivot = new Vector2(0f, 1f);
         content.anchoredPosition = Vector2.zero;
-        content.sizeDelta = new Vector2(maxX - minX + nodeSize.x, maxY - minY + nodeSize.y);
+        content.sizeDelta = new Vector2(maxX - minX + nodeSize.x + contentPadding * 2f, maxY - minY + nodeSize.y + contentPadding * 2f);
     }
 
     private void CreateConnector(SkillNode from, SkillNode to)

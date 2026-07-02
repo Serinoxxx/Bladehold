@@ -1,54 +1,54 @@
 id,displayName,description,cost,stat,kind,amount,prereqs,x,y,icon
-sword_dmg_1,Sharpened Edge,+1 Sword Damage,50,SwordDamage,Flat,1,,-2,0,AttackDoubleSword_1_nobg
-move_1,Fleet Footed,+5% Move Speed,80,MoveSpeed,Percent,0.05,,2,0,Aura_Speed_nb
-sword_dmg_2,Honed Edge,+1 Sword Damage,120,SwordDamage,Flat,1,sword_dmg_1,-2,1,AttackDoubleSword_3_nobg
-crit_1,Keen Eye,+5% Critical Strike Chance,150,CritChance,Flat,0.05,,0,1,Critical_strike_nobg
-move_2,Swift,+5% Move Speed,160,MoveSpeed,Percent,0.05,move_1,2,1,Aura_Speed_nb
-charge_unlock,Heavy Strike,Hold your attack for 1s to charge a level: +50% damage per level,300,MaxChargeLevels;ChargeDamageBonus,Flat;Flat,1;0.5,sword_dmg_2,-2,2,IncreaseStrength_1_nobg
-crit_2,Deadeye,+5% Critical Strike Chance,220,CritChance,Flat,0.05,crit_1,0,2,Critical_strike2_nobg
-charge_2,Heavy Strike II,Hold 1s longer for a 2nd charge level,450,MaxChargeLevels,Flat,1,charge_unlock,-3,3,IncreaseStrength_2_nobg
-charge_3,Heavy Strike III,Hold 1s longer for a 3rd charge level,650,MaxChargeLevels,Flat,1,charge_2,-3,4,IncreaseStrength_3_nobg
-charge_4,Heavy Strike IV,Hold 1s longer for a 4rd charge level,900,MaxChargeLevels,Flat,1,charge_3,-3,5,IncreaseStrength_4_nobg
-knock_1,Brute Force,Knockback enemies on hit,200,KnockbackForce,Flat,8,charge_unlock;crit_2,-1,3,Push_nobg
-knock_2,Stronger Blows,+5% Knockback Force,90,KnockbackForce,Percent,0.05,knock_1,-1,4,Push_nobg
-move_dup,Fleet Footed,+5% Move Speed (stacks),160,MoveSpeed,Percent,0.05,knock_1,1,4,Aura_Speed_nb
-range_ext_1,Extended Blade,+25% Sword Range (25% total),70,SwordRange,Percent,0.25,,4,0,Warriorskill_41_nobg
-range_ext_2,Extended Blade II,+25% Sword Range (50% total),140,SwordRange,Percent,0.25,range_ext_1,4,1,Warriorskill_41_nobg
-range_ext_3,Extended Blade III,+25% Sword Range (75% total),220,SwordRange,Percent,0.25,range_ext_2,4,2,Warriorskill_41_nobg
-range_ext_4,Extended Blade IV,+25% Sword Range (100% total),320,SwordRange,Percent,0.25,range_ext_3,4,3,Warriorskill_41_nobg
-range_ext_5,Extended Blade V,+25% Sword Range (125% total),450,SwordRange,Percent,0.25,range_ext_4,4,4,Warriorskill_41_nobg
-range_ext_6,Extended Blade VI,+25% Sword Range (150% total),600,SwordRange,Percent,0.25,range_ext_5,4,5,Warriorskill_41_nobg
-range_ext_7,Extended Blade VII,+25% Sword Range (175% total),800,SwordRange,Percent,0.25,range_ext_6,4,6,Warriorskill_41_nobg
-range_ext_8,Extended Blade VIII,+25% Sword Range (200% total),1050,SwordRange,Percent,0.25,range_ext_7,4,7,Warriorskill_41_nobg
-butter_1,Like Butter,Cut through 1 more enemy per swing,100,MaxHitsPerSwing,Flat,1,,6,0,Warriorskill_21_nobg
-butter_2,Like Butter II,Cut through 1 more enemy per swing,160,MaxHitsPerSwing,Flat,1,butter_1,6,1,Warriorskill_21_nobg
-butter_3,Like Butter III,Cut through 1 more enemy per swing,240,MaxHitsPerSwing,Flat,1,butter_2,6,2,Warriorskill_21_nobg
-butter_4,Like Butter IV,Cut through 1 more enemy per swing,340,MaxHitsPerSwing,Flat,1,butter_3,6,3,Warriorskill_21_nobg
-butter_5,Like Butter V,Cut through 1 more enemy per swing,460,MaxHitsPerSwing,Flat,1,butter_4,6,4,Warriorskill_21_nobg
-butter_6,Like Butter VI,Cut through 1 more enemy per swing,600,MaxHitsPerSwing,Flat,1,butter_5,6,5,Warriorskill_21_nobg
-butter_7,Like Butter VII,Cut through 1 more enemy per swing,760,MaxHitsPerSwing,Flat,1,butter_6,6,6,Warriorskill_21_nobg
-butter_8,Like Butter VIII,Cut through 1 more enemy per swing,940,MaxHitsPerSwing,Flat,1,butter_7,6,7,Warriorskill_21_nobg
-plunder_1,Plunder,+50% Gold from enemies (50% total),120,GoldDropMultiplier,Percent,0.5,,8,0,GoldCoin
-plunder_2,Plunder II,+50% Gold from enemies (100% total),240,GoldDropMultiplier,Percent,0.5,plunder_1,8,1,GoldCoinThree
-plunder_3,Plunder III,+100% Gold from enemies (200% total),450,GoldDropMultiplier,Percent,1,plunder_2,8,2,GoldCoinTen
-plunder_4,Plunder IV,+200% Gold from enemies (400% total),800,GoldDropMultiplier,Percent,2,plunder_3,8,3,Assassinskill_26_nobg
-plunder_5,Plunder V,+400% Gold from enemies (800% total),1400,GoldDropMultiplier,Percent,4,plunder_4,8,4,Skill_Money
-sprint_1,Sprinter,+10% Sprint Speed,100,SprintSpeed,Percent,0.1,move_2,2,2,Aura_Speed_nb
-sprint_2,Sprinter II,+10% Sprint Speed (20% total),180,SprintSpeed,Percent,0.1,sprint_1,2,3,Aura_Speed_nb
-sprint_3,Sprinter III,+10% Sprint Speed (30% total),280,SprintSpeed,Percent,0.1,sprint_2,2,4,Aura_Speed_nb
-sprint_4,Sprinter IV,+10% Sprint Speed (40% total),400,SprintSpeed,Percent,0.1,sprint_3,2,5,Aura_Speed_nb
-sprint_5,Sprinter V,+10% Sprint Speed (50% total),550,SprintSpeed,Percent,0.1,sprint_4,2,6,Aura_Speed_nb
-ampknock_1,Amplified Knockback,Charging your weapon also increases knockback by 25% per charge level,250,ChargeKnockbackBonus,Flat,0.25,knock_1,0,3,Warriorskill_05_nobg
-ampknock_2,Amplified Knockback II,+25% knockback per charge level (50% total),400,ChargeKnockbackBonus,Flat,0.25,ampknock_1,0,4,Warriorskill_05_nobg
-ampknock_3,Amplified Knockback III,+25% knockback per charge level (75% total),600,ChargeKnockbackBonus,Flat,0.25,ampknock_2,0,5,Warriorskill_05_nobg
-ampknock_4,Amplified Knockback IV,+25% knockback per charge level (100% total),850,ChargeKnockbackBonus,Flat,0.25,ampknock_3,0,6,Warriorskill_05_nobg
-vamp_1,Vampiric Blade,Heal 1% of the damage you deal,150,LifeStealPercent,Flat,0.01,,10,0,vampire_nobg
-vamp_2,Vampiric Blade II,Heal 2% of the damage you deal,250,LifeStealPercent,Flat,0.01,vamp_1,10,1,vampire_nobg
-vamp_3,Vampiric Blade III,Heal 3% of the damage you deal,400,LifeStealPercent,Flat,0.01,vamp_2,10,2,vampire_nobg
-vamp_4,Vampiric Blade IV,Heal 4% of the damage you deal,600,LifeStealPercent,Flat,0.01,vamp_3,10,3,vampire_nobg
-vamp_5,Vampiric Blade V,Heal 5% of the damage you deal,850,LifeStealPercent,Flat,0.01,vamp_4,10,4,vampire_nobg
-solid_1,Solid,Automatically block 1 damage source every 10 seconds,200,BlockCooldown,Flat,10,,12,0,Warriorskill_18_block
-solid_2,Solid II,Block every 9 seconds,300,BlockCooldown,Flat,-1,solid_1,12,1,Warriorskill_18_block
-solid_3,Solid III,Block every 8 seconds,450,BlockCooldown,Flat,-1,solid_2,12,2,Warriorskill_18_block
-solid_4,Solid IV,Block every 7 seconds,650,BlockCooldown,Flat,-1,solid_3,12,3,Warriorskill_18_block
-solid_5,Solid V,Block every 6 seconds,900,BlockCooldown,Flat,-1,solid_4,12,4,Warriorskill_18_block
+sword_dmg_1,Sharpened Edge,+1 Sword Damage,50,SwordDamage,Flat,1,,0,0,AttackDoubleSword_1_nobg
+move_1,Fleet Footed,+5% Move Speed,80,MoveSpeed,Percent,0.05,sword_dmg_1,2,1,Aura_Speed_nb
+sword_dmg_2,Honed Edge,+1 Sword Damage,120,SwordDamage,Flat,1,range_ext_1,-2,2,AttackDoubleSword_3_nobg
+crit_1,Keen Eye,+5% Critical Strike Chance,150,CritChance,Flat,0.05,range_ext_1,-4,2,Critical_strike_nobg
+move_2,Swift,+5% Move Speed,160,MoveSpeed,Percent,0.05,move_1,3,2,Aura_Speed_nb
+charge_unlock,Heavy Strike,Hold your attack for 1s to charge a level: +50% damage per level,300,MaxChargeLevels;ChargeDamageBonus,Flat;Flat,1;0.5,sword_dmg_2,-2,3,IncreaseStrength_1_nobg
+crit_2,Deadeye,+5% Critical Strike Chance,220,CritChance,Flat,0.05,crit_1,-5,3,Critical_strike2_nobg
+charge_2,Heavy Strike II,Hold 1s longer for a 2nd charge level,450,MaxChargeLevels,Flat,1,charge_unlock,-2,4,IncreaseStrength_2_nobg
+charge_3,Heavy Strike III,Hold 1s longer for a 3rd charge level,650,MaxChargeLevels,Flat,1,charge_2,-2,5,IncreaseStrength_3_nobg
+charge_4,Heavy Strike IV,Hold 1s longer for a 4rd charge level,900,MaxChargeLevels,Flat,1,charge_3,-2,6,IncreaseStrength_4_nobg
+knock_1,Brute Force,Knockback enemies on hit,200,KnockbackForce,Flat,8,sword_dmg_2,-3,3,Push_nobg
+knock_2,Stronger Blows,+5% Knockback Force,90,KnockbackForce,Percent,0.05,knock_1,-4,4,Push_nobg
+move_dup,Fleet Footed,+5% Move Speed (stacks),160,MoveSpeed,Percent,0.05,move_2,4,3,Aura_Speed_nb
+range_ext_1,Extended Blade,+25% Sword Range (25% total),70,SwordRange,Percent,0.25,sword_dmg_1,-2,1,Warriorskill_41_nobg
+range_ext_2,Extended Blade II,+25% Sword Range (50% total),140,SwordRange,Percent,0.25,range_ext_1,-3,2,Warriorskill_41_nobg
+range_ext_3,Extended Blade III,+25% Sword Range (stacks),220,SwordRange,Percent,0.25,butter_1;move_1,1,2,Warriorskill_41_nobg
+range_ext_4,Extended Blade IV,+25% Sword Range (stacks),320,SwordRange,Percent,0.25,butter_3,-5,4,Warriorskill_41_nobg
+range_ext_5,Extended Blade V,+25% Sword Range (stacks),450,SwordRange,Percent,0.25,butter_4;sprint_1,2,4,Warriorskill_41_nobg
+range_ext_6,Extended Blade VI,+25% Sword Range (stacks),600,SwordRange,Percent,0.25,butter_5,4,5,Warriorskill_41_nobg
+range_ext_7,Extended Blade VII,+25% Sword Range (stacks),800,SwordRange,Percent,0.25,butter_6,-4,6,Warriorskill_41_nobg
+range_ext_8,Extended Blade VIII,+25% Sword Range (stacks),1050,SwordRange,Percent,0.25,range_ext_6,4,6,Warriorskill_41_nobg
+butter_1,Like Butter,Cut through 1 more enemy per swing,100,MaxHitsPerSwing,Flat,1,sword_dmg_1,0,1,Warriorskill_21_nobg
+butter_2,Like Butter II,Cut through 1 more enemy per swing,160,MaxHitsPerSwing,Flat,1,move_1,2,2,Warriorskill_21_nobg
+butter_3,Like Butter III,Cut through 1 more enemy per swing,240,MaxHitsPerSwing,Flat,1,range_ext_2;crit_1,-4,3,Warriorskill_21_nobg
+butter_4,Like Butter IV,Cut through 1 more enemy per swing,340,MaxHitsPerSwing,Flat,1,butter_2,2,3,Warriorskill_21_nobg
+butter_5,Like Butter V,Cut through 1 more enemy per swing,460,MaxHitsPerSwing,Flat,1,move_dup,4,4,Warriorskill_21_nobg
+butter_6,Like Butter VI,Cut through 1 more enemy per swing,600,MaxHitsPerSwing,Flat,1,range_ext_4;ampknock_1,-4,5,Warriorskill_21_nobg
+butter_7,Like Butter VII,Cut through 1 more enemy per swing,760,MaxHitsPerSwing,Flat,1,range_ext_5,2,5,Warriorskill_21_nobg
+butter_8,Like Butter VIII,Cut through 1 more enemy per swing,940,MaxHitsPerSwing,Flat,1,vamp_5;plunder_5,-1,7,Warriorskill_21_nobg
+plunder_1,Plunder,+50% Gold from enemies (50% total),120,GoldDropMultiplier,Percent,0.5,butter_1,0,2,GoldCoin
+plunder_2,Plunder II,+50% Gold from enemies (100% total),240,GoldDropMultiplier,Percent,0.5,plunder_1,0,3,GoldCoinThree
+plunder_3,Plunder III,+100% Gold from enemies (200% total),450,GoldDropMultiplier,Percent,1,plunder_2,0,4,GoldCoinTen
+plunder_4,Plunder IV,+200% Gold from enemies (400% total),800,GoldDropMultiplier,Percent,2,plunder_3,0,5,Assassinskill_26_nobg
+plunder_5,Plunder V,+400% Gold from enemies (800% total),1400,GoldDropMultiplier,Percent,4,plunder_4,0,6,Skill_Money
+sprint_1,Sprinter,+10% Sprint Speed,100,SprintSpeed,Percent,0.1,move_2,3,3,Aura_Speed_nb
+sprint_2,Sprinter II,+10% Sprint Speed (20% total),180,SprintSpeed,Percent,0.1,sprint_1,3,4,Aura_Speed_nb
+sprint_3,Sprinter III,+10% Sprint Speed (30% total),280,SprintSpeed,Percent,0.1,sprint_2,3,5,Aura_Speed_nb
+sprint_4,Sprinter IV,+10% Sprint Speed (40% total),400,SprintSpeed,Percent,0.1,sprint_3,3,6,Aura_Speed_nb
+sprint_5,Sprinter V,+10% Sprint Speed (50% total),550,SprintSpeed,Percent,0.1,sprint_4,3,7,Aura_Speed_nb
+ampknock_1,Amplified Knockback,Charging your weapon also increases knockback by 25% per charge level,250,ChargeKnockbackBonus,Flat,0.25,knock_1,-3,4,Warriorskill_05_nobg
+ampknock_2,Amplified Knockback II,+25% knockback per charge level (50% total),400,ChargeKnockbackBonus,Flat,0.25,ampknock_1,-3,5,Warriorskill_05_nobg
+ampknock_3,Amplified Knockback III,+25% knockback per charge level (75% total),600,ChargeKnockbackBonus,Flat,0.25,ampknock_2,-3,6,Warriorskill_05_nobg
+ampknock_4,Amplified Knockback IV,+25% knockback per charge level (100% total),850,ChargeKnockbackBonus,Flat,0.25,ampknock_3,-3,7,Warriorskill_05_nobg
+vamp_1,Vampiric Blade,Heal 1% of the damage you deal,150,LifeStealPercent,Flat,0.01,butter_1,-1,2,vampire_nobg
+vamp_2,Vampiric Blade II,Heal 2% of the damage you deal,250,LifeStealPercent,Flat,0.01,vamp_1,-1,3,vampire_nobg
+vamp_3,Vampiric Blade III,Heal 3% of the damage you deal,400,LifeStealPercent,Flat,0.01,vamp_2,-1,4,vampire_nobg
+vamp_4,Vampiric Blade IV,Heal 4% of the damage you deal,600,LifeStealPercent,Flat,0.01,vamp_3,-1,5,vampire_nobg
+vamp_5,Vampiric Blade V,Heal 5% of the damage you deal,850,LifeStealPercent,Flat,0.01,vamp_4,-1,6,vampire_nobg
+solid_1,Solid,Automatically block 1 damage source every 10 seconds,200,BlockCooldown,Flat,10,range_ext_3,1,3,Warriorskill_18_block
+solid_2,Solid II,Block every 9 seconds,300,BlockCooldown,Flat,-1,solid_1,1,4,Warriorskill_18_block
+solid_3,Solid III,Block every 8 seconds,450,BlockCooldown,Flat,-1,solid_2,1,5,Warriorskill_18_block
+solid_4,Solid IV,Block every 7 seconds,650,BlockCooldown,Flat,-1,solid_3,1,6,Warriorskill_18_block
+solid_5,Solid V,Block every 6 seconds,900,BlockCooldown,Flat,-1,solid_4,1,7,Warriorskill_18_block
