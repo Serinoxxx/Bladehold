@@ -13,9 +13,20 @@ public enum StatType
     CritChance,
     CritMultiplier,
     KnockbackForce,
+    /// <summary>Extra damage per charge level held (e.g. 0.5 = +50% per level). Does nothing until MaxChargeLevels is at least 1.</summary>
     ChargeDamageBonus,
+    /// <summary>How many charge levels the attack hold can reach. 0 = hold-to-charge locked (the default until the Heavy Strike node is bought).</summary>
+    MaxChargeLevels,
     /// <summary>How many unique enemies a single sword swing can damage before it's blocked. Base comes from the sword's DamageTriggerSO.maxHits.</summary>
     MaxHitsPerSwing,
+    /// <summary>Unitless multiplier on the gold enemies drop (base 1.0, same convention as MoveSpeed).</summary>
+    GoldDropMultiplier,
+    /// <summary>Fraction of sword damage dealt returned to the player as health (e.g. 0.01 = 1% lifesteal). 0 = none.</summary>
+    LifeStealPercent,
+    /// <summary>Seconds between automatic damage blocks (the "Solid" skill line). 0 = blocking locked.</summary>
+    BlockCooldown,
+    /// <summary>Extra knockback per charge level held (e.g. 0.25 = +25% per level). Does nothing until MaxChargeLevels is at least 1.</summary>
+    ChargeKnockbackBonus,
 
     /// <summary>0 = Death Nova locked, 1 = unlocked (a future node could grant a 2nd charge).</summary>
     DeathNovaCharges,

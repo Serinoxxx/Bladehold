@@ -3,11 +3,11 @@ using UnityEngine;
 
 /// <summary>
 ///     Escalating charge-up feedback for the sword's charged attack. <see cref="PlayerAttack" /> already
-///     owns the charge timing (<see cref="PlayerAttack.IsCharging" />/<see cref="PlayerAttack.LastChargeFraction" />);
+///     owns the charge timing (<see cref="PlayerAttack.IsCharging" />/<see cref="PlayerAttack.ChargeLevel" />);
 ///     this component just polls it (same style as <see cref="PlayerMoveSpeedBinder" /> polls stats) and
-///     plays the next <see cref="MMF_Player" /> in <see cref="chargeStages" /> each time the hold crosses
-///     another stage threshold, so the spark/SFX gets bigger the longer the attack is held. Stage count is
-///     just however many entries are assigned - no fixed number in code.
+///     plays the next <see cref="MMF_Player" /> in <see cref="chargeStages" /> each time the hold gains
+///     another charge level, so the spark/SFX gets bigger the longer the attack is held. Stage N plays when
+///     level N+1 is reached; levels beyond the array just keep the last stage's look.
 /// </summary>
 public class SwordChargeFeedback : MonoBehaviour
 {
@@ -51,7 +51,8 @@ public class SwordChargeFeedback : MonoBehaviour
             return;
         }
 
-        int stage = Mathf.Clamp(Mathf.FloorToInt(playerAttack.LastChargeFraction * chargeStages.Length), 0, chargeStages.Length - 1);
+        // Level 1 plays stage 0, level 2 plays stage 1, ... (level 0 = nothing yet).
+        int stage = Mathf.Min(playerAttack.ChargeLevel, chargeStages.Length) - 1;
         while (lastPlayedStage < stage)
         {
             lastPlayedStage++;

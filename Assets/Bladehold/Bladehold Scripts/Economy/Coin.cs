@@ -1,4 +1,5 @@
 using DamageNumbersPro;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -13,6 +14,7 @@ public class Coin : MonoBehaviour
     [SerializeField] private DamageNumber pickupPopup;
     [Tooltip("World-space offset from the coin where the pickup popup spawns.")]
     [SerializeField] private Vector3 popupOffset = new Vector3(0f, 0.5f, 0f);
+    [SerializeField] private MMF_Player coinPickupFeedback;
 
     private bool collected;
 
@@ -51,6 +53,11 @@ public class Coin : MonoBehaviour
         if (pickupPopup != null)
         {
             pickupPopup.Spawn(transform.position + popupOffset, amount);
+        }
+
+        if (coinPickupFeedback != null)
+        {
+            coinPickupFeedback.PlayFeedbacks();
         }
 
         Destroy(gameObject);

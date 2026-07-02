@@ -22,6 +22,12 @@ public class SkillNode
     public string displayName;
     public string description;
 
+    /// <summary>
+    ///     Name of this node's icon sprite (the CSV's optional 11th column), resolved against the owning
+    ///     <see cref="SkillTreeSO" />'s icon list by <see cref="SkillTreeSO.GetIcon" />. Empty = no icon.
+    /// </summary>
+    public string iconName = "";
+
     /// <summary>Cost to purchase, in whichever currency the owning service spends (gold, Reincarnate Points, ...).</summary>
     public int cost;
 

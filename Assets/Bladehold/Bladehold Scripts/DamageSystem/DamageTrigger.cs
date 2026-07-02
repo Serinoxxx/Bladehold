@@ -115,6 +115,7 @@ public class DamageTrigger : MonoBehaviour
             stats.SetBase(StatType.CritChance, 0f);
             stats.SetBase(StatType.CritMultiplier, baseCritMultiplier);
             stats.SetBase(StatType.KnockbackForce, 0f);
+            stats.SetBase(StatType.ChargeKnockbackBonus, 0f);
             stats.SetBase(StatType.MaxHitsPerSwing, damageTriggerSO.maxHits);
 
             stats.OnStatChanged += HandleStatChanged;
@@ -277,23 +278,26 @@ public class DamageTrigger : MonoBehaviour
         float value = stats.GetValue(StatType.SwordDamage);
 
         // Roll crit per target so each enemy in a sweep crits independently.
-        bool crit = Random.value < stats.GetValue(StatType.CritChance);
+        bool crit = UnityEngine.Random.value < stats.GetValue(StatType.CritChance);
         if (crit)
         {
             value *= stats.GetValue(StatType.CritMultiplier);
         }
 
-        // Charged-attack bonus, latched by PlayerAttack at the moment this swing started.
+        float knockback = stats.GetValue(StatType.KnockbackForce);
+
+        // Charged-attack bonuses, latched by PlayerAttack at the moment this swing started.
         if (playerAttack != null)
         {
             value *= playerAttack.AttackDamageMultiplier;
+            knockback *= 1f + playerAttack.ChargeLevel * stats.GetValue(StatType.ChargeKnockbackBonus);
         }
 
         return new Damage
         {
             value = value,
             isCritical = crit,
-            knockbackForce = stats.GetValue(StatType.KnockbackForce),
+            knockbackForce = knockback,
             sourcePosition = transform.position,
         };
     }

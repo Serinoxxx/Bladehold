@@ -1,4 +1,6 @@
+using MoreMountains.Feedbacks;
 using System.Collections;
+using System.IO.MemoryMappedFiles;
 using UnityEngine;
 
 /// <summary>
@@ -13,11 +15,14 @@ public class AIAttack : MonoBehaviour
     [SerializeField] private Animator animator;
     [SerializeField] private Health health;
     [SerializeField] private AIAttackSO attackData;
+    [SerializeField] private MMF_Player startAttackFeedback;
+    [SerializeField] private MMF_Player attackHitFeedback;
 
     // Animator trigger that starts the attack. Wire an attack state driven by this in the Animator.
     [SerializeField] private string attackTrigger = "Attack";
 
     private int attackTriggerHash;
+    private float? damageOverride;
     private Transform player;
     private IDamageable playerDamageable;
     private Health playerHealth;
@@ -25,6 +30,16 @@ public class AIAttack : MonoBehaviour
     private bool isDead = false;
     private bool playerDead = false;
     private bool anyError = false;
+
+    /// <summary>
+    ///     Per-instance damage override (e.g. <see cref="WaveSpawner" /> applying an enemy type's
+    ///     roster CSV row). Call right after Instantiate; the shared <see cref="AIAttackSO" /> is
+    ///     never mutated.
+    /// </summary>
+    public void SetDamage(float value)
+    {
+        damageOverride = value;
+    }
 
     private void OnValidate()
     {
@@ -130,6 +145,10 @@ public class AIAttack : MonoBehaviour
 
     private void StartAttack()
     {
+        if (startAttackFeedback != null)
+        {
+            startAttackFeedback.PlayFeedbacks();
+        }
         lastAttackTime = Time.time;
         animator.SetTrigger(attackTriggerHash);
         StartCoroutine(ApplyDamageAtApex());
@@ -150,8 +169,13 @@ public class AIAttack : MonoBehaviour
 
         playerDamageable.ReceiveDamage(new Damage
         {
-            value = attackData.damage,
+            value = damageOverride ?? attackData.damage,
             type = attackData.damageType
         });
+
+        if (attackHitFeedback != null)
+        {
+            attackHitFeedback.PlayFeedbacks();
+        }
     }
 }

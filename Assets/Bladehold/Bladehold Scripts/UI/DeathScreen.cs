@@ -28,10 +28,15 @@ public class DeathScreen : MonoBehaviour
     [SerializeField] private Button reincarnateButton;
     [Tooltip("Optional label on the reincarnate button, set to e.g. \"Reincarnate (+7 pts)\".")]
     [SerializeField] private TMP_Text reincarnatePreviewLabel;
+    [Tooltip("Optional: the gold skill-tree panel shown when the player dies; hidden once they choose to reincarnate.")]
+    [SerializeField] private GameObject goldTreePanel;
+    [Tooltip("Optional: the Reincarnate skill-tree panel; hidden until the player clicks Reincarnate, then shown so banked points can be spent before the new run starts.")]
+    [SerializeField] private GameObject reincarnateTreePanel;
     [Tooltip("Seconds to fade the screen in.")]
     [SerializeField] private float fadeDuration = 1f;
 
     private Health playerHealth;
+    private bool reincarnateBanked = false;
     private bool anyError = false;
 
     private void OnValidate()
@@ -71,6 +76,12 @@ public class DeathScreen : MonoBehaviour
         canvasGroup.alpha = 0f;
         canvasGroup.interactable = false;
         canvasGroup.blocksRaycasts = false;
+
+        // The Reincarnate tree only appears after the player commits to reincarnating.
+        if (reincarnateTreePanel != null)
+        {
+            reincarnateTreePanel.SetActive(false);
+        }
 
         tryAgainButton.onClick.AddListener(RestartFromLevelOne);
         if (restartCurrentWaveButton != null)
@@ -185,9 +196,44 @@ public class DeathScreen : MonoBehaviour
 
     private void HandleReincarnate()
     {
-        if (ReincarnateService.Instance != null)
+        if (ReincarnateService.Instance == null)
+        {
+            return;
+        }
+
+        // Without a Reincarnate tree panel to show, fall back to the one-click flow.
+        if (reincarnateTreePanel == null)
         {
             ReincarnateService.Instance.Reincarnate();
+            return;
+        }
+
+        if (reincarnateBanked)
+        {
+            ReincarnateService.Instance.CompleteReincarnate();
+            return;
+        }
+
+        // First click: bank the points and swap the death screen from the gold tree to the Reincarnate
+        // tree so they can be spent now; the same button then starts the new run.
+        reincarnateBanked = true;
+        ReincarnateService.Instance.BankPointsAndResetGoldTree();
+
+        if (goldTreePanel != null)
+        {
+            goldTreePanel.SetActive(false);
+        }
+        reincarnateTreePanel.SetActive(true);
+
+        // The old run is already gone (gold tree wiped, wave reset) — the only way forward is the new run.
+        tryAgainButton.gameObject.SetActive(false);
+        if (restartCurrentWaveButton != null)
+        {
+            restartCurrentWaveButton.gameObject.SetActive(false);
+        }
+        if (reincarnatePreviewLabel != null)
+        {
+            reincarnatePreviewLabel.text = "Begin Next Life";
         }
     }
 

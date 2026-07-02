@@ -1,14 +1,14 @@
-id,displayName,description,cost,stat,kind,amount,prereqs,x,y
-nova_unlock,Death's Reprieve,"Unlocks the Death Nova: on lethal damage, blast nearby enemies with damage and knockback",5,DeathNovaCharges,Flat,1,,-2,0
-nova_cooldown_1,Quicker Renewal,-20s Death Nova cooldown,4,DeathNovaCooldown,Flat,-20,nova_unlock,-3,1
-nova_cooldown_2,Swift Renewal,-20s Death Nova cooldown,6,DeathNovaCooldown,Flat,-20,nova_cooldown_1,-3,2
-nova_revive_1,Second Wind,Also revive at 50% health when the Death Nova triggers,8,DeathNovaRevivePercent,Flat,0.5,nova_unlock,-1,1
-nova_revive_2,Stronger Second Wind,+15% revive health from the Death Nova,10,DeathNovaRevivePercent,Flat,0.15,nova_revive_1,-1,2
-golden_1,Golden Scent I,"5% chance for a spawned goblin to be a Golden Goblin; golden goblins drop 50% more gold",6,GoldenGoblinChance;GoldenGoblinGoldBonusPercent,Flat;Flat,0.05;0.5,,2,0
-golden_2,Golden Scent II,"+5% Golden Goblin chance; total bonus gold now 100%",8,GoldenGoblinChance;GoldenGoblinGoldBonusPercent,Flat;Flat,0.05;0.5,golden_1,2,1
-golden_3,Golden Scent III,"+5% Golden Goblin chance; total bonus gold now 200%",10,GoldenGoblinChance;GoldenGoblinGoldBonusPercent,Flat;Flat,0.05;1.0,golden_2,2,2
-golden_4,Golden Scent IV,"+5% Golden Goblin chance; total bonus gold now 400%",14,GoldenGoblinChance;GoldenGoblinGoldBonusPercent,Flat;Flat,0.05;2.0,golden_3,2,3
-deathgold_1,Grave Robber I,Auto-collect 25% of the gold on the ground when you die,5,GoldOnDeathPickupPercent,Flat,0.25,,4,0
-deathgold_2,Grave Robber II,Auto-collect 50% of the gold on the ground when you die,7,GoldOnDeathPickupPercent,Flat,0.25,deathgold_1,4,1
-deathgold_3,Grave Robber III,Auto-collect 75% of the gold on the ground when you die,9,GoldOnDeathPickupPercent,Flat,0.25,deathgold_2,4,2
-deathgold_4,Grave Robber IV,Auto-collect 100% of the gold on the ground when you die,12,GoldOnDeathPickupPercent,Flat,0.25,deathgold_3,4,3
+id,displayName,description,cost,stat,kind,amount,prereqs,x,y,icon
+nova_unlock,Death's Reprieve,"Unlocks the Death Nova: on lethal damage, blast nearby enemies with damage and knockback",5,DeathNovaCharges,Flat,1,,-2,0,skill_154_noBG
+nova_cooldown_1,Quicker Renewal,-20s Death Nova cooldown,4,DeathNovaCooldown,Flat,-20,nova_unlock,-3,1,skill_472_noBG
+nova_cooldown_2,Swift Renewal,-20s Death Nova cooldown,6,DeathNovaCooldown,Flat,-20,nova_cooldown_1,-3,2,skill_472_noBG
+nova_revive_1,Second Wind,Also revive at 50% health when the Death Nova triggers,8,DeathNovaRevivePercent,Flat,0.5,nova_unlock,-1,1,skill_189_noBG
+nova_revive_2,Stronger Second Wind,+15% revive health from the Death Nova,10,DeathNovaRevivePercent,Flat,0.15,nova_revive_1,-1,2,skill_189_noBG
+golden_1,Golden Scent I,5% chance for a spawned goblin to be a Golden Goblin; golden goblins drop 50% more gold,6,GoldenGoblinChance;GoldenGoblinGoldBonusPercent,Flat;Flat,0.05;0.5,,2,0,Creatures_09_golden_guard
+golden_2,Golden Scent II,+5% Golden Goblin chance; total bonus gold now 100%,8,GoldenGoblinChance;GoldenGoblinGoldBonusPercent,Flat;Flat,0.05;0.5,golden_1,2,1,Creatures_09_golden_guard
+golden_3,Golden Scent III,+5% Golden Goblin chance; total bonus gold now 200%,10,GoldenGoblinChance;GoldenGoblinGoldBonusPercent,Flat;Flat,0.05;1.0,golden_2,2,2,Creatures_09_golden_guard
+golden_4,Golden Scent IV,+5% Golden Goblin chance; total bonus gold now 400%,14,GoldenGoblinChance;GoldenGoblinGoldBonusPercent,Flat;Flat,0.05;2.0,golden_3,2,3,Creatures_09_golden_guard
+deathgold_1,Grave Robber I,Auto-collect 25% of the gold on the ground when you die,5,GoldOnDeathPickupPercent,Flat,0.25,,4,0,Skill_GraveyardSouls_nb
+deathgold_2,Grave Robber II,Auto-collect 50% of the gold on the ground when you die,7,GoldOnDeathPickupPercent,Flat,0.25,deathgold_1,4,1,Skill_GraveyardSouls_nb
+deathgold_3,Grave Robber III,Auto-collect 75% of the gold on the ground when you die,9,GoldOnDeathPickupPercent,Flat,0.25,deathgold_2,4,2,Skill_GraveyardSouls_nb
+deathgold_4,Grave Robber IV,Auto-collect 100% of the gold on the ground when you die,12,GoldOnDeathPickupPercent,Flat,0.25,deathgold_3,4,3,Skill_GraveyardSouls_nb

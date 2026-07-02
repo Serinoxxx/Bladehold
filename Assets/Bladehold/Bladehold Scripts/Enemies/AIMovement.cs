@@ -13,6 +13,17 @@ public class AIMovement : MonoBehaviour
     bool isDead = false;
     bool playerDead = false;
     bool anyError = false;
+    float? speedOverride;
+
+    /// <summary>
+    ///     Per-instance agent-speed override (e.g. <see cref="WaveSpawner" /> applying an enemy type's
+    ///     roster CSV row). Call right after Instantiate, before Start runs; the shared
+    ///     <see cref="AIMovementSO" /> is never mutated.
+    /// </summary>
+    public void SetSpeed(float value)
+    {
+        speedOverride = value;
+    }
     private void OnValidate()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -48,7 +59,7 @@ public class AIMovement : MonoBehaviour
             return;
         }
 
-        agent.speed = movementSO.speed;
+        agent.speed = speedOverride ?? movementSO.speed;
 
         player = Player.Instance;
 

@@ -19,6 +19,12 @@ public interface ISkillTreeService
     /// <summary>A node is revealed if it is a root (no prereqs) or any prerequisite has been purchased.</summary>
     bool IsRevealed(SkillNode node);
 
+    /// <summary>
+    ///     A node is teased when it isn't revealed yet but any of its prerequisites is — the one-step
+    ///     lookahead the UI shows dimmed, so the player can see what buying the next node unlocks.
+    /// </summary>
+    bool IsTeased(SkillNode node);
+
     /// <summary>True if the node can be bought right now: revealed, not already owned, and affordable.</summary>
     bool CanPurchase(SkillNode node);
 

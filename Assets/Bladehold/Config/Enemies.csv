@@ -1,0 +1,3 @@
+id          ,displayName ,health,damage,minGold,maxGold,speed,scale,unlockWave,spawnChance,minSpawn,maxConcurrent
+goblin      ,Goblin      ,    10,     1,      2,      5,    5,    1,         1,           ,        ,             
+goblin_brute,Goblin Brute,    50,     5,     15,     30,    4, 1.25,         4,         50,      1  ,            3

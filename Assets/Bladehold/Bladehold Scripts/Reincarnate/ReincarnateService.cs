@@ -109,6 +109,18 @@ public class ReincarnateService : MonoBehaviour, ISkillTreeService
         return false;
     }
 
+    /// <summary>A node is teased (shown dimmed, not purchasable) when any prereq is revealed but none is purchased.</summary>
+    public bool IsTeased(SkillNode node)
+    {
+        if (node == null || IsRevealed(node)) return false;
+        foreach (string p in node.prereqs)
+        {
+            SkillNode prereq = tree != null ? tree.GetById(p) : null;
+            if (prereq != null && IsRevealed(prereq)) return true;
+        }
+        return false;
+    }
+
     public bool CanPurchase(SkillNode node)
     {
         if (anyError || node == null) return false;
@@ -144,11 +156,13 @@ public class ReincarnateService : MonoBehaviour, ISkillTreeService
     }
 
     /// <summary>
-    ///     Banks the points earned this run, resets the regular gold skill tree (its purchases are cleared so
-    ///     next run's <see cref="SkillTreeService" /> comes back empty), sends the next run back to wave 1,
-    ///     and reloads the scene. Reincarnate-tree purchases are untouched — they're permanent.
+    ///     First half of reincarnating: banks the points earned this run and resets the regular gold skill
+    ///     tree (its purchases are cleared so next run's <see cref="SkillTreeService" /> comes back empty).
+    ///     Reincarnate-tree purchases are untouched — they're permanent. The scene is <b>not</b> reloaded, so
+    ///     the death screen can show the Reincarnate tree and let the player spend the banked points before
+    ///     calling <see cref="CompleteReincarnate" />.
     /// </summary>
-    public void Reincarnate()
+    public void BankPointsAndResetGoldTree()
     {
         if (anyError) return;
 
@@ -158,9 +172,25 @@ public class ReincarnateService : MonoBehaviour, ISkillTreeService
 
         RunState.StartingWave = 1;
 
+        // Points changed, so node affordability tints need a refresh.
+        OnTreeChanged?.Invoke();
+    }
+
+    /// <summary>Second half of reincarnating: starts the new run by reloading the scene.</summary>
+    public void CompleteReincarnate()
+    {
+        if (anyError) return;
+
         // Ensure normal speed resumes even if something paused time on death, mirroring DeathScreen.Reload().
         Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    /// <summary>Banks points, resets the gold tree, and immediately starts the new run — the one-click flow.</summary>
+    public void Reincarnate()
+    {
+        BankPointsAndResetGoldTree();
+        CompleteReincarnate();
     }
 
     private void ApplyEffect(SkillNode node)

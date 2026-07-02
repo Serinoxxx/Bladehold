@@ -114,6 +114,18 @@ public class SkillTreeService : MonoBehaviour, ISkillTreeService
         return false;
     }
 
+    /// <summary>A node is teased (shown dimmed, not purchasable) when any prereq is revealed but none is purchased.</summary>
+    public bool IsTeased(SkillNode node)
+    {
+        if (node == null || IsRevealed(node)) return false;
+        foreach (string p in node.prereqs)
+        {
+            SkillNode prereq = tree != null ? tree.GetById(p) : null;
+            if (prereq != null && IsRevealed(prereq)) return true;
+        }
+        return false;
+    }
+
     /// <summary>True if the node can be bought right now: revealed, not already owned, and affordable.</summary>
     public bool CanPurchase(SkillNode node)
     {
