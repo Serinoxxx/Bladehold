@@ -29,6 +29,9 @@ public class ReincarnateService : MonoBehaviour, ISkillTreeService
     /// <summary>Raised whenever the set of purchased nodes changes, so the tree UI can refresh.</summary>
     public event Action OnTreeChanged;
 
+    /// <summary>Raised after a purchase goes through, with the points actually paid (family-ladder-aware).</summary>
+    public event Action<SkillNode, int> OnNodePurchased;
+
     public SkillTreeSO Tree => tree;
 
     /// <summary>The player's current Reincarnate Point balance.</summary>
@@ -121,12 +124,36 @@ public class ReincarnateService : MonoBehaviour, ISkillTreeService
         return false;
     }
 
+    /// <summary>
+    ///     The node's current price. Same family-ladder rule as <see cref="SkillTreeService.GetCost" />:
+    ///     the Nth purchase in a family costs the Nth-cheapest authored cost in that family. Nodes without
+    ///     a family (all current Reincarnate nodes) are priced by their own cost.
+    /// </summary>
+    public int GetCost(SkillNode node)
+    {
+        if (node == null) return 0;
+        if (string.IsNullOrEmpty(node.family) || tree == null) return node.cost;
+
+        List<int> ladder = new List<int>();
+        int owned = 0;
+        foreach (SkillNode other in tree.Nodes)
+        {
+            if (other.family == node.family)
+            {
+                ladder.Add(other.cost);
+                if (purchased.Contains(other.id)) owned++;
+            }
+        }
+        ladder.Sort();
+        return ladder[Mathf.Min(owned, ladder.Count - 1)];
+    }
+
     public bool CanPurchase(SkillNode node)
     {
         if (anyError || node == null) return false;
         if (purchased.Contains(node.id)) return false;
         if (!IsRevealed(node)) return false;
-        return Points >= node.cost;
+        return Points >= GetCost(node);
     }
 
     public bool TryPurchase(string id)
@@ -139,12 +166,15 @@ public class ReincarnateService : MonoBehaviour, ISkillTreeService
             return false;
         }
 
-        saveData.reincarnatePoints -= node.cost;
+        // Capture the price before recording the purchase — owning the node climbs its family's ladder.
+        int price = GetCost(node);
+        saveData.reincarnatePoints -= price;
         purchased.Add(id);
         saveData.purchasedReincarnateNodeIds.Add(id);
         SaveSystem.Save(saveData);
 
         ApplyEffect(node);
+        OnNodePurchased?.Invoke(node, price);
         OnTreeChanged?.Invoke();
         return true;
     }

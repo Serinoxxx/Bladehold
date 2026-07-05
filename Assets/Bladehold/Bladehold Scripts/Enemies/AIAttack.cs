@@ -1,6 +1,5 @@
 using MoreMountains.Feedbacks;
 using System.Collections;
-using System.IO.MemoryMappedFiles;
 using UnityEngine;
 
 /// <summary>
@@ -116,6 +115,9 @@ public class AIAttack : MonoBehaviour
     private void HandleDied()
     {
         isDead = true;
+        // Corpses have nothing left to tick. (Coroutines survive a disable, and ApplyDamageAtApex
+        // already bails on isDead.)
+        enabled = false;
     }
 
     private void HandlePlayerDied()

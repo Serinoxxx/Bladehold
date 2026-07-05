@@ -11,10 +11,12 @@ using UnityEngine.AI;
 ///     Clearing a wave starts an intermission countdown, then the next, larger wave.
 ///
 ///     What spawns is driven by the <see cref="EnemyRosterSO" /> CSV: each spawn slot first fills any
-///     type still owed its per-wave <c>minSpawn</c> guarantee, then rolls the non-fallback types in CSV
-///     order — the first type that is unlocked (<c>unlockWave</c>), under its own concurrent cap
-///     (<c>maxConcurrent</c>), and wins its <c>spawnChance</c> roll (a percent: 10 = 10%) is spawned;
-///     otherwise the fallback (first) row spawns. The row's stat overrides (health/damage/gold/speed/
+///     type still under its per-wave budget (<c>minSpawn</c>, ramping +1 per wave since unlock and capped
+///     by <c>maxConcurrent</c> — see <see cref="PerWaveBudget" />), then rolls the non-fallback types in
+///     CSV order — the first type that is unlocked (<c>unlockWave</c>), under its own concurrent cap
+///     (<c>maxConcurrent</c>) and per-wave budget, and wins its <c>spawnChance</c> roll (a percent:
+///     10 = 10%) is spawned; otherwise the fallback (first) row spawns. Spawn positions keep at least
+///     <see cref="minPlayerDistance" /> from the player. The row's stat overrides (health/damage/gold/speed/
 ///     scale) are applied to the instance right after Instantiate, before its Start runs, so the shared
 ///     ScriptableObjects are never mutated.
 ///
@@ -62,6 +64,8 @@ public class WaveSpawner : MonoBehaviour
     [SerializeField] private float spawnRadius = 8f;
     [Tooltip("Spawn positions are snapped to the nearest NavMesh point within this distance, so goblins land on walkable ground.")]
     [SerializeField] private float navMeshSampleDistance = 3f;
+    [Tooltip("Enemies never spawn closer to the player than this. Too-close candidates are re-rolled a few times; if every roll fails, the farthest candidate is used.")]
+    [SerializeField] private float minPlayerDistance = 8f;
 
     /// <summary>Seconds remaining in the pre-wave countdown, fired once per second during the intermission.</summary>
     public event Action<int> CountdownTick;
@@ -79,6 +83,7 @@ public class WaveSpawner : MonoBehaviour
     private int killedThisWave;    // enemies killed so far this wave
     private int remainingToSpawn;  // enemies not yet spawned this wave
     private int aliveCount;        // enemies currently alive
+    private bool waveInProgress;   // true between BeginWave and the wave clearing (gates DebugSpawnBurst)
     private readonly HashSet<Health> aliveEnemies = new HashSet<Health>(); // so DebugAdvanceWave can kill them
     private readonly List<SpawnType> spawnTypes = new List<SpawnType>();   // roster rows with a valid prefab; [0] = fallback
 
@@ -155,6 +160,8 @@ public class WaveSpawner : MonoBehaviour
             // Multiplier stat (base 1.0): consumed by CoinDropper, registered here alongside the
             // other enemy-economy bases (same split as GoldenGoblinGoldBonusPercent above).
             stats.SetBase(StatType.GoldDropMultiplier, 1f);
+            // Impulse Goblin is gold-tree-granted: base 0 = never spawns until the 'Impulse' node.
+            stats.SetBase(StatType.ImpulseGoblinChance, 0f);
         }
 
         StartCoroutine(RunWaves());
@@ -241,6 +248,7 @@ public class WaveSpawner : MonoBehaviour
                 yield break;
             }
 
+            waveInProgress = false;
             WaveCleared?.Invoke(CurrentWave);
             CurrentWave++;
         }
@@ -265,6 +273,7 @@ public class WaveSpawner : MonoBehaviour
         {
             type.spawnedThisWave = 0;
         }
+        waveInProgress = true;
 
         WaveStarted?.Invoke(CurrentWave);
 
@@ -293,18 +302,17 @@ public class WaveSpawner : MonoBehaviour
     }
 
     /// <summary>
-    ///     Picks the type for one spawn slot. First pass: any non-fallback type still owed its per-wave
-    ///     minSpawn guarantee (unlocked and under its own concurrent cap) spawns immediately, in CSV
-    ///     order. Second pass: the remaining rows are checked in CSV order, and the first to win its
-    ///     spawnChance roll is chosen. When none wins (or none is eligible), the fallback (first) row
-    ///     spawns.
+    ///     Picks the type for one spawn slot. First pass: any non-fallback type still under its per-wave
+    ///     budget (unlocked and under its own concurrent cap) spawns immediately, in CSV order. Second
+    ///     pass: the remaining rows are checked in CSV order, and the first to win its spawnChance roll
+    ///     is chosen. When none wins (or none is eligible), the fallback (first) row spawns.
     /// </summary>
     private SpawnType SelectSpawnType()
     {
         for (int i = 1; i < spawnTypes.Count; i++)
         {
             SpawnType type = spawnTypes[i];
-            if (IsEligible(type) && type.spawnedThisWave < type.def.minSpawn)
+            if (IsEligible(type) && type.spawnedThisWave < PerWaveBudget(type))
             {
                 return type;
             }
@@ -313,7 +321,9 @@ public class WaveSpawner : MonoBehaviour
         for (int i = 1; i < spawnTypes.Count; i++)
         {
             SpawnType type = spawnTypes[i];
-            if (IsEligible(type) && UnityEngine.Random.value < type.def.spawnChance)
+            if (IsEligible(type)
+                && type.spawnedThisWave < PerWaveBudget(type)
+                && UnityEngine.Random.value < type.def.spawnChance)
             {
                 return type;
             }
@@ -325,6 +335,23 @@ public class WaveSpawner : MonoBehaviour
     {
         return CurrentWave >= type.def.unlockWave
             && (type.def.maxConcurrent <= 0 || type.alive < type.def.maxConcurrent);
+    }
+
+    /// <summary>
+    ///     How many of this type may spawn this wave. Types with a minSpawn ramp up: minSpawn on their
+    ///     unlock wave, one more each wave after, capped at maxConcurrent when that is set (e.g. brutes
+    ///     with minSpawn 1 / maxConcurrent 3 go 1, 2, 3, 3, ... per wave). The budget is both a guarantee
+    ///     (first pass fills it) and a cap (chance rolls can't exceed it). Types without a minSpawn are
+    ///     chance-only and per-wave-unlimited, as before.
+    /// </summary>
+    private int PerWaveBudget(SpawnType type)
+    {
+        if (type.def.minSpawn <= 0)
+        {
+            return int.MaxValue;
+        }
+        int budget = type.def.minSpawn + Mathf.Max(0, CurrentWave - type.def.unlockWave);
+        return type.def.maxConcurrent > 0 ? Mathf.Min(budget, type.def.maxConcurrent) : budget;
     }
 
     private void SpawnEnemy()
@@ -346,6 +373,14 @@ public class WaveSpawner : MonoBehaviour
         if (goldenChance > 0f && UnityEngine.Random.value < goldenChance)
         {
             enemy.GetComponent<GoldenGoblin>()?.MarkGolden();
+        }
+
+        // Independent of the golden roll — a goblin can be both golden and impulse (the impulse aura
+        // wins the visual; see GoldenGoblin.ApplyGoldenVisual).
+        float impulseChance = stats != null ? stats.GetValue(StatType.ImpulseGoblinChance) : 0f;
+        if (impulseChance > 0f && UnityEngine.Random.value < impulseChance)
+        {
+            enemy.GetComponent<ImpulseGoblin>()?.MarkImpulse();
         }
 
         Health health = enemy.GetComponent<Health>();
@@ -382,6 +417,8 @@ public class WaveSpawner : MonoBehaviour
         if (def.damage.HasValue)
         {
             enemy.GetComponent<AIAttack>()?.SetDamage(def.damage.Value);
+            enemy.GetComponent<LightningBallAttack>()?.SetDamage(def.damage.Value);
+            enemy.GetComponent<LightningStormAttack>()?.SetDamage(def.damage.Value);
         }
         if (def.minGold.HasValue)
         {
@@ -390,6 +427,10 @@ public class WaveSpawner : MonoBehaviour
         if (def.speed.HasValue)
         {
             enemy.GetComponent<AIMovement>()?.SetSpeed(def.speed.Value);
+        }
+        if (def.impulseResistance.HasValue)
+        {
+            enemy.GetComponent<ImpulseReceiver>()?.SetResistance(def.impulseResistance.Value);
         }
         if (!Mathf.Approximately(def.scale, 1f))
         {
@@ -429,6 +470,40 @@ public class WaveSpawner : MonoBehaviour
         // killedThisWave now equals waveGoblinTotal, so RunWaves clears the wave on its next frame.
     }
 
+    /// <summary>
+    ///     Dev-console stress test: spawns <paramref name="count" /> extra enemies into the current
+    ///     wave, ignoring the concurrent cap and spawn pacing (sliced across frames to avoid a hitch).
+    ///     The wave total grows to match, so the wave still clears through the normal kill accounting,
+    ///     and <see cref="SpawnLoop" /> simply idles until deaths bring aliveCount back under the cap.
+    ///     A no-op during the intermission — a burst there would be orphaned by the next
+    ///     <see cref="BeginWave" />'s counter reset.
+    /// </summary>
+    public void DebugSpawnBurst(int count)
+    {
+        if (anyError || playerDead || !waveInProgress || count <= 0)
+        {
+            return;
+        }
+
+        waveGoblinTotal += count;
+        remainingToSpawn += count;
+        StartCoroutine(SpawnBurst(count));
+    }
+
+    private IEnumerator SpawnBurst(int count)
+    {
+        const int spawnsPerFrame = 25;
+        // remainingToSpawn can hit zero mid-burst if DebugAdvanceWave cancels the wave under us.
+        for (int i = 0; i < count && !playerDead && remainingToSpawn > 0; i++)
+        {
+            SpawnEnemy();
+            if ((i + 1) % spawnsPerFrame == 0)
+            {
+                yield return null;
+            }
+        }
+    }
+
     private void HandleEnemyDied()
     {
         aliveCount--;
@@ -437,25 +512,56 @@ public class WaveSpawner : MonoBehaviour
         // sees killedThisWave reach the total and clears the wave.
     }
 
+    /// <summary>
+    ///     Picks a spawn position at least <see cref="minPlayerDistance" /> from the player, re-rolling a
+    ///     handful of candidates if needed. If every candidate is too close (small arena, unlucky rolls),
+    ///     the farthest one is used rather than stalling the spawn.
+    /// </summary>
     private Vector3 ResolveSpawnPosition()
     {
-        Vector3 candidate;
+        const int attempts = 8;
+        Vector3 playerPos = Player.Instance != null ? Player.Instance.transform.position : transform.position;
+        bool checkDistance = Player.Instance != null && minPlayerDistance > 0f;
+
+        Vector3 best = transform.position;
+        float bestDistance = -1f;
+        for (int i = 0; i < attempts; i++)
+        {
+            Vector3 candidate = RollSpawnCandidate();
+
+            // Snap onto the NavMesh so spawned goblins can immediately pathfind.
+            if (NavMesh.SamplePosition(candidate, out NavMeshHit hit, navMeshSampleDistance, NavMesh.AllAreas))
+            {
+                candidate = hit.position;
+            }
+
+            if (!checkDistance)
+            {
+                return candidate;
+            }
+
+            float distance = Vector3.Distance(candidate, playerPos);
+            if (distance >= minPlayerDistance)
+            {
+                return candidate;
+            }
+            if (distance > bestDistance)
+            {
+                bestDistance = distance;
+                best = candidate;
+            }
+        }
+        return best;
+    }
+
+    private Vector3 RollSpawnCandidate()
+    {
         if (spawnPoints != null && spawnPoints.Length > 0)
         {
             Transform point = spawnPoints[UnityEngine.Random.Range(0, spawnPoints.Length)];
-            candidate = point != null ? point.position : transform.position;
+            return point != null ? point.position : transform.position;
         }
-        else
-        {
-            Vector2 offset = UnityEngine.Random.insideUnitCircle * spawnRadius;
-            candidate = transform.position + new Vector3(offset.x, 0f, offset.y);
-        }
-
-        // Snap onto the NavMesh so spawned goblins can immediately pathfind.
-        if (NavMesh.SamplePosition(candidate, out NavMeshHit hit, navMeshSampleDistance, NavMesh.AllAreas))
-        {
-            return hit.position;
-        }
-        return candidate;
+        Vector2 offset = UnityEngine.Random.insideUnitCircle * spawnRadius;
+        return transform.position + new Vector3(offset.x, 0f, offset.y);
     }
 }

@@ -17,6 +17,9 @@ public class KnockbackReceiver : MonoBehaviour
     [SerializeField] private Health health;
     [SerializeField] private NavMeshAgent agent;
 
+    [Tooltip("Optional: when this hit knocks the enemy down or flings it (ImpulseReceiver), the ground slide is skipped so the two reactions never fight.")]
+    [SerializeField] private ImpulseReceiver impulseReceiver;
+
     [Tooltip("Seconds the knockback slide lasts; the impulse decays linearly to zero over this time.")]
     [SerializeField] private float duration = 0.18f;
 
@@ -32,6 +35,10 @@ public class KnockbackReceiver : MonoBehaviour
         if (agent == null)
         {
             agent = GetComponent<NavMeshAgent>();
+        }
+        if (impulseReceiver == null)
+        {
+            impulseReceiver = GetComponent<ImpulseReceiver>();
         }
     }
 
@@ -69,6 +76,10 @@ public class KnockbackReceiver : MonoBehaviour
         if (damage.knockbackForce <= 0f) return;
         if (health.IsDead) return;
         if (agent == null || !agent.enabled || !agent.isOnNavMesh) return;
+
+        // Checked both ways (state AND this same hit's outcome) because the two receivers' OnDamaged
+        // handlers run in unspecified order — a hit that knocks down or flings must not also slide.
+        if (impulseReceiver != null && (impulseReceiver.IsIncapacitated || impulseReceiver.WouldIncapacitate(damage))) return;
 
         Vector3 direction = transform.position - damage.sourcePosition;
         direction.y = 0f;

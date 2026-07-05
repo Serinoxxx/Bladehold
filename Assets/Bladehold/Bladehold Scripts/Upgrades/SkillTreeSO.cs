@@ -9,12 +9,16 @@ using UnityEngine;
 ///     codebase convention, the config itself lives on a ScriptableObject (created via
 ///     <c>Scriptable Objects/SkillTreeSO</c>) that points at the CSV.
 ///
-///     CSV columns (one node per row): <c>id, displayName, description, cost, stat, kind, amount, prereqs, x, y, icon</c>
+///     CSV columns (one node per row): <c>id, displayName, description, cost, stat, kind, amount, prereqs, x, y, icon, family</c>
 ///     <list type="bullet">
 ///         <item><c>stat</c>/<c>kind</c>/<c>amount</c> blank → a connector/unlock-only node (no stat effect).</item>
 ///         <item>
 ///             <c>icon</c> is optional (the column may be absent entirely, or blank per row): the name of a
 ///             sprite in this asset's <see cref="icons" /> list, shown on the node by <see cref="SkillNodeView" />.
+///         </item>
+///         <item>
+///             <c>family</c> is optional: nodes sharing a family name share one escalating price ladder
+///             (see <see cref="SkillNode.family" />). Blank = the node is priced by its own <c>cost</c>.
 ///         </item>
 ///         <item>
 ///             <c>stat</c>/<c>kind</c>/<c>amount</c> may each hold ';'-separated lists of equal length to apply
@@ -211,8 +215,9 @@ public class SkillTreeSO : ScriptableObject
             }
         }
 
-        // Optional icon column — older CSVs without it parse as icon-less.
+        // Optional icon and family columns — older CSVs without them parse as icon-less / family-less.
         node.iconName = f.Count > 10 ? f[10].Trim() : "";
+        node.family = f.Count > 11 ? f[11].Trim() : "";
         if (!string.IsNullOrEmpty(node.iconName) && GetIcon(node.iconName) == null)
         {
             Debug.LogError($"SkillTreeSO '{name}': line {lineNumber} names icon '{node.iconName}', which is not in this asset's icons list.");

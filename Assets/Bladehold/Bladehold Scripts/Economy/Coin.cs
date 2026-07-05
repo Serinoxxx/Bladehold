@@ -15,8 +15,19 @@ public class Coin : MonoBehaviour
     [Tooltip("World-space offset from the coin where the pickup popup spawns.")]
     [SerializeField] private Vector3 popupOffset = new Vector3(0f, 0.5f, 0f);
     [SerializeField] private MMF_Player coinPickupFeedback;
+    [Tooltip("Seconds before an uncollected coin expires and disappears, so long fights can't pile up unbounded trigger colliders. Generous by default so Grave Robber still sees recently dropped gold on death. 0 = never expires.")]
+    [SerializeField] private float lifetime = 90f;
 
     private bool collected;
+
+    private void Start()
+    {
+        if (lifetime > 0f)
+        {
+            // A pickup destroys the coin first, making this pending destroy a harmless no-op.
+            Destroy(gameObject, lifetime);
+        }
+    }
 
     /// <summary>How many coins this pickup is worth.</summary>
     public int Amount => amount;

@@ -254,7 +254,7 @@ public class SkillTreeView : MonoBehaviour
         hoveredView = view;
         if (tooltip != null)
         {
-            tooltip.Show(view.Node, service.IsPurchased(view.Node.id));
+            tooltip.Show(view.Node, service.IsPurchased(view.Node.id), service.GetCost(view.Node));
         }
     }
 
@@ -295,10 +295,11 @@ public class SkillTreeView : MonoBehaviour
 
         UpdateGold();
 
-        // Keep an open tooltip current (e.g. cost flips to "Owned" the moment the hovered node is bought).
+        // Keep an open tooltip current (e.g. cost flips to "Owned" the moment the hovered node is bought,
+        // and family ladder prices climb when a sibling is purchased).
         if (hoveredView != null && tooltip != null && hoveredView.isActiveAndEnabled)
         {
-            tooltip.Show(hoveredView.Node, service.IsPurchased(hoveredView.Node.id));
+            tooltip.Show(hoveredView.Node, service.IsPurchased(hoveredView.Node.id), service.GetCost(hoveredView.Node));
         }
     }
 

@@ -36,11 +36,18 @@ public class DamageTrigger : MonoBehaviour
     [Tooltip("When true, this is the player's weapon: damage and range come from Player.Instance.Stats (base + upgrades) instead of the raw SOs, and crit/knockback/charge/cap are applied. Leave false for any non-player hitbox.")]
     [SerializeField] bool readsPlayerStats = false;
 
-    [Tooltip("Base critical-strike damage multiplier, registered as the CritMultiplier stat base. 2 = crits deal double.")]
-    [SerializeField] float baseCritMultiplier = 2f;
+    /// <summary>True when this trigger is the player's weapon hitbox (see the serialized flag above).
+    /// Lets systems like <see cref="RunTelemetry" /> find the sword among the player's triggers.</summary>
+    public bool ReadsPlayerStats => readsPlayerStats;
+
+    [Tooltip("Base critical-strike damage multiplier, registered as the CritMultiplier stat base. 1.5 = crits deal 1.5x before Critical Damage skill nodes raise it.")]
+    [SerializeField] float baseCritMultiplier = 1.5f;
 
     [Tooltip("Optional: the player's attack/charge component. When set, the swing's charge multiplier scales damage. Only used when 'Reads Player Stats' is on.")]
     [SerializeField] PlayerAttack playerAttack;
+
+    [Tooltip("Optional: the player's Impulse buff. When set and active, hits are stamped with impulse force/power (flinging enemies — see ImpulseReceiver) and gain the buff's stack damage multiplier. Falls back to the Player's own ImpulseBuff when left empty. Only used when 'Reads Player Stats' is on.")]
+    [SerializeField] ImpulseBuff impulseBuff;
 
     [Tooltip("Knockback impulse applied by this hitbox when NOT reading player stats (e.g. an ability hitbox like the Death Nova). Ignored when 'Reads Player Stats' is on, where knockback comes from PlayerStats instead.")]
     [SerializeField] float knockbackForce = 0f;
@@ -120,6 +127,13 @@ public class DamageTrigger : MonoBehaviour
 
             stats.OnStatChanged += HandleStatChanged;
             ApplyRangeScale();
+
+            // Missing buff is not an error — the Impulse feature is optional (the DeathNova
+            // stats-fallback idiom).
+            if (impulseBuff == null && Player.Instance != null)
+            {
+                impulseBuff = Player.Instance.GetComponentInChildren<ImpulseBuff>();
+            }
         }
     }
 
@@ -293,12 +307,30 @@ public class DamageTrigger : MonoBehaviour
             knockback *= 1f + playerAttack.ChargeLevel * stats.GetValue(StatType.ChargeKnockbackBonus);
         }
 
+        // Impulse buff: extra damage per orb stack, plus the fling stamp. Charge amplifies the
+        // launch through the same ChargeKnockbackBonus stat as knockback (impulse is
+        // knockback-flavoured, so the Amplified Knockback line boosts both), and pierces extra
+        // resistance per level (powerPerChargeLevel) so charging helps topple resistant enemies.
+        float impulseForce = 0f;
+        float impulsePower = 0f;
+        if (impulseBuff != null && impulseBuff.IsActive)
+        {
+            value *= impulseBuff.DamageMultiplier;
+
+            int chargeLevel = playerAttack != null ? playerAttack.ChargeLevel : 0;
+            impulsePower = impulseBuff.CurrentImpulsePower + chargeLevel * impulseBuff.PowerPerChargeLevel;
+            impulseForce = impulseBuff.CurrentImpulseForce
+                * (1f + chargeLevel * stats.GetValue(StatType.ChargeKnockbackBonus));
+        }
+
         return new Damage
         {
             value = value,
             isCritical = crit,
             knockbackForce = knockback,
             sourcePosition = transform.position,
+            impulsePower = impulsePower,
+            impulseForce = impulseForce,
         };
     }
 }

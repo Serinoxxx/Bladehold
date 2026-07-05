@@ -40,6 +40,26 @@ public enum StatType
     GoldenGoblinGoldBonusPercent,
     /// <summary>Fraction (0-1) of the gold currently on the ground that's auto-collected when the player dies.</summary>
     GoldOnDeathPickupPercent,
+
+    /// <summary>Per-spawn chance (0-1) that a goblin spawns as an Impulse Goblin (drops an Impulse Orb on death). 0 = the Impulse feature locked.</summary>
+    ImpulseGoblinChance,
+    /// <summary>Seconds of Impulse buff granted per orb picked up (added to any remaining time). 0 = locked; orbs grant nothing.</summary>
+    ImpulseOrbDuration,
+    /// <summary>
+    ///     Resistance-piercing rating stamped on sword hits while the Impulse buff is active. Against an
+    ///     enemy of resistance r: power >= r flings (full ragdoll), power >= r-1 knocks down, else only
+    ///     normal knockback. Each point also launches flings harder (ImpulseSO.forcePerPower).
+    /// </summary>
+    ImpulsePower,
+
+    /// <summary>Seconds of Chain Lightning buff granted per Lightning Orb picked up. 0 = locked; orbs grant nothing.</summary>
+    ChainLightningOrbDuration,
+    /// <summary>How many additional enemies a sword hit's chain lightning can bounce to while the buff is active. 0 = locked.</summary>
+    ChainLightningBounces,
+    /// <summary>Fraction of the triggering hit's damage each chain lightning bounce deals (e.g. 0.5 = 50%). 0 = locked.</summary>
+    ChainLightningDamagePercent,
+    /// <summary>Chance (0-1) each chain lightning bounce crits, using the sword's CritMultiplier.</summary>
+    ChainLightningCritChance,
 }
 
 /// <summary>

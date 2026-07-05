@@ -9,7 +9,7 @@ using UnityEngine;
 ///     Tree Editor). Pick a <see cref="SkillTreeSO" />, edit its nodes in a list + detail layout, and
 ///     drag a Sprite onto a node's Icon field — the sprite is added to the tree asset's icons list
 ///     automatically and the node's icon column is set to the sprite's name. Save writes the CSV back to
-///     the same file the SO points at (id,displayName,description,cost,stat,kind,amount,prereqs,x,y,icon)
+///     the same file the SO points at (id,displayName,description,cost,stat,kind,amount,prereqs,x,y,icon,family)
 ///     and reloads the tree, so parse errors surface in the console immediately.
 /// </summary>
 public class SkillTreeCsvEditorWindow : EditorWindow
@@ -27,9 +27,10 @@ public class SkillTreeCsvEditorWindow : EditorWindow
         public float x;
         public float y;
         public string icon = "";
+        public string family = "";
     }
 
-    private const string Header = "id,displayName,description,cost,stat,kind,amount,prereqs,x,y,icon";
+    private const string Header = "id,displayName,description,cost,stat,kind,amount,prereqs,x,y,icon,family";
 
     private SkillTreeSO tree;
     private TextAsset csvAsset;
@@ -122,6 +123,7 @@ public class SkillTreeCsvEditorWindow : EditorWindow
                     x = src.x,
                     y = src.y + 1f,
                     icon = src.icon,
+                    family = src.family,
                 });
                 selected++;
                 dirty = true;
@@ -202,6 +204,7 @@ public class SkillTreeCsvEditorWindow : EditorWindow
         EditorGUILayout.LabelField("Description");
         row.description = EditorGUILayout.TextArea(row.description, GUILayout.MinHeight(40f));
         row.cost = EditorGUILayout.IntField("Cost", row.cost);
+        row.family = EditorGUILayout.TextField(new GUIContent("Family", "Optional price pool: family nodes buy in any order but share one escalating price ladder (the Nth family purchase costs the Nth-cheapest cost in the family). Blank = priced individually."), row.family);
 
         EditorGUILayout.Space();
         EditorGUILayout.LabelField("Effects (';'-separated lists of equal length; blank = connector node)", EditorStyles.miniBoldLabel);
@@ -333,6 +336,7 @@ public class SkillTreeCsvEditorWindow : EditorWindow
                 amount = f[6].Trim(),
                 prereqs = f[7].Trim(),
                 icon = f.Count > 10 ? f[10].Trim() : "",
+                family = f.Count > 11 ? f[11].Trim() : "",
             };
             int.TryParse(f[3].Trim(), out row.cost);
             float.TryParse(f[8].Trim(), out row.x);
@@ -369,7 +373,8 @@ public class SkillTreeCsvEditorWindow : EditorWindow
             sb.Append(Escape(row.prereqs)).Append(',');
             sb.Append(row.x).Append(',');
             sb.Append(row.y).Append(',');
-            sb.Append(Escape(row.icon)).Append('\n');
+            sb.Append(Escape(row.icon)).Append(',');
+            sb.Append(Escape(row.family)).Append('\n');
         }
 
         File.WriteAllText(path, sb.ToString());

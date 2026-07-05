@@ -194,6 +194,147 @@ Skill Tree Editor window, and the four new skill lines is done. See
       wanted (Sprinter chains off `move_2`, Amplified Knockback off `knock_1`; Vampiric Blade and
       Solid are fresh root columns at x=10/x=12).
 
+## Impulse skill line — Unity Editor wiring
+
+The C# for the Impulse buff/skill line (Impulse Goblin variant, Impulse Orb pickup, Impulse Buff,
+the sword's impulse-stamped hits, and the enemy-side ragdoll fling reaction) is done. The following
+can only be done in the Unity Editor (asset creation, prefab/scene/animator wiring, physics layers,
+art/audio) — Claude Code can't safely author these headlessly. See
+`Assets/Bladehold/Bladehold Scripts/Player/ImpulseSO.cs`, `Player/ImpulseBuff.cs`,
+`Enemies/ImpulseGoblin.cs`, `Economy/ImpulseOrb.cs`, `DamageSystem/ImpulseConfigSO.cs`,
+`DamageSystem/ImpulseReceiver.cs`, `DamageSystem/ImpulseHitFeedback.cs`, `DamageSystem/EnemyRagdoll.cs`,
+`DamageSystem/RagdollConfigSO.cs`, and the `impulse_unlock`/`impdur_*`/`impchance_*`/`imppower_*` rows
+already in `Config/SkillTree.csv` for the code side.
+
+- [ ] **Create SO asset instances** (each already has a `[CreateAssetMenu]` entry):
+  - [ ] `ImpulseSO` — leave `baseOrbDurationSeconds`/`basePower` at 0 (locked until skill nodes are
+        bought); tune `baseImpulseForce`/`forcePerPower`/`powerPerChargeLevel`/
+        `forcePerExtraStackPercent`/`damagePerExtraStackPercent`.
+  - [ ] `ImpulseConfigSO` — tune `defaultResistance`, launch/landing/recovery timings,
+        `maxSimultaneousRagdolls`.
+  - [ ] `RagdollConfigSO` — tune mass/damping/joint-limit values (defaults are reasonable starting
+        points).
+
+- [ ] **Physics layer**: add a `Ragdoll` layer in **Edit > Project Settings > Tags and Layers** (must
+      match `RagdollConfigSO.ragdollLayerName`), then in **Physics > Layer Collision Matrix** disable
+      Ragdoll×Ragdoll and Ragdoll×(the enemy/character layer), keeping Ragdoll×Default enabled so
+      flung bodies still land on the ground.
+
+- [ ] **Animator controller** (the same Synty controller already touched for the `Blocked` state):
+  - [ ] Add a `Knockdown` trigger parameter plus enter/exit states for the animation-only knockdown
+        reaction (`ImpulseReceiver.knockdownTrigger`).
+  - [ ] Add a `GetUp` state (played directly by name, not a trigger — the animator is disabled
+        mid-flight so a trigger would be lost) for standing up after a landed fling
+        (`ImpulseReceiver.getUpStateName`).
+  - [ ] Confirm the existing `Cheer` trigger is reachable from any state — a recovering enemy
+        re-fires it if the player died while it was airborne.
+
+- [ ] **ImpulseOrb prefab**: trigger `Collider` + `ImpulseOrb` component; assign `pickupPopup` (a
+      `DamageNumber` prefab), `pickupFeedback` (optional `MMF_Player`), tune `lifetime`.
+
+- [ ] **Player prefab** (`Assets/Bladehold/Bladehold Prefabs/Player.prefab`):
+  - [ ] Add an `ImpulseBuff` component on the player root; assign `config` (the `ImpulseSO`);
+        optional `activationFeedback`/`deactivationFeedback` `MMF_Player`s and an `auraVisual` child
+        object.
+  - [ ] Add an `ImpulseHitFeedback` component; assign `damageTrigger` to the sword's `DamageTrigger`
+        explicitly (same precedent as `VampiricBlade`), plus `burstPrefab` (`ParticleSystem`) and
+        `pulseLightPrefab` (a `Light` at rest intensity 0).
+  - [ ] Optionally assign the sword `DamageTrigger`'s `impulseBuff` field explicitly (it auto-finds
+        the player's `ImpulseBuff` via `GetComponentInChildren` if left blank).
+
+- [ ] **Goblin prefabs** (`Goblin Enemy.prefab` and the brute variant — Impulse can fling either):
+  - [ ] Add an `EnemyRagdoll` component; assign `animator` (auto-wires via `OnValidate`), `config`
+        (the `RagdollConfigSO`).
+  - [ ] Add an `ImpulseReceiver` component; most references (`health`/`agent`/`ragdoll`/`animator`/
+        `rootCollider`/`aiMovement`/`aiAnimation`/`aiAttack`) auto-wire via `OnValidate` — assign
+        `config` (the `ImpulseConfigSO`); optional `landingVfxPrefab`/`landingSfx`.
+  - [ ] Add an `ImpulseGoblin` component; assign `health`, `orbPrefab` (the `ImpulseOrb` prefab),
+        `bodyRenderers`, `impulseAuraMaterial`, optional `deathVfxPrefab`/`deathSfx`.
+  - [ ] Confirm the existing `KnockbackReceiver`'s `impulseReceiver` field picked up the new
+        `ImpulseReceiver` via `OnValidate` (so the two reactions don't fight over the same hit).
+
+- [ ] **Balance pass**: tune the placeholder costs in the `impulse_unlock`/`impdur_*`/`impchance_*`/
+      `imppower_*` rows of `Config/SkillTree.csv` to taste. Their icons (`Warriorskill_05_nobg`,
+      `Push_nobg`, `IncreaseStrength_2_nobg`/`_3_nobg`/`_4_nobg`) are already registered in the
+      `SkillTreeSO`'s icon list from earlier skill lines, so no new icon drag-and-drop should be
+      needed.
+
+## Manual verification (Impulse)
+
+- [ ] Buy `Impulse`, hit a goblin at or above its resistance while the buff is active — confirm it
+      launches skyward, tumbles, lands, re-seats on the NavMesh, and stands back up (or joins the
+      corpse pipeline if the hit was lethal).
+- [ ] Hit a goblin exactly one resistance point below the fling threshold — confirm an
+      animation-only knockdown instead (no ragdoll).
+- [ ] Hit a goblin further below resistance — confirm only the normal `KnockbackReceiver` slide
+      happens, no knockdown/fling.
+- [ ] Buy `Impulse Power` tiers — confirm goblins that previously only knocked down now fling, and
+      brutes eventually fling too.
+- [ ] Pick up multiple Impulse Orbs back-to-back — confirm buff duration stacks and stack count
+      increases (extra force/damage per stack).
+- [ ] Let more enemies get flung than `ImpulseConfigSO.maxSimultaneousRagdolls` at once — confirm
+      the overflow degrades to knockdowns instead of flinging.
+- [ ] Kill the player (or let the run end) while an enemy is airborne/recovering — confirm it
+      doesn't get stuck mid-air/mid-recovery and still ends up a normal corpse.
+
+## Storm Witch enemy + Chain Lightning skill line — Unity Editor wiring
+
+The C# for the Storm Witch enemy (ranged lightning-ball attack, storm-zone hazard), her Lightning
+Orb drop/pickup, and the Chain Lightning buff/skill line is done. The following can only be done in
+the Unity Editor (asset creation, prefab/scene wiring, art/audio) — Claude Code can't safely author
+these headlessly. See `Assets/Bladehold/Bladehold Scripts/Enemies/LightningBallAttack*.cs`,
+`Enemies/LightningStormAttack*.cs`, `Enemies/LightningOrbDropper.cs`, `Economy/LightningOrb.cs`,
+`Player/ChainLightning*.cs`, and `Config/Enemies.csv`/`Config/SkillTree.csv` for the code side.
+
+- [ ] **Create SO asset instances** (each already has a `[CreateAssetMenu]` entry):
+  - [ ] `LightningBallAttackSO` — tune `attackRange`/`damage`/`ballSpeed`/`ballLifetime`/
+        `windupToApex`/`attackCooldown`.
+  - [ ] `LightningStormAttackSO` — tune `castRange`/`castCooldown`/`stormRadius`/`stormDuration`/
+        `strikeInterval`/`strikeDamage`.
+  - [ ] `ChainLightningSO` — leave `baseBounces`/`baseDamagePercent`/`baseOrbDurationSeconds` at 0
+        (locked until skill nodes are bought); tune `chainRadius`/`damagePerExtraStackPercent`.
+
+- [ ] **LightningBall prefab**: kinematic `Rigidbody` + trigger `SphereCollider` + `LightningBall`
+      component; optional impact VFX/SFX.
+
+- [ ] **LightningStormZone prefab**: just a `LightningStormZone` component (uses `OverlapSphere`, no
+      collider needed) + optional strike VFX/SFX.
+
+- [ ] **LightningOrb prefab**: trigger `Collider` + `LightningOrb` component — mirrors the existing
+      `ImpulseOrb` prefab (`DamageNumber` popup, pickup `MMF_Player`, lifetime).
+
+- [ ] **Storm Witch prefab**: build with `Health`, `AIMovement`, `AIAnimation`,
+      `LightningBallAttack` (assign `firePoint`, `ballPrefab`, the `LightningBallAttackSO`),
+      `LightningStormAttack` (assign `stormZonePrefab`, the `LightningStormAttackSO`),
+      `LightningOrbDropper` (assign `orbPrefab`), plus `ImpulseReceiver`/`KnockbackReceiver` like
+      other enemies.
+  - [ ] Register the prefab in `WaveSpawner`'s `enemyPrefabs` list under id `storm_witch` (row
+        already in `Config/Enemies.csv`).
+
+- [ ] **Player prefab** (`Assets/Bladehold/Bladehold Prefabs/Player.prefab`): add a
+      `ChainLightningBuff` component (assign the `ChainLightningSO`) and a `ChainLightning`
+      component (assign the sword's `DamageTrigger` explicitly — same precedent as `VampiricBlade` —
+      and set `enemyLayers`) on the player root.
+
+- [ ] **Balance pass**: tune the placeholder costs/values in the new `Config/SkillTree.csv` rows
+      (`lightning_unlock`, `lightdur_*`, `lightbounce_*`, `lightdmg_*`, `lightcrit_*`) and the
+      `storm_witch` row in `Config/Enemies.csv` to taste.
+
+## Manual verification (Storm Witch + Chain Lightning)
+
+- [ ] Let a Storm Witch spawn (wave 6+) — confirm she approaches, fires lightning balls at range, and
+      periodically casts a storm at the player's current position.
+- [ ] Get hit by a lightning ball / stand in the storm — confirm damage applies, and the storm keeps
+      striking on its interval while something stays inside it.
+- [ ] Kill a Storm Witch — confirm she always drops a Lightning Orb.
+- [ ] Pick up a Lightning Orb before buying `Chain Lightning` — confirm nothing happens (feature
+      locked, base stats at 0).
+- [ ] Buy `Chain Lightning`, pick up an orb, hit an enemy standing near others — confirm the hit
+      chains to a nearby enemy for the expected damage.
+- [ ] Buy bounce/damage/crit tiers — confirm chains reach more enemies, hit harder, and crit at the
+      expected rate.
+- [ ] Stack multiple orbs — confirm buff duration extends and bounce damage gets the stack bonus.
+
 ## Manual verification (skill icons + new skill lines)
 
 - [x] Nodes with an icon show it on the death screen; icon-less nodes look unchanged; console shows

@@ -33,8 +33,10 @@ public class DisableCollidersOnDeath : MonoBehaviour
             return;
         }
 
-        // Cache colliders now; the rig's collider set doesn't change at runtime, and we want them
-        // even after they're disabled.
+        // Cache colliders now; we want them even after they're disabled. Caching at Start also
+        // intentionally excludes the ragdoll bone colliders EnemyRagdoll builds later at runtime —
+        // a corpse flung by a lethal impulse hit must keep those to land with (EnemyRagdoll disables
+        // them itself once the corpse settles). Do not change this to re-query at death time.
         colliders = GetComponentsInChildren<Collider>(includeInactive: true);
 
         health.OnDied += HandleDied;

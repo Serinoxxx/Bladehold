@@ -36,11 +36,19 @@ public class EnemyDefinition
     /// <summary>Per-spawn roll chance once unlocked, stored 0..1 (authored as a percent in the CSV: 10 = 10%). Ignored for the first (fallback) row, which spawns whenever no other type wins its roll.</summary>
     public float spawnChance = 0f;
 
-    /// <summary>Guaranteed spawns of this type per wave once unlocked (spawned before any chance rolls, still respecting maxConcurrent). 0 or blank = no guarantee.</summary>
+    /// <summary>
+    ///     Per-wave spawn budget at the unlock wave: both a guarantee (filled before any chance rolls) and a
+    ///     per-wave cap. The budget grows by one each wave after unlock, capped at <see cref="maxConcurrent" />
+    ///     when that is set (minSpawn 1 / maxConcurrent 3 → 1, 2, 3, 3, ... per wave). 0 or blank = no
+    ///     guarantee and no per-wave cap (chance-only).
+    /// </summary>
     public int minSpawn = 0;
 
     /// <summary>Maximum of this type alive at once. 0 or blank = unlimited.</summary>
     public int maxConcurrent = 0;
+
+    /// <summary>Overrides the prefab ImpulseReceiver's impulse resistance. Blank = prefab default.</summary>
+    public float? impulseResistance;
 }
 
 /// <summary>
@@ -50,7 +58,7 @@ public class EnemyDefinition
 ///     row's overrides to each spawned instance.
 ///
 ///     CSV columns (one type per row):
-///     <c>id, displayName, health, damage, minGold, maxGold, speed, scale, unlockWave, spawnChance, minSpawn, maxConcurrent</c>
+///     <c>id, displayName, health, damage, minGold, maxGold, speed, scale, unlockWave, spawnChance, minSpawn, maxConcurrent, impulseResistance</c>
 ///     <list type="bullet">
 ///         <item>The <b>first row is the fallback type</b> (spawned when no other type wins its
 ///         spawn-chance roll or all are at their concurrent cap), so it is effectively unlimited and
@@ -58,8 +66,8 @@ public class EnemyDefinition
 ///         <item><c>health</c>/<c>damage</c>/<c>minGold</c>/<c>maxGold</c>/<c>speed</c> blank → keep the
 ///         prefab's ScriptableObject value.</item>
 ///         <item><c>spawnChance</c> is a <b>percent</b> (10 = 10%). Each spawn slot first fills any type
-///         still owed its <c>minSpawn</c> guarantee this wave, then checks the remaining rows in CSV
-///         order; the first unlocked, under-cap type to win its roll is spawned.</item>
+///         still under its per-wave budget (<c>minSpawn</c>, ramping — see that field), then checks the
+///         remaining rows in CSV order; the first unlocked, under-cap type to win its roll is spawned.</item>
 ///     </list>
 /// </summary>
 [CreateAssetMenu(fileName = "EnemyRosterSO", menuName = "Scriptable Objects/EnemyRosterSO")]
@@ -73,7 +81,7 @@ public class EnemyRosterSO : ScriptableObject
 
     [NonSerialized] private List<EnemyDefinition> enemies;
 
-    private const int ColumnCount = 12;
+    private const int ColumnCount = 13;
 
     /// <summary>All enemy types in CSV order (index 0 = the fallback type), parsed lazily.</summary>
     public IReadOnlyList<EnemyDefinition> Enemies
@@ -168,6 +176,7 @@ public class EnemyRosterSO : ScriptableObject
             spawnChance = ParseOptionalFloat(f[9], lineNumber, "spawnChance") ?? 0f,
             minSpawn = ParseOptionalInt(f[10], lineNumber, "minSpawn") ?? 0,
             maxConcurrent = ParseOptionalInt(f[11], lineNumber, "maxConcurrent") ?? 0,
+            impulseResistance = ParseOptionalFloat(f[12], lineNumber, "impulseResistance"),
         };
 
         // Filling only one of the gold columns means a fixed drop of that amount.

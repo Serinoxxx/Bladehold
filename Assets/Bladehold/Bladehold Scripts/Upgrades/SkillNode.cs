@@ -32,6 +32,13 @@ public class SkillNode
     public int cost;
 
     /// <summary>
+    ///     Optional price-pool name (the CSV's optional 12th column). Nodes sharing a family can be bought
+    ///     in any order but share one escalating price ladder: the Nth family purchase costs the Nth-cheapest
+    ///     authored cost in the family, whichever node it is spent on. Empty = priced individually.
+    /// </summary>
+    public string family = "";
+
+    /// <summary>
     ///     Stat modifiers applied together when this node is purchased. Empty for a pure connector/unlock
     ///     node. Usually one entry; a node can carry several (e.g. a Golden Goblin tier bumping both its
     ///     spawn chance and its bonus gold at once) via the CSV's ';'-separated stat/kind/amount columns.

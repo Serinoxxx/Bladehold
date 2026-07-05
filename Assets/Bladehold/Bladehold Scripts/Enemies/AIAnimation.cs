@@ -25,11 +25,17 @@ public class AIAnimation : MonoBehaviour
 
     private LocomotionAnimator locomotion;
     private Health playerHealth;
+    private Transform playerTransform;
     private int deathTriggerHash;
     private int cheerTriggerHash;
     private bool isDead = false;
     private bool isCheering = false;
     private bool anyError = false;
+
+    // Spreads far-away enemies' sliced animation ticks across frames so they don't all tick together.
+    private static int nextSliceIndex;
+    private int sliceIndex;
+    private float accumulatedDeltaTime;
 
     private void OnValidate()
     {
@@ -84,6 +90,16 @@ public class AIAnimation : MonoBehaviour
             movementData.leanCurve
         );
 
+        // CullUpdateTransforms: off-screen enemies skip skeleton writes and skinning but the state
+        // machine keeps running — never CullCompletely, which would freeze off-screen Death/Cheer/
+        // Attack triggers and pop when the enemy comes into view.
+        if (movementData.cullOffscreenAnimators)
+        {
+            animator.cullingMode = AnimatorCullingMode.CullUpdateTransforms;
+        }
+
+        sliceIndex = nextSliceIndex++;
+
         deathTriggerHash = Animator.StringToHash(deathTrigger);
         cheerTriggerHash = Animator.StringToHash(cheerTrigger);
 
@@ -92,10 +108,14 @@ public class AIAnimation : MonoBehaviour
 
         // Celebrate when the player dies.
         Player player = Player.Instance;
-        if (player != null && player.Health != null)
+        if (player != null)
         {
-            playerHealth = player.Health;
-            playerHealth.OnDied += HandlePlayerDied;
+            playerTransform = player.transform;
+            if (player.Health != null)
+            {
+                playerHealth = player.Health;
+                playerHealth.OnDied += HandlePlayerDied;
+            }
         }
     }
 
@@ -116,6 +136,8 @@ public class AIAnimation : MonoBehaviour
         isDead = true;
         // Stop driving locomotion and let the death state take over the animator.
         animator.SetTrigger(deathTriggerHash);
+        // Corpses have nothing left to tick (cheering goblins keep theirs — see HandlePlayerDied).
+        enabled = false;
     }
 
     private void HandlePlayerDied()
@@ -132,6 +154,22 @@ public class AIAnimation : MonoBehaviour
     {
         // Once dead or cheering, leave the animator on that state instead of writing locomotion.
         if (anyError || isDead || isCheering) return;
+
+        // The locomotion maths + ~18 animator writes per Tick are the per-enemy CPU hot path, so
+        // far-away enemies tick every Nth frame (staggered by sliceIndex). Skipped frames bank
+        // their deltaTime — LocomotionAnimator's damping is deltaTime-dependent, so the eventual
+        // Tick must cover the real elapsed time.
+        accumulatedDeltaTime += Time.deltaTime;
+        if (playerTransform != null && movementData.animationFarFrameInterval > 1)
+        {
+            float sqrDistance = (playerTransform.position - transform.position).sqrMagnitude;
+            float fullRate = movementData.animationFullRateDistance;
+            if (sqrDistance > fullRate * fullRate
+                && (Time.frameCount + sliceIndex) % movementData.animationFarFrameInterval != 0)
+            {
+                return;
+            }
+        }
 
         // desiredVelocity points along the path even before the agent accelerates,
         // which gives the start/turn detection a stable intended direction.
@@ -152,6 +190,7 @@ public class AIAnimation : MonoBehaviour
             IsStrafing = false,
         };
 
-        locomotion.Tick(input, Time.deltaTime);
+        locomotion.Tick(input, accumulatedDeltaTime);
+        accumulatedDeltaTime = 0f;
     }
 }

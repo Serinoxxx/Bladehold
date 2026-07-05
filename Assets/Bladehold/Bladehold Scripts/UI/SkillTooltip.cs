@@ -51,8 +51,9 @@ public class SkillTooltip : MonoBehaviour
         }
     }
 
-    /// <summary>Fills the tooltip from a node, shows it, and snaps it to the cursor.</summary>
-    public void Show(SkillNode node, bool purchased)
+    /// <summary>Fills the tooltip from a node, shows it, and snaps it to the cursor. The cost comes from
+    /// the owning service (family nodes climb a shared price ladder, so it isn't just the node's own).</summary>
+    public void Show(SkillNode node, bool purchased, int cost)
     {
         if (node == null)
         {
@@ -61,7 +62,7 @@ public class SkillTooltip : MonoBehaviour
 
         if (nameText != null) nameText.text = node.displayName;
         if (descriptionText != null) descriptionText.text = node.description;
-        if (costText != null) costText.text = purchased ? "Owned" : node.cost + costSuffix;
+        if (costText != null) costText.text = purchased ? "Owned" : cost + costSuffix;
 
         gameObject.SetActive(true);
         FollowCursor();

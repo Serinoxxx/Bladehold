@@ -28,6 +28,9 @@ public class SkillTreeService : MonoBehaviour, ISkillTreeService
     /// <summary>Raised whenever the set of purchased nodes changes, so the tree UI can refresh.</summary>
     public event Action OnTreeChanged;
 
+    /// <summary>Raised after a purchase goes through, with the price actually paid (family-ladder-aware).</summary>
+    public event Action<SkillNode, int> OnNodePurchased;
+
     public SkillTreeSO Tree => tree;
 
     private void Awake()
@@ -126,13 +129,37 @@ public class SkillTreeService : MonoBehaviour, ISkillTreeService
         return false;
     }
 
+    /// <summary>
+    ///     The node's current price. Family nodes share one escalating price ladder: the Nth purchase in the
+    ///     family costs the Nth-cheapest authored cost in the family, whichever node it is spent on — so
+    ///     same-type upgrades can be bought in any order without cheap late nodes.
+    /// </summary>
+    public int GetCost(SkillNode node)
+    {
+        if (node == null) return 0;
+        if (string.IsNullOrEmpty(node.family) || tree == null) return node.cost;
+
+        List<int> ladder = new List<int>();
+        int owned = 0;
+        foreach (SkillNode other in tree.Nodes)
+        {
+            if (other.family == node.family)
+            {
+                ladder.Add(other.cost);
+                if (purchased.Contains(other.id)) owned++;
+            }
+        }
+        ladder.Sort();
+        return ladder[Mathf.Min(owned, ladder.Count - 1)];
+    }
+
     /// <summary>True if the node can be bought right now: revealed, not already owned, and affordable.</summary>
     public bool CanPurchase(SkillNode node)
     {
         if (anyError || node == null) return false;
         if (purchased.Contains(node.id)) return false;
         if (!IsRevealed(node)) return false;
-        return wallet.Coins >= node.cost;
+        return wallet.Coins >= GetCost(node);
     }
 
     /// <summary>
@@ -150,7 +177,9 @@ public class SkillTreeService : MonoBehaviour, ISkillTreeService
             return false;
         }
 
-        if (!wallet.TrySpend(node.cost))
+        // Capture the price before recording the purchase — owning the node climbs its family's ladder.
+        int price = GetCost(node);
+        if (!wallet.TrySpend(price))
         {
             return false;
         }
@@ -160,6 +189,7 @@ public class SkillTreeService : MonoBehaviour, ISkillTreeService
         SaveSystem.Save(saveData);
 
         ApplyEffect(node);
+        OnNodePurchased?.Invoke(node, price);
         OnTreeChanged?.Invoke();
         return true;
     }

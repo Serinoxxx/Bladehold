@@ -25,6 +25,12 @@ public interface ISkillTreeService
     /// </summary>
     bool IsTeased(SkillNode node);
 
+    /// <summary>
+    ///     The node's current price: its authored cost, or — for nodes in a <see cref="SkillNode.family" /> —
+    ///     the next rung of the family's shared price ladder (each purchase anywhere in the family climbs it).
+    /// </summary>
+    int GetCost(SkillNode node);
+
     /// <summary>True if the node can be bought right now: revealed, not already owned, and affordable.</summary>
     bool CanPurchase(SkillNode node);
 

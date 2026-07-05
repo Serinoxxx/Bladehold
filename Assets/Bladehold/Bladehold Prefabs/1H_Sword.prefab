@@ -2436,7 +2436,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   readsPlayerStats: 1
-  baseCritMultiplier: 2
+  baseCritMultiplier: 1.5
   playerAttack: {fileID: 0}
   knockbackForce: 0
 --- !u!114 &2879380361252328939

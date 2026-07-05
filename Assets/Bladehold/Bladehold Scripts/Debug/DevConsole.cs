@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 ///     In-game developer cheat console, toggled with the backquote/tilde key. Draws an IMGUI panel of
@@ -65,6 +66,35 @@ public class DevConsole : MonoBehaviour
             if (WaveSpawner.Instance != null)
             {
                 WaveSpawner.Instance.DebugAdvanceWave();
+            }
+        }
+
+        // Perf stress tests: burst-spawn into the current wave, ignoring the concurrent cap.
+        GUILayout.Label("Spawn Goblins (stress test)");
+        GUILayout.BeginHorizontal();
+        DrawSpawnBurstButton(50);
+        DrawSpawnBurstButton(100);
+        DrawSpawnBurstButton(300);
+        GUILayout.EndHorizontal();
+
+        if (GUILayout.Button("Wipe Save & Reload", GUILayout.Height(ButtonHeight)))
+        {
+            // Deleting also drops SaveSystem's in-memory cache, and nothing saves during scene teardown,
+            // so the reloaded scene's Wallet/tree services Load() fresh defaults.
+            SaveSystem.DeleteCurrentSave();
+            RunState.StartingWave = 1;
+            Time.timeScale = 1f; // ensure normal speed resumes even if something paused time on death.
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+    }
+
+    private void DrawSpawnBurstButton(int count)
+    {
+        if (GUILayout.Button($"+{count}", GUILayout.Height(ButtonHeight)))
+        {
+            if (WaveSpawner.Instance != null)
+            {
+                WaveSpawner.Instance.DebugSpawnBurst(count);
             }
         }
     }

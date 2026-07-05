@@ -82,6 +82,15 @@ public class GoldenGoblin : MonoBehaviour
 
     private void ApplyGoldenVisual()
     {
+        // A goblin can be both golden and impulse (independent rolls); the impulse aura wins the
+        // body swap because it telegraphs combat behaviour (hits will fling) while gold is
+        // economy-only. Both marks are set pre-Start, so this is deterministic regardless of which
+        // component's Start runs first. Drops are unaffected — both still occur.
+        if (TryGetComponent(out ImpulseGoblin impulse) && impulse.IsImpulse)
+        {
+            return;
+        }
+
         if (goldenMaterial == null || bodyRenderers == null)
         {
             return;

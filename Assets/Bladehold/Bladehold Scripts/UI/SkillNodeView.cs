@@ -65,7 +65,7 @@ public class SkillNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         this.onClicked = onClicked;
 
         if (nameText != null) nameText.text = node.displayName;
-        if (costText != null) costText.text = node.cost + costSuffix;
+        if (costText != null) costText.text = service.GetCost(node) + costSuffix;
 
         if (icon != null)
         {
@@ -186,7 +186,8 @@ public class SkillNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         }
         if (costText != null)
         {
-            costText.text = purchased ? "Owned" : node.cost + costSuffix;
+            // GetCost, not node.cost: family nodes climb a shared price ladder as siblings are bought.
+            costText.text = purchased ? "Owned" : service.GetCost(node) + costSuffix;
         }
     }
 }
