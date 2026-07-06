@@ -19,6 +19,9 @@ public class ImpulseConfigSO : ScriptableObject
     [Tooltip("Random angular velocity (rad/s) added to the pelvis so flung bodies tumble instead of gliding.")]
     public float spinTorque = 4f;
 
+    [Tooltip("Extra velocity (m/s) kicked into one random body part on launch so every fling flails differently. 0 = off.")]
+    public float randomLimbKick = 3f;
+
     [Header("Landing detection")]
     [Tooltip("Seconds after launch before landing checks begin (lets the impulse actually lift the body).")]
     public float minAirTime = 0.3f;

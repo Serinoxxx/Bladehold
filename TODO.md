@@ -116,6 +116,157 @@ Precision Shot), and the "Raw Power" +50%-all-damage family is done. See
 - [ ] Buy a Raw Power node — sword swings, arrows, Death Nova, and chain lightning all hit ~50%
       harder (damage numbers confirm).
 
+## Bow aim feel (camera zoom, crosshair, travelling tracer, animations) — Unity Editor wiring
+
+The C# for the bow's aim presentation is done: **aim camera** (`Player/BowAimCamera.cs` — blends the
+vendored `SampleCameraController`'s private `_cameraDistance`/`_cameraHorizontalOffset` boom fields
+by cached reflection, the `PlayerMoveSpeedBinder` precedent, plus a `Camera.main` FOV narrow;
+tunables on `BowSO`'s new "Aim camera" header), **crosshair** (`UI/BowCrosshairUI.cs` — CanvasGroup
+fade while `PlayerBow.IsAiming`, reticle tightens per charge level), **travelling tracer**
+(`Player/BowTracer.cs` — the streak's head now flies at `travelSpeed` m/s with a `tailLength` tail;
+damage stays instant hitscan), and **bow animations** (`Player/PlayerBow.cs` now drives `IsAiming`
+(Bool) / `BowFire` (Trigger) animator params, warning once and degrading gracefully until the
+params exist).
+
+- [x] **BowSO asset**: tune the new "Aim camera" fields — `aimCameraDistance` (2.75; the rig's
+      authored boom is ~5), `aimCameraHorizontalOffset` (0.7 = over the right shoulder),
+      `aimFieldOfView` (50), `aimBlendSeconds` (0.2).
+
+- [x] **Player prefab** (`Assets/Bladehold/Bladehold Prefabs/Player.prefab`): add a `BowAimCamera`
+      component on the player root next to `PlayerBow`; assign `config` (the `BowSO`).
+      `bow`/`cameraController` auto-wire via `OnValidate` (the Synty camera rig is the nested
+      CameraController child); `aimCamera` defaults to `Camera.main`.
+
+- [x] **HUD canvas**: add a "Crosshair" object anchored to screen centre — an `Image` with a
+      crosshair/dot sprite (~48px, works at alpha 0.8), a `CanvasGroup`, and the `BowCrosshairUI`
+      component. `canvasGroup`/`reticle` auto-wire to the object itself; `bow` defaults to
+      `Player.Instance`'s. Tune `fadeSeconds` (0.15), `fullChargeScale` (0.6), `tightenSeconds` (0.1).
+
+- [x] **BowTracer prefab** (`Assets/Bladehold/Bladehold Prefabs/BowTracer.prefab`): tune the new
+      `travelSpeed` (90 m/s) and `tailLength` (3 m). `travelSpeed 0` restores the old
+      instant full-length streak.
+
+- [x] **Animator** (`AC_Sidekick_Masculine.controller`): add parameters `IsAiming` (Bool) and
+      `BowFire` (Trigger), then a **Bow** layer above Attack — Override blending, mask
+      `Assets/Bladehold/Bladehold Data Objects/Upper Body Mask.mask` (the Attack layer's mask),
+      default weight 1, empty default state (the Attack-layer pattern; an empty state on a masked
+      layer contributes nothing):
+  - [x] Empty → `Bow_Draw` (`A_POLY_BOW_Rcv_Stand_Aiming_ToDrawn_Neut`) when `IsAiming` == true
+        (no exit time, ~0.15s duration).
+  - [x] `Bow_Draw` → `Bow_Aim` (`A_POLY_BOW_Rcv_Stand_Aiming_Drawn_Neut`; tick **Loop Time** on the
+        FBX's animation import settings) on exit time.
+  - [x] `Bow_Aim` → `Bow_Fire` (`A_POLY_BOW_Rcv_Stand_Shoot_Reload_Neut` — release + nock the next
+        arrow) on the `BowFire` trigger (no exit time, ~0.05s duration); `Bow_Fire` → `Bow_Aim` on
+        exit time.
+  - [x] Every bow state → Empty when `IsAiming` == false (~0.2s duration) so releasing aim melts
+        back into the sword pose.
+  - Clips live under `Assets/Third Party/Synty/AnimationBowCombat/Animations/Polygon/Neutral/
+    Standing/` (`Aim/Rcv`, `Shoot/Rcv` — recurve variants matching the equipped `Wep_RecurveBow_01`;
+    generic non-`Rcv` equivalents exist one folder up). Until both params exist `PlayerBow` logs a
+    single warning and skips them.
+    **Note (post-wiring):** the layer was wired with the *Humanoid character* clips (the generic
+    non-`Rcv` ones) — correct: the `Rcv`/`Lng`/`Cmp` variants are Generic-rig **bow-prop** clips,
+    consumed by `BowPropAnimator` below, not by this layer.
+  - [x] ~~Optional polish later: bind the rigged bow's string/limbs to the draw~~ — done in C#, see
+    the "Bow prop animation + aim look" section below.
+
+## Manual verification (bow aim feel)
+
+- [ ] Hold right click — camera eases in and over the right shoulder with a slight FOV zoom, the
+      crosshair fades in, and the character raises and draws the bow (upper body) while the legs
+      keep strafe-walking; release — camera, FOV, crosshair, and pose all return.
+- [ ] Hold aim without firing — the crosshair tightens one step per charge level up to max draw.
+- [ ] Fire — the release/reload animation plays and the tracer streak visibly flies from the bow to
+      the target rather than appearing instantly; the damage number still pops the moment of the
+      click (damage is hitscan; only the visual travels).
+- [ ] With Multi Shot bought, fire — every fanned arrow draws its own travelling streak.
+- [ ] Die while aiming — the camera framing and FOV snap back to normal, the crosshair fades out,
+      and the corpse isn't stuck drawing a bow.
+
+## Bow reload indicator — Unity Editor wiring
+
+The C# is done: `PlayerBow` now exposes `CooldownFraction` (0 the instant a shot fires → 1 when the
+bow can fire again) and `IsCoolingDown`, and the new `UI/BowReloadUI.cs` polls them (the
+`BowCrosshairUI` pattern) — while aiming with the cooldown running it fades a `CanvasGroup` in and
+drives a radial-filled `Image`'s `fillAmount` from empty to full, fading back out once ready.
+
+- [ ] **HUD canvas**: add a "BowReload" object next to the Crosshair object (anchored to screen
+      centre, offset slightly below the crosshair so it reads as part of the reticle) — an `Image`
+      with a ring/circle sprite (~40px, e.g. Unity's built-in `Knob`), **Image Type = Filled,
+      Fill Method = Radial 360** (Fill Origin: Top, clockwise reads best), a `CanvasGroup`, and the
+      `BowReloadUI` component (`canvasGroup`/`fillImage` auto-wire via `OnValidate`; `bow` resolves
+      through `Player.Instance`).
+- [ ] Optional: a second faint full-circle `Image` behind the filled one as a backing track, so the
+      empty portion of the ring is still legible. Author it on the same object's children — the
+      `CanvasGroup` fades both together.
+
+## Manual verification (bow reload indicator)
+
+- [ ] Aim and fire — the reload circle appears at the crosshair and sweeps from empty to full over
+      the cooldown (`BowSO.fireCooldownSeconds`, 0.35s), then fades out; the next shot restarts it.
+- [ ] Hold aim without firing — no reload circle (only the crosshair).
+- [ ] Fire and immediately release aim — the circle fades out with the crosshair rather than
+      lingering on screen.
+- [ ] Fire repeatedly (spam left click) — the circle restarts cleanly each shot with no flicker.
+
+## Bow prop animation + aim look — Unity Editor wiring
+
+The C# is done for **bow-prop animation** (`Player/BowPropAnimator.cs` — a Playables graph on the
+rigged bow's own Animator; Synty ships no AnimatorController for the bow props, the prefab's
+controller reference is dangling, so the graph replaces it: draw clip once on aim start → drawn
+loop → release/reload clip on the new `PlayerBow.OnFired` event → back to the loop, crossfades
+matching the character Bow layer's transition times) and **aim look** (`Player/BowAimLook.cs` —
+LateUpdate spine/chest/upper-chest pitch toward the camera aim so the upper body points at the
+crosshair; yaw already works because the Synty controller strafe-faces the camera while aiming;
+blends over `BowSO.aimBlendSeconds`, clamped by the new `BowSO.aimLookMaxPitchDegrees`).
+
+**Also fixed headlessly in `AC_Sidekick_Masculine.controller`** (precise YAML edits, no Editor work
+needed, but reopen/refocus Unity so it reimports):
+- The Bow layer's entry was an **Any State → Draw** transition on `IsAiming` — Any State
+  re-evaluates every frame, so with `IsAiming` still true the `Aim` state kept getting yanked back
+  into `Draw` (the reported bug). The same transition now hangs off the empty default state instead.
+- The **Aim → Fire** transition had no conditions and no exit time (never taken — the fire
+  animation could never play); it now has the intended `BowFire` trigger condition.
+
+- [ ] **Bow prop** (the `Wep_RecurveBow_01` instance nested in
+      `Assets/Bladehold/Bladehold Prefabs/Player.prefab`, already assigned as `PlayerBow.bowModel`):
+      add a `BowPropAnimator` component next to its Animator (`bow`/`animator` auto-wire via
+      `OnValidate`), then drag in the three **Generic-rig bow-prop clips** (the `Rcv` variants, NOT
+      the Humanoid character clips one folder up), from
+      `Assets/Third Party/Synty/AnimationBowCombat/Animations/Polygon/Neutral/Standing/`:
+  - [ ] `drawClip` — `Aim/Rcv/A_POLY_BOW_Rcv_Stand_Aiming_ToDrawn_Neut`
+  - [ ] `aimLoopClip` — `Aim/Rcv/A_POLY_BOW_Rcv_Stand_Aiming_Drawn_Neut` (looped in code — the
+        FBX's Loop Time setting doesn't matter)
+  - [ ] `fireClip` — `Shoot/Rcv/A_POLY_BOW_Rcv_Stand_Shoot_Reload_Neut`
+  - If the bow stays rigid in Play mode, the clips aren't binding to the prop's bones: on
+    `Models/Bows/Wep_RecurveBow_01.fbx` confirm Rig > Animation Type is **Generic** / Avatar
+    Definition **Create From This Model**, and on the three `Rcv` animation FBXs set **Copy From
+    Other Avatar** pointing at it.
+
+- [ ] **Player prefab**: add a `BowAimLook` component on the player root next to `PlayerBow`;
+      assign `config` (the `BowSO`). `bow`/`animator` auto-wire via `OnValidate`; `aimCamera`
+      defaults to `Camera.main`.
+
+- [ ] **BowSO asset**: tune the new `aimLookMaxPitchDegrees` (60) if the bend at extreme angles
+      looks too strong.
+
+- [ ] Optional: add `BowAimLook` to `PlayerDeath`'s disabled-components list so a corpse can't hold
+      the spine bend (it also melts out on its own since `IsAiming` goes false on death).
+
+## Manual verification (bow prop animation + aim look + animator fixes)
+
+- [ ] Hold right click — the character draws once and **stays** in the drawn pose (no repeated
+      draw-jerk: the old Any State loop is gone).
+- [ ] While drawn, the bow model itself bends and the string pulls with the hands; on release the
+      bow returns to rest.
+- [ ] Fire — the character's release/reload animation now actually plays (Aim → Fire was previously
+      unreachable), and the bow prop plays its own release/reload in sync; then both settle back
+      into the drawn loop.
+- [ ] Aim the camera up and down — the upper body pitches to keep the bow pointed at the crosshair
+      (legs/locomotion unaffected); the bend eases in/out with the camera zoom on aim start/stop.
+- [ ] Yaw while aiming — the whole character turns with the camera (Synty strafe mode, unchanged).
+- [ ] Die while aiming — no lingering spine bend on the corpse, bow model hidden, no errors.
+
 ## Frost/orb/conduit skill lines — Unity Editor wiring
 
 The C# for eight new skill lines is done: **Freezing Draw** (`Player/FreezingDraw.cs` — slows

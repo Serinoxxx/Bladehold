@@ -118,10 +118,12 @@ public class EnemyRagdoll : MonoBehaviour
 
     /// <summary>
     ///     Switches the built ragdoll live: bodies non-kinematic, bone colliders on, every body seeded
-    ///     with <paramref name="velocity" /> (carry-over momentum + launch), and a tumble spin on the
-    ///     pelvis. The caller has already disabled the animator so the bones are free.
+    ///     with <paramref name="velocity" /> (carry-over momentum + launch), a tumble spin on the
+    ///     pelvis, and <paramref name="limbKickSpeed" /> m/s of extra velocity punched into one random
+    ///     non-pelvis body so every fling flails differently. The caller has already disabled the
+    ///     animator so the bones are free.
     /// </summary>
-    public void EnterRagdoll(Vector3 velocity, Vector3 angularVelocity)
+    public void EnterRagdoll(Vector3 velocity, Vector3 angularVelocity, float limbKickSpeed = 0f)
     {
         if (!isBuilt || IsRagdolled)
         {
@@ -138,6 +140,14 @@ public class EnemyRagdoll : MonoBehaviour
             body.linearVelocity = velocity;
         }
         Pelvis.angularVelocity = angularVelocity;
+
+        if (limbKickSpeed > 0f && bodies.Count > 1)
+        {
+            // bodies[0] is the pelvis (built first) — skip it so the kick flails a limb/torso/head
+            // without altering the main trajectory the launch velocity set.
+            Rigidbody kicked = bodies[Random.Range(1, bodies.Count)];
+            kicked.linearVelocity += Random.onUnitSphere * limbKickSpeed;
+        }
 
         IsRagdolled = true;
         ActiveCount++;

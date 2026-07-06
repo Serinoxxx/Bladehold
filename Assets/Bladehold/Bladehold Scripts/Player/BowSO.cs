@@ -53,6 +53,23 @@ public class BowSO : ScriptableObject
     [Tooltip("Seconds a Brain Freeze headshot slow lasts before the Elongated Freeze bonus extends it. The brainfreeze_* skill descriptions assume 3.")]
     public float brainFreezeSeconds = 3f;
 
+    [Header("Aim camera (consumed by BowAimCamera)")]
+    [Tooltip("Camera boom distance while aiming, in metres (the rig's authored distance is ~5; smaller = zoomed in).")]
+    public float aimCameraDistance = 2.75f;
+
+    [Tooltip("Horizontal camera offset while aiming, in metres — positive moves the camera over the right shoulder.")]
+    public float aimCameraHorizontalOffset = 0.7f;
+
+    [Tooltip("Camera field of view while aiming (the camera's own FOV is restored on release).")]
+    public float aimFieldOfView = 50f;
+
+    [Tooltip("Seconds the camera takes to blend into (and out of) the aim framing. BowAimLook's spine bend blends over the same window.")]
+    public float aimBlendSeconds = 0.2f;
+
+    [Header("Aim look (consumed by BowAimLook)")]
+    [Tooltip("Furthest the spine bends up or down (degrees) to follow the camera pitch while aiming.")]
+    public float aimLookMaxPitchDegrees = 60f;
+
     [Header("Impulse blasts (Exploding Heads / Unstable Orbs)")]
     [Tooltip("Radius of the impulse blast detonated by Exploding Heads headshots and Unstable Orbs orb hits.")]
     public float impulseBlastRadius = 4f;

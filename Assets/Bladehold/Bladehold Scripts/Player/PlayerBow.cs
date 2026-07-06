@@ -20,6 +20,13 @@ using UnityEngine;
 ///     <see cref="DamageTrigger" /> never activates. (<see cref="PlayerAttack" /> also skips its
 ///     sword-charge timing while <see cref="IsAiming" />.)
 ///
+///     Aim presentation: this component drives the optional <c>IsAiming</c> bool / <c>BowFire</c>
+///     trigger animator params (the Synty Bow Combat draw/aim/shoot states live on their own
+///     masked layer — see TODO.md; missing params degrade to a one-time warning), while
+///     <see cref="BowAimCamera" /> zooms the camera over the shoulder and
+///     <see cref="BowCrosshairUI" /> fades in a crosshair, both polling <see cref="IsAiming" />
+///     (the <see cref="SwordChargeFeedback" /> pattern).
+///
 ///     Arrow damage reads <see cref="PlayerStats" /> the way the sword's <see cref="DamageTrigger" />
 ///     does — bases registered in <c>Start</c> from <see cref="BowSO" />, crits rolled against the
 ///     shared <see cref="StatType.CritChance" />/<see cref="StatType.CritMultiplier" />, and the
@@ -80,6 +87,9 @@ public class PlayerBow : MonoBehaviour
     /// <summary>Fired once per arrow (or bounce) that actually damaged a target, with the world hit point — the <see cref="DamageTrigger.OnHit" /> shape, so feedback listeners can treat bow and sword alike.</summary>
     public event Action<IDamageable, Damage, Vector3> OnHit;
 
+    /// <summary>Fired once per shot (hit or miss), the moment the arrows leave the bow — cosmetic listeners like <see cref="BowPropAnimator" /> sync their release to this.</summary>
+    public event Action OnFired;
+
     /// <summary>True while the aim button is held and the bow is drawn.</summary>
     public bool IsAiming { get; private set; }
 
@@ -88,6 +98,26 @@ public class PlayerBow : MonoBehaviour
 
     /// <summary>Levels the current draw can reach.</summary>
     public int MaxChargeLevels => anyError ? 0 : Mathf.RoundToInt(stats.GetValue(StatType.BowMaxChargeLevels));
+
+    /// <summary>
+    ///     Fraction of the post-shot fire cooldown elapsed: 0 the instant a shot fires, 1 when the
+    ///     bow can fire again (and before the first shot). Cosmetic listeners like
+    ///     <see cref="BowReloadUI" /> poll this for radial-fill reload indicators.
+    /// </summary>
+    public float CooldownFraction
+    {
+        get
+        {
+            if (anyError || config.fireCooldownSeconds <= 0f)
+            {
+                return 1f;
+            }
+            return Mathf.Clamp01((Time.time - lastFireTime) / config.fireCooldownSeconds);
+        }
+    }
+
+    /// <summary>True while the bow is between shots and can't fire yet.</summary>
+    public bool IsCoolingDown => CooldownFraction < 1f;
 
     private const int MaxRayHits = 64;
     private const int MaxOverlapResults = 64;
@@ -99,6 +129,9 @@ public class PlayerBow : MonoBehaviour
     private IDamageable ownerDamageable;
     private int startAttackHash;
     private int isHoldingAttackHash;
+    private int isAimingHash;
+    private int bowFireHash;
+    private bool hasAimAnimatorParams;
     private float chargeStartTime;
     private float lastFireTime = Mathf.NegativeInfinity;
     private bool subscribed;
@@ -160,6 +193,30 @@ public class PlayerBow : MonoBehaviour
 
         startAttackHash = Animator.StringToHash("StartAttack");
         isHoldingAttackHash = Animator.StringToHash("IsHoldingAttack");
+        isAimingHash = Animator.StringToHash("IsAiming");
+        bowFireHash = Animator.StringToHash("BowFire");
+
+        // The bow animator states are optional wiring — without the IsAiming/BowFire params the bow
+        // still works, the rig just keeps its sword pose (checked once so missing params don't spam
+        // per-set warnings every aim).
+        bool hasIsAiming = false;
+        bool hasBowFire = false;
+        foreach (AnimatorControllerParameter parameter in playerAnimator.parameters)
+        {
+            if (parameter.nameHash == isAimingHash && parameter.type == AnimatorControllerParameterType.Bool)
+            {
+                hasIsAiming = true;
+            }
+            else if (parameter.nameHash == bowFireHash && parameter.type == AnimatorControllerParameterType.Trigger)
+            {
+                hasBowFire = true;
+            }
+        }
+        hasAimAnimatorParams = hasIsAiming && hasBowFire;
+        if (!hasAimAnimatorParams)
+        {
+            Debug.LogWarning("PlayerBow: the player Animator has no IsAiming (Bool) / BowFire (Trigger) parameters — bow aim/draw/shoot animations won't play until the Bow layer is wired (see TODO.md).");
+        }
 
         // The bow never damages its wielder (the DamageTrigger owner idiom).
         ownerDamageable = GetComponentInParent<IDamageable>();
@@ -276,6 +333,11 @@ public class PlayerBow : MonoBehaviour
         ChargeLevel = 0;
         chargeStartTime = Time.time;
 
+        if (hasAimAnimatorParams)
+        {
+            playerAnimator.SetBool(isAimingHash, true);
+        }
+
         if (swordModel != null)
         {
             swordModel.SetActive(false);
@@ -299,6 +361,12 @@ public class PlayerBow : MonoBehaviour
 
         IsAiming = false;
         ChargeLevel = 0;
+
+        if (hasAimAnimatorParams && playerAnimator != null)
+        {
+            playerAnimator.SetBool(isAimingHash, false);
+            playerAnimator.ResetTrigger(bowFireHash);
+        }
 
         if (swordModel != null)
         {
@@ -338,6 +406,11 @@ public class PlayerBow : MonoBehaviour
         {
             fireFeedback.PlayFeedbacks();
         }
+        if (hasAimAnimatorParams)
+        {
+            playerAnimator.SetTrigger(bowFireHash);
+        }
+        OnFired?.Invoke();
 
         FireArrow(origin, mainDirection, 1f, isMainArrow: true);
 

@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 00d6e93a6edb0bb4984e4e7fac8f3fdc, type: 3}
   m_Name: BowSO
   m_EditorClassIdentifier: Assembly-CSharp::BowSO
-  baseDamage: 15
+  baseDamage: 5
   maxRange: 60
-  fireCooldownSeconds: 0.35
+  fireCooldownSeconds: 0.7
   chargeTimePerLevel: 0.6
   baseMaxChargeLevels: 3
   baseChargeDamageBonus: 0.5
@@ -24,6 +24,10 @@ MonoBehaviour:
   pickupRadius: 1.5
   freezingDrawRadius: 8
   brainFreezeSeconds: 3
+  aimCameraDistance: 1
+  aimCameraHorizontalOffset: 0.7
+  aimFieldOfView: 60
+  aimBlendSeconds: 0.2
   impulseBlastRadius: 4
   impulseBlastPower: 2
   impulseBlastForce: 10

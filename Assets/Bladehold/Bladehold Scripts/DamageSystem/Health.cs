@@ -88,7 +88,11 @@ public class Health : MonoBehaviour, IDamageable
         }
 
         currentHealth -= damage.value;
-        damageFeedback.PlayFeedbacks();
+
+        if (damageFeedback != null)
+        {
+            damageFeedback.PlayFeedbacks();
+        }
 
         OnDamaged?.Invoke(damage);
 

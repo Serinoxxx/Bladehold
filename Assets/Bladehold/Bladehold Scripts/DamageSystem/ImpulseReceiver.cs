@@ -290,7 +290,7 @@ public class ImpulseReceiver : MonoBehaviour
 
         Vector3 launchVelocity = LaunchDirection(damage) * damage.impulseForce;
         Vector3 spin = Random.insideUnitSphere * config.spinTorque;
-        ragdoll.EnterRagdoll(carried + launchVelocity, spin);
+        ragdoll.EnterRagdoll(carried + launchVelocity, spin, config.randomLimbKick);
 
         // The root transform stays at the launch point while the bones fly; everything that needs the
         // body's real position (landing VFX, NavMesh recovery) uses the pelvis.
