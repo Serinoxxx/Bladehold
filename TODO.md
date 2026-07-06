@@ -59,29 +59,29 @@ Precision Shot), and the "Raw Power" +50%-all-damage family is done. See
 `multishot_*`/`multidmg_*`/`bounce_*`/`precision_*`/`pickuparrow_1`/`imparrow_1`/`stormarrow_1`/
 `alldmg_*` rows in `Config/SkillTree.csv` for the code side.
 
-- [ ] **Create SO asset instance**: a `BowSO` (menu `Scriptable Objects/BowSO`) — tune `baseDamage`,
+- [x] **Create SO asset instance**: a `BowSO` (menu `Scriptable Objects/BowSO`) — tune `baseDamage`,
       `maxRange`, `fireCooldownSeconds`, charge pacing (`chargeTimePerLevel`/`baseMaxChargeLevels`/
       `baseChargeDamageBonus`), `multishotSpreadDegrees`, `bounceRadius`, `pickupRadius`.
 
-- [ ] **BowTracer prefab**: a GameObject with a `LineRenderer` (own the looks: width curve, material,
+- [x] **BowTracer prefab**: a GameObject with a `LineRenderer` (own the looks: width curve, material,
       start/end colors — an additive/unlit material reads best) + the `BowTracer` component; tune
       `holdSeconds`/`fadeSeconds`.
 
-- [ ] **Player prefab** (`Assets/Bladehold/Bladehold Prefabs/Player.prefab`):
-  - [ ] Add a `PlayerBow` component on the player root; assign `config` (the `BowSO`), `tracerPrefab`,
+- [x] **Player prefab** (`Assets/Bladehold/Bladehold Prefabs/Player.prefab`):
+  - [x] Add a `PlayerBow` component on the player root; assign `config` (the `BowSO`), `tracerPrefab`,
         and `arrowOrigin` (an empty child at chest/bow height — defaults to the player root if left
         empty). `inputReader`/`stats`/`playerAnimator` auto-wire via `OnValidate`; `aimCamera`
         defaults to `Camera.main`; `impulseBuff`/`chainLightning` default to the player's own.
-  - [ ] Set `hitLayers`/`bounceLayers` to exclude the player's own layer (and, for bounce, the
+  - [x] Set `hitLayers`/`bounceLayers` to exclude the player's own layer (and, for bounce, the
         environment) if arrows ever clip the player or bounces fizzle on scenery.
-  - [ ] Assign `swordModel` (the `Wep_Sword_01` child) so it hides while aiming. Leave `bowModel`
+  - [x] Assign `swordModel` (the `Wep_Sword_01` child) so it hides while aiming. Leave `bowModel`
         empty until a bow model is added — everything works without it, the player just aims
         empty-handed.
-  - [ ] Confirm `PlayerAttack` picked up the new `bow` field via `OnValidate` (skips sword
+  - [x] Confirm `PlayerAttack` picked up the new `bow` field via `OnValidate` (skips sword
         hold-to-charge while aiming).
-  - [ ] Optional `drawFeedback`/`fireFeedback` `MMF_Player`s (bow creak on aim, string snap on fire).
+  - [x] Optional `drawFeedback`/`fireFeedback` `MMF_Player`s (bow creak on aim, string snap on fire).
 
-- [ ] **Vulnerable spots (for Precision Shot)**: on each enemy prefab (`Goblin Enemy`, brute variant,
+- [x] **Vulnerable spots (for Precision Shot)**: on each enemy prefab (`Goblin Enemy`, brute variant,
       Storm Witch, Troll), add a small trigger `SphereCollider` on the head bone (find it under the
       rig; roughly skull-sized) with the `VulnerableSpot` component. Without these, Precision Shot
       nodes simply never trigger.
@@ -130,14 +130,14 @@ lightning-ball damage + chain proc, in `Enemies/LightningBall.cs`, bases registe
 `ChainLightningBuff`). New CSV rows: `freezedraw_*`, `brainfreeze_*`, `elongfreeze_*`,
 `icebreaker_*`, `explodeheads_*`, `midas_*`, `conduit_*`, `unstableorbs_1`.
 
-- [ ] **Player prefab**: add a `FreezingDraw` component next to `PlayerBow`; assign `config` (the
+- [x] **Player prefab**: add a `FreezingDraw` component next to `PlayerBow`; assign `config` (the
       same `BowSO` asset) and set `enemyLayers` to the enemy layer (exclude player/environment).
       `bow`/`stats` auto-wire via `OnValidate`.
-- [ ] **BowSO asset**: tune the new fields — `freezingDrawRadius` (8), `brainFreezeSeconds` (3 —
+- [x] **BowSO asset**: tune the new fields — `freezingDrawRadius` (8), `brainFreezeSeconds` (3 —
       the `brainfreeze_*` descriptions assume this), and the shared impulse-blast tunables
       `impulseBlastRadius` (4) / `impulseBlastPower` (2 — flings default-resistance goblins; raise
       to topple brutes) / `impulseBlastForce` (10).
-- [ ] **Vulnerable spots**: Brain Freeze and Exploding Heads trigger on the same `VulnerableSpot`
+- [x] **Vulnerable spots**: Brain Freeze and Exploding Heads trigger on the same `VulnerableSpot`
       head colliders as Precision Shot — the wiring item in the bow section above covers all three.
 - [ ] **Skill icons**: the `freezedraw_*`, `brainfreeze_*`, and `elongfreeze_*` rows have blank
       icons (no frost sprite registered yet) — assign in **Bladehold > Skill Tree Editor** when art
@@ -177,26 +177,26 @@ gates, and other enemies alike) is done, reusing the player's impulse/resistance
 (`ImpulseReceiver`). See `Assets/Bladehold/Bladehold Scripts/Enemies/TrollSlamAttack.cs`,
 `Enemies/TrollSlamAttackSO.cs`, and the new `troll` row in `Config/Enemies.csv` for the code side.
 
-- [ ] **Create SO asset instances**:
-  - [ ] `TrollSlamAttackSO` — tune `triggerRange`/`slamRadius`/`forwardOffset`/`telegraphSeconds`
+- [x] **Create SO asset instances**:
+  - [x] `TrollSlamAttackSO` — tune `triggerRange`/`slamRadius`/`forwardOffset`/`telegraphSeconds`
         (the dodge window)/`attackCooldown`/`damage`/`impulsePower`/`impulseForce`. The CSV `damage`
         column (40) overrides the SO's damage per spawn.
-  - [ ] Its own `AIMovementSO` (slow: the CSV speed column is 2.5) and `HealthSO`/`EnemySO` if not
+  - [x] Its own `AIMovementSO` (slow: the CSV speed column is 2.5) and `HealthSO`/`EnemySO` if not
         reusing existing assets with CSV overrides.
 
-- [ ] **Telegraph prefab**: a flat quad/decal (unlit, red ring/circle material, ~1m diameter at scale
+- [x] **Telegraph prefab**: a flat quad/decal (unlit, red ring/circle material, ~1m diameter at scale
       1 — the code scales x/z to the slam diameter) with **no collider**.
 
-- [ ] **Troll prefab**: build like the other enemies (Synty rig or a scaled brute as placeholder):
+- [x] **Troll prefab**: build like the other enemies (Synty rig or a scaled brute as placeholder):
       `Health`, `Enemy`, `AIMovement`, `AIAnimation`, `TrollSlamAttack` (assign `attackData`, the
       telegraph prefab, optional `impactVfxPrefab`/`windupFeedback`/`slamFeedback`), `CoinDropper`,
       `CorpseDespawner`, `KnockbackReceiver`, `EnemyRagdoll` + `ImpulseReceiver` (CSV resistance 6 —
       only a heavily-stacked Impulse build should fling a troll), `GoldenGoblin`/`ImpulseGoblin` if
       trolls may roll those variants, and optionally an `AITargetSelector` so it sieges gates.
-  - [ ] **Animator**: add a `Slam` trigger + a long wind-up slam state on the troll's controller
+  - [x] **Animator**: add a `Slam` trigger + a long wind-up slam state on the troll's controller
         (the `TrollSlamAttack.slamTrigger` default). Time the clip so the impact lines up with
         `telegraphSeconds`.
-  - [ ] Register the prefab in `WaveSpawner`'s `enemyPrefabs` list under id `troll` (row already in
+  - [x] Register the prefab in `WaveSpawner`'s `enemyPrefabs` list under id `troll` (row already in
         `Config/Enemies.csv`: unlocks wave 8, 15% chance, 1 guaranteed/max concurrent, resistance 6).
 
 - [ ] **Balance pass**: tune the `troll` CSV row and `TrollSlamAttackSO` numbers to taste.
@@ -220,16 +220,16 @@ alternating gates) is done. See `Assets/Bladehold/Bladehold Scripts/Waves/Gate.c
 routing in `Waves/WaveSpawner.cs`/`UI/DeathScreen.cs` for the code side. Scenes without gates play
 exactly as before — every gate feature is inert until a `Gate` exists.
 
-- [ ] **Gate object(s)** in the scene: a mesh (wall/door) with a solid `Collider`, a `Health`
+- [x] **Gate object(s)** in the scene: a mesh (wall/door) with a solid `Collider`, a `Health`
       component (create a beefy `HealthSO`, e.g. 500+), and the `Gate` component (`attackPoint`
       optional — an empty child at the doors; defaults to the gate's own transform). Place it on/next
       to the baked NavMesh so enemies can path to it. Optionally add `DisableCollidersOnDeath` and a
       `HealthBarUI` so gate damage is readable.
-- [ ] **Enemy prefabs**: add an `AITargetSelector` to each enemy that should siege gates (goblin,
+- [x] **Enemy prefabs**: add an `AITargetSelector` to each enemy that should siege gates (goblin,
       brute, troll…); tune `playerEngageRange` (distance at which they drop the gate and turn on the
       player). `AIMovement`/`AIAttack` pick it up via `OnValidate`. Prefabs without the selector keep
       hunting only the player.
-- [ ] **GateAssaultSpawner** (scene object, only for levels with gates): assign `enemyPrefab` (e.g.
+- [x] **GateAssaultSpawner** (scene object, only for levels with gates): assign `enemyPrefab` (e.g.
       the goblin — a fast "quick gob" variant fits the design), `assaultInterval` (~30s), `baseCount`/
       `countAddedPerWave`, and `spawnPoints` near/behind the gates (falls back to a radius around
       itself). The prefab needs an `AITargetSelector` to actually beeline its gate. Mini-wave enemies
@@ -412,50 +412,50 @@ art/audio) — Claude Code can't safely author these headlessly. See
 already in `Config/SkillTree.csv` for the code side.
 
 - [ ] **Create SO asset instances** (each already has a `[CreateAssetMenu]` entry):
-  - [ ] `ImpulseSO` — leave `baseOrbDurationSeconds`/`basePower` at 0 (locked until skill nodes are
+  - [x] `ImpulseSO` — leave `baseOrbDurationSeconds`/`basePower` at 0 (locked until skill nodes are
         bought); tune `baseImpulseForce`/`forcePerPower`/`powerPerChargeLevel`/
         `forcePerExtraStackPercent`/`damagePerExtraStackPercent`.
-  - [ ] `ImpulseConfigSO` — tune `defaultResistance`, launch/landing/recovery timings,
+  - [x] `ImpulseConfigSO` — tune `defaultResistance`, launch/landing/recovery timings,
         `maxSimultaneousRagdolls`.
-  - [ ] `RagdollConfigSO` — tune mass/damping/joint-limit values (defaults are reasonable starting
+  - [x] `RagdollConfigSO` — tune mass/damping/joint-limit values (defaults are reasonable starting
         points).
 
-- [ ] **Physics layer**: add a `Ragdoll` layer in **Edit > Project Settings > Tags and Layers** (must
+- [x] **Physics layer**: add a `Ragdoll` layer in **Edit > Project Settings > Tags and Layers** (must
       match `RagdollConfigSO.ragdollLayerName`), then in **Physics > Layer Collision Matrix** disable
       Ragdoll×Ragdoll and Ragdoll×(the enemy/character layer), keeping Ragdoll×Default enabled so
       flung bodies still land on the ground.
 
-- [ ] **Animator controller** (the same Synty controller already touched for the `Blocked` state):
-  - [ ] Add a `Knockdown` trigger parameter plus enter/exit states for the animation-only knockdown
+- [x] **Animator controller** (the same Synty controller already touched for the `Blocked` state):
+  - [x] Add a `Knockdown` trigger parameter plus enter/exit states for the animation-only knockdown
         reaction (`ImpulseReceiver.knockdownTrigger`).
-  - [ ] Add a `GetUp` state (played directly by name, not a trigger — the animator is disabled
+  - [x] Add a `GetUp` state (played directly by name, not a trigger — the animator is disabled
         mid-flight so a trigger would be lost) for standing up after a landed fling
         (`ImpulseReceiver.getUpStateName`).
-  - [ ] Confirm the existing `Cheer` trigger is reachable from any state — a recovering enemy
+  - [x] Confirm the existing `Cheer` trigger is reachable from any state — a recovering enemy
         re-fires it if the player died while it was airborne.
 
-- [ ] **ImpulseOrb prefab**: trigger `Collider` + `ImpulseOrb` component; assign `pickupPopup` (a
+- [x] **ImpulseOrb prefab**: trigger `Collider` + `ImpulseOrb` component; assign `pickupPopup` (a
       `DamageNumber` prefab), `pickupFeedback` (optional `MMF_Player`), tune `lifetime`.
 
-- [ ] **Player prefab** (`Assets/Bladehold/Bladehold Prefabs/Player.prefab`):
-  - [ ] Add an `ImpulseBuff` component on the player root; assign `config` (the `ImpulseSO`);
+- [x] **Player prefab** (`Assets/Bladehold/Bladehold Prefabs/Player.prefab`):
+  - [x] Add an `ImpulseBuff` component on the player root; assign `config` (the `ImpulseSO`);
         optional `activationFeedback`/`deactivationFeedback` `MMF_Player`s and an `auraVisual` child
         object.
-  - [ ] Add an `ImpulseHitFeedback` component; assign `damageTrigger` to the sword's `DamageTrigger`
+  - [x] Add an `ImpulseHitFeedback` component; assign `damageTrigger` to the sword's `DamageTrigger`
         explicitly (same precedent as `VampiricBlade`), plus `burstPrefab` (`ParticleSystem`) and
         `pulseLightPrefab` (a `Light` at rest intensity 0).
-  - [ ] Optionally assign the sword `DamageTrigger`'s `impulseBuff` field explicitly (it auto-finds
+  - [x] Optionally assign the sword `DamageTrigger`'s `impulseBuff` field explicitly (it auto-finds
         the player's `ImpulseBuff` via `GetComponentInChildren` if left blank).
 
-- [ ] **Goblin prefabs** (`Goblin Enemy.prefab` and the brute variant — Impulse can fling either):
-  - [ ] Add an `EnemyRagdoll` component; assign `animator` (auto-wires via `OnValidate`), `config`
+- [x] **Goblin prefabs** (`Goblin Enemy.prefab` and the brute variant — Impulse can fling either):
+  - [x] Add an `EnemyRagdoll` component; assign `animator` (auto-wires via `OnValidate`), `config`
         (the `RagdollConfigSO`).
-  - [ ] Add an `ImpulseReceiver` component; most references (`health`/`agent`/`ragdoll`/`animator`/
+  - [x] Add an `ImpulseReceiver` component; most references (`health`/`agent`/`ragdoll`/`animator`/
         `rootCollider`/`aiMovement`/`aiAnimation`/`aiAttack`) auto-wire via `OnValidate` — assign
         `config` (the `ImpulseConfigSO`); optional `landingVfxPrefab`/`landingSfx`.
-  - [ ] Add an `ImpulseGoblin` component; assign `health`, `orbPrefab` (the `ImpulseOrb` prefab),
+  - [x] Add an `ImpulseGoblin` component; assign `health`, `orbPrefab` (the `ImpulseOrb` prefab),
         `bodyRenderers`, `impulseAuraMaterial`, optional `deathVfxPrefab`/`deathSfx`.
-  - [ ] Confirm the existing `KnockbackReceiver`'s `impulseReceiver` field picked up the new
+  - [x] Confirm the existing `KnockbackReceiver`'s `impulseReceiver` field picked up the new
         `ImpulseReceiver` via `OnValidate` (so the two reactions don't fight over the same hit).
 
 - [ ] **Balance pass**: tune the placeholder costs in the `impulse_unlock`/`impdur_*`/`impchance_*`/

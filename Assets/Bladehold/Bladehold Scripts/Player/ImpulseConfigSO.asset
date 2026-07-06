@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5aae3d36e8ae4846b83e167aa6adfc2, type: 3}
+  m_Name: ImpulseConfigSO
+  m_EditorClassIdentifier: Assembly-CSharp::ImpulseConfigSO
+  defaultResistance: 0
+  launchAngleDegrees: 60
+  spinTorque: 4
+  minAirTime: 0.3
+  settleSpeed: 0.5
+  settleTime: 0.3
+  airborneTimeout: 6
+  recoverSampleDistance: 2
+  recoverRetryInterval: 0.5
+  recoverRetryWindow: 3
+  getUpSeconds: 2.2
+  knockdownSeconds: 2.5
+  maxSimultaneousRagdolls: 12

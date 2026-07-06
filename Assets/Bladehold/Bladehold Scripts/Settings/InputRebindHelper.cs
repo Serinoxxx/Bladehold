@@ -1,5 +1,6 @@
 using System;
 using UnityEngine.InputSystem;
+using RebindingOperation = UnityEngine.InputSystem.InputActionRebindingExtensions.RebindingOperation;
 
 /// <summary>
 ///     Thin wrapper around the Input System's interactive rebinding API, used by

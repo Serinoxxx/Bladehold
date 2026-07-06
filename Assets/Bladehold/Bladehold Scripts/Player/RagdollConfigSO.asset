@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef8325169f5c545458d26c4b61324292, type: 3}
+  m_Name: RagdollConfigSO
+  m_EditorClassIdentifier: Assembly-CSharp::RagdollConfigSO
+  ragdollLayerName: Ragdoll
+  totalMass: 40
+  linearDamping: 0.05
+  angularDamping: 0.6
+  limbRadiusRatio: 0.25
+  headRadius: 0.12
+  torsoThickness: 0.2
+  lowTwistLimit: -40
+  highTwistLimit: 20
+  swing1Limit: 45
+  swing2Limit: 30
+  enableProjection: 1
+  maxDepenetrationVelocity: 5
