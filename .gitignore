@@ -60,3 +60,8 @@ crashlytics-build.properties
 # OS generated
 .DS_Store
 Thumbs.db
+/Assets/Feel/FeelDemos/FeelTemplatesDemo.unitypackage.meta
+/Assets/Feel/FeelDemosURP/FeelDemosURP.unitypackage.meta
+/Assets/Feel/NiceVibrations/OlderVersions/v1.7/NiceVibrations-v-1-7.unitypackage.meta
+/Assets/Feel/NiceVibrations/OlderVersions/v2.0.1/NiceVibrations-v-2-0-1.unitypackage.meta
+/Assets/Feel/NiceVibrations/OlderVersions/v3.9/NiceVibrations-v-3-9-0.unitypackage.meta
