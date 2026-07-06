@@ -1,3 +1,4 @@
+using MoreMountains.Feedbacks;
 using System.Collections;
 using UnityEngine;
 
@@ -13,11 +14,16 @@ public class AIAttack : MonoBehaviour
     [SerializeField] private Animator animator;
     [SerializeField] private Health health;
     [SerializeField] private AIAttackSO attackData;
+    [Tooltip("Optional target-selection layer (gate defense): the attack lands on the current target — gate or player. Without it, only the player is ever attacked, as before.")]
+    [SerializeField] private AITargetSelector targetSelector;
+    [SerializeField] private MMF_Player startAttackFeedback;
+    [SerializeField] private MMF_Player attackHitFeedback;
 
     // Animator trigger that starts the attack. Wire an attack state driven by this in the Animator.
     [SerializeField] private string attackTrigger = "Attack";
 
     private int attackTriggerHash;
+    private float? damageOverride;
     private Transform player;
     private IDamageable playerDamageable;
     private Health playerHealth;
@@ -25,6 +31,16 @@ public class AIAttack : MonoBehaviour
     private bool isDead = false;
     private bool playerDead = false;
     private bool anyError = false;
+
+    /// <summary>
+    ///     Per-instance damage override (e.g. <see cref="WaveSpawner" /> applying an enemy type's
+    ///     roster CSV row). Call right after Instantiate; the shared <see cref="AIAttackSO" /> is
+    ///     never mutated.
+    /// </summary>
+    public void SetDamage(float value)
+    {
+        damageOverride = value;
+    }
 
     private void OnValidate()
     {
@@ -36,6 +52,10 @@ public class AIAttack : MonoBehaviour
         if (health == null)
         {
             health = GetComponent<Health>();
+        }
+        if (targetSelector == null)
+        {
+            targetSelector = GetComponent<AITargetSelector>();
         }
     }
 
@@ -101,6 +121,9 @@ public class AIAttack : MonoBehaviour
     private void HandleDied()
     {
         isDead = true;
+        // Corpses have nothing left to tick. (Coroutines survive a disable, and ApplyDamageAtApex
+        // already bails on isDead.)
+        enabled = false;
     }
 
     private void HandlePlayerDied()
@@ -114,22 +137,44 @@ public class AIAttack : MonoBehaviour
 
         if (Time.time - lastAttackTime < attackData.attackCooldown) return;
 
-        if (IsPlayerInRange())
+        if (IsTargetInRange())
         {
             StartAttack();
         }
     }
 
-    private bool IsPlayerInRange()
+    /// <summary>The current target's damage sink — the selector's pick (gate or player), else the player.</summary>
+    private IDamageable CurrentTargetDamageable()
     {
-        if (player == null) return false;
+        return targetSelector != null ? targetSelector.TargetDamageable : playerDamageable;
+    }
 
-        float sqrDistance = (player.position - transform.position).sqrMagnitude;
+    private bool IsTargetInRange()
+    {
+        Vector3 targetPosition;
+        if (targetSelector != null)
+        {
+            targetPosition = targetSelector.TargetPosition;
+        }
+        else if (player != null)
+        {
+            targetPosition = player.position;
+        }
+        else
+        {
+            return false;
+        }
+
+        float sqrDistance = (targetPosition - transform.position).sqrMagnitude;
         return sqrDistance <= attackData.attackRange * attackData.attackRange;
     }
 
     private void StartAttack()
     {
+        if (startAttackFeedback != null)
+        {
+            startAttackFeedback.PlayFeedbacks();
+        }
         lastAttackTime = Time.time;
         animator.SetTrigger(attackTriggerHash);
         StartCoroutine(ApplyDamageAtApex());
@@ -142,16 +187,23 @@ public class AIAttack : MonoBehaviour
         // for frame-perfect timing.)
         yield return new WaitForSeconds(attackData.windupToApex);
 
-        // Only connect if this goblin is still alive, the player is still alive, and in range.
-        if (isDead || playerDead || playerDamageable == null || !IsPlayerInRange())
+        // Only connect if this goblin is still alive, the run is still going, and the target it
+        // wound up on (re-resolved — it may have switched between player and gate) is still in range.
+        IDamageable target = CurrentTargetDamageable();
+        if (isDead || playerDead || target == null || !IsTargetInRange())
         {
             yield break;
         }
 
-        playerDamageable.ReceiveDamage(new Damage
+        target.ReceiveDamage(new Damage
         {
-            value = attackData.damage,
+            value = damageOverride ?? attackData.damage,
             type = attackData.damageType
         });
+
+        if (attackHitFeedback != null)
+        {
+            attackHitFeedback.PlayFeedbacks();
+        }
     }
 }

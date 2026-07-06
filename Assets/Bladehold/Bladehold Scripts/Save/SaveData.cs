@@ -14,7 +14,35 @@ public class SaveData
 
     /// <summary>
     ///     Ids of every skill-tree node the player has purchased. Re-applied as stat modifiers on each run
-    ///     by <see cref="SkillTreeService" />, making upgrades permanent meta-progression like gold.
+    ///     by <see cref="SkillTreeService" />, making upgrades permanent meta-progression like gold. Cleared
+    ///     by <see cref="ReincarnateService.Reincarnate" /> when the player reincarnates.
     /// </summary>
     public List<string> purchasedNodeIds = new List<string>();
+
+    /// <summary>The player's accumulated Reincarnate Points, persisted across runs and never reset.</summary>
+    public int reincarnatePoints;
+
+    /// <summary>
+    ///     Ids of every Reincarnate-tree node purchased. Re-applied as stat modifiers on each run by
+    ///     <see cref="ReincarnateService" />, exactly like <see cref="purchasedNodeIds" /> — but these survive
+    ///     reincarnating, since the point tree is the permanent progression layer.
+    /// </summary>
+    public List<string> purchasedReincarnateNodeIds = new List<string>();
+
+    /// <summary>Linear 0-1 volumes applied by <see cref="GameSettingsService" />.</summary>
+    public float masterVolume = 1f;
+    public float musicVolume = 1f;
+    public float sfxVolume = 1f;
+
+    /// <summary>Mouse look sensitivity, matching the vendored camera controller's own default.</summary>
+    public float mouseSensitivity = 5f;
+    public bool invertLookX;
+    public bool invertLookY;
+
+    /// <summary>
+    ///     Serialized Input System binding overrides for the vendored gameplay Controls asset (button
+    ///     remapping), produced by <see cref="InputSettingsBinder.SaveBindingOverridesToJson" />. Empty
+    ///     string means no overrides — every binding stays at its authored default.
+    /// </summary>
+    public string inputBindingOverridesJson = "";
 }

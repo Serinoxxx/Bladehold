@@ -6,6 +6,8 @@ public class AIMovement : MonoBehaviour
     [SerializeField] private NavMeshAgent agent;
     [SerializeField] AIMovementSO movementSO;
     [SerializeField] Health health;
+    [Tooltip("Optional target-selection layer (gate defense). Without it, the agent chases the player as before.")]
+    [SerializeField] AITargetSelector targetSelector;
 
     Player player;
     Health playerHealth;
@@ -13,12 +15,34 @@ public class AIMovement : MonoBehaviour
     bool isDead = false;
     bool playerDead = false;
     bool anyError = false;
+    float? speedOverride;
+
+    /// <summary>
+    ///     Per-instance agent-speed override (e.g. <see cref="WaveSpawner" /> applying an enemy type's
+    ///     roster CSV row). Call right after Instantiate, before Start runs; the shared
+    ///     <see cref="AIMovementSO" /> is never mutated.
+    /// </summary>
+    public void SetSpeed(float value)
+    {
+        speedOverride = value;
+    }
+
+    /// <summary>
+    ///     This enemy's unslowed agent speed (the roster override or the SO value) — what
+    ///     <see cref="SlowStatus" /> scales from and restores to, so its own writes to
+    ///     <c>agent.speed</c> never compound.
+    /// </summary>
+    public float BaseSpeed => speedOverride ?? (movementSO != null ? movementSO.speed : 0f);
     private void OnValidate()
     {
         agent = GetComponent<NavMeshAgent>();
         if (health == null)
         {
             health = GetComponent<Health>();
+        }
+        if (targetSelector == null)
+        {
+            targetSelector = GetComponent<AITargetSelector>();
         }
     }
 
@@ -48,7 +72,19 @@ public class AIMovement : MonoBehaviour
             return;
         }
 
-        agent.speed = movementSO.speed;
+        agent.speed = speedOverride ?? movementSO.speed;
+
+        // Avoidance is applied in code so the prefab's NavMeshAgent stays untouched. Start in the
+        // near tier; the repath tick moves the agent between tiers as its distance changes.
+        agent.obstacleAvoidanceType = movementSO.nearAvoidance;
+        isFar = false;
+
+        // Unequal priorities let agents shoulder past each other instead of mutually oscillating.
+        agent.avoidancePriority = Random.Range(movementSO.avoidancePriorityMin, movementSO.avoidancePriorityMax + 1);
+
+        // De-phase the repath ticks so hundreds of agents spawned together don't all call
+        // SetDestination on the same frames.
+        lastUpdateTime = Time.time - Random.value * movementSO.updateInterval;
 
         player = Player.Instance;
 
@@ -87,6 +123,9 @@ public class AIMovement : MonoBehaviour
         {
             agent.enabled = false;
         }
+
+        // Corpses have nothing left to tick.
+        enabled = false;
     }
 
     private void HandlePlayerDied()
@@ -106,15 +145,38 @@ public class AIMovement : MonoBehaviour
     }
 
     float lastUpdateTime;
+    bool isFar;
     // Update is called once per frame
     void Update()
     {
         if (anyError || isDead || playerDead) return;
 
-        if (Time.time - lastUpdateTime >= movementSO.updateInterval)
+        // Far agents repath less often — with the stagger above, ~300 agents spread their
+        // SetDestination calls evenly instead of spiking the path queue in lockstep.
+        float repathInterval = isFar ? movementSO.farRepathInterval : movementSO.updateInterval;
+        if (Time.time - lastUpdateTime >= repathInterval)
         {
             lastUpdateTime = Time.time;
-            agent.SetDestination(player.transform.position);
+            // The selector (gate defense) picks between the player and a gate; without one, the
+            // player is the only target, as before.
+            Vector3 destination = targetSelector != null ? targetSelector.TargetPosition : player.transform.position;
+            agent.SetDestination(destination);
+            UpdateAvoidanceTier();
+        }
+    }
+
+    /// <summary>
+    ///     Re-tiers avoidance on the repath tick (not per frame): full avoidance only matters in the
+    ///     dense ring around the player; distant agents marching in open field skip the N-body cost.
+    /// </summary>
+    private void UpdateAvoidanceTier()
+    {
+        float sqrDistance = (player.transform.position - transform.position).sqrMagnitude;
+        bool nowFar = sqrDistance > movementSO.farDistance * movementSO.farDistance;
+        if (nowFar != isFar)
+        {
+            isFar = nowFar;
+            agent.obstacleAvoidanceType = nowFar ? movementSO.farAvoidance : movementSO.nearAvoidance;
         }
     }
 }

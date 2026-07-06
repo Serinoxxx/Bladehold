@@ -1,0 +1,746 @@
+using System;
+using System.Collections.Generic;
+using MoreMountains.Feedbacks;
+using Synty.AnimationBaseLocomotion.Samples.InputSystem;
+using UnityEngine;
+
+/// <summary>
+///     The player's bow. Holding aim (right click, the Synty <see cref="InputReader" />'s
+///     <c>onAimActivated</c>/<c>onAimDeactivated</c> events) swaps the sword model for the bow and
+///     starts drawing: power builds in discrete charge levels while the aim is held (the
+///     <see cref="PlayerAttack" /> convention — each level takes another
+///     <see cref="BowSO.chargeTimePerLevel" /> seconds, capped at <see cref="StatType.BowMaxChargeLevels" />).
+///     Pressing attack (left click) while aiming fires a hitscan arrow rendered as a
+///     <see cref="BowTracer" /> line streak, then the draw restarts for the next shot.
+///
+///     While aiming the sword can't swing: the vendored controller fires its <c>StartAttack</c>
+///     animator trigger on every attack press, so this component clears that trigger (and the
+///     <c>IsHoldingAttack</c> bool) every frame while aiming — the animator only consumes triggers
+///     after all Updates, so the swing state never starts and the sword's animation-event-driven
+///     <see cref="DamageTrigger" /> never activates. (<see cref="PlayerAttack" /> also skips its
+///     sword-charge timing while <see cref="IsAiming" />.)
+///
+///     Arrow damage reads <see cref="PlayerStats" /> the way the sword's <see cref="DamageTrigger" />
+///     does — bases registered in <c>Start</c> from <see cref="BowSO" />, crits rolled against the
+///     shared <see cref="StatType.CritChance" />/<see cref="StatType.CritMultiplier" />, and the
+///     global <see cref="StatType.AllDamageMultiplier" /> applied. The bow skill lines all hang off
+///     stats (base 0 = locked): Multi Shot arcs extra arrows, Bounce Shot chains a hit to one nearby
+///     enemy, Impulse/Storm Arrows let the orb buffs (<see cref="ImpulseBuff" /> /
+///     <see cref="ChainLightningBuff" />) apply to arrows, Pickup Arrows collect coins/orbs along the
+///     flight path, and Precision Shot multiplies damage on <see cref="VulnerableSpot" /> hits.
+///
+///     Further arrow skill lines (all stat-gated the same way): Exploding Heads detonates an impulse
+///     blast on VulnerableSpot hits, Brain Freeze chills the headshot target (via <see cref="SlowStatus" />),
+///     Arrows of Midas rolls a chance to convert the hit enemy golden
+///     (<see cref="GoldenGoblin.TryConvertToGolden" />), and Unstable Orbs lets the main arrow detonate
+///     Impulse/Lightning Orbs along its path (an impulse blast, or a buff-independent
+///     <see cref="ChainLightning.ForceChain" />, around the orb). Freezing Draw lives in its own
+///     <see cref="FreezingDraw" /> component (the <see cref="SwordChargeFeedback" /> polling pattern),
+///     but its stat bases are registered here with the rest of the bow's.
+/// </summary>
+public class PlayerBow : MonoBehaviour
+{
+    [Tooltip("Synty InputReader that raises the aim and attack press/release events. Usually on the player root.")]
+    [SerializeField] private InputReader inputReader;
+    [SerializeField] private PlayerStats stats;
+    [SerializeField] private BowSO config;
+
+    [Header("Aiming")]
+    [Tooltip("Camera whose centre the arrow flies toward. Defaults to Camera.main.")]
+    [SerializeField] private Camera aimCamera;
+    [Tooltip("Where arrows (and their tracer streaks) originate — e.g. the bow model or the player's chest. Defaults to this transform.")]
+    [SerializeField] private Transform arrowOrigin;
+    [Tooltip("Layers an arrow can hit. Exclude the player's own layer if the ray ever clips the player.")]
+    [SerializeField] private LayerMask hitLayers = ~0;
+    [Tooltip("The player rig's Animator — used to cancel the sword-swing trigger while aiming. Synty rigs keep it on a child.")]
+    [SerializeField] private Animator playerAnimator;
+
+    [Header("Weapon models (optional)")]
+    [Tooltip("Sword model shown while not aiming. Optional.")]
+    [SerializeField] private GameObject swordModel;
+    [Tooltip("Bow model shown while aiming. Optional (no bow model exists yet).")]
+    [SerializeField] private GameObject bowModel;
+
+    [Header("Visuals & feedback (optional)")]
+    [Tooltip("BowTracer prefab instantiated per arrow (and per bounce) to draw the shot.")]
+    [SerializeField] private BowTracer tracerPrefab;
+    [Tooltip("Played when aiming starts (draw sound / zoom).")]
+    [SerializeField] private MMF_Player drawFeedback;
+    [Tooltip("Played on every shot.")]
+    [SerializeField] private MMF_Player fireFeedback;
+
+    [Header("Skill integrations (optional)")]
+    [Tooltip("The player's Impulse buff, for the Impulse Arrow skill. Defaults to Player.Instance's.")]
+    [SerializeField] private ImpulseBuff impulseBuff;
+    [Tooltip("The player's ChainLightning component, for the Storm Arrow skill. Defaults to Player.Instance's.")]
+    [SerializeField] private ChainLightning chainLightning;
+    [Tooltip("Layers a Bounce Shot can hit (the ChainLightning convention: exclude player/environment).")]
+    [SerializeField] private LayerMask bounceLayers = ~0;
+
+    /// <summary>Fired once per arrow (or bounce) that actually damaged a target, with the world hit point — the <see cref="DamageTrigger.OnHit" /> shape, so feedback listeners can treat bow and sword alike.</summary>
+    public event Action<IDamageable, Damage, Vector3> OnHit;
+
+    /// <summary>True while the aim button is held and the bow is drawn.</summary>
+    public bool IsAiming { get; private set; }
+
+    /// <summary>Charge level of the draw in progress, 0..BowMaxChargeLevels. Useful for VFX/feedback (the PlayerAttack convention).</summary>
+    public int ChargeLevel { get; private set; }
+
+    /// <summary>Levels the current draw can reach.</summary>
+    public int MaxChargeLevels => anyError ? 0 : Mathf.RoundToInt(stats.GetValue(StatType.BowMaxChargeLevels));
+
+    private const int MaxRayHits = 64;
+    private const int MaxOverlapResults = 64;
+
+    private readonly RaycastHit[] rayBuffer = new RaycastHit[MaxRayHits];
+    private readonly Collider[] overlapBuffer = new Collider[MaxOverlapResults];
+    private readonly HashSet<IDamageable> blastHitTargets = new HashSet<IDamageable>();
+
+    private IDamageable ownerDamageable;
+    private int startAttackHash;
+    private int isHoldingAttackHash;
+    private float chargeStartTime;
+    private float lastFireTime = Mathf.NegativeInfinity;
+    private bool subscribed;
+    private bool anyError = false;
+
+    private void OnValidate()
+    {
+        if (inputReader == null)
+        {
+            inputReader = GetComponentInChildren<InputReader>();
+        }
+        if (stats == null)
+        {
+            stats = GetComponent<PlayerStats>();
+        }
+        if (playerAnimator == null)
+        {
+            // Synty rigs keep the Animator on a child model object.
+            playerAnimator = GetComponentInChildren<Animator>();
+        }
+    }
+
+    private void Start()
+    {
+        if (inputReader == null)
+        {
+            Debug.LogError("InputReader is not assigned or found; the bow can't read aim/fire input.");
+            anyError = true;
+        }
+        if (stats == null)
+        {
+            Debug.LogError("PlayerStats component is not assigned or found on the GameObject.");
+            anyError = true;
+        }
+        if (config == null)
+        {
+            Debug.LogError("BowSO is not assigned in the inspector.");
+            anyError = true;
+        }
+        if (playerAnimator == null)
+        {
+            Debug.LogError("Player Animator is not assigned or found; the bow can't suppress sword swings while aiming.");
+            anyError = true;
+        }
+
+        if (anyError)
+        {
+            return;
+        }
+
+        if (arrowOrigin == null)
+        {
+            arrowOrigin = transform;
+        }
+        if (aimCamera == null)
+        {
+            aimCamera = Camera.main;
+        }
+
+        startAttackHash = Animator.StringToHash("StartAttack");
+        isHoldingAttackHash = Animator.StringToHash("IsHoldingAttack");
+
+        // The bow never damages its wielder (the DamageTrigger owner idiom).
+        ownerDamageable = GetComponentInParent<IDamageable>();
+
+        // Register the authored SO values as the stat bases; skill nodes layer on top without ever
+        // mutating the asset. Everything at 0 is a locked skill line.
+        stats.SetBase(StatType.BowDamage, config.baseDamage);
+        stats.SetBase(StatType.BowMaxChargeLevels, config.baseMaxChargeLevels);
+        stats.SetBase(StatType.BowChargeDamageBonus, config.baseChargeDamageBonus);
+        stats.SetBase(StatType.BowMultishotArrows, 0f);
+        stats.SetBase(StatType.BowMultishotDamagePercent, config.baseMultishotDamagePercent);
+        stats.SetBase(StatType.BowBounceChance, 0f);
+        stats.SetBase(StatType.BowImpulseArrows, 0f);
+        stats.SetBase(StatType.BowStormArrows, 0f);
+        stats.SetBase(StatType.BowPickupArrows, 0f);
+        stats.SetBase(StatType.BowPrecisionDamageBonus, 0f);
+        stats.SetBase(StatType.FreezingDrawSlowPercent, 0f);
+        stats.SetBase(StatType.BrainFreezeSlowPercent, 0f);
+        stats.SetBase(StatType.SlowDurationBonusSeconds, 0f);
+        stats.SetBase(StatType.ExplodingHeadsDamagePercent, 0f);
+        stats.SetBase(StatType.MidasChance, 0f);
+        stats.SetBase(StatType.BowUnstableOrbs, 0f);
+
+        // Missing buff/chain components are not errors — those skill lines are optional features
+        // (the DamageTrigger ImpulseBuff fallback idiom).
+        if (impulseBuff == null && Player.Instance != null)
+        {
+            impulseBuff = Player.Instance.GetComponentInChildren<ImpulseBuff>();
+        }
+        if (chainLightning == null && Player.Instance != null)
+        {
+            chainLightning = Player.Instance.GetComponentInChildren<ChainLightning>();
+        }
+
+        Subscribe();
+    }
+
+    private void OnEnable()
+    {
+        if (!anyError && inputReader != null)
+        {
+            Subscribe();
+        }
+    }
+
+    private void OnDisable()
+    {
+        Unsubscribe();
+        // E.g. PlayerDeath disabling controls mid-aim: put the sword back so the corpse isn't holding a bow.
+        if (IsAiming)
+        {
+            EndAim();
+        }
+    }
+
+    private void OnDestroy()
+    {
+        Unsubscribe();
+    }
+
+    private void Subscribe()
+    {
+        if (subscribed || inputReader == null)
+        {
+            return;
+        }
+        inputReader.onAimActivated += StartAim;
+        inputReader.onAimDeactivated += EndAim;
+        inputReader.onAttackActivated += HandleAttackPressed;
+        subscribed = true;
+    }
+
+    private void Unsubscribe()
+    {
+        if (!subscribed || inputReader == null)
+        {
+            return;
+        }
+        inputReader.onAimActivated -= StartAim;
+        inputReader.onAimDeactivated -= EndAim;
+        inputReader.onAttackActivated -= HandleAttackPressed;
+        subscribed = false;
+    }
+
+    private void Update()
+    {
+        if (anyError || !IsAiming)
+        {
+            return;
+        }
+
+        // Keep the charge level live as the draw grows (the PlayerAttack convention).
+        int maxLevels = MaxChargeLevels;
+        int level = config.chargeTimePerLevel > 0f
+            ? Mathf.FloorToInt((Time.time - chargeStartTime) / config.chargeTimePerLevel)
+            : maxLevels;
+        ChargeLevel = Mathf.Clamp(level, 0, maxLevels);
+
+        // The vendored controller sets StartAttack/IsHoldingAttack on every attack press (input
+        // callbacks run before Update; the animator consumes triggers after all Updates), so clearing
+        // them every aiming frame reliably suppresses the sword swing regardless of event order.
+        playerAnimator.ResetTrigger(startAttackHash);
+        playerAnimator.SetBool(isHoldingAttackHash, false);
+    }
+
+    private void StartAim()
+    {
+        if (anyError)
+        {
+            return;
+        }
+
+        IsAiming = true;
+        ChargeLevel = 0;
+        chargeStartTime = Time.time;
+
+        if (swordModel != null)
+        {
+            swordModel.SetActive(false);
+        }
+        if (bowModel != null)
+        {
+            bowModel.SetActive(true);
+        }
+        if (drawFeedback != null)
+        {
+            drawFeedback.PlayFeedbacks();
+        }
+    }
+
+    private void EndAim()
+    {
+        if (!IsAiming)
+        {
+            return;
+        }
+
+        IsAiming = false;
+        ChargeLevel = 0;
+
+        if (swordModel != null)
+        {
+            swordModel.SetActive(true);
+        }
+        if (bowModel != null)
+        {
+            bowModel.SetActive(false);
+        }
+    }
+
+    private void HandleAttackPressed()
+    {
+        if (anyError || !IsAiming)
+        {
+            return;
+        }
+        if (Time.time - lastFireTime < config.fireCooldownSeconds)
+        {
+            return;
+        }
+
+        lastFireTime = Time.time;
+        Fire();
+
+        // The draw restarts for the next shot while the aim is still held.
+        ChargeLevel = 0;
+        chargeStartTime = Time.time;
+    }
+
+    private void Fire()
+    {
+        Vector3 origin = arrowOrigin.position;
+        Vector3 mainDirection = ResolveAimDirection(origin);
+
+        if (fireFeedback != null)
+        {
+            fireFeedback.PlayFeedbacks();
+        }
+
+        FireArrow(origin, mainDirection, 1f, isMainArrow: true);
+
+        // Multi Shot: extra arrows fan out in a flat arc alternating left/right of the main arrow.
+        int extraArrows = Mathf.RoundToInt(stats.GetValue(StatType.BowMultishotArrows));
+        float extraDamageScale = stats.GetValue(StatType.BowMultishotDamagePercent);
+        for (int i = 1; i <= extraArrows; i++)
+        {
+            int step = (i + 1) / 2;
+            float sign = i % 2 == 1 ? -1f : 1f;
+            Vector3 direction = Quaternion.AngleAxis(sign * step * config.multishotSpreadDegrees, Vector3.up) * mainDirection;
+            FireArrow(origin, direction, extraDamageScale, isMainArrow: false);
+        }
+    }
+
+    /// <summary>
+    ///     Arrows fly toward whatever the camera centre is looking at (the third-person hitscan
+    ///     convention), falling back to the origin's forward if no camera is available.
+    /// </summary>
+    private Vector3 ResolveAimDirection(Vector3 origin)
+    {
+        if (aimCamera == null)
+        {
+            aimCamera = Camera.main;
+        }
+        if (aimCamera == null)
+        {
+            return arrowOrigin.forward;
+        }
+
+        Ray ray = aimCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        Vector3 aimPoint = ray.origin + ray.direction * config.maxRange;
+        if (TryHitscan(ray.origin, ray.direction, out RaycastHit hit, out _, out _))
+        {
+            aimPoint = hit.point;
+        }
+        return (aimPoint - origin).normalized;
+    }
+
+    /// <summary>
+    ///     One hitscan arrow: finds the first thing it strikes, damages it (with charge, crit,
+    ///     precision, impulse, and global multipliers applied), then runs the storm/bounce/pickup
+    ///     skill effects and draws the tracer.
+    /// </summary>
+    private void FireArrow(Vector3 origin, Vector3 direction, float damageScale, bool isMainArrow)
+    {
+        Vector3 endPoint = origin + direction * config.maxRange;
+
+        if (TryHitscan(origin, direction, out RaycastHit hit, out IDamageable target, out bool hitVulnerableSpot))
+        {
+            endPoint = hit.point;
+        }
+
+        SpawnTracer(origin, endPoint);
+
+        // Unstable Orbs: the main arrow detonates any Impulse/Lightning Orbs along its path — before
+        // the pickup sweep, so a detonated orb can't also be collected as a buff.
+        if (isMainArrow && stats.GetValue(StatType.BowUnstableOrbs) >= 1f)
+        {
+            DetonateOrbsAlongPath(origin, endPoint, damageScale);
+        }
+
+        // Pickup Arrows: sweep the flight path for coins/orbs, whoever the arrow hit.
+        if (stats.GetValue(StatType.BowPickupArrows) >= 1f)
+        {
+            CollectPickupsAlongPath(origin, endPoint);
+        }
+
+        if (target == null)
+        {
+            return;
+        }
+
+        Damage damage = BuildArrowDamage(origin, damageScale, hitVulnerableSpot);
+        target.ReceiveDamage(damage);
+        OnHit?.Invoke(target, damage, endPoint);
+
+        if (hitVulnerableSpot)
+        {
+            // Exploding Heads: the headshot detonates an impulse blast at the point of impact.
+            float explodePercent = stats.GetValue(StatType.ExplodingHeadsDamagePercent);
+            if (explodePercent > 0f)
+            {
+                SpawnImpulseBlast(endPoint, damage.value * explodePercent);
+            }
+
+            // Brain Freeze: the headshot chills the target's movement and animation.
+            float freezeFraction = stats.GetValue(StatType.BrainFreezeSlowPercent);
+            if (freezeFraction > 0f && target is Component targetComponent)
+            {
+                SlowStatus slow = SlowStatus.GetOrAdd(targetComponent);
+                if (slow != null)
+                {
+                    slow.ApplySlow(freezeFraction, config.brainFreezeSeconds + stats.GetValue(StatType.SlowDurationBonusSeconds));
+                }
+            }
+        }
+
+        // Arrows of Midas: chance to convert a regular enemy into a golden one.
+        if (UnityEngine.Random.value < stats.GetValue(StatType.MidasChance) && target is Component midasComponent)
+        {
+            GoldenGoblin golden = midasComponent.GetComponentInParent<GoldenGoblin>();
+            if (golden != null)
+            {
+                golden.TryConvertToGolden();
+            }
+        }
+
+        // Storm Arrow: hand the hit to the Chain Lightning skill line — it checks its own buff state.
+        if (stats.GetValue(StatType.BowStormArrows) >= 1f && chainLightning != null)
+        {
+            chainLightning.TryChain(target, damage.value, endPoint);
+        }
+
+        // Bounce Shot: chance to arc to one additional nearby enemy for the same damage.
+        if (UnityEngine.Random.value < stats.GetValue(StatType.BowBounceChance))
+        {
+            TryBounce(target, damage, endPoint);
+        }
+    }
+
+    /// <summary>
+    ///     Sorted hitscan along a ray: skips the wielder and stray pickup/ability triggers, stopping
+    ///     at the first damageable target or solid piece of environment. Returns true when anything
+    ///     stopped the arrow; <paramref name="target" /> is null for environment.
+    ///     <paramref name="hitVulnerableSpot" /> is true when the arrow struck one of the target's
+    ///     <see cref="VulnerableSpot" /> colliders — checked across every hit the ray scored on that
+    ///     target, since its body capsule can sit in front of a head sphere along the same ray.
+    /// </summary>
+    private bool TryHitscan(Vector3 origin, Vector3 direction, out RaycastHit blockingHit, out IDamageable target, out bool hitVulnerableSpot)
+    {
+        blockingHit = default;
+        target = null;
+        hitVulnerableSpot = false;
+
+        int count = Physics.RaycastNonAlloc(origin, direction, rayBuffer, config.maxRange, hitLayers, QueryTriggerInteraction.Collide);
+        Array.Sort(rayBuffer, 0, count, HitDistanceComparer.Instance);
+
+        for (int i = 0; i < count; i++)
+        {
+            RaycastHit hit = rayBuffer[i];
+            IDamageable damageable = ResolveDamageable(hit.collider);
+
+            if (damageable != null && damageable == ownerDamageable)
+            {
+                continue;
+            }
+
+            if (damageable != null)
+            {
+                blockingHit = hit;
+                target = damageable;
+                for (int j = i; j < count; j++)
+                {
+                    if (ResolveDamageable(rayBuffer[j].collider) == target
+                        && rayBuffer[j].collider.GetComponentInParent<VulnerableSpot>() != null)
+                    {
+                        hitVulnerableSpot = true;
+                        break;
+                    }
+                }
+                return true;
+            }
+
+            // Trigger colliders with no damageable (coins, orbs, hitboxes) don't stop an arrow.
+            if (!hit.collider.isTrigger)
+            {
+                blockingHit = hit;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>Distance-sorts raycast hits without allocating a comparison delegate per shot.</summary>
+    private class HitDistanceComparer : System.Collections.Generic.IComparer<RaycastHit>
+    {
+        public static readonly HitDistanceComparer Instance = new HitDistanceComparer();
+        public int Compare(RaycastHit a, RaycastHit b) => a.distance.CompareTo(b.distance);
+    }
+
+    private static IDamageable ResolveDamageable(Collider collider)
+    {
+        if (!collider.TryGetComponent(out IDamageable damageable))
+        {
+            damageable = collider.GetComponentInParent<IDamageable>();
+        }
+        return damageable;
+    }
+
+    private Damage BuildArrowDamage(Vector3 origin, float damageScale, bool hitVulnerableSpot)
+    {
+        float value = stats.GetValue(StatType.BowDamage);
+        value *= 1f + ChargeLevel * stats.GetValue(StatType.BowChargeDamageBonus);
+
+        // Crits share the sword's stats so Keen Eye/Critical Damage benefit both weapons.
+        bool crit = UnityEngine.Random.value < stats.GetValue(StatType.CritChance);
+        if (crit)
+        {
+            value *= stats.GetValue(StatType.CritMultiplier);
+        }
+
+        float allDamage = stats.GetValue(StatType.AllDamageMultiplier);
+        if (allDamage > 0f)
+        {
+            value *= allDamage;
+        }
+
+        if (hitVulnerableSpot)
+        {
+            float precisionBonus = stats.GetValue(StatType.BowPrecisionDamageBonus);
+            if (precisionBonus > 0f)
+            {
+                value *= 1f + precisionBonus;
+            }
+        }
+
+        value *= damageScale;
+
+        // Impulse Arrow: the orb buff stamps its fling rating onto arrows exactly the way the sword's
+        // DamageTrigger stamps swings (charge pierces resistance and amplifies the launch).
+        float impulsePower = 0f;
+        float impulseForce = 0f;
+        if (stats.GetValue(StatType.BowImpulseArrows) >= 1f && impulseBuff != null && impulseBuff.IsActive)
+        {
+            value *= impulseBuff.DamageMultiplier;
+            impulsePower = impulseBuff.CurrentImpulsePower + ChargeLevel * impulseBuff.PowerPerChargeLevel;
+            impulseForce = impulseBuff.CurrentImpulseForce
+                * (1f + ChargeLevel * stats.GetValue(StatType.ChargeKnockbackBonus));
+        }
+
+        return new Damage
+        {
+            value = value,
+            type = DamageType.sharp,
+            isCritical = crit,
+            sourcePosition = origin,
+            impulsePower = impulsePower,
+            impulseForce = impulseForce,
+        };
+    }
+
+    /// <summary>Bounce Shot: the arrow arcs from its hit to the nearest other enemy in range for the same damage.</summary>
+    private void TryBounce(IDamageable alreadyHit, Damage damage, Vector3 hitPoint)
+    {
+        IDamageable best = null;
+        Vector3 bestPosition = hitPoint;
+        float bestSqrDistance = float.MaxValue;
+
+        int count = Physics.OverlapSphereNonAlloc(hitPoint, config.bounceRadius, overlapBuffer, bounceLayers, QueryTriggerInteraction.Collide);
+        for (int i = 0; i < count; i++)
+        {
+            Collider collider = overlapBuffer[i];
+            IDamageable damageable = ResolveDamageable(collider);
+            if (damageable == null || damageable == alreadyHit || damageable == ownerDamageable)
+            {
+                continue;
+            }
+
+            float sqrDistance = (collider.transform.position - hitPoint).sqrMagnitude;
+            if (sqrDistance < bestSqrDistance)
+            {
+                bestSqrDistance = sqrDistance;
+                best = damageable;
+                bestPosition = collider.transform.position;
+            }
+        }
+
+        if (best == null)
+        {
+            return;
+        }
+
+        Damage bounceDamage = new Damage
+        {
+            value = damage.value,
+            type = damage.type,
+            isCritical = damage.isCritical,
+            sourcePosition = hitPoint,
+            impulsePower = damage.impulsePower,
+            impulseForce = damage.impulseForce,
+        };
+        best.ReceiveDamage(bounceDamage);
+        OnHit?.Invoke(best, bounceDamage, bestPosition);
+        SpawnTracer(hitPoint, bestPosition);
+    }
+
+    /// <summary>Pickup Arrows: collect any coin/orb pickups within a capsule along the arrow's flight path.</summary>
+    private void CollectPickupsAlongPath(Vector3 from, Vector3 to)
+    {
+        GameObject collector = Player.Instance != null ? Player.Instance.gameObject : gameObject;
+        int count = Physics.OverlapCapsuleNonAlloc(from, to, config.pickupRadius, overlapBuffer, ~0, QueryTriggerInteraction.Collide);
+        for (int i = 0; i < count; i++)
+        {
+            Collider collider = overlapBuffer[i];
+            Coin coin = collider.GetComponentInParent<Coin>();
+            if (coin != null)
+            {
+                coin.TryCollect(collector);
+                continue;
+            }
+            ImpulseOrb impulseOrb = collider.GetComponentInParent<ImpulseOrb>();
+            if (impulseOrb != null)
+            {
+                impulseOrb.TryCollect(collector);
+                continue;
+            }
+            LightningOrb lightningOrb = collider.GetComponentInParent<LightningOrb>();
+            if (lightningOrb != null)
+            {
+                lightningOrb.TryCollect(collector);
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Unstable Orbs: detonates every Impulse/Lightning Orb the main arrow's ray crosses — an
+    ///     impulse blast around an Impulse Orb, a buff-independent chain lightning around a Lightning
+    ///     Orb, each fuelled by this arrow's damage. The orb is consumed (no buff granted).
+    /// </summary>
+    private void DetonateOrbsAlongPath(Vector3 from, Vector3 to, float damageScale)
+    {
+        Vector3 delta = to - from;
+        float distance = delta.magnitude;
+        if (distance <= 0.0001f)
+        {
+            return;
+        }
+
+        // Same ~0 mask as the pickup sweep: orb triggers may live off the arrow's hitLayers.
+        int count = Physics.RaycastNonAlloc(from, delta / distance, rayBuffer, distance, ~0, QueryTriggerInteraction.Collide);
+        float arrowDamage = 0f;
+        bool damageRolled = false;
+
+        for (int i = 0; i < count; i++)
+        {
+            Collider collider = rayBuffer[i].collider;
+            ImpulseOrb impulseOrb = collider.GetComponentInParent<ImpulseOrb>();
+            LightningOrb lightningOrb = impulseOrb == null ? collider.GetComponentInParent<LightningOrb>() : null;
+            if (impulseOrb == null && lightningOrb == null)
+            {
+                continue;
+            }
+
+            if (!damageRolled)
+            {
+                // One representative (non-precision) damage roll fuels every detonation on this shot.
+                arrowDamage = BuildArrowDamage(from, damageScale, hitVulnerableSpot: false).value;
+                damageRolled = true;
+            }
+
+            Vector3 orbPosition = collider.transform.position;
+            if (impulseOrb != null && impulseOrb.TryDetonate())
+            {
+                SpawnImpulseBlast(orbPosition, arrowDamage);
+            }
+            else if (lightningOrb != null && lightningOrb.TryDetonate() && chainLightning != null)
+            {
+                chainLightning.ForceChain(arrowDamage, orbPosition);
+            }
+        }
+    }
+
+    /// <summary>
+    ///     An impulse blast (Exploding Heads / Unstable Orbs): damages every enemy around
+    ///     <paramref name="center" />, stamping each hit with the <see cref="BowSO" /> blast
+    ///     power/force so <see cref="ImpulseReceiver" /> flings them (the Death Nova shape).
+    /// </summary>
+    private void SpawnImpulseBlast(Vector3 center, float damageValue)
+    {
+        if (damageValue <= 0f)
+        {
+            return;
+        }
+
+        blastHitTargets.Clear();
+        int count = Physics.OverlapSphereNonAlloc(center, config.impulseBlastRadius, overlapBuffer, bounceLayers, QueryTriggerInteraction.Collide);
+        for (int i = 0; i < count; i++)
+        {
+            IDamageable damageable = ResolveDamageable(overlapBuffer[i]);
+            if (damageable == null || damageable == ownerDamageable || !blastHitTargets.Add(damageable))
+            {
+                continue;
+            }
+
+            damageable.ReceiveDamage(new Damage
+            {
+                value = damageValue,
+                type = DamageType.blunt,
+                sourcePosition = center,
+                impulsePower = config.impulseBlastPower,
+                impulseForce = config.impulseBlastForce,
+            });
+        }
+    }
+
+    private void SpawnTracer(Vector3 from, Vector3 to)
+    {
+        if (tracerPrefab == null)
+        {
+            return;
+        }
+        BowTracer tracer = Instantiate(tracerPrefab, from, Quaternion.identity);
+        tracer.Show(from, to);
+    }
+}

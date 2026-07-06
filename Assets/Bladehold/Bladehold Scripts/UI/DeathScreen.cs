@@ -5,16 +5,24 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
-///     Fades in a death screen when the player dies, showing goblins killed and gold earned this run
-///     (from <see cref="GameStats" />) plus the player's total gold (from <see cref="Wallet" />), and
-///     offers two restart options: from wave 1, or from the wave the player died on (via
-///     <see cref="RunState" />). Both reload the scene. Listens to the player's <see cref="Health.OnDied" />
-///     through the <see cref="Player" /> singleton.
+///     Fades in a death screen when the run ends — the player dying (the player's
+///     <see cref="Health.OnDied" /> via the <see cref="Player" /> singleton) or, in gate defense, any
+///     <see cref="Gate" /> falling (<see cref="Gate.OnAnyGateDestroyed" />; time is frozen for that
+///     one since the player is still alive behind the screen). Shows goblins killed and gold earned
+///     this run (from <see cref="GameStats" />) plus the player's total gold (from
+///     <see cref="Wallet" />), and offers two restart options: from wave 1, or from the wave the run
+///     ended on (via <see cref="RunState" />). Both reload the scene.
 /// </summary>
 [RequireComponent(typeof(CanvasGroup))]
 public class DeathScreen : MonoBehaviour
 {
     [SerializeField] private CanvasGroup canvasGroup;
+    [Tooltip("Optional headline label, set per loss condition (see the two title strings below).")]
+    [SerializeField] private TMP_Text titleText;
+    [Tooltip("Headline when the player died.")]
+    [SerializeField] private string playerDiedTitle = "You Died";
+    [Tooltip("Headline when a gate fell (gate defense).")]
+    [SerializeField] private string gateFellTitle = "The Gate Has Fallen";
     [SerializeField] private TMP_Text goblinsKilledText;
     [SerializeField] private TMP_Text goldEarnedText;
     [SerializeField] private TMP_Text totalGoldText;
@@ -24,10 +32,20 @@ public class DeathScreen : MonoBehaviour
     [SerializeField] private Button restartCurrentWaveButton;
     [Tooltip("Optional label on the restart-current-wave button, set to e.g. \"Restart Wave 3\".")]
     [SerializeField] private TMP_Text restartCurrentWaveLabel;
+    [Tooltip("Optional: reincarnates — banks Reincarnate Points, resets the gold skill tree and wave to 1, restarts. Leave unassigned to omit the option.")]
+    [SerializeField] private Button reincarnateButton;
+    [Tooltip("Optional label on the reincarnate button, set to e.g. \"Reincarnate (+7 pts)\".")]
+    [SerializeField] private TMP_Text reincarnatePreviewLabel;
+    [Tooltip("Optional: the gold skill-tree panel shown when the player dies; hidden once they choose to reincarnate.")]
+    [SerializeField] private GameObject goldTreePanel;
+    [Tooltip("Optional: the Reincarnate skill-tree panel; hidden until the player clicks Reincarnate, then shown so banked points can be spent before the new run starts.")]
+    [SerializeField] private GameObject reincarnateTreePanel;
     [Tooltip("Seconds to fade the screen in.")]
     [SerializeField] private float fadeDuration = 1f;
 
     private Health playerHealth;
+    private bool reincarnateBanked = false;
+    private bool shown = false;   // latch: the run only ends once, whichever signal fires first
     private bool anyError = false;
 
     private void OnValidate()
@@ -68,14 +86,25 @@ public class DeathScreen : MonoBehaviour
         canvasGroup.interactable = false;
         canvasGroup.blocksRaycasts = false;
 
+        // The Reincarnate tree only appears after the player commits to reincarnating.
+        if (reincarnateTreePanel != null)
+        {
+            reincarnateTreePanel.SetActive(false);
+        }
+
         tryAgainButton.onClick.AddListener(RestartFromLevelOne);
         if (restartCurrentWaveButton != null)
         {
             restartCurrentWaveButton.onClick.AddListener(RestartFromCurrentWave);
         }
+        if (reincarnateButton != null)
+        {
+            reincarnateButton.onClick.AddListener(HandleReincarnate);
+        }
 
         playerHealth = player.Health;
         playerHealth.OnDied += HandlePlayerDied;
+        Gate.OnAnyGateDestroyed += HandleGateDestroyed;
     }
 
     private void OnDestroy()
@@ -84,6 +113,7 @@ public class DeathScreen : MonoBehaviour
         {
             playerHealth.OnDied -= HandlePlayerDied;
         }
+        Gate.OnAnyGateDestroyed -= HandleGateDestroyed;
         if (tryAgainButton != null)
         {
             tryAgainButton.onClick.RemoveListener(RestartFromLevelOne);
@@ -92,10 +122,38 @@ public class DeathScreen : MonoBehaviour
         {
             restartCurrentWaveButton.onClick.RemoveListener(RestartFromCurrentWave);
         }
+        if (reincarnateButton != null)
+        {
+            reincarnateButton.onClick.RemoveListener(HandleReincarnate);
+        }
     }
 
     private void HandlePlayerDied()
     {
+        ShowRunOver(playerDiedTitle);
+    }
+
+    private void HandleGateDestroyed(Gate gate)
+    {
+        // Unlike a player death, the player is still alive and controllable — freeze time so the
+        // run visibly ends behind the screen. Reload() restores the timescale.
+        Time.timeScale = 0f;
+        ShowRunOver(gateFellTitle);
+    }
+
+    private void ShowRunOver(string title)
+    {
+        if (shown)
+        {
+            return;
+        }
+        shown = true;
+
+        if (titleText != null)
+        {
+            titleText.text = title;
+        }
+
         int killed = GameStats.Instance != null ? GameStats.Instance.GoblinsKilled : 0;
         int earned = GameStats.Instance != null ? GameStats.Instance.GoldEarnedThisRun : 0;
         int total = Player.Instance != null && Player.Instance.Wallet != null ? Player.Instance.Wallet.Coins : 0;
@@ -121,6 +179,16 @@ public class DeathScreen : MonoBehaviour
             if (hasWave && restartCurrentWaveLabel != null)
             {
                 restartCurrentWaveLabel.text = $"Restart Wave {WaveSpawner.Instance.CurrentWave}";
+            }
+        }
+
+        if (reincarnateButton != null)
+        {
+            bool hasService = ReincarnateService.Instance != null;
+            reincarnateButton.gameObject.SetActive(hasService);
+            if (hasService && reincarnatePreviewLabel != null)
+            {
+                reincarnatePreviewLabel.text = $"Reincarnate (+{ReincarnateService.Instance.PreviewPointsForReincarnate()} pts)";
             }
         }
 
@@ -159,6 +227,49 @@ public class DeathScreen : MonoBehaviour
             RunState.StartingWave = WaveSpawner.Instance.CurrentWave;
         }
         Reload();
+    }
+
+    private void HandleReincarnate()
+    {
+        if (ReincarnateService.Instance == null)
+        {
+            return;
+        }
+
+        // Without a Reincarnate tree panel to show, fall back to the one-click flow.
+        if (reincarnateTreePanel == null)
+        {
+            ReincarnateService.Instance.Reincarnate();
+            return;
+        }
+
+        if (reincarnateBanked)
+        {
+            ReincarnateService.Instance.CompleteReincarnate();
+            return;
+        }
+
+        // First click: bank the points and swap the death screen from the gold tree to the Reincarnate
+        // tree so they can be spent now; the same button then starts the new run.
+        reincarnateBanked = true;
+        ReincarnateService.Instance.BankPointsAndResetGoldTree();
+
+        if (goldTreePanel != null)
+        {
+            goldTreePanel.SetActive(false);
+        }
+        reincarnateTreePanel.SetActive(true);
+
+        // The old run is already gone (gold tree wiped, wave reset) — the only way forward is the new run.
+        tryAgainButton.gameObject.SetActive(false);
+        if (restartCurrentWaveButton != null)
+        {
+            restartCurrentWaveButton.gameObject.SetActive(false);
+        }
+        if (reincarnatePreviewLabel != null)
+        {
+            reincarnatePreviewLabel.text = "Begin Next Life";
+        }
     }
 
     private void Reload()

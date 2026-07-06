@@ -1,0 +1,29 @@
+fileFormatVersion: 2
+guid: cda0b4bf39ee20241ba198b03450fa4a
+AudioImporter:
+  externalObjects: {}
+  serializedVersion: 6
+  defaultSettings:
+    loadType: 0
+    sampleRateSetting: 0
+    sampleRateOverride: 44100
+    compressionFormat: 1
+    quality: 1
+    conversionMode: 0
+  platformSettingOverrides: {}
+  forceToMono: 0
+  normalize: 1
+  preloadAudioData: 1
+  loadInBackground: 0
+  ambisonic: 0
+  3D: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 254055
+  packageName: Bestiary Monster Bundle Vol 1
+  packageVersion: 1.0
+  assetPath: Assets/Bladehold/Bladehold Audio/SFX/Goblin_Attack_05.wav
+  uploadId: 593014

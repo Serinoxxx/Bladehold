@@ -9,9 +9,21 @@ using UnityEngine;
 ///     codebase convention, the config itself lives on a ScriptableObject (created via
 ///     <c>Scriptable Objects/SkillTreeSO</c>) that points at the CSV.
 ///
-///     CSV columns (one node per row): <c>id, displayName, description, cost, stat, kind, amount, prereqs, x, y</c>
+///     CSV columns (one node per row): <c>id, displayName, description, cost, stat, kind, amount, prereqs, x, y, icon, family</c>
 ///     <list type="bullet">
 ///         <item><c>stat</c>/<c>kind</c>/<c>amount</c> blank → a connector/unlock-only node (no stat effect).</item>
+///         <item>
+///             <c>icon</c> is optional (the column may be absent entirely, or blank per row): the name of a
+///             sprite in this asset's <see cref="icons" /> list, shown on the node by <see cref="SkillNodeView" />.
+///         </item>
+///         <item>
+///             <c>family</c> is optional: nodes sharing a family name share one escalating price ladder
+///             (see <see cref="SkillNode.family" />). Blank = the node is priced by its own <c>cost</c>.
+///         </item>
+///         <item>
+///             <c>stat</c>/<c>kind</c>/<c>amount</c> may each hold ';'-separated lists of equal length to apply
+///             several effects atomically (e.g. a node bumping both a chance and a bonus-% stat at once).
+///         </item>
 ///         <item><c>prereqs</c> is semicolon-separated; blank → a root node visible from the start.</item>
 ///         <item>Fields may be wrapped in double quotes to contain commas; "" is an escaped quote.</item>
 ///     </list>
@@ -25,8 +37,12 @@ public class SkillTreeSO : ScriptableObject
     [Tooltip("Skip the first CSV row as a header.")]
     [SerializeField] private bool hasHeaderRow = true;
 
+    [Tooltip("Sprites the CSV's 'icon' column can reference by sprite asset name.")]
+    [SerializeField] private Sprite[] icons;
+
     [NonSerialized] private List<SkillNode> nodes;
     [NonSerialized] private Dictionary<string, SkillNode> byId;
+    [NonSerialized] private Dictionary<string, Sprite> iconsByName;
 
     /// <summary>All nodes, parsed lazily from the CSV.</summary>
     public IReadOnlyList<SkillNode> Nodes
@@ -45,11 +61,38 @@ public class SkillTreeSO : ScriptableObject
         return byId.TryGetValue(id, out SkillNode node) ? node : null;
     }
 
+    /// <summary>The sprite for the given icon name from <see cref="icons" />, or null (blank/unknown name).</summary>
+    public Sprite GetIcon(string iconName)
+    {
+        if (string.IsNullOrEmpty(iconName))
+        {
+            return null;
+        }
+
+        if (iconsByName == null)
+        {
+            iconsByName = new Dictionary<string, Sprite>();
+            if (icons != null)
+            {
+                foreach (Sprite sprite in icons)
+                {
+                    if (sprite != null)
+                    {
+                        iconsByName[sprite.name] = sprite;
+                    }
+                }
+            }
+        }
+
+        return iconsByName.TryGetValue(iconName, out Sprite found) ? found : null;
+    }
+
     /// <summary>Forces a re-parse (e.g. after editing the CSV at runtime). Normally not needed.</summary>
     public void Reload()
     {
         nodes = null;
         byId = null;
+        iconsByName = null;
         EnsureParsed();
     }
 
@@ -102,10 +145,10 @@ public class SkillTreeSO : ScriptableObject
 
     private SkillNode ParseRow(string line, int lineNumber)
     {
-        List<string> f = SplitCsvLine(line);
+        List<string> f = CsvUtil.SplitLine(line);
         if (f.Count < 10)
         {
-            Debug.LogError($"SkillTreeSO '{name}': line {lineNumber} has {f.Count} columns, expected 10. Skipping.");
+            Debug.LogError($"SkillTreeSO '{name}': line {lineNumber} has {f.Count} columns, expected at least 10. Skipping.");
             return null;
         }
 
@@ -129,19 +172,34 @@ public class SkillTreeSO : ScriptableObject
         string statRaw = f[4].Trim();
         if (!string.IsNullOrEmpty(statRaw))
         {
-            node.hasEffect = true;
-            if (!Enum.TryParse(statRaw, true, out node.stat))
-            {
-                Debug.LogError($"SkillTreeSO '{name}': line {lineNumber} has unknown stat '{statRaw}'. Treating node as effect-less.");
-                node.hasEffect = false;
-            }
-            else if (!Enum.TryParse(f[5].Trim(), true, out node.kind))
-            {
-                Debug.LogError($"SkillTreeSO '{name}': line {lineNumber} has unknown modifier kind '{f[5]}'. Defaulting to Flat.");
-                node.kind = ModifierKind.Flat;
-            }
+            string[] statParts = statRaw.Split(';');
+            string[] kindParts = f[5].Split(';');
+            string[] amountParts = f[6].Split(';');
 
-            node.amount = ParseFloat(f[6], 0f, lineNumber, "amount");
+            if (kindParts.Length != statParts.Length || amountParts.Length != statParts.Length)
+            {
+                Debug.LogError($"SkillTreeSO '{name}': line {lineNumber} has mismatched stat/kind/amount effect counts. Treating node as effect-less.");
+            }
+            else
+            {
+                for (int e = 0; e < statParts.Length; e++)
+                {
+                    if (!Enum.TryParse(statParts[e].Trim(), true, out StatType effectStat))
+                    {
+                        Debug.LogError($"SkillTreeSO '{name}': line {lineNumber} has unknown stat '{statParts[e]}'. Skipping that effect.");
+                        continue;
+                    }
+
+                    if (!Enum.TryParse(kindParts[e].Trim(), true, out ModifierKind effectKind))
+                    {
+                        Debug.LogError($"SkillTreeSO '{name}': line {lineNumber} has unknown modifier kind '{kindParts[e]}'. Defaulting to Flat.");
+                        effectKind = ModifierKind.Flat;
+                    }
+
+                    float effectAmount = ParseFloat(amountParts[e], 0f, lineNumber, "amount");
+                    node.effects.Add(new SkillEffect { stat = effectStat, kind = effectKind, amount = effectAmount });
+                }
+            }
         }
 
         string prereqRaw = f[7].Trim();
@@ -157,54 +215,15 @@ public class SkillTreeSO : ScriptableObject
             }
         }
 
-        return node;
-    }
-
-    // Minimal RFC-4180-ish splitter: supports double-quoted fields with embedded commas and "" escapes.
-    private static List<string> SplitCsvLine(string line)
-    {
-        var fields = new List<string>();
-        var current = new System.Text.StringBuilder();
-        bool inQuotes = false;
-
-        for (int i = 0; i < line.Length; i++)
+        // Optional icon and family columns — older CSVs without them parse as icon-less / family-less.
+        node.iconName = f.Count > 10 ? f[10].Trim() : "";
+        node.family = f.Count > 11 ? f[11].Trim() : "";
+        if (!string.IsNullOrEmpty(node.iconName) && GetIcon(node.iconName) == null)
         {
-            char c = line[i];
-            if (inQuotes)
-            {
-                if (c == '"')
-                {
-                    if (i + 1 < line.Length && line[i + 1] == '"')
-                    {
-                        current.Append('"');
-                        i++;
-                    }
-                    else
-                    {
-                        inQuotes = false;
-                    }
-                }
-                else
-                {
-                    current.Append(c);
-                }
-            }
-            else if (c == '"')
-            {
-                inQuotes = true;
-            }
-            else if (c == ',')
-            {
-                fields.Add(current.ToString());
-                current.Clear();
-            }
-            else
-            {
-                current.Append(c);
-            }
+            Debug.LogError($"SkillTreeSO '{name}': line {lineNumber} names icon '{node.iconName}', which is not in this asset's icons list.");
         }
-        fields.Add(current.ToString());
-        return fields;
+
+        return node;
     }
 
     private int ParseInt(string s, int fallback, int lineNumber, string field)

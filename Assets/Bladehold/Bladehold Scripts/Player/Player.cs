@@ -26,6 +26,13 @@ public class Player : MonoBehaviour
     /// </summary>
     public PlayerStats Stats { get; private set; }
 
+    /// <summary>
+    ///     Reaches the vendored camera controller/input reader for sensitivity, invert, and button-remap
+    ///     settings, so <see cref="GameSettingsService" /> and the settings UI can apply them through the
+    ///     singleton. Null if the player has no <see cref="InputSettingsBinder" />.
+    /// </summary>
+    public InputSettingsBinder InputSettings { get; private set; }
+
     private void Awake()
     {
         if (Instance == null)
@@ -35,10 +42,22 @@ public class Player : MonoBehaviour
             Damageable = GetComponent<IDamageable>();
             Wallet = GetComponent<Wallet>();
             Stats = GetComponent<PlayerStats>();
+            InputSettings = GetComponent<InputSettingsBinder>();
         }
         else
         {
             Destroy(gameObject);
+        }
+    }
+
+    private void Start()
+    {
+        // The global damage multiplier belongs to no single weapon, so the Player itself registers
+        // its base (1.0, the MoveSpeed multiplier convention). The "Raw Power" skill family layers
+        // percent modifiers on top; every player-owned damage source multiplies by the effective value.
+        if (Stats != null)
+        {
+            Stats.SetBase(StatType.AllDamageMultiplier, 1f);
         }
     }
 }
