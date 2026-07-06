@@ -49,6 +49,23 @@ public class GoldenGoblin : MonoBehaviour
         isGolden = true;
     }
 
+    /// <summary>
+    ///     Converts a live, regular enemy into a golden one mid-run (the "Arrows of Midas" skill).
+    ///     Unlike <see cref="MarkGolden" /> this runs long after Start, so it applies the visual swap
+    ///     itself. Returns false when there's nothing to convert (already golden, or dead).
+    /// </summary>
+    public bool TryConvertToGolden()
+    {
+        if (isGolden || anyError || (health != null && health.IsDead))
+        {
+            return false;
+        }
+
+        isGolden = true;
+        ApplyGoldenVisual();
+        return true;
+    }
+
     private void Start()
     {
         if (health == null)

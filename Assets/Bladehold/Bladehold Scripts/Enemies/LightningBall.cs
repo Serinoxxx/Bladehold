@@ -82,9 +82,37 @@ public class LightningBall : MonoBehaviour
             return;
         }
 
+        float value = damage;
+
+        // Conduit (gold-tree skill): the player takes reduced lightning-ball damage and can deflect
+        // the strike into a chain of their own. Read through Player.Instance.Stats, the same
+        // enemy-side pattern GoldenGoblin uses.
+        if (Player.Instance != null && ReferenceEquals(damageable, Player.Instance.Damageable))
+        {
+            PlayerStats stats = Player.Instance.Stats;
+            if (stats != null)
+            {
+                float reduction = stats.GetValue(StatType.ConduitDamageReductionPercent);
+                if (reduction > 0f)
+                {
+                    value *= 1f - Mathf.Clamp01(reduction);
+                }
+
+                if (Random.value < stats.GetValue(StatType.ConduitChainChance))
+                {
+                    ChainLightning chainLightning = Player.Instance.GetComponentInChildren<ChainLightning>();
+                    if (chainLightning != null)
+                    {
+                        // The chain is fuelled by the ball's full, unreduced damage.
+                        chainLightning.ForceChain(damage, transform.position);
+                    }
+                }
+            }
+        }
+
         damageable.ReceiveDamage(new Damage
         {
-            value = damage,
+            value = value,
             type = damageType,
             sourcePosition = transform.position,
         });

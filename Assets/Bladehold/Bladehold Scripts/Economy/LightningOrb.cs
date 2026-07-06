@@ -32,16 +32,27 @@ public class LightningOrb : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (collected)
+        TryCollect(other.gameObject);
+    }
+
+    /// <summary>
+    ///     Collects this orb on behalf of <paramref name="collector" /> (anything holding a
+    ///     <see cref="ChainLightningBuff" /> in its parents). Walk-over pickup routes through here;
+    ///     remote collectors (the bow's Pickup Arrows) may call it directly. Returns false if already
+    ///     collected or the collector has no buff.
+    /// </summary>
+    public bool TryCollect(GameObject collector)
+    {
+        if (collected || collector == null)
         {
-            return;
+            return false;
         }
 
         // Only the holder of a ChainLightningBuff (the player) can pick the orb up.
-        ChainLightningBuff buff = other.GetComponentInParent<ChainLightningBuff>();
+        ChainLightningBuff buff = collector.GetComponentInParent<ChainLightningBuff>();
         if (buff == null)
         {
-            return;
+            return false;
         }
 
         collected = true;
@@ -59,5 +70,28 @@ public class LightningOrb : MonoBehaviour
         }
 
         Destroy(gameObject);
+        return true;
+    }
+
+    /// <summary>
+    ///     Consumes this orb without granting the buff — the Unstable Orbs skill detonates it instead
+    ///     (the caller owns the chain; this just spends the orb). Returns false if already collected,
+    ///     so a detonation and a walk-over pickup can never both fire.
+    /// </summary>
+    public bool TryDetonate()
+    {
+        if (collected)
+        {
+            return false;
+        }
+        collected = true;
+
+        if (pickupFeedback != null)
+        {
+            pickupFeedback.PlayFeedbacks();
+        }
+
+        Destroy(gameObject);
+        return true;
     }
 }

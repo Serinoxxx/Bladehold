@@ -32,20 +32,225 @@ enemy variety/count/toughness and map objectives, not player-facing friction.
         `SkillTree.csv`) unlock/improve the per-charge percentages, following the existing
         `stat;kind;amount` multi-effect convention.
 
-- [ ] **Gate defense objective** — castle gates as a second loss condition alongside player death:
-  - [ ] A `Gate` is just another `Health`/`IDamageable` object; reuse `AIAttack` for goblins attacking
-        it (attack range/damage against the gate rather than the player).
-  - [ ] `AIMovement` needs a target-selection layer: path toward the nearest/assigned gate by default,
-        but switch to engaging the player if the player comes within engage range.
-  - [ ] Level 1: one gate. Level 2+: multiple gates, with mini-waves spawning on a fixed interval
-        (~30s) alternating which gate they target — the player must clear the goblins at one gate and
-        reach the next before the next mini-wave lands, so travel time/spacing between gates becomes
-        a real tuning lever.
-  - [ ] Round ends (loss) if any gate's `Health.OnDied` fires, same as it currently ends on the
-        player's `Health.OnDied` — likely both route through the same "run over" path `DeathScreen`
-        already owns.
-  - [ ] Keep the alternation pattern predictable/learnable (fits the mastery-over-time goal); scale
-        difficulty by goblin count/composition per mini-wave and gate HP, not by randomizing timing.
+- [x] **Gate defense objective** — castle gates as a second loss condition alongside player death.
+      **C# done** — see the "Gate defense — Unity Editor wiring" section below for the remaining
+      scene/prefab work:
+  - [x] A `Gate` is just another `Health`/`IDamageable` object (`Waves/Gate.cs`); `AIAttack` now
+        attacks the current target (gate or player) through the selector below.
+  - [x] `AIMovement`/`AIAttack`/`TrollSlamAttack` consult an optional `AITargetSelector`
+        (`Enemies/AITargetSelector.cs`): assigned/nearest gate by default, the player within engage
+        range wins. No selector (or no gates in the scene) = player-only, exactly as before.
+  - [x] Mini-waves on a fixed interval alternating gates: `Waves/GateAssaultSpawner.cs` (round-robin
+        over alive gates; count scales with the main wave number, never the timing).
+  - [x] Round ends (loss) when any gate's `Health.OnDied` fires — routed through
+        `Gate.OnAnyGateDestroyed` into the same `DeathScreen`/`WaveSpawner` run-over path as player
+        death (time freezes on gate loss since the player is still alive).
+  - [x] Alternation stays predictable/learnable; difficulty levers are mini-wave count and gate HP.
+
+## Bow weapon + bow skill lines + Raw Power — Unity Editor wiring
+
+The C# for the bow (hold right click to aim/charge, left click to fire hitscan arrows drawn with
+line-renderer tracers, sword/bow model toggle, sword-swing suppression while aiming), its seven
+skill lines (Multi Shot, Heavy Arrows, Bounce Shot, Impulse Arrow, Storm Arrow, Retriever/pickup,
+Precision Shot), and the "Raw Power" +50%-all-damage family is done. See
+`Assets/Bladehold/Bladehold Scripts/Player/PlayerBow.cs`, `Player/BowSO.cs`, `Player/BowTracer.cs`,
+`Enemies/VulnerableSpot.cs`, the `AllDamageMultiplier` handling in `DamageSystem/DamageTrigger.cs` +
+`Player/Player.cs`, `ChainLightning.TryChain`, the pickups' new `TryCollect`, and the new
+`multishot_*`/`multidmg_*`/`bounce_*`/`precision_*`/`pickuparrow_1`/`imparrow_1`/`stormarrow_1`/
+`alldmg_*` rows in `Config/SkillTree.csv` for the code side.
+
+- [ ] **Create SO asset instance**: a `BowSO` (menu `Scriptable Objects/BowSO`) — tune `baseDamage`,
+      `maxRange`, `fireCooldownSeconds`, charge pacing (`chargeTimePerLevel`/`baseMaxChargeLevels`/
+      `baseChargeDamageBonus`), `multishotSpreadDegrees`, `bounceRadius`, `pickupRadius`.
+
+- [ ] **BowTracer prefab**: a GameObject with a `LineRenderer` (own the looks: width curve, material,
+      start/end colors — an additive/unlit material reads best) + the `BowTracer` component; tune
+      `holdSeconds`/`fadeSeconds`.
+
+- [ ] **Player prefab** (`Assets/Bladehold/Bladehold Prefabs/Player.prefab`):
+  - [ ] Add a `PlayerBow` component on the player root; assign `config` (the `BowSO`), `tracerPrefab`,
+        and `arrowOrigin` (an empty child at chest/bow height — defaults to the player root if left
+        empty). `inputReader`/`stats`/`playerAnimator` auto-wire via `OnValidate`; `aimCamera`
+        defaults to `Camera.main`; `impulseBuff`/`chainLightning` default to the player's own.
+  - [ ] Set `hitLayers`/`bounceLayers` to exclude the player's own layer (and, for bounce, the
+        environment) if arrows ever clip the player or bounces fizzle on scenery.
+  - [ ] Assign `swordModel` (the `Wep_Sword_01` child) so it hides while aiming. Leave `bowModel`
+        empty until a bow model is added — everything works without it, the player just aims
+        empty-handed.
+  - [ ] Confirm `PlayerAttack` picked up the new `bow` field via `OnValidate` (skips sword
+        hold-to-charge while aiming).
+  - [ ] Optional `drawFeedback`/`fireFeedback` `MMF_Player`s (bow creak on aim, string snap on fire).
+
+- [ ] **Vulnerable spots (for Precision Shot)**: on each enemy prefab (`Goblin Enemy`, brute variant,
+      Storm Witch, Troll), add a small trigger `SphereCollider` on the head bone (find it under the
+      rig; roughly skull-sized) with the `VulnerableSpot` component. Without these, Precision Shot
+      nodes simply never trigger.
+
+- [ ] **Skill icons**: the new `multishot_*` and `multidmg_*` rows have blank icons (no bow-ish
+      sprite is registered yet) — drop sprites on them in **Bladehold > Skill Tree Editor** when
+      suitable art exists; the other new rows reuse already-registered icon names.
+
+- [ ] **Balance pass**: tune the placeholder costs/positions of the new CSV rows (`multishot_*`,
+      `multidmg_*`, `bounce_*`, `precision_*`, `pickuparrow_1`, `imparrow_1`, `stormarrow_1`, and the
+      scattered `alldmg_*` "Raw Power" family) and the `BowSO` numbers to taste.
+
+## Manual verification (bow + Raw Power)
+
+- [ ] Hold right click — sword model hides (bow shows once assigned), left click fires a visible
+      tracer that damages the first enemy it crosses; release right click — sword returns and left
+      click swings as before.
+- [ ] While aiming, mash left click — no sword swing animation plays, no sword damage lands, and no
+      sword charge VFX starts.
+- [ ] Hold aim without firing — arrow damage steps up per charge level (damage numbers grow); firing
+      resets the draw while aim stays held.
+- [ ] Buy Multi Shot tiers — extra tracers fan out left/right, each dealing 25% (then more with
+      Heavy Arrows tiers) of the main arrow.
+- [ ] Buy Bounce Shot — at 20% roughly one in five hits draws a second tracer to a nearby enemy;
+      at 100% every hit bounces.
+- [ ] Buy Precision Shot (after head colliders are added) — headshots deal the boosted damage,
+      body shots don't.
+- [ ] Buy Retriever — arrows fired over coins/orbs collect them from range.
+- [ ] Buy Impulse Arrow, grab an Impulse Orb — arrow hits fling goblins like sword hits do; without
+      the node (or with the buff expired) they don't.
+- [ ] Buy Storm Arrow, grab a Lightning Orb — arrow hits chain to nearby enemies like sword hits.
+- [ ] Buy a Raw Power node — sword swings, arrows, Death Nova, and chain lightning all hit ~50%
+      harder (damage numbers confirm).
+
+## Frost/orb/conduit skill lines — Unity Editor wiring
+
+The C# for eight new skill lines is done: **Freezing Draw** (`Player/FreezingDraw.cs` — slows
+enemies near the player while the bow is drawn), **Brain Freeze** (headshots chill the target) and
+**Elongated Freeze** (slows linger longer) via the new runtime-added `Enemies/SlowStatus.cs` (scales
+`NavMeshAgent.speed` + `Animator.speed`, no prefab wiring — the `EnemyRagdoll` lazy-build idiom;
+`AIMovement.BaseSpeed` is the restore source), **Ice Breaker** (sword bonus vs slowed enemies, in
+`DamageSystem/DamageTrigger.cs`), **Exploding Heads** (headshot impulse blasts) / **Arrows of
+Midas** (`GoldenGoblin.TryConvertToGolden`) / **Unstable Orbs** (main arrow detonates orbs — orbs'
+new `TryDetonate`, `ChainLightning.ForceChain`) in `Player/PlayerBow.cs`, and **Conduit** (reduced
+lightning-ball damage + chain proc, in `Enemies/LightningBall.cs`, bases registered by
+`ChainLightningBuff`). New CSV rows: `freezedraw_*`, `brainfreeze_*`, `elongfreeze_*`,
+`icebreaker_*`, `explodeheads_*`, `midas_*`, `conduit_*`, `unstableorbs_1`.
+
+- [ ] **Player prefab**: add a `FreezingDraw` component next to `PlayerBow`; assign `config` (the
+      same `BowSO` asset) and set `enemyLayers` to the enemy layer (exclude player/environment).
+      `bow`/`stats` auto-wire via `OnValidate`.
+- [ ] **BowSO asset**: tune the new fields — `freezingDrawRadius` (8), `brainFreezeSeconds` (3 —
+      the `brainfreeze_*` descriptions assume this), and the shared impulse-blast tunables
+      `impulseBlastRadius` (4) / `impulseBlastPower` (2 — flings default-resistance goblins; raise
+      to topple brutes) / `impulseBlastForce` (10).
+- [ ] **Vulnerable spots**: Brain Freeze and Exploding Heads trigger on the same `VulnerableSpot`
+      head colliders as Precision Shot — the wiring item in the bow section above covers all three.
+- [ ] **Skill icons**: the `freezedraw_*`, `brainfreeze_*`, and `elongfreeze_*` rows have blank
+      icons (no frost sprite registered yet) — assign in **Bladehold > Skill Tree Editor** when art
+      exists. The other new rows reuse registered names.
+- [ ] **Balance pass**: costs/positions of the new rows are placeholders (frost branch sits at
+      y6-y8 under the bow region, Conduit at x9-10/y3-4 by the lightning branch).
+- [ ] **Optional polish (future)**: slows have no VFX/tint yet — a frost material swap or aura on
+      `SlowStatus` would telegraph the state; an `MMF_Player`/VFX on the impulse blasts and orb
+      detonations (currently the orb just plays its pickup feedback and vanishes).
+
+## Manual verification (frost/orb/conduit skills)
+
+- [ ] Buy Freezing Draw, hold aim near goblins — they visibly crawl (movement and animation) while
+      the bow is drawn, and resume full speed ~instantly after releasing aim (or lingering, with
+      Elongated Freeze bought).
+- [ ] Buy Brain Freeze (after head colliders exist) — a headshot slows that goblin for ~3s; body
+      shots don't. The slow expires and speed restores exactly.
+- [ ] Buy Ice Breaker — sword hits on a chilled goblin show boosted damage numbers; unslowed
+      goblins take normal damage. Death Nova damage is unaffected (it isn't melee).
+- [ ] Buy Exploding Heads — a headshot detonates a blast that damages/flings the goblins around the
+      victim for the node's % of the arrow's damage.
+- [ ] Buy Arrows of Midas — roughly 1 in 20 arrow hits (at tier 1) turns a live goblin gold
+      mid-fight (material swap + bonus coin on death); already-golden goblins are unaffected.
+- [ ] Buy Conduit, let a Storm Witch ball hit you — damage taken drops by the node's %, and ~1 in
+      10 hits arcs chain lightning from the impact into nearby enemies (needs the Chain Lightning
+      unlock for bounces/damage to be non-zero).
+- [ ] Buy Unstable Orbs — shoot your main arrow through an Impulse Orb (impulse blast at the orb)
+      and a Lightning Orb (chain lightning from the orb, no buff needed); the orb is consumed and
+      grants no buff. Multi Shot side arrows and walk-over pickups behave as before.
+- [ ] Player is never slowed by anything (SlowStatus only attaches to NavMesh enemies).
+
+## Troll enemy — Unity Editor wiring
+
+The C# for the Troll (telegraphed ground slam: reveals the damage area, waits a configurable
+telegraph window, then deals massive damage + an impulse fling to everything in the area — player,
+gates, and other enemies alike) is done, reusing the player's impulse/resistance system
+(`ImpulseReceiver`). See `Assets/Bladehold/Bladehold Scripts/Enemies/TrollSlamAttack.cs`,
+`Enemies/TrollSlamAttackSO.cs`, and the new `troll` row in `Config/Enemies.csv` for the code side.
+
+- [ ] **Create SO asset instances**:
+  - [ ] `TrollSlamAttackSO` — tune `triggerRange`/`slamRadius`/`forwardOffset`/`telegraphSeconds`
+        (the dodge window)/`attackCooldown`/`damage`/`impulsePower`/`impulseForce`. The CSV `damage`
+        column (40) overrides the SO's damage per spawn.
+  - [ ] Its own `AIMovementSO` (slow: the CSV speed column is 2.5) and `HealthSO`/`EnemySO` if not
+        reusing existing assets with CSV overrides.
+
+- [ ] **Telegraph prefab**: a flat quad/decal (unlit, red ring/circle material, ~1m diameter at scale
+      1 — the code scales x/z to the slam diameter) with **no collider**.
+
+- [ ] **Troll prefab**: build like the other enemies (Synty rig or a scaled brute as placeholder):
+      `Health`, `Enemy`, `AIMovement`, `AIAnimation`, `TrollSlamAttack` (assign `attackData`, the
+      telegraph prefab, optional `impactVfxPrefab`/`windupFeedback`/`slamFeedback`), `CoinDropper`,
+      `CorpseDespawner`, `KnockbackReceiver`, `EnemyRagdoll` + `ImpulseReceiver` (CSV resistance 6 —
+      only a heavily-stacked Impulse build should fling a troll), `GoldenGoblin`/`ImpulseGoblin` if
+      trolls may roll those variants, and optionally an `AITargetSelector` so it sieges gates.
+  - [ ] **Animator**: add a `Slam` trigger + a long wind-up slam state on the troll's controller
+        (the `TrollSlamAttack.slamTrigger` default). Time the clip so the impact lines up with
+        `telegraphSeconds`.
+  - [ ] Register the prefab in `WaveSpawner`'s `enemyPrefabs` list under id `troll` (row already in
+        `Config/Enemies.csv`: unlocks wave 8, 15% chance, 1 guaranteed/max concurrent, resistance 6).
+
+- [ ] **Balance pass**: tune the `troll` CSV row and `TrollSlamAttackSO` numbers to taste.
+
+## Manual verification (Troll)
+
+- [ ] Reach wave 8 (or temporarily lower `unlockWave`) — a troll spawns, lumbers at the player.
+- [ ] Get in range — the ground telegraph appears ahead of the troll, holds for `telegraphSeconds`,
+      then the slam lands: standing in it hurts a lot; stepping out is safe.
+- [ ] Let goblins wander into the area — they take the damage too and get ragdoll-flung by the
+      impulse (knocked down if the horde ragdoll cap is full).
+- [ ] Kill the troll mid-wind-up — no slam lands, the telegraph disappears.
+- [ ] Kill the troll — coins drop, corpse pipeline runs, wave accounting stays correct.
+
+## Gate defense — Unity Editor wiring
+
+The C# for gates (second loss condition, enemy target-selection layer, fixed-interval mini-waves
+alternating gates) is done. See `Assets/Bladehold/Bladehold Scripts/Waves/Gate.cs`,
+`Waves/GateAssaultSpawner.cs`, `Enemies/AITargetSelector.cs`, and the selector integration in
+`Enemies/AIMovement.cs`/`Enemies/AIAttack.cs`/`Enemies/TrollSlamAttack.cs`, plus the run-over
+routing in `Waves/WaveSpawner.cs`/`UI/DeathScreen.cs` for the code side. Scenes without gates play
+exactly as before — every gate feature is inert until a `Gate` exists.
+
+- [ ] **Gate object(s)** in the scene: a mesh (wall/door) with a solid `Collider`, a `Health`
+      component (create a beefy `HealthSO`, e.g. 500+), and the `Gate` component (`attackPoint`
+      optional — an empty child at the doors; defaults to the gate's own transform). Place it on/next
+      to the baked NavMesh so enemies can path to it. Optionally add `DisableCollidersOnDeath` and a
+      `HealthBarUI` so gate damage is readable.
+- [ ] **Enemy prefabs**: add an `AITargetSelector` to each enemy that should siege gates (goblin,
+      brute, troll…); tune `playerEngageRange` (distance at which they drop the gate and turn on the
+      player). `AIMovement`/`AIAttack` pick it up via `OnValidate`. Prefabs without the selector keep
+      hunting only the player.
+- [ ] **GateAssaultSpawner** (scene object, only for levels with gates): assign `enemyPrefab` (e.g.
+      the goblin — a fast "quick gob" variant fits the design), `assaultInterval` (~30s), `baseCount`/
+      `countAddedPerWave`, and `spawnPoints` near/behind the gates (falls back to a radius around
+      itself). The prefab needs an `AITargetSelector` to actually beeline its gate. Mini-wave enemies
+      are extra pressure — they do NOT count toward the main wave's kill total.
+- [ ] **DeathScreen**: optionally assign the new `titleText` label (+ tweak `playerDiedTitle`/
+      `gateFellTitle`) so gate losses read differently from deaths.
+- [ ] **Balance pass**: gate HP, engage range, mini-wave size/interval, gate spacing (travel time
+      between gates is the intended difficulty lever).
+
+## Manual verification (gate defense)
+
+- [ ] Scene with no gates: everything behaves exactly as before (enemies hunt the player; no
+      warnings besides an inert `GateAssaultSpawner` if one was left in).
+- [ ] Place one gate + selectors on goblins: distant goblins path to the gate and beat on it (gate
+      health drops); walking near them pulls them onto the player; retreating past engage range
+      sends them back to the gate.
+- [ ] Mini-waves: every ~30s a group spawns and beelines the gate; with two gates, consecutive
+      mini-waves alternate targets; group size grows with the wave number.
+- [ ] Let a gate die: time freezes, the death screen shows the gate-fell title, spawning stops, and
+      both restart buttons work (timescale restored, wave resumes correctly).
+- [ ] Player death still works exactly as before with gates in the scene.
 
 ## Reincarnate system — Unity Editor wiring
 
@@ -334,6 +539,66 @@ these headlessly. See `Assets/Bladehold/Bladehold Scripts/Enemies/LightningBallA
 - [ ] Buy bounce/damage/crit tiers — confirm chains reach more enemies, hit harder, and crit at the
       expected rate.
 - [ ] Stack multiple orbs — confirm buff duration extends and bounce damage gets the stack bonus.
+
+## Pause menu, settings, and Photo Mode — Unity Editor wiring
+
+The C# for the pause menu, settings (audio/sensitivity/invert/button remapping), and Photo Mode
+(free-fly camera, sun/post-processing tweaks, screenshot capture) is done. Esc is handled by a
+code-built Input System action (`MenuInputActions`), not a hand-authored `.inputactions` asset or the
+vendored Synty `Controls` asset, so there's no input-asset wiring needed. See
+`Assets/Bladehold/Bladehold Scripts/Settings/`, `Player/InputSettingsBinder.cs`,
+`Player/ScreenshotFlyCamera.cs`, and `UI/PauseMenuView.cs`, `UI/SettingsPanelView.cs`,
+`UI/RebindButtonView.cs`, `UI/ConfirmDialog.cs`, `UI/ScreenshotModePanel.cs` for the code side.
+
+**Run `Bladehold > Generate Settings Menu` first** (`Assets/Bladehold/Bladehold Scripts/Editor/SettingsMenuGenerator.cs`) —
+it builds and wires the `GameMenu` scene object (`PauseMenuController`/`ScreenshotModeController`/
+`GameSettingsService`), the whole `PauseMenuCanvas` hierarchy (main buttons, Settings panel with all
+sliders/toggles/rebind list/Delete Save + confirmation dialog, Photo Mode panel with all its sliders),
+and adds `InputSettingsBinder` to the Player instance in the scene — everything below is what it
+can't do for you.
+
+- [ ] **Reskin the shared control prefabs** it generated under `Assets/Bladehold/Bladehold Prefabs/UI/`
+      (`MenuButton`, `MenuLabel`, `MenuSlider`, `MenuToggle`) to match the game's look — every button/
+      label/slider/toggle in the generated menu is an instance of one of these, so restyling the four
+      prefabs restyles the whole menu at once. Then lay out/resize the panels (`PauseMenuCanvas` >
+      `PauseMenuView` > `MainButtonsPanel`/`SettingsPanel`/`PhotoModePanelRoot`) to taste — the
+      generator only gives them functional placeholder sizes/positions.
+- [ ] **Player prefab**: the generator added `InputSettingsBinder` to the Player *instance* in the open
+      scene only (a prefab override) — select it and **Overrides > Apply All** onto
+      `Assets/Bladehold/Bladehold Prefabs/Player.prefab` to make it permanent.
+- [ ] **Settings mixer routing**: the generator already assigned `GameSettingsService.mixer` to
+      `MMSoundManagerAudioMixer.mixer` (exposed params `MasterVolume`/`MusicVolume`/`SfxVolume`), but
+      **Music/SFX sliders only have an audible effect once sources are routed through its groups** —
+      assign the Output Audio Mixer Group on `SwordHitFeedback`'s/`ImpulseHitFeedback`'s
+      `AudioSource`s, `Coin`'s pickup `AudioSource`, and any MMF_Player "Sound" feedbacks, to the
+      mixer's Sfx group (or Music, for anything music-like). Master volume works regardless via
+      `AudioListener.volume`.
+- [ ] If the generator logged warnings (no Main Camera/AudioMixer/Player found, etc.), assign those
+      `ScreenshotModeController`/`GameSettingsService`/`InputSettingsBinder` fields by hand.
+- [ ] **Balance pass**: tune default sensitivity/volume values and `ScreenshotFlyCamera`'s
+      `moveSpeed`/`boostMultiplier`/`lookSensitivity` to taste.
+
+## Manual verification (pause menu, settings, Photo Mode)
+
+- [ ] Press Esc mid-run — game freezes (enemies/animations stop, character stops responding), cursor
+      unlocks, pause menu appears; press Esc again (or click Resume) — everything resumes cleanly with
+      no camera snap.
+- [ ] Move the mouse while paused, then resume — confirm the camera doesn't jump from input that
+      accumulated while frozen.
+- [ ] Adjust Master/Music/SFX sliders — Master audibly changes volume immediately; Music/SFX do too
+      once routed through the mixer (see wiring above); all three persist across a restart.
+- [ ] Adjust sensitivity and invert X/Y — camera look responds immediately and correctly in both axes;
+      settings persist across a restart.
+- [ ] Click a rebind row, press a new key — the row updates to the new binding and the new key actually
+      controls that action in gameplay; pressing Esc while "Press any key..." is showing cancels the
+      rebind without closing the pause menu; the new binding survives a restart.
+- [ ] Click Delete Save — a confirmation dialog appears; Cancel does nothing; Confirm wipes gold/
+      upgrades/settings and reloads to a fresh save.
+- [ ] Click Quit — the game/Editor Play session actually stops.
+- [ ] From the pause menu, click Photo Mode — camera detaches and flies freely with WASD/QE/mouse/Shift
+      boost; sun and post-processing sliders visibly change the scene; Capture writes a PNG under
+      `persistentDataPath/Screenshots/` with no UI visible in it; Exit (button or Esc) returns to the
+      pause menu with the camera, sun, and post-processing back exactly as they were before entering.
 
 ## Manual verification (skill icons + new skill lines)
 

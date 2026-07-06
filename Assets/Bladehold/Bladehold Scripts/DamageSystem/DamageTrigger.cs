@@ -124,6 +124,7 @@ public class DamageTrigger : MonoBehaviour
             stats.SetBase(StatType.KnockbackForce, 0f);
             stats.SetBase(StatType.ChargeKnockbackBonus, 0f);
             stats.SetBase(StatType.MaxHitsPerSwing, damageTriggerSO.maxHits);
+            stats.SetBase(StatType.IceBreakerDamageBonus, 0f);
 
             stats.OnStatChanged += HandleStatChanged;
             ApplyRangeScale();
@@ -134,6 +135,12 @@ public class DamageTrigger : MonoBehaviour
             {
                 impulseBuff = Player.Instance.GetComponentInChildren<ImpulseBuff>();
             }
+        }
+        else if (Player.Instance != null && ReferenceEquals(ownerDamageable, Player.Instance.Damageable))
+        {
+            // Player-owned ability hitboxes (e.g. the Death Nova) don't read weapon stats, but they
+            // are still "all damage sources" — keep stats around just for the global multiplier.
+            stats = Player.Instance.Stats;
         }
     }
 
@@ -260,6 +267,22 @@ public class DamageTrigger : MonoBehaviour
 
         hitTargets.Add(damageable);
         Damage damage = BuildDamage();
+
+        // Ice Breaker: the player's melee hits slowed/chilled enemies harder. Per-target (unlike
+        // BuildDamage's rolls) because it depends on the target's SlowStatus, not the swing.
+        if (readsPlayerStats && damageable is Component targetComponent)
+        {
+            float iceBreakerBonus = stats.GetValue(StatType.IceBreakerDamageBonus);
+            if (iceBreakerBonus > 0f)
+            {
+                SlowStatus slow = targetComponent.GetComponentInParent<SlowStatus>();
+                if (slow != null && slow.IsSlowed)
+                {
+                    damage.value *= 1f + iceBreakerBonus;
+                }
+            }
+        }
+
         damageable.ReceiveDamage(damage);
         OnHit?.Invoke(damageable, damage, hitPoint);
         return true;
@@ -268,6 +291,20 @@ public class DamageTrigger : MonoBehaviour
     int EffectiveMaxHits()
     {
         return readsPlayerStats ? Mathf.RoundToInt(stats.GetValue(StatType.MaxHitsPerSwing)) : damageTriggerSO.maxHits;
+    }
+
+    /// <summary>
+    ///     The effective <see cref="StatType.AllDamageMultiplier" /> ("Raw Power" skill family) for
+    ///     player-owned triggers, 1 for everything else (enemy hitboxes never get player stats).
+    /// </summary>
+    float GlobalDamageMultiplier()
+    {
+        if (stats == null)
+        {
+            return 1f;
+        }
+        float multiplier = stats.GetValue(StatType.AllDamageMultiplier);
+        return multiplier > 0f ? multiplier : 1f;
     }
 
     Vector3 BladePointPosition(int index)
@@ -282,14 +319,14 @@ public class DamageTrigger : MonoBehaviour
         {
             return new Damage
             {
-                value = damageSO.baseDamage,
+                value = damageSO.baseDamage * GlobalDamageMultiplier(),
                 isCritical = damageSO.isCritical,
                 knockbackForce = knockbackForce,
                 sourcePosition = transform.position,
             };
         }
 
-        float value = stats.GetValue(StatType.SwordDamage);
+        float value = stats.GetValue(StatType.SwordDamage) * GlobalDamageMultiplier();
 
         // Roll crit per target so each enemy in a sweep crits independently.
         bool crit = UnityEngine.Random.value < stats.GetValue(StatType.CritChance);

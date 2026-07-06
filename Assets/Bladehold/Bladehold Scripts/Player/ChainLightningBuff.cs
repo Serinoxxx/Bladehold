@@ -41,10 +41,11 @@ public class ChainLightningBuff : MonoBehaviour
     /// <summary>How many additional enemies a chain can bounce to, including stack bonuses.</summary>
     public int CurrentBounces => anyError ? 0 : Mathf.RoundToInt(stats.GetValue(StatType.ChainLightningBounces));
 
-    /// <summary>Fraction of the triggering hit's damage each bounce deals, including stack bonuses.</summary>
+    /// <summary>Fraction of the triggering hit's damage each bounce deals, including stack bonuses. The
+    /// clamp keeps buff-independent chains (<see cref="ChainLightning.ForceChain" /> at 0 stacks) at 1x.</summary>
     public float CurrentDamagePercent => anyError
         ? 0f
-        : stats.GetValue(StatType.ChainLightningDamagePercent) * (1f + (StackCount - 1) * config.damagePerExtraStackPercent);
+        : stats.GetValue(StatType.ChainLightningDamagePercent) * (1f + Mathf.Max(0, StackCount - 1) * config.damagePerExtraStackPercent);
 
     /// <summary>Chance (0-1) each bounce crits.</summary>
     public float CurrentCritChance => anyError ? 0f : stats.GetValue(StatType.ChainLightningCritChance);
@@ -79,6 +80,10 @@ public class ChainLightningBuff : MonoBehaviour
         stats.SetBase(StatType.ChainLightningBounces, config.baseBounces);
         stats.SetBase(StatType.ChainLightningDamagePercent, config.baseDamagePercent);
         stats.SetBase(StatType.ChainLightningCritChance, config.baseCritChance);
+        // Conduit (incoming Storm Witch lightning) is part of the lightning skill family, so its
+        // bases live here with the rest; LightningBall reads them via Player.Instance.Stats.
+        stats.SetBase(StatType.ConduitDamageReductionPercent, 0f);
+        stats.SetBase(StatType.ConduitChainChance, 0f);
 
         if (auraVisual != null)
         {

@@ -79,11 +79,40 @@ public class ChainLightning : MonoBehaviour
 
     private void HandleHit(IDamageable target, Damage damage, Vector3 hitPoint)
     {
+        TryChain(target, damage.value, hitPoint);
+    }
+
+    /// <summary>
+    ///     Runs one chain from a hit: while the buff is active, hops to nearby not-yet-hit enemies
+    ///     dealing a fraction of <paramref name="triggeringDamage" /> per hop. Public so other player
+    ///     damage sources (the bow's Storm Arrow skill) can chain their hits exactly like sword hits;
+    ///     a no-op while the buff is inactive or the skill line is locked.
+    /// </summary>
+    public void TryChain(IDamageable target, float triggeringDamage, Vector3 hitPoint)
+    {
         if (anyError || !buff.IsActive)
         {
             return;
         }
+        Chain(target, triggeringDamage, hitPoint);
+    }
 
+    /// <summary>
+    ///     Runs a chain regardless of the buff's timer — the lightning source is external (an Unstable
+    ///     Orbs detonation, a Conduit-deflected Storm Witch ball), not the player's charged blade.
+    ///     Still stat-gated: a no-op until the Chain Lightning unlock grants bounces/damage.
+    /// </summary>
+    public void ForceChain(float triggeringDamage, Vector3 hitPoint)
+    {
+        if (anyError)
+        {
+            return;
+        }
+        Chain(null, triggeringDamage, hitPoint);
+    }
+
+    private void Chain(IDamageable target, float triggeringDamage, Vector3 hitPoint)
+    {
         int bounces = buff.CurrentBounces;
         float damagePercent = buff.CurrentDamagePercent;
         if (bounces <= 0 || damagePercent <= 0f)
@@ -96,7 +125,10 @@ public class ChainLightning : MonoBehaviour
         float chainRadius = buff.ChainRadius;
 
         excluded.Clear();
-        excluded.Add(target);
+        if (target != null)
+        {
+            excluded.Add(target);
+        }
         Vector3 origin = hitPoint;
 
         for (int i = 0; i < bounces; i++)
@@ -108,7 +140,7 @@ public class ChainLightning : MonoBehaviour
 
             excluded.Add(found);
 
-            float value = damage.value * damagePercent;
+            float value = triggeringDamage * damagePercent;
             bool crit = Random.value < critChance;
             if (crit)
             {

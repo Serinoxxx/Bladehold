@@ -40,16 +40,27 @@ public class Coin : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (collected)
+        TryCollect(other.gameObject);
+    }
+
+    /// <summary>
+    ///     Collects this coin on behalf of <paramref name="collector" /> (anything holding a
+    ///     <see cref="Wallet" /> in its parents). Walk-over pickup routes through here; remote
+    ///     collectors (the bow's Pickup Arrows, Grave Robber) may call it directly. Returns false if
+    ///     already collected or the collector has no Wallet.
+    /// </summary>
+    public bool TryCollect(GameObject collector)
+    {
+        if (collected || collector == null)
         {
-            return;
+            return false;
         }
 
         // Only the holder of a Wallet (the player) can pick the coin up.
-        Wallet wallet = other.GetComponentInParent<Wallet>();
+        Wallet wallet = collector.GetComponentInParent<Wallet>();
         if (wallet == null)
         {
-            return;
+            return false;
         }
 
         collected = true;
@@ -72,5 +83,6 @@ public class Coin : MonoBehaviour
         }
 
         Destroy(gameObject);
+        return true;
     }
 }

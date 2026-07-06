@@ -33,16 +33,27 @@ public class ImpulseOrb : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (collected)
+        TryCollect(other.gameObject);
+    }
+
+    /// <summary>
+    ///     Collects this orb on behalf of <paramref name="collector" /> (anything holding an
+    ///     <see cref="ImpulseBuff" /> in its parents). Walk-over pickup routes through here; remote
+    ///     collectors (the bow's Pickup Arrows) may call it directly. Returns false if already
+    ///     collected or the collector has no buff.
+    /// </summary>
+    public bool TryCollect(GameObject collector)
+    {
+        if (collected || collector == null)
         {
-            return;
+            return false;
         }
 
         // Only the holder of an ImpulseBuff (the player) can pick the orb up.
-        ImpulseBuff buff = other.GetComponentInParent<ImpulseBuff>();
+        ImpulseBuff buff = collector.GetComponentInParent<ImpulseBuff>();
         if (buff == null)
         {
-            return;
+            return false;
         }
 
         collected = true;
@@ -60,5 +71,28 @@ public class ImpulseOrb : MonoBehaviour
         }
 
         Destroy(gameObject);
+        return true;
+    }
+
+    /// <summary>
+    ///     Consumes this orb without granting the buff — the Unstable Orbs skill detonates it instead
+    ///     (the caller owns the blast; this just spends the orb). Returns false if already collected,
+    ///     so a detonation and a walk-over pickup can never both fire.
+    /// </summary>
+    public bool TryDetonate()
+    {
+        if (collected)
+        {
+            return false;
+        }
+        collected = true;
+
+        if (pickupFeedback != null)
+        {
+            pickupFeedback.PlayFeedbacks();
+        }
+
+        Destroy(gameObject);
+        return true;
     }
 }

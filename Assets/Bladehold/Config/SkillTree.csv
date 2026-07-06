@@ -88,3 +88,73 @@ lightdmg_2,Overcharged Bolts,+15% Chain Lightning damage,50,ChainLightningDamage
 lightdmg_3,Overcharged Bolts,+15% Chain Lightning damage,75,ChainLightningDamagePercent,Flat,0.15,lightdmg_2,7,5,IncreaseStrength_4_nobg,lightdmg
 lightcrit_1,Static Discharge,+10% Chain Lightning crit chance,35,ChainLightningCritChance,Flat,0.1,lightning_unlock,8,3,Critical_strike_nobg,lightcrit
 lightcrit_2,Static Discharge,+10% Chain Lightning crit chance,55,ChainLightningCritChance,Flat,0.1,lightcrit_1,8,4,Critical_strike2_nobg,lightcrit
+alldmg_1,Raw Power,+50% All Damage,60,AllDamageMultiplier,Percent,0.5,sword_dmg_3,5,2,IncreaseStrength_4_nobg,alldmg
+alldmg_2,Raw Power,+50% All Damage,110,AllDamageMultiplier,Percent,0.5,crit_2,-7,3,IncreaseStrength_4_nobg,alldmg
+alldmg_3,Raw Power,+50% All Damage,170,AllDamageMultiplier,Percent,0.5,knock_5,-6,7,IncreaseStrength_4_nobg,alldmg
+alldmg_4,Raw Power,+50% All Damage,240,AllDamageMultiplier,Percent,0.5,sprint_5,4,7,IncreaseStrength_4_nobg,alldmg
+alldmg_5,Raw Power,+50% All Damage,320,AllDamageMultiplier,Percent,0.5,lightdmg_3,7,6,IncreaseStrength_4_nobg,alldmg
+alldmg_6,Raw Power,+50% All Damage,410,AllDamageMultiplier,Percent,0.5,precision_1,12,4,IncreaseStrength_4_nobg,alldmg
+multishot_1,Multi Shot,Fire 1 additional arrow in an arc for 25% of your main arrow's damage,25,BowMultishotArrows,Flat,1,,11,0,,multishot
+multishot_2,Multi Shot,Fire a 2nd additional arrow,40,BowMultishotArrows,Flat,1,multishot_1,12,0,,multishot
+multishot_3,Multi Shot,Fire a 3rd additional arrow,60,BowMultishotArrows,Flat,1,multishot_2,13,0,,multishot
+multishot_4,Multi Shot,Fire a 4th additional arrow,85,BowMultishotArrows,Flat,1,multishot_3,14,0,,multishot
+multishot_5,Multi Shot,Fire a 5th additional arrow,115,BowMultishotArrows,Flat,1,multishot_4,15,0,,multishot
+multishot_6,Multi Shot,Fire a 6th additional arrow,150,BowMultishotArrows,Flat,1,multishot_5,16,0,,multishot
+multishot_7,Multi Shot,Fire a 7th additional arrow,190,BowMultishotArrows,Flat,1,multishot_6,17,0,,multishot
+multidmg_1,Heavy Arrows,Additional arrows deal 40% of your main arrow's damage,30,BowMultishotDamagePercent,Flat,0.15,multishot_1,12,1,,multidmg
+multidmg_2,Heavy Arrows,Additional arrows deal 55% of your main arrow's damage,45,BowMultishotDamagePercent,Flat,0.15,multidmg_1,13,1,,multidmg
+multidmg_3,Heavy Arrows,Additional arrows deal 60% of your main arrow's damage,60,BowMultishotDamagePercent,Flat,0.05,multidmg_2,14,1,,multidmg
+multidmg_4,Heavy Arrows,Additional arrows deal 75% of your main arrow's damage,80,BowMultishotDamagePercent,Flat,0.15,multidmg_3,15,1,,multidmg
+multidmg_5,Heavy Arrows,Additional arrows deal 90% of your main arrow's damage,105,BowMultishotDamagePercent,Flat,0.15,multidmg_4,16,1,,multidmg
+multidmg_6,Heavy Arrows,Additional arrows deal 100% of your main arrow's damage,135,BowMultishotDamagePercent,Flat,0.1,multidmg_5,17,1,,multidmg
+bounce_1,Bounce Shot,Arrows have a 20% chance to bounce to an additional nearby enemy,30,BowBounceChance,Flat,0.2,,11,2,Push_nobg,bounce
+bounce_2,Bounce Shot,Arrows have a 40% chance to bounce to an additional nearby enemy,50,BowBounceChance,Flat,0.2,bounce_1,12,2,Push_nobg,bounce
+bounce_3,Bounce Shot,Arrows have a 60% chance to bounce to an additional nearby enemy,75,BowBounceChance,Flat,0.2,bounce_2,13,2,Push_nobg,bounce
+bounce_4,Bounce Shot,Arrows have an 80% chance to bounce to an additional nearby enemy,105,BowBounceChance,Flat,0.2,bounce_3,14,2,Push_nobg,bounce
+bounce_5,Bounce Shot,Arrows always bounce to an additional nearby enemy,140,BowBounceChance,Flat,0.2,bounce_4,15,2,Push_nobg,bounce
+precision_1,Precision Shot,Arrows deal 100% more damage to vulnerable parts on enemies,25,BowPrecisionDamageBonus,Flat,1,,11,3,Critical_strike_nobg,precision
+precision_2,Precision Shot,Arrows deal 150% more damage to vulnerable parts on enemies,40,BowPrecisionDamageBonus,Flat,0.5,precision_1,12,3,Critical_strike_nobg,precision
+precision_3,Precision Shot,Arrows deal 200% more damage to vulnerable parts on enemies,60,BowPrecisionDamageBonus,Flat,0.5,precision_2,13,3,Critical_strike2_nobg,precision
+precision_4,Precision Shot,Arrows deal 250% more damage to vulnerable parts on enemies,85,BowPrecisionDamageBonus,Flat,0.5,precision_3,14,3,Critical_strike2_nobg,precision
+precision_5,Precision Shot,Arrows deal 300% more damage to vulnerable parts on enemies,115,BowPrecisionDamageBonus,Flat,0.5,precision_4,15,3,Critical_strike3_nobg,precision
+precision_6,Precision Shot,Arrows deal 350% more damage to vulnerable parts on enemies,150,BowPrecisionDamageBonus,Flat,0.5,precision_5,16,3,Critical_strike3_nobg,precision
+precision_7,Precision Shot,Arrows deal 400% more damage to vulnerable parts on enemies,190,BowPrecisionDamageBonus,Flat,0.5,precision_6,17,3,Critical_strike4_nobg,precision
+pickuparrow_1,Retriever,Arrows collect gold and power-ups they fly past,45,BowPickupArrows,Flat,1,,11,4,GoldCoin,
+imparrow_1,Impulse Arrow,Arrows are affected by your Impulse Orb buff: hits fling enemies skyward,50,BowImpulseArrows,Flat,1,impulse_unlock,-7,0,Warriorskill_05_nobg,
+stormarrow_1,Storm Arrow,Arrows are affected by your Chain Lightning buff: hits chain to nearby enemies,50,BowStormArrows,Flat,1,lightning_unlock,9,1,Warriorskill_05_nobg,
+unstableorbs_1,Unstable Orbs,Your main arrow detonates Impulse and Lightning Orbs it strikes: an impulse blast or chain lightning erupts from the orb,45,BowUnstableOrbs,Flat,1,stormarrow_1;imparrow_1,10,1,Warriorskill_05_nobg,
+conduit_1,Conduit,Lightning balls deal 10% less damage to you and have a 10% chance to arc chain lightning at your foes,30,ConduitDamageReductionPercent;ConduitChainChance,Flat;Flat,0.1;0.1,lightning_unlock,9,3,Warriorskill_05_nobg,conduit
+conduit_2,Conduit,Lightning balls deal 20% less damage to you and have a 20% chance to arc chain lightning at your foes,50,ConduitDamageReductionPercent;ConduitChainChance,Flat;Flat,0.1;0.1,conduit_1,10,3,Warriorskill_05_nobg,conduit
+conduit_3,Conduit,Lightning balls deal 30% less damage to you and have a 30% chance to arc chain lightning at your foes,75,ConduitDamageReductionPercent;ConduitChainChance,Flat;Flat,0.1;0.1,conduit_2,9,4,Warriorskill_05_nobg,conduit
+conduit_4,Conduit,Lightning balls deal 40% less damage to you and have a 40% chance to arc chain lightning at your foes,105,ConduitDamageReductionPercent;ConduitChainChance,Flat;Flat,0.1;0.1,conduit_3,10,4,Warriorskill_05_nobg,conduit
+explodeheads_1,Exploding Heads,Headshots detonate an impulse blast dealing 25% of the arrow's damage,35,ExplodingHeadsDamagePercent,Flat,0.25,precision_1,13,4,Push_nobg,explodeheads
+explodeheads_2,Exploding Heads,Headshots detonate an impulse blast dealing 50% of the arrow's damage,55,ExplodingHeadsDamagePercent,Flat,0.25,explodeheads_1,14,4,Push_nobg,explodeheads
+explodeheads_3,Exploding Heads,Headshots detonate an impulse blast dealing 75% of the arrow's damage,80,ExplodingHeadsDamagePercent,Flat,0.25,explodeheads_2,15,4,Push_nobg,explodeheads
+explodeheads_4,Exploding Heads,Headshots detonate an impulse blast dealing 100% of the arrow's damage,110,ExplodingHeadsDamagePercent,Flat,0.25,explodeheads_3,16,4,Push_nobg,explodeheads
+midas_1,Arrows of Midas,Arrows have a 5% chance to turn an enemy golden,30,MidasChance,Flat,0.05,pickuparrow_1,11,5,GoldCoin,midas
+midas_2,Arrows of Midas,Arrows have a 10% chance to turn an enemy golden,50,MidasChance,Flat,0.05,midas_1,12,5,GoldCoin,midas
+midas_3,Arrows of Midas,Arrows have a 15% chance to turn an enemy golden,75,MidasChance,Flat,0.05,midas_2,13,5,GoldCoinThree,midas
+midas_4,Arrows of Midas,Arrows have a 20% chance to turn an enemy golden,105,MidasChance,Flat,0.05,midas_3,14,5,GoldCoinThree,midas
+midas_5,Arrows of Midas,Arrows have a 25% chance to turn an enemy golden,140,MidasChance,Flat,0.05,midas_4,15,5,GoldCoinTen,midas
+freezedraw_1,Freezing Draw,Nearby enemies are slowed 10% while you draw your bow,20,FreezingDrawSlowPercent,Flat,0.1,,10,6,,freezedraw
+freezedraw_2,Freezing Draw,Nearby enemies are slowed 20% while you draw your bow,30,FreezingDrawSlowPercent,Flat,0.1,freezedraw_1,11,6,,freezedraw
+freezedraw_3,Freezing Draw,Nearby enemies are slowed 30% while you draw your bow,42,FreezingDrawSlowPercent,Flat,0.1,freezedraw_2,12,6,,freezedraw
+freezedraw_4,Freezing Draw,Nearby enemies are slowed 40% while you draw your bow,56,FreezingDrawSlowPercent,Flat,0.1,freezedraw_3,13,6,,freezedraw
+freezedraw_5,Freezing Draw,Nearby enemies are slowed 50% while you draw your bow,72,FreezingDrawSlowPercent,Flat,0.1,freezedraw_4,14,6,,freezedraw
+freezedraw_6,Freezing Draw,Nearby enemies are slowed 60% while you draw your bow,90,FreezingDrawSlowPercent,Flat,0.1,freezedraw_5,15,6,,freezedraw
+freezedraw_7,Freezing Draw,Nearby enemies are slowed 70% while you draw your bow,110,FreezingDrawSlowPercent,Flat,0.1,freezedraw_6,16,6,,freezedraw
+freezedraw_8,Freezing Draw,Nearby enemies are slowed 80% while you draw your bow,135,FreezingDrawSlowPercent,Flat,0.1,freezedraw_7,17,6,,freezedraw
+brainfreeze_1,Brain Freeze,Headshots chill enemies for 3s: movement and attacks slowed 15%,25,BrainFreezeSlowPercent,Flat,0.15,freezedraw_1,11,7,,brainfreeze
+brainfreeze_2,Brain Freeze,Headshots chill enemies for 3s: movement and attacks slowed 30%,40,BrainFreezeSlowPercent,Flat,0.15,brainfreeze_1,12,7,,brainfreeze
+brainfreeze_3,Brain Freeze,Headshots chill enemies for 3s: movement and attacks slowed 45%,60,BrainFreezeSlowPercent,Flat,0.15,brainfreeze_2,13,7,,brainfreeze
+brainfreeze_4,Brain Freeze,Headshots chill enemies for 3s: movement and attacks slowed 60%,85,BrainFreezeSlowPercent,Flat,0.15,brainfreeze_3,14,7,,brainfreeze
+brainfreeze_5,Brain Freeze,Headshots chill enemies for 3s: movement and attacks slowed 75%,115,BrainFreezeSlowPercent,Flat,0.15,brainfreeze_4,15,7,,brainfreeze
+elongfreeze_1,Elongated Freeze,Enemies slowed by Freezing Draw or Brain Freeze stay slowed 2 seconds longer,30,SlowDurationBonusSeconds,Flat,2,freezedraw_1;brainfreeze_1,11,8,,elongfreeze
+elongfreeze_2,Elongated Freeze,Slows linger 3 seconds longer,45,SlowDurationBonusSeconds,Flat,1,elongfreeze_1,12,8,,elongfreeze
+elongfreeze_3,Elongated Freeze,Slows linger 4 seconds longer,65,SlowDurationBonusSeconds,Flat,1,elongfreeze_2,13,8,,elongfreeze
+elongfreeze_4,Elongated Freeze,Slows linger 5 seconds longer,90,SlowDurationBonusSeconds,Flat,1,elongfreeze_3,14,8,,elongfreeze
+elongfreeze_5,Elongated Freeze,Slows linger 6 seconds longer,120,SlowDurationBonusSeconds,Flat,1,elongfreeze_4,15,8,,elongfreeze
+icebreaker_1,Ice Breaker,Your sword deals 50% more damage to slowed enemies,35,IceBreakerDamageBonus,Flat,0.5,freezedraw_2;brainfreeze_1,16,7,IncreaseStrength_1_nobg,icebreaker
+icebreaker_2,Ice Breaker,Your sword deals 100% more damage to slowed enemies,60,IceBreakerDamageBonus,Flat,0.5,icebreaker_1,17,7,IncreaseStrength_2_nobg,icebreaker
+icebreaker_3,Ice Breaker,Your sword deals 150% more damage to slowed enemies,90,IceBreakerDamageBonus,Flat,0.5,icebreaker_2,16,8,IncreaseStrength_3_nobg,icebreaker
+icebreaker_4,Ice Breaker,Your sword deals 200% more damage to slowed enemies,125,IceBreakerDamageBonus,Flat,0.5,icebreaker_3,17,8,IncreaseStrength_4_nobg,icebreaker

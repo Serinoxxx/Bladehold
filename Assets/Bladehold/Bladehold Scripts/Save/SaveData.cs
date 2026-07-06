@@ -28,4 +28,21 @@ public class SaveData
     ///     reincarnating, since the point tree is the permanent progression layer.
     /// </summary>
     public List<string> purchasedReincarnateNodeIds = new List<string>();
+
+    /// <summary>Linear 0-1 volumes applied by <see cref="GameSettingsService" />.</summary>
+    public float masterVolume = 1f;
+    public float musicVolume = 1f;
+    public float sfxVolume = 1f;
+
+    /// <summary>Mouse look sensitivity, matching the vendored camera controller's own default.</summary>
+    public float mouseSensitivity = 5f;
+    public bool invertLookX;
+    public bool invertLookY;
+
+    /// <summary>
+    ///     Serialized Input System binding overrides for the vendored gameplay Controls asset (button
+    ///     remapping), produced by <see cref="InputSettingsBinder.SaveBindingOverridesToJson" />. Empty
+    ///     string means no overrides — every binding stays at its authored default.
+    /// </summary>
+    public string inputBindingOverridesJson = "";
 }

@@ -2,3 +2,4 @@ id          ,displayName ,health,damage,minGold,maxGold,speed,scale,unlockWave,s
 goblin      ,Goblin      ,    10,     1,      2,      5,    5,    1,         1,           ,        ,             ,
 goblin_brute,Goblin Brute,    25,   2.5,     15,     30,    4, 1.25,         4,         50,      1  ,            3,                 3
 storm_witch ,Storm Witch ,    20,     3,     10,     20,  3.5,    1,         6,         25,         ,            2,                 2
+troll       ,Troll       ,   180,    40,     50,    100,  2.5,  1.6,         8,         15,        1,            1,                 6

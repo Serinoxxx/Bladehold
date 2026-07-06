@@ -6,6 +6,8 @@ public class AIMovement : MonoBehaviour
     [SerializeField] private NavMeshAgent agent;
     [SerializeField] AIMovementSO movementSO;
     [SerializeField] Health health;
+    [Tooltip("Optional target-selection layer (gate defense). Without it, the agent chases the player as before.")]
+    [SerializeField] AITargetSelector targetSelector;
 
     Player player;
     Health playerHealth;
@@ -24,12 +26,23 @@ public class AIMovement : MonoBehaviour
     {
         speedOverride = value;
     }
+
+    /// <summary>
+    ///     This enemy's unslowed agent speed (the roster override or the SO value) — what
+    ///     <see cref="SlowStatus" /> scales from and restores to, so its own writes to
+    ///     <c>agent.speed</c> never compound.
+    /// </summary>
+    public float BaseSpeed => speedOverride ?? (movementSO != null ? movementSO.speed : 0f);
     private void OnValidate()
     {
         agent = GetComponent<NavMeshAgent>();
         if (health == null)
         {
             health = GetComponent<Health>();
+        }
+        if (targetSelector == null)
+        {
+            targetSelector = GetComponent<AITargetSelector>();
         }
     }
 
@@ -144,7 +157,10 @@ public class AIMovement : MonoBehaviour
         if (Time.time - lastUpdateTime >= repathInterval)
         {
             lastUpdateTime = Time.time;
-            agent.SetDestination(player.transform.position);
+            // The selector (gate defense) picks between the player and a gate; without one, the
+            // player is the only target, as before.
+            Vector3 destination = targetSelector != null ? targetSelector.TargetPosition : player.transform.position;
+            agent.SetDestination(destination);
             UpdateAvoidanceTier();
         }
     }

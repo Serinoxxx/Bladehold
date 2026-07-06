@@ -14,6 +14,8 @@ public class AIAttack : MonoBehaviour
     [SerializeField] private Animator animator;
     [SerializeField] private Health health;
     [SerializeField] private AIAttackSO attackData;
+    [Tooltip("Optional target-selection layer (gate defense): the attack lands on the current target — gate or player. Without it, only the player is ever attacked, as before.")]
+    [SerializeField] private AITargetSelector targetSelector;
     [SerializeField] private MMF_Player startAttackFeedback;
     [SerializeField] private MMF_Player attackHitFeedback;
 
@@ -50,6 +52,10 @@ public class AIAttack : MonoBehaviour
         if (health == null)
         {
             health = GetComponent<Health>();
+        }
+        if (targetSelector == null)
+        {
+            targetSelector = GetComponent<AITargetSelector>();
         }
     }
 
@@ -131,17 +137,35 @@ public class AIAttack : MonoBehaviour
 
         if (Time.time - lastAttackTime < attackData.attackCooldown) return;
 
-        if (IsPlayerInRange())
+        if (IsTargetInRange())
         {
             StartAttack();
         }
     }
 
-    private bool IsPlayerInRange()
+    /// <summary>The current target's damage sink — the selector's pick (gate or player), else the player.</summary>
+    private IDamageable CurrentTargetDamageable()
     {
-        if (player == null) return false;
+        return targetSelector != null ? targetSelector.TargetDamageable : playerDamageable;
+    }
 
-        float sqrDistance = (player.position - transform.position).sqrMagnitude;
+    private bool IsTargetInRange()
+    {
+        Vector3 targetPosition;
+        if (targetSelector != null)
+        {
+            targetPosition = targetSelector.TargetPosition;
+        }
+        else if (player != null)
+        {
+            targetPosition = player.position;
+        }
+        else
+        {
+            return false;
+        }
+
+        float sqrDistance = (targetPosition - transform.position).sqrMagnitude;
         return sqrDistance <= attackData.attackRange * attackData.attackRange;
     }
 
@@ -163,13 +187,15 @@ public class AIAttack : MonoBehaviour
         // for frame-perfect timing.)
         yield return new WaitForSeconds(attackData.windupToApex);
 
-        // Only connect if this goblin is still alive, the player is still alive, and in range.
-        if (isDead || playerDead || playerDamageable == null || !IsPlayerInRange())
+        // Only connect if this goblin is still alive, the run is still going, and the target it
+        // wound up on (re-resolved — it may have switched between player and gate) is still in range.
+        IDamageable target = CurrentTargetDamageable();
+        if (isDead || playerDead || target == null || !IsTargetInRange())
         {
             yield break;
         }
 
-        playerDamageable.ReceiveDamage(new Damage
+        target.ReceiveDamage(new Damage
         {
             value = damageOverride ?? attackData.damage,
             type = attackData.damageType

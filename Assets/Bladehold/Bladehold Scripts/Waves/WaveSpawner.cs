@@ -89,7 +89,7 @@ public class WaveSpawner : MonoBehaviour
 
     private Health playerHealth;
     private PlayerStats stats;
-    private bool playerDead = false;
+    private bool runOver = false;   // the run has ended — the player died or a gate fell
     private bool anyError = false;
 
     private void Awake()
@@ -114,6 +114,7 @@ public class WaveSpawner : MonoBehaviour
         {
             playerHealth.OnDied -= HandlePlayerDied;
         }
+        Gate.OnAnyGateDestroyed -= HandleGateDestroyed;
     }
 
     private void Start()
@@ -141,13 +142,14 @@ public class WaveSpawner : MonoBehaviour
         // Resume from the wave a previous run set (1 by default). Clamp so a stale value can't start below 1.
         CurrentWave = Mathf.Max(1, RunState.StartingWave);
 
-        // Stop spawning once the player dies.
+        // Stop spawning once the run ends — player death, or any gate falling (gate defense).
         Player player = Player.Instance;
         if (player != null && player.Health != null)
         {
             playerHealth = player.Health;
             playerHealth.OnDied += HandlePlayerDied;
         }
+        Gate.OnAnyGateDestroyed += HandleGateDestroyed;
 
         // Golden Goblin is entirely Reincarnate-upgrade-granted, so the bases start at 0 (no chance, no bonus)
         // until a node raises them. Optional: the game still works with no PlayerStats, golden goblins just
@@ -215,8 +217,13 @@ public class WaveSpawner : MonoBehaviour
 
     private void HandlePlayerDied()
     {
-        playerDead = true;
-        // RunWaves / SpawnLoop both watch playerDead and exit on their own.
+        runOver = true;
+        // RunWaves / SpawnLoop both watch runOver and exit on their own.
+    }
+
+    private void HandleGateDestroyed(Gate gate)
+    {
+        runOver = true;
     }
 
     private IEnumerator RunWaves()
@@ -225,13 +232,13 @@ public class WaveSpawner : MonoBehaviour
         // since script execution order between this and the UI isn't guaranteed.
         yield return null;
 
-        while (!playerDead)
+        while (!runOver)
         {
             // Remember the wave we're on so a death mid-wave can restart from it.
             RunState.StartingWave = CurrentWave;
 
             yield return StartCoroutine(Countdown());
-            if (playerDead)
+            if (runOver)
             {
                 yield break;
             }
@@ -239,11 +246,11 @@ public class WaveSpawner : MonoBehaviour
             BeginWave();
 
             // Wait until every goblin this wave has been killed.
-            while (killedThisWave < waveGoblinTotal && !playerDead)
+            while (killedThisWave < waveGoblinTotal && !runOver)
             {
                 yield return null;
             }
-            if (playerDead)
+            if (runOver)
             {
                 yield break;
             }
@@ -256,7 +263,7 @@ public class WaveSpawner : MonoBehaviour
 
     private IEnumerator Countdown()
     {
-        for (int remaining = config.timeBetweenWaves; remaining > 0 && !playerDead; remaining--)
+        for (int remaining = config.timeBetweenWaves; remaining > 0 && !runOver; remaining--)
         {
             CountdownTick?.Invoke(remaining);
             yield return new WaitForSeconds(1f);
@@ -287,7 +294,7 @@ public class WaveSpawner : MonoBehaviour
     /// </summary>
     private IEnumerator SpawnLoop()
     {
-        while (remainingToSpawn > 0 && !playerDead)
+        while (remainingToSpawn > 0 && !runOver)
         {
             if (aliveCount < config.maxConcurrent)
             {
@@ -419,6 +426,7 @@ public class WaveSpawner : MonoBehaviour
             enemy.GetComponent<AIAttack>()?.SetDamage(def.damage.Value);
             enemy.GetComponent<LightningBallAttack>()?.SetDamage(def.damage.Value);
             enemy.GetComponent<LightningStormAttack>()?.SetDamage(def.damage.Value);
+            enemy.GetComponent<TrollSlamAttack>()?.SetDamage(def.damage.Value);
         }
         if (def.minGold.HasValue)
         {
@@ -453,7 +461,7 @@ public class WaveSpawner : MonoBehaviour
     /// </summary>
     public void DebugAdvanceWave()
     {
-        if (anyError || playerDead)
+        if (anyError || runOver)
         {
             return;
         }
@@ -480,7 +488,7 @@ public class WaveSpawner : MonoBehaviour
     /// </summary>
     public void DebugSpawnBurst(int count)
     {
-        if (anyError || playerDead || !waveInProgress || count <= 0)
+        if (anyError || runOver || !waveInProgress || count <= 0)
         {
             return;
         }
@@ -494,7 +502,7 @@ public class WaveSpawner : MonoBehaviour
     {
         const int spawnsPerFrame = 25;
         // remainingToSpawn can hit zero mid-burst if DebugAdvanceWave cancels the wave under us.
-        for (int i = 0; i < count && !playerDead && remainingToSpawn > 0; i++)
+        for (int i = 0; i < count && !runOver && remainingToSpawn > 0; i++)
         {
             SpawnEnemy();
             if ((i + 1) % spawnsPerFrame == 0)

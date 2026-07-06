@@ -25,6 +25,8 @@ public class PlayerAttack : MonoBehaviour
     [Tooltip("Synty InputReader that raises the attack press/release events. Usually on the player root.")]
     [SerializeField] private InputReader inputReader;
     [SerializeField] private PlayerStats stats;
+    [Tooltip("Optional: the player's bow. While it is aiming, attack presses fire arrows instead of swinging, so the sword hold-to-charge is skipped.")]
+    [SerializeField] private PlayerBow bow;
 
     [Tooltip("Seconds of holding the attack button to gain each charge level (level 1 at 1×, level 2 at 2×, ...).")]
     [SerializeField] private float chargeTimePerLevel = 1f;
@@ -58,6 +60,10 @@ public class PlayerAttack : MonoBehaviour
         if (stats == null)
         {
             stats = GetComponent<PlayerStats>();
+        }
+        if (bow == null)
+        {
+            bow = GetComponentInChildren<PlayerBow>();
         }
     }
 
@@ -142,6 +148,10 @@ public class PlayerAttack : MonoBehaviour
     private void HandlePressed()
     {
         if (anyError) return;
+
+        // While the bow is drawn, this press fires an arrow (PlayerBow suppresses the swing) — don't
+        // start timing a sword charge that can never land.
+        if (bow != null && bow.IsAiming) return;
 
         ChargeLevel = 0;
         AttackDamageMultiplier = 1f;

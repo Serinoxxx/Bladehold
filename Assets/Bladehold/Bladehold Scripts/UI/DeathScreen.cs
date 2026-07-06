@@ -5,16 +5,24 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
-///     Fades in a death screen when the player dies, showing goblins killed and gold earned this run
-///     (from <see cref="GameStats" />) plus the player's total gold (from <see cref="Wallet" />), and
-///     offers two restart options: from wave 1, or from the wave the player died on (via
-///     <see cref="RunState" />). Both reload the scene. Listens to the player's <see cref="Health.OnDied" />
-///     through the <see cref="Player" /> singleton.
+///     Fades in a death screen when the run ends — the player dying (the player's
+///     <see cref="Health.OnDied" /> via the <see cref="Player" /> singleton) or, in gate defense, any
+///     <see cref="Gate" /> falling (<see cref="Gate.OnAnyGateDestroyed" />; time is frozen for that
+///     one since the player is still alive behind the screen). Shows goblins killed and gold earned
+///     this run (from <see cref="GameStats" />) plus the player's total gold (from
+///     <see cref="Wallet" />), and offers two restart options: from wave 1, or from the wave the run
+///     ended on (via <see cref="RunState" />). Both reload the scene.
 /// </summary>
 [RequireComponent(typeof(CanvasGroup))]
 public class DeathScreen : MonoBehaviour
 {
     [SerializeField] private CanvasGroup canvasGroup;
+    [Tooltip("Optional headline label, set per loss condition (see the two title strings below).")]
+    [SerializeField] private TMP_Text titleText;
+    [Tooltip("Headline when the player died.")]
+    [SerializeField] private string playerDiedTitle = "You Died";
+    [Tooltip("Headline when a gate fell (gate defense).")]
+    [SerializeField] private string gateFellTitle = "The Gate Has Fallen";
     [SerializeField] private TMP_Text goblinsKilledText;
     [SerializeField] private TMP_Text goldEarnedText;
     [SerializeField] private TMP_Text totalGoldText;
@@ -37,6 +45,7 @@ public class DeathScreen : MonoBehaviour
 
     private Health playerHealth;
     private bool reincarnateBanked = false;
+    private bool shown = false;   // latch: the run only ends once, whichever signal fires first
     private bool anyError = false;
 
     private void OnValidate()
@@ -95,6 +104,7 @@ public class DeathScreen : MonoBehaviour
 
         playerHealth = player.Health;
         playerHealth.OnDied += HandlePlayerDied;
+        Gate.OnAnyGateDestroyed += HandleGateDestroyed;
     }
 
     private void OnDestroy()
@@ -103,6 +113,7 @@ public class DeathScreen : MonoBehaviour
         {
             playerHealth.OnDied -= HandlePlayerDied;
         }
+        Gate.OnAnyGateDestroyed -= HandleGateDestroyed;
         if (tryAgainButton != null)
         {
             tryAgainButton.onClick.RemoveListener(RestartFromLevelOne);
@@ -119,6 +130,30 @@ public class DeathScreen : MonoBehaviour
 
     private void HandlePlayerDied()
     {
+        ShowRunOver(playerDiedTitle);
+    }
+
+    private void HandleGateDestroyed(Gate gate)
+    {
+        // Unlike a player death, the player is still alive and controllable — freeze time so the
+        // run visibly ends behind the screen. Reload() restores the timescale.
+        Time.timeScale = 0f;
+        ShowRunOver(gateFellTitle);
+    }
+
+    private void ShowRunOver(string title)
+    {
+        if (shown)
+        {
+            return;
+        }
+        shown = true;
+
+        if (titleText != null)
+        {
+            titleText.text = title;
+        }
+
         int killed = GameStats.Instance != null ? GameStats.Instance.GoblinsKilled : 0;
         int earned = GameStats.Instance != null ? GameStats.Instance.GoldEarnedThisRun : 0;
         int total = Player.Instance != null && Player.Instance.Wallet != null ? Player.Instance.Wallet.Coins : 0;
