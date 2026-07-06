@@ -491,32 +491,32 @@ these headlessly. See `Assets/Bladehold/Bladehold Scripts/Enemies/LightningBallA
 `Enemies/LightningStormAttack*.cs`, `Enemies/LightningOrbDropper.cs`, `Economy/LightningOrb.cs`,
 `Player/ChainLightning*.cs`, and `Config/Enemies.csv`/`Config/SkillTree.csv` for the code side.
 
-- [ ] **Create SO asset instances** (each already has a `[CreateAssetMenu]` entry):
-  - [ ] `LightningBallAttackSO` — tune `attackRange`/`damage`/`ballSpeed`/`ballLifetime`/
+- [x] **Create SO asset instances** (each already has a `[CreateAssetMenu]` entry):
+  - [x] `LightningBallAttackSO` — tune `attackRange`/`damage`/`ballSpeed`/`ballLifetime`/
         `windupToApex`/`attackCooldown`.
-  - [ ] `LightningStormAttackSO` — tune `castRange`/`castCooldown`/`stormRadius`/`stormDuration`/
+  - [x] `LightningStormAttackSO` — tune `castRange`/`castCooldown`/`stormRadius`/`stormDuration`/
         `strikeInterval`/`strikeDamage`.
-  - [ ] `ChainLightningSO` — leave `baseBounces`/`baseDamagePercent`/`baseOrbDurationSeconds` at 0
+  - [x] `ChainLightningSO` — leave `baseBounces`/`baseDamagePercent`/`baseOrbDurationSeconds` at 0
         (locked until skill nodes are bought); tune `chainRadius`/`damagePerExtraStackPercent`.
 
-- [ ] **LightningBall prefab**: kinematic `Rigidbody` + trigger `SphereCollider` + `LightningBall`
+- [x] **LightningBall prefab**: kinematic `Rigidbody` + trigger `SphereCollider` + `LightningBall`
       component; optional impact VFX/SFX.
 
-- [ ] **LightningStormZone prefab**: just a `LightningStormZone` component (uses `OverlapSphere`, no
+- [x] **LightningStormZone prefab**: just a `LightningStormZone` component (uses `OverlapSphere`, no
       collider needed) + optional strike VFX/SFX.
 
-- [ ] **LightningOrb prefab**: trigger `Collider` + `LightningOrb` component — mirrors the existing
+- [x] **LightningOrb prefab**: trigger `Collider` + `LightningOrb` component — mirrors the existing
       `ImpulseOrb` prefab (`DamageNumber` popup, pickup `MMF_Player`, lifetime).
 
-- [ ] **Storm Witch prefab**: build with `Health`, `AIMovement`, `AIAnimation`,
+- [x] **Storm Witch prefab**: build with `Health`, `AIMovement`, `AIAnimation`,
       `LightningBallAttack` (assign `firePoint`, `ballPrefab`, the `LightningBallAttackSO`),
       `LightningStormAttack` (assign `stormZonePrefab`, the `LightningStormAttackSO`),
       `LightningOrbDropper` (assign `orbPrefab`), plus `ImpulseReceiver`/`KnockbackReceiver` like
       other enemies.
-  - [ ] Register the prefab in `WaveSpawner`'s `enemyPrefabs` list under id `storm_witch` (row
+  - [x] Register the prefab in `WaveSpawner`'s `enemyPrefabs` list under id `storm_witch` (row
         already in `Config/Enemies.csv`).
 
-- [ ] **Player prefab** (`Assets/Bladehold/Bladehold Prefabs/Player.prefab`): add a
+- [x] **Player prefab** (`Assets/Bladehold/Bladehold Prefabs/Player.prefab`): add a
       `ChainLightningBuff` component (assign the `ChainLightningSO`) and a `ChainLightning`
       component (assign the sword's `DamageTrigger` explicitly — same precedent as `VampiricBlade` —
       and set `enemyLayers`) on the player root.

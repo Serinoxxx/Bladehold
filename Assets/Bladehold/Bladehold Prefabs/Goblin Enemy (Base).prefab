@@ -430,7 +430,7 @@ GameObject:
   - component: {fileID: 7287549992360804403}
   - component: {fileID: 6790884973619429240}
   m_Layer: 7
-  m_Name: Goblin Enemy
+  m_Name: Goblin Enemy (Base)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

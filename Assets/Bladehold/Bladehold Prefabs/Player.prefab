@@ -1839,6 +1839,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8241250634216195633}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4664109616690436507}
   m_SourcePrefab: {fileID: 100100000, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
 --- !u!4 &1570487432797161804 stripped
 Transform:
@@ -2775,6 +2778,25 @@ MonoBehaviour:
   pulseOutSeconds: 0.3
   pulseRange: 8
   forceForMaxPulse: 25
+--- !u!114 &4664109616690436507
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8033356972124291578}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a248854a83a0d8040b1e0079c524a7fa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ChainLightning
+  swordTrigger: {fileID: 1385601990044069648}
+  buff: {fileID: 2961273703423059463}
+  stats: {fileID: 5156588240620538864}
+  enemyLayers:
+    serializedVersion: 2
+    m_Bits: 128
+  bounceVfxPrefab: {fileID: 1190131086089332, guid: 0bd177434eca5da43a8235ff71e707e9, type: 3}
 --- !u!137 &8844904305191094916 stripped
 SkinnedMeshRenderer:
   m_CorrespondingSourceObject: {fileID: 1802064171929466415, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
