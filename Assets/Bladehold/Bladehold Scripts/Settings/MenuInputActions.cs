@@ -20,6 +20,8 @@ public class MenuInputActions
     public InputAction Move { get; }
     public InputAction UpDown { get; }
     public InputAction Look { get; }
+    /// <summary>Held to rotate the fly camera with <see cref="Look" /> — click-and-drag, so the cursor stays usable on the Photo Mode sliders.</summary>
+    public InputAction Drag { get; }
     public InputAction Boost { get; }
     public InputAction Capture { get; }
 
@@ -46,6 +48,9 @@ public class MenuInputActions
 
         Look = ScreenshotFly.AddAction("Look", InputActionType.Value);
         Look.AddBinding("<Mouse>/delta");
+
+        Drag = ScreenshotFly.AddAction("Drag", InputActionType.Button);
+        Drag.AddBinding("<Mouse>/leftButton");
 
         Boost = ScreenshotFly.AddAction("Boost", InputActionType.Button);
         Boost.AddBinding("<Keyboard>/leftShift");

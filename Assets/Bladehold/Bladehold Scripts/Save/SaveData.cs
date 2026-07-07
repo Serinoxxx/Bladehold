@@ -34,6 +34,13 @@ public class SaveData
     public float musicVolume = 1f;
     public float sfxVolume = 1f;
 
+    /// <summary>
+    ///     Max ragdolls simulating at once (0-50), applied by <see cref="GameSettingsService" /> to
+    ///     <see cref="EnemyRagdoll.MaxActive" />. Trades physics fidelity for performance — kills/flings
+    ///     beyond this cap fall back to a normal animated death/knockdown.
+    /// </summary>
+    public int maxRagdolls = 12;
+
     /// <summary>Mouse look sensitivity, matching the vendored camera controller's own default.</summary>
     public float mouseSensitivity = 5f;
     public bool invertLookX;

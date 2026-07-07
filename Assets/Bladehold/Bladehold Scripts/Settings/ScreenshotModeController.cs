@@ -7,20 +7,42 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
 /// <summary>
+///     The adjustable Photo Mode settings — the shared vocabulary between
+///     <see cref="ScreenshotModeController" /> (which knows how to apply each one) and
+///     <see cref="ScreenshotModePanel" /> (which pairs each with a slider + reset button).
+/// </summary>
+public enum PhotoSetting
+{
+    SunIntensity,
+    SunPitch,
+    SunYaw,
+    Bloom,
+    Vignette,
+    Exposure,
+    Contrast,
+    Saturation,
+    FocusDistance,
+    Aperture,
+    FieldOfView,
+}
+
+/// <summary>
 ///     Photo Mode: only reachable from the pause menu (see <see cref="PauseMenuController" />), so it
 ///     reuses the already-frozen/cursor-unlocked state rather than managing its own. Detaches the Main
-///     Camera to a free-fly rig (<see cref="ScreenshotFlyCamera" />) and exposes live setters for the
-///     sun light and the scene's post-processing <see cref="Volume" /> for <see cref="ScreenshotModePanel" />
-///     to bind sliders to. Everything touched here — camera pose/FOV, light, and any Volume overrides
-///     added on the fly (<c>ColorAdjustments</c>/<c>DepthOfField</c> aren't on the authored profile yet)
-///     — is cached on <see cref="Enter" /> and restored on <see cref="Exit" />, so nothing leaks into
-///     normal gameplay.
+///     Camera to a free-fly rig (<see cref="ScreenshotFlyCamera" />) and exposes the
+///     <see cref="PhotoSetting" /> values on the sun light, the scene's post-processing
+///     <see cref="Volume" />, and the camera through <see cref="Set" />/<see cref="Get" /> for
+///     <see cref="ScreenshotModePanel" /> to bind sliders to. Everything touched here — camera
+///     pose/FOV, light, and any Volume overrides added on the fly (<c>ColorAdjustments</c>/
+///     <c>DepthOfField</c> aren't on the authored profile yet) — is cached on <see cref="Enter" />
+///     (readable per-setting via <see cref="GetEnterValue" />, which is what the panel's reset buttons
+///     restore) and restored on <see cref="Exit" />, so nothing leaks into normal gameplay.
 /// </summary>
 public class ScreenshotModeController : MonoBehaviour
 {
     [SerializeField] private Camera mainCamera;
     [SerializeField] private ScreenshotFlyCamera flyCamera;
-    [Tooltip("Optional: the scene's directional sun light, for the intensity/pitch sliders.")]
+    [Tooltip("Optional: the scene's directional sun light, for the intensity/pitch/yaw sliders.")]
     [SerializeField] private Light sunLight;
     [Tooltip("Optional: the scene's Global Volume, for the post-processing sliders.")]
     [SerializeField] private Volume globalVolume;
@@ -50,11 +72,13 @@ public class ScreenshotModeController : MonoBehaviour
     private Vignette vignette;
     private ColorAdjustments colorAdjustments;
     private DepthOfField depthOfField;
+    private bool colorAdjustmentsExisted, depthOfFieldExisted;
     private float cachedBloomIntensity, cachedVignetteIntensity;
     private bool cachedBloomOverride, cachedVignetteOverride;
-    private bool colorAdjustmentsExisted, depthOfFieldExisted;
     private float cachedExposure, cachedContrast, cachedSaturation;
+    private bool cachedExposureOverride, cachedContrastOverride, cachedSaturationOverride;
     private float cachedFocusDistance, cachedAperture;
+    private bool cachedFocusDistanceOverride, cachedApertureOverride;
 
     private void OnValidate()
     {
@@ -163,57 +187,84 @@ public class ScreenshotModeController : MonoBehaviour
         OnActiveChanged?.Invoke(false);
     }
 
-    public void SetSunIntensity(float value)
+    public void Set(PhotoSetting setting, float value)
     {
-        if (sunLight != null) sunLight.intensity = value;
+        switch (setting)
+        {
+            case PhotoSetting.SunIntensity:
+                if (sunLight != null) sunLight.intensity = value;
+                break;
+            case PhotoSetting.SunPitch:
+                SetSunAngles(value, null);
+                break;
+            case PhotoSetting.SunYaw:
+                SetSunAngles(null, value);
+                break;
+            case PhotoSetting.Bloom:
+                if (bloom != null) ApplyOverride(bloom.intensity, value);
+                break;
+            case PhotoSetting.Vignette:
+                if (vignette != null) ApplyOverride(vignette.intensity, value);
+                break;
+            case PhotoSetting.Exposure:
+                if (colorAdjustments != null) ApplyOverride(colorAdjustments.postExposure, value);
+                break;
+            case PhotoSetting.Contrast:
+                if (colorAdjustments != null) ApplyOverride(colorAdjustments.contrast, value);
+                break;
+            case PhotoSetting.Saturation:
+                if (colorAdjustments != null) ApplyOverride(colorAdjustments.saturation, value);
+                break;
+            case PhotoSetting.FocusDistance:
+                if (depthOfField != null) ApplyOverride(depthOfField.focusDistance, value);
+                break;
+            case PhotoSetting.Aperture:
+                if (depthOfField != null) ApplyOverride(depthOfField.aperture, value);
+                break;
+            case PhotoSetting.FieldOfView:
+                if (mainCamera != null) mainCamera.fieldOfView = value;
+                break;
+        }
     }
 
-    public void SetSunPitch(float degrees)
+    /// <summary>The setting's current live value — what the panel's sliders sync to on enter.</summary>
+    public float Get(PhotoSetting setting)
     {
-        if (sunLight == null) return;
-        Vector3 euler = sunLight.transform.eulerAngles;
-        euler.x = degrees;
-        sunLight.transform.eulerAngles = euler;
+        switch (setting)
+        {
+            case PhotoSetting.SunIntensity: return sunLight != null ? sunLight.intensity : 0f;
+            case PhotoSetting.SunPitch: return sunLight != null ? NormalizeAngle(sunLight.transform.eulerAngles.x) : 0f;
+            case PhotoSetting.SunYaw: return sunLight != null ? sunLight.transform.eulerAngles.y : 0f;
+            case PhotoSetting.Bloom: return bloom != null ? bloom.intensity.value : 0f;
+            case PhotoSetting.Vignette: return vignette != null ? vignette.intensity.value : 0f;
+            case PhotoSetting.Exposure: return colorAdjustments != null ? colorAdjustments.postExposure.value : 0f;
+            case PhotoSetting.Contrast: return colorAdjustments != null ? colorAdjustments.contrast.value : 0f;
+            case PhotoSetting.Saturation: return colorAdjustments != null ? colorAdjustments.saturation.value : 0f;
+            case PhotoSetting.FocusDistance: return depthOfField != null ? depthOfField.focusDistance.value : 0f;
+            case PhotoSetting.Aperture: return depthOfField != null ? depthOfField.aperture.value : 0f;
+            case PhotoSetting.FieldOfView: return mainCamera != null ? mainCamera.fieldOfView : 60f;
+            default: return 0f;
+        }
     }
 
-    public void SetBloomIntensity(float value)
+    /// <summary>The value the setting had when Photo Mode was entered — what a reset button restores.</summary>
+    public float GetEnterValue(PhotoSetting setting)
     {
-        if (bloom != null) bloom.intensity.value = value;
-    }
-
-    public void SetVignetteIntensity(float value)
-    {
-        if (vignette != null) vignette.intensity.value = value;
-    }
-
-    public void SetExposure(float value)
-    {
-        if (colorAdjustments != null) colorAdjustments.postExposure.value = value;
-    }
-
-    public void SetContrast(float value)
-    {
-        if (colorAdjustments != null) colorAdjustments.contrast.value = value;
-    }
-
-    public void SetSaturation(float value)
-    {
-        if (colorAdjustments != null) colorAdjustments.saturation.value = value;
-    }
-
-    public void SetFocusDistance(float value)
-    {
-        if (depthOfField != null) depthOfField.focusDistance.value = value;
-    }
-
-    public void SetAperture(float value)
-    {
-        if (depthOfField != null) depthOfField.aperture.value = value;
-    }
-
-    public void SetFieldOfView(float value)
-    {
-        if (mainCamera != null) mainCamera.fieldOfView = value;
+        switch (setting)
+        {
+            case PhotoSetting.SunIntensity: return originalSunIntensity;
+            case PhotoSetting.SunPitch: return NormalizeAngle(originalSunRotation.eulerAngles.x);
+            case PhotoSetting.SunYaw: return originalSunRotation.eulerAngles.y;
+            case PhotoSetting.Bloom: return cachedBloomIntensity;
+            case PhotoSetting.Vignette: return cachedVignetteIntensity;
+            case PhotoSetting.Exposure: return cachedExposure;
+            case PhotoSetting.Contrast: return cachedContrast;
+            case PhotoSetting.Saturation: return cachedSaturation;
+            case PhotoSetting.FocusDistance: return cachedFocusDistance;
+            case PhotoSetting.Aperture: return cachedAperture;
+            case PhotoSetting.FieldOfView: return originalFov;
+            default: return 0f;
+        }
     }
 
     public void Capture()
@@ -229,6 +280,37 @@ public class ScreenshotModeController : MonoBehaviour
     private void HandleCapturePerformed(InputAction.CallbackContext context)
     {
         Capture();
+    }
+
+    private void SetSunAngles(float? pitch, float? yaw)
+    {
+        if (sunLight == null)
+        {
+            return;
+        }
+
+        Vector3 euler = sunLight.transform.eulerAngles;
+        sunLight.transform.rotation = Quaternion.Euler(pitch ?? NormalizeAngle(euler.x), yaw ?? euler.y, 0f);
+    }
+
+    /// <summary>Maps Unity's 0-360 euler read-back into the signed range the pitch slider uses.</summary>
+    private static float NormalizeAngle(float degrees)
+    {
+        degrees %= 360f;
+        if (degrees > 180f) degrees -= 360f;
+        if (degrees < -180f) degrees += 360f;
+        return degrees;
+    }
+
+    /// <summary>
+    ///     Sets a Volume parameter and forces its override on — an authored profile may have the
+    ///     parameter's override unchecked, which would silently swallow the slider's value.
+    ///     Override states are cached on enter and put back on exit like the values themselves.
+    /// </summary>
+    private static void ApplyOverride(FloatParameter parameter, float value)
+    {
+        parameter.overrideState = true;
+        parameter.value = value;
     }
 
     private IEnumerator CaptureRoutine()
@@ -284,12 +366,12 @@ public class ScreenshotModeController : MonoBehaviour
         {
             colorAdjustments = profile.Add<ColorAdjustments>(true);
         }
-        else
-        {
-            cachedExposure = colorAdjustments.postExposure.value;
-            cachedContrast = colorAdjustments.contrast.value;
-            cachedSaturation = colorAdjustments.saturation.value;
-        }
+        cachedExposure = colorAdjustments.postExposure.value;
+        cachedExposureOverride = colorAdjustments.postExposure.overrideState;
+        cachedContrast = colorAdjustments.contrast.value;
+        cachedContrastOverride = colorAdjustments.contrast.overrideState;
+        cachedSaturation = colorAdjustments.saturation.value;
+        cachedSaturationOverride = colorAdjustments.saturation.overrideState;
 
         depthOfFieldExisted = profile.TryGet(out depthOfField);
         if (!depthOfFieldExisted)
@@ -298,11 +380,10 @@ public class ScreenshotModeController : MonoBehaviour
             depthOfField.mode.value = DepthOfFieldMode.Bokeh;
             depthOfField.mode.overrideState = true;
         }
-        else
-        {
-            cachedFocusDistance = depthOfField.focusDistance.value;
-            cachedAperture = depthOfField.aperture.value;
-        }
+        cachedFocusDistance = depthOfField.focusDistance.value;
+        cachedFocusDistanceOverride = depthOfField.focusDistance.overrideState;
+        cachedAperture = depthOfField.aperture.value;
+        cachedApertureOverride = depthOfField.aperture.overrideState;
     }
 
     private void RestoreVolumeOverrides()
@@ -328,8 +409,11 @@ public class ScreenshotModeController : MonoBehaviour
             if (colorAdjustmentsExisted)
             {
                 colorAdjustments.postExposure.value = cachedExposure;
+                colorAdjustments.postExposure.overrideState = cachedExposureOverride;
                 colorAdjustments.contrast.value = cachedContrast;
+                colorAdjustments.contrast.overrideState = cachedContrastOverride;
                 colorAdjustments.saturation.value = cachedSaturation;
+                colorAdjustments.saturation.overrideState = cachedSaturationOverride;
             }
             else if (globalVolume.profile.Has<ColorAdjustments>())
             {
@@ -342,7 +426,9 @@ public class ScreenshotModeController : MonoBehaviour
             if (depthOfFieldExisted)
             {
                 depthOfField.focusDistance.value = cachedFocusDistance;
+                depthOfField.focusDistance.overrideState = cachedFocusDistanceOverride;
                 depthOfField.aperture.value = cachedAperture;
+                depthOfField.aperture.overrideState = cachedApertureOverride;
             }
             else if (globalVolume.profile.Has<DepthOfField>())
             {

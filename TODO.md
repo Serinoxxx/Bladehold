@@ -47,6 +47,41 @@ enemy variety/count/toughness and map objectives, not player-facing friction.
         death (time freezes on gate loss since the player is still alive).
   - [x] Alternation stays predictable/learnable; difficulty levers are mini-wave count and gate HP.
 
+## Failure reason banner — Unity Editor wiring
+
+The C# is done: the new `UI/FailureBanner.cs` is a purely presentational full-screen banner (own
+`CanvasGroup` + TMP label; fade in → hold → fade out on unscaled time, so it works through the
+gate-loss time freeze), and `DeathScreen` gained an optional `failureBanner` reference plus two
+per-condition message strings (`playerDiedReason` "The hero has fallen. All hope is lost." /
+`gateFellReason` "The gate was destroyed. We were overrun."). When assigned, the run-over sequence
+plays the banner to completion first and only then unlocks the cursor and fades the death screen
+in; unassigned = the old immediate fade, unchanged.
+
+- [ ] **Banner object**: under the same Canvas as the death screen (or its own overlay Canvas), add
+      a "FailureBanner" GameObject **outside the death screen's `CanvasGroup` hierarchy** (group
+      alphas multiply — parented under it, the banner would stay invisible). Give it a `CanvasGroup`,
+      the `FailureBanner` component (`canvasGroup`/`messageText` auto-wire via `OnValidate`), a
+      full-screen dark backing `Image` (e.g. black ~60% alpha) and a centred TMP text child (large,
+      dramatic — this shows lines like "The gate was destroyed. We were overrun."). Tune
+      `fadeInDuration` (1s) / `holdDuration` (2.5s) / `fadeOutDuration` (0.75s) on the component.
+- [ ] **DeathScreen**: assign the new `failureBanner` field on the death screen's `DeathScreen`
+      component; tweak the two reason strings in the inspector if the defaults don't read well.
+- [ ] Make sure the banner renders **above** the gameplay HUD (sibling order under the canvas is
+      fine). Banner-vs-death-screen ordering doesn't matter — they never overlap, the banner has
+      fully faded out before the screen fades in.
+
+## Manual verification (failure reason banner)
+
+- [ ] Die to enemies — "The hero has fallen. All hope is lost." fades in, holds a beat, fades out,
+      and only then does the death screen (skill tree) fade in; the cursor stays locked until the
+      death screen appears.
+- [ ] Let a gate fall — time freezes, "The gate was destroyed. We were overrun." plays through the
+      freeze (unscaled time), then the death screen fades in as before.
+- [ ] With `failureBanner` unassigned on `DeathScreen`, dying goes straight to the death screen fade
+      (old behaviour).
+- [ ] Restart from the death screen — the banner is invisible again on the new run and replays
+      correctly on the next loss.
+
 ## Bow weapon + bow skill lines + Raw Power — Unity Editor wiring
 
 The C# for the bow (hold right click to aim/charge, left click to fire hitscan arrows drawn with
@@ -553,7 +588,13 @@ Skill Tree Editor window, and the four new skill lines is done. See
 ## Impulse skill line — Unity Editor wiring
 
 The C# for the Impulse buff/skill line (Impulse Goblin variant, Impulse Orb pickup, Impulse Buff,
-the sword's impulse-stamped hits, and the enemy-side ragdoll fling reaction) is done. The following
+the sword's impulse-stamped hits, and the enemy-side ragdoll fling reaction) is done.
+**`ImpulseReceiver` now also ragdolls every plain kill** (not just Impulse-flung ones) — on
+`Health.OnDied` with no fling/knockdown already in progress, it disables the AI/animator and calls
+`EnemyRagdoll.EnterRagdoll` with zero launch velocity (just a small random tumble spin) instead of
+letting the Death animation play, subject to the same `EnemyRagdoll.MaxActive` cap (see the pause
+menu section above for the new Max Ragdolls setting) — kills beyond the cap still just play the
+Death animation as before. The following
 can only be done in the Unity Editor (asset creation, prefab/scene/animator wiring, physics layers,
 art/audio) — Claude Code can't safely author these headlessly. See
 `Assets/Bladehold/Bladehold Scripts/Player/ImpulseSO.cs`, `Player/ImpulseBuff.cs`,
@@ -566,8 +607,9 @@ already in `Config/SkillTree.csv` for the code side.
   - [x] `ImpulseSO` — leave `baseOrbDurationSeconds`/`basePower` at 0 (locked until skill nodes are
         bought); tune `baseImpulseForce`/`forcePerPower`/`powerPerChargeLevel`/
         `forcePerExtraStackPercent`/`damagePerExtraStackPercent`.
-  - [x] `ImpulseConfigSO` — tune `defaultResistance`, launch/landing/recovery timings,
-        `maxSimultaneousRagdolls`.
+  - [x] `ImpulseConfigSO` — tune `defaultResistance`, launch/landing/recovery timings. (The old
+        `maxSimultaneousRagdolls` field is gone — it's the player-facing Max Ragdolls setting now,
+        see the pause menu section above.)
   - [x] `RagdollConfigSO` — tune mass/damping/joint-limit values (defaults are reasonable starting
         points).
 
@@ -628,10 +670,17 @@ already in `Config/SkillTree.csv` for the code side.
       brutes eventually fling too.
 - [ ] Pick up multiple Impulse Orbs back-to-back — confirm buff duration stacks and stack count
       increases (extra force/damage per stack).
-- [ ] Let more enemies get flung than `ImpulseConfigSO.maxSimultaneousRagdolls` at once — confirm
-      the overflow degrades to knockdowns instead of flinging.
+- [ ] Let more enemies get flung than the Max Ragdolls setting at once — confirm the overflow
+      degrades to knockdowns instead of flinging.
 - [ ] Kill the player (or let the run end) while an enemy is airborne/recovering — confirm it
       doesn't get stuck mid-air/mid-recovery and still ends up a normal corpse.
+- [ ] Kill a goblin with a plain (non-impulse) sword hit — confirm it now ragdolls and collapses
+      physically instead of playing the canned Death animation.
+- [ ] Set Max Ragdolls to 0 in Settings — confirm kills fall back to the normal Death animation with
+      no ragdoll at all.
+- [ ] Kill a wave's worth of goblins at once with Max Ragdolls set low (e.g. 3) — confirm only that
+      many ragdoll simultaneously and the rest play the Death animation instead.
+- [ ] Raise Max Ragdolls back up mid-run — confirm subsequent kills ragdoll again without a restart.
 
 ## Storm Witch enemy + Chain Lightning skill line — Unity Editor wiring
 
@@ -708,12 +757,32 @@ sliders/toggles/rebind list/Delete Save + confirmation dialog, Photo Mode panel 
 and adds `InputSettingsBinder` to the Player instance in the scene — everything below is what it
 can't do for you.
 
+- [ ] **Regenerate the menu** (Photo Mode feedback round): delete **`PauseMenuCanvas` and `GameMenu`**
+      from the scene, then re-run `Bladehold > Generate Settings Menu`. This picks up: the layout fix
+      (rows were 100px tall, pushing Take Photo off-screen), the Photo Mode panel now stretching full
+      screen height with the sliders in a scroll view and Take Photo/Exit pinned at the bottom, a
+      per-setting **reset button** (new `MenuIconButton` prefab + generated `ResetIcon.png`), a **Sun
+      Yaw** slider + Sun Pitch narrowed to -10..90, `hideOnCapture` now actually wired (screenshots no
+      longer include the UI), and the pause backdrop wired so it hides during Photo Mode (it was
+      graying out the shot and would eat click-drag input). Camera look in Photo Mode is now
+      click-and-drag (left mouse held) instead of always-on mouse delta.
+- [ ] **Regenerate the menu again** (always-ragdoll kills): the Settings panel now has a **Max
+      Ragdolls** slider (0-50, whole numbers, default 12) alongside Sensitivity —
+      `GameSettingsService.SetMaxRagdolls` applies it to the new `EnemyRagdoll.MaxActive` cap, which
+      both the Impulse fling and the new always-ragdoll-on-kill reaction (see the Impulse section
+      below) check before starting a ragdoll. If `PauseMenuCanvas`/`GameMenu` already exist from an
+      earlier generation, delete and regenerate to pick up the new row (or add a `MenuSlider` instance
+      by hand and wire it to `SettingsPanelView.maxRagdollsSlider`). `ImpulseConfigSO.maxSimultaneousRagdolls`
+      is gone — it's a player-facing setting now instead of a designer-tuned asset value; if any
+      `ImpulseConfigSO` asset shows the old field as "missing" in the inspector that's expected and
+      harmless.
 - [ ] **Reskin the shared control prefabs** it generated under `Assets/Bladehold/Bladehold Prefabs/UI/`
-      (`MenuButton`, `MenuLabel`, `MenuSlider`, `MenuToggle`) to match the game's look — every button/
-      label/slider/toggle in the generated menu is an instance of one of these, so restyling the four
-      prefabs restyles the whole menu at once. Then lay out/resize the panels (`PauseMenuCanvas` >
-      `PauseMenuView` > `MainButtonsPanel`/`SettingsPanel`/`PhotoModePanelRoot`) to taste — the
-      generator only gives them functional placeholder sizes/positions.
+      (`MenuButton`, `MenuLabel`, `MenuSlider`, `MenuToggle`, `MenuIconButton` + its `ResetIcon.png`)
+      to match the game's look — every button/label/slider/toggle in the generated menu is an instance
+      of one of these, so restyling the prefabs restyles the whole menu at once. Then lay out/resize
+      the panels (`PauseMenuCanvas` > `PauseMenuView` > `MainButtonsPanel`/`SettingsPanel`/
+      `PhotoModePanelRoot`) to taste — the generator only gives them functional placeholder
+      sizes/positions.
 - [ ] **Player prefab**: the generator added `InputSettingsBinder` to the Player *instance* in the open
       scene only (a prefab override) — select it and **Overrides > Apply All** onto
       `Assets/Bladehold/Bladehold Prefabs/Player.prefab` to make it permanent.
@@ -746,10 +815,18 @@ can't do for you.
 - [ ] Click Delete Save — a confirmation dialog appears; Cancel does nothing; Confirm wipes gold/
       upgrades/settings and reloads to a fresh save.
 - [ ] Click Quit — the game/Editor Play session actually stops.
-- [ ] From the pause menu, click Photo Mode — camera detaches and flies freely with WASD/QE/mouse/Shift
-      boost; sun and post-processing sliders visibly change the scene; Capture writes a PNG under
-      `persistentDataPath/Screenshots/` with no UI visible in it; Exit (button or Esc) returns to the
-      pause menu with the camera, sun, and post-processing back exactly as they were before entering.
+- [ ] From the pause menu, click Photo Mode — the pause dim/backdrop disappears, the camera detaches
+      and flies with WASD/QE/Shift boost, and **click-and-drag** (hold left mouse on empty scene, not
+      on the panel) rotates the look; dragging a slider does not rotate the camera.
+- [ ] Photo Mode panel fills the right edge of the screen with the sliders scrolling and the
+      **Take Photo**/Exit buttons always visible at the bottom; sliders open showing the scene's
+      *actual* current values (e.g. Field of View matches the gameplay FOV).
+- [ ] Sun Pitch/Sun Yaw give fine control over the light direction (pitch is -10..90 now, not a full
+      0..360 sweep); each setting's ↺ reset button puts just that setting back to the value it had
+      when Photo Mode was entered.
+- [ ] Take Photo writes a PNG under `persistentDataPath/Screenshots/` with no UI visible in it; Exit
+      (button or Esc) returns to the pause menu with the camera, sun, and post-processing back exactly
+      as they were before entering.
 
 ## Manual verification (skill icons + new skill lines)
 
@@ -765,3 +842,32 @@ can't do for you.
       out of sprint (works even with no Sprinter nodes owned).
 - [ ] Buy Amplified Knockback with Heavy Strike owned → a fully charged swing shoves goblins visibly
       further than an uncharged one, scaling per tier.
+
+## Combat facing (stationary attack/aim turns to camera) — Unity Editor wiring
+
+The C# is done: `Player/CombatFacing.cs` yaw-rotates a stationary player toward the camera heading
+while the attack button is held or the bow is aiming, filling the gap where the Synty controller's
+stationary strafe branch only drives the turn-in-place animator offset and never rotates the root.
+Attack hold comes from `InputReader` press/release events; bow aim reads `PlayerBow.IsAiming`;
+movement is detected via the `CharacterController`, so the controller's own strafe rotation takes
+over untouched the moment the player moves.
+
+- [ ] **Player prefab** (`Assets/Bladehold/Bladehold Prefabs/Player.prefab`): add a `CombatFacing`
+      component on the player root. `inputReader`/`bow`/`characterController` auto-wire via
+      `OnValidate`; `facingCamera` defaults to `Camera.main`. Defaults for `rotationSmoothing` (10,
+      matching the controller) and `stationarySpeedThreshold` (0.1) should be fine.
+- [ ] **PlayerDeath**: add the new `CombatFacing` component to `PlayerDeath`'s inspector list of
+      control components it disables on death, so a corpse holding attack doesn't keep turning.
+
+## Manual verification (combat facing)
+
+- [ ] Stand still, hold left click (sword), and swing the camera around → the character smoothly
+      turns to face where the camera looks, both mid-hold and during a held charge.
+- [ ] Stand still, hold right click (bow aim), and swing the camera → same smooth turn; arrows and
+      the body agree on direction (the `BowAimLook` spine bend still lines up).
+- [ ] Attack/aim **while moving** → rotation feels exactly as before (the controller's strafe
+      rotation, no fighting or jitter at the moving/stationary boundary).
+- [ ] Release attack/aim while stationary → the character stops tracking the camera and idle
+      turn-in-place behaviour is back to normal.
+- [ ] Die while holding attack → the corpse doesn't rotate with the camera (requires the
+      `PlayerDeath` list wiring above).

@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 227e3b4473314524f97aea5149e19dd0, type: 3}
   m_Name: ImpulseSO
   m_EditorClassIdentifier: Assembly-CSharp::ImpulseSO
-  baseOrbDurationSeconds: 0
-  basePower: 0
-  baseImpulseForce: 10
+  baseOrbDurationSeconds: 1
+  basePower: 1
+  baseImpulseForce: 20
   forcePerPower: 0.15
   powerPerChargeLevel: 0.25
   forcePerExtraStackPercent: 0.15

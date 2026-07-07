@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LightningStormAttackSO
   castRange: 20
   castCooldown: 8
-  stormRadius: 3
+  stormRadius: 1.5
   stormDuration: 6
-  strikeInterval: 1.5
+  strikeInterval: 3
   strikeDamage: 2
   damageType: 2

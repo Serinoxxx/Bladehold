@@ -51,6 +51,7 @@ public class SkillNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     private SkillNode node;
     private ISkillTreeService service;
     private Action<string> onClicked;
+    private int bindFrame = -1;
 
     public SkillNode Node => node;
 
@@ -63,6 +64,7 @@ public class SkillNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         this.node = node;
         this.service = service;
         this.onClicked = onClicked;
+        bindFrame = Time.frameCount;
 
         if (nameText != null) nameText.text = node.displayName;
         if (costText != null) costText.text = service.GetCost(node) + costSuffix;
@@ -88,7 +90,10 @@ public class SkillNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         // Instantiate fires OnEnable before Bind, so node == null distinguishes the initial build
         // (where already-revealed nodes must stay silent — the death screen is alpha-hidden but active
         // at scene load) from Refresh re-activating this node when a prereq purchase reveals it.
-        if (node != null && spawnFeedback != null)
+        // The bindFrame check covers the second load-time path: SkillTreeService.Start may run after
+        // the tree is built, re-applying saved purchases and revealing nodes via OnTreeChanged in the
+        // same frame as Bind — only reveals on a later frame come from a real purchase.
+        if (node != null && spawnFeedback != null && Time.frameCount != bindFrame)
         {
             spawnFeedback.PlayFeedbacks();
         }

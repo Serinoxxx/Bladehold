@@ -316,7 +316,7 @@ MonoBehaviour:
         SoloAllTracks: 0
         AutoUnSoloOnEnd: 0
         PanStereo: 0
-        SpatialBlend: 0
+        SpatialBlend: 1
         AttachToTransform: {fileID: 0}
         BypassEffects: 0
         BypassListenerEffects: 0
@@ -896,7 +896,7 @@ MonoBehaviour:
         SoloAllTracks: 0
         AutoUnSoloOnEnd: 0
         PanStereo: 0
-        SpatialBlend: 0
+        SpatialBlend: 1
         AttachToTransform: {fileID: 0}
         BypassEffects: 0
         BypassListenerEffects: 0
@@ -1445,7 +1445,7 @@ MonoBehaviour:
         SoloAllTracks: 0
         AutoUnSoloOnEnd: 0
         PanStereo: 0
-        SpatialBlend: 0
+        SpatialBlend: 1
         AttachToTransform: {fileID: 0}
         BypassEffects: 0
         BypassListenerEffects: 0
@@ -2060,7 +2060,7 @@ MonoBehaviour:
         SoloAllTracks: 0
         AutoUnSoloOnEnd: 0
         PanStereo: 0
-        SpatialBlend: 0
+        SpatialBlend: 1
         AttachToTransform: {fileID: 0}
         BypassEffects: 0
         BypassListenerEffects: 0
@@ -2438,6 +2438,7 @@ MonoBehaviour:
   readsPlayerStats: 1
   baseCritMultiplier: 1.5
   playerAttack: {fileID: 0}
+  impulseBuff: {fileID: 0}
   knockbackForce: 0
 --- !u!114 &2879380361252328939
 MonoBehaviour:

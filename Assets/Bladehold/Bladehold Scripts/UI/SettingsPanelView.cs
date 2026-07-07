@@ -21,6 +21,9 @@ public class SettingsPanelView : MonoBehaviour
     [SerializeField] private Slider sensitivitySlider;
     [SerializeField] private Toggle invertXToggle;
     [SerializeField] private Toggle invertYToggle;
+
+    [Header("Performance")]
+    [SerializeField] private Slider maxRagdollsSlider;
     [Tooltip("Parent under which one RebindButtonView is instantiated per remappable binding.")]
     [SerializeField] private Transform rebindListParent;
     [SerializeField] private RebindButtonView rebindRowPrefab;
@@ -44,6 +47,11 @@ public class SettingsPanelView : MonoBehaviour
             Debug.LogError("Sensitivity slider is not assigned in the inspector.");
             anyError = true;
         }
+        if (maxRagdollsSlider == null)
+        {
+            Debug.LogError("Max Ragdolls slider is not assigned in the inspector.");
+            anyError = true;
+        }
         if (deleteSaveButton == null || confirmDialog == null)
         {
             Debug.LogError("Delete Save button/ConfirmDialog is not assigned in the inspector.");
@@ -64,6 +72,7 @@ public class SettingsPanelView : MonoBehaviour
         musicVolumeSlider.onValueChanged.AddListener(HandleMusicVolumeChanged);
         sfxVolumeSlider.onValueChanged.AddListener(HandleSfxVolumeChanged);
         sensitivitySlider.onValueChanged.AddListener(HandleSensitivityChanged);
+        maxRagdollsSlider.onValueChanged.AddListener(HandleMaxRagdollsChanged);
         if (invertXToggle != null) invertXToggle.onValueChanged.AddListener(HandleInvertXChanged);
         if (invertYToggle != null) invertYToggle.onValueChanged.AddListener(HandleInvertYChanged);
         deleteSaveButton.onClick.AddListener(HandleDeleteSaveClicked);
@@ -85,6 +94,7 @@ public class SettingsPanelView : MonoBehaviour
         if (musicVolumeSlider != null) musicVolumeSlider.onValueChanged.RemoveListener(HandleMusicVolumeChanged);
         if (sfxVolumeSlider != null) sfxVolumeSlider.onValueChanged.RemoveListener(HandleSfxVolumeChanged);
         if (sensitivitySlider != null) sensitivitySlider.onValueChanged.RemoveListener(HandleSensitivityChanged);
+        if (maxRagdollsSlider != null) maxRagdollsSlider.onValueChanged.RemoveListener(HandleMaxRagdollsChanged);
         if (invertXToggle != null) invertXToggle.onValueChanged.RemoveListener(HandleInvertXChanged);
         if (invertYToggle != null) invertYToggle.onValueChanged.RemoveListener(HandleInvertYChanged);
         if (deleteSaveButton != null) deleteSaveButton.onClick.RemoveListener(HandleDeleteSaveClicked);
@@ -102,6 +112,7 @@ public class SettingsPanelView : MonoBehaviour
         musicVolumeSlider.SetValueWithoutNotify(settings.MusicVolume);
         sfxVolumeSlider.SetValueWithoutNotify(settings.SfxVolume);
         sensitivitySlider.SetValueWithoutNotify(settings.Sensitivity);
+        maxRagdollsSlider.SetValueWithoutNotify(settings.MaxRagdolls);
         if (invertXToggle != null) invertXToggle.SetIsOnWithoutNotify(settings.InvertX);
         if (invertYToggle != null) invertYToggle.SetIsOnWithoutNotify(settings.InvertY);
     }
@@ -146,6 +157,7 @@ public class SettingsPanelView : MonoBehaviour
     private void HandleMusicVolumeChanged(float value) => GameSettingsService.Instance?.SetMusicVolume(value);
     private void HandleSfxVolumeChanged(float value) => GameSettingsService.Instance?.SetSfxVolume(value);
     private void HandleSensitivityChanged(float value) => GameSettingsService.Instance?.SetSensitivity(value);
+    private void HandleMaxRagdollsChanged(float value) => GameSettingsService.Instance?.SetMaxRagdolls(Mathf.RoundToInt(value));
     private void HandleInvertXChanged(bool value) => GameSettingsService.Instance?.SetInvertX(value);
     private void HandleInvertYChanged(bool value) => GameSettingsService.Instance?.SetInvertY(value);
 

@@ -11,7 +11,10 @@ using UnityEngine.UI;
 ///     one since the player is still alive behind the screen). Shows goblins killed and gold earned
 ///     this run (from <see cref="GameStats" />) plus the player's total gold (from
 ///     <see cref="Wallet" />), and offers two restart options: from wave 1, or from the wave the run
-///     ended on (via <see cref="RunState" />). Both reload the scene.
+///     ended on (via <see cref="RunState" />). Both reload the scene. When an optional
+///     <see cref="FailureBanner" /> is assigned, it plays first with a per-condition failure reason
+///     ("The hero has fallen…" / "The gate was destroyed…") and the screen only fades in after it
+///     finishes.
 /// </summary>
 [RequireComponent(typeof(CanvasGroup))]
 public class DeathScreen : MonoBehaviour
@@ -23,6 +26,12 @@ public class DeathScreen : MonoBehaviour
     [SerializeField] private string playerDiedTitle = "You Died";
     [Tooltip("Headline when a gate fell (gate defense).")]
     [SerializeField] private string gateFellTitle = "The Gate Has Fallen";
+    [Tooltip("Optional: a failure-reason banner played to completion before this screen fades in. Must live outside this screen's CanvasGroup. Leave unassigned to fade the death screen in immediately, as before.")]
+    [SerializeField] private FailureBanner failureBanner;
+    [Tooltip("Banner message when the player died.")]
+    [SerializeField] private string playerDiedReason = "The hero has fallen. All hope is lost.";
+    [Tooltip("Banner message when a gate fell (gate defense).")]
+    [SerializeField] private string gateFellReason = "The gate was destroyed. We were overrun.";
     [SerializeField] private TMP_Text goblinsKilledText;
     [SerializeField] private TMP_Text goldEarnedText;
     [SerializeField] private TMP_Text totalGoldText;
@@ -130,7 +139,7 @@ public class DeathScreen : MonoBehaviour
 
     private void HandlePlayerDied()
     {
-        ShowRunOver(playerDiedTitle);
+        ShowRunOver(playerDiedTitle, playerDiedReason);
     }
 
     private void HandleGateDestroyed(Gate gate)
@@ -138,10 +147,10 @@ public class DeathScreen : MonoBehaviour
         // Unlike a player death, the player is still alive and controllable — freeze time so the
         // run visibly ends behind the screen. Reload() restores the timescale.
         Time.timeScale = 0f;
-        ShowRunOver(gateFellTitle);
+        ShowRunOver(gateFellTitle, gateFellReason);
     }
 
-    private void ShowRunOver(string title)
+    private void ShowRunOver(string title, string failureReason)
     {
         if (shown)
         {
@@ -192,7 +201,24 @@ public class DeathScreen : MonoBehaviour
             }
         }
 
-        StartCoroutine(FadeIn());
+        StartCoroutine(RunOverSequence(failureReason));
+    }
+
+    private IEnumerator RunOverSequence(string failureReason)
+    {
+        // The failure-reason banner plays fully (fade in, hold, fade out) before the screen appears.
+        if (failureBanner != null)
+        {
+            yield return failureBanner.PlayRoutine(failureReason);
+        }
+
+        // SampleCameraController locks/hides the cursor for gameplay look; the skill tree needs it
+        // free to click buttons. Freed only now so no cursor floats over the banner. Reload()
+        // re-locks it before restarting.
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        yield return FadeIn();
     }
 
     private IEnumerator FadeIn()
@@ -277,6 +303,8 @@ public class DeathScreen : MonoBehaviour
         // Reload the active scene; scene-scoped singletons (GameStats, Wallet) reset naturally, while the
         // wave to resume from rides across the reload in the static RunState.
         Time.timeScale = 1f; // ensure normal speed resumes even if something paused time on death.
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }

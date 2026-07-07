@@ -5,7 +5,8 @@ using UnityEngine.Audio;
 /// <summary>
 ///     Scene singleton owning applying and persisting player-facing settings: audio volumes (via the
 ///     Feel <see cref="AudioMixer" />'s exposed <c>MasterVolume</c>/<c>MusicVolume</c>/<c>SfxVolume</c>
-///     parameters), mouse sensitivity/invert (via the player's <see cref="InputSettingsBinder" />), and
+///     parameters), mouse sensitivity/invert (via the player's <see cref="InputSettingsBinder" />),
+///     the max-simultaneous-ragdolls performance cap (via <see cref="EnemyRagdoll.MaxActive" />), and
 ///     button-remap overrides. Settings live on the shared <see cref="SaveData" /> like gold/upgrades —
 ///     applied once on <see cref="Start" /> and again immediately whenever a setter is called, so the
 ///     settings UI never touches <see cref="SaveData" /> or the mixer directly.
@@ -30,6 +31,7 @@ public class GameSettingsService : MonoBehaviour
     public float Sensitivity => saveData.mouseSensitivity;
     public bool InvertX => saveData.invertLookX;
     public bool InvertY => saveData.invertLookY;
+    public int MaxRagdolls => saveData.maxRagdolls;
 
     /// <summary>Raised whenever any setting changes, so UI showing current values can refresh.</summary>
     public event Action OnSettingsChanged;
@@ -68,6 +70,7 @@ public class GameSettingsService : MonoBehaviour
         ApplyMasterVolume(saveData.masterVolume);
         SetMixerVolume("MusicVolume", saveData.musicVolume);
         SetMixerVolume("SfxVolume", saveData.sfxVolume);
+        ApplyMaxRagdolls(saveData.maxRagdolls);
 
         InputSettingsBinder inputSettings = Player.Instance != null ? Player.Instance.InputSettings : null;
         if (inputSettings != null)
@@ -97,6 +100,13 @@ public class GameSettingsService : MonoBehaviour
     {
         saveData.sfxVolume = Mathf.Clamp01(value);
         SetMixerVolume("SfxVolume", saveData.sfxVolume);
+        Persist();
+    }
+
+    public void SetMaxRagdolls(int value)
+    {
+        saveData.maxRagdolls = Mathf.Clamp(value, 0, 50);
+        ApplyMaxRagdolls(saveData.maxRagdolls);
         Persist();
     }
 
@@ -153,6 +163,11 @@ public class GameSettingsService : MonoBehaviour
         }
 
         OnSettingsChanged?.Invoke();
+    }
+
+    private void ApplyMaxRagdolls(int value)
+    {
+        EnemyRagdoll.MaxActive = value;
     }
 
     private void ApplyMasterVolume(float value)

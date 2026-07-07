@@ -22,8 +22,12 @@ using UnityEngine.AI;
 ///     (<see cref="NavMesh.SamplePosition" /> + <see cref="NavMeshAgent.Warp" />), play the get-up
 ///     state, and resume; corpses stay ragdolled and continue through the normal corpse pipeline;
 ///     landings that never find the NavMesh force-kill through the damage flow so wave/coin/kill
-///     accounting stays consistent. Flings beyond <see cref="ImpulseConfigSO.maxSimultaneousRagdolls" />
-///     degrade to knockdowns. Tunables live on <see cref="ImpulseConfigSO" />.
+///     accounting stays consistent. Flings beyond <see cref="EnemyRagdoll.MaxActive" /> degrade to
+///     knockdowns. Tunables live on <see cref="ImpulseConfigSO" />.
+///
+///     Every plain kill (no impulse hit involved) also ragdolls instead of just playing the Death
+///     animation — see <see cref="HandleDied" /> — subject to the same <see cref="EnemyRagdoll.MaxActive" />
+///     cap, so a kill beyond the cap falls back to the normal animated death.
 /// </summary>
 public class ImpulseReceiver : MonoBehaviour
 {
@@ -225,7 +229,7 @@ public class ImpulseReceiver : MonoBehaviour
         // A full fling needs to beat the resistance AND fit under the horde cap AND have a buildable
         // rig — any failure degrades to the knockdown so the buff never silently does nothing.
         bool fling = damage.impulsePower >= resistance
-            && EnemyRagdoll.ActiveCount < config.maxSimultaneousRagdolls
+            && EnemyRagdoll.HasCapacity
             && ragdoll.BuildIfNeeded();
 
         if (fling)
@@ -235,18 +239,34 @@ public class ImpulseReceiver : MonoBehaviour
         else if (health.CurrentHealth > 0f)
         {
             // Knockdowns are for the living; a lethal near-threshold hit just dies normally
-            // (OnDied fires right after this handler and the Death animation takes over).
+            // (OnDied fires right after this handler and HandleDied ragdolls the kill itself).
             StartCoroutine(KnockdownRoutine());
         }
     }
 
     private void HandleDied()
     {
-        // Any in-flight routine sees this and hands the body to the corpse pipeline.
+        // Any in-flight fling/knockdown routine sees this and hands the body to the corpse pipeline.
         if (State != ImpulseState.Normal)
         {
             State = ImpulseState.Corpse;
+            return;
         }
+
+        // A plain kill — no impulse hit ever flung or knocked this one down. Ragdoll it anyway so
+        // every death gets a physical collapse instead of just playing the Death animation, subject
+        // to the same horde cap the Impulse fling uses (over the cap, the Death animation plays as
+        // it always did).
+        if (!EnemyRagdoll.HasCapacity || !ragdoll.BuildIfNeeded())
+        {
+            return;
+        }
+
+        State = ImpulseState.Corpse;
+        SetAiEnabled(false);
+        rootCollider.enabled = false;
+        animator.enabled = false;
+        ragdoll.EnterRagdoll(Vector3.zero, Random.insideUnitSphere * config.spinTorque);
     }
 
     private IEnumerator KnockdownRoutine()

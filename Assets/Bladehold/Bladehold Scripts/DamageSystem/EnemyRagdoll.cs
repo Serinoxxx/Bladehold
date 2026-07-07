@@ -26,6 +26,17 @@ public class EnemyRagdoll : MonoBehaviour
     /// <summary>Ragdolls simulating right now, across all enemies. <see cref="ImpulseReceiver" /> caps this.</summary>
     public static int ActiveCount { get; private set; }
 
+    /// <summary>
+    ///     Global cap on simultaneous ragdolls, applied by <see cref="GameSettingsService" /> from the
+    ///     player-facing "Max Ragdolls" setting (0-50). <see cref="ImpulseReceiver" /> checks
+    ///     <see cref="HasCapacity" /> before starting a new ragdoll for either an Impulse fling or a
+    ///     plain kill, degrading to a knockdown / normal animated death when the cap is full.
+    /// </summary>
+    public static int MaxActive = 12;
+
+    /// <summary>True while another ragdoll can start without exceeding <see cref="MaxActive" />.</summary>
+    public static bool HasCapacity => ActiveCount < MaxActive;
+
     public bool IsRagdolled { get; private set; }
 
     /// <summary>The hips body — the reference point for landing detection and recovery placement.</summary>

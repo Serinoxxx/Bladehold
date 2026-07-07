@@ -1,3 +1,4 @@
+using System.IO;
 using Synty.AnimationBaseLocomotion.Samples;
 using Synty.AnimationBaseLocomotion.Samples.InputSystem;
 using TMPro;
@@ -13,10 +14,11 @@ using UnityEngine.UI;
 ///     Editor-time generator for the pause/settings/Photo Mode UI (Bladehold > Generate Settings Menu).
 ///     Builds a functional (unstyled) hierarchy wired up to the runtime scripts in
 ///     <c>Assets/Bladehold/Bladehold Scripts/Settings/</c> and <c>UI/</c>, so the remaining work is
-///     purely visual — reskin the four shared control prefabs it creates under
+///     purely visual — reskin the five shared control prefabs it creates under
 ///     <c>Assets/Bladehold/Bladehold Prefabs/UI/</c> (<c>MenuButton</c>/<c>MenuLabel</c>/
-///     <c>MenuSlider</c>/<c>MenuToggle</c>) and every button/slider/toggle in the generated menu — being
-///     an instance of one of those four prefabs — picks up the change everywhere at once. Re-running the
+///     <c>MenuSlider</c>/<c>MenuToggle</c>/<c>MenuIconButton</c>) and every control in the generated
+///     menu — being an instance of one of those prefabs — picks up the change everywhere at once (the
+///     icon button's circular-arrow sprite is generated too, as <c>ResetIcon.png</c>). Re-running the
 ///     command is a no-op if a "PauseMenuCanvas" already exists in the scene (delete it, and "GameMenu"
 ///     if starting fully fresh, to regenerate).
 ///
@@ -32,12 +34,15 @@ public static class SettingsMenuGenerator
     private const string SliderPrefabPath = PrefabFolder + "/MenuSlider.prefab";
     private const string TogglePrefabPath = PrefabFolder + "/MenuToggle.prefab";
     private const string RebindRowPrefabPath = PrefabFolder + "/RebindRow.prefab";
+    private const string IconButtonPrefabPath = PrefabFolder + "/MenuIconButton.prefab";
+    private const string ResetIconPath = PrefabFolder + "/ResetIcon.png";
     private const string MixerAssetPath = "Assets/Feel/MMTools/Core/MMAudio/MMSoundManager/Settings/MMSoundManagerAudioMixer.mixer";
 
     private static GameObject buttonPrefab;
     private static GameObject labelPrefab;
     private static GameObject sliderPrefab;
     private static GameObject togglePrefab;
+    private static GameObject iconButtonPrefab;
 
     [MenuItem("Bladehold/Generate Settings Menu")]
     private static void Generate()
@@ -77,9 +82,9 @@ public static class SettingsMenuGenerator
 
         Undo.CollapseUndoOperations(undoGroup);
 
-        Debug.Log("Generated the pause/settings/Photo Mode menu. Reskin MenuButton/MenuLabel/MenuSlider/MenuToggle "
-            + "under Assets/Bladehold/Bladehold Prefabs/UI to restyle everything at once. See TODO.md for anything "
-            + "this couldn't wire automatically (e.g. routing audio sources through the mixer).");
+        Debug.Log("Generated the pause/settings/Photo Mode menu. Reskin MenuButton/MenuLabel/MenuSlider/MenuToggle/"
+            + "MenuIconButton under Assets/Bladehold/Bladehold Prefabs/UI to restyle everything at once. See TODO.md "
+            + "for anything this couldn't wire automatically (e.g. routing audio sources through the mixer).");
     }
 
     // ---- Top-level wiring -------------------------------------------------
@@ -210,8 +215,12 @@ public static class SettingsMenuGenerator
         SetField(pauseView, "quitButton", quitButton);
         SetField(pauseView, "settingsPanel", settingsPanel);
         SetField(pauseView, "mainButtonsPanel", mainButtonsPanel);
+        SetField(pauseView, "backdrop", backdrop.gameObject);
         SetField(pauseView, "screenshotMode", screenshotController);
         SetField(pauseView, "photoModePanelRoot", photoModePanel);
+
+        // Hidden for the captured frame so screenshots come out clean.
+        SetObjectArrayField(screenshotController, "hideOnCapture", new Object[] { pauseViewRt.GetComponent<CanvasGroup>() });
 
         mainButtonsPanel.SetActive(true);
         settingsPanel.SetActive(false);
@@ -252,6 +261,8 @@ public static class SettingsMenuGenerator
         CreateSliderRow(content, "Music Volume", out Slider musicSlider, 0f, 1f, 1f);
         CreateSliderRow(content, "SFX Volume", out Slider sfxSlider, 0f, 1f, 1f);
         CreateSliderRow(content, "Sensitivity", out Slider sensitivitySlider, 1f, 15f, 5f);
+        CreateSliderRow(content, "Max Ragdolls", out Slider maxRagdollsSlider, 0f, 50f, 12f);
+        maxRagdollsSlider.wholeNumbers = true;
         CreateToggleRow(content, "Invert X", out Toggle invertXToggle);
         CreateToggleRow(content, "Invert Y", out Toggle invertYToggle);
 
@@ -267,6 +278,7 @@ public static class SettingsMenuGenerator
         SetField(view, "musicVolumeSlider", musicSlider);
         SetField(view, "sfxVolumeSlider", sfxSlider);
         SetField(view, "sensitivitySlider", sensitivitySlider);
+        SetField(view, "maxRagdollsSlider", maxRagdollsSlider);
         SetField(view, "invertXToggle", invertXToggle);
         SetField(view, "invertYToggle", invertYToggle);
         SetField(view, "rebindListParent", rebindContent);
@@ -326,21 +338,46 @@ public static class SettingsMenuGenerator
 
     private static GameObject BuildPhotoModePanel(Transform parent, ScreenshotModeController screenshotController)
     {
-        RectTransform panel = CreateFloatingPanel("PhotoModePanelRoot", parent, new Vector2(360f, 780f), new Vector2(1f, 1f), new Vector2(-20f, -20f));
-        panel.gameObject.AddComponent<Image>().color = new Color(0.08f, 0.08f, 0.1f, 0.85f);
+        // Stretches the full screen height along the right edge: the slider rows live in a scroll view
+        // that takes whatever height is left, so Take Photo / Exit stay pinned (and visible) at the
+        // bottom no matter how many settings are added or how short the screen is.
+        RectTransform panel = CreateUIObject("PhotoModePanelRoot", parent, typeof(RectTransform), typeof(Image));
+        panel.anchorMin = new Vector2(1f, 0f);
+        panel.anchorMax = Vector2.one;
+        panel.pivot = new Vector2(1f, 0.5f);
+        panel.sizeDelta = new Vector2(400f, -40f);
+        panel.anchoredPosition = new Vector2(-20f, 0f);
+        panel.GetComponent<Image>().color = new Color(0.08f, 0.08f, 0.1f, 0.85f);
 
-        RectTransform content = CreateVerticalContainer("Content", panel, 8f, new RectOffset(20, 20, 16, 16));
+        RectTransform content = CreateVerticalContainer("Content", panel, 8f, new RectOffset(16, 16, 16, 16));
 
-        CreateSliderRow(content, "Sun Intensity", out Slider sunIntensity, 0f, 8f, 2f);
-        CreateSliderRow(content, "Sun Pitch", out Slider sunPitch, 0f, 360f, 50f);
-        CreateSliderRow(content, "Bloom", out Slider bloom, 0f, 5f, 0f);
-        CreateSliderRow(content, "Vignette", out Slider vignette, 0f, 1f, 0f);
-        CreateSliderRow(content, "Exposure", out Slider exposure, -5f, 5f, 0f);
-        CreateSliderRow(content, "Contrast", out Slider contrast, -100f, 100f, 0f);
-        CreateSliderRow(content, "Saturation", out Slider saturation, -100f, 100f, 0f);
-        CreateSliderRow(content, "Focus Distance", out Slider focusDistance, 0.1f, 20f, 5f);
-        CreateSliderRow(content, "Aperture", out Slider aperture, 1f, 32f, 5.6f);
-        CreateSliderRow(content, "Field of View", out Slider fov, 20f, 90f, 60f);
+        RectTransform scrollRoot = CreateScrollView(content, "SettingsScrollView", 200f, out Transform scrollContent);
+        scrollRoot.GetComponent<LayoutElement>().flexibleHeight = 1f;
+
+        // Order here is just panel order; each row carries its own PhotoSetting, so it also drives the
+        // ScreenshotModePanel.rows wiring below.
+        (PhotoSetting setting, string label, float min, float max, float defaultValue)[] settings =
+        {
+            (PhotoSetting.SunIntensity, "Sun Intensity", 0f, 8f, 2f),
+            (PhotoSetting.SunPitch, "Sun Pitch", -10f, 90f, 50f),
+            (PhotoSetting.SunYaw, "Sun Yaw", 0f, 360f, 0f),
+            (PhotoSetting.Bloom, "Bloom", 0f, 5f, 0f),
+            (PhotoSetting.Vignette, "Vignette", 0f, 1f, 0f),
+            (PhotoSetting.Exposure, "Exposure", -5f, 5f, 0f),
+            (PhotoSetting.Contrast, "Contrast", -100f, 100f, 0f),
+            (PhotoSetting.Saturation, "Saturation", -100f, 100f, 0f),
+            (PhotoSetting.FocusDistance, "Focus Distance", 0.1f, 20f, 10f),
+            (PhotoSetting.Aperture, "Aperture", 1f, 32f, 5.6f),
+            (PhotoSetting.FieldOfView, "Field of View", 20f, 90f, 60f),
+        };
+
+        var sliders = new Slider[settings.Length];
+        var resetButtons = new Button[settings.Length];
+        for (int i = 0; i < settings.Length; i++)
+        {
+            CreatePhotoSliderRow(scrollContent, settings[i].label, settings[i].min, settings[i].max, settings[i].defaultValue,
+                out sliders[i], out resetButtons[i]);
+        }
 
         RectTransform buttonsRow = CreateUIObject("ButtonsRow", content, typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(LayoutElement));
         HorizontalLayoutGroup rowLayout = buttonsRow.GetComponent<HorizontalLayoutGroup>();
@@ -353,7 +390,7 @@ public static class SettingsMenuGenerator
 
         GameObject captureButtonGO = Instantiate(buttonPrefab, buttonsRow);
         captureButtonGO.name = "CaptureButton";
-        SetButtonLabel(captureButtonGO.GetComponent<Button>(), "Capture");
+        SetButtonLabel(captureButtonGO.GetComponent<Button>(), "Take Photo");
 
         GameObject exitButtonGO = Instantiate(buttonPrefab, buttonsRow);
         exitButtonGO.name = "ExitButton";
@@ -363,21 +400,43 @@ public static class SettingsMenuGenerator
 
         ScreenshotModePanel panelView = panel.gameObject.AddComponent<ScreenshotModePanel>();
         SetField(panelView, "screenshotMode", screenshotController);
-        SetField(panelView, "sunIntensitySlider", sunIntensity);
-        SetField(panelView, "sunPitchSlider", sunPitch);
-        SetField(panelView, "bloomSlider", bloom);
-        SetField(panelView, "vignetteSlider", vignette);
-        SetField(panelView, "exposureSlider", exposure);
-        SetField(panelView, "contrastSlider", contrast);
-        SetField(panelView, "saturationSlider", saturation);
-        SetField(panelView, "focusDistanceSlider", focusDistance);
-        SetField(panelView, "apertureSlider", aperture);
-        SetField(panelView, "fovSlider", fov);
         SetField(panelView, "captureButton", captureButtonGO.GetComponent<Button>());
         SetField(panelView, "exitButton", exitButtonGO.GetComponent<Button>());
         SetField(panelView, "savedLabel", savedLabelGO.GetComponent<TextMeshProUGUI>());
 
+        SerializedObject panelSO = new SerializedObject(panelView);
+        SerializedProperty rowsProp = panelSO.FindProperty("rows");
+        rowsProp.arraySize = settings.Length;
+        for (int i = 0; i < settings.Length; i++)
+        {
+            SerializedProperty element = rowsProp.GetArrayElementAtIndex(i);
+            element.FindPropertyRelative("setting").intValue = (int)settings[i].setting;
+            element.FindPropertyRelative("slider").objectReferenceValue = sliders[i];
+            element.FindPropertyRelative("resetButton").objectReferenceValue = resetButtons[i];
+        }
+        panelSO.ApplyModifiedProperties();
+
         return panel.gameObject;
+    }
+
+    private static void CreatePhotoSliderRow(Transform parent, string labelText, float min, float max, float value, out Slider slider, out Button resetButton)
+    {
+        RectTransform row = CreateLabeledRow(parent, labelText, sliderPrefab, 32f, 0f, out GameObject controlInstance);
+        // Narrower label than the settings panel's 220 so the slider keeps usable width with the reset
+        // button also in the row.
+        row.GetChild(0).GetComponent<LayoutElement>().preferredWidth = 150f;
+
+        slider = controlInstance.GetComponent<Slider>();
+        slider.minValue = min;
+        slider.maxValue = max;
+        slider.value = value;
+
+        GameObject resetGO = Instantiate(iconButtonPrefab, row);
+        resetGO.name = "ResetButton";
+        LayoutElement resetLayout = resetGO.AddComponent<LayoutElement>();
+        resetLayout.preferredWidth = 26f;
+        resetLayout.flexibleWidth = 0f;
+        resetButton = resetGO.GetComponent<Button>();
     }
 
     // ---- Shared control prefabs ---------------------------------------------
@@ -389,6 +448,7 @@ public static class SettingsMenuGenerator
         labelPrefab = GetOrCreateLabelPrefab();
         sliderPrefab = GetOrCreateSliderPrefab();
         togglePrefab = GetOrCreateTogglePrefab();
+        iconButtonPrefab = GetOrCreateIconButtonPrefab();
     }
 
     private static void EnsureFolder()
@@ -558,6 +618,102 @@ public static class SettingsMenuGenerator
         return saved;
     }
 
+    private static GameObject GetOrCreateIconButtonPrefab()
+    {
+        GameObject existing = AssetDatabase.LoadAssetAtPath<GameObject>(IconButtonPrefabPath);
+        if (existing != null) return existing;
+
+        GameObject root = new GameObject("MenuIconButton", typeof(RectTransform), typeof(Image), typeof(Button));
+        root.GetComponent<RectTransform>().sizeDelta = new Vector2(28f, 28f);
+
+        Image image = root.GetComponent<Image>();
+        image.sprite = GetBuiltinSprite("UI/Skin/UISprite.psd");
+        image.type = Image.Type.Sliced;
+        image.color = new Color(0.2f, 0.2f, 0.24f);
+        root.GetComponent<Button>().targetGraphic = image;
+
+        GameObject iconGO = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+        iconGO.transform.SetParent(root.transform, false);
+        RectTransform iconRt = iconGO.GetComponent<RectTransform>();
+        StretchFull(iconRt);
+        iconRt.offsetMin = new Vector2(4f, 4f);
+        iconRt.offsetMax = new Vector2(-4f, -4f);
+        Image iconImage = iconGO.GetComponent<Image>();
+        iconImage.sprite = GetOrCreateResetIconSprite();
+        iconImage.color = new Color(0.85f, 0.85f, 0.9f);
+        iconImage.raycastTarget = false;
+
+        GameObject saved = PrefabUtility.SaveAsPrefabAsset(root, IconButtonPrefabPath);
+        Object.DestroyImmediate(root);
+        return saved;
+    }
+
+    /// <summary>
+    ///     A circular "reset" arrow drawn once into a small PNG — TMP's default font atlas has no ↺
+    ///     glyph and Unity ships no builtin refresh sprite, so the generator makes its own. Replace the
+    ///     PNG to restyle it, same as the control prefabs.
+    /// </summary>
+    private static Sprite GetOrCreateResetIconSprite()
+    {
+        Sprite existing = AssetDatabase.LoadAssetAtPath<Sprite>(ResetIconPath);
+        if (existing != null) return existing;
+
+        const int size = 64;
+        const float radius = 22f;
+        const float thickness = 5f;
+        Vector2 center = new Vector2((size - 1) * 0.5f, (size - 1) * 0.5f);
+
+        Vector2 Dir(float degrees) => new Vector2(Mathf.Cos(degrees * Mathf.Deg2Rad), Mathf.Sin(degrees * Mathf.Deg2Rad));
+
+        // Ring with a gap at the top; the arrowhead sits at the gap's edge pointing into it.
+        Vector2 tip = center + radius * Dir(105f);
+        Vector2 baseInner = center + (radius - 10f) * Dir(60f);
+        Vector2 baseOuter = center + (radius + 10f) * Dir(60f);
+
+        Color32[] pixels = new Color32[size * size];
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                Vector2 point = new Vector2(x, y);
+                Vector2 fromCenter = point - center;
+                float angle = Mathf.Atan2(fromCenter.y, fromCenter.x) * Mathf.Rad2Deg;
+
+                bool inGap = angle > 55f && angle < 125f;
+                float alpha = inGap ? 0f : Mathf.Clamp01(thickness * 0.5f + 0.5f - Mathf.Abs(fromCenter.magnitude - radius));
+                if (InTriangle(point, tip, baseInner, baseOuter)) alpha = 1f;
+
+                pixels[y * size + x] = new Color32(255, 255, 255, (byte)(alpha * 255f));
+            }
+        }
+
+        Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        texture.SetPixels32(pixels);
+        File.WriteAllBytes(ResetIconPath, texture.EncodeToPNG());
+        Object.DestroyImmediate(texture);
+
+        AssetDatabase.ImportAsset(ResetIconPath);
+        TextureImporter importer = (TextureImporter)AssetImporter.GetAtPath(ResetIconPath);
+        importer.textureType = TextureImporterType.Sprite;
+        importer.alphaIsTransparency = true;
+        importer.mipmapEnabled = false;
+        importer.SaveAndReimport();
+
+        return AssetDatabase.LoadAssetAtPath<Sprite>(ResetIconPath);
+    }
+
+    private static bool InTriangle(Vector2 point, Vector2 a, Vector2 b, Vector2 c)
+    {
+        float Cross(Vector2 from, Vector2 to) => from.x * to.y - from.y * to.x;
+
+        float d1 = Cross(b - a, point - a);
+        float d2 = Cross(c - b, point - b);
+        float d3 = Cross(a - c, point - c);
+        bool hasNegative = d1 < 0f || d2 < 0f || d3 < 0f;
+        bool hasPositive = d1 > 0f || d2 > 0f || d3 > 0f;
+        return !(hasNegative && hasPositive);
+    }
+
     private static GameObject GetOrCreateRebindRowPrefab()
     {
         GameObject existing = AssetDatabase.LoadAssetAtPath<GameObject>(RebindRowPrefabPath);
@@ -654,7 +810,10 @@ public static class SettingsMenuGenerator
         layout.spacing = spacing;
         layout.padding = padding;
         layout.childControlWidth = true;
-        layout.childControlHeight = false;
+        // Control heights so each child's LayoutElement.preferredHeight actually applies — left
+        // uncontrolled, every row keeps the 100px default RectTransform height and tall panels
+        // overflow the screen.
+        layout.childControlHeight = true;
         layout.childForceExpandWidth = true;
         layout.childForceExpandHeight = false;
         layout.childAlignment = TextAnchor.UpperCenter;

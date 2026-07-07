@@ -319,7 +319,7 @@ MonoBehaviour:
         SoloAllTracks: 0
         AutoUnSoloOnEnd: 0
         PanStereo: 0
-        SpatialBlend: 0
+        SpatialBlend: 1
         AttachToTransform: {fileID: 0}
         BypassEffects: 0
         BypassListenerEffects: 0
@@ -758,7 +758,7 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.5
+  m_Radius: 0.25
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 1, z: 0}
@@ -1336,7 +1336,7 @@ MonoBehaviour:
         SoloAllTracks: 0
         AutoUnSoloOnEnd: 0
         PanStereo: 0
-        SpatialBlend: 0
+        SpatialBlend: 1
         AttachToTransform: {fileID: 0}
         BypassEffects: 0
         BypassListenerEffects: 0
@@ -1738,7 +1738,7 @@ MonoBehaviour:
         SoloAllTracks: 0
         AutoUnSoloOnEnd: 0
         PanStereo: 0
-        SpatialBlend: 0
+        SpatialBlend: 1
         AttachToTransform: {fileID: 0}
         BypassEffects: 0
         BypassListenerEffects: 0

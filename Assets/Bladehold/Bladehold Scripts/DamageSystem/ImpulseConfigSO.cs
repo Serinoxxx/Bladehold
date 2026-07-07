@@ -2,9 +2,11 @@ using UnityEngine;
 
 /// <summary>
 ///     Gameplay tunables for the Impulse fling reaction (<see cref="ImpulseReceiver" />): the
-///     resistance defaults, launch shaping, landing detection, NavMesh recovery, and the horde-safety
-///     cap on simultaneous ragdolls. The player-side numbers (orb duration, power, force bases) live
-///     on <see cref="ImpulseSO" /> instead — this asset is the enemy/reaction side.
+///     resistance defaults, launch shaping, landing detection, and NavMesh recovery. The player-side
+///     numbers (orb duration, power, force bases) live on <see cref="ImpulseSO" /> instead — this
+///     asset is the enemy/reaction side. The horde-safety cap on simultaneous ragdolls is a
+///     player-facing setting instead (<see cref="EnemyRagdoll.MaxActive" />, set by
+///     <see cref="GameSettingsService" />), since it trades physics fidelity for performance.
 /// </summary>
 [CreateAssetMenu(fileName = "ImpulseConfigSO", menuName = "Scriptable Objects/ImpulseConfigSO")]
 public class ImpulseConfigSO : ScriptableObject
@@ -50,8 +52,4 @@ public class ImpulseConfigSO : ScriptableObject
 
     [Tooltip("Seconds a knockdown (the animation-only reaction below the fling threshold) lasts before the AI resumes.")]
     public float knockdownSeconds = 2.5f;
-
-    [Header("Horde safety")]
-    [Tooltip("Max ragdolls simulating at once; further flings degrade to knockdowns so the buff never stops working but physics cost stays bounded.")]
-    public int maxSimultaneousRagdolls = 12;
 }

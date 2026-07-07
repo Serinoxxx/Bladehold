@@ -21,6 +21,8 @@ public class PauseMenuView : MonoBehaviour
     [SerializeField] private GameObject settingsPanel;
     [Tooltip("Hidden whenever the Settings panel or Photo Mode is open, shown alongside it otherwise.")]
     [SerializeField] private GameObject mainButtonsPanel;
+    [Tooltip("The full-screen dim image behind the menus. Hidden during Photo Mode — it would tint the shot and, as a full-screen raycast target, swallow the click-and-drag camera input.")]
+    [SerializeField] private GameObject backdrop;
     [SerializeField] private ScreenshotModeController screenshotMode;
     [SerializeField] private GameObject photoModePanelRoot;
 
@@ -112,6 +114,7 @@ public class PauseMenuView : MonoBehaviour
     private void HandleScreenshotModeActiveChanged(bool active)
     {
         if (photoModePanelRoot != null) photoModePanelRoot.SetActive(active);
+        if (backdrop != null) backdrop.SetActive(!active);
 
         if (active)
         {
@@ -129,6 +132,7 @@ public class PauseMenuView : MonoBehaviour
         if (settingsPanel != null) settingsPanel.SetActive(false);
         if (photoModePanelRoot != null) photoModePanelRoot.SetActive(false);
         if (mainButtonsPanel != null) mainButtonsPanel.SetActive(true);
+        if (backdrop != null) backdrop.SetActive(true);
     }
 
     private void HandleResume() => PauseMenuController.Instance.SetPaused(false);
