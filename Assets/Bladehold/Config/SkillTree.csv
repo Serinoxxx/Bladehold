@@ -1,160 +1,180 @@
 id,displayName,description,cost,stat,kind,amount,prereqs,x,y,icon,family
-sword_dmg_1,Sharpened Edge,+1 Sword Damage,5,SwordDamage,Flat,1,,0,0,AttackDoubleSword_1_nobg,damage
-sword_dmg_2,Sharpened Edge,+2 Sword Damage,8,SwordDamage,Flat,2,range_ext_1,-2,2,AttackDoubleSword_2_nobg,damage
-sword_dmg_3,Sharpened Edge,+3 Sword Damage,12,SwordDamage,Flat,3,move_1,4,2,AttackDoubleSword_3_nobg,damage
-sword_dmg_4,Sharpened Edge,+4 Sword Damage,18,SwordDamage,Flat,4,sword_dmg_3,5,3,AttackDoubleSword_4_nobg,damage
-sword_dmg_5,Sharpened Edge,+5 Sword Damage,26,SwordDamage,Flat,5,knock_3,-4,5,AttackDoubleSword_1_nobg,damage
-sword_dmg_6,Sharpened Edge,+6 Sword Damage,38,SwordDamage,Flat,6,range_ext_4,5,5,AttackDoubleSword_2_nobg,damage
-sword_dmg_7,Sharpened Edge,+7 Sword Damage,55,SwordDamage,Flat,7,butter_7,2,6,AttackDoubleSword_3_nobg,damage
-sword_dmg_8,Sharpened Edge,+8 Sword Damage,75,SwordDamage,Flat,8,charge_4,-2,7,AttackDoubleSword_4_nobg,damage
-sword_dmg_9,Sharpened Edge,+9 Sword Damage,100,SwordDamage,Flat,9,sword_dmg_6,5,6,AttackDoubleSword_1_nobg,damage
-sword_dmg_10,Sharpened Edge,+10 Sword Damage,130,SwordDamage,Flat,10,plunder_5,0,7,diamond_blade_nobg,damage
-range_ext_1,Extended Blade,+25% Sword Range,7,SwordRange,Percent,0.25,sword_dmg_1,-2,1,Warriorskill_41_nobg,range
-range_ext_2,Extended Blade,+25% Sword Range,14,SwordRange,Percent,0.25,range_ext_1,-3,2,Warriorskill_41_nobg,range
-range_ext_3,Extended Blade,+25% Sword Range,22,SwordRange,Percent,0.25,butter_1;move_1,1,2,Warriorskill_41_nobg,range
-range_ext_4,Extended Blade,+25% Sword Range,32,SwordRange,Percent,0.25,sword_dmg_4,5,4,Warriorskill_41_nobg,range
-range_ext_5,Extended Blade,+25% Sword Range,45,SwordRange,Percent,0.25,butter_4;sprint_1,2,4,Warriorskill_41_nobg,range
-range_ext_6,Extended Blade,+25% Sword Range,60,SwordRange,Percent,0.25,butter_5,4,5,Warriorskill_41_nobg,range
-range_ext_7,Extended Blade,+25% Sword Range,80,SwordRange,Percent,0.25,butter_6,-4,7,Warriorskill_41_nobg,range
-range_ext_8,Extended Blade,+25% Sword Range,105,SwordRange,Percent,0.25,range_ext_6,4,6,Warriorskill_41_nobg,range
-butter_1,Like Butter,Cut through 1 more enemy per swing,10,MaxHitsPerSwing,Flat,1,sword_dmg_1,0,1,Warriorskill_21_nobg,cleave
-butter_2,Like Butter,Cut through 1 more enemy per swing,16,MaxHitsPerSwing,Flat,1,move_1,2,2,Warriorskill_21_nobg,cleave
-butter_3,Like Butter,Cut through 1 more enemy per swing,24,MaxHitsPerSwing,Flat,1,range_ext_2;crit_1,-4,3,Warriorskill_21_nobg,cleave
-butter_4,Like Butter,Cut through 1 more enemy per swing,34,MaxHitsPerSwing,Flat,1,butter_2,2,3,Warriorskill_21_nobg,cleave
-butter_5,Like Butter,Cut through 1 more enemy per swing,46,MaxHitsPerSwing,Flat,1,move_dup,4,4,Warriorskill_21_nobg,cleave
-butter_6,Like Butter,Cut through 1 more enemy per swing,60,MaxHitsPerSwing,Flat,1,sword_dmg_5,-4,6,Warriorskill_21_nobg,cleave
-butter_7,Like Butter,Cut through 1 more enemy per swing,76,MaxHitsPerSwing,Flat,1,range_ext_5,2,5,Warriorskill_21_nobg,cleave
-butter_8,Like Butter,Cut through 1 more enemy per swing,94,MaxHitsPerSwing,Flat,1,vamp_5;plunder_5,-1,7,Warriorskill_21_nobg,cleave
-move_1,Fleet Footed,+5% Move Speed,8,MoveSpeed,Percent,0.05,sword_dmg_1,2,1,Aura_Speed_nb,fleet
-move_dup,Fleet Footed,+5% Move Speed,16,MoveSpeed,Percent,0.05,move_2,4,3,Aura_Speed_nb,fleet
-move_2,Swift,+5% Move Speed,16,MoveSpeed,Percent,0.05,move_1,3,2,Aura_Speed_nb,
-crit_1,Keen Eye,+5% Critical Strike Chance,15,CritChance,Flat,0.05,range_ext_1,-4,2,Critical_strike_nobg,
-crit_2,Deadeye,+5% Critical Strike Chance,22,CritChance,Flat,0.05,crit_1,-5,3,Critical_strike2_nobg,
-critdmg_1,Critical Damage,Critical strikes deal 2x damage,20,CritMultiplier,Flat,0.5,crit_2,-6,4,Critical_strike3_nobg,critdmg
-critdmg_2,Critical Damage,Critical strikes deal 4x damage,45,CritMultiplier,Flat,2,critdmg_1,-6,5,Critical_strike4_nobg,critdmg
-critdmg_3,Critical Damage,Critical strikes deal 8x damage,90,CritMultiplier,Flat,4,critdmg_2,-6,6,Critical_strike4_nobg,critdmg
-charge_unlock,Heavy Strike,Hold your attack for 1s to charge a level: +50% damage per level,30,MaxChargeLevels;ChargeDamageBonus,Flat;Flat,1;0.5,sword_dmg_2,-2,3,IncreaseStrength_1_nobg,charge
-charge_2,Heavy Strike,Hold 1s longer for another charge level,45,MaxChargeLevels,Flat,1,charge_unlock,-2,4,IncreaseStrength_2_nobg,charge
-charge_3,Heavy Strike,Hold 1s longer for another charge level,65,MaxChargeLevels,Flat,1,charge_2,-2,5,IncreaseStrength_3_nobg,charge
-charge_4,Heavy Strike,Hold 1s longer for another charge level,90,MaxChargeLevels,Flat,1,charge_3,-2,6,IncreaseStrength_4_nobg,charge
-knock_1,Brute Force,Knockback enemies on hit,20,KnockbackForce,Flat,8,sword_dmg_2,-3,3,Push_nobg,knock
-knock_2,Stronger Blows,+5% Knockback Force,9,KnockbackForce,Percent,0.05,knock_1,-5,4,Push_nobg,knock
-knock_3,Stronger Blows,+4 Knockback Force,15,KnockbackForce,Flat,4,knock_1,-4,4,Push_nobg,knock
-knock_4,Stronger Blows,+6 Knockback Force,25,KnockbackForce,Flat,6,knock_2;knock_3,-5,5,Push_nobg,knock
-knock_5,Stronger Blows,+8 Knockback Force,35,KnockbackForce,Flat,8,knock_4,-5,6,Push_nobg,knock
-ampknock_1,Amplified Knockback,Charging your weapon also increases knockback by 25% per charge level,25,ChargeKnockbackBonus,Flat,0.25,knock_1,-3,4,Warriorskill_05_nobg,ampknock
-ampknock_2,Amplified Knockback,+25% knockback per charge level,40,ChargeKnockbackBonus,Flat,0.25,ampknock_1,-3,5,Warriorskill_05_nobg,ampknock
-ampknock_3,Amplified Knockback,+25% knockback per charge level,60,ChargeKnockbackBonus,Flat,0.25,ampknock_2,-3,6,Warriorskill_05_nobg,ampknock
-ampknock_4,Amplified Knockback,+25% knockback per charge level,85,ChargeKnockbackBonus,Flat,0.25,ampknock_3,-3,7,Warriorskill_05_nobg,ampknock
-vamp_1,Vampiric Blade,Heal +1% of the damage you deal,15,LifeStealPercent,Flat,0.01,butter_1,-1,2,vampire_nobg,vamp
-vamp_2,Vampiric Blade,Heal +1% of the damage you deal,25,LifeStealPercent,Flat,0.01,vamp_1,-1,3,vampire_nobg,vamp
-vamp_3,Vampiric Blade,Heal +1% of the damage you deal,40,LifeStealPercent,Flat,0.01,vamp_2,-1,4,vampire_nobg,vamp
-vamp_4,Vampiric Blade,Heal +1% of the damage you deal,60,LifeStealPercent,Flat,0.01,vamp_3,-1,5,vampire_nobg,vamp
-vamp_5,Vampiric Blade,Heal +1% of the damage you deal,85,LifeStealPercent,Flat,0.01,vamp_4,-1,6,vampire_nobg,vamp
-plunder_1,Plunder,+50% Gold from enemies,12,GoldDropMultiplier,Percent,0.5,butter_1,0,2,GoldCoin,plunder
-plunder_2,Plunder,+50% Gold from enemies,24,GoldDropMultiplier,Percent,0.5,plunder_1,0,3,GoldCoinThree,plunder
-plunder_3,Plunder,+100% Gold from enemies,45,GoldDropMultiplier,Percent,1,plunder_2,0,4,GoldCoinTen,plunder
-plunder_4,Plunder,+200% Gold from enemies,80,GoldDropMultiplier,Percent,2,plunder_3,0,5,Assassinskill_26_nobg,plunder
-plunder_5,Plunder,+400% Gold from enemies,140,GoldDropMultiplier,Percent,4,plunder_4,0,6,Skill_Money,plunder
-sprint_1,Sprinter,+10% Sprint Speed,10,SprintSpeed,Percent,0.1,move_2,3,3,Aura_Speed_nb,sprint
-sprint_2,Sprinter,+10% Sprint Speed,18,SprintSpeed,Percent,0.1,sprint_1,3,4,Aura_Speed_nb,sprint
-sprint_3,Sprinter,+10% Sprint Speed,28,SprintSpeed,Percent,0.1,sprint_2,3,5,Aura_Speed_nb,sprint
-sprint_4,Sprinter,+10% Sprint Speed,40,SprintSpeed,Percent,0.1,sprint_3,3,6,Aura_Speed_nb,sprint
-sprint_5,Sprinter,+10% Sprint Speed,55,SprintSpeed,Percent,0.1,sprint_4,3,7,Aura_Speed_nb,sprint
-solid_1,Solid,Automatically block 1 damage source every 10 seconds,20,BlockCooldown,Flat,10,range_ext_3,1,3,Warriorskill_18_block,solid
-solid_2,Solid,Auto-block recharges 1s sooner,30,BlockCooldown,Flat,-1,solid_1,1,4,Warriorskill_18_block,solid
-solid_3,Solid,Auto-block recharges 1s sooner,45,BlockCooldown,Flat,-1,solid_2,1,5,Warriorskill_18_block,solid
-solid_4,Solid,Auto-block recharges 1s sooner,65,BlockCooldown,Flat,-1,solid_3,1,6,Warriorskill_18_block,solid
-solid_5,Solid,Auto-block recharges 1s sooner,90,BlockCooldown,Flat,-1,solid_4,1,7,Warriorskill_18_block,solid
-impulse_unlock,Impulse,"Impulse Goblins (10% of spawns) drop Impulse Orbs: collecting one supercharges your sword for 3s, flinging goblins skyward",40,ImpulseGoblinChance;ImpulseOrbDuration,Flat;Flat,0.1;3,range_ext_2,-3,1,Warriorskill_05_nobg,
-impdur_1,Lingering Impulse,Impulse buff lasts 4s per orb,25,ImpulseOrbDuration,Flat,1,impulse_unlock,-4,1,Warriorskill_05_nobg,impdur
-impdur_2,Lingering Impulse,Impulse buff lasts 5s per orb,35,ImpulseOrbDuration,Flat,1,impdur_1,-5,1,Warriorskill_05_nobg,impdur
-impdur_3,Lingering Impulse,Impulse buff lasts 6s per orb,50,ImpulseOrbDuration,Flat,1,impdur_2,-6,1,Warriorskill_05_nobg,impdur
-impdur_4,Lingering Impulse,Impulse buff lasts 7s per orb,70,ImpulseOrbDuration,Flat,1,impdur_3,-6,2,Warriorskill_05_nobg,impdur
-impdur_5,Lingering Impulse,Impulse buff lasts 8s per orb,95,ImpulseOrbDuration,Flat,1,impdur_4,-6,3,Warriorskill_05_nobg,impdur
-impchance_1,Impulse Scent,+10% Impulse Goblin spawn chance,30,ImpulseGoblinChance,Flat,0.1,impulse_unlock,-4,0,Push_nobg,impchance
-impchance_2,Impulse Scent,+10% Impulse Goblin spawn chance,50,ImpulseGoblinChance,Flat,0.1,impchance_1,-5,0,Push_nobg,impchance
-imppower_1,Impulse Power,+1 Impulse Power: flings launch 15% harder,35,ImpulsePower,Flat,1,impulse_unlock,-3,0,IncreaseStrength_2_nobg,
-imppower_2,Impulse Power,+1 Impulse Power: enough to knock Goblin Brutes off their feet,55,ImpulsePower,Flat,1,imppower_1,-2,0,IncreaseStrength_3_nobg,
-imppower_3,Impulse Power,+1 Impulse Power: enough to fling Goblin Brutes skyward,80,ImpulsePower,Flat,1,imppower_2,-1,0,IncreaseStrength_4_nobg,
-lightning_unlock,Chain Lightning,Picking up a Lightning Orb (dropped by Storm Witches) charges your blade for 4s: every hit chains to 1 nearby enemy for 50% damage,40,ChainLightningOrbDuration;ChainLightningBounces;ChainLightningDamagePercent,Flat;Flat;Flat,4;1;0.5,crit_1,7,2,Warriorskill_05_nobg,
-lightdur_1,Lingering Charge,Chain Lightning buff lasts 1s longer per orb,25,ChainLightningOrbDuration,Flat,1,lightning_unlock,7,1,Warriorskill_05_nobg,lightdur
-lightdur_2,Lingering Charge,Chain Lightning buff lasts 1s longer per orb,35,ChainLightningOrbDuration,Flat,1,lightdur_1,7,0,Warriorskill_05_nobg,lightdur
-lightbounce_1,Arc Chain,Chain Lightning bounces to 1 more enemy,30,ChainLightningBounces,Flat,1,lightning_unlock,8,2,Push_nobg,lightbounce
-lightbounce_2,Arc Chain,Chain Lightning bounces to 1 more enemy,50,ChainLightningBounces,Flat,1,lightbounce_1,9,2,Push_nobg,lightbounce
-lightbounce_3,Arc Chain,Chain Lightning bounces to 1 more enemy,75,ChainLightningBounces,Flat,1,lightbounce_2,10,2,Push_nobg,lightbounce
-lightdmg_1,Overcharged Bolts,+15% Chain Lightning damage,30,ChainLightningDamagePercent,Flat,0.15,lightning_unlock,7,3,IncreaseStrength_2_nobg,lightdmg
-lightdmg_2,Overcharged Bolts,+15% Chain Lightning damage,50,ChainLightningDamagePercent,Flat,0.15,lightdmg_1,7,4,IncreaseStrength_3_nobg,lightdmg
-lightdmg_3,Overcharged Bolts,+15% Chain Lightning damage,75,ChainLightningDamagePercent,Flat,0.15,lightdmg_2,7,5,IncreaseStrength_4_nobg,lightdmg
-lightcrit_1,Static Discharge,+10% Chain Lightning crit chance,35,ChainLightningCritChance,Flat,0.1,lightning_unlock,8,3,Critical_strike_nobg,lightcrit
-lightcrit_2,Static Discharge,+10% Chain Lightning crit chance,55,ChainLightningCritChance,Flat,0.1,lightcrit_1,8,4,Critical_strike2_nobg,lightcrit
-alldmg_1,Raw Power,+50% All Damage,60,AllDamageMultiplier,Percent,0.5,sword_dmg_3,5,2,IncreaseStrength_4_nobg,alldmg
-alldmg_2,Raw Power,+50% All Damage,110,AllDamageMultiplier,Percent,0.5,crit_2,-7,3,IncreaseStrength_4_nobg,alldmg
-alldmg_3,Raw Power,+50% All Damage,170,AllDamageMultiplier,Percent,0.5,knock_5,-6,7,IncreaseStrength_4_nobg,alldmg
-alldmg_4,Raw Power,+50% All Damage,240,AllDamageMultiplier,Percent,0.5,sprint_5,4,7,IncreaseStrength_4_nobg,alldmg
-alldmg_5,Raw Power,+50% All Damage,320,AllDamageMultiplier,Percent,0.5,lightdmg_3,7,6,IncreaseStrength_4_nobg,alldmg
-alldmg_6,Raw Power,+50% All Damage,410,AllDamageMultiplier,Percent,0.5,precision_1,12,4,IncreaseStrength_4_nobg,alldmg
-multishot_1,Multi Shot,Fire 1 additional arrow in an arc for 25% of your main arrow's damage,25,BowMultishotArrows,Flat,1,,11,0,,multishot
-multishot_2,Multi Shot,Fire a 2nd additional arrow,40,BowMultishotArrows,Flat,1,multishot_1,12,0,,multishot
-multishot_3,Multi Shot,Fire a 3rd additional arrow,60,BowMultishotArrows,Flat,1,multishot_2,13,0,,multishot
-multishot_4,Multi Shot,Fire a 4th additional arrow,85,BowMultishotArrows,Flat,1,multishot_3,14,0,,multishot
-multishot_5,Multi Shot,Fire a 5th additional arrow,115,BowMultishotArrows,Flat,1,multishot_4,15,0,,multishot
-multishot_6,Multi Shot,Fire a 6th additional arrow,150,BowMultishotArrows,Flat,1,multishot_5,16,0,,multishot
-multishot_7,Multi Shot,Fire a 7th additional arrow,190,BowMultishotArrows,Flat,1,multishot_6,17,0,,multishot
-multidmg_1,Heavy Arrows,Additional arrows deal 40% of your main arrow's damage,30,BowMultishotDamagePercent,Flat,0.15,multishot_1,12,1,,multidmg
-multidmg_2,Heavy Arrows,Additional arrows deal 55% of your main arrow's damage,45,BowMultishotDamagePercent,Flat,0.15,multidmg_1,13,1,,multidmg
-multidmg_3,Heavy Arrows,Additional arrows deal 60% of your main arrow's damage,60,BowMultishotDamagePercent,Flat,0.05,multidmg_2,14,1,,multidmg
-multidmg_4,Heavy Arrows,Additional arrows deal 75% of your main arrow's damage,80,BowMultishotDamagePercent,Flat,0.15,multidmg_3,15,1,,multidmg
-multidmg_5,Heavy Arrows,Additional arrows deal 90% of your main arrow's damage,105,BowMultishotDamagePercent,Flat,0.15,multidmg_4,16,1,,multidmg
-multidmg_6,Heavy Arrows,Additional arrows deal 100% of your main arrow's damage,135,BowMultishotDamagePercent,Flat,0.1,multidmg_5,17,1,,multidmg
-bounce_1,Bounce Shot,Arrows have a 20% chance to bounce to an additional nearby enemy,30,BowBounceChance,Flat,0.2,,11,2,Push_nobg,bounce
-bounce_2,Bounce Shot,Arrows have a 40% chance to bounce to an additional nearby enemy,50,BowBounceChance,Flat,0.2,bounce_1,12,2,Push_nobg,bounce
-bounce_3,Bounce Shot,Arrows have a 60% chance to bounce to an additional nearby enemy,75,BowBounceChance,Flat,0.2,bounce_2,13,2,Push_nobg,bounce
-bounce_4,Bounce Shot,Arrows have an 80% chance to bounce to an additional nearby enemy,105,BowBounceChance,Flat,0.2,bounce_3,14,2,Push_nobg,bounce
-bounce_5,Bounce Shot,Arrows always bounce to an additional nearby enemy,140,BowBounceChance,Flat,0.2,bounce_4,15,2,Push_nobg,bounce
-precision_1,Precision Shot,Arrows deal 100% more damage to vulnerable parts on enemies,25,BowPrecisionDamageBonus,Flat,1,,11,3,Critical_strike_nobg,precision
-precision_2,Precision Shot,Arrows deal 150% more damage to vulnerable parts on enemies,40,BowPrecisionDamageBonus,Flat,0.5,precision_1,12,3,Critical_strike_nobg,precision
-precision_3,Precision Shot,Arrows deal 200% more damage to vulnerable parts on enemies,60,BowPrecisionDamageBonus,Flat,0.5,precision_2,13,3,Critical_strike2_nobg,precision
-precision_4,Precision Shot,Arrows deal 250% more damage to vulnerable parts on enemies,85,BowPrecisionDamageBonus,Flat,0.5,precision_3,14,3,Critical_strike2_nobg,precision
-precision_5,Precision Shot,Arrows deal 300% more damage to vulnerable parts on enemies,115,BowPrecisionDamageBonus,Flat,0.5,precision_4,15,3,Critical_strike3_nobg,precision
-precision_6,Precision Shot,Arrows deal 350% more damage to vulnerable parts on enemies,150,BowPrecisionDamageBonus,Flat,0.5,precision_5,16,3,Critical_strike3_nobg,precision
-precision_7,Precision Shot,Arrows deal 400% more damage to vulnerable parts on enemies,190,BowPrecisionDamageBonus,Flat,0.5,precision_6,17,3,Critical_strike4_nobg,precision
-pickuparrow_1,Retriever,Arrows collect gold and power-ups they fly past,45,BowPickupArrows,Flat,1,,11,4,GoldCoin,
-imparrow_1,Impulse Arrow,Arrows are affected by your Impulse Orb buff: hits fling enemies skyward,50,BowImpulseArrows,Flat,1,impulse_unlock,-7,0,Warriorskill_05_nobg,
-stormarrow_1,Storm Arrow,Arrows are affected by your Chain Lightning buff: hits chain to nearby enemies,50,BowStormArrows,Flat,1,lightning_unlock,9,1,Warriorskill_05_nobg,
-unstableorbs_1,Unstable Orbs,Your main arrow detonates Impulse and Lightning Orbs it strikes: an impulse blast or chain lightning erupts from the orb,45,BowUnstableOrbs,Flat,1,stormarrow_1;imparrow_1,10,1,Warriorskill_05_nobg,
-conduit_1,Conduit,Lightning balls deal 10% less damage to you and have a 10% chance to arc chain lightning at your foes,30,ConduitDamageReductionPercent;ConduitChainChance,Flat;Flat,0.1;0.1,lightning_unlock,9,3,Warriorskill_05_nobg,conduit
-conduit_2,Conduit,Lightning balls deal 20% less damage to you and have a 20% chance to arc chain lightning at your foes,50,ConduitDamageReductionPercent;ConduitChainChance,Flat;Flat,0.1;0.1,conduit_1,10,3,Warriorskill_05_nobg,conduit
-conduit_3,Conduit,Lightning balls deal 30% less damage to you and have a 30% chance to arc chain lightning at your foes,75,ConduitDamageReductionPercent;ConduitChainChance,Flat;Flat,0.1;0.1,conduit_2,9,4,Warriorskill_05_nobg,conduit
-conduit_4,Conduit,Lightning balls deal 40% less damage to you and have a 40% chance to arc chain lightning at your foes,105,ConduitDamageReductionPercent;ConduitChainChance,Flat;Flat,0.1;0.1,conduit_3,10,4,Warriorskill_05_nobg,conduit
-explodeheads_1,Exploding Heads,Headshots detonate an impulse blast dealing 25% of the arrow's damage,35,ExplodingHeadsDamagePercent,Flat,0.25,precision_1,13,4,Push_nobg,explodeheads
-explodeheads_2,Exploding Heads,Headshots detonate an impulse blast dealing 50% of the arrow's damage,55,ExplodingHeadsDamagePercent,Flat,0.25,explodeheads_1,14,4,Push_nobg,explodeheads
-explodeheads_3,Exploding Heads,Headshots detonate an impulse blast dealing 75% of the arrow's damage,80,ExplodingHeadsDamagePercent,Flat,0.25,explodeheads_2,15,4,Push_nobg,explodeheads
-explodeheads_4,Exploding Heads,Headshots detonate an impulse blast dealing 100% of the arrow's damage,110,ExplodingHeadsDamagePercent,Flat,0.25,explodeheads_3,16,4,Push_nobg,explodeheads
-midas_1,Arrows of Midas,Arrows have a 5% chance to turn an enemy golden,30,MidasChance,Flat,0.05,pickuparrow_1,11,5,GoldCoin,midas
-midas_2,Arrows of Midas,Arrows have a 10% chance to turn an enemy golden,50,MidasChance,Flat,0.05,midas_1,12,5,GoldCoin,midas
-midas_3,Arrows of Midas,Arrows have a 15% chance to turn an enemy golden,75,MidasChance,Flat,0.05,midas_2,13,5,GoldCoinThree,midas
-midas_4,Arrows of Midas,Arrows have a 20% chance to turn an enemy golden,105,MidasChance,Flat,0.05,midas_3,14,5,GoldCoinThree,midas
-midas_5,Arrows of Midas,Arrows have a 25% chance to turn an enemy golden,140,MidasChance,Flat,0.05,midas_4,15,5,GoldCoinTen,midas
-freezedraw_1,Freezing Draw,Nearby enemies are slowed 10% while you draw your bow,20,FreezingDrawSlowPercent,Flat,0.1,,10,6,,freezedraw
-freezedraw_2,Freezing Draw,Nearby enemies are slowed 20% while you draw your bow,30,FreezingDrawSlowPercent,Flat,0.1,freezedraw_1,11,6,,freezedraw
-freezedraw_3,Freezing Draw,Nearby enemies are slowed 30% while you draw your bow,42,FreezingDrawSlowPercent,Flat,0.1,freezedraw_2,12,6,,freezedraw
-freezedraw_4,Freezing Draw,Nearby enemies are slowed 40% while you draw your bow,56,FreezingDrawSlowPercent,Flat,0.1,freezedraw_3,13,6,,freezedraw
-freezedraw_5,Freezing Draw,Nearby enemies are slowed 50% while you draw your bow,72,FreezingDrawSlowPercent,Flat,0.1,freezedraw_4,14,6,,freezedraw
-freezedraw_6,Freezing Draw,Nearby enemies are slowed 60% while you draw your bow,90,FreezingDrawSlowPercent,Flat,0.1,freezedraw_5,15,6,,freezedraw
-freezedraw_7,Freezing Draw,Nearby enemies are slowed 70% while you draw your bow,110,FreezingDrawSlowPercent,Flat,0.1,freezedraw_6,16,6,,freezedraw
-freezedraw_8,Freezing Draw,Nearby enemies are slowed 80% while you draw your bow,135,FreezingDrawSlowPercent,Flat,0.1,freezedraw_7,17,6,,freezedraw
-brainfreeze_1,Brain Freeze,Headshots chill enemies for 3s: movement and attacks slowed 15%,25,BrainFreezeSlowPercent,Flat,0.15,freezedraw_1,11,7,,brainfreeze
-brainfreeze_2,Brain Freeze,Headshots chill enemies for 3s: movement and attacks slowed 30%,40,BrainFreezeSlowPercent,Flat,0.15,brainfreeze_1,12,7,,brainfreeze
-brainfreeze_3,Brain Freeze,Headshots chill enemies for 3s: movement and attacks slowed 45%,60,BrainFreezeSlowPercent,Flat,0.15,brainfreeze_2,13,7,,brainfreeze
-brainfreeze_4,Brain Freeze,Headshots chill enemies for 3s: movement and attacks slowed 60%,85,BrainFreezeSlowPercent,Flat,0.15,brainfreeze_3,14,7,,brainfreeze
-brainfreeze_5,Brain Freeze,Headshots chill enemies for 3s: movement and attacks slowed 75%,115,BrainFreezeSlowPercent,Flat,0.15,brainfreeze_4,15,7,,brainfreeze
-elongfreeze_1,Elongated Freeze,Enemies slowed by Freezing Draw or Brain Freeze stay slowed 2 seconds longer,30,SlowDurationBonusSeconds,Flat,2,freezedraw_1;brainfreeze_1,11,8,,elongfreeze
-elongfreeze_2,Elongated Freeze,Slows linger 3 seconds longer,45,SlowDurationBonusSeconds,Flat,1,elongfreeze_1,12,8,,elongfreeze
-elongfreeze_3,Elongated Freeze,Slows linger 4 seconds longer,65,SlowDurationBonusSeconds,Flat,1,elongfreeze_2,13,8,,elongfreeze
-elongfreeze_4,Elongated Freeze,Slows linger 5 seconds longer,90,SlowDurationBonusSeconds,Flat,1,elongfreeze_3,14,8,,elongfreeze
-elongfreeze_5,Elongated Freeze,Slows linger 6 seconds longer,120,SlowDurationBonusSeconds,Flat,1,elongfreeze_4,15,8,,elongfreeze
-icebreaker_1,Ice Breaker,Your sword deals 50% more damage to slowed enemies,35,IceBreakerDamageBonus,Flat,0.5,freezedraw_2;brainfreeze_1,16,7,IncreaseStrength_1_nobg,icebreaker
-icebreaker_2,Ice Breaker,Your sword deals 100% more damage to slowed enemies,60,IceBreakerDamageBonus,Flat,0.5,icebreaker_1,17,7,IncreaseStrength_2_nobg,icebreaker
-icebreaker_3,Ice Breaker,Your sword deals 150% more damage to slowed enemies,90,IceBreakerDamageBonus,Flat,0.5,icebreaker_2,16,8,IncreaseStrength_3_nobg,icebreaker
-icebreaker_4,Ice Breaker,Your sword deals 200% more damage to slowed enemies,125,IceBreakerDamageBonus,Flat,0.5,icebreaker_3,17,8,IncreaseStrength_4_nobg,icebreaker
+sword_dmg_1,Sharpened Edge,+1 Sword Damage,15,SwordDamage,Flat,1,,0,0,AttackDoubleSword_1_nobg,damage
+sword_dmg_2,Sharpened Edge,+2 Sword Damage,24,SwordDamage,Flat,2,range_ext_1,-2,2,AttackDoubleSword_2_nobg,damage
+sword_dmg_3,Sharpened Edge,+3 Sword Damage,36,SwordDamage,Flat,3,move_1,4,2,AttackDoubleSword_3_nobg,damage
+sword_dmg_4,Sharpened Edge,+4 Sword Damage,54,SwordDamage,Flat,4,sword_dmg_3,5,3,AttackDoubleSword_4_nobg,damage
+sword_dmg_5,Sharpened Edge,+5 Sword Damage,78,SwordDamage,Flat,5,knock_3,-4,5,AttackDoubleSword_1_nobg,damage
+sword_dmg_6,Sharpened Edge,+6 Sword Damage,114,SwordDamage,Flat,6,range_ext_4,5,5,AttackDoubleSword_2_nobg,damage
+sword_dmg_7,Sharpened Edge,+7 Sword Damage,165,SwordDamage,Flat,7,butter_7,2,6,AttackDoubleSword_3_nobg,damage
+sword_dmg_8,Sharpened Edge,+8 Sword Damage,225,SwordDamage,Flat,8,charge_4,-2,7,AttackDoubleSword_4_nobg,damage
+sword_dmg_9,Sharpened Edge,+9 Sword Damage,300,SwordDamage,Flat,9,sword_dmg_6,5,6,AttackDoubleSword_1_nobg,damage
+sword_dmg_10,Sharpened Edge,+10 Sword Damage,390,SwordDamage,Flat,10,plunder_5,0,7,diamond_blade_nobg,damage
+range_ext_1,Extended Blade,+25% Sword Range,21,SwordRange,Percent,0.25,sword_dmg_1,-2,1,Warriorskill_41_nobg,range
+range_ext_2,Extended Blade,+25% Sword Range,42,SwordRange,Percent,0.25,range_ext_1,-3,2,Warriorskill_41_nobg,range
+range_ext_3,Extended Blade,+25% Sword Range,66,SwordRange,Percent,0.25,butter_1;move_1,1,2,Warriorskill_41_nobg,range
+range_ext_4,Extended Blade,+25% Sword Range,96,SwordRange,Percent,0.25,sword_dmg_4,5,4,Warriorskill_41_nobg,range
+range_ext_5,Extended Blade,+25% Sword Range,135,SwordRange,Percent,0.25,butter_4;sprint_1,2,4,Warriorskill_41_nobg,range
+range_ext_6,Extended Blade,+25% Sword Range,180,SwordRange,Percent,0.25,butter_5,4,5,Warriorskill_41_nobg,range
+range_ext_7,Extended Blade,+25% Sword Range,240,SwordRange,Percent,0.25,butter_6,-4,7,Warriorskill_41_nobg,range
+range_ext_8,Extended Blade,+25% Sword Range,315,SwordRange,Percent,0.25,range_ext_6,4,6,Warriorskill_41_nobg,range
+butter_1,Like Butter,Cut through 1 more enemy per swing,30,MaxHitsPerSwing,Flat,1,sword_dmg_1,0,1,Warriorskill_21_nobg,cleave
+butter_2,Like Butter,Cut through 1 more enemy per swing,48,MaxHitsPerSwing,Flat,1,move_1,2,2,Warriorskill_21_nobg,cleave
+butter_3,Like Butter,Cut through 1 more enemy per swing,72,MaxHitsPerSwing,Flat,1,range_ext_2;crit_1,-4,3,Warriorskill_21_nobg,cleave
+butter_4,Like Butter,Cut through 1 more enemy per swing,102,MaxHitsPerSwing,Flat,1,butter_2,2,3,Warriorskill_21_nobg,cleave
+butter_5,Like Butter,Cut through 1 more enemy per swing,138,MaxHitsPerSwing,Flat,1,move_dup,4,4,Warriorskill_21_nobg,cleave
+butter_6,Like Butter,Cut through 1 more enemy per swing,180,MaxHitsPerSwing,Flat,1,sword_dmg_5,-4,6,Warriorskill_21_nobg,cleave
+butter_7,Like Butter,Cut through 1 more enemy per swing,228,MaxHitsPerSwing,Flat,1,range_ext_5,2,5,Warriorskill_21_nobg,cleave
+butter_8,Like Butter,Cut through 1 more enemy per swing,282,MaxHitsPerSwing,Flat,1,vamp_5;plunder_5,-1,7,Warriorskill_21_nobg,cleave
+move_1,Fleet Footed,+5% Move Speed,24,MoveSpeed,Percent,0.05,sword_dmg_1,2,1,Aura_Speed_nb,fleet
+move_dup,Fleet Footed,+5% Move Speed,48,MoveSpeed,Percent,0.05,move_2,4,3,Aura_Speed_nb,fleet
+move_2,Swift,+5% Move Speed,48,MoveSpeed,Percent,0.05,move_1,3,2,Aura_Speed_nb,
+crit_1,Keen Eye,+5% Critical Strike Chance,45,CritChance,Flat,0.05,range_ext_1,-4,2,Critical_strike_nobg,
+crit_2,Deadeye,+5% Critical Strike Chance,66,CritChance,Flat,0.05,crit_1,-5,3,Critical_strike2_nobg,
+critdmg_1,Critical Damage,Critical strikes deal 2x damage,60,CritMultiplier,Flat,0.5,crit_2,-6,4,Critical_strike3_nobg,critdmg
+critdmg_2,Critical Damage,Critical strikes deal 4x damage,135,CritMultiplier,Flat,2,critdmg_1,-6,5,Critical_strike4_nobg,critdmg
+critdmg_3,Critical Damage,Critical strikes deal 8x damage,270,CritMultiplier,Flat,4,critdmg_2,-6,6,Critical_strike4_nobg,critdmg
+charge_unlock,Heavy Strike,Hold your attack for 1s to charge a level: +50% damage per level,90,MaxChargeLevels;ChargeDamageBonus,Flat;Flat,1;0.5,sword_dmg_2,-2,3,IncreaseStrength_1_nobg,charge
+charge_2,Heavy Strike,Hold 1s longer for another charge level,135,MaxChargeLevels,Flat,1,charge_unlock,-2,4,IncreaseStrength_2_nobg,charge
+charge_3,Heavy Strike,Hold 1s longer for another charge level,195,MaxChargeLevels,Flat,1,charge_2,-2,5,IncreaseStrength_3_nobg,charge
+charge_4,Heavy Strike,Hold 1s longer for another charge level,270,MaxChargeLevels,Flat,1,charge_3,-2,6,IncreaseStrength_4_nobg,charge
+knock_1,Brute Force,Knockback enemies on hit,60,KnockbackForce,Flat,8,sword_dmg_2,-3,3,Push_nobg,knock
+knock_2,Stronger Blows,+5% Knockback Force,27,KnockbackForce,Percent,0.05,knock_1,-5,4,Push_nobg,knock
+knock_3,Stronger Blows,+4 Knockback Force,45,KnockbackForce,Flat,4,knock_1,-4,4,Push_nobg,knock
+knock_4,Stronger Blows,+6 Knockback Force,75,KnockbackForce,Flat,6,knock_2;knock_3,-5,5,Push_nobg,knock
+knock_5,Stronger Blows,+8 Knockback Force,105,KnockbackForce,Flat,8,knock_4,-5,6,Push_nobg,knock
+ampknock_1,Amplified Knockback,Charging your weapon also increases knockback by 25% per charge level,75,ChargeKnockbackBonus,Flat,0.25,knock_1,-3,4,Warriorskill_05_nobg,ampknock
+ampknock_2,Amplified Knockback,+25% knockback per charge level,120,ChargeKnockbackBonus,Flat,0.25,ampknock_1,-3,5,Warriorskill_05_nobg,ampknock
+ampknock_3,Amplified Knockback,+25% knockback per charge level,180,ChargeKnockbackBonus,Flat,0.25,ampknock_2,-3,6,Warriorskill_05_nobg,ampknock
+ampknock_4,Amplified Knockback,+25% knockback per charge level,255,ChargeKnockbackBonus,Flat,0.25,ampknock_3,-3,7,Warriorskill_05_nobg,ampknock
+vamp_1,Vampiric Blade,Heal +1% of the damage you deal,45,LifeStealPercent,Flat,0.01,butter_1,-1,2,vampire_nobg,vamp
+vamp_2,Vampiric Blade,Heal +1% of the damage you deal,75,LifeStealPercent,Flat,0.01,vamp_1,-1,3,vampire_nobg,vamp
+vamp_3,Vampiric Blade,Heal +1% of the damage you deal,120,LifeStealPercent,Flat,0.01,vamp_2,-1,4,vampire_nobg,vamp
+vamp_4,Vampiric Blade,Heal +1% of the damage you deal,180,LifeStealPercent,Flat,0.01,vamp_3,-1,5,vampire_nobg,vamp
+vamp_5,Vampiric Blade,Heal +1% of the damage you deal,255,LifeStealPercent,Flat,0.01,vamp_4,-1,6,vampire_nobg,vamp
+plunder_1,Plunder,+50% Gold from enemies,36,GoldDropMultiplier,Percent,0.5,butter_1,0,2,GoldCoin,plunder
+plunder_2,Plunder,+50% Gold from enemies,72,GoldDropMultiplier,Percent,0.5,plunder_1,0,3,GoldCoinThree,plunder
+plunder_3,Plunder,+100% Gold from enemies,135,GoldDropMultiplier,Percent,1,plunder_2,0,4,GoldCoinTen,plunder
+plunder_4,Plunder,+200% Gold from enemies,240,GoldDropMultiplier,Percent,2,plunder_3,0,5,Assassinskill_26_nobg,plunder
+plunder_5,Plunder,+400% Gold from enemies,420,GoldDropMultiplier,Percent,4,plunder_4,0,6,Skill_Money,plunder
+sprint_1,Sprinter,+10% Sprint Speed,30,SprintSpeed,Percent,0.1,move_2,3,3,Aura_Speed_nb,sprint
+sprint_2,Sprinter,+10% Sprint Speed,54,SprintSpeed,Percent,0.1,sprint_1,3,4,Aura_Speed_nb,sprint
+sprint_3,Sprinter,+10% Sprint Speed,84,SprintSpeed,Percent,0.1,sprint_2,3,5,Aura_Speed_nb,sprint
+sprint_4,Sprinter,+10% Sprint Speed,120,SprintSpeed,Percent,0.1,sprint_3,3,6,Aura_Speed_nb,sprint
+sprint_5,Sprinter,+10% Sprint Speed,165,SprintSpeed,Percent,0.1,sprint_4,3,7,Aura_Speed_nb,sprint
+solid_1,Solid,Automatically block 1 damage source every 10 seconds,60,BlockCooldown,Flat,10,range_ext_3,1,3,Warriorskill_18_block,solid
+solid_2,Solid,Auto-block recharges 1s sooner,90,BlockCooldown,Flat,-1,solid_1,1,4,Warriorskill_18_block,solid
+solid_3,Solid,Auto-block recharges 1s sooner,135,BlockCooldown,Flat,-1,solid_2,1,5,Warriorskill_18_block,solid
+solid_4,Solid,Auto-block recharges 1s sooner,195,BlockCooldown,Flat,-1,solid_3,1,6,Warriorskill_18_block,solid
+solid_5,Solid,Auto-block recharges 1s sooner,270,BlockCooldown,Flat,-1,solid_4,1,7,Warriorskill_18_block,solid
+impulse_unlock,Impulse,"Impulse Goblins (10% of spawns) drop Impulse Orbs: collecting one supercharges your sword for 3s, flinging goblins skyward",120,ImpulseGoblinChance;ImpulseOrbDuration,Flat;Flat,0.1;3,range_ext_2,-3,1,Warriorskill_05_nobg,
+impdur_1,Lingering Impulse,Impulse buff lasts 4s per orb,75,ImpulseOrbDuration,Flat,1,impulse_unlock,-4,1,Warriorskill_05_nobg,impdur
+impdur_2,Lingering Impulse,Impulse buff lasts 5s per orb,105,ImpulseOrbDuration,Flat,1,impdur_1,-5,1,Warriorskill_05_nobg,impdur
+impdur_3,Lingering Impulse,Impulse buff lasts 6s per orb,150,ImpulseOrbDuration,Flat,1,impdur_2,-6,1,Warriorskill_05_nobg,impdur
+impdur_4,Lingering Impulse,Impulse buff lasts 7s per orb,210,ImpulseOrbDuration,Flat,1,impdur_3,-6,2,Warriorskill_05_nobg,impdur
+impdur_5,Lingering Impulse,Impulse buff lasts 8s per orb,285,ImpulseOrbDuration,Flat,1,impdur_4,-6,3,Warriorskill_05_nobg,impdur
+impchance_1,Impulse Scent,+10% Impulse Goblin spawn chance,90,ImpulseGoblinChance,Flat,0.1,impulse_unlock,-4,0,Push_nobg,impchance
+impchance_2,Impulse Scent,+10% Impulse Goblin spawn chance,150,ImpulseGoblinChance,Flat,0.1,impchance_1,-5,0,Push_nobg,impchance
+imppower_1,Impulse Power,+1 Impulse Power: flings launch 15% harder,105,ImpulsePower,Flat,1,impulse_unlock,-3,0,IncreaseStrength_2_nobg,
+imppower_2,Impulse Power,+1 Impulse Power: enough to knock Goblin Brutes off their feet,165,ImpulsePower,Flat,1,imppower_1,-2,0,IncreaseStrength_3_nobg,
+imppower_3,Impulse Power,+1 Impulse Power: enough to fling Goblin Brutes skyward,240,ImpulsePower,Flat,1,imppower_2,-1,0,IncreaseStrength_4_nobg,
+lightning_unlock,Chain Lightning,Picking up a Lightning Orb (dropped by Storm Witches) charges your blade for 4s: every hit chains to 1 nearby enemy for 50% damage,120,ChainLightningOrbDuration;ChainLightningBounces;ChainLightningDamagePercent,Flat;Flat;Flat,4;1;0.5,crit_1,7,2,Warriorskill_05_nobg,
+lightdur_1,Lingering Charge,Chain Lightning buff lasts 1s longer per orb,75,ChainLightningOrbDuration,Flat,1,lightning_unlock,7,1,Warriorskill_05_nobg,lightdur
+lightdur_2,Lingering Charge,Chain Lightning buff lasts 1s longer per orb,105,ChainLightningOrbDuration,Flat,1,lightdur_1,7,0,Warriorskill_05_nobg,lightdur
+lightbounce_1,Arc Chain,Chain Lightning bounces to 1 more enemy,90,ChainLightningBounces,Flat,1,lightning_unlock,8,2,Push_nobg,lightbounce
+lightbounce_2,Arc Chain,Chain Lightning bounces to 1 more enemy,150,ChainLightningBounces,Flat,1,lightbounce_1,9,2,Push_nobg,lightbounce
+lightbounce_3,Arc Chain,Chain Lightning bounces to 1 more enemy,225,ChainLightningBounces,Flat,1,lightbounce_2,10,2,Push_nobg,lightbounce
+lightdmg_1,Overcharged Bolts,+15% Chain Lightning damage,90,ChainLightningDamagePercent,Flat,0.15,lightning_unlock,7,3,IncreaseStrength_2_nobg,lightdmg
+lightdmg_2,Overcharged Bolts,+15% Chain Lightning damage,150,ChainLightningDamagePercent,Flat,0.15,lightdmg_1,7,4,IncreaseStrength_3_nobg,lightdmg
+lightdmg_3,Overcharged Bolts,+15% Chain Lightning damage,225,ChainLightningDamagePercent,Flat,0.15,lightdmg_2,7,5,IncreaseStrength_4_nobg,lightdmg
+lightcrit_1,Static Discharge,+10% Chain Lightning crit chance,105,ChainLightningCritChance,Flat,0.1,lightning_unlock,8,3,Critical_strike_nobg,lightcrit
+lightcrit_2,Static Discharge,+10% Chain Lightning crit chance,165,ChainLightningCritChance,Flat,0.1,lightcrit_1,8,4,Critical_strike2_nobg,lightcrit
+alldmg_1,Raw Power,+50% All Damage,180,AllDamageMultiplier,Percent,0.5,sword_dmg_3,5,2,IncreaseStrength_4_nobg,alldmg
+alldmg_2,Raw Power,+50% All Damage,330,AllDamageMultiplier,Percent,0.5,crit_2,-7,3,IncreaseStrength_4_nobg,alldmg
+alldmg_3,Raw Power,+50% All Damage,510,AllDamageMultiplier,Percent,0.5,knock_5,-6,7,IncreaseStrength_4_nobg,alldmg
+alldmg_4,Raw Power,+50% All Damage,720,AllDamageMultiplier,Percent,0.5,sprint_5,4,7,IncreaseStrength_4_nobg,alldmg
+alldmg_5,Raw Power,+50% All Damage,960,AllDamageMultiplier,Percent,0.5,lightdmg_3,7,6,IncreaseStrength_4_nobg,alldmg
+alldmg_6,Raw Power,+50% All Damage,1230,AllDamageMultiplier,Percent,0.5,precision_1,12,4,IncreaseStrength_4_nobg,alldmg
+multishot_1,Multi Shot,Fire 1 additional arrow in an arc for 25% of your main arrow's damage,75,BowMultishotArrows,Flat,1,,11,0,,multishot
+multishot_2,Multi Shot,Fire a 2nd additional arrow,120,BowMultishotArrows,Flat,1,multishot_1,12,0,,multishot
+multishot_3,Multi Shot,Fire a 3rd additional arrow,180,BowMultishotArrows,Flat,1,multishot_2,13,0,,multishot
+multishot_4,Multi Shot,Fire a 4th additional arrow,255,BowMultishotArrows,Flat,1,multishot_3,14,0,,multishot
+multishot_5,Multi Shot,Fire a 5th additional arrow,345,BowMultishotArrows,Flat,1,multishot_4,15,0,,multishot
+multishot_6,Multi Shot,Fire a 6th additional arrow,450,BowMultishotArrows,Flat,1,multishot_5,16,0,,multishot
+multishot_7,Multi Shot,Fire a 7th additional arrow,570,BowMultishotArrows,Flat,1,multishot_6,17,0,,multishot
+multidmg_1,Heavy Arrows,Additional arrows deal 40% of your main arrow's damage,90,BowMultishotDamagePercent,Flat,0.15,multishot_1,12,1,,multidmg
+multidmg_2,Heavy Arrows,Additional arrows deal 55% of your main arrow's damage,135,BowMultishotDamagePercent,Flat,0.15,multidmg_1,13,1,,multidmg
+multidmg_3,Heavy Arrows,Additional arrows deal 60% of your main arrow's damage,180,BowMultishotDamagePercent,Flat,0.05,multidmg_2,14,1,,multidmg
+multidmg_4,Heavy Arrows,Additional arrows deal 75% of your main arrow's damage,240,BowMultishotDamagePercent,Flat,0.15,multidmg_3,15,1,,multidmg
+multidmg_5,Heavy Arrows,Additional arrows deal 90% of your main arrow's damage,315,BowMultishotDamagePercent,Flat,0.15,multidmg_4,16,1,,multidmg
+multidmg_6,Heavy Arrows,Additional arrows deal 100% of your main arrow's damage,405,BowMultishotDamagePercent,Flat,0.1,multidmg_5,17,1,,multidmg
+bounce_1,Bounce Shot,Arrows have a 20% chance to bounce to an additional nearby enemy,90,BowBounceChance,Flat,0.2,,11,2,Push_nobg,bounce
+bounce_2,Bounce Shot,Arrows have a 40% chance to bounce to an additional nearby enemy,150,BowBounceChance,Flat,0.2,bounce_1,12,2,Push_nobg,bounce
+bounce_3,Bounce Shot,Arrows have a 60% chance to bounce to an additional nearby enemy,225,BowBounceChance,Flat,0.2,bounce_2,13,2,Push_nobg,bounce
+bounce_4,Bounce Shot,Arrows have an 80% chance to bounce to an additional nearby enemy,315,BowBounceChance,Flat,0.2,bounce_3,14,2,Push_nobg,bounce
+bounce_5,Bounce Shot,Arrows always bounce to an additional nearby enemy,420,BowBounceChance,Flat,0.2,bounce_4,15,2,Push_nobg,bounce
+precision_1,Precision Shot,Arrows deal 100% more damage to vulnerable parts on enemies,75,BowPrecisionDamageBonus,Flat,1,,11,3,Critical_strike_nobg,precision
+precision_2,Precision Shot,Arrows deal 150% more damage to vulnerable parts on enemies,120,BowPrecisionDamageBonus,Flat,0.5,precision_1,12,3,Critical_strike_nobg,precision
+precision_3,Precision Shot,Arrows deal 200% more damage to vulnerable parts on enemies,180,BowPrecisionDamageBonus,Flat,0.5,precision_2,13,3,Critical_strike2_nobg,precision
+precision_4,Precision Shot,Arrows deal 250% more damage to vulnerable parts on enemies,255,BowPrecisionDamageBonus,Flat,0.5,precision_3,14,3,Critical_strike2_nobg,precision
+precision_5,Precision Shot,Arrows deal 300% more damage to vulnerable parts on enemies,345,BowPrecisionDamageBonus,Flat,0.5,precision_4,15,3,Critical_strike3_nobg,precision
+precision_6,Precision Shot,Arrows deal 350% more damage to vulnerable parts on enemies,450,BowPrecisionDamageBonus,Flat,0.5,precision_5,16,3,Critical_strike3_nobg,precision
+precision_7,Precision Shot,Arrows deal 400% more damage to vulnerable parts on enemies,570,BowPrecisionDamageBonus,Flat,0.5,precision_6,17,3,Critical_strike4_nobg,precision
+pickuparrow_1,Retriever,Arrows collect gold and power-ups they fly past,135,BowPickupArrows,Flat,1,,11,4,GoldCoin,
+imparrow_1,Impulse Arrow,Arrows are affected by your Impulse Orb buff: hits fling enemies skyward,150,BowImpulseArrows,Flat,1,impulse_unlock,-7,0,Warriorskill_05_nobg,
+stormarrow_1,Storm Arrow,Arrows are affected by your Chain Lightning buff: hits chain to nearby enemies,150,BowStormArrows,Flat,1,lightning_unlock,9,1,Warriorskill_05_nobg,
+unstableorbs_1,Unstable Orbs,Your main arrow detonates Impulse and Lightning Orbs it strikes: an impulse blast or chain lightning erupts from the orb,135,BowUnstableOrbs,Flat,1,stormarrow_1;imparrow_1,10,1,Warriorskill_05_nobg,
+conduit_1,Conduit,Lightning balls deal 10% less damage to you and have a 10% chance to arc chain lightning at your foes,90,ConduitDamageReductionPercent;ConduitChainChance,Flat;Flat,0.1;0.1,lightning_unlock,9,3,Warriorskill_05_nobg,conduit
+conduit_2,Conduit,Lightning balls deal 20% less damage to you and have a 20% chance to arc chain lightning at your foes,150,ConduitDamageReductionPercent;ConduitChainChance,Flat;Flat,0.1;0.1,conduit_1,10,3,Warriorskill_05_nobg,conduit
+conduit_3,Conduit,Lightning balls deal 30% less damage to you and have a 30% chance to arc chain lightning at your foes,225,ConduitDamageReductionPercent;ConduitChainChance,Flat;Flat,0.1;0.1,conduit_2,9,4,Warriorskill_05_nobg,conduit
+conduit_4,Conduit,Lightning balls deal 40% less damage to you and have a 40% chance to arc chain lightning at your foes,315,ConduitDamageReductionPercent;ConduitChainChance,Flat;Flat,0.1;0.1,conduit_3,10,4,Warriorskill_05_nobg,conduit
+explodeheads_1,Exploding Heads,Headshots detonate an impulse blast dealing 25% of the arrow's damage,105,ExplodingHeadsDamagePercent,Flat,0.25,precision_1,13,4,Push_nobg,explodeheads
+explodeheads_2,Exploding Heads,Headshots detonate an impulse blast dealing 50% of the arrow's damage,165,ExplodingHeadsDamagePercent,Flat,0.25,explodeheads_1,14,4,Push_nobg,explodeheads
+explodeheads_3,Exploding Heads,Headshots detonate an impulse blast dealing 75% of the arrow's damage,240,ExplodingHeadsDamagePercent,Flat,0.25,explodeheads_2,15,4,Push_nobg,explodeheads
+explodeheads_4,Exploding Heads,Headshots detonate an impulse blast dealing 100% of the arrow's damage,330,ExplodingHeadsDamagePercent,Flat,0.25,explodeheads_3,16,4,Push_nobg,explodeheads
+midas_1,Arrows of Midas,Arrows have a 5% chance to turn an enemy golden,90,MidasChance,Flat,0.05,pickuparrow_1,11,5,GoldCoin,midas
+midas_2,Arrows of Midas,Arrows have a 10% chance to turn an enemy golden,150,MidasChance,Flat,0.05,midas_1,12,5,GoldCoin,midas
+midas_3,Arrows of Midas,Arrows have a 15% chance to turn an enemy golden,225,MidasChance,Flat,0.05,midas_2,13,5,GoldCoinThree,midas
+midas_4,Arrows of Midas,Arrows have a 20% chance to turn an enemy golden,315,MidasChance,Flat,0.05,midas_3,14,5,GoldCoinThree,midas
+midas_5,Arrows of Midas,Arrows have a 25% chance to turn an enemy golden,420,MidasChance,Flat,0.05,midas_4,15,5,GoldCoinTen,midas
+freezedraw_1,Freezing Draw,Nearby enemies are slowed 10% while you draw your bow,60,FreezingDrawSlowPercent,Flat,0.1,,10,6,,freezedraw
+freezedraw_2,Freezing Draw,Nearby enemies are slowed 20% while you draw your bow,90,FreezingDrawSlowPercent,Flat,0.1,freezedraw_1,11,6,,freezedraw
+freezedraw_3,Freezing Draw,Nearby enemies are slowed 30% while you draw your bow,126,FreezingDrawSlowPercent,Flat,0.1,freezedraw_2,12,6,,freezedraw
+freezedraw_4,Freezing Draw,Nearby enemies are slowed 40% while you draw your bow,168,FreezingDrawSlowPercent,Flat,0.1,freezedraw_3,13,6,,freezedraw
+freezedraw_5,Freezing Draw,Nearby enemies are slowed 50% while you draw your bow,216,FreezingDrawSlowPercent,Flat,0.1,freezedraw_4,14,6,,freezedraw
+freezedraw_6,Freezing Draw,Nearby enemies are slowed 60% while you draw your bow,270,FreezingDrawSlowPercent,Flat,0.1,freezedraw_5,15,6,,freezedraw
+freezedraw_7,Freezing Draw,Nearby enemies are slowed 70% while you draw your bow,330,FreezingDrawSlowPercent,Flat,0.1,freezedraw_6,16,6,,freezedraw
+freezedraw_8,Freezing Draw,Nearby enemies are slowed 80% while you draw your bow,405,FreezingDrawSlowPercent,Flat,0.1,freezedraw_7,17,6,,freezedraw
+brainfreeze_1,Brain Freeze,Headshots chill enemies for 3s: movement and attacks slowed 15%,75,BrainFreezeSlowPercent,Flat,0.15,freezedraw_1,11,7,,brainfreeze
+brainfreeze_2,Brain Freeze,Headshots chill enemies for 3s: movement and attacks slowed 30%,120,BrainFreezeSlowPercent,Flat,0.15,brainfreeze_1,12,7,,brainfreeze
+brainfreeze_3,Brain Freeze,Headshots chill enemies for 3s: movement and attacks slowed 45%,180,BrainFreezeSlowPercent,Flat,0.15,brainfreeze_2,13,7,,brainfreeze
+brainfreeze_4,Brain Freeze,Headshots chill enemies for 3s: movement and attacks slowed 60%,255,BrainFreezeSlowPercent,Flat,0.15,brainfreeze_3,14,7,,brainfreeze
+brainfreeze_5,Brain Freeze,Headshots chill enemies for 3s: movement and attacks slowed 75%,345,BrainFreezeSlowPercent,Flat,0.15,brainfreeze_4,15,7,,brainfreeze
+elongfreeze_1,Elongated Freeze,Enemies slowed by Freezing Draw or Brain Freeze stay slowed 2 seconds longer,90,SlowDurationBonusSeconds,Flat,2,freezedraw_1;brainfreeze_1,11,8,,elongfreeze
+elongfreeze_2,Elongated Freeze,Slows linger 3 seconds longer,135,SlowDurationBonusSeconds,Flat,1,elongfreeze_1,12,8,,elongfreeze
+elongfreeze_3,Elongated Freeze,Slows linger 4 seconds longer,195,SlowDurationBonusSeconds,Flat,1,elongfreeze_2,13,8,,elongfreeze
+elongfreeze_4,Elongated Freeze,Slows linger 5 seconds longer,270,SlowDurationBonusSeconds,Flat,1,elongfreeze_3,14,8,,elongfreeze
+elongfreeze_5,Elongated Freeze,Slows linger 6 seconds longer,360,SlowDurationBonusSeconds,Flat,1,elongfreeze_4,15,8,,elongfreeze
+icebreaker_1,Ice Breaker,Your sword deals 50% more damage to slowed enemies,105,IceBreakerDamageBonus,Flat,0.5,freezedraw_2;brainfreeze_1,16,7,IncreaseStrength_1_nobg,icebreaker
+icebreaker_2,Ice Breaker,Your sword deals 100% more damage to slowed enemies,180,IceBreakerDamageBonus,Flat,0.5,icebreaker_1,17,7,IncreaseStrength_2_nobg,icebreaker
+icebreaker_3,Ice Breaker,Your sword deals 150% more damage to slowed enemies,270,IceBreakerDamageBonus,Flat,0.5,icebreaker_2,16,8,IncreaseStrength_3_nobg,icebreaker
+icebreaker_4,Ice Breaker,Your sword deals 200% more damage to slowed enemies,375,IceBreakerDamageBonus,Flat,0.5,icebreaker_3,17,8,IncreaseStrength_4_nobg,icebreaker
+parry_1,Parry,5% chance to parry melee damage when facing your attacker,60,ParryChance,Flat,0.05,solid_1,6,0,Warriorskill_18_block,parry
+parry_2,Parry,+5% Parry Chance,100,ParryChance,Flat,0.05,parry_1,6,1,Warriorskill_18_block,parry
+parry_3,Parry,+5% Parry Chance,150,ParryChance,Flat,0.05,parry_2,6,2,Warriorskill_18_block,parry
+parry_4,Parry,+5% Parry Chance,220,ParryChance,Flat,0.05,parry_3,6,3,Warriorskill_18_block,parry
+parry_5,Parry,+5% Parry Chance,300,ParryChance,Flat,0.05,parry_4,6,4,Warriorskill_18_block,parry
+counter_1,Counterstrike,Parrying deals 25% of your weapon damage back to the attacker,90,CounterstrikePercent,Flat,0.25,parry_1,6,5,IncreaseStrength_2_nobg,counter
+counter_2,Counterstrike,Parrying deals 50% of your weapon damage back to the attacker,150,CounterstrikePercent,Flat,0.25,counter_1,6,6,IncreaseStrength_3_nobg,counter
+counter_3,Counterstrike,Parrying deals 100% of your weapon damage back to the attacker,255,CounterstrikePercent,Flat,0.5,counter_2,6,7,IncreaseStrength_4_nobg,counter
+counter_4,Counterstrike,Parrying deals 200% of your weapon damage back to the attacker,420,CounterstrikePercent,Flat,1.0,counter_3,6,8,IncreaseStrength_4_nobg,counter
+flamearrow_1,Flaming Arrows,Arrows deal +25% fire damage and have a 10% chance to instantly explode Bombers,90,FlamingArrowsDamagePercent;FlamingArrowsBomberDetonateChance,Flat;Flat,0.25;0.1,,18,0,,flamearrow
+flamearrow_2,Flaming Arrows,Flaming arrows have a 20% chance to instantly explode Bombers,150,FlamingArrowsBomberDetonateChance,Flat,0.1,flamearrow_1,18,1,,flamearrow
+flamearrow_3,Flaming Arrows,Flaming arrows have a 30% chance to instantly explode Bombers,225,FlamingArrowsBomberDetonateChance,Flat,0.1,flamearrow_2,18,2,,flamearrow
+flamearrow_4,Flaming Arrows,Flaming arrows have a 40% chance to instantly explode Bombers,315,FlamingArrowsBomberDetonateChance,Flat,0.1,flamearrow_3,18,3,,flamearrow
+flamearrow_5,Flaming Arrows,Flaming arrows have a 50% chance to instantly explode Bombers,420,FlamingArrowsBomberDetonateChance,Flat,0.1,flamearrow_4,18,4,,flamearrow
+medpack_1,Field Medic,Health Packs heal 15% of your Max HP,60,HealthPackHealPercent,Flat,0.05,,9,5,,medpack
+medpack_2,Field Medic,Health Packs heal 20% of your Max HP,100,HealthPackHealPercent,Flat,0.05,medpack_1,9,6,,medpack
+medpack_3,Field Medic,Health Packs heal 25% of your Max HP,150,HealthPackHealPercent,Flat,0.05,medpack_2,9,7,,medpack
+medpack_4,Field Medic,Health Packs heal 30% of your Max HP,220,HealthPackHealPercent,Flat,0.05,medpack_3,9,8,,medpack
+medpack_5,Field Medic,Health Packs heal 35% of your Max HP,300,HealthPackHealPercent,Flat,0.05,medpack_4,10,8,,medpack
+medpack_6,Field Medic,Health Packs heal 40% of your Max HP,400,HealthPackHealPercent,Flat,0.05,medpack_5,10,7,,medpack

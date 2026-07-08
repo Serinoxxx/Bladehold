@@ -212,7 +212,7 @@ public class DeathScreen : MonoBehaviour
             yield return failureBanner.PlayRoutine(failureReason);
         }
 
-        // SampleCameraController locks/hides the cursor for gameplay look; the skill tree needs it
+        // PlayerCameraPivot locks/hides the cursor for gameplay look; the skill tree needs it
         // free to click buttons. Freed only now so no cursor floats over the banner. Reload()
         // re-locks it before restarting.
         Cursor.lockState = CursorLockMode.None;

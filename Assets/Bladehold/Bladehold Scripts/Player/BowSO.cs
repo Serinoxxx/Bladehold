@@ -60,8 +60,8 @@ public class BowSO : ScriptableObject
     [Tooltip("Horizontal camera offset while aiming, in metres — positive moves the camera over the right shoulder.")]
     public float aimCameraHorizontalOffset = 0.7f;
 
-    [Tooltip("Camera field of view while aiming (the camera's own FOV is restored on release).")]
-    public float aimFieldOfView = 50f;
+    [Tooltip("Camera field of view while aiming, as a percentage of the resting FOV (1 = unchanged, 0.8 = 20% narrower). The resting FOV is restored on release.")]
+    public float aimFieldOfViewPercent = 1f;
 
     [Tooltip("Seconds the camera takes to blend into (and out of) the aim framing. BowAimLook's spine bend blends over the same window.")]
     public float aimBlendSeconds = 0.2f;

@@ -1,5 +1,327 @@
 # TODO
 
+## Enemy Zoo (config/test scene) — Unity Editor wiring
+
+The C# is done: `Bladehold Scripts/Debug/EnemyZoo.cs` (guarded to `UNITY_EDITOR || DEVELOPMENT_BUILD`,
+so it can't ship) spawns one of every `EnemyRosterSO` type in a labelled gallery grid, applying the
+same CSV overrides the waves use via `WaveSpawner.ApplyDefinition` (made `public static` for this).
+An IMGUI panel (same wiring-free idiom as `DevConsole`, drawn top-right) toggles **Battle Mode**
+(freeze the gallery for inspection ↔ enable each enemy's `AIMovement` + `*Attack` components so they
+chase/fight the player), **Respawn Gallery**, and a type picker that spawns a batch of one type on
+demand (with **Clear Spawns**). World-space name/health labels are drawn per enemy via IMGUI. This
+scene is a config/test tool only — **do not add it to Build Profiles**.
+
+- [ ] **New scene** `Assets/Bladehold/Bladehold Scenes/Enemy Zoo.unity` (first-party scenes live
+      here). Add a large flat ground plane and **bake a NavMesh** over it (`com.unity.ai.navigation`)
+      — enemies need it for battle mode; the gallery snaps slots onto it.
+- [ ] Add a **Player prefab instance** (`Bladehold Prefabs/Player.prefab`) so `Player.Instance`
+      exists — Battle Mode's `AIAttack.Start` hard-errors without it. Position it where you want to
+      stand relative to the gallery.
+- [ ] Add a **camera** (the Player prefab's rig, or a plain one) and a light so the gallery renders.
+- [ ] Add an empty GameObject **"EnemyZoo"** with the `EnemyZoo` component. Assign the same
+      `EnemyRosterSO` asset the `WaveSpawner` uses, and fill the **prefab map** (id → prefab) for
+      every roster row you want shown (Goblin, Goblin Brute, Bomber, Storm Witch, Troll). Set
+      `spawnPoint` (empty transform where on-demand batches appear) and tune `galleryOrigin` /
+      `columns` / spacing so the grid sits in front of the player and on the NavMesh.
+- [ ] Optional: drop a **GameStats** object in the scene if you want kill accounting during battle
+      (enemies report kills to `GameStats.Instance`; harmless if absent).
+
+## Manual verification (Enemy Zoo)
+
+- [ ] Enter Play in the Enemy Zoo scene — one of each roster type stands in a grid, each with a
+      name + health label, none chasing (Battle Mode OFF).
+- [ ] Click **Battle Mode** — every gallery enemy activates and moves toward/attacks the player;
+      click again to freeze them in place.
+- [ ] Pick a type, set a count, **Spawn** — that many spawn at the spawn point and immediately
+      fight; **Clear Spawns** removes them.
+- [ ] Confirm scaled types (e.g. Goblin Brute) render at the right size — proves
+      `ApplyDefinition` overrides are being applied.
+
+## Instant gold + gold bags + Health Pack powerups — Unity Editor wiring
+
+The C# is done: `CoinDropper` now grants each kill's gold **instantly** to the Wallet/GameStats
+(optional `goldPopup` DamageNumber shows it at the corpse) and only rarely (`goldBagChance`, default
+5%) drops a pickup — a **gold bag** worth `goldBagMultiplier`× (default 5×) the enemy's rolled gold,
+spawned scaled up by `goldBagScale`; the old `coinPrefab` field was renamed to `goldBagPrefab` via
+`FormerlySerializedAs`, so existing prefab references carry over and the plain coin doubles as the
+bag until a distinct prefab exists. A new generic rare-drop system covers powerups:
+`Enemies/PowerupDropper.cs` (on every enemy) rolls the shared `Enemies/PowerupDropSO` table on
+death; `Economy/HealthPack.cs` is the first powerup — heals `StatType.HealthPackHealPercent` of max
+HP (base 10%, registered in `Player.Start`; not consumed at full health), raised by the new
+6-node **Field Medic** family in `Config/SkillTree.csv` (15→40%). The bow's Pickup Arrows also
+collect Health Packs (`PlayerBow.CollectPickupsAlongPath`).
+
+- [x] **HealthPack prefab** (`Assets/Bladehold/Bladehold Prefabs/HealthPack.prefab`): a small
+      medkit/cross visual + a trigger SphereCollider + the `HealthPack` component; assign a
+      DamageNumbersPro popup (a green-tinted variant of the coin pickup popup reads as healing)
+      and an optional `MMF_Player` pickup feedback.
+- [x] **PowerupDropSO asset** (Create > Scriptable Objects > PowerupDropSO, e.g. at
+      `Assets/Bladehold/Bladehold Scripts/Enemies/PowerupDropSO.asset`): one entry — the
+      HealthPack prefab at chance **0.03**.
+- [x] Add **`PowerupDropper`** to every enemy prefab mapped in `WaveSpawner`'s roster list
+      (Goblin, Goblin Brute, Bomber, Storm Witch, Troll) and assign the `PowerupDropSO` asset
+      (`health` auto-wires via OnValidate).
+- [x] On each enemy prefab's **CoinDropper**: optionally assign `goldPopup` (the coin pickup
+      DamageNumber asset) so instant gold pops at the kill; tune `goldBagChance` /
+      `goldBagMultiplier` / `goldBagScale` if 5% / 5× / 1.5 feel wrong.
+- [x] Optional: a distinct **GoldBag prefab** (Coin component on a bag mesh) assigned to
+      `goldBagPrefab` on each enemy, replacing the scaled-up coin stand-in.
+- [x] Optional: assign an icon to the Field Medic nodes via **Bladehold > Skill Tree Editor**
+      (the `icon` cells are blank for now).
+
+## Manual verification (instant gold + powerups)
+
+- [ ] Kill a goblin — the gold counter rises immediately with no coin left on the ground (and the
+      popup shows at the corpse if wired).
+- [ ] Grind ~20 kills — roughly one drops a visibly larger coin (the gold bag); collecting it
+      grants ~5× that enemy's gold on top of the instant grant.
+- [ ] Buy a Plunder node — both the instant grant and a gold bag's value scale up.
+- [ ] Golden Goblins still drop their bonus coin; Grave Robber on death now only collects
+      whatever bags/bonus coins are actually on the ground.
+- [ ] Take damage, then grind kills until a Health Pack drops (~3%) — walking over it heals 10%
+      of max HP with a popup; at full HP the pack is *not* consumed and stays until its 60s
+      lifetime expires.
+- [ ] Buy Field Medic tiers — packs heal 15/20/…% as described.
+- [ ] With Retriever (Pickup Arrows), an arrow flying past a gold bag collects it, and past a
+      Health Pack heals (only while hurt).
+
+## Settings menu tabs + two-column rebind list — Unity Editor wiring
+
+The C# is done: the settings panel is now split into a **General** tab (audio, sensitivity, max
+ragdolls, invert, FoV) and a **Controls** tab (the rebind list), switched by two tab buttons under
+the Back button (`SettingsPanelView` owns the switching + selected-tab tint, always reopening on
+General). The rebind list is now **one row per action with separate Keyboard/Mouse and Gamepad
+columns** (column headers above the list): `SettingsPanelView.BuildRowSlots` pairs each action's
+KBM and gamepad bindings by display label (classified by the binding's authored `<Gamepad>` path,
+so a row keeps its column even after remapping to another device); a column with no binding (e.g.
+gamepad "Move" is one stick binding while KBM has per-direction WASD parts) shows a disabled "—"
+button, and the arrow-key alternates to WASD get their own "(Alt)" rows. `RebindButtonView` now
+drives two binding buttons per row (one interactive rebind at a time). `SettingsMenuGenerator`
+builds all of it on regeneration — including auto-rebuilding the outdated single-button
+`RebindRow.prefab` — but the existing generated menu in the scene predates the tab hierarchy, so
+regeneration is the way to go:
+
+- [ ] In the gameplay scene (`Demo_01_Sidekick`), delete **`PauseMenuCanvas`** and **`GameMenu`**,
+      then re-run **Bladehold > Generate Settings Menu** (it rebuilds
+      `Assets/Bladehold/Bladehold Prefabs/UI/RebindRow.prefab` to the two-column layout on its own;
+      the other Menu* control prefabs are reused as-is). Redo any styling done on the old canvas.
+
+## Manual verification (settings tabs + rebind columns)
+
+- [ ] Open Settings — the General tab is selected (highlighted) and shows only the sliders/toggles;
+      Back / Reset Settings / Delete Save are visible on both tabs.
+- [ ] Click Controls — the sliders disappear, the rebind list appears with "Keyboard / Mouse" and
+      "Gamepad" column headers, and each action (Aim, Crouch, LockOn, …) is a single row with its
+      KBM binding in the left column and its gamepad binding in the right.
+- [ ] "Move" shows the gamepad stick in one row (KBM side "—", disabled) and per-direction
+      WASD rows (gamepad side "—"); the arrow-key alternates appear as "(Alt)" rows.
+- [ ] Rebind a key in each column — only the clicked column enters "Press any key..." and updates;
+      the remap persists across a restart, and Reset Settings restores both columns' labels.
+- [ ] Close and reopen Settings mid-run — it reopens on the General tab.
+
+## Reset Settings button + progress-only Delete Save — Unity Editor wiring
+
+The C# is done: **Delete Save** now wipes only progress — `SaveData.ResetProgress()` (gold, both
+trees' purchases, Reincarnate points) — keeping every settings field, and resets
+`RunState.StartingWave` before the scene reload. A new **Reset Settings** button restores all
+settings (audio/controls/video/performance/button remaps) to their authored defaults via
+`GameSettingsService.ResetToDefaults()` → `SaveData.ResetSettings()`, applied live with no reload
+(sliders/toggles and rebind row labels refresh in place; the unused `ResetInputOverrides` was folded
+into it). `ConfirmDialog.Show` now takes a `confirmLabel` so the shared dialog says "Delete" vs
+"Reset". `SettingsMenuGenerator` builds and wires the new button on regeneration, but the existing
+generated menu in the scene predates it — `SettingsPanelView.Start` will error until it's wired.
+
+- [ ] **SettingsPanel** in the scene's `PauseMenuCanvas`: duplicate `Content/DeleteSaveButton`,
+      rename to `ResetSettingsButton`, move it **above** DeleteSaveButton, set its label to
+      "Reset Settings", clear any copied `onClick` entries, and assign it to `SettingsPanelView`'s
+      new `resetSettingsButton` field. (Or delete `PauseMenuCanvas` + `GameMenu` and re-run
+      **Bladehold > Generate Settings Menu**, then redo any styling.)
+
+## Manual verification (Reset Settings + Delete Save)
+
+- [ ] Change several settings (volume, sensitivity, FoV, invert, a button remap), then Reset
+      Settings → confirm dialog says "Reset"; all sliders/toggles snap to defaults, the remapped
+      binding's row shows its default key again, and gold/upgrades are untouched.
+- [ ] Buy an upgrade, earn gold, reach a wave > 1, then Delete Save → confirm dialog says
+      "Delete"; scene reloads at wave 1 with zero gold and empty trees, but every changed setting
+      (and button remap) is still in effect after the reload.
+- [ ] Quit and relaunch after each of the two actions — the kept half persists on disk (settings
+      after a delete; progress after a reset).
+
+## Stuck arrows + arrow impact feedback — Unity Editor wiring
+
+The C# is done: `PlayerBow` now raises **`OnArrowImpact(ArrowImpact)`** once per physical arrow that
+damaged a target (bounces and the Flaming Arrows bonus hit don't re-raise it) — a richer sibling of
+`OnHit` carrying the flight direction, the exact collider struck, the `VulnerableSpot` flag, and the
+charge level. Two new reactive listeners consume it (the `SwordHitFeedback` pattern — the bow stays
+unaware of them): **`Player/StuckArrowSpawner.cs`** plants a **`Player/StuckArrow.cs`** prop at the
+hit point, aligned to the flight direction with a random roll around the shaft, sunk in by a random
+`minPenetration`..`maxPenetration` depth (+`penetrationPerChargeLevel` per charge level), parented
+to the struck collider so it rides animation/ragdoll and dies with the corpse (plus a 20s lifetime
+backstop); **`DamageSystem/BowHitFeedback.cs`** plays a hit sound and a blood burst oriented back
+along the arrow's path, with distinct sound pools / blood prefabs for **critical** and
+**vulnerable (headshot)** hits — vulnerable outranks crit, each falls back to normal when unassigned.
+
+- [x] **StuckArrow prefab** (`Assets/Bladehold/Bladehold Prefabs/StuckArrow.prefab`): an arrow mesh
+      (the Synty bow pack has one near `Wep_RecurveBow_01`) under an empty root with the
+      `StuckArrow` component. Author the root so the **tip sits at the origin and the shaft points
+      down +Z** (tip forward) — `Embed` sinks the origin along the flight direction, so the tip ends
+      up `penetration` metres inside the surface. No colliders/rigidbody. Tune `lifetime` (20).
+- [x] **Player prefab** (`Assets/Bladehold/Bladehold Prefabs/Player.prefab`): on the object holding
+      `PlayerBow` (or a child), add:
+  - [x] `StuckArrowSpawner` — assign `arrowPrefab`; `bow` auto-wires via `OnValidate`. Tune
+        `minPenetration` (0.15) / `maxPenetration` (0.35) / `penetrationPerChargeLevel` (0.05).
+  - [x] `BowHitFeedback` — `bow`/`audioSource` auto-wire; assign `hitSounds` (arrow thunk/flesh
+        impact pool), `critHitSounds` (meatier variant), `vulnerableHitSounds` (headshot sting —
+        outranks crit), and blood prefabs: `bloodParticlePrefab` (the sword's blood prefab reuses
+        fine), optional `critBloodParticlePrefab` / `vulnerableBloodParticlePrefab` (bigger burst
+        for headshots). Blood cone is spawned facing back along the arrow path, so a narrow-cone
+        particle shape reads best.
+
+## Manual verification (stuck arrows + impact feedback)
+
+- [ ] Shoot a goblin in the body — an arrow prop appears exactly at the hit point, pointing the way
+      the shot flew, sunk partway in; it follows the goblin as it runs and animates.
+- [ ] Fire several arrows into one enemy — penetration depths visibly vary and fletching rolls
+      differ (no two arrows identical).
+- [ ] Full-draw shot — the arrow buries noticeably deeper than a snap shot.
+- [ ] Each hit plays an impact sound and a blood burst spraying back toward the shooter; a crit
+      sounds/looks different; a headshot (`VulnerableSpot`) sounds/looks different again, and wins
+      over crit when both happen on one arrow.
+- [ ] Multi Shot — every fanned arrow that lands sticks its own prop and plays its own feedback;
+      a Bounce Shot arc does **not** stick a second arrow at the bounce target.
+- [ ] Fling a stuck-full enemy with Impulse — arrows ride the ragdoll bones; kill it — arrows sink
+      and vanish with the corpse; leave one stuck long enough — it despawns on its own at `lifetime`.
+
+## Bomber enemy + Flaming Arrows skill line — Unity Editor wiring
+
+The C# is done: **Bomber** (`Enemies/BomberAttack.cs` + `Enemies/BomberAttackSO.cs`) chases with a
+torch; within `triggerRange` (8m) it plants for a short ignite pause (`AIMovement.SetMovementPaused`,
+the Troll wind-up precedent), lights the dynamite (a `LightFuse` animator trigger, torch hidden,
+spark visuals shown), then sprints at `fuseSpeedMultiplier`× via the new
+`AIMovement.SetSpeedMultiplier` (folded into `BaseSpeed` so `SlowStatus` slows compose with it).
+`fuseSeconds` (5s) after lighting it explodes: AoE damage + impulse fling to everything in
+`explosionRadius` except itself (the `TrollSlamAttack` shape — elemental, `unparryable`), then
+force-kills itself through `Health.ReceiveDamage` so wave/coin/corpse accounting runs (the
+`ImpulseReceiver` precedent). Killed before the fuse burns down = no explosion, sparks out.
+**Flaming Arrows** (`flamearrow_1..5` in `Config/SkillTree.csv`, fresh root column at x=18):
+`PlayerBow` deals `StatType.FlamingArrowsDamagePercent` (25% from the unlock) of each arrow hit as
+a separate elemental fire hit, and rolls `StatType.FlamingArrowsBomberDetonateChance` (10-50%) per
+arrow hit to call `BomberAttack.Detonate()` — rolled *before* the arrow damage lands so a lethal
+arrow still gets its explosion (corpses never explode). New `bomber` row in `Config/Enemies.csv`
+(unlocks wave 5, 20% chance, 1 guaranteed ramping to 3 concurrent, resistance 2);
+`WaveSpawner.ApplyDefinition` routes the CSV damage column to `BomberAttack.SetDamage`.
+
+- [ ] **Create SO asset instance**: a `BomberAttackSO` (menu `Scriptable Objects/BomberAttackSO`) —
+      tune `triggerRange` (8), `igniteSeconds` (0.6), `fuseSeconds` (5 — total from lighting to
+      boom, ignite pause included), `fuseSpeedMultiplier` (1.6), `explosionRadius` (4), `damage`
+      (25 — the CSV column overrides it per spawn), `impulsePower` (3) / `impulseForce` (12).
+- [ ] **Bomber prefab** (a goblin variant works as the base): `Health`, `Enemy`, `AIMovement` (its
+      own or the goblin `AIMovementSO` — the CSV speed 5.5 overrides it), `AIAnimation`,
+      `BomberAttack` (assign `attackData`; `animator`/`health`/`movement`/`targetSelector`
+      auto-wire via `OnValidate`), `CoinDropper`, `CorpseDespawner`, `KnockbackReceiver`,
+      `EnemyRagdoll` + `ImpulseReceiver`, optional `GoldenGoblin`/`ImpulseGoblin`/
+      `AITargetSelector`, and a `VulnerableSpot` head collider (arrow headshots).
+  - [ ] **Props/VFX on the prefab**: a torch prop in one hand → `torchVisual`; dynamite/spark
+        objects (e.g. one per hand, each with a sparking `ParticleSystem`), authored **inactive** →
+        `fuseSparkVisuals`; an explosion VFX prefab → `explosionVfxPrefab`; optional
+        `igniteFeedback`/`explodeFeedback` `MMF_Player`s (fuse hiss, big boom).
+  - [ ] **Animator**: add a `LightFuse` trigger + a short crouch/ignite state on the bomber's
+        controller (the `BomberAttack.lightFuseTrigger` default), timed to roughly `igniteSeconds`.
+  - [ ] Register the prefab in `WaveSpawner`'s `enemyPrefabs` list under id `bomber` (row already
+        in `Config/Enemies.csv`).
+- [ ] **Skill icons**: the `flamearrow_*` rows have blank icons (no fire sprite registered yet) —
+      assign in **Bladehold > Skill Tree Editor** when art exists.
+- [ ] **Balance pass**: tune the `bomber` CSV row, the `BomberAttackSO` numbers, and the
+      placeholder `flamearrow_*` costs/positions to taste.
+
+## Manual verification (Bomber + Flaming Arrows)
+
+- [ ] Reach wave 5 (or lower `unlockWave`) — a bomber spawns and runs at the player holding the
+      torch, faster than a regular goblin.
+- [ ] Get within ~8m — it stops, plays the ignite animation (torch swaps for sparking dynamite in
+      both hands), then sprints at you noticeably faster; ~5s after lighting it explodes, hurting
+      you if you're inside the radius and damaging/flinging any goblins caught in it.
+- [ ] Outrun the blast — standing outside the radius when it pops takes no damage; the bomber dies
+      in its own explosion either way (coins drop, wave count decrements, corpse pipeline runs).
+- [ ] Kill the bomber before the fuse burns down (without the detonate roll) — sparks go out,
+      **no explosion**, normal death.
+- [ ] The explosion is never parried (elemental + unparryable), even with Parry maxed.
+- [ ] Buy `flamearrow_1` — every arrow hit now pops a second, smaller damage number (~25% of the
+      arrow's) on the same target; Multi Shot side arrows each get their own fire hit; bounce hits
+      don't reroll it.
+- [ ] Shoot bombers with `flamearrow_1` — roughly 1 in 10 hits detonates one on the spot (full
+      explosion where it stands, nuking its own horde); higher tiers detonate visibly more often.
+- [ ] A bomber the arrow would have killed anyway still explodes on a winning roll (the roll
+      happens before the arrow damage lands).
+- [ ] Shooting a bomber **corpse** never explodes it.
+- [ ] Die (or lose a gate) while a fuse is burning — the bomber fizzles (sparks out, no explosion)
+      and celebrates with the rest.
+- [ ] Slow a lit bomber (Freezing Draw / Brain Freeze) — the slow visibly reduces the sprint, and
+      when it expires the bomber returns to *sprint* speed, not walking pace (the multiplier and
+      the slow compose).
+
+## Parry + Counterstrike skill lines — Unity Editor wiring
+
+The C# is done: `Player/Parry.cs` hooks `Health.TryBlockDamage` with a chance roll
+(`StatType.ParryChance`) gated on facing the attacker (dot product of the player's forward vs. the
+direction to `Damage.sourcePosition`) — only "melee" (sharp/blunt) hits qualify, elemental hits
+(Storm Witch) can never be parried, and neither can anything stamped `Damage.unparryable` (the
+Troll's ground slam — a wide AoE with no single directional swing to read/block).
+`Player/Counterstrike.cs` listens to the new `Parry.OnParried` event (the `VampiricBlade`/sword-
+`OnHit` precedent) and deals `StatType.CounterstrikePercent` of effective sword damage back to the
+attacker via the new `Damage.source` field, which `AIAttack` and `TrollSlamAttack` now stamp with
+their own `Health` alongside `sourcePosition` (previously melee attacks against the player didn't
+set either). New `parry_*`/`counter_*` rows already in `Config/SkillTree.csv` (fresh column at
+x=6, y=0-8, chained off `solid_1`).
+
+- [ ] **Player prefab** (`Assets/Bladehold/Bladehold Prefabs/Player.prefab`):
+  - [ ] Add a `Parry` component on the player root (next to `Health`/`DamageBlocker`); optionally
+        assign a `parryFeedback` `MMF_Player` (a parry clang/flash) and tune `facingDotThreshold`
+        (0.3 default — wider than dead-on, but not the whole front hemisphere).
+  - [ ] Add a `Counterstrike` component on the player root; `parry` auto-wires via `OnValidate`
+        (`GetComponent<Parry>()`).
+- [ ] **Skill icon**: `parry_*`/`counter_*` reuse already-registered icon names
+      (`Warriorskill_18_block`, `IncreaseStrength_2/3/4_nobg`), so no new icon drag-and-drop should
+      be needed — confirm they render in **Bladehold > Skill Tree Editor**.
+- [ ] **Balance pass**: tune the placeholder costs/positions of the new rows to taste.
+
+## Manual verification (Parry + Counterstrike)
+
+- [ ] Buy a `Parry` tier — facing a goblin as it lands a melee hit sometimes blocks it entirely (no
+      health loss, no damage feedback); getting hit from behind or the side never parries even at
+      100% rolled luck.
+- [ ] A Storm Witch's lightning ball/storm damage is never parried, even with `Parry` maxed.
+- [ ] Without `Counterstrike` bought, a successful parry blocks damage but the attacker takes
+      nothing back.
+- [ ] Buy a `Counterstrike` tier — a successful parry now also damages the goblin that hit you
+      (damage number on the goblin), scaling with the node's %; the sword's own swing damage is
+      unaffected.
+- [ ] Face a Troll and let its ground slam land on you — it's never parried (no block, no
+      counterstrike) even with `Parry`/`Counterstrike` maxed; you just take the damage normally.
+- [ ] The existing `Solid` auto-block still works independently (both can trigger; whichever's
+      handler runs first on a given hit wins that hit).
+
+## Troll slam — hold still during the wind-up (Unity Editor wiring)
+
+The C# is done: `TrollSlamAttack` now pauses the troll's `AIMovement` (new
+`AIMovement.SetMovementPaused(bool)`) for the wind-up and landing, since the telegraph is locked to
+the troll's position when the swing starts and it looked wrong for the troll to keep chasing/sliding
+out from under it. `TrollSlamAttack` gained a `movement` field that auto-wires via `OnValidate`
+(`GetComponent<AIMovement>()`), same as its other dependencies.
+
+- [ ] Open the Troll prefab in the Editor once so `OnValidate` runs and the new `Movement` field on
+      `TrollSlamAttack` gets serialized (should auto-populate from the existing `AIMovement` on the
+      same prefab — just confirm it's not empty in the Inspector, then save).
+
+## Manual verification (troll slam)
+
+- [ ] Aggro a troll and let it start a slam — it should plant and hold its position for the entire
+      wind-up/telegraph and the landing, not keep advancing toward the player.
+- [ ] After the slam lands, the troll resumes chasing normally.
+- [ ] Kill the troll mid-wind-up — no errors, no lingering paused state (the corpse doesn't move,
+      obviously, but nothing throws).
+
 ## Game loop expansion — enemy variety, elemental orbs, gate defense (design plan, not yet built)
 
 Design discussion, no code written yet. Core philosophy: the player should feel *more* powerful
@@ -757,7 +1079,7 @@ sliders/toggles/rebind list/Delete Save + confirmation dialog, Photo Mode panel 
 and adds `InputSettingsBinder` to the Player instance in the scene — everything below is what it
 can't do for you.
 
-- [ ] **Regenerate the menu** (Photo Mode feedback round): delete **`PauseMenuCanvas` and `GameMenu`**
+- [x] **Regenerate the menu** (Photo Mode feedback round): delete **`PauseMenuCanvas` and `GameMenu`**
       from the scene, then re-run `Bladehold > Generate Settings Menu`. This picks up: the layout fix
       (rows were 100px tall, pushing Take Photo off-screen), the Photo Mode panel now stretching full
       screen height with the sliders in a scroll view and Take Photo/Exit pinned at the bottom, a
@@ -766,7 +1088,7 @@ can't do for you.
       longer include the UI), and the pause backdrop wired so it hides during Photo Mode (it was
       graying out the shot and would eat click-drag input). Camera look in Photo Mode is now
       click-and-drag (left mouse held) instead of always-on mouse delta.
-- [ ] **Regenerate the menu again** (always-ragdoll kills): the Settings panel now has a **Max
+- [x] **Regenerate the menu again** (always-ragdoll kills): the Settings panel now has a **Max
       Ragdolls** slider (0-50, whole numbers, default 12) alongside Sensitivity —
       `GameSettingsService.SetMaxRagdolls` applies it to the new `EnemyRagdoll.MaxActive` cap, which
       both the Impulse fling and the new always-ragdoll-on-kill reaction (see the Impulse section
@@ -777,26 +1099,48 @@ can't do for you.
       `ImpulseConfigSO` asset shows the old field as "missing" in the inspector that's expected and
       harmless.
 - [ ] **Reskin the shared control prefabs** it generated under `Assets/Bladehold/Bladehold Prefabs/UI/`
-      (`MenuButton`, `MenuLabel`, `MenuSlider`, `MenuToggle`, `MenuIconButton` + its `ResetIcon.png`)
-      to match the game's look — every button/label/slider/toggle in the generated menu is an instance
-      of one of these, so restyling the prefabs restyles the whole menu at once. Then lay out/resize
+      (`MenuButton`, `MenuLabel`, `MenuSlider`, `MenuToggle`, `MenuIconButton` + its `ResetIcon.png`,
+      `MenuValueInput`) to match the game's look — every button/label/slider/toggle/value-field in the
+      generated menu is an instance of one of these, so restyling the prefabs restyles the whole menu
+      at once. Then lay out/resize
       the panels (`PauseMenuCanvas` > `PauseMenuView` > `MainButtonsPanel`/`SettingsPanel`/
       `PhotoModePanelRoot`) to taste — the generator only gives them functional placeholder
       sizes/positions.
-- [ ] **Player prefab**: the generator added `InputSettingsBinder` to the Player *instance* in the open
+- [x] **Player prefab**: the generator added `InputSettingsBinder` to the Player *instance* in the open
       scene only (a prefab override) — select it and **Overrides > Apply All** onto
       `Assets/Bladehold/Bladehold Prefabs/Player.prefab` to make it permanent.
-- [ ] **Settings mixer routing**: the generator already assigned `GameSettingsService.mixer` to
+- [x] **Settings mixer routing**: the generator already assigned `GameSettingsService.mixer` to
       `MMSoundManagerAudioMixer.mixer` (exposed params `MasterVolume`/`MusicVolume`/`SfxVolume`), but
       **Music/SFX sliders only have an audible effect once sources are routed through its groups** —
       assign the Output Audio Mixer Group on `SwordHitFeedback`'s/`ImpulseHitFeedback`'s
       `AudioSource`s, `Coin`'s pickup `AudioSource`, and any MMF_Player "Sound" feedbacks, to the
       mixer's Sfx group (or Music, for anything music-like). Master volume works regardless via
       `AudioListener.volume`.
-- [ ] If the generator logged warnings (no Main Camera/AudioMixer/Player found, etc.), assign those
+- [x] If the generator logged warnings (no Main Camera/AudioMixer/Player found, etc.), assign those
       `ScreenshotModeController`/`GameSettingsService`/`InputSettingsBinder` fields by hand.
-- [ ] **Balance pass**: tune default sensitivity/volume values and `ScreenshotFlyCamera`'s
+- [x] **Balance pass**: tune default sensitivity/volume values and `ScreenshotFlyCamera`'s
       `moveSpeed`/`boostMultiplier`/`lookSensitivity` to taste.
+- [x] **Regenerate the menu again** (FOV setting + bow aim FOV as a percentage): the Settings panel
+      now has a **Field of View** slider (30-100, default 40 — matches the rig's authored FOV) below
+      Invert Y — `GameSettingsService.SetFieldOfView` applies it via the new
+      `BowAimCamera.SetRestingFieldOfView`, which the bow's aim-zoom blends away from and back to
+      (`BowSO.aimFieldOfViewPercent`, default 1 = unchanged, replaces the old absolute
+      `aimFieldOfView` override — re-tune it on `BowSO.asset` if the bow's aim should still
+      zoom/widen the view). The **Sensitivity** slider's range also changed from 1-15 to 0-10 so the
+      existing default of 5 sits at the middle, with room to go lower than before. If
+      `PauseMenuCanvas`/`GameMenu` already exist from an earlier generation, delete and regenerate to
+      pick up the new row and range (or add a `MenuSlider` instance by hand, wire it to
+      `SettingsPanelView.fieldOfViewSlider`, and edit the existing Sensitivity slider's Min/Max to
+      0/10).
+- [x] **Regenerate the menu again** (typeable slider values): every Settings-panel slider row (Master/
+      Music/SFX Volume, Sensitivity, Max Ragdolls, Field of View) now also gets a small text field next
+      to it — a new `MenuValueInput` prefab (a `TMP_InputField`) kept in sync with the slider by the new
+      `UI/SliderValueField.cs`, so exact numbers can be typed in instead of only dragging. Volume shows
+      2 decimals, Sensitivity 1, Max Ragdolls/Field of View whole numbers. Photo Mode's sliders are
+      unchanged (still drag-only) — regenerate only touches the Settings panel. If
+      `PauseMenuCanvas`/`GameMenu` already exist from an earlier generation, delete and regenerate to
+      pick up the new fields (or add a `MenuValueInput` instance next to each existing slider by hand,
+      add a `SliderValueField` to the row, and wire its `slider`/`inputField`).
 
 ## Manual verification (pause menu, settings, Photo Mode)
 
@@ -808,7 +1152,16 @@ can't do for you.
 - [ ] Adjust Master/Music/SFX sliders — Master audibly changes volume immediately; Music/SFX do too
       once routed through the mixer (see wiring above); all three persist across a restart.
 - [ ] Adjust sensitivity and invert X/Y — camera look responds immediately and correctly in both axes;
-      settings persist across a restart.
+      settings persist across a restart. Sensitivity now ranges 0-10 (0 = no look) with 5 — the
+      default — in the middle.
+- [ ] Adjust the Field of View slider — the gameplay camera's zoom changes immediately (even while not
+      aiming the bow) and persists across a restart. Draw the bow while at a non-default FOV — the aim
+      zoom blends from and back to *that* FOV, not the old authored default.
+- [ ] Each Settings slider shows a matching number in its text field, updating live as you drag; type an
+      exact number into a field and press Enter (or click away) — the slider jumps to that value and the
+      setting applies exactly as if it had been dragged. Type something out of range — it clamps to the
+      slider's min/max; type garbage (letters) — the field reverts to the current value instead of
+      accepting it.
 - [ ] Click a rebind row, press a new key — the row updates to the new binding and the new key actually
       controls that action in gameplay; pressing Esc while "Press any key..." is showing cancels the
       rebind without closing the pause menu; the new binding survives a restart.
@@ -871,3 +1224,82 @@ over untouched the moment the player moves.
       turn-in-place behaviour is back to normal.
 - [ ] Die while holding attack → the corpse doesn't rotate with the camera (requires the
       `PlayerDeath` list wiring above).
+
+## Cinemachine camera conversion — Unity Editor wiring
+
+The C# is done: the camera is now Cinemachine-driven (`com.unity.cinemachine` 3.1.7, already
+installed). New `Player/PlayerCameraPivot.cs` replaces the look-input/rotation half of the vendored
+`SampleCameraController` — it accumulates yaw/pitch from the Synty `InputReader` mouse delta (same
+raw-delta × sensitivity scale, so saved sensitivity values are unchanged), clamps pitch, sticks to
+`SyntyPlayer_LookAt`, and owns the gameplay cursor lock. Positioning/framing/damping/collision move
+to a `CinemachineCamera` with **Third Person Follow** tracking the pivot. `Player/BowAimCamera.cs`
+was rewritten to blend the follow component's public `CameraDistance`/`ShoulderOffset.x` and the
+vcam lens FOV (reflection gone); `Player/InputSettingsBinder.cs` now writes plain
+`PlayerCameraPivot` properties for sensitivity/invert (its only remaining reflection is the
+`InputReader._controls` rebinding access, and its old per-frame `_mouseDelta.x` invert flip is
+gone). `PauseMenuController` docs/tooltip and `SettingsMenuGenerator` wiring updated. The vendored
+`SampleCameraController` is **not** edited — it stays on the rig disabled as a passive facade,
+because `SamplePlayerAnimationController` still calls its `GetCamera*()` getters, which only read
+the serialized `_mainCamera` transform.
+
+All wiring below is in `Player.prefab` (open in prefab mode; the gameplay scene is
+`Demo_01_Sidekick.unity`). Current authored rig values to reproduce: distance **2.5**, height/
+horizontal offset **0**, tilt offset **15°**, tilt bounds **±70°**, FOV **90**, lag 0.2 (which the
+old `1/(lag/20)` math made effectively rigid — so damping 0 matches today's feel).
+
+- [x] **Main camera** (`PF_SyntyCamera` → its `MainCamera` child): add a `CinemachineBrain`.
+      Existing components (AudioListener, URP camera data, `MMCameraShaker`, `ScreenshotFlyCamera`)
+      stay put.
+- [x] **Disable (don't remove) the `SampleCameraController`** component on the `PF_SyntyCamera`
+      root. Keep its `_syntyCharacter`/`_mainCamera` references assigned — the movement controller's
+      camera-relative getters read through them. Disabled means its `Start`/`Update` (old cursor
+      lock + boom driving) never run.
+- [x] **CameraPivot**: new child GameObject of the Player root (sibling of `PF_SyntyCamera`), add
+      `PlayerCameraPivot`. `inputReader` and `followTarget` (`SyntyPlayer_LookAt`) auto-wire via
+      `OnValidate`. Defaults already match the authored rig (sensitivity 0.5, tilt bounds ±70,
+      hideCursor on).
+- [x] **GameplayCamera**: new child GameObject of the Player root, add `CinemachineCamera`:
+  - [x] Tracking Target = the CameraPivot; Lens FOV = **90**.
+  - [x] Position Control = **Third Person Follow**: Camera Distance **2.5**, Shoulder Offset
+        **(0, 0, 0)**, Vertical Arm Length **0**, Camera Side **1** (right — the bow's aim shoulder
+        offset is authored positive-right), Damping **(0, 0, 0)** to match the current rigid feel
+        (raise to taste later).
+  - [x] Rotation Control = none (the camera matches the pivot's rotation).
+  - [x] Add a **CinemachineRecomposer** extension with Tilt = **15** (the old `_cameraTiltOffset`,
+        which tilted the camera down without moving the boom).
+  - [x] Recommended (new capability): on Third Person Follow, enable **Avoid Obstacles**, set the
+        collision filter to the environment/ground layers (exclude Player, layer 6), Camera Radius
+        ~0.15 — the old rig clipped through walls.
+- [x] **BowAimCamera** (on the Player root): its old `cameraController`/`aimCamera` fields are gone;
+      the new `aimCamera` field wants the GameplayCamera vcam (auto-found via
+      `GetComponentInChildren<CinemachineCamera>` — verify it resolved).
+- [x] **InputSettingsBinder** (on the Player root): assign the new `cameraPivot` field (auto-finds
+      in children; the old `cameraController` field is gone).
+- [x] **PauseMenuController** (`GameMenu` object in the scene): in `componentsToDisable`, replace
+      the `SampleCameraController` entry with **both** the `PlayerCameraPivot` and the
+      `CinemachineBrain` (keep `InputReader`). Disabling the brain is what lets Photo Mode's
+      detached fly camera work. (Alternatively delete `PauseMenuCanvas` + `GameMenu` and re-run
+      **Bladehold > Generate Settings Menu** — the generator now wires all three.)
+
+## Manual verification (Cinemachine conversion)
+
+- [ ] Look around, run, sprint — camera orbits with the same feel (rigid follow, ±70° pitch clamp,
+      15° down-tilt) and camera-relative movement/strafing is unchanged (the Synty controller's
+      getters still work through the disabled facade).
+- [ ] Settings menu: sensitivity slider and invert X/Y toggles take effect immediately and persist
+      across restarts (the saved values are the same scale as before).
+- [ ] Aim the bow: framing blends over `aimBlendSeconds` to distance 2.75 / shoulder 0.7 / FOV 50
+      and back on release; `BowAimLook`'s spine bend and `CombatFacing` still track correctly
+      (both read `Camera.main`, which the brain drives).
+- [ ] Die mid-aim: framing snaps back (BowAimCamera `OnDisable`), death screen frames normally and
+      frees the cursor; restarting re-locks it (pivot `Start`).
+- [ ] Pause (Esc): camera freezes completely, mouse movement while paused causes no snap on resume.
+      Enter Photo Mode: fly camera moves freely (brain disabled); exit restores the gameplay camera
+      cleanly.
+- [ ] If Avoid Obstacles was enabled: back the camera into a wall — it slides in instead of
+      clipping.
+- [ ] Hit feedbacks that shake the camera (`MMCameraShaker` on the main camera): confirm shakes are
+      still visible. The brain rewrites the camera transform after `LateUpdate`, so if shakes
+      stopped showing, swap to Feel's Cinemachine shaker (add the `MM_CINEMACHINE3` scripting
+      define and use `MMCinemachineCameraShaker`/Cinemachine Impulse on the vcam) — flag it and
+      we'll wire that variant.

@@ -83,14 +83,38 @@ public class WaveSpawner : MonoBehaviour
     private int killedThisWave;    // enemies killed so far this wave
     private int remainingToSpawn;  // enemies not yet spawned this wave
     private int aliveCount;        // enemies currently alive
-    private bool waveInProgress;   // true between BeginWave and the wave clearing (gates DebugSpawnBurst)
-    private readonly HashSet<Health> aliveEnemies = new HashSet<Health>(); // so DebugAdvanceWave can kill them
+    private bool waveInProgress;   // true between BeginWave and the wave clearing (gates the dev cheats)
+    private readonly HashSet<Health> aliveEnemies = new HashSet<Health>(); // so DebugWipeWave can kill them
     private readonly List<SpawnType> spawnTypes = new List<SpawnType>();   // roster rows with a valid prefab; [0] = fallback
 
     private Health playerHealth;
     private PlayerStats stats;
     private bool runOver = false;   // the run has ended — the player died or a gate fell
     private bool anyError = false;
+    private int? nextWaveOverride;  // dev-console override applied when the current wave clears
+    private bool spawningPaused;    // dev-console: pauses SpawnLoop's automatic trickle-spawn
+
+    /// <summary>The wave that will begin next: the dev-console override if one is set, otherwise the
+    /// natural successor mid-wave, or the wave the intermission is counting down to.</summary>
+    public int NextWave => waveInProgress ? nextWaveOverride ?? CurrentWave + 1 : CurrentWave;
+
+    /// <summary>True while <see cref="DebugSetSpawningPaused" /> has paused automatic spawning.</summary>
+    public bool IsSpawningPaused => spawningPaused;
+
+    /// <summary>Ids/display-names of every spawnable enemy type (roster rows with a valid prefab
+    /// mapping — see <see cref="BuildSpawnTypes" />), for dev-console tooling.</summary>
+    public IReadOnlyList<EnemyDefinition> DebugSpawnableTypes
+    {
+        get
+        {
+            var defs = new List<EnemyDefinition>(spawnTypes.Count);
+            foreach (SpawnType type in spawnTypes)
+            {
+                defs.Add(type.def);
+            }
+            return defs;
+        }
+    }
 
     private void Awake()
     {
@@ -245,7 +269,8 @@ public class WaveSpawner : MonoBehaviour
 
             BeginWave();
 
-            // Wait until every goblin this wave has been killed.
+            // Wait until every goblin this wave has been killed (DebugWipeWave kills them all at once,
+            // so it clears the wave through this same accounting).
             while (killedThisWave < waveGoblinTotal && !runOver)
             {
                 yield return null;
@@ -257,7 +282,8 @@ public class WaveSpawner : MonoBehaviour
 
             waveInProgress = false;
             WaveCleared?.Invoke(CurrentWave);
-            CurrentWave++;
+            CurrentWave = nextWaveOverride ?? CurrentWave + 1;
+            nextWaveOverride = null;
         }
     }
 
@@ -296,7 +322,7 @@ public class WaveSpawner : MonoBehaviour
     {
         while (remainingToSpawn > 0 && !runOver)
         {
-            if (aliveCount < config.maxConcurrent)
+            if (!spawningPaused && aliveCount < config.maxConcurrent)
             {
                 SpawnEnemy();
                 yield return new WaitForSeconds(config.spawnInterval);
@@ -361,12 +387,14 @@ public class WaveSpawner : MonoBehaviour
         return type.def.maxConcurrent > 0 ? Mathf.Min(budget, type.def.maxConcurrent) : budget;
     }
 
-    private void SpawnEnemy()
+    /// <summary>Spawns one enemy, either picked normally (<see cref="SelectSpawnType" />) or, when
+    /// <paramref name="forcedType" /> is given (the dev-console spawn-specific-type cheat), that exact type.</summary>
+    private void SpawnEnemy(SpawnType forcedType = null)
     {
         remainingToSpawn--;
         aliveCount++;
 
-        SpawnType type = SelectSpawnType();
+        SpawnType type = forcedType ?? SelectSpawnType();
         type.spawnedThisWave++;
         Vector3 position = ResolveSpawnPosition();
         GameObject enemy = Instantiate(type.prefab, position, Quaternion.identity);
@@ -414,8 +442,10 @@ public class WaveSpawner : MonoBehaviour
     }
 
     /// <summary>Applies a roster row's stat overrides to a freshly spawned instance. Blank CSV cells
-    /// leave the prefab's own ScriptableObject values in effect; the shared SOs are never mutated.</summary>
-    private static void ApplyDefinition(GameObject enemy, EnemyDefinition def)
+    /// leave the prefab's own ScriptableObject values in effect; the shared SOs are never mutated.
+    /// Public so config/test harnesses (e.g. <c>EnemyZoo</c>) can spawn roster-faithful instances
+    /// through the same single source of truth.</summary>
+    public static void ApplyDefinition(GameObject enemy, EnemyDefinition def)
     {
         if (def.health.HasValue)
         {
@@ -427,6 +457,7 @@ public class WaveSpawner : MonoBehaviour
             enemy.GetComponent<LightningBallAttack>()?.SetDamage(def.damage.Value);
             enemy.GetComponent<LightningStormAttack>()?.SetDamage(def.damage.Value);
             enemy.GetComponent<TrollSlamAttack>()?.SetDamage(def.damage.Value);
+            enemy.GetComponent<BomberAttack>()?.SetDamage(def.damage.Value);
         }
         if (def.minGold.HasValue)
         {
@@ -454,18 +485,94 @@ public class WaveSpawner : MonoBehaviour
     }
 
     /// <summary>
-    ///     Dev-console cheat: instantly clears the wave in progress. Enemies not yet spawned are
-    ///     cancelled, and every live enemy is killed through the normal <see cref="Health" /> damage
-    ///     flow so all death listeners (spawner accounting, coin drops, kill stats, corpse handling)
-    ///     stay consistent. A no-op during the intermission countdown.
+    ///     Dev-console cheat: instantly clears the wave in progress (see
+    ///     <see cref="ClearCurrentWaveInstantly" />), sending the run into the next intermission.
+    ///     A no-op during the intermission — there's nothing to wipe.
     /// </summary>
-    public void DebugAdvanceWave()
+    public void DebugWipeWave()
+    {
+        if (anyError || runOver || !waveInProgress)
+        {
+            return;
+        }
+        ClearCurrentWaveInstantly();
+    }
+
+    /// <summary>
+    ///     Dev-console cheat: sets the wave that begins next (clamped to 1). Mid-wave it's stored and
+    ///     applied when the current wave clears; during the intermission it retargets the wave the
+    ///     countdown is about to start.
+    /// </summary>
+    public void DebugSetNextWave(int wave)
     {
         if (anyError || runOver)
         {
             return;
         }
+        wave = Mathf.Max(1, wave);
+        if (waveInProgress)
+        {
+            nextWaveOverride = wave;
+        }
+        else
+        {
+            CurrentWave = wave;
+            // Keep the death-restart wave in sync — RunWaves already stamped the old value this iteration.
+            RunState.StartingWave = wave;
+        }
+    }
 
+    /// <summary>
+    ///     Dev-console cheat: instantly spawns one enemy of the given roster id (see
+    ///     <see cref="DebugSpawnableTypes" />) at a random spawn point, bypassing normal type selection
+    ///     (<see cref="SelectSpawnType" />) and the concurrent-spawn cap — it always spawns immediately.
+    ///     Grows the wave total by one so kill/wave-clear accounting stays consistent, the same trick
+    ///     <see cref="DebugSpawnBurst" /> uses. A no-op outside an active wave (nothing to grow) or for
+    ///     an unknown id.
+    /// </summary>
+    public void DebugSpawnEnemyType(string id)
+    {
+        if (anyError || runOver || !waveInProgress || string.IsNullOrEmpty(id))
+        {
+            return;
+        }
+
+        SpawnType type = null;
+        foreach (SpawnType candidate in spawnTypes)
+        {
+            if (candidate.def.id == id)
+            {
+                type = candidate;
+                break;
+            }
+        }
+        if (type == null)
+        {
+            return;
+        }
+
+        waveGoblinTotal += 1;
+        remainingToSpawn += 1;
+        SpawnEnemy(type);
+    }
+
+    /// <summary>
+    ///     Dev-console cheat: pauses/resumes <see cref="SpawnLoop" />'s automatic trickle-spawn, without
+    ///     touching the countdown or wave-clear accounting. Lets a wave be parked mid-spawn while enemies
+    ///     are placed manually via <see cref="DebugSpawnEnemyType" />.
+    /// </summary>
+    public void DebugSetSpawningPaused(bool paused)
+    {
+        spawningPaused = paused;
+    }
+
+    /// <summary>
+    ///     Instantly clears the wave in progress. Enemies not yet spawned are cancelled, and every live
+    ///     enemy is killed through the normal <see cref="Health" /> damage flow so all death listeners
+    ///     (spawner accounting, coin drops, kill stats, corpse handling) stay consistent.
+    /// </summary>
+    private void ClearCurrentWaveInstantly()
+    {
         // Cancel enemies that haven't spawned yet; SpawnLoop exits on its own.
         waveGoblinTotal -= remainingToSpawn;
         remainingToSpawn = 0;
@@ -501,7 +608,7 @@ public class WaveSpawner : MonoBehaviour
     private IEnumerator SpawnBurst(int count)
     {
         const int spawnsPerFrame = 25;
-        // remainingToSpawn can hit zero mid-burst if DebugAdvanceWave cancels the wave under us.
+        // remainingToSpawn can hit zero mid-burst if DebugWipeWave cancels the wave under us.
         for (int i = 0; i < count && !runOver && remainingToSpawn > 0; i++)
         {
             SpawnEnemy();

@@ -15,13 +15,16 @@ using UnityEngine;
 ///     player's own impulse/resistance system.
 ///
 ///     Follows the <see cref="AIAttack" /> skeleton (validate in Start, cooldown in Update, coroutine
-///     to the apex, never touches the NavMeshAgent, stops on own/player death). All tunables live on
-///     <see cref="TrollSlamAttackSO" />.
+///     to the apex, stops on own/player death) but — unlike <see cref="AIAttack" /> — pauses
+///     <see cref="AIMovement" /> for the wind-up and landing via <see cref="AIMovement.SetMovementPaused" />:
+///     the telegraph is locked to the troll's position when the swing starts, so it can't be allowed
+///     to chase out from under it. All tunables live on <see cref="TrollSlamAttackSO" />.
 /// </summary>
 public class TrollSlamAttack : MonoBehaviour
 {
     [SerializeField] private Animator animator;
     [SerializeField] private Health health;
+    [SerializeField] private AIMovement movement;
     [SerializeField] private TrollSlamAttackSO attackData;
     [Tooltip("Optional target-selection layer; without it the troll only ever slams at the player.")]
     [SerializeField] private AITargetSelector targetSelector;
@@ -72,6 +75,10 @@ public class TrollSlamAttack : MonoBehaviour
         {
             health = GetComponent<Health>();
         }
+        if (movement == null)
+        {
+            movement = GetComponent<AIMovement>();
+        }
         if (targetSelector == null)
         {
             targetSelector = GetComponent<AITargetSelector>();
@@ -88,6 +95,11 @@ public class TrollSlamAttack : MonoBehaviour
         if (health == null)
         {
             Debug.LogError("Health component is not assigned or found on the GameObject.");
+            anyError = true;
+        }
+        if (movement == null)
+        {
+            Debug.LogError("AIMovement component is not assigned or found on the GameObject.");
             anyError = true;
         }
         if (attackData == null)
@@ -184,6 +196,10 @@ public class TrollSlamAttack : MonoBehaviour
     {
         lastAttackTime = Time.time;
 
+        // The telegraph is locked to this position — the troll must hold still until the slam
+        // lands, or the model would visibly drift out from under it.
+        movement.SetMovementPaused(true);
+
         if (windupFeedback != null)
         {
             windupFeedback.PlayFeedbacks();
@@ -214,6 +230,7 @@ public class TrollSlamAttack : MonoBehaviour
         // A troll killed mid-wind-up never lands the slam; a dead player means the run is over.
         if (isDead || playerDead)
         {
+            movement.SetMovementPaused(false);
             yield break;
         }
 
@@ -227,6 +244,7 @@ public class TrollSlamAttack : MonoBehaviour
         }
 
         ApplySlamDamage(center);
+        movement.SetMovementPaused(false);
     }
 
     /// <summary>
@@ -257,6 +275,8 @@ public class TrollSlamAttack : MonoBehaviour
                 sourcePosition = center,
                 impulsePower = attackData.impulsePower,
                 impulseForce = attackData.impulseForce,
+                source = ownerDamageable,
+                unparryable = true,
             });
         }
     }

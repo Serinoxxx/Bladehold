@@ -35,6 +35,22 @@ public class Damage
     ///     wins the resistance check. Already includes power/stack/charge amplification.
     /// </summary>
     public float impulseForce;
+
+    /// <summary>
+    ///     The attacker's own damage sink (e.g. its <see cref="Health" />), if the hit came from a
+    ///     single identifiable source. Used by retaliation effects (e.g. the player's Counterstrike
+    ///     skill) to hit back at whoever landed the blocked hit. Null for hits with no single
+    ///     attacker (e.g. AoE ground effects) or where the source didn't bother stamping it.
+    /// </summary>
+    public IDamageable source;
+
+    /// <summary>
+    ///     True for hits that can never be parried (see <see cref="Parry" />), regardless of
+    ///     <see cref="type" /> or facing — e.g. the Troll's ground slam, a wide AoE with no single
+    ///     directional swing to read and block. Doesn't affect <see cref="DamageBlocker" />'s
+    ///     omnidirectional auto-block, which isn't about facing an attacker.
+    /// </summary>
+    public bool unparryable;
 }
 
 public enum DamageType

@@ -33,6 +33,10 @@ public class AIMovementSO : ScriptableObject
     [Tooltip("Beyond Animation Full Rate Distance, each enemy ticks its locomotion animation every Nth frame (staggered per enemy). 1 = never sliced.")]
     [Min(1)] public int animationFarFrameInterval = 3;
 
+    [Header("Facing")]
+    [Tooltip("Degrees per second the enemy keeps turning toward its target after the NavMeshAgent has stopped at its stopping distance (agents only auto-rotate while moving).")]
+    public float stoppedTurnSpeed = 240f;
+
     [Header("Animation Gaits")]
     [Tooltip("Top speed of the walk gait. Gait thresholds are derived halfway between these three speeds.")]
     public float walkSpeed = 1.6f;

@@ -6,8 +6,9 @@ using UnityEngine.Audio;
 ///     Scene singleton owning applying and persisting player-facing settings: audio volumes (via the
 ///     Feel <see cref="AudioMixer" />'s exposed <c>MasterVolume</c>/<c>MusicVolume</c>/<c>SfxVolume</c>
 ///     parameters), mouse sensitivity/invert (via the player's <see cref="InputSettingsBinder" />),
-///     the max-simultaneous-ragdolls performance cap (via <see cref="EnemyRagdoll.MaxActive" />), and
-///     button-remap overrides. Settings live on the shared <see cref="SaveData" /> like gold/upgrades —
+///     field of view (via the player's <see cref="BowAimCamera" />), the max-simultaneous-ragdolls
+///     performance cap (via <see cref="EnemyRagdoll.MaxActive" />), and button-remap overrides.
+///     Settings live on the shared <see cref="SaveData" /> like gold/upgrades —
 ///     applied once on <see cref="Start" /> and again immediately whenever a setter is called, so the
 ///     settings UI never touches <see cref="SaveData" /> or the mixer directly.
 ///
@@ -32,6 +33,7 @@ public class GameSettingsService : MonoBehaviour
     public bool InvertX => saveData.invertLookX;
     public bool InvertY => saveData.invertLookY;
     public int MaxRagdolls => saveData.maxRagdolls;
+    public float FieldOfView => saveData.fieldOfView;
 
     /// <summary>Raised whenever any setting changes, so UI showing current values can refresh.</summary>
     public event Action OnSettingsChanged;
@@ -80,6 +82,11 @@ public class GameSettingsService : MonoBehaviour
             inputSettings.ApplyInvertY(saveData.invertLookY);
             inputSettings.LoadBindingOverridesFromJson(saveData.inputBindingOverridesJson);
         }
+
+        if (Player.Instance != null && Player.Instance.AimCamera != null)
+        {
+            Player.Instance.AimCamera.SetRestingFieldOfView(saveData.fieldOfView);
+        }
     }
 
     public void SetMasterVolume(float value)
@@ -112,10 +119,20 @@ public class GameSettingsService : MonoBehaviour
 
     public void SetSensitivity(float value)
     {
-        saveData.mouseSensitivity = value;
+        saveData.mouseSensitivity = Mathf.Clamp(value, 0f, 10f);
         if (Player.Instance != null && Player.Instance.InputSettings != null)
         {
-            Player.Instance.InputSettings.ApplySensitivity(value);
+            Player.Instance.InputSettings.ApplySensitivity(saveData.mouseSensitivity);
+        }
+        Persist();
+    }
+
+    public void SetFieldOfView(float value)
+    {
+        saveData.fieldOfView = Mathf.Clamp(value, 30f, 100f);
+        if (Player.Instance != null && Player.Instance.AimCamera != null)
+        {
+            Player.Instance.AimCamera.SetRestingFieldOfView(saveData.fieldOfView);
         }
         Persist();
     }
@@ -152,17 +169,23 @@ public class GameSettingsService : MonoBehaviour
         SaveSystem.Save(saveData);
     }
 
-    public void ResetInputOverrides()
+    /// <summary>
+    ///     Restores every setting — audio, controls, video, performance, and button remaps — to its
+    ///     authored default, re-applies them to the live systems, and persists. Progress is untouched
+    ///     (that's Delete Save's job).
+    /// </summary>
+    public void ResetToDefaults()
     {
-        saveData.inputBindingOverridesJson = "";
-        SaveSystem.Save(saveData);
+        saveData.ResetSettings();
 
+        // ApplyAll only loads override json (a no-op when empty) — actively remove the live overrides too.
         if (Player.Instance != null && Player.Instance.InputSettings != null)
         {
             Player.Instance.InputSettings.ClearBindingOverrides();
         }
 
-        OnSettingsChanged?.Invoke();
+        ApplyAll();
+        Persist();
     }
 
     private void ApplyMaxRagdolls(int value)

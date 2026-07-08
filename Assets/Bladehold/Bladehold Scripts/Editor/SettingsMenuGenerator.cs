@@ -1,6 +1,6 @@
 using System.IO;
-using Synty.AnimationBaseLocomotion.Samples;
 using Synty.AnimationBaseLocomotion.Samples.InputSystem;
+using Unity.Cinemachine;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
@@ -14,13 +14,15 @@ using UnityEngine.UI;
 ///     Editor-time generator for the pause/settings/Photo Mode UI (Bladehold > Generate Settings Menu).
 ///     Builds a functional (unstyled) hierarchy wired up to the runtime scripts in
 ///     <c>Assets/Bladehold/Bladehold Scripts/Settings/</c> and <c>UI/</c>, so the remaining work is
-///     purely visual — reskin the five shared control prefabs it creates under
+///     purely visual — reskin the six shared control prefabs it creates under
 ///     <c>Assets/Bladehold/Bladehold Prefabs/UI/</c> (<c>MenuButton</c>/<c>MenuLabel</c>/
-///     <c>MenuSlider</c>/<c>MenuToggle</c>/<c>MenuIconButton</c>) and every control in the generated
-///     menu — being an instance of one of those prefabs — picks up the change everywhere at once (the
-///     icon button's circular-arrow sprite is generated too, as <c>ResetIcon.png</c>). Re-running the
-///     command is a no-op if a "PauseMenuCanvas" already exists in the scene (delete it, and "GameMenu"
-///     if starting fully fresh, to regenerate).
+///     <c>MenuSlider</c>/<c>MenuToggle</c>/<c>MenuIconButton</c>/<c>MenuValueInput</c>) and every
+///     control in the generated menu — being an instance of one of those prefabs — picks up the
+///     change everywhere at once (the icon button's circular-arrow sprite is generated too, as
+///     <c>ResetIcon.png</c>). Every Settings-panel slider row also gets a <c>MenuValueInput</c> text
+///     field kept in sync by <see cref="SliderValueField" />, so exact numbers can be typed in
+///     instead of dragging. Re-running the command is a no-op if a "PauseMenuCanvas" already exists in
+///     the scene (delete it, and "GameMenu" if starting fully fresh, to regenerate).
 ///
 ///     Uses Unity's own built-in UI skin sprites (<see cref="AssetDatabase.GetBuiltinExtraResource{T}" />)
 ///     for button/slider/toggle graphics — the same defaults "GameObject > UI > ..." uses — purely as a
@@ -35,14 +37,20 @@ public static class SettingsMenuGenerator
     private const string TogglePrefabPath = PrefabFolder + "/MenuToggle.prefab";
     private const string RebindRowPrefabPath = PrefabFolder + "/RebindRow.prefab";
     private const string IconButtonPrefabPath = PrefabFolder + "/MenuIconButton.prefab";
+    private const string ValueInputPrefabPath = PrefabFolder + "/MenuValueInput.prefab";
     private const string ResetIconPath = PrefabFolder + "/ResetIcon.png";
     private const string MixerAssetPath = "Assets/Feel/MMTools/Core/MMAudio/MMSoundManager/Settings/MMSoundManagerAudioMixer.mixer";
+
+    // Shared by RebindRow and the header row above the rebind list so their columns line up; narrower
+    // than the slider rows' 220 label so the two binding buttons keep usable width.
+    private const float RebindActionLabelWidth = 160f;
 
     private static GameObject buttonPrefab;
     private static GameObject labelPrefab;
     private static GameObject sliderPrefab;
     private static GameObject togglePrefab;
     private static GameObject iconButtonPrefab;
+    private static GameObject valueInputPrefab;
 
     [MenuItem("Bladehold/Generate Settings Menu")]
     private static void Generate()
@@ -92,9 +100,10 @@ public static class SettingsMenuGenerator
     private static void WireGameMenu(PauseMenuController pauseController, ScreenshotModeController screenshotController, GameSettingsService settingsService)
     {
         InputReader inputReader = Object.FindFirstObjectByType<InputReader>();
-        SampleCameraController cameraController = Object.FindFirstObjectByType<SampleCameraController>();
+        PlayerCameraPivot cameraPivot = Object.FindFirstObjectByType<PlayerCameraPivot>();
+        CinemachineBrain cameraBrain = Object.FindFirstObjectByType<CinemachineBrain>();
 
-        Object[] toDisable = { inputReader, cameraController };
+        Object[] toDisable = { inputReader, cameraPivot, cameraBrain };
         SetObjectArrayField(pauseController, "componentsToDisable", toDisable);
         SetField(pauseController, "screenshotMode", screenshotController);
 
@@ -149,10 +158,10 @@ public static class SettingsMenuGenerator
         player.gameObject.SetActive(false);
 
         InputSettingsBinder binder = GetOrAddComponent<InputSettingsBinder>(player.gameObject);
-        SampleCameraController cameraController = Object.FindFirstObjectByType<SampleCameraController>();
+        PlayerCameraPivot cameraPivot = Object.FindFirstObjectByType<PlayerCameraPivot>();
         InputReader inputReader = player.GetComponent<InputReader>() ?? Object.FindFirstObjectByType<InputReader>();
 
-        if (cameraController != null) SetField(binder, "cameraController", cameraController);
+        if (cameraPivot != null) SetField(binder, "cameraPivot", cameraPivot);
         if (inputReader != null) SetField(binder, "inputReader", inputReader);
 
         player.gameObject.SetActive(wasActive);
@@ -257,23 +266,51 @@ public static class SettingsMenuGenerator
 
         AddButtonRow(content, "BackButton", 32f);
 
-        CreateSliderRow(content, "Master Volume", out Slider masterSlider, 0f, 1f, 1f);
-        CreateSliderRow(content, "Music Volume", out Slider musicSlider, 0f, 1f, 1f);
-        CreateSliderRow(content, "SFX Volume", out Slider sfxSlider, 0f, 1f, 1f);
-        CreateSliderRow(content, "Sensitivity", out Slider sensitivitySlider, 1f, 15f, 5f);
-        CreateSliderRow(content, "Max Ragdolls", out Slider maxRagdollsSlider, 0f, 50f, 12f);
+        // Tab bar: General (audio/look/video/performance) | Controls (the rebind list).
+        RectTransform tabsRow = CreateUIObject("TabsRow", content, typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(LayoutElement));
+        HorizontalLayoutGroup tabsLayout = tabsRow.GetComponent<HorizontalLayoutGroup>();
+        tabsLayout.spacing = 8f;
+        tabsLayout.childControlWidth = true;
+        tabsLayout.childControlHeight = true;
+        tabsLayout.childForceExpandWidth = true;
+        tabsLayout.childForceExpandHeight = true;
+        tabsRow.GetComponent<LayoutElement>().preferredHeight = 36f;
+
+        GameObject generalTabGO = Instantiate(buttonPrefab, tabsRow);
+        generalTabGO.name = "GeneralTabButton";
+        GameObject controlsTabGO = Instantiate(buttonPrefab, tabsRow);
+        controlsTabGO.name = "ControlsTabButton";
+
+        RectTransform generalContent = CreateVerticalContainer("GeneralTabContent", content, 10f, new RectOffset(0, 0, 0, 0));
+        generalContent.gameObject.AddComponent<LayoutElement>().flexibleHeight = 1f;
+
+        CreateSliderRow(generalContent, "Master Volume", out Slider masterSlider, 0f, 1f, 1f, 2);
+        CreateSliderRow(generalContent, "Music Volume", out Slider musicSlider, 0f, 1f, 1f, 2);
+        CreateSliderRow(generalContent, "SFX Volume", out Slider sfxSlider, 0f, 1f, 1f, 2);
+        CreateSliderRow(generalContent, "Sensitivity", out Slider sensitivitySlider, 0f, 10f, 5f, 1);
+        CreateSliderRow(generalContent, "Max Ragdolls", out Slider maxRagdollsSlider, 0f, 50f, 12f, 0);
         maxRagdollsSlider.wholeNumbers = true;
-        CreateToggleRow(content, "Invert X", out Toggle invertXToggle);
-        CreateToggleRow(content, "Invert Y", out Toggle invertYToggle);
+        CreateToggleRow(generalContent, "Invert X", out Toggle invertXToggle);
+        CreateToggleRow(generalContent, "Invert Y", out Toggle invertYToggle);
+        CreateSliderRow(generalContent, "Field of View", out Slider fieldOfViewSlider, 30f, 100f, 40f, 0);
 
-        AddLabel(content, "RebindLabel", "Controls", 18f);
-        CreateScrollView(content, "RebindScrollView", 220f, out Transform rebindContent);
+        RectTransform controlsContent = CreateVerticalContainer("ControlsTabContent", content, 6f, new RectOffset(0, 0, 0, 0));
+        controlsContent.gameObject.AddComponent<LayoutElement>().flexibleHeight = 1f;
 
+        CreateRebindHeaderRow(controlsContent);
+        RectTransform rebindScroll = CreateScrollView(controlsContent, "RebindScrollView", 220f, out Transform rebindContent);
+        rebindScroll.GetComponent<LayoutElement>().flexibleHeight = 1f;
+
+        AddButtonRow(content, "ResetSettingsButton", 40f);
         AddButtonRow(content, "DeleteSaveButton", 40f);
 
         GameObject confirmDialogGO = BuildConfirmDialog(panel);
 
         SettingsPanelView view = panel.gameObject.AddComponent<SettingsPanelView>();
+        SetField(view, "generalTabButton", generalTabGO.GetComponent<Button>());
+        SetField(view, "controlsTabButton", controlsTabGO.GetComponent<Button>());
+        SetField(view, "generalTabContent", generalContent.gameObject);
+        SetField(view, "controlsTabContent", controlsContent.gameObject);
         SetField(view, "masterVolumeSlider", masterSlider);
         SetField(view, "musicVolumeSlider", musicSlider);
         SetField(view, "sfxVolumeSlider", sfxSlider);
@@ -281,14 +318,63 @@ public static class SettingsMenuGenerator
         SetField(view, "maxRagdollsSlider", maxRagdollsSlider);
         SetField(view, "invertXToggle", invertXToggle);
         SetField(view, "invertYToggle", invertYToggle);
+        SetField(view, "fieldOfViewSlider", fieldOfViewSlider);
         SetField(view, "rebindListParent", rebindContent);
         SetField(view, "rebindRowPrefab", GetOrCreateRebindRowPrefab().GetComponent<RebindButtonView>());
+        SetField(view, "resetSettingsButton", content.Find("ResetSettingsButton").GetComponent<Button>());
         SetField(view, "deleteSaveButton", content.Find("DeleteSaveButton").GetComponent<Button>());
         SetField(view, "confirmDialog", confirmDialogGO.GetComponent<ConfirmDialog>());
 
+        SetButtonLabel(content.Find("ResetSettingsButton").GetComponent<Button>(), "Reset Settings");
         SetButtonLabel(content.Find("DeleteSaveButton").GetComponent<Button>(), "Delete Save");
+        SetButtonLabel(generalTabGO.GetComponent<Button>(), "General");
+        SetButtonLabel(controlsTabGO.GetComponent<Button>(), "Controls");
+
+        // SettingsPanelView.OnEnable re-selects the General tab at runtime; this just makes the
+        // generated scene match that default.
+        generalContent.gameObject.SetActive(true);
+        controlsContent.gameObject.SetActive(false);
 
         return panel.gameObject;
+    }
+
+    /// <summary>
+    ///     Column headers over the rebind list, mirroring RebindRow's layout (action label width +
+    ///     two equal flexible columns) so the headers line up with the buttons below.
+    /// </summary>
+    private static void CreateRebindHeaderRow(Transform parent)
+    {
+        RectTransform row = CreateUIObject("HeaderRow", parent, typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(LayoutElement));
+        HorizontalLayoutGroup layout = row.GetComponent<HorizontalLayoutGroup>();
+        layout.spacing = 8f;
+        layout.padding = new RectOffset(4, 4, 0, 0); // matches the scroll content's horizontal padding.
+        layout.childAlignment = TextAnchor.MiddleLeft;
+        layout.childControlWidth = true;
+        layout.childControlHeight = true;
+        layout.childForceExpandWidth = false;
+        layout.childForceExpandHeight = true;
+        row.GetComponent<LayoutElement>().preferredHeight = 26f;
+
+        GameObject actionHeaderGO = Instantiate(labelPrefab, row);
+        actionHeaderGO.name = "ActionHeader";
+        LayoutElement actionLayout = actionHeaderGO.AddComponent<LayoutElement>();
+        actionLayout.preferredWidth = RebindActionLabelWidth;
+        actionLayout.flexibleWidth = 0f;
+        actionHeaderGO.GetComponent<TextMeshProUGUI>().text = "";
+
+        AddRebindColumnHeader(row, "KbmHeader", "Keyboard / Mouse");
+        AddRebindColumnHeader(row, "GamepadHeader", "Gamepad");
+    }
+
+    private static void AddRebindColumnHeader(Transform parent, string name, string text)
+    {
+        GameObject headerGO = Instantiate(labelPrefab, parent);
+        headerGO.name = name;
+        headerGO.AddComponent<LayoutElement>().flexibleWidth = 1f;
+        TextMeshProUGUI headerText = headerGO.GetComponent<TextMeshProUGUI>();
+        headerText.text = text;
+        headerText.fontSize = 18f;
+        headerText.alignment = TextAlignmentOptions.Center;
     }
 
     private static GameObject BuildConfirmDialog(Transform parent)
@@ -321,7 +407,8 @@ public static class SettingsMenuGenerator
 
         GameObject confirmButtonGO = Instantiate(buttonPrefab, buttonsRow);
         confirmButtonGO.name = "ConfirmButton";
-        SetButtonLabel(confirmButtonGO.GetComponent<Button>(), "Delete");
+        // Placeholder only — ConfirmDialog.Show sets the label per action (Delete / Reset).
+        SetButtonLabel(confirmButtonGO.GetComponent<Button>(), "Confirm");
 
         GameObject cancelButtonGO = Instantiate(buttonPrefab, buttonsRow);
         cancelButtonGO.name = "CancelButton";
@@ -449,6 +536,7 @@ public static class SettingsMenuGenerator
         sliderPrefab = GetOrCreateSliderPrefab();
         togglePrefab = GetOrCreateTogglePrefab();
         iconButtonPrefab = GetOrCreateIconButtonPrefab();
+        valueInputPrefab = GetOrCreateValueInputPrefab();
     }
 
     private static void EnsureFolder()
@@ -648,6 +736,58 @@ public static class SettingsMenuGenerator
         return saved;
     }
 
+    private static GameObject GetOrCreateValueInputPrefab()
+    {
+        GameObject existing = AssetDatabase.LoadAssetAtPath<GameObject>(ValueInputPrefabPath);
+        if (existing != null) return existing;
+
+        Sprite background = GetBuiltinSprite("UI/Skin/InputFieldBackground.psd");
+
+        GameObject root = new GameObject("MenuValueInput", typeof(RectTransform), typeof(Image), typeof(TMP_InputField));
+        root.GetComponent<RectTransform>().sizeDelta = new Vector2(56f, 28f);
+
+        Image image = root.GetComponent<Image>();
+        image.sprite = background;
+        image.type = Image.Type.Sliced;
+        image.color = new Color(0.15f, 0.15f, 0.18f);
+
+        GameObject textAreaGO = new GameObject("Text Area", typeof(RectTransform), typeof(RectMask2D));
+        textAreaGO.transform.SetParent(root.transform, false);
+        RectTransform textAreaRt = textAreaGO.GetComponent<RectTransform>();
+        StretchFull(textAreaRt);
+        textAreaRt.offsetMin = new Vector2(6f, 2f);
+        textAreaRt.offsetMax = new Vector2(-6f, -2f);
+
+        GameObject placeholderGO = new GameObject("Placeholder", typeof(RectTransform), typeof(TextMeshProUGUI));
+        placeholderGO.transform.SetParent(textAreaRt, false);
+        StretchFull(placeholderGO.GetComponent<RectTransform>());
+        TextMeshProUGUI placeholder = placeholderGO.GetComponent<TextMeshProUGUI>();
+        placeholder.text = "";
+        placeholder.fontSize = 18f;
+        placeholder.color = new Color(1f, 1f, 1f, 0.3f);
+        placeholder.alignment = TextAlignmentOptions.MidlineRight;
+
+        GameObject textGO = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI));
+        textGO.transform.SetParent(textAreaRt, false);
+        StretchFull(textGO.GetComponent<RectTransform>());
+        TextMeshProUGUI text = textGO.GetComponent<TextMeshProUGUI>();
+        text.fontSize = 18f;
+        text.color = Color.white;
+        text.alignment = TextAlignmentOptions.MidlineRight;
+
+        TMP_InputField inputField = root.GetComponent<TMP_InputField>();
+        inputField.targetGraphic = image;
+        inputField.textViewport = textAreaRt;
+        inputField.textComponent = text;
+        inputField.placeholder = placeholder;
+        inputField.lineType = TMP_InputField.LineType.SingleLine;
+        inputField.contentType = TMP_InputField.ContentType.DecimalNumber;
+
+        GameObject saved = PrefabUtility.SaveAsPrefabAsset(root, ValueInputPrefabPath);
+        Object.DestroyImmediate(root);
+        return saved;
+    }
+
     /// <summary>
     ///     A circular "reset" arrow drawn once into a small PNG — TMP's default font atlas has no ↺
     ///     glyph and Unity ships no builtin refresh sprite, so the generator makes its own. Replace the
@@ -717,7 +857,13 @@ public static class SettingsMenuGenerator
     private static GameObject GetOrCreateRebindRowPrefab()
     {
         GameObject existing = AssetDatabase.LoadAssetAtPath<GameObject>(RebindRowPrefabPath);
-        if (existing != null) return existing;
+        if (existing != null)
+        {
+            // A pre-two-column prefab (single BindingButton) no longer matches RebindButtonView's
+            // fields — rebuild it rather than returning a stale hierarchy.
+            if (existing.transform.Find("KbmBindingButton") != null) return existing;
+            AssetDatabase.DeleteAsset(RebindRowPrefabPath);
+        }
 
         GameObject root = new GameObject("RebindRow", typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(LayoutElement));
         root.GetComponent<RectTransform>().sizeDelta = new Vector2(500f, 36f);
@@ -736,28 +882,36 @@ public static class SettingsMenuGenerator
         GameObject nameLabelGO = (GameObject)PrefabUtility.InstantiatePrefab(labelPrefab, root.transform);
         nameLabelGO.name = "ActionLabel";
         LayoutElement nameLayout = nameLabelGO.AddComponent<LayoutElement>();
-        nameLayout.preferredWidth = 220f;
+        nameLayout.preferredWidth = RebindActionLabelWidth;
         nameLayout.flexibleWidth = 0f;
         TextMeshProUGUI nameLabel = nameLabelGO.GetComponent<TextMeshProUGUI>();
         nameLabel.text = "Action";
 
-        GameObject bindingButtonGO = (GameObject)PrefabUtility.InstantiatePrefab(buttonPrefab, root.transform);
-        bindingButtonGO.name = "BindingButton";
-        LayoutElement bindingLayout = bindingButtonGO.AddComponent<LayoutElement>();
-        bindingLayout.flexibleWidth = 1f;
-        bindingLayout.preferredHeight = 32f;
-        TextMeshProUGUI bindingLabel = bindingButtonGO.GetComponentInChildren<TextMeshProUGUI>();
-        bindingLabel.text = "<Unbound>";
-        Button bindingButton = bindingButtonGO.GetComponent<Button>();
+        Button kbmButton = AddRebindBindingButton(root.transform, "KbmBindingButton", out TextMeshProUGUI kbmLabel);
+        Button gamepadButton = AddRebindBindingButton(root.transform, "GamepadBindingButton", out TextMeshProUGUI gamepadLabel);
 
         RebindButtonView view = root.AddComponent<RebindButtonView>();
         SetField(view, "label", nameLabel);
-        SetField(view, "bindingPathLabel", bindingLabel);
-        SetField(view, "button", bindingButton);
+        SetField(view, "kbmBindingPathLabel", kbmLabel);
+        SetField(view, "kbmButton", kbmButton);
+        SetField(view, "gamepadBindingPathLabel", gamepadLabel);
+        SetField(view, "gamepadButton", gamepadButton);
 
         GameObject saved = PrefabUtility.SaveAsPrefabAsset(root, RebindRowPrefabPath);
         Object.DestroyImmediate(root);
         return saved;
+    }
+
+    private static Button AddRebindBindingButton(Transform parent, string name, out TextMeshProUGUI bindingLabel)
+    {
+        GameObject buttonGO = (GameObject)PrefabUtility.InstantiatePrefab(buttonPrefab, parent);
+        buttonGO.name = name;
+        LayoutElement buttonLayout = buttonGO.AddComponent<LayoutElement>();
+        buttonLayout.flexibleWidth = 1f;
+        buttonLayout.preferredHeight = 32f;
+        bindingLabel = buttonGO.GetComponentInChildren<TextMeshProUGUI>(true);
+        bindingLabel.text = "<Unbound>";
+        return buttonGO.GetComponent<Button>();
     }
 
     // ---- Layout helpers ------------------------------------------------------
@@ -844,7 +998,9 @@ public static class SettingsMenuGenerator
 
     private static void SetButtonLabel(Button button, string text)
     {
-        TextMeshProUGUI label = button.GetComponentInChildren<TextMeshProUGUI>();
+        // includeInactive — the canvas hierarchy is built inactive, and the default lookup skips
+        // inactive objects, silently leaving the prefab's placeholder "Button" text.
+        TextMeshProUGUI label = button.GetComponentInChildren<TextMeshProUGUI>(true);
         if (label != null) label.text = text;
     }
 
@@ -882,13 +1038,24 @@ public static class SettingsMenuGenerator
         return row;
     }
 
-    private static void CreateSliderRow(Transform parent, string labelText, out Slider slider, float min, float max, float value)
+    private static void CreateSliderRow(Transform parent, string labelText, out Slider slider, float min, float max, float value, int decimalPlaces)
     {
-        CreateLabeledRow(parent, labelText, sliderPrefab, 32f, 0f, out GameObject controlInstance);
+        RectTransform row = CreateLabeledRow(parent, labelText, sliderPrefab, 32f, 0f, out GameObject controlInstance);
         slider = controlInstance.GetComponent<Slider>();
         slider.minValue = min;
         slider.maxValue = max;
         slider.value = value;
+
+        GameObject valueInputGO = Instantiate(valueInputPrefab, row);
+        LayoutElement valueLayout = valueInputGO.AddComponent<LayoutElement>();
+        valueLayout.preferredWidth = 56f;
+        valueLayout.flexibleWidth = 0f;
+        valueLayout.preferredHeight = 32f * 0.7f;
+
+        SliderValueField sync = row.gameObject.AddComponent<SliderValueField>();
+        SetField(sync, "slider", slider);
+        SetField(sync, "inputField", valueInputGO.GetComponent<TMP_InputField>());
+        SetIntField(sync, "decimalPlaces", decimalPlaces);
     }
 
     private static void CreateToggleRow(Transform parent, string labelText, out Toggle toggle)
@@ -966,6 +1133,22 @@ public static class SettingsMenuGenerator
         }
 
         prop.objectReferenceValue = value;
+        so.ApplyModifiedProperties();
+    }
+
+    private static void SetIntField(Object target, string fieldName, int value)
+    {
+        if (target == null) return;
+
+        SerializedObject so = new SerializedObject(target);
+        SerializedProperty prop = so.FindProperty(fieldName);
+        if (prop == null)
+        {
+            Debug.LogError($"SettingsMenuGenerator: field '{fieldName}' not found on {target.GetType().Name}.");
+            return;
+        }
+
+        prop.intValue = value;
         so.ApplyModifiedProperties();
     }
 

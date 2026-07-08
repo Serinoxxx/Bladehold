@@ -429,6 +429,7 @@ GameObject:
   - component: {fileID: 2774917170554717151}
   - component: {fileID: 7287549992360804403}
   - component: {fileID: 6790884973619429240}
+  - component: {fileID: 4433720349428158434}
   m_Layer: 7
   m_Name: Goblin Enemy (Base)
   m_TagString: Untagged
@@ -824,8 +825,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CoinDropper
   health: {fileID: 2416392165065999887}
   enemyData: {fileID: 11400000, guid: 95fa231467dfc9b43a2251a4f035cc18, type: 2}
-  coinPrefab: {fileID: 8493665466631301938, guid: 26ebce2f78526014da0d1b69d835b6e9, type: 3}
+  goldBagPrefab: {fileID: 8493665466631301938, guid: 26ebce2f78526014da0d1b69d835b6e9, type: 3}
   dropOffset: {x: 0, y: 0.5, z: 0}
+  goldPopup: {fileID: 5445448510257546009, guid: 0c337af341cc6e840986619c86ca00fb, type: 3}
+  goldBagChance: 0.05
+  goldBagMultiplier: 5
+  goldBagScale: 1.5
 --- !u!114 &8743446565083701594
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -952,6 +957,21 @@ MonoBehaviour:
   impulseAuraMaterial: {fileID: 2100000, guid: 84f63d6fe8d820f4790708c17375eb97, type: 2}
   deathVfxPrefab: {fileID: 0}
   deathSfx: {fileID: 0}
+--- !u!114 &4433720349428158434
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 494112403358464087}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d340360ac73cef745a0776fc792e4660, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PowerupDropper
+  health: {fileID: 2416392165065999887}
+  dropTable: {fileID: 11400000, guid: a934a2f3cd5fd364e8e7791c07f025e2, type: 2}
+  dropOffset: {x: 0, y: 0.5, z: 0}
 --- !u!1 &5523990517535919116
 GameObject:
   m_ObjectHideFlags: 0

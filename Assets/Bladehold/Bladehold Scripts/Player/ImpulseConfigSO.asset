@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: ImpulseConfigSO
   m_EditorClassIdentifier: Assembly-CSharp::ImpulseConfigSO
   defaultResistance: 0
-  launchAngleDegrees: 60
-  spinTorque: 4
+  launchAngleDegrees: 45
+  spinTorque: 40
+  randomLimbKick: 30
   minAirTime: 0.3
   settleSpeed: 0.5
   settleTime: 0.3
@@ -24,4 +25,3 @@ MonoBehaviour:
   recoverRetryWindow: 3
   getUpSeconds: 2.2
   knockdownSeconds: 2.5
-  maxSimultaneousRagdolls: 12

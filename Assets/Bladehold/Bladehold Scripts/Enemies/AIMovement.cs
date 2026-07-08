@@ -14,8 +14,10 @@ public class AIMovement : MonoBehaviour
 
     bool isDead = false;
     bool playerDead = false;
+    bool isPaused = false;
     bool anyError = false;
     float? speedOverride;
+    float speedMultiplier = 1f;
 
     /// <summary>
     ///     Per-instance agent-speed override (e.g. <see cref="WaveSpawner" /> applying an enemy type's
@@ -28,11 +30,29 @@ public class AIMovement : MonoBehaviour
     }
 
     /// <summary>
-    ///     This enemy's unslowed agent speed (the roster override or the SO value) — what
-    ///     <see cref="SlowStatus" /> scales from and restores to, so its own writes to
-    ///     <c>agent.speed</c> never compound.
+    ///     This enemy's unslowed agent speed (the roster override or the SO value, times any
+    ///     <see cref="SetSpeedMultiplier" /> in effect) — what <see cref="SlowStatus" /> scales from
+    ///     and restores to, so its own writes to <c>agent.speed</c> never compound. Including the
+    ///     multiplier here means a slow and a speed burst (the Bomber's lit fuse) compose instead
+    ///     of overwriting each other.
     /// </summary>
-    public float BaseSpeed => speedOverride ?? (movementSO != null ? movementSO.speed : 0f);
+    public float BaseSpeed => (speedOverride ?? (movementSO != null ? movementSO.speed : 0f)) * speedMultiplier;
+
+    /// <summary>
+    ///     Temporary agent-speed multiplier on top of the base/roster speed (1 = normal) — e.g. the
+    ///     Bomber sprinting while its fuse burns (<see cref="BomberAttack" />). Applied immediately,
+    ///     preserving any active <see cref="SlowStatus" /> scaling.
+    /// </summary>
+    public void SetSpeedMultiplier(float value)
+    {
+        speedMultiplier = Mathf.Max(0f, value);
+        if (anyError || isDead || agent == null || !agent.enabled)
+        {
+            return;
+        }
+        float slowFraction = TryGetComponent(out SlowStatus slow) ? slow.CurrentSlowFraction : 0f;
+        agent.speed = BaseSpeed * (1f - slowFraction);
+    }
     private void OnValidate()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -72,7 +92,7 @@ public class AIMovement : MonoBehaviour
             return;
         }
 
-        agent.speed = speedOverride ?? movementSO.speed;
+        agent.speed = BaseSpeed;
 
         // Avoidance is applied in code so the prefab's NavMeshAgent stays untouched. Start in the
         // near tier; the repath tick moves the agent between tiers as its distance changes.
@@ -144,12 +164,28 @@ public class AIMovement : MonoBehaviour
         }
     }
 
+    /// <summary>
+    ///     Temporarily halts/resumes chasing without touching the death/player-death state above —
+    ///     used by attacks with a long wind-up (e.g. <see cref="TrollSlamAttack" />) that shouldn't
+    ///     slide out from under a telegraph locked to the enemy's position when the wind-up started.
+    /// </summary>
+    public void SetMovementPaused(bool paused)
+    {
+        if (anyError || isDead) return;
+
+        isPaused = paused;
+        if (agent != null && agent.isOnNavMesh)
+        {
+            agent.isStopped = paused;
+        }
+    }
+
     float lastUpdateTime;
     bool isFar;
     // Update is called once per frame
     void Update()
     {
-        if (anyError || isDead || playerDead) return;
+        if (anyError || isDead || playerDead || isPaused) return;
 
         // Far agents repath less often — with the stagger above, ~300 agents spread their
         // SetDestination calls evenly instead of spiking the path queue in lockstep.
@@ -163,6 +199,26 @@ public class AIMovement : MonoBehaviour
             agent.SetDestination(destination);
             UpdateAvoidanceTier();
         }
+
+        FaceTargetWhenStopped();
+    }
+
+    /// <summary>
+    ///     The NavMeshAgent only auto-rotates while it is moving along a path, so an agent resting
+    ///     inside its stopping distance stops tracking the player. Keep turning toward the target
+    ///     manually while stopped so melee enemies stay squared up to what they're attacking.
+    /// </summary>
+    private void FaceTargetWhenStopped()
+    {
+        if (agent.pathPending || agent.remainingDistance > agent.stoppingDistance) return;
+
+        Vector3 targetPosition = targetSelector != null ? targetSelector.TargetPosition : player.transform.position;
+        Vector3 toTarget = targetPosition - transform.position;
+        toTarget.y = 0f;
+        if (toTarget.sqrMagnitude < 0.0001f) return;
+
+        Quaternion desired = Quaternion.LookRotation(toTarget);
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, desired, movementSO.stoppedTurnSpeed * Time.deltaTime);
     }
 
     /// <summary>

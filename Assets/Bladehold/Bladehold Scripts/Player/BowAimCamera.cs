@@ -1,31 +1,26 @@
-using System.Reflection;
-using Synty.AnimationBaseLocomotion.Samples;
+using Unity.Cinemachine;
 using UnityEngine;
 
 /// <summary>
 ///     Over-the-shoulder aim camera for the bow. While <see cref="PlayerBow.IsAiming" /> (polled, the
-///     <see cref="SwordChargeFeedback" /> pattern) the vendored <see cref="SampleCameraController" />'s
-///     boom is blended in close and off to the side, and the camera's field of view narrows — all
-///     tuned on <see cref="BowSO" />. The controller re-applies its private <c>_cameraDistance</c> /
-///     <c>_cameraHorizontalOffset</c> fields to the boom every frame, so we capture the authored
-///     values once and write blended values back by cached reflection (the
-///     <see cref="PlayerMoveSpeedBinder" /> precedent — no vendored source is edited, and the binder
-///     degrades gracefully if Synty ever renames the fields). Releasing aim blends everything back to
-///     the authored framing.
+///     <see cref="SwordChargeFeedback" /> pattern) the gameplay <see cref="CinemachineCamera" />'s
+///     Third Person Follow boom is blended in close and off to the side, and its lens field of view
+///     scales by <see cref="BowSO.aimFieldOfViewPercent" /> (1 = unchanged) — all tuned on
+///     <see cref="BowSO" />. Everything goes through Cinemachine's public fields, so the reflection
+///     the old Synty-controller version needed is gone. The resting framing is captured once in
+///     <c>Start</c>; releasing aim blends everything back to it. This also owns the gameplay
+///     camera's resting field of view for <see cref="GameSettingsService" />'s FOV setting (see
+///     <see cref="SetRestingFieldOfView" />), since it's already the only component holding this
+///     camera's lens reference.
 /// </summary>
 public class BowAimCamera : MonoBehaviour
 {
-    private const BindingFlags FieldFlags = BindingFlags.Instance | BindingFlags.NonPublic;
-
     [SerializeField] private PlayerBow bow;
     [SerializeField] private BowSO config;
-    [Tooltip("The vendored Synty camera rig, a child of the player prefab. Auto-found in children.")]
-    [SerializeField] private SampleCameraController cameraController;
-    [Tooltip("Camera whose field of view narrows while aiming. Defaults to Camera.main.")]
-    [SerializeField] private Camera aimCamera;
+    [Tooltip("The gameplay CinemachineCamera whose Third Person Follow boom and lens the aim blend drives. Auto-found in children.")]
+    [SerializeField] private CinemachineCamera aimCamera;
 
-    private FieldInfo distanceField;
-    private FieldInfo horizontalOffsetField;
+    private CinemachineThirdPersonFollow follow;
     private float baseDistance;
     private float baseHorizontalOffset;
     private float baseFieldOfView;
@@ -41,9 +36,9 @@ public class BowAimCamera : MonoBehaviour
         {
             bow = GetComponent<PlayerBow>();
         }
-        if (cameraController == null)
+        if (aimCamera == null)
         {
-            cameraController = GetComponentInChildren<SampleCameraController>();
+            aimCamera = GetComponentInChildren<CinemachineCamera>();
         }
     }
 
@@ -59,9 +54,9 @@ public class BowAimCamera : MonoBehaviour
             Debug.LogError("BowSO is not assigned in the inspector.");
             anyError = true;
         }
-        if (cameraController == null)
+        if (aimCamera == null)
         {
-            Debug.LogError("SampleCameraController is not assigned or found in children; the aim camera can't move.");
+            Debug.LogError("CinemachineCamera is not assigned or found in children; the aim camera can't move.");
             anyError = true;
         }
 
@@ -70,32 +65,18 @@ public class BowAimCamera : MonoBehaviour
             return;
         }
 
-        if (aimCamera == null)
+        follow = aimCamera.GetComponent<CinemachineThirdPersonFollow>();
+        if (follow == null)
         {
-            aimCamera = Camera.main;
-        }
-        if (aimCamera == null)
-        {
-            Debug.LogError("No aim Camera assigned and no Camera.main found; the aim camera can't zoom.");
-            anyError = true;
-            return;
-        }
-
-        System.Type type = cameraController.GetType();
-        distanceField = type.GetField("_cameraDistance", FieldFlags);
-        horizontalOffsetField = type.GetField("_cameraHorizontalOffset", FieldFlags);
-
-        if (distanceField == null || horizontalOffsetField == null)
-        {
-            Debug.LogError("BowAimCamera could not find the camera controller's boom fields (_cameraDistance/_cameraHorizontalOffset). Aim zoom disabled.");
+            Debug.LogError("The gameplay CinemachineCamera has no CinemachineThirdPersonFollow; the aim camera can't move.");
             anyError = true;
             return;
         }
 
         // Capture the authored framing the aim blend returns to.
-        baseDistance = (float)distanceField.GetValue(cameraController);
-        baseHorizontalOffset = (float)horizontalOffsetField.GetValue(cameraController);
-        baseFieldOfView = aimCamera.fieldOfView;
+        baseDistance = follow.CameraDistance;
+        baseHorizontalOffset = follow.ShoulderOffset.x;
+        baseFieldOfView = aimCamera.Lens.FieldOfView;
     }
 
     private void Update()
@@ -116,26 +97,47 @@ public class BowAimCamera : MonoBehaviour
 
         // Ease the linear blend so the zoom settles softly at both ends.
         float eased = Mathf.SmoothStep(0f, 1f, blend);
-        distanceField.SetValue(cameraController, Mathf.Lerp(baseDistance, config.aimCameraDistance, eased));
-        horizontalOffsetField.SetValue(cameraController, Mathf.Lerp(baseHorizontalOffset, config.aimCameraHorizontalOffset, eased));
-        aimCamera.fieldOfView = Mathf.Lerp(baseFieldOfView, config.aimFieldOfView, eased);
+        follow.CameraDistance = Mathf.Lerp(baseDistance, config.aimCameraDistance, eased);
+        Vector3 shoulder = follow.ShoulderOffset;
+        shoulder.x = Mathf.Lerp(baseHorizontalOffset, config.aimCameraHorizontalOffset, eased);
+        follow.ShoulderOffset = shoulder;
+        aimCamera.Lens.FieldOfView = Mathf.Lerp(baseFieldOfView, baseFieldOfView * config.aimFieldOfViewPercent, eased);
+    }
+
+    /// <summary>
+    ///     Sets the resting (non-aim) field of view the aim blend returns to, applying it immediately
+    ///     if not currently aiming. The intended caller is <see cref="GameSettingsService" />; safe to
+    ///     call before <see cref="Start" /> has run, since <c>Start</c> re-reads the lens value it sets
+    ///     here as its own captured baseline.
+    /// </summary>
+    public void SetRestingFieldOfView(float fov)
+    {
+        if (aimCamera == null)
+        {
+            return;
+        }
+
+        baseFieldOfView = fov;
+        if (Mathf.Approximately(blend, 0f))
+        {
+            aimCamera.Lens.FieldOfView = fov;
+        }
     }
 
     private void OnDisable()
     {
         // E.g. PlayerDeath disabling controls mid-aim: snap the framing back so the death camera
         // isn't stuck zoomed over a shoulder.
-        if (anyError || distanceField == null)
+        if (anyError || follow == null)
         {
             return;
         }
 
         blend = 0f;
-        distanceField.SetValue(cameraController, baseDistance);
-        horizontalOffsetField.SetValue(cameraController, baseHorizontalOffset);
-        if (aimCamera != null)
-        {
-            aimCamera.fieldOfView = baseFieldOfView;
-        }
+        follow.CameraDistance = baseDistance;
+        Vector3 shoulder = follow.ShoulderOffset;
+        shoulder.x = baseHorizontalOffset;
+        follow.ShoulderOffset = shoulder;
+        aimCamera.Lens.FieldOfView = baseFieldOfView;
     }
 }

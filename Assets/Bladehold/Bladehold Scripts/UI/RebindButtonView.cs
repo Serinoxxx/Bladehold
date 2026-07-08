@@ -5,26 +5,40 @@ using UnityEngine.UI;
 using RebindingOperation = UnityEngine.InputSystem.InputActionRebindingExtensions.RebindingOperation;
 
 /// <summary>
-///     One remappable binding row: shows the action/binding's display name and current path, and on
-///     click starts an interactive rebind via <see cref="InputRebindHelper" />. Instantiated by
-///     <see cref="SettingsPanelView" />, which builds one of these per binding on the vendored Controls
-///     asset's Player action map (composite parts included) so remapping covers every gameplay control
-///     generically rather than hand-picking specific actions.
+///     One remappable action row with two binding columns — Keyboard/Mouse and Gamepad — each showing
+///     its binding's current path and starting an interactive rebind via
+///     <see cref="InputRebindHelper" /> on click. Instantiated by <see cref="SettingsPanelView" />,
+///     which pairs each action's keyboard/mouse and gamepad bindings into one row (composite parts
+///     included) so remapping covers every gameplay control generically rather than hand-picking
+///     specific actions. Either column may be absent (index -1) — e.g. the gamepad moves with one
+///     stick binding while the keyboard has per-direction composite parts — in which case that
+///     column's button is disabled and shows a dash.
 /// </summary>
 public class RebindButtonView : MonoBehaviour
 {
+    private const string EmptyBindingText = "—";
+
     [SerializeField] private TMP_Text label;
-    [SerializeField] private TMP_Text bindingPathLabel;
-    [SerializeField] private Button button;
+
+    [Header("Keyboard / Mouse column")]
+    [SerializeField] private TMP_Text kbmBindingPathLabel;
+    [SerializeField] private Button kbmButton;
+
+    [Header("Gamepad column")]
+    [SerializeField] private TMP_Text gamepadBindingPathLabel;
+    [SerializeField] private Button gamepadButton;
 
     private InputAction action;
-    private int bindingIndex;
+    private int kbmBindingIndex = -1;
+    private int gamepadBindingIndex = -1;
     private RebindingOperation activeRebind;
 
-    public void Bind(InputAction boundAction, int index, string displayLabel)
+    /// <summary>Binds this row to an action; pass -1 for a column the action has no binding in.</summary>
+    public void Bind(InputAction boundAction, int kbmIndex, int gamepadIndex, string displayLabel)
     {
         action = boundAction;
-        bindingIndex = index;
+        kbmBindingIndex = kbmIndex;
+        gamepadBindingIndex = gamepadIndex;
 
         if (label != null)
         {
@@ -32,40 +46,64 @@ public class RebindButtonView : MonoBehaviour
         }
         RefreshPathLabel();
 
-        if (button != null)
+        if (kbmButton != null)
         {
-            button.onClick.RemoveListener(HandleClick);
-            button.onClick.AddListener(HandleClick);
+            kbmButton.onClick.RemoveListener(HandleKbmClick);
+            kbmButton.onClick.AddListener(HandleKbmClick);
+            kbmButton.interactable = kbmBindingIndex >= 0;
+        }
+        if (gamepadButton != null)
+        {
+            gamepadButton.onClick.RemoveListener(HandleGamepadClick);
+            gamepadButton.onClick.AddListener(HandleGamepadClick);
+            gamepadButton.interactable = gamepadBindingIndex >= 0;
         }
     }
 
     private void OnDestroy()
     {
-        if (button != null)
+        if (kbmButton != null)
         {
-            button.onClick.RemoveListener(HandleClick);
+            kbmButton.onClick.RemoveListener(HandleKbmClick);
+        }
+        if (gamepadButton != null)
+        {
+            gamepadButton.onClick.RemoveListener(HandleGamepadClick);
         }
         activeRebind?.Dispose();
     }
 
-    private void RefreshPathLabel()
+    /// <summary>Re-reads both bindings' current display strings — e.g. after Reset Settings clears overrides.</summary>
+    public void RefreshPathLabel()
     {
-        if (bindingPathLabel != null && action != null)
-        {
-            bindingPathLabel.text = action.GetBindingDisplayString(bindingIndex);
-        }
+        RefreshColumn(kbmBindingPathLabel, kbmBindingIndex);
+        RefreshColumn(gamepadBindingPathLabel, gamepadBindingIndex);
     }
 
-    private void HandleClick()
+    private void RefreshColumn(TMP_Text pathLabel, int bindingIndex)
     {
-        if (action == null || activeRebind != null)
+        if (pathLabel == null)
+        {
+            return;
+        }
+        pathLabel.text = action != null && bindingIndex >= 0
+            ? action.GetBindingDisplayString(bindingIndex)
+            : EmptyBindingText;
+    }
+
+    private void HandleKbmClick() => StartRebind(kbmBindingIndex, kbmBindingPathLabel);
+    private void HandleGamepadClick() => StartRebind(gamepadBindingIndex, gamepadBindingPathLabel);
+
+    private void StartRebind(int bindingIndex, TMP_Text pathLabel)
+    {
+        if (action == null || bindingIndex < 0 || activeRebind != null)
         {
             return;
         }
 
-        if (bindingPathLabel != null)
+        if (pathLabel != null)
         {
-            bindingPathLabel.text = "Press any key...";
+            pathLabel.text = "Press any key...";
         }
         PauseMenuController.Instance?.SetToggleEnabled(false);
 

@@ -47,6 +47,22 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 531501347744972787, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: managedReferences[7037627173625921841].MaxPitch
+      value: 1.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 531501347744972787, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: managedReferences[7037627173625921841].MinPitch
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 531501347744972787, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: managedReferences[7037627173625921841].RandomSfx.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 531501347744972787, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: 'managedReferences[7037627173625921841].RandomSfx.Array.data[0]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 2c5d6eb960ec1b64bab451625462407e, type: 3}
     - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: m_LocalPosition.x
       value: 2.0292327
@@ -91,6 +107,14 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 1248dc354e3bb1846bccb717a7ac9281, type: 2}
+    - target: {fileID: 7080334578233263117, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_StoppingDistance
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 8780529840763675578, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 6790884973619429240, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
     - {fileID: 6572349470805921892, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
@@ -120,6 +144,17 @@ Animator:
   m_CorrespondingSourceObject: {fileID: 1991649265611916359, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
   m_PrefabInstance: {fileID: 6043395197127789999}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &6106377799707161180 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 531501347744972787, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+  m_PrefabInstance: {fileID: 6043395197127789999}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6da43522623d4704e979466dc7650b65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MoreMountains.Tools::MoreMountains.Feedbacks.MMF_Player
 --- !u!1 &6126306671088186872 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 494112403358464087, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
@@ -142,7 +177,7 @@ MonoBehaviour:
   attackData: {fileID: 11400000, guid: ff3af30b2262c1b4788024ddf1dc3454, type: 2}
   firePoint: {fileID: 1408057382394028227}
   ballPrefab: {fileID: 362802824379598382, guid: c025b2ff5f1e92d45b34573f1f0dbf0c, type: 3}
-  startAttackFeedback: {fileID: 0}
+  startAttackFeedback: {fileID: 6106377799707161180}
   attackTrigger: Attack
 --- !u!114 &1582666693887650219
 MonoBehaviour:

@@ -39,12 +39,40 @@ using UnityEngine;
 ///     Further arrow skill lines (all stat-gated the same way): Exploding Heads detonates an impulse
 ///     blast on VulnerableSpot hits, Brain Freeze chills the headshot target (via <see cref="SlowStatus" />),
 ///     Arrows of Midas rolls a chance to convert the hit enemy golden
-///     (<see cref="GoldenGoblin.TryConvertToGolden" />), and Unstable Orbs lets the main arrow detonate
+///     (<see cref="GoldenGoblin.TryConvertToGolden" />), Unstable Orbs lets the main arrow detonate
 ///     Impulse/Lightning Orbs along its path (an impulse blast, or a buff-independent
-///     <see cref="ChainLightning.ForceChain" />, around the orb). Freezing Draw lives in its own
+///     <see cref="ChainLightning.ForceChain" />, around the orb), and Flaming Arrows adds a bonus
+///     elemental fire hit to every arrow plus a chance to remote-detonate Bombers
+///     (<see cref="BomberAttack.Detonate" />). Freezing Draw lives in its own
 ///     <see cref="FreezingDraw" /> component (the <see cref="SwordChargeFeedback" /> polling pattern),
 ///     but its stat bases are registered here with the rest of the bow's.
 /// </summary>
+/// <summary>
+///     Everything a listener needs to react to one arrow striking a damageable target — richer than
+///     the <see cref="DamageTrigger.OnHit" /> triple because arrow reactions need the flight
+///     direction (to orient a stuck arrow / blood spray), the exact collider struck (to parent a
+///     stuck arrow to the right bone), and whether a <see cref="VulnerableSpot" /> was hit (crit is
+///     already on <see cref="Damage.isCritical" />). Raised once per arrow that damaged something;
+///     bounces and the Flaming Arrows bonus hit don't re-raise it (no physical arrow lands there).
+/// </summary>
+public struct ArrowImpact
+{
+    public IDamageable target;
+    public Damage damage;
+    /// <summary>World point where the arrow struck.</summary>
+    public Vector3 point;
+    /// <summary>Normalized flight direction of the arrow.</summary>
+    public Vector3 direction;
+    /// <summary>The collider the hitscan stopped at — parent stuck-arrow props here so they ride animation/ragdoll.</summary>
+    public Collider hitCollider;
+    /// <summary>True when the arrow struck one of the target's <see cref="VulnerableSpot" /> colliders.</summary>
+    public bool hitVulnerableSpot;
+    /// <summary>The specific VulnerableSpot struck, when <see cref="hitVulnerableSpot" /> is true — lets a stuck-arrow prop anchor to that exact spot rather than the general hit collider.</summary>
+    public VulnerableSpot vulnerableSpot;
+    /// <summary>Charge level of the draw that fired this arrow.</summary>
+    public int chargeLevel;
+}
+
 public class PlayerBow : MonoBehaviour
 {
     [Tooltip("Synty InputReader that raises the aim and attack press/release events. Usually on the player root.")]
@@ -86,6 +114,14 @@ public class PlayerBow : MonoBehaviour
 
     /// <summary>Fired once per arrow (or bounce) that actually damaged a target, with the world hit point — the <see cref="DamageTrigger.OnHit" /> shape, so feedback listeners can treat bow and sword alike.</summary>
     public event Action<IDamageable, Damage, Vector3> OnHit;
+
+    /// <summary>
+    ///     Fired once per physical arrow that damaged a target, with the full <see cref="ArrowImpact" />
+    ///     detail — consumed by <see cref="StuckArrowSpawner" /> (embedded arrow props) and
+    ///     <see cref="BowHitFeedback" /> (impact sound + blood). Listeners that don't care about the
+    ///     extra detail should keep using <see cref="OnHit" />.
+    /// </summary>
+    public event Action<ArrowImpact> OnArrowImpact;
 
     /// <summary>Fired once per shot (hit or miss), the moment the arrows leave the bow — cosmetic listeners like <see cref="BowPropAnimator" /> sync their release to this.</summary>
     public event Action OnFired;
@@ -239,6 +275,8 @@ public class PlayerBow : MonoBehaviour
         stats.SetBase(StatType.ExplodingHeadsDamagePercent, 0f);
         stats.SetBase(StatType.MidasChance, 0f);
         stats.SetBase(StatType.BowUnstableOrbs, 0f);
+        stats.SetBase(StatType.FlamingArrowsDamagePercent, 0f);
+        stats.SetBase(StatType.FlamingArrowsBomberDetonateChance, 0f);
 
         // Missing buff/chain components are not errors — those skill lines are optional features
         // (the DamageTrigger ImpulseBuff fallback idiom).
@@ -443,7 +481,7 @@ public class PlayerBow : MonoBehaviour
 
         Ray ray = aimCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
         Vector3 aimPoint = ray.origin + ray.direction * config.maxRange;
-        if (TryHitscan(ray.origin, ray.direction, out RaycastHit hit, out _, out _))
+        if (TryHitscan(ray.origin, ray.direction, out RaycastHit hit, out _, out _, out _))
         {
             aimPoint = hit.point;
         }
@@ -459,7 +497,7 @@ public class PlayerBow : MonoBehaviour
     {
         Vector3 endPoint = origin + direction * config.maxRange;
 
-        if (TryHitscan(origin, direction, out RaycastHit hit, out IDamageable target, out bool hitVulnerableSpot))
+        if (TryHitscan(origin, direction, out RaycastHit hit, out IDamageable target, out bool hitVulnerableSpot, out VulnerableSpot vulnerableSpot))
         {
             endPoint = hit.point;
         }
@@ -484,9 +522,45 @@ public class PlayerBow : MonoBehaviour
             return;
         }
 
+        // Flaming Arrows: a winning roll detonates a Bomber on the spot — rolled before the
+        // arrow's own damage lands, so a lethal arrow can't rob the skill of its explosion (a
+        // detonated bomber is dead by the time the arrow damage would apply, which Health ignores).
+        if (UnityEngine.Random.value < stats.GetValue(StatType.FlamingArrowsBomberDetonateChance)
+            && target is Component bomberComponent)
+        {
+            bomberComponent.GetComponentInParent<BomberAttack>()?.Detonate();
+        }
+
         Damage damage = BuildArrowDamage(origin, damageScale, hitVulnerableSpot);
         target.ReceiveDamage(damage);
         OnHit?.Invoke(target, damage, endPoint);
+        OnArrowImpact?.Invoke(new ArrowImpact
+        {
+            target = target,
+            damage = damage,
+            point = endPoint,
+            direction = direction,
+            hitCollider = hit.collider,
+            hitVulnerableSpot = hitVulnerableSpot,
+            vulnerableSpot = vulnerableSpot,
+            chargeLevel = ChargeLevel,
+        });
+
+        // Flaming Arrows: bonus fire damage as its own elemental hit on the same target (the
+        // chain-lightning shape — a separate derived instance, so it pops its own damage number
+        // and can never be parried as melee). Direct arrow hits only; bounces don't reroll it.
+        float fireDamagePercent = stats.GetValue(StatType.FlamingArrowsDamagePercent);
+        if (fireDamagePercent > 0f)
+        {
+            Damage fireDamage = new Damage
+            {
+                value = damage.value * fireDamagePercent,
+                type = DamageType.elemental,
+                sourcePosition = origin,
+            };
+            target.ReceiveDamage(fireDamage);
+            OnHit?.Invoke(target, fireDamage, endPoint);
+        }
 
         if (hitVulnerableSpot)
         {
@@ -539,12 +613,14 @@ public class PlayerBow : MonoBehaviour
     ///     <paramref name="hitVulnerableSpot" /> is true when the arrow struck one of the target's
     ///     <see cref="VulnerableSpot" /> colliders — checked across every hit the ray scored on that
     ///     target, since its body capsule can sit in front of a head sphere along the same ray.
+    ///     <paramref name="vulnerableSpot" /> is the specific spot found, or null.
     /// </summary>
-    private bool TryHitscan(Vector3 origin, Vector3 direction, out RaycastHit blockingHit, out IDamageable target, out bool hitVulnerableSpot)
+    private bool TryHitscan(Vector3 origin, Vector3 direction, out RaycastHit blockingHit, out IDamageable target, out bool hitVulnerableSpot, out VulnerableSpot vulnerableSpot)
     {
         blockingHit = default;
         target = null;
         hitVulnerableSpot = false;
+        vulnerableSpot = null;
 
         int count = Physics.RaycastNonAlloc(origin, direction, rayBuffer, config.maxRange, hitLayers, QueryTriggerInteraction.Collide);
         Array.Sort(rayBuffer, 0, count, HitDistanceComparer.Instance);
@@ -565,10 +641,15 @@ public class PlayerBow : MonoBehaviour
                 target = damageable;
                 for (int j = i; j < count; j++)
                 {
-                    if (ResolveDamageable(rayBuffer[j].collider) == target
-                        && rayBuffer[j].collider.GetComponentInParent<VulnerableSpot>() != null)
+                    if (ResolveDamageable(rayBuffer[j].collider) != target)
+                    {
+                        continue;
+                    }
+                    VulnerableSpot spot = rayBuffer[j].collider.GetComponentInParent<VulnerableSpot>();
+                    if (spot != null)
                     {
                         hitVulnerableSpot = true;
+                        vulnerableSpot = spot;
                         break;
                     }
                 }
@@ -722,6 +803,12 @@ public class PlayerBow : MonoBehaviour
             if (lightningOrb != null)
             {
                 lightningOrb.TryCollect(collector);
+                continue;
+            }
+            HealthPack healthPack = collider.GetComponentInParent<HealthPack>();
+            if (healthPack != null)
+            {
+                healthPack.TryCollect(collector);
             }
         }
     }

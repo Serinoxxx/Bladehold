@@ -27,6 +27,10 @@ public enum StatType
     BlockCooldown,
     /// <summary>Extra knockback per charge level held (e.g. 0.25 = +25% per level). Does nothing until MaxChargeLevels is at least 1.</summary>
     ChargeKnockbackBonus,
+    /// <summary>Chance (0-1) to auto-block an incoming melee hit while facing the attacker (the "Parry" skill line). 0 = locked.</summary>
+    ParryChance,
+    /// <summary>Fraction of effective sword damage dealt back to the attacker on a successful parry (the "Counterstrike" skill line). 0 = no counterattack.</summary>
+    CounterstrikePercent,
 
     /// <summary>0 = Death Nova locked, 1 = unlocked (a future node could grant a 2nd charge).</summary>
     DeathNovaCharges,
@@ -107,6 +111,14 @@ public enum StatType
     ConduitChainChance,
     /// <summary>1 = the main arrow detonates Impulse/Lightning Orbs it hits (an impulse blast or chain lightning around the orb; the "Unstable Orbs" node). 0 = locked.</summary>
     BowUnstableOrbs,
+
+    /// <summary>Extra fraction of an arrow's damage dealt as a separate elemental fire hit on the same target (the "Flaming Arrows" line). 0 = locked.</summary>
+    FlamingArrowsDamagePercent,
+    /// <summary>Chance (0-1) each arrow hit on a Bomber instantly detonates its explosion (the "Flaming Arrows" line — see <see cref="BomberAttack.Detonate" />). 0 = locked.</summary>
+    FlamingArrowsBomberDetonateChance,
+
+    /// <summary>Fraction (0-1) of max health a Health Pack pickup restores. Base 0.10 (packs work out of the box); the "Field Medic" line raises it.</summary>
+    HealthPackHealPercent,
 }
 
 /// <summary>

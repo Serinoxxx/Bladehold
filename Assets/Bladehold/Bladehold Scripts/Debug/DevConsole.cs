@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -13,8 +14,11 @@ public class DevConsole : MonoBehaviour
     private const float PanelWidth = 220f;
     private const float Padding = 10f;
     private const float ButtonHeight = 32f;
+    private const string NextWaveFieldName = "DevConsoleNextWave";
 
     private bool visible;
+    private string nextWaveText = "";
+    private int spawnTypeIndex;
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -61,13 +65,8 @@ public class DevConsole : MonoBehaviour
             }
         }
 
-        if (GUILayout.Button("Advance Wave", GUILayout.Height(ButtonHeight)))
-        {
-            if (WaveSpawner.Instance != null)
-            {
-                WaveSpawner.Instance.DebugAdvanceWave();
-            }
-        }
+        DrawWaveControls();
+        DrawEnemySpawnControls();
 
         // Perf stress tests: burst-spawn into the current wave, ignoring the concurrent cap.
         GUILayout.Label("Spawn Goblins (stress test)");
@@ -85,6 +84,106 @@ public class DevConsole : MonoBehaviour
             RunState.StartingWave = 1;
             Time.timeScale = 1f; // ensure normal speed resumes even if something paused time on death.
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+    }
+
+    /// <summary>
+    ///     Wave cheats: the current wave, a "Wipe Wave" kill-everything button, and a next-wave picker
+    ///     (integer field + ▲/▼). Edits apply immediately — mid-wave they take effect when the wave
+    ///     clears; during the intermission they retarget the wave about to start.
+    /// </summary>
+    private void DrawWaveControls()
+    {
+        WaveSpawner spawner = WaveSpawner.Instance;
+        if (spawner == null)
+        {
+            return;
+        }
+
+        GUILayout.Label($"Wave {spawner.CurrentWave}");
+        if (GUILayout.Button("Wipe Wave", GUILayout.Height(ButtonHeight)))
+        {
+            spawner.DebugWipeWave();
+        }
+
+        if (GUILayout.Button(spawner.IsSpawningPaused ? "Resume Wave Spawner" : "Pause Wave Spawner", GUILayout.Height(ButtonHeight)))
+        {
+            spawner.DebugSetSpawningPaused(!spawner.IsSpawningPaused);
+        }
+
+        GUILayout.Label("Next Wave");
+        GUILayout.BeginHorizontal();
+
+        // While the field isn't being edited, mirror the spawner's actual next wave so it stays live;
+        // while focused, leave the user's in-progress text alone (it re-syncs on blur, so a garbage
+        // entry just snaps back).
+        if (GUI.GetNameOfFocusedControl() != NextWaveFieldName)
+        {
+            nextWaveText = spawner.NextWave.ToString();
+        }
+        GUI.SetNextControlName(NextWaveFieldName);
+        string edited = GUILayout.TextField(nextWaveText, GUILayout.Height(ButtonHeight));
+        if (edited != nextWaveText)
+        {
+            nextWaveText = edited;
+            if (int.TryParse(edited, out int typed))
+            {
+                spawner.DebugSetNextWave(typed);
+            }
+        }
+
+        if (GUILayout.Button("▲", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
+        {
+            spawner.DebugSetNextWave(spawner.NextWave + 1);
+            GUI.FocusControl(null); // unfocus the field so it re-syncs to the new value
+        }
+        if (GUILayout.Button("▼", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
+        {
+            spawner.DebugSetNextWave(spawner.NextWave - 1);
+            GUI.FocusControl(null);
+        }
+
+        GUILayout.EndHorizontal();
+    }
+
+    /// <summary>
+    ///     Spawn-a-specific-type cheat: a ◄/► picker over <see cref="WaveSpawner.DebugSpawnableTypes" />
+    ///     (all roster ids with a prefab mapping) plus a "Spawn" button that instantly places one at a
+    ///     random spawn point via <see cref="WaveSpawner.DebugSpawnEnemyType" />.
+    /// </summary>
+    private void DrawEnemySpawnControls()
+    {
+        WaveSpawner spawner = WaveSpawner.Instance;
+        if (spawner == null)
+        {
+            return;
+        }
+
+        IReadOnlyList<EnemyDefinition> types = spawner.DebugSpawnableTypes;
+        if (types.Count == 0)
+        {
+            return;
+        }
+        spawnTypeIndex = Mathf.Clamp(spawnTypeIndex, 0, types.Count - 1);
+
+        GUILayout.Label("Spawn Enemy Type");
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("<", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
+        {
+            spawnTypeIndex = (spawnTypeIndex - 1 + types.Count) % types.Count;
+        }
+        EnemyDefinition selected = types[spawnTypeIndex];
+        string label = string.IsNullOrEmpty(selected.displayName) ? selected.id : selected.displayName;
+        GUILayout.Label(label, GUILayout.ExpandWidth(true));
+        if (GUILayout.Button(">", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
+        {
+            spawnTypeIndex = (spawnTypeIndex + 1) % types.Count;
+        }
+        GUILayout.EndHorizontal();
+
+        if (GUILayout.Button($"Spawn {label}", GUILayout.Height(ButtonHeight)))
+        {
+            spawner.DebugSpawnEnemyType(selected.id);
         }
     }
 

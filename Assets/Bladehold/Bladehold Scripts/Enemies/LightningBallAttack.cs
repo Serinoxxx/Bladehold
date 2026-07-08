@@ -181,7 +181,8 @@ public class LightningBallAttack : MonoBehaviour
             yield break;
         }
 
-        Vector3 direction = player.position - firePoint.position;
+        var offsetPlayerPosition = player.position + 1.5f * Vector3.up; // Aim for the player's chest/torso instead of their feet.
+        Vector3 direction = offsetPlayerPosition - firePoint.position;
         if (direction.sqrMagnitude < 0.0001f)
         {
             direction = transform.forward;

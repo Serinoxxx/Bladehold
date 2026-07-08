@@ -26,8 +26,9 @@ MonoBehaviour:
   brainFreezeSeconds: 3
   aimCameraDistance: 1
   aimCameraHorizontalOffset: 0.7
-  aimFieldOfView: 60
+  aimFieldOfViewPercent: 1
   aimBlendSeconds: 0.2
+  aimLookMaxPitchDegrees: 60
   impulseBlastRadius: 4
   impulseBlastPower: 2
   impulseBlastForce: 10

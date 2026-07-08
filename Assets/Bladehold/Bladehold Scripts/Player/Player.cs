@@ -27,11 +27,17 @@ public class Player : MonoBehaviour
     public PlayerStats Stats { get; private set; }
 
     /// <summary>
-    ///     Reaches the vendored camera controller/input reader for sensitivity, invert, and button-remap
+    ///     Reaches the camera pivot/vendored input reader for sensitivity, invert, and button-remap
     ///     settings, so <see cref="GameSettingsService" /> and the settings UI can apply them through the
     ///     singleton. Null if the player has no <see cref="InputSettingsBinder" />.
     /// </summary>
     public InputSettingsBinder InputSettings { get; private set; }
+
+    /// <summary>
+    ///     The gameplay camera controller, so <see cref="GameSettingsService" /> can apply the field-of-view
+    ///     setting through the singleton. Null if the player has no <see cref="BowAimCamera" />.
+    /// </summary>
+    public BowAimCamera AimCamera { get; private set; }
 
     private void Awake()
     {
@@ -43,6 +49,7 @@ public class Player : MonoBehaviour
             Wallet = GetComponent<Wallet>();
             Stats = GetComponent<PlayerStats>();
             InputSettings = GetComponent<InputSettingsBinder>();
+            AimCamera = GetComponent<BowAimCamera>();
         }
         else
         {
@@ -58,6 +65,11 @@ public class Player : MonoBehaviour
         if (Stats != null)
         {
             Stats.SetBase(StatType.AllDamageMultiplier, 1f);
+
+            // Health Packs are transient pickups with no persistent owner component, so the Player
+            // registers their heal fraction here (base 10% of max health; the "Field Medic" skill
+            // family layers flat modifiers on top).
+            Stats.SetBase(StatType.HealthPackHealPercent, 0.10f);
         }
     }
 }

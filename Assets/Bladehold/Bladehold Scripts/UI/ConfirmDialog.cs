@@ -68,7 +68,7 @@ public class ConfirmDialog : MonoBehaviour
         if (cancelButton != null) cancelButton.onClick.RemoveListener(HandleCancel);
     }
 
-    public void Show(string message, Action onConfirmed, Action onCancelled = null)
+    public void Show(string message, Action onConfirmed, Action onCancelled = null, string confirmLabel = "Confirm")
     {
         if (anyError)
         {
@@ -81,6 +81,14 @@ public class ConfirmDialog : MonoBehaviour
         if (messageText != null)
         {
             messageText.text = message;
+        }
+
+        // The dialog is shared between actions (Delete Save, Reset Settings), so the confirm label is
+        // per-Show rather than authored on the button.
+        TMP_Text confirmButtonLabel = confirmButton.GetComponentInChildren<TMP_Text>();
+        if (confirmButtonLabel != null)
+        {
+            confirmButtonLabel.text = confirmLabel;
         }
 
         StopAllCoroutines();

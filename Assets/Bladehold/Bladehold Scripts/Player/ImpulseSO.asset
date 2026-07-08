@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ImpulseSO
   baseOrbDurationSeconds: 1
   basePower: 1
-  baseImpulseForce: 20
+  baseImpulseForce: 5
   forcePerPower: 0.15
   powerPerChargeLevel: 0.25
   forcePerExtraStackPercent: 0.15

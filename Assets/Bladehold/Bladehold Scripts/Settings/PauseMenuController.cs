@@ -9,12 +9,12 @@ using UnityEngine.InputSystem;
 ///     unlocks the cursor, and disables an inspector-assigned list of player control components — the
 ///     same "disable a list of components" pattern <see cref="PlayerDeath" /> already uses for death.
 ///
-///     Disabling the Synty <c>InputReader</c> specifically is load-bearing, not cosmetic: the vendored
-///     camera controller accumulates its look angles every <c>Update</c> uncapped by
-///     <see cref="Time.deltaTime" />, and only the Lerp toward that accumulated value is
-///     timescale-scaled — so at <c>timeScale = 0</c> the camera looks frozen, but if the reader kept
-///     receiving mouse input the accumulator would drift and snap violently on resume. Disabling it
-///     stops that drift at the source.
+///     Disabling the camera components specifically is load-bearing, not cosmetic:
+///     <see cref="PlayerCameraPivot" /> accumulates its look angles from per-frame mouse delta
+///     uncapped by <see cref="Time.deltaTime" />, so left enabled at <c>timeScale = 0</c> the pivot
+///     would keep turning under the frozen game; and the <c>CinemachineBrain</c> keeps writing the
+///     camera's transform every frame regardless of timescale, which would fight Photo Mode's
+///     detached free-fly rig — disabling both freezes the camera exactly where it was.
 ///
 ///     Photo Mode (<see cref="ScreenshotModeController" />) is reached from inside this pause menu and
 ///     reuses this paused state rather than a second competing one — pressing Esc while it's active
@@ -24,7 +24,7 @@ public class PauseMenuController : MonoBehaviour
 {
     public static PauseMenuController Instance;
 
-    [Tooltip("Components disabled while paused to freeze the character and camera look (e.g. InputReader, SampleCameraController).")]
+    [Tooltip("Components disabled while paused to freeze the character and camera look (e.g. InputReader, PlayerCameraPivot, CinemachineBrain).")]
     [SerializeField] private MonoBehaviour[] componentsToDisable;
     [SerializeField] private ScreenshotModeController screenshotMode;
 

@@ -198,7 +198,9 @@ public class AIAttack : MonoBehaviour
         target.ReceiveDamage(new Damage
         {
             value = damageOverride ?? attackData.damage,
-            type = attackData.damageType
+            type = attackData.damageType,
+            sourcePosition = transform.position,
+            source = health
         });
 
         if (attackHitFeedback != null)

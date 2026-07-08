@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f845c510b38d534ca1dc5634250aa5c, type: 3}
   m_Name: TrollSlamAttackSO
   m_EditorClassIdentifier: Assembly-CSharp::TrollSlamAttackSO
-  triggerRange: 5
-  slamRadius: 5
+  triggerRange: 3
+  slamRadius: 2
   forwardOffset: 2.5
   telegraphSeconds: 1.5
   attackCooldown: 6

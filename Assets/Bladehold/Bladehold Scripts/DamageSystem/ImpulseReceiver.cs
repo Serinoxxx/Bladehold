@@ -369,7 +369,7 @@ public class ImpulseReceiver : MonoBehaviour
 
         if (!found)
         {
-            // Stranded off the NavMesh: kill through the normal damage flow (the DebugAdvanceWave
+            // Stranded off the NavMesh: kill through the normal damage flow (the DebugWipeWave
             // precedent) so coins, kill stats, and wave accounting all stay consistent.
             State = ImpulseState.Corpse;
             health.ReceiveDamage(new Damage { value = 999999f, type = DamageType.blunt });
