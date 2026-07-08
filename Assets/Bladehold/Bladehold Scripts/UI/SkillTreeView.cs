@@ -1,6 +1,8 @@
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
@@ -8,12 +10,15 @@ using UnityEngine.UI;
 ///     its authored (x, y) coordinates inside <see cref="content" /> (place that under a ScrollRect to pan a
 ///     large tree), draws connector images from each node to its prerequisites, and refreshes everything
 ///     whenever the tree changes or the player's gold changes. Clicking an available node buys it; hovering
-///     a node drives the optional cursor-following <see cref="SkillTooltip" />.
+///     a node drives the optional cursor-following <see cref="SkillTooltip" />. Scroll-wheel zooms
+///     <see cref="content" /> in/out around the cursor (<see cref="OnScroll" />); the pan/zoom is remembered
+///     per tree across reopenings (<see cref="RestoreView" />/<see cref="SaveView" />), and a fresh purchase
+///     pans to center the newly bought node (<see cref="CenterOnNode" />).
 ///
 ///     This is the "upgrade screen" content: drop it on the death-screen canvas so it appears with the
 ///     death screen on player death.
 /// </summary>
-public class SkillTreeView : MonoBehaviour
+public class SkillTreeView : MonoBehaviour, IScrollHandler
 {
     [Tooltip("Optional; defaults to SkillTreeService.Instance. Assign explicitly to render a different tree (e.g. ReincarnateService).")]
     [SerializeField] private MonoBehaviour serviceBehaviour;
@@ -33,6 +38,18 @@ public class SkillTreeView : MonoBehaviour
     [Tooltip("Empty space (px) between the outermost nodes and the content edge, so edge nodes aren't flush against the viewport when scrolled to the extremes.")]
     [SerializeField] private float contentPadding = 200f;
 
+    [Header("Zoom")]
+    [Tooltip("content.localScale at maximum zoom-out.")]
+    [SerializeField] private float minZoom = 0.5f;
+    [Tooltip("content.localScale at maximum zoom-in.")]
+    [SerializeField] private float maxZoom = 2f;
+    [Tooltip("Zoom change per unit of mouse-wheel scroll delta.")]
+    [SerializeField] private float zoomStep = 0.05f;
+    [Tooltip("How quickly the zoom eases toward its scrolled-to target; higher = snappier, lower = more sluggish.")]
+    [SerializeField] private float zoomSmoothSpeed = 10f;
+    [Tooltip("Seconds to pan-center the view on a node just purchased.")]
+    [SerializeField] private float centerOnUnlockDuration = 0.35f;
+
     [Header("Optional gold readout")]
     [SerializeField] private TMP_Text goldText;
 
@@ -46,6 +63,14 @@ public class SkillTreeView : MonoBehaviour
     private bool built = false;
     private bool anyError = false;
     private Vector2 treeOffset;
+
+    private ScrollRect scrollRect;
+    private Canvas canvas;
+    private Coroutine panRoutine;
+    private float zoom = 1f;
+    private float targetZoom = 1f;
+    private Vector2 zoomPivotLocalPoint;
+    private string prefsKeyPrefix;
 
     private void Start()
     {
@@ -80,8 +105,19 @@ public class SkillTreeView : MonoBehaviour
             return;
         }
 
+        // Keyed by the concrete service type so the gold tree and the Reincarnate tree (two separate
+        // SkillTreeView instances sharing this class) remember independent pan/zoom state.
+        prefsKeyPrefix = $"SkillTreeView.{service.GetType().Name}.";
+
+        scrollRect = content.GetComponentInParent<ScrollRect>();
+        if (scrollRect != null)
+        {
+            // The wheel now zooms (see OnScroll) instead of panning; dragging and the scrollbars still work.
+            scrollRect.scrollSensitivity = 0f;
+        }
+
         Build();
-        ScrollToTopLeft();
+        RestoreView();
 
         service.OnTreeChanged += RefreshAll;
         if (wallet != null)
@@ -109,6 +145,14 @@ public class SkillTreeView : MonoBehaviour
                 view.HoverEntered -= HandleHoverEntered;
                 view.HoverExited -= HandleHoverExited;
             }
+        }
+
+        // Persist whatever pan/zoom the player left the tree at, so reopening (another death, another
+        // session) restores it. Guarded on 'built' so an errored-out view never writes bogus zeros.
+        if (built)
+        {
+            SaveView();
+            PlayerPrefs.Save();
         }
     }
 
@@ -169,16 +213,187 @@ public class SkillTreeView : MonoBehaviour
     /// <summary>
     ///     Forces the enclosing ScrollRect (if any) to open showing content's top-left corner (where the
     ///     root nodes sit), rather than wherever a Scrollbar's leftover serialized value would otherwise
-    ///     snap it to on enable.
+    ///     snap it to on enable. The default view for a tree with no remembered position (see
+    ///     <see cref="RestoreView" />).
     /// </summary>
     private void ScrollToTopLeft()
     {
-        ScrollRect scrollRect = content.GetComponentInParent<ScrollRect>();
         if (scrollRect != null)
         {
             scrollRect.horizontalNormalizedPosition = 0f;
             scrollRect.verticalNormalizedPosition = 1f;
         }
+    }
+
+    /// <summary>
+    ///     Applies the last pan/zoom this tree was left at (see <see cref="SaveView" />), or falls back to
+    ///     <see cref="ScrollToTopLeft" /> the first time this tree is ever opened.
+    /// </summary>
+    private void RestoreView()
+    {
+        if (!PlayerPrefs.HasKey(prefsKeyPrefix + "zoom"))
+        {
+            ScrollToTopLeft();
+            targetZoom = zoom;
+            return;
+        }
+
+        zoom = Mathf.Clamp(PlayerPrefs.GetFloat(prefsKeyPrefix + "zoom", 1f), minZoom, maxZoom);
+        targetZoom = zoom;
+        content.localScale = new Vector3(zoom, zoom, 1f);
+        content.anchoredPosition = new Vector2(
+            PlayerPrefs.GetFloat(prefsKeyPrefix + "x", 0f),
+            PlayerPrefs.GetFloat(prefsKeyPrefix + "y", 0f));
+        ClampContentPosition();
+    }
+
+    private void SaveView()
+    {
+        PlayerPrefs.SetFloat(prefsKeyPrefix + "zoom", zoom);
+        PlayerPrefs.SetFloat(prefsKeyPrefix + "x", content.anchoredPosition.x);
+        PlayerPrefs.SetFloat(prefsKeyPrefix + "y", content.anchoredPosition.y);
+    }
+
+    /// <summary>
+    ///     Keeps <see cref="content" /> from scrolling past its own edges once scaled, using content's
+    ///     top-left anchor/pivot (see <see cref="FitContentToTree" />): anchoredPosition.x in
+    ///     [-(scaledWidth - viewportWidth), 0], anchoredPosition.y in [0, scaledHeight - viewportHeight].
+    ///     A tree smaller than the viewport (fully zoomed out) pins to the top-left corner.
+    /// </summary>
+    private void ClampContentPosition()
+    {
+        RectTransform viewport = scrollRect != null && scrollRect.viewport != null ? scrollRect.viewport : content.parent as RectTransform;
+        if (viewport == null)
+        {
+            return;
+        }
+
+        Vector2 scaledSize = content.rect.size * zoom;
+        Vector2 viewportSize = viewport.rect.size;
+        float maxX = Mathf.Max(0f, scaledSize.x - viewportSize.x);
+        float maxY = Mathf.Max(0f, scaledSize.y - viewportSize.y);
+
+        Vector2 pos = content.anchoredPosition;
+        pos.x = Mathf.Clamp(pos.x, -maxX, 0f);
+        pos.y = Mathf.Clamp(pos.y, 0f, maxY);
+        content.anchoredPosition = pos;
+    }
+
+    /// <summary>
+    ///     Mouse-wheel zoom. Only nudges <see cref="targetZoom" /> and records the cursor's content point
+    ///     as the zoom pivot; <see cref="Update" /> eases <see cref="zoom" /> toward it every frame. Deriving
+    ///     the required anchoredPosition shift only needs the point in content's own (scale-independent)
+    ///     local space — <see cref="RectTransformUtility.ScreenPointToLocalPointInRectangle" /> already
+    ///     divides out content's current scale — so this works regardless of the parent ScrollRect/viewport's
+    ///     own anchor setup.
+    /// </summary>
+    public void OnScroll(PointerEventData eventData)
+    {
+        if (!built || anyError)
+        {
+            return;
+        }
+
+        float scrollY = eventData.scrollDelta.y;
+        if (Mathf.Approximately(scrollY, 0f))
+        {
+            return;
+        }
+
+        float newTargetZoom = Mathf.Clamp(targetZoom + scrollY * zoomStep, minZoom, maxZoom);
+        if (Mathf.Approximately(newTargetZoom, targetZoom))
+        {
+            return;
+        }
+
+        // Re-pinned on every scroll tick so the point currently under the cursor stays fixed on screen
+        // as the eased zoom keeps chasing a moving target.
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(content, eventData.position, EventCamera(), out zoomPivotLocalPoint);
+        targetZoom = newTargetZoom;
+    }
+
+    private void Update()
+    {
+        if (!built || anyError || Mathf.Approximately(zoom, targetZoom))
+        {
+            return;
+        }
+
+        float oldZoom = zoom;
+        zoom = Mathf.Lerp(zoom, targetZoom, 1f - Mathf.Exp(-zoomSmoothSpeed * Time.unscaledDeltaTime));
+        if (Mathf.Abs(targetZoom - zoom) < 0.001f)
+        {
+            zoom = targetZoom;
+        }
+
+        content.anchoredPosition -= zoomPivotLocalPoint * (zoom - oldZoom);
+        content.localScale = new Vector3(zoom, zoom, 1f);
+
+        ClampContentPosition();
+        if (Mathf.Approximately(zoom, targetZoom))
+        {
+            SaveView();
+        }
+    }
+
+    private Camera EventCamera()
+    {
+        if (canvas == null)
+        {
+            canvas = content.GetComponentInParent<Canvas>();
+        }
+        return canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
+    }
+
+    /// <summary>
+    ///     Smoothly pans so <paramref name="node" /> ends up centered in the viewport — called right after
+    ///     a successful purchase. Cancels any pan already in flight (e.g. a second quick purchase) rather
+    ///     than fighting it.
+    /// </summary>
+    private void CenterOnNode(SkillNode node)
+    {
+        if (scrollRect == null)
+        {
+            return;
+        }
+
+        Vector2 target = CenterAnchoredPositionFor(GridToLocal(node));
+        if (panRoutine != null)
+        {
+            StopCoroutine(panRoutine);
+        }
+        panRoutine = StartCoroutine(PanTo(target));
+    }
+
+    /// <summary>
+    ///     The anchoredPosition that puts content-local point <paramref name="contentLocalPoint" /> at the
+    ///     viewport's center, at the current zoom.
+    /// </summary>
+    private Vector2 CenterAnchoredPositionFor(Vector2 contentLocalPoint)
+    {
+        RectTransform viewport = scrollRect.viewport != null ? scrollRect.viewport : content.parent as RectTransform;
+        Vector2 half = viewport != null ? viewport.rect.size * 0.5f : Vector2.zero;
+        return new Vector2(half.x, -half.y) - contentLocalPoint * zoom;
+    }
+
+    private IEnumerator PanTo(Vector2 target)
+    {
+        Vector2 start = content.anchoredPosition;
+        float elapsed = 0f;
+        while (elapsed < centerOnUnlockDuration)
+        {
+            // Unscaled so the pan still plays if something froze Time.timeScale (e.g. a gate-defense loss).
+            elapsed += Time.unscaledDeltaTime;
+            float t = centerOnUnlockDuration > 0f ? Mathf.Clamp01(elapsed / centerOnUnlockDuration) : 1f;
+            t = 1f - (1f - t) * (1f - t); // ease-out
+            content.anchoredPosition = Vector2.Lerp(start, target, t);
+            yield return null;
+        }
+
+        content.anchoredPosition = target;
+        ClampContentPosition();
+        SaveView();
+        panRoutine = null;
     }
 
     private Vector2 GridToLocal(SkillNode node)
@@ -289,6 +504,7 @@ public class SkillTreeView : MonoBehaviour
         if (service.TryPurchase(id) && views.TryGetValue(id, out SkillNodeView view))
         {
             view.PlayPurchaseFeedback();
+            CenterOnNode(view.Node);
         }
     }
 

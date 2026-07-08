@@ -785,6 +785,10 @@ MonoBehaviour:
   connectorPrefab: {fileID: 4869767786769141824, guid: 3028bc314cd14bc4dbef3a8712abfc22, type: 3}
   spacing: 160
   contentPadding: 200
+  minZoom: 0.5
+  maxZoom: 2
+  zoomStep: 0.05
+  centerOnUnlockDuration: 0.35
   goldText: {fileID: 0}
   tooltip: {fileID: 1563247214}
 --- !u!114 &439459167
@@ -1194,6 +1198,10 @@ MonoBehaviour:
   connectorPrefab: {fileID: 4869767786769141824, guid: 3028bc314cd14bc4dbef3a8712abfc22, type: 3}
   spacing: 160
   contentPadding: 200
+  minZoom: 0.5
+  maxZoom: 2
+  zoomStep: 0.05
+  centerOnUnlockDuration: 0.35
   goldText: {fileID: 0}
   tooltip: {fileID: 2074838069}
 --- !u!114 &535633641
