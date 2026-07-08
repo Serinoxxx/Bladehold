@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using UnityEditor;
 using UnityEngine;
 
@@ -11,30 +9,13 @@ using UnityEngine;
 ///     automatically and the node's icon column is set to the sprite's name. Save writes the CSV back to
 ///     the same file the SO points at (id,displayName,description,cost,stat,kind,amount,prereqs,x,y,icon,family)
 ///     and reloads the tree, so parse errors surface in the console immediately.
+///     CSV parsing/serialization is shared with the Scene-view editor via <see cref="SkillTreeCsvIO" />.
 /// </summary>
 public class SkillTreeCsvEditorWindow : EditorWindow
 {
-    private class Row
-    {
-        public string id = "";
-        public string displayName = "";
-        public string description = "";
-        public int cost;
-        public string stat = "";
-        public string kind = "";
-        public string amount = "";
-        public string prereqs = "";
-        public float x;
-        public float y;
-        public string icon = "";
-        public string family = "";
-    }
-
-    private const string Header = "id,displayName,description,cost,stat,kind,amount,prereqs,x,y,icon,family";
-
     private SkillTreeSO tree;
     private TextAsset csvAsset;
-    private readonly List<Row> rows = new List<Row>();
+    private List<SkillTreeRow> rows = new List<SkillTreeRow>();
     private int selected = -1;
     private Vector2 listScroll;
     private Vector2 detailScroll;
@@ -93,7 +74,7 @@ public class SkillTreeCsvEditorWindow : EditorWindow
 
         if (GUILayout.Button("Add Node", EditorStyles.toolbarButton))
         {
-            var row = new Row { id = UniqueId("new_node") };
+            var row = new SkillTreeRow { id = SkillTreeCsvIO.UniqueId(rows, "new_node") };
             if (selected >= 0 && selected < rows.Count)
             {
                 row.x = rows[selected].x;
@@ -109,22 +90,10 @@ public class SkillTreeCsvEditorWindow : EditorWindow
         {
             if (GUILayout.Button("Duplicate", EditorStyles.toolbarButton))
             {
-                Row src = rows[selected];
-                rows.Insert(selected + 1, new Row
-                {
-                    id = UniqueId(src.id),
-                    displayName = src.displayName,
-                    description = src.description,
-                    cost = src.cost,
-                    stat = src.stat,
-                    kind = src.kind,
-                    amount = src.amount,
-                    prereqs = src.prereqs,
-                    x = src.x,
-                    y = src.y + 1f,
-                    icon = src.icon,
-                    family = src.family,
-                });
+                SkillTreeRow copy = rows[selected].Clone();
+                copy.id = SkillTreeCsvIO.UniqueId(rows, copy.id);
+                copy.y += 1f;
+                rows.Insert(selected + 1, copy);
                 selected++;
                 dirty = true;
             }
@@ -156,7 +125,10 @@ public class SkillTreeCsvEditorWindow : EditorWindow
         {
             if (GUILayout.Button("Save CSV", EditorStyles.toolbarButton))
             {
-                Save();
+                if (SkillTreeCsvIO.Save(tree, csvAsset, rows))
+                {
+                    dirty = false;
+                }
             }
         }
 
@@ -190,12 +162,12 @@ public class SkillTreeCsvEditorWindow : EditorWindow
             return;
         }
 
-        Row row = rows[selected];
+        SkillTreeRow row = rows[selected];
 
         EditorGUI.BeginChangeCheck();
 
         row.id = EditorGUILayout.TextField("Id", row.id);
-        if (CountId(row.id) > 1)
+        if (SkillTreeCsvIO.CountId(rows, row.id) > 1)
         {
             EditorGUILayout.HelpBox("Duplicate id — the tree will ignore the second occurrence.", MessageType.Error);
         }
@@ -225,7 +197,7 @@ public class SkillTreeCsvEditorWindow : EditorWindow
             row.icon = picked != null ? picked.name : "";
             if (picked != null)
             {
-                EnsureIconInTree(picked);
+                SkillTreeCsvIO.EnsureIconInTree(tree, picked);
             }
         }
         row.icon = EditorGUILayout.TextField("Icon Name", row.icon);
@@ -265,7 +237,7 @@ public class SkillTreeCsvEditorWindow : EditorWindow
             {
                 if (dragged is Sprite sprite)
                 {
-                    EnsureIconInTree(sprite);
+                    SkillTreeCsvIO.EnsureIconInTree(tree, sprite);
                 }
                 else if (dragged is Texture2D texture)
                 {
@@ -275,7 +247,7 @@ public class SkillTreeCsvEditorWindow : EditorWindow
                     {
                         if (sub is Sprite texSprite)
                         {
-                            EnsureIconInTree(texSprite);
+                            SkillTreeCsvIO.EnsureIconInTree(tree, texSprite);
                             break;
                         }
                     }
@@ -287,157 +259,12 @@ public class SkillTreeCsvEditorWindow : EditorWindow
 
     private void Load()
     {
-        rows.Clear();
         selected = -1;
         dirty = false;
-        csvAsset = null;
-
-        if (tree == null)
-        {
-            return;
-        }
-
-        var so = new SerializedObject(tree);
-        csvAsset = so.FindProperty("csv").objectReferenceValue as TextAsset;
-        bool hasHeader = so.FindProperty("hasHeaderRow").boolValue;
-        if (csvAsset == null)
-        {
-            return;
-        }
-
-        string[] lines = csvAsset.text.Split('\n');
-        for (int i = 0; i < lines.Length; i++)
-        {
-            if (i == 0 && hasHeader)
-            {
-                continue;
-            }
-
-            string line = lines[i].TrimEnd('\r');
-            if (string.IsNullOrWhiteSpace(line))
-            {
-                continue;
-            }
-
-            List<string> f = CsvUtil.SplitLine(line);
-            if (f.Count < 10)
-            {
-                Debug.LogWarning($"Skill Tree Editor: skipping line {i + 1} of '{csvAsset.name}' ({f.Count} columns, expected at least 10).");
-                continue;
-            }
-
-            var row = new Row
-            {
-                id = f[0].Trim(),
-                displayName = f[1].Trim(),
-                description = f[2].Trim(),
-                stat = f[4].Trim(),
-                kind = f[5].Trim(),
-                amount = f[6].Trim(),
-                prereqs = f[7].Trim(),
-                icon = f.Count > 10 ? f[10].Trim() : "",
-                family = f.Count > 11 ? f[11].Trim() : "",
-            };
-            int.TryParse(f[3].Trim(), out row.cost);
-            float.TryParse(f[8].Trim(), out row.x);
-            float.TryParse(f[9].Trim(), out row.y);
-            rows.Add(row);
-        }
-
+        rows = SkillTreeCsvIO.Load(tree, out csvAsset);
         if (rows.Count > 0)
         {
             selected = 0;
         }
-    }
-
-    private void Save()
-    {
-        string path = AssetDatabase.GetAssetPath(csvAsset);
-        if (string.IsNullOrEmpty(path))
-        {
-            Debug.LogError("Skill Tree Editor: could not resolve the CSV asset's path.");
-            return;
-        }
-
-        var sb = new StringBuilder();
-        sb.Append(Header).Append('\n');
-        foreach (Row row in rows)
-        {
-            sb.Append(Escape(row.id)).Append(',');
-            sb.Append(Escape(row.displayName)).Append(',');
-            sb.Append(Escape(row.description)).Append(',');
-            sb.Append(row.cost).Append(',');
-            sb.Append(Escape(row.stat)).Append(',');
-            sb.Append(Escape(row.kind)).Append(',');
-            sb.Append(Escape(row.amount)).Append(',');
-            sb.Append(Escape(row.prereqs)).Append(',');
-            sb.Append(row.x).Append(',');
-            sb.Append(row.y).Append(',');
-            sb.Append(Escape(row.icon)).Append(',');
-            sb.Append(Escape(row.family)).Append('\n');
-        }
-
-        File.WriteAllText(path, sb.ToString());
-        AssetDatabase.ImportAsset(path);
-        tree.Reload();
-        dirty = false;
-    }
-
-    private static string Escape(string field)
-    {
-        if (string.IsNullOrEmpty(field))
-        {
-            return "";
-        }
-        if (field.IndexOf(',') < 0 && field.IndexOf('"') < 0 && field.IndexOf('\n') < 0)
-        {
-            return field;
-        }
-        return "\"" + field.Replace("\"", "\"\"") + "\"";
-    }
-
-    /// <summary>Adds the sprite to the tree asset's icons list (if not already there) and refreshes the tree's icon cache.</summary>
-    private void EnsureIconInTree(Sprite sprite)
-    {
-        var so = new SerializedObject(tree);
-        SerializedProperty icons = so.FindProperty("icons");
-
-        for (int i = 0; i < icons.arraySize; i++)
-        {
-            if (icons.GetArrayElementAtIndex(i).objectReferenceValue == sprite)
-            {
-                return;
-            }
-        }
-
-        icons.InsertArrayElementAtIndex(icons.arraySize);
-        icons.GetArrayElementAtIndex(icons.arraySize - 1).objectReferenceValue = sprite;
-        so.ApplyModifiedProperties();
-        EditorUtility.SetDirty(tree);
-        tree.Reload();
-    }
-
-    private string UniqueId(string baseId)
-    {
-        string candidate = baseId;
-        int suffix = 1;
-        while (CountId(candidate) > 0)
-        {
-            candidate = $"{baseId}_{++suffix}";
-        }
-        return candidate;
-    }
-
-    private int CountId(string id)
-    {
-        int count = 0;
-        foreach (Row row in rows)
-        {
-            if (row.id == id)
-            {
-                count++;
-            }
-        }
-        return count;
     }
 }

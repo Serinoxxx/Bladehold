@@ -160,7 +160,7 @@ public class SkillTreeView : MonoBehaviour
     ///     authored anchor (commonly the center default) or content's size. Leaves pivot untouched so
     ///     prefabs that rely on a specific pivot (e.g. the connector's left-center rotation pivot) keep it.
     /// </summary>
-    private static void SetTopLeftAnchor(RectTransform rect)
+    public static void SetTopLeftAnchor(RectTransform rect)
     {
         rect.anchorMin = new Vector2(0f, 1f);
         rect.anchorMax = new Vector2(0f, 1f);
@@ -183,8 +183,62 @@ public class SkillTreeView : MonoBehaviour
 
     private Vector2 GridToLocal(SkillNode node)
     {
-        // y grows downward in tree terms, so negate for UI space (up is positive).
-        return new Vector2(node.x * spacing, -node.y * spacing) + treeOffset;
+        return GridToLocal(node.x, node.y, spacing, treeOffset);
+    }
+
+    /// <summary>
+    ///     Converts authored (x, y) grid coordinates to a content-local anchored position. y grows
+    ///     downward in tree terms, so it is negated for UI space (up is positive). Static so the
+    ///     Scene-view skill tree editor lays out its preview with the exact same math.
+    /// </summary>
+    public static Vector2 GridToLocal(float x, float y, float spacing, Vector2 treeOffset)
+    {
+        return new Vector2(x * spacing, -y * spacing) + treeOffset;
+    }
+
+    /// <summary>
+    ///     The <see cref="FitContentToTree" /> math: given every node's grid coordinates, returns the
+    ///     treeOffset that shifts them into content's [0, width] x [-height, 0] rect and the content size
+    ///     that encloses them (plus one node plus padding on every side).
+    /// </summary>
+    public static (Vector2 offset, Vector2 size) ComputeContentFit(IEnumerable<Vector2> gridCoords, float spacing, Vector2 nodeSize, float padding)
+    {
+        float minX = float.MaxValue, maxX = float.MinValue;
+        float minY = float.MaxValue, maxY = float.MinValue;
+        bool any = false;
+        foreach (Vector2 coord in gridCoords)
+        {
+            Vector2 pos = new Vector2(coord.x * spacing, -coord.y * spacing);
+            minX = Mathf.Min(minX, pos.x);
+            maxX = Mathf.Max(maxX, pos.x);
+            minY = Mathf.Min(minY, pos.y);
+            maxY = Mathf.Max(maxY, pos.y);
+            any = true;
+        }
+        if (!any)
+        {
+            return (Vector2.zero, Vector2.zero);
+        }
+
+        Vector2 offset = new Vector2(-minX + nodeSize.x * 0.5f + padding, -maxY - nodeSize.y * 0.5f - padding);
+        Vector2 size = new Vector2(maxX - minX + nodeSize.x + padding * 2f, maxY - minY + nodeSize.y + padding * 2f);
+        return (offset, size);
+    }
+
+    /// <summary>
+    ///     Stretches/rotates a connector line between two content-local points: pivot on 'a', length =
+    ///     distance, authored thickness kept. Static so the Scene-view editor places its preview
+    ///     connectors identically.
+    /// </summary>
+    public static void PlaceConnector(RectTransform line, Vector2 a, Vector2 b)
+    {
+        // The placement puts the line's pivot on 'a' and rotates it toward 'b', so the pivot must be
+        // left-center regardless of what the prefab was authored with.
+        line.pivot = new Vector2(0f, 0.5f);
+        Vector2 delta = b - a;
+        line.anchoredPosition = a;
+        line.sizeDelta = new Vector2(delta.magnitude, line.sizeDelta.y);
+        line.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(delta.y, delta.x) * Mathf.Rad2Deg);
     }
 
     /// <summary>
@@ -203,24 +257,19 @@ public class SkillTreeView : MonoBehaviour
 
         Vector2 nodeSize = nodePrefab.GetComponent<RectTransform>().sizeDelta;
 
-        float minX = float.MaxValue, maxX = float.MinValue;
-        float minY = float.MaxValue, maxY = float.MinValue;
+        var coords = new List<Vector2>(nodes.Count);
         foreach (SkillNode node in nodes)
         {
-            Vector2 pos = new Vector2(node.x * spacing, -node.y * spacing);
-            minX = Mathf.Min(minX, pos.x);
-            maxX = Mathf.Max(maxX, pos.x);
-            minY = Mathf.Min(minY, pos.y);
-            maxY = Mathf.Max(maxY, pos.y);
+            coords.Add(new Vector2(node.x, node.y));
         }
-
-        treeOffset = new Vector2(-minX + nodeSize.x * 0.5f + contentPadding, -maxY - nodeSize.y * 0.5f - contentPadding);
+        (Vector2 offset, Vector2 size) = ComputeContentFit(coords, spacing, nodeSize, contentPadding);
+        treeOffset = offset;
 
         content.anchorMin = new Vector2(0f, 1f);
         content.anchorMax = new Vector2(0f, 1f);
         content.pivot = new Vector2(0f, 1f);
         content.anchoredPosition = Vector2.zero;
-        content.sizeDelta = new Vector2(maxX - minX + nodeSize.x + contentPadding * 2f, maxY - minY + nodeSize.y + contentPadding * 2f);
+        content.sizeDelta = size;
     }
 
     private void CreateConnector(SkillNode from, SkillNode to)
@@ -230,13 +279,7 @@ public class SkillTreeView : MonoBehaviour
 
         RectTransform line = Instantiate(connectorPrefab, content);
         SetTopLeftAnchor(line);
-        // The placement below puts the line's pivot on 'from' and rotates it toward 'to', so the pivot
-        // must be left-center regardless of what the prefab was authored with.
-        line.pivot = new Vector2(0f, 0.5f);
-        Vector2 delta = b - a;
-        line.anchoredPosition = a;
-        line.sizeDelta = new Vector2(delta.magnitude, line.sizeDelta.y);
-        line.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(delta.y, delta.x) * Mathf.Rad2Deg);
+        PlaceConnector(line, a, b);
         connectors.Add((line, from, to));
     }
 

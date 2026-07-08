@@ -1,42 +1,5 @@
 # TODO
 
-## Enemy Zoo (config/test scene) — Unity Editor wiring
-
-The C# is done: `Bladehold Scripts/Debug/EnemyZoo.cs` (guarded to `UNITY_EDITOR || DEVELOPMENT_BUILD`,
-so it can't ship) spawns one of every `EnemyRosterSO` type in a labelled gallery grid, applying the
-same CSV overrides the waves use via `WaveSpawner.ApplyDefinition` (made `public static` for this).
-An IMGUI panel (same wiring-free idiom as `DevConsole`, drawn top-right) toggles **Battle Mode**
-(freeze the gallery for inspection ↔ enable each enemy's `AIMovement` + `*Attack` components so they
-chase/fight the player), **Respawn Gallery**, and a type picker that spawns a batch of one type on
-demand (with **Clear Spawns**). World-space name/health labels are drawn per enemy via IMGUI. This
-scene is a config/test tool only — **do not add it to Build Profiles**.9
-
-- [ ] **New scene** `Assets/Bladehold/Bladehold Scenes/Enemy Zoo.unity` (first-party scenes live
-      here). Add a large flat ground plane and **bake a NavMesh** over it (`com.unity.ai.navigation`)
-      — enemies need it for battle mode; the gallery snaps slots onto it.
-- [ ] Add a **Player prefab instance** (`Bladehold Prefabs/Player.prefab`) so `Player.Instance`
-      exists — Battle Mode's `AIAttack.Start` hard-errors without it. Position it where you want to
-      stand relative to the gallery.
-- [ ] Add a **camera** (the Player prefab's rig, or a plain one) and a light so the gallery renders.
-- [ ] Add an empty GameObject **"EnemyZoo"** with the `EnemyZoo` component. Assign the same
-      `EnemyRosterSO` asset the `WaveSpawner` uses, and fill the **prefab map** (id → prefab) for
-      every roster row you want shown (Goblin, Goblin Brute, Bomber, Storm Witch, Troll). Set
-      `spawnPoint` (empty transform where on-demand batches appear) and tune `galleryOrigin` /
-      `columns` / spacing so the grid sits in front of the player and on the NavMesh.
-- [ ] Optional: drop a **GameStats** object in the scene if you want kill accounting during battle
-      (enemies report kills to `GameStats.Instance`; harmless if absent).
-
-## Manual verification (Enemy Zoo)
-
-- [ ] Enter Play in the Enemy Zoo scene — one of each roster type stands in a grid, each with a
-      name + health label, none chasing (Battle Mode OFF).
-- [ ] Click **Battle Mode** — every gallery enemy activates and moves toward/attacks the player;
-      click again to freeze them in place.
-- [ ] Pick a type, set a count, **Spawn** — that many spawn at the spawn point and immediately
-      fight; **Clear Spawns** removes them.
-- [ ] Confirm scaled types (e.g. Goblin Brute) render at the right size — proves
-      `ApplyDefinition` overrides are being applied.
-
 ## Stuck arrows + arrow impact feedback — Unity Editor wiring
 
 ## Manual verification (stuck arrows + impact feedback)

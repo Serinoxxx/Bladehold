@@ -85,6 +85,26 @@ public class SkillNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         Refresh();
     }
 
+    /// <summary>
+    ///     Edit-mode binding used by the Scene-view skill tree editor: sets the visuals directly (name,
+    ///     cost, icon, the "available" border — the editor shows the tree fully unlocked) without needing
+    ///     an <see cref="ISkillTreeService" />. Leaves <see cref="node" /> null so Refresh/OnEnable stay
+    ///     inert on preview instances. Never called at runtime.
+    /// </summary>
+    public void BindPreview(string displayName, int cost, Sprite iconSprite)
+    {
+        if (nameText != null) nameText.text = displayName;
+        if (costText != null) costText.text = cost + costSuffix;
+        if (icon != null)
+        {
+            icon.sprite = iconSprite;
+            icon.enabled = iconSprite != null;
+        }
+        if (border != null) border.color = availableColor;
+        if (purchasedTick != null) purchasedTick.SetActive(false);
+        if (teasedLock != null) teasedLock.SetActive(false);
+    }
+
     private void OnEnable()
     {
         // Instantiate fires OnEnable before Bind, so node == null distinguishes the initial build
