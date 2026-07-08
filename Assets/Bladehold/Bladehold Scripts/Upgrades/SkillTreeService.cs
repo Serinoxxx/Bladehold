@@ -105,7 +105,7 @@ public class SkillTreeService : MonoBehaviour, ISkillTreeService
 
     public bool IsPurchased(string id) => purchased.Contains(id);
 
-    /// <summary>A node is revealed if it is a root (no prereqs) or any prerequisite has been purchased.</summary>
+    /// <summary>A node is revealed if it is a root (no links) or any linked node has been purchased (links are symmetric).</summary>
     public bool IsRevealed(SkillNode node)
     {
         if (node == null) return false;
@@ -114,17 +114,30 @@ public class SkillTreeService : MonoBehaviour, ISkillTreeService
         {
             if (purchased.Contains(p)) return true;
         }
+        if (tree != null)
+        {
+            foreach (string dependentId in tree.GetDependents(node.id))
+            {
+                if (purchased.Contains(dependentId)) return true;
+            }
+        }
         return false;
     }
 
-    /// <summary>A node is teased (shown dimmed, not purchasable) when any prereq is revealed but none is purchased.</summary>
+    /// <summary>A node is teased (shown dimmed, not purchasable) when a linked node is revealed but none is purchased.</summary>
     public bool IsTeased(SkillNode node)
     {
         if (node == null || IsRevealed(node)) return false;
+        if (tree == null) return false;
         foreach (string p in node.prereqs)
         {
-            SkillNode prereq = tree != null ? tree.GetById(p) : null;
-            if (prereq != null && IsRevealed(prereq)) return true;
+            SkillNode linked = tree.GetById(p);
+            if (linked != null && IsRevealed(linked)) return true;
+        }
+        foreach (string dependentId in tree.GetDependents(node.id))
+        {
+            SkillNode linked = tree.GetById(dependentId);
+            if (linked != null && IsRevealed(linked)) return true;
         }
         return false;
     }

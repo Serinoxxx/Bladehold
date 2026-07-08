@@ -185,7 +185,7 @@ public class SkillTreeCsvEditorWindow : EditorWindow
         row.amount = EditorGUILayout.TextField(new GUIContent("Amount", "one number per stat"), row.amount);
 
         EditorGUILayout.Space();
-        row.prereqs = EditorGUILayout.TextField(new GUIContent("Prereqs", "';'-separated node ids; blank = root node"), row.prereqs);
+        row.prereqs = EditorGUILayout.TextField(new GUIContent("Links", "';'-separated node ids; blank = root node. A link is symmetric — purchasing either end unlocks the other."), row.prereqs);
         row.x = EditorGUILayout.FloatField("X", row.x);
         row.y = EditorGUILayout.FloatField("Y", row.y);
 

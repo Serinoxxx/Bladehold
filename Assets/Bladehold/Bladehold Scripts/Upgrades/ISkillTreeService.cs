@@ -16,12 +16,16 @@ public interface ISkillTreeService
 
     bool IsPurchased(string id);
 
-    /// <summary>A node is revealed if it is a root (no prereqs) or any prerequisite has been purchased.</summary>
+    /// <summary>
+    ///     A node is revealed if it is a root (no links) or any node it's linked to has been purchased.
+    ///     Links are symmetric — this checks both the node's own listed links and the reverse direction
+    ///     (nodes that list this one).
+    /// </summary>
     bool IsRevealed(SkillNode node);
 
     /// <summary>
-    ///     A node is teased when it isn't revealed yet but any of its prerequisites is — the one-step
-    ///     lookahead the UI shows dimmed, so the player can see what buying the next node unlocks.
+    ///     A node is teased when it isn't revealed yet but a linked node is — the one-step lookahead the UI
+    ///     shows dimmed, so the player can see what buying the next node unlocks.
     /// </summary>
     bool IsTeased(SkillNode node);
 

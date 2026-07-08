@@ -24,7 +24,10 @@ using UnityEngine;
 ///             <c>stat</c>/<c>kind</c>/<c>amount</c> may each hold ';'-separated lists of equal length to apply
 ///             several effects atomically (e.g. a node bumping both a chance and a bonus-% stat at once).
 ///         </item>
-///         <item><c>prereqs</c> is semicolon-separated; blank → a root node visible from the start.</item>
+///         <item>
+///             <c>prereqs</c> is semicolon-separated; blank → a root node visible from the start. A link
+///             is symmetric — purchasing either end of it reveals the other (see <see cref="SkillNode.prereqs" />).
+///         </item>
 ///         <item>Fields may be wrapped in double quotes to contain commas; "" is an escaped quote.</item>
 ///     </list>
 /// </summary>
@@ -43,6 +46,7 @@ public class SkillTreeSO : ScriptableObject
     [NonSerialized] private List<SkillNode> nodes;
     [NonSerialized] private Dictionary<string, SkillNode> byId;
     [NonSerialized] private Dictionary<string, Sprite> iconsByName;
+    [NonSerialized] private Dictionary<string, List<string>> dependentsById;
 
     /// <summary>All nodes, parsed lazily from the CSV.</summary>
     public IReadOnlyList<SkillNode> Nodes
@@ -87,12 +91,24 @@ public class SkillTreeSO : ScriptableObject
         return iconsByName.TryGetValue(iconName, out Sprite found) ? found : null;
     }
 
+    /// <summary>
+    ///     Ids of nodes that list <paramref name="id" /> in their own <see cref="SkillNode.prereqs" /> — the
+    ///     reverse direction of that link. A prereq link is symmetric (see <see cref="SkillNode.prereqs" />),
+    ///     so services check both this and the node's own list when deciding whether it's revealed.
+    /// </summary>
+    public IReadOnlyList<string> GetDependents(string id)
+    {
+        EnsureParsed();
+        return dependentsById.TryGetValue(id, out List<string> list) ? list : Array.Empty<string>();
+    }
+
     /// <summary>Forces a re-parse (e.g. after editing the CSV at runtime). Normally not needed.</summary>
     public void Reload()
     {
         nodes = null;
         byId = null;
         iconsByName = null;
+        dependentsById = null;
         EnsureParsed();
     }
 
@@ -105,6 +121,7 @@ public class SkillTreeSO : ScriptableObject
 
         nodes = new List<SkillNode>();
         byId = new Dictionary<string, SkillNode>();
+        dependentsById = new Dictionary<string, List<string>>();
 
         if (csv == null)
         {
@@ -140,6 +157,19 @@ public class SkillTreeSO : ScriptableObject
 
             nodes.Add(node);
             byId[node.id] = node;
+        }
+
+        foreach (SkillNode node in nodes)
+        {
+            foreach (string prereq in node.prereqs)
+            {
+                if (!dependentsById.TryGetValue(prereq, out List<string> list))
+                {
+                    list = new List<string>();
+                    dependentsById[prereq] = list;
+                }
+                list.Add(node.id);
+            }
         }
     }
 

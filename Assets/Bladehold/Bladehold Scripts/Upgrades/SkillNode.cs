@@ -45,7 +45,13 @@ public class SkillNode
     /// </summary>
     public List<SkillEffect> effects = new List<SkillEffect>();
 
-    /// <summary>Ids of prerequisite nodes. Empty = a root, visible from the start. Otherwise revealed once ANY prereq is purchased.</summary>
+    /// <summary>
+    ///     Ids of nodes this one is linked to. Empty = a root, visible from the start. Otherwise a link is
+    ///     symmetric: this node is revealed once ANY node it's linked to is purchased — either one listed
+    ///     here, or one that lists this node's id in its own <see cref="prereqs" /> (the reverse direction,
+    ///     via <see cref="SkillTreeSO.GetDependents" />). There's no visual arrow on the connector, so
+    ///     purchasing either endpoint of a link always unlocks the other.
+    /// </summary>
     public List<string> prereqs = new List<string>();
 
     /// <summary>Layout coordinates for the tree UI (column, row); multiplied by spacing by the view.</summary>

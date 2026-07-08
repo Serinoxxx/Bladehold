@@ -483,6 +483,130 @@ public static class SkillTreeSceneEditor
         RaiseSessionChanged();
     }
 
+    /// <summary>True when a node has any prereqs of its own or is a prereq of some other node.</summary>
+    public static bool HasAnyLinks(string id)
+    {
+        SkillTreeRow row = Session.GetRow(id);
+        if (row == null)
+        {
+            return false;
+        }
+        if (row.PrereqList().Count > 0)
+        {
+            return true;
+        }
+        foreach (SkillTreeRow other in Session.rows)
+        {
+            if (other != row && other.PrereqList().Contains(id))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
+    ///     Severs every link touching a node in one step (the overlay's "Clear All Links" button): its own
+    ///     prereqs, and this node's id removed from any other node's prereqs (nodes left with none become
+    ///     roots).
+    /// </summary>
+    public static void ClearAllLinks(string id)
+    {
+        SkillTreeRow row = Session.GetRow(id);
+        if (row == null)
+        {
+            return;
+        }
+
+        bool hadOwnPrereqs = row.PrereqList().Count > 0;
+        var dependents = new List<SkillTreeRow>();
+        foreach (SkillTreeRow other in Session.rows)
+        {
+            if (other != row && other.PrereqList().Contains(id))
+            {
+                dependents.Add(other);
+            }
+        }
+        if (!hadOwnPrereqs && dependents.Count == 0)
+        {
+            return;
+        }
+
+        RecordUndo("Clear All Links");
+        if (hadOwnPrereqs)
+        {
+            row.SetPrereqList(Array.Empty<string>());
+            Session.dirty = true;
+            builder.SyncConnectors(row);
+        }
+        foreach (SkillTreeRow dependent in dependents)
+        {
+            List<string> prereqs = dependent.PrereqList();
+            prereqs.Remove(id);
+            dependent.SetPrereqList(prereqs);
+            builder.SyncConnectors(dependent);
+        }
+        Session.dirty = true;
+        RaiseSessionChanged();
+    }
+
+    /// <summary>
+    ///     Batch form of <see cref="ClearAllLinks" /> for the current selection (the multi-select panel's
+    ///     "Clear All Links" button), in one undo step: clears every selected node's own prereqs, and
+    ///     removes any selected node's id from every other node's prereqs — including links between two
+    ///     selected nodes, which only need clearing once.
+    /// </summary>
+    public static void ClearAllLinksForSelection()
+    {
+        var ids = new HashSet<string>(Session.selectedIds);
+        if (ids.Count == 0)
+        {
+            return;
+        }
+
+        bool anyLinks = false;
+        foreach (string id in ids)
+        {
+            if (HasAnyLinks(id))
+            {
+                anyLinks = true;
+                break;
+            }
+        }
+        if (!anyLinks)
+        {
+            return;
+        }
+
+        RecordUndo("Clear All Links");
+        var touched = new HashSet<SkillTreeRow>();
+        foreach (string id in ids)
+        {
+            SkillTreeRow row = Session.GetRow(id);
+            if (row != null && row.PrereqList().Count > 0)
+            {
+                row.SetPrereqList(Array.Empty<string>());
+                touched.Add(row);
+            }
+        }
+        foreach (SkillTreeRow other in Session.rows)
+        {
+            List<string> prereqs = other.PrereqList();
+            if (prereqs.RemoveAll(ids.Contains) > 0)
+            {
+                other.SetPrereqList(prereqs);
+                touched.Add(other);
+            }
+        }
+
+        Session.dirty = true;
+        foreach (SkillTreeRow row in touched)
+        {
+            builder.SyncConnectors(row);
+        }
+        RaiseSessionChanged();
+    }
+
     /// <summary>True when 'targetId' is reachable from 'startId' by walking prereq edges upward.</summary>
     private static bool IsReachable(string startId, string targetId)
     {

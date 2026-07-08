@@ -6,8 +6,10 @@ using UnityEngine;
 ///     Scene-view input for the skill tree editor (hooked to SceneView.duringSceneGui by
 ///     <see cref="SkillTreeSceneEditor" /> while a session is active): click to select, drag to move
 ///     (snapped to the 0.5 grid, connectors following live), drag empty space for a marquee box-select,
-///     hover a node for its '+' add-child button, Delete to remove the selection (confirmed), and a
-///     link-pick mode (entered from the overlay) that adds a prereq edge to the next node clicked.
+///     hover a node for its '+' add-child button, Delete to remove the selection (confirmed), a link-pick
+///     mode (entered from the overlay) that links the next node clicked to the source node, and an
+///     Alt+click shortcut that does the same in one click. A link is symmetric — purchasing either end
+///     unlocks the other — so which node was "source" vs "clicked" doesn't matter once it's made.
 ///     All state mutations go through <see cref="SkillTreeSceneEditor" />; this class only translates
 ///     IMGUI events and draws the selection/marquee/link visuals.
 /// </summary>
@@ -74,9 +76,16 @@ public static class SkillTreeSceneGuiHandler
                 break;
 
             case EventType.MouseDown:
-                if (evt.button == 0 && !evt.alt)
+                if (evt.button == 0)
                 {
-                    HandleMouseDown(evt, controlId);
+                    if (evt.alt)
+                    {
+                        HandleAltClickLink(evt);
+                    }
+                    else
+                    {
+                        HandleMouseDown(evt, controlId);
+                    }
                 }
                 break;
 
@@ -185,6 +194,33 @@ public static class SkillTreeSceneGuiHandler
             GUIUtility.hotControl = controlId;
             evt.Use();
         }
+    }
+
+    /// <summary>
+    ///     Alt+click shortcut: links the clicked node with the single selected node (a link is symmetric —
+    ///     purchasing either one unlocks the other), without entering the overlay's Link Skill mode first.
+    ///     Only consumes the event on an actual node hit, so alt-click/drag elsewhere still reaches the
+    ///     Scene view's own camera controls.
+    /// </summary>
+    private static void HandleAltClickLink(Event evt)
+    {
+        if (IsLinking)
+        {
+            return;
+        }
+
+        string hit = HitTestNode(evt.mousePosition);
+        if (hit == null)
+        {
+            return;
+        }
+
+        List<string> selected = SkillTreeSceneEditor.Session.selectedIds;
+        if (selected.Count == 1 && selected[0] != hit)
+        {
+            SkillTreeSceneEditor.LinkSkill(hit, selected[0]);
+        }
+        evt.Use();
     }
 
     private static void HandleMouseDrag(Event evt, SceneView sceneView)
@@ -323,7 +359,7 @@ public static class SkillTreeSceneGuiHandler
             Handles.color = LinkLineColor;
             Handles.DrawAAPolyLine(3f, new Vector3(from.x, from.y, 0f), new Vector3(mouse.x, mouse.y, 0f));
 
-            var label = new GUIContent($"Click a node that will require '{LinkSourceId}' — Esc to cancel");
+            var label = new GUIContent($"Click a node to link with '{LinkSourceId}' (either unlocks the other) — Esc to cancel");
             Vector2 size = EditorStyles.helpBox.CalcSize(label);
             GUI.Label(new Rect(mouse.x + 16f, mouse.y + 8f, size.x + 8f, size.y + 4f), label, EditorStyles.helpBox);
         }

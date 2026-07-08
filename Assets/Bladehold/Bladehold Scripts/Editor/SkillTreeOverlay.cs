@@ -71,6 +71,7 @@ public class SkillTreeOverlay : Overlay
                 "Drag to move (snaps to 0.5 grid steps).\n" +
                 "Drag empty space to box-select; Shift-click to add.\n" +
                 "Hover a node and click its + to add a linked child.\n" +
+                "Alt-click a node to link it with the selected node (either unlocks the other).\n" +
                 "Delete key removes the selection.",
                 MessageType.Info);
         }
@@ -118,7 +119,7 @@ public class SkillTreeOverlay : Overlay
         {
             bool linking = SkillTreeSceneGuiHandler.IsLinking;
             bool wantLinking = GUILayout.Toggle(linking, new GUIContent("Link Skill",
-                "Then click another node in the Scene view — the selected node becomes its prerequisite."), "Button");
+                "Then click another node in the Scene view — the two nodes become linked; purchasing either one unlocks the other."), "Button");
             if (wantLinking != linking)
             {
                 if (wantLinking)
@@ -198,7 +199,7 @@ public class SkillTreeOverlay : Overlay
         }
 
         EditorGUILayout.Space(2f);
-        EditorGUILayout.LabelField("Prerequisites (use Link Skill to add)", EditorStyles.miniBoldLabel);
+        EditorGUILayout.LabelField("Links (use Link Skill or Alt-click to add)", EditorStyles.miniBoldLabel);
         foreach (string prereq in row.PrereqList())
         {
             EditorGUILayout.BeginHorizontal();
@@ -214,6 +215,12 @@ public class SkillTreeOverlay : Overlay
         if (row.PrereqList().Count == 0)
         {
             EditorGUILayout.LabelField("(none — root node)", EditorStyles.miniLabel);
+        }
+        if (SkillTreeSceneEditor.HasAnyLinks(id) && GUILayout.Button(new GUIContent("Clear All Links",
+                "Removes this node's own prereqs, and removes it from any other node's prereqs.")))
+        {
+            SkillTreeSceneEditor.ClearAllLinks(id);
+            return; // links changed under this draw — redraw next frame
         }
 
         EditorGUILayout.Space(2f);
@@ -275,6 +282,25 @@ public class SkillTreeOverlay : Overlay
         if (picked != current && picked != null)
         {
             SkillTreeSceneEditor.SetIconForSelection(picked);
+        }
+
+        EditorGUILayout.Space(4f);
+        bool anySelectedHasLinks = false;
+        foreach (SkillTreeRow r in selected)
+        {
+            if (SkillTreeSceneEditor.HasAnyLinks(r.id))
+            {
+                anySelectedHasLinks = true;
+                break;
+            }
+        }
+        using (new EditorGUI.DisabledScope(!anySelectedHasLinks))
+        {
+            if (GUILayout.Button(new GUIContent("Clear All Links",
+                    "Removes every link touching any selected node — its own links and any other node's link to it.")))
+            {
+                SkillTreeSceneEditor.ClearAllLinksForSelection();
+            }
         }
 
         EditorGUILayout.Space(4f);
