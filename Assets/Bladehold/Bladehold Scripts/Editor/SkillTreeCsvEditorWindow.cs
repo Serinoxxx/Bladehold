@@ -7,8 +7,8 @@ using UnityEngine;
 ///     Tree Editor). Pick a <see cref="SkillTreeSO" />, edit its nodes in a list + detail layout, and
 ///     drag a Sprite onto a node's Icon field — the sprite is added to the tree asset's icons list
 ///     automatically and the node's icon column is set to the sprite's name. Save writes the CSV back to
-///     the same file the SO points at (id,displayName,description,cost,stat,kind,amount,prereqs,x,y,icon,family)
-///     and reloads the tree, so parse errors surface in the console immediately.
+///     the same file the SO points at (see <see cref="SkillTreeCsvIO.Header" /> for the columns) and
+///     reloads the tree, so parse errors surface in the console immediately.
 ///     CSV parsing/serialization is shared with the Scene-view editor via <see cref="SkillTreeCsvIO" />.
 /// </summary>
 public class SkillTreeCsvEditorWindow : EditorWindow
@@ -77,9 +77,17 @@ public class SkillTreeCsvEditorWindow : EditorWindow
             var row = new SkillTreeRow { id = SkillTreeCsvIO.UniqueId(rows, "new_node") };
             if (selected >= 0 && selected < rows.Count)
             {
-                row.x = rows[selected].x;
-                row.y = rows[selected].y + 1f;
-                row.prereqs = rows[selected].id;
+                SkillTreeRow parent = rows[selected];
+                row.x = parent.x;
+                row.y = parent.y + 1f;
+                // Symmetric link: record it on both nodes so neither becomes an accidental root.
+                row.prereqs = parent.id;
+                List<string> parentLinks = parent.PrereqList();
+                if (!parentLinks.Contains(row.id))
+                {
+                    parentLinks.Add(row.id);
+                    parent.SetPrereqList(parentLinks);
+                }
             }
             rows.Add(row);
             selected = rows.Count - 1;
@@ -93,6 +101,10 @@ public class SkillTreeCsvEditorWindow : EditorWindow
                 SkillTreeRow copy = rows[selected].Clone();
                 copy.id = SkillTreeCsvIO.UniqueId(rows, copy.id);
                 copy.y += 1f;
+                // A clone starts unlinked and non-root: copying links would make one-sided links (the
+                // neighbours wouldn't list the copy back), and copying root-ness rarely what's wanted.
+                copy.prereqs = "";
+                copy.isRoot = false;
                 rows.Insert(selected + 1, copy);
                 selected++;
                 dirty = true;
@@ -173,19 +185,27 @@ public class SkillTreeCsvEditorWindow : EditorWindow
         }
 
         row.displayName = EditorGUILayout.TextField("Display Name", row.displayName);
-        EditorGUILayout.LabelField("Description");
+        EditorGUILayout.LabelField(new GUIContent("Description (unlock text)", "Shown before purchase, and the only text for single-level nodes."));
         row.description = EditorGUILayout.TextArea(row.description, GUILayout.MinHeight(40f));
-        row.cost = EditorGUILayout.IntField("Cost", row.cost);
-        row.family = EditorGUILayout.TextField(new GUIContent("Family", "Optional price pool: family nodes buy in any order but share one escalating price ladder (the Nth family purchase costs the Nth-cheapest cost in the family). Blank = priced individually."), row.family);
+        EditorGUILayout.LabelField(new GUIContent("Upgrade Text", "Shown once owned and still upgradeable. Blank reuses the description."));
+        row.upgradeText = EditorGUILayout.TextArea(row.upgradeText, GUILayout.MinHeight(30f));
 
         EditorGUILayout.Space();
-        EditorGUILayout.LabelField("Effects (';'-separated lists of equal length; blank = connector node)", EditorStyles.miniBoldLabel);
+        EditorGUILayout.LabelField("Levels & cost", EditorStyles.miniBoldLabel);
+        row.cost = EditorGUILayout.IntField(new GUIContent("Cost", "Cost of level 1."), row.cost);
+        row.growth = EditorGUILayout.FloatField(new GUIContent("Growth", "Per-level cost multiplier: each level costs round(prev × growth). ≤1 = flat cost every level."), row.growth);
+        row.maxLevel = EditorGUILayout.IntField(new GUIContent("Max Level", "How many times the node can be purchased. 1 = single-level."), row.maxLevel);
+
+        EditorGUILayout.Space();
+        EditorGUILayout.LabelField("Effects (';'-separated per stat; blank = connector node)", EditorStyles.miniBoldLabel);
         row.stat = EditorGUILayout.TextField(new GUIContent("Stat", "StatType name(s), e.g. SwordDamage or GoldenGoblinChance;GoldenGoblinGoldBonusPercent"), row.stat);
         row.kind = EditorGUILayout.TextField(new GUIContent("Kind", "Flat or Percent, one per stat"), row.kind);
-        row.amount = EditorGUILayout.TextField(new GUIContent("Amount", "one number per stat"), row.amount);
+        row.amount = EditorGUILayout.TextField(new GUIContent("Amount", "Per stat, ';'-separated. Within one stat, a '|'-separated list gives per-level increments (length = Max Level); a single value repeats every level. e.g. 0.05;0.5|0.5|1|2"), row.amount);
 
         EditorGUILayout.Space();
-        row.prereqs = EditorGUILayout.TextField(new GUIContent("Links", "';'-separated node ids; blank = root node. A link is symmetric — purchasing either end unlocks the other."), row.prereqs);
+        row.isRoot = EditorGUILayout.Toggle(new GUIContent("Root (unlocked at start)",
+            "A start-unlocked entry node. Every tree needs at least one root; the rest unlock by buying a linked node. This flag — not an empty link list — makes a node a root."), row.isRoot);
+        row.prereqs = EditorGUILayout.TextField(new GUIContent("Links", "';'-separated node ids. A link is symmetric and should be listed on both nodes — purchasing either end unlocks the other."), row.prereqs);
         row.x = EditorGUILayout.FloatField("X", row.x);
         row.y = EditorGUILayout.FloatField("Y", row.y);
 

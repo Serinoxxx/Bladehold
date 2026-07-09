@@ -23,13 +23,13 @@ public class ReincarnateService : MonoBehaviour, ISkillTreeService
     [SerializeField] private PlayerStats stats;
 
     private SaveData saveData;
-    private readonly HashSet<string> purchased = new HashSet<string>();
+    private readonly Dictionary<string, int> levels = new Dictionary<string, int>();
     private bool anyError = false;
 
-    /// <summary>Raised whenever the set of purchased nodes changes, so the tree UI can refresh.</summary>
+    /// <summary>Raised whenever the set of purchased levels changes, so the tree UI can refresh.</summary>
     public event Action OnTreeChanged;
 
-    /// <summary>Raised after a purchase goes through, with the points actually paid (family-ladder-aware).</summary>
+    /// <summary>Raised after a level purchase goes through, with the points actually paid.</summary>
     public event Action<SkillNode, int> OnNodePurchased;
 
     public SkillTreeSO Tree => tree;
@@ -74,7 +74,9 @@ public class ReincarnateService : MonoBehaviour, ISkillTreeService
         }
 
         // Re-apply persisted purchases to this run's stats — the Reincarnate tree is never wiped by
-        // reincarnating, only the regular gold tree is.
+        // reincarnating, only the regular gold tree is. purchasedReincarnateNodeIds is a multiset: the
+        // id appears once per owned level, so counting rebuilds each node's level and re-applies each
+        // level's per-level effect increment.
         saveData = SaveSystem.Load();
         foreach (string id in saveData.purchasedReincarnateNodeIds)
         {
@@ -84,8 +86,13 @@ public class ReincarnateService : MonoBehaviour, ISkillTreeService
                 // Node was removed/renamed in the CSV since this save; skip it.
                 continue;
             }
-            purchased.Add(id);
-            ApplyEffect(node);
+            if (levels.TryGetValue(id, out int current) && current >= node.maxLevel)
+            {
+                continue;
+            }
+            int level = current + 1;
+            levels[id] = level;
+            ApplyLevel(node, level);
         }
 
         OnTreeChanged?.Invoke();
@@ -99,22 +106,26 @@ public class ReincarnateService : MonoBehaviour, ISkillTreeService
         }
     }
 
-    public bool IsPurchased(string id) => purchased.Contains(id);
+    public bool IsPurchased(string id) => levels.TryGetValue(id, out int level) && level >= 1;
 
-    /// <summary>A node is revealed if it is a root (no links) or any linked node has been purchased (links are symmetric).</summary>
+    public int GetLevel(SkillNode node) => node != null && levels.TryGetValue(node.id, out int level) ? level : 0;
+
+    public bool IsMaxed(SkillNode node) => node != null && GetLevel(node) >= node.maxLevel;
+
+    /// <summary>A node is revealed if it is a root (start-unlocked) or any linked node has reached level 1 (links are symmetric).</summary>
     public bool IsRevealed(SkillNode node)
     {
         if (node == null) return false;
-        if (node.prereqs.Count == 0) return true;
+        if (node.isRoot) return true;
         foreach (string p in node.prereqs)
         {
-            if (purchased.Contains(p)) return true;
+            if (IsPurchased(p)) return true;
         }
         if (tree != null)
         {
             foreach (string dependentId in tree.GetDependents(node.id))
             {
-                if (purchased.Contains(dependentId)) return true;
+                if (IsPurchased(dependentId)) return true;
             }
         }
         return false;
@@ -138,34 +149,18 @@ public class ReincarnateService : MonoBehaviour, ISkillTreeService
         return false;
     }
 
-    /// <summary>
-    ///     The node's current price. Same family-ladder rule as <see cref="SkillTreeService.GetCost" />:
-    ///     the Nth purchase in a family costs the Nth-cheapest authored cost in that family. Nodes without
-    ///     a family (all current Reincarnate nodes) are priced by their own cost.
-    /// </summary>
+    /// <summary>The cost of the node's next level (0 when already maxed).</summary>
     public int GetCost(SkillNode node)
     {
         if (node == null) return 0;
-        if (string.IsNullOrEmpty(node.family) || tree == null) return node.cost;
-
-        List<int> ladder = new List<int>();
-        int owned = 0;
-        foreach (SkillNode other in tree.Nodes)
-        {
-            if (other.family == node.family)
-            {
-                ladder.Add(other.cost);
-                if (purchased.Contains(other.id)) owned++;
-            }
-        }
-        ladder.Sort();
-        return ladder[Mathf.Min(owned, ladder.Count - 1)];
+        int level = GetLevel(node);
+        return level >= node.maxLevel ? 0 : node.CostForLevel(level + 1);
     }
 
     public bool CanPurchase(SkillNode node)
     {
         if (anyError || node == null) return false;
-        if (purchased.Contains(node.id)) return false;
+        if (IsMaxed(node)) return false;
         if (!IsRevealed(node)) return false;
         return Points >= GetCost(node);
     }
@@ -180,14 +175,14 @@ public class ReincarnateService : MonoBehaviour, ISkillTreeService
             return false;
         }
 
-        // Capture the price before recording the purchase — owning the node climbs its family's ladder.
-        int price = GetCost(node);
+        int level = GetLevel(node) + 1;
+        int price = node.CostForLevel(level);
         saveData.reincarnatePoints -= price;
-        purchased.Add(id);
+        levels[id] = level;
         saveData.purchasedReincarnateNodeIds.Add(id);
         SaveSystem.Save(saveData);
 
-        ApplyEffect(node);
+        ApplyLevel(node, level);
         OnNodePurchased?.Invoke(node, price);
         OnTreeChanged?.Invoke();
         return true;
@@ -237,11 +232,12 @@ public class ReincarnateService : MonoBehaviour, ISkillTreeService
         CompleteReincarnate();
     }
 
-    private void ApplyEffect(SkillNode node)
+    /// <summary>Applies the per-level increment each of the node's effects contributes at <paramref name="level" />.</summary>
+    private void ApplyLevel(SkillNode node, int level)
     {
         foreach (SkillEffect effect in node.effects)
         {
-            stats.AddModifier(effect.stat, effect.kind, effect.amount);
+            stats.AddModifier(effect.stat, effect.kind, effect.AmountForLevel(level));
         }
     }
 }

@@ -186,7 +186,7 @@ public class SkillTreePreviewBuilder
     {
         if (nodesById.TryGetValue(row.id, out NodePreview node) && node.view != null)
         {
-            node.view.BindPreview(row.displayName, row.cost, tree != null ? tree.GetIcon(row.icon) : null);
+            node.view.BindPreview(row.displayName, row.cost, row.maxLevel, tree != null ? tree.GetIcon(row.icon) : null);
         }
     }
 
@@ -244,11 +244,14 @@ public class SkillTreePreviewBuilder
             return;
         }
 
-        List<string> wanted = row.PrereqList();
+        var wanted = new HashSet<string>(row.PrereqList());
 
+        // Links are undirected and stored on both ends, so a connector is one line per unordered pair.
+        // Remove any connector touching this row whose other endpoint is no longer linked.
         for (int i = connectors.Count - 1; i >= 0; i--)
         {
-            if (connectors[i].toId == row.id && !wanted.Contains(connectors[i].fromId))
+            string other = OtherEnd(connectors[i], row.id);
+            if (other != null && !wanted.Contains(other))
             {
                 if (connectors[i].rect != null)
                 {
@@ -258,26 +261,35 @@ public class SkillTreePreviewBuilder
             }
         }
 
-        foreach (string fromId in wanted)
+        foreach (string other in wanted)
         {
-            if (!nodesById.ContainsKey(fromId) || HasConnector(fromId, row.id))
+            if (!nodesById.ContainsKey(other) || HasConnectorEither(row.id, other))
             {
                 continue;
             }
             RectTransform line = Object.Instantiate(connectorPrefab, connectorLayer);
             SetDontSaveRecursive(line.gameObject);
             SkillTreeView.SetTopLeftAnchor(line);
-            var connector = new ConnectorPreview { fromId = fromId, toId = row.id, rect = line };
+            var connector = new ConnectorPreview { fromId = other, toId = row.id, rect = line };
             connectors.Add(connector);
             PlaceConnector(connector);
         }
     }
 
-    private bool HasConnector(string fromId, string toId)
+    /// <summary>The endpoint of <paramref name="connector" /> that isn't <paramref name="id" />, or null if it doesn't touch it.</summary>
+    private static string OtherEnd(ConnectorPreview connector, string id)
+    {
+        if (connector.fromId == id) return connector.toId;
+        if (connector.toId == id) return connector.fromId;
+        return null;
+    }
+
+    private bool HasConnectorEither(string a, string b)
     {
         foreach (ConnectorPreview connector in connectors)
         {
-            if (connector.fromId == fromId && connector.toId == toId)
+            if ((connector.fromId == a && connector.toId == b) ||
+                (connector.fromId == b && connector.toId == a))
             {
                 return true;
             }
@@ -293,7 +305,7 @@ public class SkillTreePreviewBuilder
         var rect = (RectTransform)view.transform;
         SkillTreeView.SetTopLeftAnchor(rect);
         rect.anchoredPosition = SkillTreeView.GridToLocal(row.x, row.y, spacing, treeOffset);
-        view.BindPreview(row.displayName, row.cost, tree != null ? tree.GetIcon(row.icon) : null);
+        view.BindPreview(row.displayName, row.cost, row.maxLevel, tree != null ? tree.GetIcon(row.icon) : null);
         nodesById[row.id] = new NodePreview { row = row, rect = rect, view = view };
     }
 

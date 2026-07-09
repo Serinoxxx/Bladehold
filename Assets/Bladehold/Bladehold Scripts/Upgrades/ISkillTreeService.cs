@@ -14,10 +14,17 @@ public interface ISkillTreeService
     /// <summary>Raised whenever the set of purchased nodes changes, so the tree UI can refresh.</summary>
     event Action OnTreeChanged;
 
+    /// <summary>True once the node owns at least one level (used for reveal and by external listeners).</summary>
     bool IsPurchased(string id);
 
+    /// <summary>How many levels of the node are owned (0..<see cref="SkillNode.maxLevel" />).</summary>
+    int GetLevel(SkillNode node);
+
+    /// <summary>True when every level of the node has been purchased.</summary>
+    bool IsMaxed(SkillNode node);
+
     /// <summary>
-    ///     A node is revealed if it is a root (no links) or any node it's linked to has been purchased.
+    ///     A node is revealed if it is a root (no links) or any node it's linked to has reached level 1.
     ///     Links are symmetric — this checks both the node's own listed links and the reverse direction
     ///     (nodes that list this one).
     /// </summary>
@@ -29,15 +36,12 @@ public interface ISkillTreeService
     /// </summary>
     bool IsTeased(SkillNode node);
 
-    /// <summary>
-    ///     The node's current price: its authored cost, or — for nodes in a <see cref="SkillNode.family" /> —
-    ///     the next rung of the family's shared price ladder (each purchase anywhere in the family climbs it).
-    /// </summary>
+    /// <summary>The cost of the node's <em>next</em> level (0 when already maxed).</summary>
     int GetCost(SkillNode node);
 
-    /// <summary>True if the node can be bought right now: revealed, not already owned, and affordable.</summary>
+    /// <summary>True if the node can be upgraded right now: revealed, not maxed, and affordable.</summary>
     bool CanPurchase(SkillNode node);
 
-    /// <summary>Buys the node: spends its cost, records it (persisted), and applies its effect(s).</summary>
+    /// <summary>Buys the node's next level: spends its cost, records it (persisted), and applies that level's effect(s).</summary>
     bool TryPurchase(string id);
 }

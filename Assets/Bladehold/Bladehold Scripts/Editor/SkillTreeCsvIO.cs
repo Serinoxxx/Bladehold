@@ -8,9 +8,9 @@ using UnityEngine;
 
 /// <summary>
 ///     One editable skill-tree CSV row (mirrors the columns of
-///     id,displayName,description,cost,stat,kind,amount,prereqs,x,y,icon,family). Serializable so an
-///     editing session (e.g. <see cref="SkillTreeEditSession" />) can persist a List of these through
-///     domain reloads and register them with the Undo system.
+///     id,displayName,description,upgradeText,cost,growth,maxLevel,stat,kind,amount,prereqs,x,y,icon).
+///     Serializable so an editing session (e.g. <see cref="SkillTreeEditSession" />) can persist a List of
+///     these through domain reloads and register them with the Undo system.
 /// </summary>
 [Serializable]
 public class SkillTreeRow
@@ -18,7 +18,10 @@ public class SkillTreeRow
     public string id = "";
     public string displayName = "";
     public string description = "";
+    public string upgradeText = "";
     public int cost;
+    public float growth = 1f;
+    public int maxLevel = 1;
     public string stat = "";
     public string kind = "";
     public string amount = "";
@@ -26,7 +29,9 @@ public class SkillTreeRow
     public float x;
     public float y;
     public string icon = "";
-    public string family = "";
+
+    /// <summary>Whether this node is unlocked from the start (the CSV's 'root' column).</summary>
+    public bool isRoot;
 
     /// <summary>The prereqs column split into trimmed, non-empty ids.</summary>
     public List<string> PrereqList()
@@ -61,14 +66,14 @@ public class SkillTreeRow
 /// <summary>
 ///     Shared CSV read/write for the skill-tree editors (the list-and-detail
 ///     <see cref="SkillTreeCsvEditorWindow" /> and the Scene-view editor). Reads a
-///     <see cref="SkillTreeSO" />'s private csv/hasHeaderRow via SerializedObject, and writes all 12
+///     <see cref="SkillTreeSO" />'s private csv/hasHeaderRow via SerializedObject, and writes all 15
 ///     columns back with the same quoting the runtime parser (CsvUtil.SplitLine) understands. All float
 ///     parsing/writing is InvariantCulture to match SkillTreeSO's parser — a locale with ',' decimals
 ///     must never corrupt the file.
 /// </summary>
 public static class SkillTreeCsvIO
 {
-    public const string Header = "id,displayName,description,cost,stat,kind,amount,prereqs,x,y,icon,family";
+    public const string Header = "id,displayName,description,upgradeText,cost,growth,maxLevel,stat,kind,amount,prereqs,x,y,icon,root";
 
     /// <summary>
     ///     Parses the tree's CSV into editable rows. Returns an empty list (and null csvAsset) when the
@@ -107,9 +112,9 @@ public static class SkillTreeCsvIO
             }
 
             List<string> f = CsvUtil.SplitLine(line);
-            if (f.Count < 10)
+            if (f.Count < 13)
             {
-                Debug.LogWarning($"Skill Tree Editor: skipping line {i + 1} of '{csvAsset.name}' ({f.Count} columns, expected at least 10).");
+                Debug.LogWarning($"Skill Tree Editor: skipping line {i + 1} of '{csvAsset.name}' ({f.Count} columns, expected at least 13).");
                 continue;
             }
 
@@ -118,16 +123,19 @@ public static class SkillTreeCsvIO
                 id = f[0].Trim(),
                 displayName = f[1].Trim(),
                 description = f[2].Trim(),
-                stat = f[4].Trim(),
-                kind = f[5].Trim(),
-                amount = f[6].Trim(),
-                prereqs = f[7].Trim(),
-                icon = f.Count > 10 ? f[10].Trim() : "",
-                family = f.Count > 11 ? f[11].Trim() : "",
+                upgradeText = f[3].Trim(),
+                stat = f[7].Trim(),
+                kind = f[8].Trim(),
+                amount = f[9].Trim(),
+                prereqs = f[10].Trim(),
+                icon = f.Count > 13 ? f[13].Trim() : "",
+                isRoot = f.Count > 14 && IsTruthy(f[14]),
             };
-            int.TryParse(f[3].Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out row.cost);
-            float.TryParse(f[8].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out row.x);
-            float.TryParse(f[9].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out row.y);
+            int.TryParse(f[4].Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out row.cost);
+            if (!float.TryParse(f[5].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out row.growth)) row.growth = 1f;
+            if (!int.TryParse(f[6].Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out row.maxLevel)) row.maxLevel = 1;
+            float.TryParse(f[11].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out row.x);
+            float.TryParse(f[12].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out row.y);
             rows.Add(row);
         }
 
@@ -135,7 +143,7 @@ public static class SkillTreeCsvIO
     }
 
     /// <summary>
-    ///     Writes the rows back to the CSV file the asset lives at (always all 12 columns), reimports it,
+    ///     Writes the rows back to the CSV file the asset lives at (always all 14 columns), reimports it,
     ///     and reloads the tree so parse errors surface immediately. Returns false when the asset path
     ///     can't be resolved.
     /// </summary>
@@ -155,7 +163,10 @@ public static class SkillTreeCsvIO
             sb.Append(Escape(row.id)).Append(',');
             sb.Append(Escape(row.displayName)).Append(',');
             sb.Append(Escape(row.description)).Append(',');
+            sb.Append(Escape(row.upgradeText)).Append(',');
             sb.Append(row.cost.ToString(CultureInfo.InvariantCulture)).Append(',');
+            sb.Append(row.growth.ToString(CultureInfo.InvariantCulture)).Append(',');
+            sb.Append(row.maxLevel.ToString(CultureInfo.InvariantCulture)).Append(',');
             sb.Append(Escape(row.stat)).Append(',');
             sb.Append(Escape(row.kind)).Append(',');
             sb.Append(Escape(row.amount)).Append(',');
@@ -163,13 +174,23 @@ public static class SkillTreeCsvIO
             sb.Append(row.x.ToString(CultureInfo.InvariantCulture)).Append(',');
             sb.Append(row.y.ToString(CultureInfo.InvariantCulture)).Append(',');
             sb.Append(Escape(row.icon)).Append(',');
-            sb.Append(Escape(row.family)).Append('\n');
+            sb.Append(row.isRoot ? "1" : "").Append('\n');
         }
 
         File.WriteAllText(path, sb.ToString());
         AssetDatabase.ImportAsset(path);
         tree.Reload();
         return true;
+    }
+
+    /// <summary>A CSV cell counts as true when it is "1", "true", "yes", or "root" (case-insensitive).</summary>
+    private static bool IsTruthy(string s)
+    {
+        s = s.Trim();
+        return s == "1"
+            || s.Equals("true", StringComparison.OrdinalIgnoreCase)
+            || s.Equals("yes", StringComparison.OrdinalIgnoreCase)
+            || s.Equals("root", StringComparison.OrdinalIgnoreCase);
     }
 
     public static string Escape(string field)

@@ -9,24 +9,35 @@ using UnityEngine;
 ///     codebase convention, the config itself lives on a ScriptableObject (created via
 ///     <c>Scriptable Objects/SkillTreeSO</c>) that points at the CSV.
 ///
-///     CSV columns (one node per row): <c>id, displayName, description, cost, stat, kind, amount, prereqs, x, y, icon, family</c>
+///     CSV columns (one node per row):
+///     <c>id, displayName, description, upgradeText, cost, growth, maxLevel, stat, kind, amount, prereqs, x, y, icon, root</c>
 ///     <list type="bullet">
+///         <item><c>description</c> = the unlock text; <c>upgradeText</c> = text shown once owned and still upgradeable (blank reuses <c>description</c>).</item>
 ///         <item><c>stat</c>/<c>kind</c>/<c>amount</c> blank → a connector/unlock-only node (no stat effect).</item>
+///         <item>
+///             <c>cost</c> is the level-1 cost; each subsequent level costs <c>round(prev × growth)</c>
+///             (blank/≤1 growth → flat cost every level). <c>maxLevel</c> is how many times the node can be
+///             purchased (blank/≤1 → single-level).
+///         </item>
 ///         <item>
 ///             <c>icon</c> is optional (the column may be absent entirely, or blank per row): the name of a
 ///             sprite in this asset's <see cref="icons" /> list, shown on the node by <see cref="SkillNodeView" />.
 ///         </item>
 ///         <item>
-///             <c>family</c> is optional: nodes sharing a family name share one escalating price ladder
-///             (see <see cref="SkillNode.family" />). Blank = the node is priced by its own <c>cost</c>.
-///         </item>
-///         <item>
 ///             <c>stat</c>/<c>kind</c>/<c>amount</c> may each hold ';'-separated lists of equal length to apply
 ///             several effects atomically (e.g. a node bumping both a chance and a bonus-% stat at once).
+///             Within one stat's <c>amount</c>, a '|'-separated list gives per-level increments (length
+///             <c>maxLevel</c>); a single value is the same increment every level.
 ///         </item>
 ///         <item>
-///             <c>prereqs</c> is semicolon-separated; blank → a root node visible from the start. A link
-///             is symmetric — purchasing either end of it reveals the other (see <see cref="SkillNode.prereqs" />).
+///             <c>prereqs</c> is a semicolon-separated list of linked node ids. Links are symmetric and
+///             stored on both ends — buying either end's first level reveals the other (see
+///             <see cref="SkillNode.prereqs" />). It does <b>not</b> control rootness.
+///         </item>
+///         <item>
+///             <c>root</c> (optional trailing column) marks a start-unlocked entry node (truthy = "1"/
+///             "true"/"yes"/"root"; blank = normal). This is the only thing that makes a node a root — an
+///             empty <c>prereqs</c> list does not. A tree may have several roots.
 ///         </item>
 ///         <item>Fields may be wrapped in double quotes to contain commas; "" is an escaped quote.</item>
 ///     </list>
@@ -176,9 +187,9 @@ public class SkillTreeSO : ScriptableObject
     private SkillNode ParseRow(string line, int lineNumber)
     {
         List<string> f = CsvUtil.SplitLine(line);
-        if (f.Count < 10)
+        if (f.Count < 13)
         {
-            Debug.LogError($"SkillTreeSO '{name}': line {lineNumber} has {f.Count} columns, expected at least 10. Skipping.");
+            Debug.LogError($"SkillTreeSO '{name}': line {lineNumber} has {f.Count} columns, expected at least 13. Skipping.");
             return null;
         }
 
@@ -189,22 +200,29 @@ public class SkillTreeSO : ScriptableObject
             return null;
         }
 
+        int maxLevel = Mathf.Max(1, ParseInt(f[6], 1, lineNumber, "maxLevel"));
+
         var node = new SkillNode
         {
             id = id,
             displayName = f[1].Trim(),
             description = f[2].Trim(),
-            cost = ParseInt(f[3], 0, lineNumber, "cost"),
-            x = ParseFloat(f[8], 0f, lineNumber, "x"),
-            y = ParseFloat(f[9], 0f, lineNumber, "y"),
+            upgradeText = f[3].Trim(),
+            maxLevel = maxLevel,
+            costPerLevel = BuildCostLadder(
+                ParseInt(f[4], 0, lineNumber, "cost"),
+                ParseFloat(f[5], 1f, lineNumber, "growth"),
+                maxLevel),
+            x = ParseFloat(f[11], 0f, lineNumber, "x"),
+            y = ParseFloat(f[12], 0f, lineNumber, "y"),
         };
 
-        string statRaw = f[4].Trim();
+        string statRaw = f[7].Trim();
         if (!string.IsNullOrEmpty(statRaw))
         {
             string[] statParts = statRaw.Split(';');
-            string[] kindParts = f[5].Split(';');
-            string[] amountParts = f[6].Split(';');
+            string[] kindParts = f[8].Split(';');
+            string[] amountParts = f[9].Split(';');
 
             if (kindParts.Length != statParts.Length || amountParts.Length != statParts.Length)
             {
@@ -226,13 +244,13 @@ public class SkillTreeSO : ScriptableObject
                         effectKind = ModifierKind.Flat;
                     }
 
-                    float effectAmount = ParseFloat(amountParts[e], 0f, lineNumber, "amount");
-                    node.effects.Add(new SkillEffect { stat = effectStat, kind = effectKind, amount = effectAmount });
+                    float[] amounts = ParsePerLevelAmounts(amountParts[e], maxLevel, lineNumber, statParts[e].Trim());
+                    node.effects.Add(new SkillEffect { stat = effectStat, kind = effectKind, amounts = amounts });
                 }
             }
         }
 
-        string prereqRaw = f[7].Trim();
+        string prereqRaw = f[10].Trim();
         if (!string.IsNullOrEmpty(prereqRaw))
         {
             foreach (string p in prereqRaw.Split(';'))
@@ -245,15 +263,65 @@ public class SkillTreeSO : ScriptableObject
             }
         }
 
-        // Optional icon and family columns — older CSVs without them parse as icon-less / family-less.
-        node.iconName = f.Count > 10 ? f[10].Trim() : "";
-        node.family = f.Count > 11 ? f[11].Trim() : "";
+        // Optional trailing icon column — rows without it parse as icon-less.
+        node.iconName = f.Count > 13 ? f[13].Trim() : "";
         if (!string.IsNullOrEmpty(node.iconName) && GetIcon(node.iconName) == null)
         {
             Debug.LogError($"SkillTreeSO '{name}': line {lineNumber} names icon '{node.iconName}', which is not in this asset's icons list.");
         }
 
+        // Optional trailing 'root' column — a truthy value marks a start-unlocked entry node. Absent/blank
+        // (older files) parse as non-root, which is why the CSVs carry an explicit root per entry branch.
+        node.isRoot = f.Count > 14 && ParseBool(f[14]);
+
         return node;
+    }
+
+    /// <summary>Level-1 cost, then <c>round(prev × growth)</c> per level (growth ≤ 1 ⇒ flat cost).</summary>
+    private static int[] BuildCostLadder(int baseCost, float growth, int maxLevel)
+    {
+        var ladder = new int[maxLevel];
+        ladder[0] = baseCost;
+        for (int i = 1; i < maxLevel; i++)
+        {
+            ladder[i] = growth > 1f ? Mathf.RoundToInt(ladder[i - 1] * growth) : baseCost;
+        }
+        return ladder;
+    }
+
+    /// <summary>
+    ///     Parses one stat's amount cell into a per-level array. A single value = same increment every
+    ///     level; a '|'-separated list gives one increment per level (must be length <paramref name="maxLevel" />).
+    /// </summary>
+    private float[] ParsePerLevelAmounts(string raw, int maxLevel, int lineNumber, string statName)
+    {
+        string[] parts = raw.Split('|');
+        if (parts.Length == 1)
+        {
+            return new[] { ParseFloat(parts[0], 0f, lineNumber, "amount") };
+        }
+
+        if (parts.Length != maxLevel)
+        {
+            Debug.LogError($"SkillTreeSO '{name}': line {lineNumber} stat '{statName}' has {parts.Length} per-level amounts but maxLevel is {maxLevel}. Extra/missing levels reuse the nearest value.");
+        }
+
+        var amounts = new float[parts.Length];
+        for (int i = 0; i < parts.Length; i++)
+        {
+            amounts[i] = ParseFloat(parts[i], 0f, lineNumber, "amount");
+        }
+        return amounts;
+    }
+
+    /// <summary>A CSV cell counts as true when it is "1", "true", "yes", or "root" (case-insensitive).</summary>
+    private static bool ParseBool(string s)
+    {
+        s = s.Trim();
+        return s == "1"
+            || s.Equals("true", StringComparison.OrdinalIgnoreCase)
+            || s.Equals("yes", StringComparison.OrdinalIgnoreCase)
+            || s.Equals("root", StringComparison.OrdinalIgnoreCase);
     }
 
     private int ParseInt(string s, int fallback, int lineNumber, string field)

@@ -284,15 +284,17 @@ public static class SettingsMenuGenerator
         RectTransform generalContent = CreateVerticalContainer("GeneralTabContent", content, 10f, new RectOffset(0, 0, 0, 0));
         generalContent.gameObject.AddComponent<LayoutElement>().flexibleHeight = 1f;
 
-        CreateSliderRow(generalContent, "Master Volume", out Slider masterSlider, 0f, 1f, 1f, 2);
-        CreateSliderRow(generalContent, "Music Volume", out Slider musicSlider, 0f, 1f, 1f, 2);
-        CreateSliderRow(generalContent, "SFX Volume", out Slider sfxSlider, 0f, 1f, 1f, 2);
-        CreateSliderRow(generalContent, "Sensitivity", out Slider sensitivitySlider, 0f, 10f, 5f, 1);
+        // Slider defaults mirror SaveData's authored defaults; at runtime RefreshFromSettings overrides
+        // each from the saved value anyway, so these only matter for a freshly-generated menu.
+        CreateSliderRow(generalContent, "Master Volume", out Slider masterSlider, 0f, 1f, 0.5f, 2);
+        CreateSliderRow(generalContent, "Music Volume", out Slider musicSlider, 0f, 1f, 0.5f, 2);
+        CreateSliderRow(generalContent, "SFX Volume", out Slider sfxSlider, 0f, 1f, 0.5f, 2);
+        CreateSliderRow(generalContent, "Sensitivity", out Slider sensitivitySlider, 0f, 10f, 0.5f, 1);
         CreateSliderRow(generalContent, "Max Ragdolls", out Slider maxRagdollsSlider, 0f, 50f, 12f, 0);
         maxRagdollsSlider.wholeNumbers = true;
         CreateToggleRow(generalContent, "Invert X", out Toggle invertXToggle);
         CreateToggleRow(generalContent, "Invert Y", out Toggle invertYToggle);
-        CreateSliderRow(generalContent, "Field of View", out Slider fieldOfViewSlider, 30f, 100f, 40f, 0);
+        CreateSliderRow(generalContent, "Field of View", out Slider fieldOfViewSlider, 30f, 100f, 90f, 0);
 
         RectTransform controlsContent = CreateVerticalContainer("ControlsTabContent", content, 6f, new RectOffset(0, 0, 0, 0));
         controlsContent.gameObject.AddComponent<LayoutElement>().flexibleHeight = 1f;

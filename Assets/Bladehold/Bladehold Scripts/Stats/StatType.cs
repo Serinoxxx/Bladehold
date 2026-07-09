@@ -72,6 +72,8 @@ public enum StatType
     /// </summary>
     AllDamageMultiplier,
 
+    /// <summary>1 = the bow is unlocked and can be drawn (hold aim); 0 = locked (aiming does nothing, sword stays out). Gated by the "Bow" skill node.</summary>
+    BowUnlocked,
     /// <summary>Damage of one arrow before charge/crit/multipliers. Base comes from BowSO.baseDamage.</summary>
     BowDamage,
     /// <summary>How many charge levels the bow draw can reach while aiming. Base comes from BowSO (the bow charges out of the box, unlike the sword's Heavy Strike gate).</summary>

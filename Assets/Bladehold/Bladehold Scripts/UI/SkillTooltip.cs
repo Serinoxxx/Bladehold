@@ -55,11 +55,11 @@ public class SkillTooltip : MonoBehaviour
 
     /// <summary>
     ///     Fills the tooltip from a node and its owning service, shows it, and snaps it to the cursor.
-    ///     The service supplies purchased state and the ladder-aware cost (family nodes climb a shared
-    ///     price ladder, so it isn't just the node's own <see cref="SkillNode.cost" />). For a multi-level
-    ///     (family) node the name gains a tier numeral, and — when the node is a single, still-buyable stat
-    ///     effect — the description is replaced by a live "before → after (+%)" block read from
-    ///     <see cref="Player.Instance" />'s stats. Anything else keeps its authored description.
+    ///     The service supplies the node's current level and the next-level cost. The description is the
+    ///     node's unlock text before it's owned, its upgrade text once owned and still upgradeable; a
+    ///     multi-level name gains a current/max level suffix; and — when the node is a single,
+    ///     still-buyable stat effect — a live "before → after (+%)" block for the <em>next</em> level is
+    ///     read from <see cref="Player.Instance" />'s stats.
     /// </summary>
     public void Show(SkillNode node, ISkillTreeService service)
     {
@@ -68,50 +68,56 @@ public class SkillTooltip : MonoBehaviour
             return;
         }
 
-        bool purchased = service.IsPurchased(node.id);
+        int level = service.GetLevel(node);
+        bool maxed = service.IsMaxed(node);
         int cost = service.GetCost(node);
 
-        if (nameText != null) nameText.text = BuildName(node, service, purchased);
-        var (beforeAfter, percentIncrease) = GetImprovementValues(node, purchased);
-        if (descriptionText != null) descriptionText.text = node.description;
+        if (nameText != null) nameText.text = BuildName(node);
+        var (beforeAfter, percentIncrease) = GetImprovementValues(node, level, maxed);
+        if (descriptionText != null) descriptionText.text = DescriptionFor(node, level);
         if (beforeAfterText != null) beforeAfterText.text = beforeAfter;
         if (percentIncreaseText != null) percentIncreaseText.text = percentIncrease;
-        if (costText != null) costText.text = purchased ? "Owned" : cost + costSuffix;
+        if (costText != null) costText.text = maxed ? "Maxed" : cost + costSuffix;
 
         gameObject.SetActive(true);
         FollowCursor();
     }
 
-    /// <summary>Appends a tier numeral to a multi-level (family) node's name — the tier a purchase reaches.</summary>
-    private static string BuildName(SkillNode node, ISkillTreeService service, bool purchased)
+    /// <summary>Appends the current/max level to a multi-level node's name (e.g. "Sharpened Edge 3/10").</summary>
+    private static string BuildName(SkillNode node)
     {
+        if (node.maxLevel <= 1)
+        {
+            return node.displayName;
+        }
+        // level shown by the owning view's badge; here the name just carries the max so the tooltip reads
+        // as a leveled skill.
         return node.displayName;
-
-        //not doing roman numerals for now, but leaving the code in case we want to add it back in later
-        //int familySize = FamilyCount(node, service, out int familyPurchased);
-        //if (familySize <= 1)
-        //{
-        //    return node.displayName;
-        //}
-
-        //// Ladder purchases are order-independent, so the numeral reads as "the tier you'd reach".
-        //int tier = familyPurchased + (purchased ? 0 : 1);
-        //return node.displayName + " " + ToRoman(tier);
     }
 
-    /// <summary>The dynamic value block for a clean single-effect leveled node, else the authored text.</summary>
-    private (string beforeAfter, string percentIncrease) GetImprovementValues(SkillNode node, bool purchased)
+    /// <summary>Unlock text before the node is owned; upgrade text (when authored) once it has a level.</summary>
+    private static string DescriptionFor(SkillNode node, int level)
+    {
+        if (level >= 1 && !string.IsNullOrEmpty(node.upgradeText))
+        {
+            return node.upgradeText;
+        }
+        return node.description;
+    }
+
+    /// <summary>The dynamic value block for a clean single-effect node's next level, else the authored text.</summary>
+    private (string beforeAfter, string percentIncrease) GetImprovementValues(SkillNode node, int level, bool maxed)
     {
         PlayerStats stats = Player.Instance != null ? Player.Instance.Stats : null;
-        bool multiLevel = !string.IsNullOrEmpty(node.family);
-        if (purchased || multiLevel == false || node.effects.Count != 1 || stats == null)
+        if (maxed || node.effects.Count != 1 || stats == null)
         {
             return (null, null);
         }
 
         SkillEffect e = node.effects[0];
+        float amount = e.AmountForLevel(level + 1);
         float before = stats.GetValue(e.stat);
-        float after = stats.PreviewValue(e.stat, e.kind, e.amount);
+        float after = stats.PreviewValue(e.stat, e.kind, amount);
 
         string beforeAfter = $"{StatDisplay.Label(e.stat)} {StatDisplay.Value(e.stat, before)} -> {StatDisplay.Value(e.stat, after)}.";
         string percentIncrease = null;
@@ -122,44 +128,6 @@ public class SkillTooltip : MonoBehaviour
         }
 
         return (beforeAfter, percentIncrease);
-    }
-
-    /// <summary>Counts nodes in the same family (0/1 = not a real family), and how many are purchased.</summary>
-    private static int FamilyCount(SkillNode node, ISkillTreeService service, out int purchasedInFamily)
-    {
-        purchasedInFamily = 0;
-        if (string.IsNullOrEmpty(node.family) || service.Tree == null)
-        {
-            return 0;
-        }
-
-        int count = 0;
-        foreach (SkillNode other in service.Tree.Nodes)
-        {
-            if (other.family != node.family)
-            {
-                continue;
-            }
-            count++;
-            if (service.IsPurchased(other.id))
-            {
-                purchasedInFamily++;
-            }
-        }
-        return count;
-    }
-
-    private static readonly string[] RomanUnits = { "", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX" };
-    private static readonly string[] RomanTens = { "", "X", "XX", "XXX" };
-
-    /// <summary>Roman numeral for small tier counts (1-39 covers the deepest family); larger falls back to digits.</summary>
-    private static string ToRoman(int n)
-    {
-        if (n <= 0 || n >= 40)
-        {
-            return n.ToString();
-        }
-        return RomanTens[n / 10] + RomanUnits[n % 10];
     }
 
     public void Hide()

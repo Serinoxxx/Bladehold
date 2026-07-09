@@ -126,6 +126,9 @@ public class PlayerBow : MonoBehaviour
     /// <summary>Fired once per shot (hit or miss), the moment the arrows leave the bow — cosmetic listeners like <see cref="BowPropAnimator" /> sync their release to this.</summary>
     public event Action OnFired;
 
+    /// <summary>True once the "Bow" skill node has been bought; while false, aiming does nothing and the sword stays out.</summary>
+    public bool IsUnlocked => !anyError && stats.GetValue(StatType.BowUnlocked) >= 1f;
+
     /// <summary>True while the aim button is held and the bow is drawn.</summary>
     public bool IsAiming { get; private set; }
 
@@ -259,6 +262,9 @@ public class PlayerBow : MonoBehaviour
 
         // Register the authored SO values as the stat bases; skill nodes layer on top without ever
         // mutating the asset. Everything at 0 is a locked skill line.
+        // The bow itself is gated: base 0 = locked until the "Bow" skill node is bought (unlike the
+        // sword, which is free out of the box).
+        stats.SetBase(StatType.BowUnlocked, 0f);
         stats.SetBase(StatType.BowDamage, config.baseDamage);
         stats.SetBase(StatType.BowMaxChargeLevels, config.baseMaxChargeLevels);
         stats.SetBase(StatType.BowChargeDamageBonus, config.baseChargeDamageBonus);
@@ -362,8 +368,9 @@ public class PlayerBow : MonoBehaviour
 
     private void StartAim()
     {
-        if (anyError)
+        if (anyError || !IsUnlocked)
         {
+            // Bow still locked: leave IsAiming false so the sword swing (and everything else) works normally.
             return;
         }
 

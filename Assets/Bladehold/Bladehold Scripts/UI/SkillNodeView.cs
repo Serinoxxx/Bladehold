@@ -19,11 +19,13 @@ public class SkillNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     [SerializeField] private Button button;
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private TMP_Text costText;
+    [Tooltip("Optional: shows the node's current/max level (e.g. \"3/10\") for multi-level nodes; hidden for single-level ones.")]
+    [SerializeField] private TMP_Text levelText;
     [Tooltip("Border ring tinted by node state; the background image keeps its authored color.")]
     [SerializeField] private Image border;
     [Tooltip("Optional: shows the node's CSV-authored icon (resolved through the tree's SkillTreeSO). Hidden when the node has none.")]
     [SerializeField] private Image icon;
-    [Tooltip("Shown on purchased nodes.")]
+    [Tooltip("Shown on fully-upgraded (maxed) nodes.")]
     [SerializeField] private GameObject purchasedTick;
     [Tooltip("Shown on teased nodes — the one-step-ahead preview that can't be bought yet.")]
     [SerializeField] private GameObject teasedLock;
@@ -91,10 +93,16 @@ public class SkillNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     ///     an <see cref="ISkillTreeService" />. Leaves <see cref="node" /> null so Refresh/OnEnable stay
     ///     inert on preview instances. Never called at runtime.
     /// </summary>
-    public void BindPreview(string displayName, int cost, Sprite iconSprite)
+    public void BindPreview(string displayName, int cost, int maxLevel, Sprite iconSprite)
     {
         if (nameText != null) nameText.text = displayName;
         if (costText != null) costText.text = cost + costSuffix;
+        if (levelText != null)
+        {
+            bool multiLevel = maxLevel > 1;
+            levelText.gameObject.SetActive(multiLevel);
+            if (multiLevel) levelText.text = "0/" + maxLevel;
+        }
         if (icon != null)
         {
             icon.sprite = iconSprite;
@@ -173,7 +181,8 @@ public class SkillNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
             return;
         }
 
-        bool purchased = service.IsPurchased(node.id);
+        int level = service.GetLevel(node);
+        bool maxed = service.IsMaxed(node);
         bool revealed = service.IsRevealed(node);
         bool teased = service.IsTeased(node);
 
@@ -189,15 +198,23 @@ public class SkillNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
         if (border != null)
         {
-            border.color = purchased ? purchasedColor : teased ? teasedColor : (canBuy ? availableColor : lockedColor);
+            // Maxed = green; teased = dim lookahead; otherwise available (affordable, incl. mid-upgrade)
+            // or locked. A partly-leveled but unaffordable node reads as locked, same as a fresh one.
+            border.color = maxed ? purchasedColor : teased ? teasedColor : (canBuy ? availableColor : lockedColor);
         }
-        if (purchasedTick != null && purchasedTick.activeSelf != purchased)
+        if (purchasedTick != null && purchasedTick.activeSelf != maxed)
         {
-            purchasedTick.SetActive(purchased);
+            purchasedTick.SetActive(maxed);
         }
         if (teasedLock != null && teasedLock.activeSelf != teased)
         {
             teasedLock.SetActive(teased);
+        }
+        if (levelText != null)
+        {
+            bool showLevel = node.maxLevel > 1 && !teased;
+            if (levelText.gameObject.activeSelf != showLevel) levelText.gameObject.SetActive(showLevel);
+            if (showLevel) levelText.text = level + "/" + node.maxLevel;
         }
         if (icon != null && icon.enabled)
         {
@@ -211,8 +228,7 @@ public class SkillNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         }
         if (costText != null)
         {
-            // GetCost, not node.cost: family nodes climb a shared price ladder as siblings are bought.
-            costText.text = purchased ? "Owned" : service.GetCost(node) + costSuffix;
+            costText.text = maxed ? "Maxed" : service.GetCost(node) + costSuffix;
         }
     }
 }

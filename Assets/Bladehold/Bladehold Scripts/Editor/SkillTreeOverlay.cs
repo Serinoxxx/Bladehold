@@ -8,8 +8,8 @@ using UnityEngine.UIElements;
 ///     The Scene-view detail panel for the skill tree editor: shown (docked) while a
 ///     <see cref="SkillTreeSceneEditor" /> session is active. Header = save/revert/close; then either an
 ///     interaction cheatsheet (nothing selected), the full node editor (one selected: id, name,
-///     description, cost, family, effects, prereqs, position, icon), or the multi-edit panel (several
-///     selected: shared icon swap + delete). All edits funnel through SkillTreeSceneEditor so they're
+///     description/upgrade text, cost/growth/maxLevel, effects, prereqs, position, icon), or the multi-edit
+///     panel (several selected: shared icon swap + delete). All edits funnel through SkillTreeSceneEditor so they're
 ///     undoable and the Scene-view preview refreshes live.
 /// </summary>
 [Overlay(typeof(SceneView), "Skill Tree Editor", defaultDisplay = false)]
@@ -132,12 +132,6 @@ public class SkillTreeOverlay : Overlay
                 }
             }
 
-            if (GUILayout.Button(new GUIContent("New Skill Level",
-                    "Duplicate the selected skill one tier up: trailing number in the id incremented, prereq set to the source.")))
-            {
-                SkillTreeSceneEditor.DuplicateAsHigherTier(session.selectedIds[0]);
-            }
-
             if (GUILayout.Button(new GUIContent("Add Node", "Add a new node linked to the selected one (same as the Scene-view + button).")))
             {
                 SkillTreeSceneEditor.AddChildNode(session.selectedIds[0]);
@@ -166,28 +160,35 @@ public class SkillTreeOverlay : Overlay
 
         EditorGUI.BeginChangeCheck();
         string displayName = EditorGUILayout.TextField("Display Name", row.displayName);
-        EditorGUILayout.LabelField("Description");
+        EditorGUILayout.LabelField(new GUIContent("Description (unlock text)", "Shown before purchase, and the only text for single-level nodes."));
         string description = EditorGUILayout.TextArea(row.description, GUILayout.MinHeight(40f));
-        int cost = EditorGUILayout.IntField("Cost", row.cost);
-        string family = EditorGUILayout.TextField(new GUIContent("Family",
-            "Optional price pool: family nodes buy in any order but share one escalating price ladder. Blank = priced individually."), row.family);
+        EditorGUILayout.LabelField(new GUIContent("Upgrade Text", "Shown once owned and still upgradeable. Blank reuses the description."));
+        string upgradeText = EditorGUILayout.TextArea(row.upgradeText, GUILayout.MinHeight(30f));
+        int cost = EditorGUILayout.IntField(new GUIContent("Cost", "Cost of level 1."), row.cost);
+        float growth = EditorGUILayout.FloatField(new GUIContent("Growth",
+            "Per-level cost multiplier: each level costs round(prev × growth). ≤1 = flat cost every level."), row.growth);
+        int maxLevel = EditorGUILayout.IntField(new GUIContent("Max Level",
+            "How many times the node can be purchased. 1 = single-level."), row.maxLevel);
         if (EditorGUI.EndChangeCheck())
         {
             SkillTreeSceneEditor.EditRow(id, r =>
             {
                 r.displayName = displayName;
                 r.description = description;
+                r.upgradeText = upgradeText;
                 r.cost = cost;
-                r.family = family;
+                r.growth = growth;
+                r.maxLevel = maxLevel;
             });
         }
 
         EditorGUILayout.Space(2f);
-        EditorGUILayout.LabelField("Effects (';'-separated, equal lengths; blank = connector node)", EditorStyles.miniBoldLabel);
+        EditorGUILayout.LabelField("Effects (';'-separated per stat; blank = connector node)", EditorStyles.miniBoldLabel);
         EditorGUI.BeginChangeCheck();
         string stat = EditorGUILayout.TextField(new GUIContent("Stat", "StatType name(s), e.g. SwordDamage or GoldenGoblinChance;GoldenGoblinGoldBonusPercent"), row.stat);
         string kind = EditorGUILayout.TextField(new GUIContent("Kind", "Flat or Percent, one per stat"), row.kind);
-        string amount = EditorGUILayout.TextField(new GUIContent("Amount", "one number per stat"), row.amount);
+        string amount = EditorGUILayout.TextField(new GUIContent("Amount",
+            "Per stat, ';'-separated. Within one stat, a '|'-separated list gives per-level increments (length = Max Level); a single value repeats every level. e.g. 0.05;0.5|0.5|1|2"), row.amount);
         if (EditorGUI.EndChangeCheck())
         {
             SkillTreeSceneEditor.EditRow(id, r =>
@@ -196,6 +197,14 @@ public class SkillTreeOverlay : Overlay
                 r.kind = kind;
                 r.amount = amount;
             });
+        }
+
+        EditorGUILayout.Space(2f);
+        bool wantRoot = EditorGUILayout.Toggle(new GUIContent("Root (unlocked at start)",
+            "A start-unlocked entry node. Every tree needs at least one root; the rest unlock by buying a linked node. This flag — not an empty link list — is what makes a node a root."), row.isRoot);
+        if (wantRoot != row.isRoot)
+        {
+            SkillTreeSceneEditor.SetRoot(id, wantRoot);
         }
 
         EditorGUILayout.Space(2f);
@@ -214,7 +223,9 @@ public class SkillTreeOverlay : Overlay
         }
         if (row.PrereqList().Count == 0)
         {
-            EditorGUILayout.LabelField("(none — root node)", EditorStyles.miniLabel);
+            EditorGUILayout.LabelField(
+                row.isRoot ? "(no links)" : "(no links — unreachable unless marked Root)",
+                EditorStyles.miniLabel);
         }
         if (SkillTreeSceneEditor.HasAnyLinks(id) && GUILayout.Button(new GUIContent("Clear All Links",
                 "Removes this node's own prereqs, and removes it from any other node's prereqs.")))

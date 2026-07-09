@@ -76,11 +76,15 @@ public class DevConsole : MonoBehaviour
         DrawSpawnBurstButton(300);
         GUILayout.EndHorizontal();
 
-        if (GUILayout.Button("Wipe Save & Reload", GUILayout.Height(ButtonHeight)))
+        if (GUILayout.Button("Wipe Progress & Reload", GUILayout.Height(ButtonHeight)))
         {
-            // Deleting also drops SaveSystem's in-memory cache, and nothing saves during scene teardown,
-            // so the reloaded scene's Wallet/tree services Load() fresh defaults.
-            SaveSystem.DeleteCurrentSave();
+            // Wipe only the progress half of the save (gold, both skill trees, Reincarnate points) —
+            // settings survive, same as the settings menu's Delete Save. Save() also updates
+            // SaveSystem's in-memory cache, so the reloaded scene's Wallet/tree services Load() the
+            // wiped-progress-but-same-settings data.
+            SaveData data = SaveSystem.Load();
+            data.ResetProgress();
+            SaveSystem.Save(data);
             RunState.StartingWave = 1;
             Time.timeScale = 1f; // ensure normal speed resumes even if something paused time on death.
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);

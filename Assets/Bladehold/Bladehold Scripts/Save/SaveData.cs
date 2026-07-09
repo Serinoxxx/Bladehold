@@ -15,9 +15,10 @@ public class SaveData
     public int totalGold;
 
     /// <summary>
-    ///     Ids of every skill-tree node the player has purchased. Re-applied as stat modifiers on each run
-    ///     by <see cref="SkillTreeService" />, making upgrades permanent meta-progression like gold. Cleared
-    ///     by <see cref="ReincarnateService.Reincarnate" /> when the player reincarnates.
+    ///     Purchased gold-tree levels as a <b>multiset</b>: a node's id appears once per level owned, so its
+    ///     level is how many times it occurs. Re-applied as stat modifiers on each run by
+    ///     <see cref="SkillTreeService" />, making upgrades permanent meta-progression like gold. Cleared by
+    ///     <see cref="ReincarnateService.BankPointsAndResetGoldTree" /> when the player reincarnates.
     /// </summary>
     public List<string> purchasedNodeIds = new List<string>();
 
@@ -25,16 +26,17 @@ public class SaveData
     public int reincarnatePoints;
 
     /// <summary>
-    ///     Ids of every Reincarnate-tree node purchased. Re-applied as stat modifiers on each run by
-    ///     <see cref="ReincarnateService" />, exactly like <see cref="purchasedNodeIds" /> — but these survive
-    ///     reincarnating, since the point tree is the permanent progression layer.
+    ///     Purchased Reincarnate-tree levels, same multiset encoding as <see cref="purchasedNodeIds" /> (one
+    ///     entry per level owned). Re-applied as stat modifiers on each run by
+    ///     <see cref="ReincarnateService" /> — but these survive reincarnating, since the point tree is the
+    ///     permanent progression layer.
     /// </summary>
     public List<string> purchasedReincarnateNodeIds = new List<string>();
 
     /// <summary>Linear 0-1 volumes applied by <see cref="GameSettingsService" />.</summary>
-    public float masterVolume = 1f;
-    public float musicVolume = 1f;
-    public float sfxVolume = 1f;
+    public float masterVolume = 0.5f;
+    public float musicVolume = 0.5f;
+    public float sfxVolume = 0.5f;
 
     /// <summary>
     ///     Max ragdolls simulating at once (0-50), applied by <see cref="GameSettingsService" /> to
@@ -44,18 +46,18 @@ public class SaveData
     public int maxRagdolls = 12;
 
     /// <summary>
-    ///     Mouse look sensitivity. 5 is the authored default, sitting at the middle of the settings
+    ///     Mouse look sensitivity. 0.5 is the authored default, near the low end of the settings
     ///     slider's 0-10 range.
     /// </summary>
-    public float mouseSensitivity = 5f;
+    public float mouseSensitivity = 0.5f;
     public bool invertLookX;
     public bool invertLookY;
 
     /// <summary>
     ///     Gameplay camera field of view in degrees, applied by <see cref="GameSettingsService" /> via
-    ///     <see cref="BowAimCamera.SetRestingFieldOfView" />. Matches the rig's authored default.
+    ///     <see cref="BowAimCamera.SetRestingFieldOfView" />.
     /// </summary>
-    public float fieldOfView = 40f;
+    public float fieldOfView = 90f;
 
     /// <summary>
     ///     Serialized Input System binding overrides for the vendored gameplay Controls asset (button

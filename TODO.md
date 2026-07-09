@@ -1,5 +1,62 @@
 # TODO
 
+## Bow unlock skill — Unity Editor wiring
+
+The C# is done: `StatType.BowUnlocked` (base 0 = locked) is registered by `PlayerBow.Start`, and
+`PlayerBow.StartAim` now early-returns while locked (aiming does nothing, sword stays out) —
+`PlayerBow.IsUnlocked` exposes the state. A `bow_unlock` node ("Bow", cost 60) in
+`Config/SkillTree.csv` sets `BowUnlocked` to 1. The bow now only works once that node is bought.
+
+- [ ] **Icon**: the node names `Archerskill_01_nobg`, which isn't in the gold `SkillTreeSO`'s `icons`
+      list yet. Add it via **Bladehold > Skill Tree Editor** (drag the
+      `Assets/Bladehold/Bladehold Images/Skills/Archerskill_01_nobg.png` sprite onto the node) or the
+      node just shows no icon.
+- [ ] **Balance**: `cost 60` is a placeholder for a whole-weapon unlock — tune to taste.
+
+## Manual verification (bow unlock)
+
+- [ ] Fresh save (or after a Reincarnate): holding aim (right-click) does nothing and the sword still
+      swings; buy the "Bow" node on the death-screen tree, restart, and aim now draws/fires the bow.
+- [ ] Existing bow upgrade nodes (Multi Shot etc.) are still independently buyable and take effect
+      once the bow is unlocked.
+
+## Leveled skill nodes (collapsed duplicates) — Unity Editor wiring
+
+The C# is done: each skill is now **one node upgraded through levels** instead of many duplicate
+rows. `SkillNode` gained `maxLevel`, per-level `costPerLevel` (from a base `cost` × `growth`), an
+`upgradeText`, and per-level effect amounts (`SkillEffect.amounts` + `AmountForLevel`); `SkillTreeSO`
+parses the new 14-column CSV (`id,displayName,description,upgradeText,cost,growth,maxLevel,stat,kind,
+amount,prereqs,x,y,icon`) with `;` between stats and `|` between per-level values. Both services
+(`SkillTreeService`/`ReincarnateService`) track a `Dictionary<string,int>` of levels, persisted as a
+**multiset** in `SaveData.purchasedNodeIds`/`purchasedReincarnateNodeIds` (id once per level owned) —
+`GetCost` is the next level's cost, `TryPurchase` buys one level and applies that level's increment,
+`GetLevel`/`IsMaxed` are new on `ISkillTreeService`. `SkillNodeView` shows a level badge + `Maxed`
+state; `SkillTooltip` swaps unlock→upgrade text and previews the next level. Both `Config/*.csv` were
+migrated to collapsed leveled nodes. The Skill Tree editors dropped `family`/`New Skill Level` and
+gained Upgrade Text / Growth / Max Level fields.
+
+- [ ] **Node prefab — level label**: add an optional `TMP_Text` to the `SkillNodeView` node prefab
+      and assign it to the new `levelText` field, so multi-level nodes show `n/max` (e.g. `3/10`).
+      Code degrades gracefully if left unwired (no label, everything else works). The prefab is the
+      one referenced by both `SkillTreeView.nodePrefab` in `SkillTreePreview.unity` (and the
+      death-screen canvas).
+- [ ] **Re-check icons list**: every icon name in the migrated CSVs was already used before, so all
+      should resolve — if any node shows no icon, add the sprite via **Bladehold > Skill Tree Editor**.
+- [ ] **Balance pass**: the `growth` multipliers were fitted to roughly match the old hand-tuned cost
+      ladders but the exact per-level numbers shifted — tune `cost`/`growth`/`maxLevel` to taste.
+
+## Manual verification (leveled skill nodes)
+
+- [ ] Open `Assets/Bladehold/Bladehold Scenes/SkillTreePreview.unity`, Play, and on the gold tree:
+      clicking a leveled node (e.g. Sharpened Edge) buys level 1, reveals its linked nodes (Like
+      Butter), and the badge reads `1/10`; further clicks raise the level, escalate the cost, and
+      stack the stat; at the cap the node reads `Maxed` and can't be clicked.
+- [ ] Tooltip shows the unlock text before purchase and the upgrade text once owned, with the
+      next-level before→after preview.
+- [ ] Spot-check the Reincarnate tree (points currency) — Golden Scent / Grave Robber level up.
+- [ ] `ClearSave` on the preview resets between runs; a save from before the migration loads without
+      errors (old ids are simply skipped).
+
 ## Stuck arrows + arrow impact feedback — Unity Editor wiring
 
 ## Manual verification (stuck arrows + impact feedback)

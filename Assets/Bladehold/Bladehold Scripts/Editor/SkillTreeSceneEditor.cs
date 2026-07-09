@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -382,7 +381,7 @@ public static class SkillTreeSceneEditor
 
     // ---------------------------------------------------------------- mutations
 
-    /// <summary>The Scene view's '+' button: a new node in a free cell near the source, prereq pre-linked.</summary>
+    /// <summary>The Scene view's '+' button: a new node in a free cell near the source, two-way linked to it.</summary>
     public static SkillTreeRow AddChildNode(string sourceId)
     {
         SkillTreeRow source = Session.GetRow(sourceId);
@@ -394,93 +393,99 @@ public static class SkillTreeSceneEditor
         RecordUndo("Add Skill Node");
         var row = new SkillTreeRow { id = SkillTreeCsvIO.UniqueId(Session.rows, "new_node") };
         (row.x, row.y) = FindFreeCell(source.x, source.y);
-        row.prereqs = source.id;
         Session.rows.Add(row);
+        AddLinkEntry(row, source.id);
+        AddLinkEntry(source, row.id);
         Session.dirty = true;
 
         builder.AddNode(row);
+        builder.SyncConnectors(row);
+        builder.SyncConnectors(source);
         SetSelection(new[] { row.id });
         RaiseSessionChanged();
         return row;
     }
 
     /// <summary>
-    ///     "New Skill Level": a copy of the node one tier up — trailing number in the id incremented
-    ///     (sword_2 → sword_3, else _2 appended), same name/effects/family/icon, prereq = the source.
+    ///     Links two nodes. A link is symmetric and stored on <b>both</b> nodes' lists, so direction is
+    ///     irrelevant (there are no dependent/prereq roles). No-ops on self-links or an existing link.
     /// </summary>
-    public static SkillTreeRow DuplicateAsHigherTier(string sourceId)
+    public static bool LinkSkill(string aId, string bId)
     {
-        SkillTreeRow source = Session.GetRow(sourceId);
-        if (source == null)
-        {
-            return null;
-        }
-
-        RecordUndo("New Skill Level");
-        SkillTreeRow row = source.Clone();
-        Match match = Regex.Match(source.id, @"^(.*?)(\d+)$");
-        string candidate = match.Success
-            ? match.Groups[1].Value + (int.Parse(match.Groups[2].Value) + 1)
-            : source.id + "_2";
-        row.id = SkillTreeCsvIO.UniqueId(Session.rows, candidate);
-        row.prereqs = source.id;
-        (row.x, row.y) = FindFreeCell(source.x, source.y);
-        Session.rows.Add(row);
-        Session.dirty = true;
-
-        builder.AddNode(row);
-        SetSelection(new[] { row.id });
-        RaiseSessionChanged();
-        return row;
-    }
-
-    /// <summary>Adds prereqId to dependentId's prereqs. No-ops on self/duplicate links; refuses cycles.</summary>
-    public static bool LinkSkill(string prereqId, string dependentId)
-    {
-        SkillTreeRow dependent = Session.GetRow(dependentId);
-        if (dependent == null || Session.GetRow(prereqId) == null || prereqId == dependentId)
+        SkillTreeRow a = Session.GetRow(aId);
+        SkillTreeRow b = Session.GetRow(bId);
+        if (a == null || b == null || aId == bId)
         {
             return false;
         }
-        List<string> prereqs = dependent.PrereqList();
-        if (prereqs.Contains(prereqId))
+        if (a.PrereqList().Contains(bId) && b.PrereqList().Contains(aId))
         {
-            return false;
-        }
-        if (IsReachable(dependentId, prereqId))
-        {
-            EditorUtility.DisplayDialog("Skill Tree Scene Editor",
-                $"'{dependentId}' is already a prerequisite (directly or indirectly) of '{prereqId}' — linking them the other way would create a cycle, permanently locking both nodes.", "OK");
             return false;
         }
 
         RecordUndo("Link Skill");
-        prereqs.Add(prereqId);
-        dependent.SetPrereqList(prereqs);
+        AddLinkEntry(a, bId);
+        AddLinkEntry(b, aId);
         Session.dirty = true;
-        builder.SyncConnectors(dependent);
+        builder.SyncConnectors(a);
+        builder.SyncConnectors(b);
         RaiseSessionChanged();
         return true;
     }
 
-    /// <summary>Removes one prereq id from a node (the overlay's × button).</summary>
-    public static void UnlinkSkill(string prereqId, string dependentId)
+    /// <summary>Removes the link between two nodes from <b>both</b> ends (the overlay's × button).</summary>
+    public static void UnlinkSkill(string aId, string bId)
     {
-        SkillTreeRow dependent = Session.GetRow(dependentId);
-        if (dependent == null)
+        SkillTreeRow a = Session.GetRow(aId);
+        SkillTreeRow b = Session.GetRow(bId);
+        bool removed = false;
+        if (a != null && a.PrereqList().Contains(bId)) removed = true;
+        if (b != null && b.PrereqList().Contains(aId)) removed = true;
+        if (!removed)
         {
             return;
         }
-        List<string> prereqs = dependent.PrereqList();
-        if (!prereqs.Remove(prereqId))
-        {
-            return;
-        }
+
         RecordUndo("Unlink Skill");
-        dependent.SetPrereqList(prereqs);
+        if (a != null) { RemoveLinkEntry(a, bId); builder.SyncConnectors(a); }
+        if (b != null) { RemoveLinkEntry(b, aId); builder.SyncConnectors(b); }
         Session.dirty = true;
-        builder.SyncConnectors(dependent);
         RaiseSessionChanged();
+    }
+
+    /// <summary>Sets whether a node is a start-unlocked root (the CSV's 'root' column).</summary>
+    public static void SetRoot(string id, bool isRoot)
+    {
+        SkillTreeRow row = Session.GetRow(id);
+        if (row == null || row.isRoot == isRoot)
+        {
+            return;
+        }
+        RecordUndo(isRoot ? "Mark Root" : "Unmark Root");
+        row.isRoot = isRoot;
+        Session.dirty = true;
+        RaiseSessionChanged();
+    }
+
+    /// <summary>Adds an id to a row's link list if not already present (no undo/dirty of its own).</summary>
+    private static void AddLinkEntry(SkillTreeRow row, string linkedId)
+    {
+        List<string> links = row.PrereqList();
+        if (!links.Contains(linkedId))
+        {
+            links.Add(linkedId);
+            row.SetPrereqList(links);
+        }
+    }
+
+    /// <summary>Removes an id from a row's link list (no undo/dirty of its own).</summary>
+    private static void RemoveLinkEntry(SkillTreeRow row, string linkedId)
+    {
+        List<string> links = row.PrereqList();
+        if (links.Remove(linkedId))
+        {
+            row.SetPrereqList(links);
+        }
     }
 
     /// <summary>True when a node has any prereqs of its own or is a prereq of some other node.</summary>
@@ -507,8 +512,8 @@ public static class SkillTreeSceneEditor
 
     /// <summary>
     ///     Severs every link touching a node in one step (the overlay's "Clear All Links" button): its own
-    ///     prereqs, and this node's id removed from any other node's prereqs (nodes left with none become
-    ///     roots).
+    ///     links, and this node's id removed from any other node's link list. Rootness is unaffected (it's
+    ///     the explicit 'root' flag now, not "has no links").
     /// </summary>
     public static void ClearAllLinks(string id)
     {
@@ -607,36 +612,6 @@ public static class SkillTreeSceneEditor
         RaiseSessionChanged();
     }
 
-    /// <summary>True when 'targetId' is reachable from 'startId' by walking prereq edges upward.</summary>
-    private static bool IsReachable(string startId, string targetId)
-    {
-        var visited = new HashSet<string>();
-        var stack = new Stack<string>();
-        stack.Push(startId);
-        while (stack.Count > 0)
-        {
-            string id = stack.Pop();
-            if (id == targetId)
-            {
-                return true;
-            }
-            if (!visited.Add(id))
-            {
-                continue;
-            }
-            SkillTreeRow row = Session.GetRow(id);
-            if (row == null)
-            {
-                continue;
-            }
-            foreach (string prereq in row.PrereqList())
-            {
-                stack.Push(prereq);
-            }
-        }
-        return false;
-    }
-
     /// <summary>Records one undo step for the drag about to start (per-frame moves are then silent).</summary>
     public static void BeginDrag()
     {
@@ -679,7 +654,7 @@ public static class SkillTreeSceneEditor
             preview += ", …";
         }
         if (!EditorUtility.DisplayDialog("Delete skill nodes",
-                $"Delete {ids.Count} node(s) ({preview})?\n\nPrereq references to them in other nodes will be removed; nodes left with no prereqs become root nodes.",
+                $"Delete {ids.Count} node(s) ({preview})?\n\nLinks to them from other nodes will be removed. Any node this leaves stranded (no links, not a root) will warn on Save.",
                 "Delete", "Cancel"))
         {
             return;
@@ -844,6 +819,9 @@ public static class SkillTreeSceneEditor
         {
             all.Add(row.id);
         }
+        var roots = new List<string>();
+        // Undirected adjacency, so reachability holds even if a link was hand-authored on only one end.
+        var adjacency = new Dictionary<string, HashSet<string>>();
         foreach (SkillTreeRow row in Session.rows)
         {
             if (string.IsNullOrEmpty(row.id))
@@ -854,15 +832,60 @@ public static class SkillTreeSceneEditor
             {
                 problems.Add($"duplicate id '{row.id}' (the tree will ignore the second occurrence)");
             }
+            if (row.isRoot)
+            {
+                roots.Add(row.id);
+            }
             foreach (string prereq in row.PrereqList())
             {
                 if (!all.Contains(prereq))
                 {
-                    problems.Add($"'{row.id}' requires unknown node '{prereq}'");
+                    problems.Add($"'{row.id}' links to unknown node '{prereq}'");
+                    continue;
+                }
+                AddAdjacency(adjacency, row.id, prereq);
+                AddAdjacency(adjacency, prereq, row.id);
+            }
+        }
+
+        if (roots.Count == 0)
+        {
+            problems.Add("no root nodes — nothing is unlocked at the start. Mark an entry node with the 'Root' toggle.");
+        }
+        else
+        {
+            // Nodes not reachable from any root can never be unlocked in-game.
+            var reachable = new HashSet<string>();
+            var stack = new Stack<string>(roots);
+            while (stack.Count > 0)
+            {
+                string id = stack.Pop();
+                if (!reachable.Add(id)) continue;
+                if (adjacency.TryGetValue(id, out HashSet<string> neighbours))
+                {
+                    foreach (string n in neighbours) stack.Push(n);
+                }
+            }
+            foreach (SkillTreeRow row in Session.rows)
+            {
+                if (!string.IsNullOrEmpty(row.id) && !reachable.Contains(row.id))
+                {
+                    problems.Add($"'{row.id}' is not reachable from any root node — it can never be unlocked.");
                 }
             }
         }
+
         return problems;
+    }
+
+    private static void AddAdjacency(Dictionary<string, HashSet<string>> adjacency, string from, string to)
+    {
+        if (!adjacency.TryGetValue(from, out HashSet<string> set))
+        {
+            set = new HashSet<string>();
+            adjacency[from] = set;
+        }
+        set.Add(to);
     }
 
     // ---------------------------------------------------------------- helpers

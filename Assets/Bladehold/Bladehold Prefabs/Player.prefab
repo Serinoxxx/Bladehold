@@ -625,6 +625,1492 @@ MonoBehaviour:
   references:
     version: 2
     RefIds: []
+--- !u!1 &3823456107636950212
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6385057675740259602}
+  - component: {fileID: 2309847610307793736}
+  - component: {fileID: 7190521362377715147}
+  - component: {fileID: 6012024974484717034}
+  m_Layer: 0
+  m_Name: LS_MeshRaycast_06
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6385057675740259602
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3823456107636950212}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5600408761925510343}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!2083052967 &2309847610307793736
+VisualEffect:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3823456107636950212}
+  m_Enabled: 1
+  m_Asset: {fileID: 8926484042661614526, guid: 1e3089274154b1043beaec8e5cdd7731, type: 3}
+  m_InitialEventName: OnPlay
+  m_InitialEventNameOverriden: 0
+  m_StartSeed: 0
+  m_ResetSeedOnPlay: 1
+  m_AllowInstancing: 1
+  m_ResourceVersion: 1
+  m_PropertySheet:
+    m_Float:
+      m_Array:
+      - m_Value: 0.5
+        m_Name: testof
+        m_Overridden: 1
+      - m_Value: 0.5
+        m_Name: Main Strip Size
+        m_Overridden: 0
+      - m_Value: 1
+        m_Name: Strips SAoL Overshot Peak Value
+        m_Overridden: 1
+      - m_Value: 0.25
+        m_Name: Strip UV Stretch
+        m_Overridden: 1
+      - m_Value: 0.46
+        m_Name: Noise Strength
+        m_Overridden: 1
+      - m_Value: 0.42
+        m_Name: Noise Scale
+        m_Overridden: 1
+      - m_Value: 0.2
+        m_Name: Branched Start Min
+        m_Overridden: 1
+      - m_Value: 0.6
+        m_Name: Branched Start Max
+        m_Overridden: 1
+      - m_Value: 1.5
+        m_Name: Hit Main Size Mult
+        m_Overridden: 1
+      - m_Value: 1.5
+        m_Name: Hit Branched Size Mult
+        m_Overridden: 1
+      - m_Value: 0.6
+        m_Name: Lifetime Multiply
+        m_Overridden: 1
+      - m_Value: 0.325
+        m_Name: Transition Width
+        m_Overridden: 1
+      - m_Value: 0.75
+        m_Name: Lifetime Main Branch Hits
+        m_Overridden: 1
+      - m_Value: 0.75
+        m_Name: Lifetime Side Branches Hits
+        m_Overridden: 1
+      - m_Value: 1.75
+        m_Name: Transition Exp
+        m_Overridden: 1
+      - m_Value: 1
+        m_Name: Strip To Center
+        m_Overridden: 1
+      - m_Value: 1
+        m_Name: Hit 2 Size Mult
+        m_Overridden: 1
+      - m_Value: 33
+        m_Name: Hit 2 Emission Power
+        m_Overridden: 1
+      - m_Value: 3
+        m_Name: Hit 2 Size
+        m_Overridden: 1
+      - m_Value: 1
+        m_Name: Hit 2 Dissolve Texture Scale
+        m_Overridden: 1
+      - m_Value: 0.5
+        m_Name: Hit 2 Random Size
+        m_Overridden: 1
+      - m_Value: 0.66
+        m_Name: Hit 2 Lifetime
+        m_Overridden: 1
+      - m_Value: 3
+        m_Name: Hit 2 Rows
+        m_Overridden: 1
+      - m_Value: 3
+        m_Name: Hit 2 Columns
+        m_Overridden: 1
+      - m_Value: 1
+        m_Name: Hit 2 Exp
+        m_Overridden: 1
+      - m_Value: 3
+        m_Name: Sparks Size Mult
+        m_Overridden: 1
+      - m_Value: 1.5
+        m_Name: Sparks Velocity Mult
+        m_Overridden: 1
+      - m_Value: 2
+        m_Name: Hit 2 Distortion Scale
+        m_Overridden: 1
+      - m_Value: 0.125
+        m_Name: Hit 2 Distortion
+        m_Overridden: 1
+      - m_Value: 0.25
+        m_Name: Hit 2 Distortion Subtract Remap
+        m_Overridden: 1
+      - m_Value: 0.33
+        m_Name: Hit 2 Size Random
+        m_Overridden: 1
+      - m_Value: 1
+        m_Name: Hit 2 Probability
+        m_Overridden: 1
+      - m_Value: 8
+        m_Name: Sparks 2 Size Mult
+        m_Overridden: 1
+      - m_Value: 0.66
+        m_Name: Sparks 2 Velocity Mult
+        m_Overridden: 1
+      - m_Value: 1
+        m_Name: Sparks 2 Linear Drag Mult
+        m_Overridden: 1
+      - m_Value: 1.5
+        m_Name: Sparks 2 Lifetime Mult
+        m_Overridden: 1
+      - m_Value: 0.75
+        m_Name: Hit 2 Mask Affects Color
+        m_Overridden: 1
+      - m_Value: 2
+        m_Name: Hit 3 Rim Exp
+        m_Overridden: 1
+      - m_Value: 2
+        m_Name: Hit 3 EoL
+        m_Overridden: 1
+      - m_Value: 0.25
+        m_Name: Hit 3 Lifetime
+        m_Overridden: 1
+      - m_Value: 0.25
+        m_Name: Hit 3 Noise Scale U
+        m_Overridden: 1
+      - m_Value: 1
+        m_Name: Hit 3 Noise Scale V
+        m_Overridden: 1
+      - m_Value: 15
+        m_Name: Hit 3 Emission Power
+        m_Overridden: 1
+      - m_Value: 1.25
+        m_Name: Hit 3 Size Mult
+        m_Overridden: 1
+      - m_Value: 0.45
+        m_Name: Hit Branch Noise Scale
+        m_Overridden: 1
+      - m_Value: 0.6
+        m_Name: Hit Branch Lifetime
+        m_Overridden: 1
+      - m_Value: 0.75
+        m_Name: Hit Branch Noise Strength
+        m_Overridden: 1
+      - m_Value: 0.5
+        m_Name: Hit Branch NSoL
+        m_Overridden: 1
+      - m_Value: 0.5
+        m_Name: Hit Branch UV Stretch
+        m_Overridden: 1
+      - m_Value: 1
+        m_Name: Hit Branch Size
+        m_Overridden: 1
+      - m_Value: 0
+        m_Name: Hit 3 Probability
+        m_Overridden: 1
+      - m_Value: 1
+        m_Name: Main Strip B Noise Boost
+        m_Overridden: 1
+      - m_Value: 0.4
+        m_Name: Lifetime Side Branches
+        m_Overridden: 1
+      - m_Value: 0.5
+        m_Name: Branched Strip Lifetime
+        m_Overridden: 1
+      - m_Value: 0
+        m_Name: Source Move Amount
+        m_Overridden: 1
+      - m_Value: 1
+        m_Name: Source Hit Size Mult
+        m_Overridden: 1
+      - m_Value: 1
+        m_Name: MASTER SCALE Strips UV
+        m_Overridden: 1
+      - m_Value: 0.5
+        m_Name: Branched Hit Lifetime
+        m_Overridden: 1
+      - m_Value: 0.5
+        m_Name: Main Strip Hit Lifetime
+        m_Overridden: 1
+      - m_Value: 1
+        m_Name: Strips Noise Scale
+        m_Overridden: 1
+      - m_Value: 0.3
+        m_Name: Strips Noise Strength
+        m_Overridden: 1
+      - m_Value: 0.125
+        m_Name: MASTER SCALE Strips Thickness
+        m_Overridden: 1
+      - m_Value: 0.66
+        m_Name: MASTER SCALE Hits And Sparks
+        m_Overridden: 1
+      - m_Value: 0.5
+        m_Name: Main Strip Lifetime
+        m_Overridden: 1
+      - m_Value: 0
+        m_Name: Hit Move To Camera Fix
+        m_Overridden: 1
+      - m_Value: 0.55
+        m_Name: Source Hit Lifetime
+        m_Overridden: 1
+      - m_Value: 3
+        m_Name: Strips V Mask Exp
+        m_Overridden: 1
+      - m_Value: 15
+        m_Name: Dissolve Noise Scale
+        m_Overridden: 1
+    m_Vector2f:
+      m_Array: []
+    m_Vector3f:
+      m_Array: []
+    m_Vector4f:
+      m_Array:
+      - m_Value: {x: 0, y: 0.20000005, z: 1, w: 1}
+        m_Name: Lightning Color
+        m_Overridden: 1
+    m_Uint:
+      m_Array: []
+    m_Int:
+      m_Array:
+      - m_Value: 1
+        m_Name: BranchesCountHIDDEN
+        m_Overridden: 1
+      - m_Value: 170
+        m_Name: HowManyTimesBranchesWereTriggeredHIDDEN
+        m_Overridden: 1
+      - m_Value: 170
+        m_Name: HowManyTimesVFXWasTriggeredHIDDEN
+        m_Overridden: 1
+      - m_Value: 100
+        m_Name: TotalBranchedParticleCountHIDDEN
+        m_Overridden: 1
+    m_Matrix4x4f:
+      m_Array: []
+    m_AnimationCurve:
+      m_Array:
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 1
+            inSlope: -11.443998
+            outSlope: -11.443998
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0.09908779
+          - serializedVersion: 3
+            time: 0.09918828
+            value: 0.35876995
+            inSlope: -1.9848881
+            outSlope: -1.9848881
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0.5176155
+            outWeight: 0.17282462
+          - serializedVersion: 3
+            time: 0.36966324
+            value: 0.08811552
+            inSlope: -0.3564774
+            outSlope: -0.3564774
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0.39715874
+            outWeight: 0.18962952
+          - serializedVersion: 3
+            time: 1
+            value: 0
+            inSlope: -0.053237285
+            outSlope: -0.053237285
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0.185542
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Hit SoL Cirve
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0.002004008
+            value: 0.14999072
+            inSlope: 0.018464556
+            outSlope: 0.018464556
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 0.6870264
+            value: 0.24737796
+            inSlope: 0.4016299
+            outSlope: 0.4016299
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 1
+            value: 0.19838245
+            inSlope: -0.9843194
+            outSlope: -0.9843194
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Main Strip Curve
+        m_Overridden: 0
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 34
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 1
+            value: 1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 34
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Strips SAoL Overshot Curve
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 0
+            inSlope: 2
+            outSlope: 2
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 1
+            value: 1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Strips SAoL Time Curve
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 1
+            inSlope: -0.6716214
+            outSlope: -0.6716214
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0.10357814
+          - serializedVersion: 3
+            time: 1
+            value: 0.75
+            inSlope: -0.009865065
+            outSlope: -0.009865065
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0.07344645
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Main Strip Profile
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 1
+            inSlope: -1.3706254
+            outSlope: -1.3706254
+            tangentMode: 34
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0.33333334
+          - serializedVersion: 3
+            time: 0.23427331
+            value: 0.67889905
+            inSlope: Infinity
+            outSlope: Infinity
+            tangentMode: 1
+            weightedMode: 0
+            inWeight: 0.33333334
+            outWeight: 0.33333334
+          - serializedVersion: 3
+            time: 0.29934925
+            value: 0.41055045
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 1
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Main Strip NpOL Curve
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 0
+            inSlope: 2
+            outSlope: 2
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 1
+            value: 1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Main Strip NpoL Curve
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 0
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 34
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0.33333334
+          - serializedVersion: 3
+            time: 1
+            value: 0
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 34
+            weightedMode: 0
+            inWeight: 0.33333334
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Transition Length Curve
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 1
+            inSlope: 0.008366754
+            outSlope: 0.008366754
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0.6238226
+          - serializedVersion: 3
+            time: 0.35833335
+            value: 0.000000016763806
+            inSlope: -0.012304876
+            outSlope: -0.012304876
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0.33333334
+            outWeight: 0.6388891
+          - serializedVersion: 3
+            time: 0.662497
+            value: -0.0037029386
+            inSlope: -0.0051776413
+            outSlope: -0.0051776413
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0.44444415
+            outWeight: 0.58025074
+          - serializedVersion: 3
+            time: 1
+            value: 1
+            inSlope: 0.003252716
+            outSlope: 0.003252716
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0.6503402
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Strip To Center Curve
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 0.3999939
+            inSlope: 0.6000061
+            outSlope: 0.6000061
+            tangentMode: 34
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0.33333334
+          - serializedVersion: 3
+            time: 1
+            value: 1
+            inSlope: 0.6000061
+            outSlope: 0.6000061
+            tangentMode: 34
+            weightedMode: 0
+            inWeight: 0.33333334
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Hit 2 Dissolve Curve
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 0
+            inSlope: 1.6562264
+            outSlope: 1.6562264
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0.059808612
+          - serializedVersion: 3
+            time: 1
+            value: 1
+            inSlope: 0.44048584
+            outSlope: 0.44048584
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0.11244017
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Sparks 2 Linear Drag Curve
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 1
+            inSlope: -0.03972154
+            outSlope: -0.03972154
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0.2375
+          - serializedVersion: 3
+            time: 1
+            value: 0.000008106232
+            inSlope: -2.4056408
+            outSlope: -2.4056408
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0.050000012
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Sparks 2 SoL Curve
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 1.501041
+            inSlope: -10.787678
+            outSlope: -10.787678
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0.11532225
+          - serializedVersion: 3
+            time: 0.16674621
+            value: 0.70309806
+            inSlope: -1.5047477
+            outSlope: -1.5047477
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0.4978473
+            outWeight: 0.3237028
+          - serializedVersion: 3
+            time: 0.44284365
+            value: 0.5153454
+            inSlope: -0.17152649
+            outSlope: -0.17152649
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0.4688436
+            outWeight: 0.24613343
+          - serializedVersion: 3
+            time: 1
+            value: 0.49998894
+            inSlope: 0.032872207
+            outSlope: 0.032872207
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Hit 2 Emission Curve
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 0
+            inSlope: 2.8959317
+            outSlope: 2.8959317
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0.03827751
+          - serializedVersion: 3
+            time: 1
+            value: 1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Hit 3 SoL
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 1
+            inSlope: -2.751959
+            outSlope: -2.751959
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0.045454547
+          - serializedVersion: 3
+            time: 1
+            value: 0
+            inSlope: 0.008508283
+            outSlope: 0.008508283
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0.08373207
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Hit 3 OoL
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 1.9929063
+            inSlope: -4.485878
+            outSlope: -4.485878
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0.08899777
+          - serializedVersion: 3
+            time: 1
+            value: 0.5499878
+            inSlope: 0.008508283
+            outSlope: 0.008508283
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Hit 3 EoL
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 0.1000061
+            inSlope: 6.524198
+            outSlope: 6.524198
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0.06422745
+          - serializedVersion: 3
+            time: 1
+            value: 3
+            inSlope: 0.95870334
+            outSlope: 0.95870334
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0.21031892
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Hit 3 Rim Exp
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 1
+            inSlope: -0.021431552
+            outSlope: -0.021431552
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0.11004785
+          - serializedVersion: 3
+            time: 1
+            value: 0
+            inSlope: -3.0279667
+            outSlope: -3.0279667
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0.033492804
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Hit Branch Noise Profile
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 0
+            inSlope: 1
+            outSlope: 1
+            tangentMode: 34
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 1
+            value: 1
+            inSlope: 1
+            outSlope: 1
+            tangentMode: 34
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Hit Branch Profile
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 0
+            inSlope: 2
+            outSlope: 2
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 1
+            value: 1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Main Strip Add Profile
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 1
+            inSlope: -2.104921
+            outSlope: -2.104921
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0.08851675
+          - serializedVersion: 3
+            time: 1
+            value: 0
+            inSlope: -0.14787738
+            outSlope: -0.14787738
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0.09569377
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Main Strip B Profile
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 0
+            inSlope: -0.04430783
+            outSlope: -0.04430783
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0.2277694
+          - serializedVersion: 3
+            time: 0.9088175
+            value: 0.7278736
+            inSlope: -2.7348025
+            outSlope: -2.7348025
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0.047975022
+            outWeight: 0.5296156
+          - serializedVersion: 3
+            time: 1
+            value: 0
+            inSlope: -19.222225
+            outSlope: -19.222225
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0.0718779
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Main Strip B Noise Mask Profile
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 0
+            inSlope: Infinity
+            outSlope: Infinity
+            tangentMode: 103
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 0.13827454
+            value: 0.3727844
+            inSlope: Infinity
+            outSlope: Infinity
+            tangentMode: 103
+            weightedMode: 0
+            inWeight: 0.33333334
+            outWeight: 0.33333334
+          - serializedVersion: 3
+            time: 0.44818187
+            value: 0.4521749
+            inSlope: Infinity
+            outSlope: Infinity
+            tangentMode: 103
+            weightedMode: 0
+            inWeight: 0.33333334
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Strips NpoL Curve
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 1
+            inSlope: -1.9239146
+            outSlope: -1.9239146
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0.0677966
+          - serializedVersion: 3
+            time: 1
+            value: 0.25
+            inSlope: -0.015181287
+            outSlope: -0.015181287
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0.09642569
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Main Strip EoT
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 0
+            inSlope: 1
+            outSlope: 1
+            tangentMode: 34
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 1
+            value: 1
+            inSlope: 1
+            outSlope: 1
+            tangentMode: 34
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Strips Noise PoL
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 0
+            inSlope: 2.8995562
+            outSlope: 2.8995562
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0.040669855
+          - serializedVersion: 3
+            time: 0.59265053
+            value: 0.9630563
+            inSlope: 0.2988423
+            outSlope: 0.2988423
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0.33333334
+            outWeight: 0.5801487
+          - serializedVersion: 3
+            time: 0.796406
+            value: 0.8495831
+            inSlope: -1.7009926
+            outSlope: -1.7009926
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0.19729735
+            outWeight: 0.5267728
+          - serializedVersion: 3
+            time: 1
+            value: 0
+            inSlope: -4.942457
+            outSlope: -4.942457
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0.1536618
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Main Strip Noise Mask Profile
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 1
+            inSlope: -2.000871
+            outSlope: -2.000871
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0.056497168
+          - serializedVersion: 3
+            time: 1
+            value: 0.25
+            inSlope: -0.015181287
+            outSlope: -0.015181287
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0.09642569
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Branched Strip EoT
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 1
+            inSlope: -6.0747867
+            outSlope: -6.0747867
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 0.1566071
+            value: 0.39890057
+            inSlope: -1.6940354
+            outSlope: -1.6940354
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 0.42469066
+            value: 0.1258851
+            inSlope: -0.507721
+            outSlope: -0.507721
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 1
+            value: 0
+            inSlope: 0.032872207
+            outSlope: 0.032872207
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Strips EoL
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 1
+            inSlope: -1.4271944
+            outSlope: -1.4271944
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0.10357814
+          - serializedVersion: 3
+            time: 1
+            value: 0.5
+            inSlope: -0.01603206
+            outSlope: -0.01603206
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0.09039557
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Main Strip AoT
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 1
+            inSlope: -1.4271944
+            outSlope: -1.4271944
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0.10357814
+          - serializedVersion: 3
+            time: 1
+            value: 0.5
+            inSlope: -0.01603206
+            outSlope: -0.01603206
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0.09039557
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Branched Strip AoT
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 34
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 1
+            value: 1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 34
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Branched Strip Profile
+        m_Overridden: 1
+      - m_Value:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 0
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 34
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0.33333334
+          - serializedVersion: 3
+            time: 1
+            value: 0
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 34
+            weightedMode: 0
+            inWeight: 0.33333334
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Name: Strips SAoL Alpha
+        m_Overridden: 1
+    m_Gradient:
+      m_Array:
+      - m_Value:
+          serializedVersion: 2
+          key0: {r: 1, g: 1, b: 1, a: 1}
+          key1: {r: 0, g: 0, b: 0, a: 1}
+          key2: {r: 0, g: 0, b: 0, a: 0}
+          key3: {r: 0, g: 0, b: 0, a: 0}
+          key4: {r: 0, g: 0, b: 0, a: 0}
+          key5: {r: 0, g: 0, b: 0, a: 0}
+          key6: {r: 0, g: 0, b: 0, a: 0}
+          key7: {r: 0, g: 0, b: 0, a: 0}
+          ctime0: 3277
+          ctime1: 9830
+          ctime2: 0
+          ctime3: 0
+          ctime4: 0
+          ctime5: 0
+          ctime6: 0
+          ctime7: 0
+          atime0: 0
+          atime1: 65535
+          atime2: 0
+          atime3: 0
+          atime4: 0
+          atime5: 0
+          atime6: 0
+          atime7: 0
+          m_Mode: 0
+          m_ColorSpace: -1
+          m_NumColorKeys: 2
+          m_NumAlphaKeys: 2
+        m_Name: Branched Strip Low Lifetime Fix
+        m_Overridden: 1
+    m_NamedObject:
+      m_Array:
+      - m_Value: {fileID: 0}
+        m_Name: New Texture2D
+        m_Overridden: 1
+      - m_Value: {fileID: 2800000, guid: a644a348e34700940864291ac7056452, type: 3}
+        m_Name: Strip Texture
+        m_Overridden: 1
+      - m_Value: {fileID: 2800000, guid: 7d1a37581b4ed214e94b08f84ad16c0a, type: 3}
+        m_Name: Hit Texture
+        m_Overridden: 1
+      - m_Value: {fileID: 2800000, guid: 385c268453c8a0345aca4b3969a03446, type: 3}
+        m_Name: Strips Texture
+        m_Overridden: 1
+      - m_Value: {fileID: 2800000, guid: 8854b766b9952fa43987076977c7b3fb, type: 3}
+        m_Name: Strip Center UV
+        m_Overridden: 1
+      - m_Value: {fileID: 2800000, guid: c7dd401dc0a67a944b4b7e410b512f0a, type: 3}
+        m_Name: Hit 2 Texture
+        m_Overridden: 1
+      - m_Value: {fileID: 2800000, guid: 4b946163c721a6747a7ab21eb7d98111, type: 3}
+        m_Name: Hit 2 Dissolve Texture
+        m_Overridden: 1
+      - m_Value: {fileID: 2800000, guid: a346da21936e3824ebec9b2439a7f25e, type: 3}
+        m_Name: Hit 2 Distortion Texture
+        m_Overridden: 1
+      - m_Value: {fileID: 2800000, guid: 70ee02db9272644409a74d1124517113, type: 3}
+        m_Name: Sparks 2 Texture
+        m_Overridden: 1
+      - m_Value: {fileID: 2800000, guid: abc12e17cbe5efa45a128c8148517d56, type: 3}
+        m_Name: Hit 3 Noise Texture
+        m_Overridden: 1
+    m_Bool:
+      m_Array:
+      - m_Value: 1
+        m_Name: Strips NpoL Along Direction Enabled
+        m_Overridden: 1
+      - m_Value: 1
+        m_Name: Strips NpoL Along Direction Flip
+        m_Overridden: 1
+      - m_Value: 0
+        m_Name: Disable Main Hit
+        m_Overridden: 1
+      - m_Value: 0
+        m_Name: Disable Branched Hits
+        m_Overridden: 1
+      - m_Value: 1
+        m_Name: Disable Hit 3
+        m_Overridden: 1
+      - m_Value: 1
+        m_Name: Disable Sparks
+        m_Overridden: 1
+      - m_Value: 1
+        m_Name: Strips V Mask Enabled
+        m_Overridden: 1
+      - m_Value: 1
+        m_Name: Dissolve Noise Enabled
+        m_Overridden: 1
+--- !u!73398921 &7190521362377715147
+VFXRenderer:
+  serializedVersion: 1
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3823456107636950212}
+  m_Enabled: 0
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 0
+  m_LightProbeUsage: 0
+  m_ReflectionProbeUsage: 0
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 257
+  m_RendererPriority: 0
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+--- !u!114 &6012024974484717034
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3823456107636950212}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68d62a8f179b1f647bfe486febcf3eaa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  previewNormalsInEditor: 1
+  showNormalHitDistance: 1
+  mesh: {fileID: 5600408761925220583}
+  maxDistance: 1
+  maxDistanceAffectedByMeshScale: 1
+  maxDistanceAffectedByMeshScaleMultiply: 1
+  meshScaleAutoScaleEnabled: 0
+  meshAutoScaleMultiply: 1
+  autoScaleMultiply: 1
+  normalAdjustEnabled: 0
+  normalAdjust: {x: 0, y: 1, z: 0}
+  normalAdjustAmount: 0.95
+  maximumNumberOfAttempts: 1
+  maximumNumberOfBranchedAttempts: 1
+  minNumberOfMainStrips: 1
+  maxNumberOfMainStrips: 1
+  minNumberOfBranchedStrips: 0
+  maxNumberOfBranchedStrips: 3
+  speed: 100
+  speedVariation:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0.67988527
+      outSlope: 0.67988527
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.15429688
+      value: 1.1049042
+      inSlope: -0.14798748
+      outSlope: -0.14798748
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.328125
+      value: 0.9352722
+      inSlope: -0.12559491
+      outSlope: -0.12559491
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.48828125
+      value: 1.0513327
+      inSlope: -0.173365
+      outSlope: -0.173365
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.64453125
+      value: 0.8839264
+      inSlope: 0.2667433
+      outSlope: 0.2667433
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.828125
+      value: 1.1785736
+      inSlope: 0.28295666
+      outSlope: 0.28295666
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: -1.0389737
+      outSlope: -1.0389737
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  speedVariationTime: 0.54748684
+  speedVariationTimeSpeed: 0.5
+  randomBranchedCircleMinRadius: 0
+  randomBranchedCircleMaxRadius: 8
 --- !u!1 &5281167709324721594
 GameObject:
   m_ObjectHideFlags: 0
@@ -778,7 +2264,7 @@ Transform:
   m_GameObject: {fileID: 5487365143093422266}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 1.66, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -801,6 +2287,170 @@ MonoBehaviour:
   sensitivity: 0.5
   tiltBounds: {x: -70, y: 70}
   hideCursor: 1
+--- !u!1 &6195939974722655765
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8159982072029018326}
+  - component: {fileID: 4514427201274516064}
+  - component: {fileID: 128400662044999071}
+  m_Layer: 6
+  m_Name: BowHitFeedback
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8159982072029018326
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6195939974722655765}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7221494747159862080}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4514427201274516064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6195939974722655765}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1bccc036cccbdf44fa461577ca93b012, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BowHitFeedback
+  bow: {fileID: 9219490616039227213}
+  audioSource: {fileID: 128400662044999071}
+  hitSounds:
+  - {fileID: 8300000, guid: b487e419382b543d8920150dc5315093, type: 3}
+  - {fileID: 8300000, guid: 714a19163d1a9430c82c6f530bf1b347, type: 3}
+  - {fileID: 8300000, guid: df7d38020e40e4ac4af4dd00147dbade, type: 3}
+  - {fileID: 8300000, guid: e8c517be417c34728837bb7e42c7e903, type: 3}
+  - {fileID: 8300000, guid: 214875c9a6b62414f934018d19f0c0cb, type: 3}
+  - {fileID: 8300000, guid: e4a40cd4d59d5441e9515d3e180b1af1, type: 3}
+  critHitSounds:
+  - {fileID: 8300000, guid: 0924b18008130254fab0dca453f36ff9, type: 3}
+  vulnerableHitSounds:
+  - {fileID: 8300000, guid: 0924b18008130254fab0dca453f36ff9, type: 3}
+  bloodParticlePrefab: {fileID: 198615267133080452, guid: ed67c2cb8e3a7fb418c6fbb1b001dce2, type: 3}
+  critBloodParticlePrefab: {fileID: 198355779183106702, guid: 3b517eddec185dd4a830743a742ad00b, type: 3}
+  vulnerableBloodParticlePrefab: {fileID: 198355779183106702, guid: 3b517eddec185dd4a830743a742ad00b, type: 3}
+  damageForMaxParticles: 20
+  minParticles: 3
+  maxParticles: 40
+  minSpeedMultiplier: 0.5
+  maxSpeedMultiplier: 2
+  particleCleanupDelay: 3
+--- !u!82 &128400662044999071
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6195939974722655765}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: -3165942800488051908, guid: 7e984f512e89b60468e829489e8883e3, type: 2}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &6770273655476019272
 GameObject:
   m_ObjectHideFlags: 0
@@ -1021,7 +2671,7 @@ MonoBehaviour:
   InScriptDrivenPause: 0
   FeedbacksList:
   - rid: 6386679462484246920
-  - rid: 6386679462484246925
+  - rid: 6386679477309276274
   KeepPlayModeChanges: 0
   PerformanceMode: 0
   RestoreInitialValuesOnDisable: 0
@@ -1257,13 +2907,13 @@ MonoBehaviour:
           ButtonText: Debug Stop Sound
         ResetSequentialIndexButton:
           ButtonText: Reset Sequential Index
-    - rid: 6386679462484246925
-      type: {class: MMF_CameraShake, ns: MoreMountains.Feedbacks, asm: MoreMountains.Tools}
+    - rid: 6386679477309276274
+      type: {class: MMF_CinemachineImpulse, ns: MoreMountains.FeedbacksForThirdParty, asm: MoreMountains.Tools}
       data:
         Active: 1
-        UniqueID: 1008286831
-        Label: Camera Shake
-        OriginalLabel: Camera Shake
+        UniqueID: -1188934764
+        Label: Cinemachine Impulse
+        OriginalLabel: Cinemachine Impulse
         ChannelMode: 0
         Channel: 0
         MMChannelDefinition: {fileID: 0}
@@ -1331,14 +2981,49 @@ MonoBehaviour:
           ButtonText: Automatic Shaker Setup
         Owner: {fileID: 2388480790343458676}
         DebugActive: 0
-        RepeatUntilStopped: 0
-        CameraShakeProperties:
-          Duration: 0.1
-          Amplitude: 0.2
-          Frequency: 40
-          AmplitudeX: 0
-          AmplitudeY: 0
-          AmplitudeZ: 0
+        m_ImpulseDefinition:
+          ImpulseChannel: 1
+          ImpulseShape: 0
+          CustomImpulseShape:
+            serializedVersion: 2
+            m_Curve: []
+            m_PreInfinity: 2
+            m_PostInfinity: 2
+            m_RotationOrder: 4
+          ImpulseDuration: 0.2
+          ImpulseType: 3
+          DissipationRate: 0
+          RawSignal: {fileID: 11400000, guid: bcf6524ce6451f34cb7106d0c00da9a5, type: 2}
+          AmplitudeGain: 0.1
+          FrequencyGain: 0.1
+          RepeatMode: 0
+          Randomize: 1
+          TimeEnvelope:
+            AttackShape:
+              serializedVersion: 2
+              m_Curve: []
+              m_PreInfinity: 2
+              m_PostInfinity: 2
+              m_RotationOrder: 4
+            DecayShape:
+              serializedVersion: 2
+              m_Curve: []
+              m_PreInfinity: 2
+              m_PostInfinity: 2
+              m_RotationOrder: 4
+            AttackTime: 0
+            SustainTime: 0.1
+            DecayTime: 0.1
+            ScaleWithImpact: 1
+            HoldForever: 0
+          ImpactRadius: 100
+          DirectionMode: 0
+          DissipationMode: 2
+          DissipationDistance: 100
+          PropagationSpeed: 343
+        Velocity: {x: 5, y: 5, z: 5}
+        ClearImpulseOnStop: 0
+        DrawGizmos: 0
 --- !u!1 &7567990337997743211
 GameObject:
   m_ObjectHideFlags: 0
@@ -1382,6 +3067,7 @@ GameObject:
   - component: {fileID: 8368257702468494365}
   - component: {fileID: 5693803477582424997}
   - component: {fileID: 7086826561376847919}
+  - component: {fileID: 5155057848357334095}
   m_Layer: 6
   m_Name: GameplayCamera
   m_TagString: Untagged
@@ -1398,7 +3084,7 @@ Transform:
   m_GameObject: {fileID: 7911693431017532871}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.043964744, y: 0, z: 0.0076289177}
+  m_LocalPosition: {x: 0, y: 2.06, z: -2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1428,7 +3114,7 @@ MonoBehaviour:
     LookAtTarget: {fileID: 0}
     CustomLookAtTarget: 0
   Lens:
-    FieldOfView: 40
+    FieldOfView: 90
     OrthographicSize: 10
     NearClipPlane: 0.1
     FarClipPlane: 5000
@@ -1460,10 +3146,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineThirdPersonFollow
   Damping: {x: 0.1, y: 0.5, z: 0.3}
-  ShoulderOffset: {x: 0.5, y: -0.4, z: 0}
+  ShoulderOffset: {x: 0, y: 0, z: 0}
   VerticalArmLength: 0.4
   CameraSide: 1
-  CameraDistance: 2.5
+  CameraDistance: 2
   AvoidObstacles:
     Enabled: 1
     CollisionFilter:
@@ -1492,6 +3178,30 @@ MonoBehaviour:
   ZoomScale: 1
   FollowAttachment: 1
   LookAtAttachment: 1
+--- !u!114 &5155057848357334095
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7911693431017532871}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00b2d199b96b516448144ab30fb26aed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineImpulseListener
+  ApplyAfter: 2
+  ChannelMask: 1
+  Gain: 1
+  Use2DDistance: 0
+  UseCameraSpace: 1
+  SignalCombinationMode: 0
+  ReactionSettings:
+    m_SecondaryNoise: {fileID: 0}
+    AmplitudeGain: 1
+    FrequencyGain: 1
+    Duration: 1
+    m_NoiseOffsets: {x: 0, y: 0, z: 0}
 --- !u!1 &8565633187688809128
 GameObject:
   m_ObjectHideFlags: 0
@@ -2471,6 +4181,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 8789121434888947489, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
       insertIndex: -1
       addedObject: {fileID: 406600245825838223}
+    - targetCorrespondingSourceObject: {fileID: 8789121434888947489, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5600408761925510343}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
 --- !u!114 &1385601990044069648 stripped
@@ -2603,6 +4316,84 @@ Transform:
 ParticleSystem:
   m_CorrespondingSourceObject: {fileID: 198835972586501196, guid: 72a652ab7835362499c9686288610212, type: 3}
   m_PrefabInstance: {fileID: 5518223718852502864}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &5600408761925123655
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 4100194322526136044}
+    m_Modifications:
+    - target: {fileID: 100000, guid: ebd0dd4d6a7bf68438de9416d7c7393d, type: 3}
+      propertyPath: m_Name
+      value: SM_Wep_Sword_01
+      objectReference: {fileID: 0}
+    - target: {fileID: 100000, guid: ebd0dd4d6a7bf68438de9416d7c7393d, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: ebd0dd4d6a7bf68438de9416d7c7393d, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: ebd0dd4d6a7bf68438de9416d7c7393d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: ebd0dd4d6a7bf68438de9416d7c7393d, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: ebd0dd4d6a7bf68438de9416d7c7393d, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: ebd0dd4d6a7bf68438de9416d7c7393d, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.000000022629603
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: ebd0dd4d6a7bf68438de9416d7c7393d, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.000000059604623
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: ebd0dd4d6a7bf68438de9416d7c7393d, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0.000000019392706
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: ebd0dd4d6a7bf68438de9416d7c7393d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -180
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: ebd0dd4d6a7bf68438de9416d7c7393d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 98.81
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: ebd0dd4d6a7bf68438de9416d7c7393d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2300000, guid: ebd0dd4d6a7bf68438de9416d7c7393d, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 400000, guid: ebd0dd4d6a7bf68438de9416d7c7393d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6385057675740259602}
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: ebd0dd4d6a7bf68438de9416d7c7393d, type: 3}
+--- !u!1 &5600408761925220583 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 100000, guid: ebd0dd4d6a7bf68438de9416d7c7393d, type: 3}
+  m_PrefabInstance: {fileID: 5600408761925123655}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &5600408761925510343 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 400000, guid: ebd0dd4d6a7bf68438de9416d7c7393d, type: 3}
+  m_PrefabInstance: {fileID: 5600408761925123655}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &7187004258203303083
 PrefabInstance:
@@ -3054,6 +4845,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1809010801844389879}
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8159982072029018326}
     - targetCorrespondingSourceObject: {fileID: 6075133564220705635, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
       insertIndex: -1
       addedObject: {fileID: 941691276324997797}
@@ -3151,6 +4945,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1123551956803832767}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2373302693047663370}
   m_SourcePrefab: {fileID: 100100000, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
 --- !u!4 &1570487432797161804 stripped
 Transform:
@@ -4006,7 +5803,7 @@ MonoBehaviour:
   inputReader: {fileID: 6872381413864324108}
   stats: {fileID: 5156588240620538864}
   config: {fileID: 11400000, guid: 7bbfff43c7d0ba340badf35b526d0f97, type: 2}
-  aimCamera: {fileID: 0}
+  aimCamera: {fileID: 5162794026609004655}
   arrowOrigin: {fileID: 5575598779727217549}
   hitLayers:
     serializedVersion: 2
@@ -4017,8 +5814,8 @@ MonoBehaviour:
   tracerPrefab: {fileID: 6461299207872465346, guid: 96f96ed4061392241a998c6b760b69bf, type: 3}
   drawFeedback: {fileID: 9096973897892025506}
   fireFeedback: {fileID: 2388480790343458676}
-  impulseBuff: {fileID: 0}
-  chainLightning: {fileID: 0}
+  impulseBuff: {fileID: 1839661837703581504}
+  chainLightning: {fileID: 4664109616690436507}
   bounceLayers:
     serializedVersion: 2
     m_Bits: 128
@@ -4055,7 +5852,7 @@ MonoBehaviour:
   stats: {fileID: 5156588240620538864}
   activationFeedback: {fileID: 0}
   deactivationFeedback: {fileID: 0}
-  auraVisual: {fileID: 0}
+  auraVisual: {fileID: 5600408761925220583}
 --- !u!114 &6103277860756355011
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4179,6 +5976,24 @@ MonoBehaviour:
   facingCamera: {fileID: 5162794026609004655}
   rotationSmoothing: 10
   stationarySpeedThreshold: 0.1
+--- !u!114 &2373302693047663370
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8033356972124291578}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b398dab2072b2c64095c739017ce04a3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StuckArrowSpawner
+  bow: {fileID: 9219490616039227213}
+  arrowPrefab: {fileID: 2502419655459928812, guid: 8d332200f87cd124e9b19b57c8e2e854, type: 3}
+  minPenetration: 0.15
+  maxPenetration: 0.35
+  penetrationPerChargeLevel: 0.05
+  anchorOffsetRadius: 0.08
 --- !u!137 &8844904305191094916 stripped
 SkinnedMeshRenderer:
   m_CorrespondingSourceObject: {fileID: 1802064171929466415, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
@@ -4194,15 +6009,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2088881918190117096, guid: db3e5048b1146cc4591bbfd0320d58d0, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.055517852
+      value: -0.011553109
       objectReference: {fileID: 0}
     - target: {fileID: 2088881918190117096, guid: db3e5048b1146cc4591bbfd0320d58d0, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.6946466
+      value: 1.3653533
       objectReference: {fileID: 0}
     - target: {fileID: 2088881918190117096, guid: db3e5048b1146cc4591bbfd0320d58d0, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.15237093
+      value: -1.855258
       objectReference: {fileID: 0}
     - target: {fileID: 2088881918190117096, guid: db3e5048b1146cc4591bbfd0320d58d0, type: 3}
       propertyPath: m_LocalRotation.w
@@ -4214,7 +6029,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2366980056891764237, guid: db3e5048b1146cc4591bbfd0320d58d0, type: 3}
       propertyPath: field of view
-      value: 40
+      value: 90
       objectReference: {fileID: 0}
     - target: {fileID: 2366980056891764237, guid: db3e5048b1146cc4591bbfd0320d58d0, type: 3}
       propertyPath: far clip plane
@@ -4227,6 +6042,22 @@ PrefabInstance:
     - target: {fileID: 2366980056891764237, guid: db3e5048b1146cc4591bbfd0320d58d0, type: 3}
       propertyPath: orthographic size
       value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 2366980056891764237, guid: db3e5048b1146cc4591bbfd0320d58d0, type: 3}
+      propertyPath: m_BackGroundColor.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2366980056891764237, guid: db3e5048b1146cc4591bbfd0320d58d0, type: 3}
+      propertyPath: m_BackGroundColor.b
+      value: 0.4716981
+      objectReference: {fileID: 0}
+    - target: {fileID: 2366980056891764237, guid: db3e5048b1146cc4591bbfd0320d58d0, type: 3}
+      propertyPath: m_BackGroundColor.g
+      value: 0.3525755
+      objectReference: {fileID: 0}
+    - target: {fileID: 2366980056891764237, guid: db3e5048b1146cc4591bbfd0320d58d0, type: 3}
+      propertyPath: m_BackGroundColor.r
+      value: 0.2781239
       objectReference: {fileID: 0}
     - target: {fileID: 2997877704410419352, guid: db3e5048b1146cc4591bbfd0320d58d0, type: 3}
       propertyPath: m_Name
@@ -4367,7 +6198,8 @@ MonoBehaviour:
   m_RequiresDepthTextureOption: 2
   m_RequiresOpaqueTextureOption: 2
   m_CameraType: 0
-  m_Cameras: []
+  m_Cameras:
+  - {fileID: 0}
   m_RendererIndex: -1
   m_VolumeLayerMask:
     serializedVersion: 2
