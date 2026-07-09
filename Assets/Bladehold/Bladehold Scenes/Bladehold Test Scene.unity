@@ -2418,6 +2418,11 @@ MonoBehaviour:
   connectorPrefab: {fileID: 4869767786769141824, guid: 3028bc314cd14bc4dbef3a8712abfc22, type: 3}
   spacing: 160
   contentPadding: 200
+  minZoom: 0.5
+  maxZoom: 2
+  zoomStep: 0.1
+  zoomSmoothSpeed: 10
+  centerOnUnlockDuration: 0.35
   goldText: {fileID: 1711118965}
   tooltip: {fileID: 5113447990960171567}
 --- !u!114 &198617733
@@ -6671,7 +6676,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 270043671}
   m_HandleRect: {fileID: 270043670}
   m_Direction: 0
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -14834,6 +14839,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1818915490}
     m_Modifications:
+    - target: {fileID: 875308982699252885, guid: c2d27a68902f6e244b07a0822b861fcd, type: 3}
+      propertyPath: costSuffix
+      value: Pts
+      objectReference: {fileID: 0}
     - target: {fileID: 3996582974464306955, guid: c2d27a68902f6e244b07a0822b861fcd, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -14913,10 +14922,6 @@ PrefabInstance:
     - target: {fileID: 3996582974464306955, guid: c2d27a68902f6e244b07a0822b861fcd, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8307179098021156589, guid: c2d27a68902f6e244b07a0822b861fcd, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 26.669998
       objectReference: {fileID: 0}
     - target: {fileID: 8799430253758706231, guid: c2d27a68902f6e244b07a0822b861fcd, type: 3}
       propertyPath: m_Name
@@ -18009,7 +18014,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1667677097}
   m_HandleRect: {fileID: 1667677096}
   m_Direction: 0
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -21435,6 +21440,11 @@ MonoBehaviour:
   connectorPrefab: {fileID: 4869767786769141824, guid: 3028bc314cd14bc4dbef3a8712abfc22, type: 3}
   spacing: 160
   contentPadding: 200
+  minZoom: 0.5
+  maxZoom: 2
+  zoomStep: 0.1
+  zoomSmoothSpeed: 10
+  centerOnUnlockDuration: 0.35
   goldText: {fileID: 1711118965}
   tooltip: {fileID: 1418054825}
 --- !u!114 &1818915492

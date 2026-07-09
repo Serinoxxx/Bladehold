@@ -226,3 +226,30 @@ over untouched the moment the player moves.
       turn-in-place behaviour is back to normal.
 - [ ] Die while holding attack → the corpse doesn't rotate with the camera (requires the
       `PlayerDeath` list wiring above).
+
+
+## Dynamic skill tooltips (before→after / % increase) — Unity Editor wiring
+
+The C# is done: `SkillTooltip.Show(node, service)` now appends a tier numeral to a multi-level
+(family) node's name and, for a still-buyable **single-effect** family node, replaces the authored
+description with a live block read from `Player.Instance.Stats` —
+`"{Label} {before} -> {after}"` plus a `+{pct}%` line (via the new `StatDisplay` label/unit table
+and `PlayerStats.PreviewValue`). Non-family / multi-effect / unlock / purchased nodes keep their
+authored description. `SkillTreeView` passes the service into both `Show` call sites.
+
+- [ ] **Center-align the tooltip description** so the divider + `+%` block reads like the mock: set
+      the `descriptionText` TMP field's alignment to Center on the `SkillTooltip` prefab/GameObject
+      on **both** the gold tree and Reincarnate tree canvases (the block uses a `──────────` divider
+      that only looks right centered). Optional — left-aligned still renders correctly, just off-mock.
+
+## Manual verification (dynamic skill tooltips)
+
+- [ ] Play → die to open the death-screen skill tree. Hover an **unowned** Sharpened Edge node →
+      name shows a numeral (e.g. "Sharpened Edge II"), description shows "Sword Damage 10 -> 1X" and
+      "+YY%". Buy one, hover another → numeral increments and the "before" reflects new current damage.
+- [ ] Hover a **percent** node (Keen Eye / Parry / Fleet Footed) → values render as "5% -> 10%".
+- [ ] Hover a **cooldown** node (Solid) → "10s -> 9s" with **no** misleading % line.
+- [ ] Hover a **multi-effect / unlock** node (Heavy Strike, Impulse, Conduit, Flaming Arrows I) →
+      **authored** description unchanged (no block).
+- [ ] Hover a **purchased** node → name keeps its numeral, cost shows "Owned", authored description.
+- [ ] Repeat on the **Reincarnate** tree — points/values render, no null-refs.

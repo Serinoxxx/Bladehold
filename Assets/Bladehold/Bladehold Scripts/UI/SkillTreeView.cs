@@ -513,7 +513,7 @@ public class SkillTreeView : MonoBehaviour, IScrollHandler
         hoveredView = view;
         if (tooltip != null)
         {
-            tooltip.Show(view.Node, service.IsPurchased(view.Node.id), service.GetCost(view.Node));
+            tooltip.Show(view.Node, service);
         }
     }
 
@@ -558,7 +558,7 @@ public class SkillTreeView : MonoBehaviour, IScrollHandler
         // and family ladder prices climb when a sibling is purchased).
         if (hoveredView != null && tooltip != null && hoveredView.isActiveAndEnabled)
         {
-            tooltip.Show(hoveredView.Node, service.IsPurchased(hoveredView.Node.id), service.GetCost(hoveredView.Node));
+            tooltip.Show(hoveredView.Node, service);
         }
     }
 

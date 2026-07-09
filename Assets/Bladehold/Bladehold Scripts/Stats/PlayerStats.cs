@@ -74,6 +74,20 @@ public class PlayerStats : MonoBehaviour
         return entries.TryGetValue(stat, out Entry entry) ? entry.baseValue : 0f;
     }
 
+    /// <summary>
+    ///     The value this stat would have if the given modifier were added on top of the current base and
+    ///     modifiers, without actually adding it. Mirrors <see cref="Entry.Value" /> so a Percent modifier
+    ///     previews correctly (Σpercent isn't otherwise exposed). Used by the skill tooltip's before→after.
+    /// </summary>
+    public float PreviewValue(StatType stat, ModifierKind kind, float amount)
+    {
+        entries.TryGetValue(stat, out Entry e);
+        float baseValue = e?.baseValue ?? 0f;
+        float flat = (e?.flat ?? 0f) + (kind == ModifierKind.Flat ? amount : 0f);
+        float percent = (e?.percent ?? 0f) + (kind == ModifierKind.Percent ? amount : 0f);
+        return (baseValue + flat) * (1f + percent);
+    }
+
     private Entry GetOrCreate(StatType stat)
     {
         if (!entries.TryGetValue(stat, out Entry entry))
