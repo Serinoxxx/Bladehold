@@ -121,6 +121,23 @@ public enum StatType
 
     /// <summary>Fraction (0-1) of max health a Health Pack pickup restores. Base 0.10 (packs work out of the box); the "Field Medic" line raises it.</summary>
     HealthPackHealPercent,
+
+    /// <summary>
+    ///     1 = horse riding unlocked (the gold-tree "Saddle Up" node). Riding is allowed when this OR
+    ///     <see cref="StartMounted" /> is at least 1 (the code-side OR lives in <c>PlayerMount.CanRide</c>) —
+    ///     Reincarnate wipes the gold tree, so the Cavalier node must grant riding by itself.
+    /// </summary>
+    HorseRidingUnlocked,
+    /// <summary>Unitless multiplier on a player-ridden horse's max health (base 1.0, the MoveSpeed convention). Applied once per horse on first mount, preserving its current health fraction.</summary>
+    HorseMaxHealthMultiplier,
+    /// <summary>Unitless multiplier on a player-ridden horse's speeds (base 1.0). AI-ridden horses ignore it.</summary>
+    HorseSpeedMultiplier,
+    /// <summary>1 = Health Packs the ridden horse runs over also heal the horse (the "Stable Diet" node). 0 = locked.</summary>
+    HorseHealFromPacks,
+    /// <summary>1 = the bow can be drawn while mounted (the "Horse Archer" node). 0 = mounted aiming does nothing (the BowUnlocked gate, mounted edition).</summary>
+    HorseArcheryUnlocked,
+    /// <summary>1 = each run starts already mounted on a spawned horse (the Reincarnate "Cavalier" node; grants riding by itself — see <see cref="HorseRidingUnlocked" />).</summary>
+    StartMounted,
 }
 
 /// <summary>

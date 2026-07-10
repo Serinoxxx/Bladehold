@@ -52,6 +52,18 @@ public class HealthPack : MonoBehaviour
             return false;
         }
 
+        // A player-ridden horse collects on behalf of its rider (see HorsePickupProxy): the heal
+        // applies to the player, and — with the "Stable Diet" node — also to the horse itself.
+        HorsePickupProxy proxy = collector.GetComponentInParent<HorsePickupProxy>();
+        if (proxy != null && proxy.Target != null)
+        {
+            collector = proxy.Target;
+        }
+        else
+        {
+            proxy = null;
+        }
+
         Player player = collector.GetComponentInParent<Player>();
         if (player == null || player.Health == null)
         {
@@ -59,10 +71,6 @@ public class HealthPack : MonoBehaviour
         }
 
         Health health = player.Health;
-        if (health.IsDead || health.CurrentHealth >= health.MaxHealth)
-        {
-            return false;
-        }
 
         float percent = player.Stats != null
             ? Mathf.Clamp01(player.Stats.GetValue(StatType.HealthPackHealPercent))
@@ -72,12 +80,47 @@ public class HealthPack : MonoBehaviour
             return false;
         }
 
+        bool playerNeedsHeal = !health.IsDead && health.CurrentHealth < health.MaxHealth;
+
+        // Stable Diet: packs the ridden horse runs over also heal the horse.
+        Health horseHealth = null;
+        if (proxy != null && proxy.HorseHealth != null && player.Stats != null
+            && player.Stats.GetValue(StatType.HorseHealFromPacks) >= 1f)
+        {
+            Health candidate = proxy.HorseHealth;
+            if (!candidate.IsDead && candidate.CurrentHealth < candidate.MaxHealth)
+            {
+                horseHealth = candidate;
+            }
+        }
+
+        // A pack that helps neither body stays on the ground until needed.
+        if (!playerNeedsHeal && horseHealth == null)
+        {
+            return false;
+        }
+
         collected = true;
 
         // The popup shows what was actually restored, which a near-full health bar caps.
-        float missing = health.MaxHealth - health.CurrentHealth;
-        float healed = Mathf.Min(health.MaxHealth * percent, missing);
-        health.Heal(health.MaxHealth * percent);
+        float healed = 0f;
+        if (playerNeedsHeal)
+        {
+            float missing = health.MaxHealth - health.CurrentHealth;
+            healed = Mathf.Min(health.MaxHealth * percent, missing);
+            health.Heal(health.MaxHealth * percent);
+        }
+
+        if (horseHealth != null)
+        {
+            float horseMissing = horseHealth.MaxHealth - horseHealth.CurrentHealth;
+            float horseHealed = Mathf.Min(horseHealth.MaxHealth * percent, horseMissing);
+            horseHealth.Heal(horseHealth.MaxHealth * percent);
+            if (healed <= 0f)
+            {
+                healed = horseHealed;
+            }
+        }
 
         if (pickupPopup != null && healed > 0f)
         {

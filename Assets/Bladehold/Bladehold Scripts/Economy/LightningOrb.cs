@@ -48,6 +48,14 @@ public class LightningOrb : MonoBehaviour
             return false;
         }
 
+        // A player-ridden horse collects on behalf of its rider (see HorsePickupProxy) — the buff
+        // lands on the player, never on the horse.
+        HorsePickupProxy proxy = collector.GetComponentInParent<HorsePickupProxy>();
+        if (proxy != null && proxy.Target != null)
+        {
+            collector = proxy.Target;
+        }
+
         // Only the holder of a ChainLightningBuff (the player) can pick the orb up.
         ChainLightningBuff buff = collector.GetComponentInParent<ChainLightningBuff>();
         if (buff == null)

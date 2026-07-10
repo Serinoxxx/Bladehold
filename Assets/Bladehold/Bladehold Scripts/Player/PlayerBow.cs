@@ -112,6 +112,9 @@ public class PlayerBow : MonoBehaviour
     [Tooltip("Layers a Bounce Shot can hit (the ChainLightning convention: exclude player/environment).")]
     [SerializeField] private LayerMask bounceLayers = ~0;
 
+    [Tooltip("Optional: the player's mount. While mounted, aiming is gated behind the Horse Archer skill node.")]
+    [SerializeField] private PlayerMount mount;
+
     /// <summary>Fired once per arrow (or bounce) that actually damaged a target, with the world hit point — the <see cref="DamageTrigger.OnHit" /> shape, so feedback listeners can treat bow and sword alike.</summary>
     public event Action<IDamageable, Damage, Vector3> OnHit;
 
@@ -158,6 +161,17 @@ public class PlayerBow : MonoBehaviour
     /// <summary>True while the bow is between shots and can't fire yet.</summary>
     public bool IsCoolingDown => CooldownFraction < 1f;
 
+    /// <summary>
+    ///     A target arrows fly through in addition to the wielder — the horse under a mounted
+    ///     player, whose neck would otherwise stop every close-range shot (the
+    ///     <see cref="DamageTrigger" /> SetIgnoredTarget sibling). Null = none. Bounces and impulse
+    ///     blasts skip it too. Set/cleared by <c>PlayerMount</c>.
+    /// </summary>
+    public void SetIgnoredTarget(IDamageable target)
+    {
+        ignoredTarget = target;
+    }
+
     private const int MaxRayHits = 64;
     private const int MaxOverlapResults = 64;
 
@@ -166,6 +180,7 @@ public class PlayerBow : MonoBehaviour
     private readonly HashSet<IDamageable> blastHitTargets = new HashSet<IDamageable>();
 
     private IDamageable ownerDamageable;
+    private IDamageable ignoredTarget;
     private int startAttackHash;
     private int isHoldingAttackHash;
     private int isAimingHash;
@@ -190,6 +205,10 @@ public class PlayerBow : MonoBehaviour
         {
             // Synty rigs keep the Animator on a child model object.
             playerAnimator = GetComponentInChildren<Animator>();
+        }
+        if (mount == null)
+        {
+            mount = GetComponent<PlayerMount>();
         }
     }
 
@@ -283,6 +302,9 @@ public class PlayerBow : MonoBehaviour
         stats.SetBase(StatType.BowUnstableOrbs, 0f);
         stats.SetBase(StatType.FlamingArrowsDamagePercent, 0f);
         stats.SetBase(StatType.FlamingArrowsBomberDetonateChance, 0f);
+        // The BowUnlocked gate, mounted edition: base 0 = the bow can't be drawn from horseback
+        // until the "Horse Archer" node is bought.
+        stats.SetBase(StatType.HorseArcheryUnlocked, 0f);
 
         // Missing buff/chain components are not errors — those skill lines are optional features
         // (the DamageTrigger ImpulseBuff fallback idiom).
@@ -371,6 +393,13 @@ public class PlayerBow : MonoBehaviour
         if (anyError || !IsUnlocked)
         {
             // Bow still locked: leave IsAiming false so the sword swing (and everything else) works normally.
+            return;
+        }
+
+        // Mounted archery is its own skill: without Horse Archer, aiming from the saddle does
+        // nothing (the sword still swings via MountedCombat).
+        if (mount != null && mount.IsMounted && stats.GetValue(StatType.HorseArcheryUnlocked) < 1f)
+        {
             return;
         }
 
@@ -637,7 +666,7 @@ public class PlayerBow : MonoBehaviour
             RaycastHit hit = rayBuffer[i];
             IDamageable damageable = ResolveDamageable(hit.collider);
 
-            if (damageable != null && damageable == ownerDamageable)
+            if (damageable != null && (damageable == ownerDamageable || (ignoredTarget != null && damageable == ignoredTarget)))
             {
                 continue;
             }
@@ -753,7 +782,8 @@ public class PlayerBow : MonoBehaviour
         {
             Collider collider = overlapBuffer[i];
             IDamageable damageable = ResolveDamageable(collider);
-            if (damageable == null || damageable == alreadyHit || damageable == ownerDamageable)
+            if (damageable == null || damageable == alreadyHit || damageable == ownerDamageable
+                || (ignoredTarget != null && damageable == ignoredTarget))
             {
                 continue;
             }
@@ -885,7 +915,9 @@ public class PlayerBow : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             IDamageable damageable = ResolveDamageable(overlapBuffer[i]);
-            if (damageable == null || damageable == ownerDamageable || !blastHitTargets.Add(damageable))
+            if (damageable == null || damageable == ownerDamageable
+                || (ignoredTarget != null && damageable == ignoredTarget)
+                || !blastHitTargets.Add(damageable))
             {
                 continue;
             }

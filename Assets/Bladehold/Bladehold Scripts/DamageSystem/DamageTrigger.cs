@@ -65,11 +65,13 @@ public class DamageTrigger : MonoBehaviour
     readonly Vector3[] previousPointPositions = new Vector3[MaxBladePoints];
 
     IDamageable ownerDamageable;
+    IDamageable ignoredTarget;
     PlayerStats stats;
 
     bool isActive;
     float deactivateTime;
     int activePointCount;
+    float reachBonus;
 
     bool anyError = false;
 
@@ -165,6 +167,26 @@ public class DamageTrigger : MonoBehaviour
         transform.localScale = Vector3.one * stats.GetValue(StatType.SwordRange);
     }
 
+    /// <summary>
+    ///     Extra reach as a fraction of the blade length (0.6 = 60% longer sweep), with no visual
+    ///     change: blade-sweep sample points extrapolate past Blade Tip instead of scaling the
+    ///     transform the way the SwordRange stat does. Used by <c>PlayerMount</c> while riding, where
+    ///     the saddle height would otherwise put grounded enemies outside the sword's arc. 0 = off.
+    /// </summary>
+    public void SetReachBonus(float value)
+    {
+        reachBonus = Mathf.Max(0f, value);
+    }
+
+    /// <summary>
+    ///     A target this trigger skips in addition to the wielder — e.g. the horse under a mounted
+    ///     player, which sits directly inside the blade's (reach-extended) arc. Null = none.
+    /// </summary>
+    public void SetIgnoredTarget(IDamageable target)
+    {
+        ignoredTarget = target;
+    }
+
     public void Activate()
     {
         if (anyError) return;
@@ -176,6 +198,9 @@ public class DamageTrigger : MonoBehaviour
         if (detectionMode == DetectionMode.BladeSweep)
         {
             float rangeMultiplier = readsPlayerStats ? stats.GetValue(StatType.SwordRange) : 1f;
+            // Reach bonus lengthens the sweep past the tip (see SetReachBonus), so sample the longer
+            // line proportionally more densely to keep the anti-tunneling spacing constant.
+            rangeMultiplier *= 1f + reachBonus;
             activePointCount = Mathf.Clamp(Mathf.RoundToInt(basePointCount * rangeMultiplier), 2, MaxBladePoints);
 
             // Seed each point's "previous" position so the first sweep this activation doesn't raycast
@@ -254,8 +279,10 @@ public class DamageTrigger : MonoBehaviour
         }
 
         if (damageable == null) return true;
-        // Never damage the wielder of this trigger.
+        // Never damage the wielder of this trigger, nor the explicitly ignored target (the mounted
+        // player's horse — see SetIgnoredTarget).
         if (damageable == ownerDamageable) return true;
+        if (ignoredTarget != null && damageable == ignoredTarget) return true;
         if (hitTargets.Contains(damageable)) return true;
 
         if (hitTargets.Count >= cap)
@@ -310,7 +337,8 @@ public class DamageTrigger : MonoBehaviour
     Vector3 BladePointPosition(int index)
     {
         float t = activePointCount > 1 ? (float)index / (activePointCount - 1) : 0f;
-        return Vector3.Lerp(bladeBase.position, bladeTip.position, t);
+        // t beyond 1 extrapolates past the tip: extra reach with no visual blade change.
+        return Vector3.LerpUnclamped(bladeBase.position, bladeTip.position, t * (1f + reachBonus));
     }
 
     Damage BuildDamage()

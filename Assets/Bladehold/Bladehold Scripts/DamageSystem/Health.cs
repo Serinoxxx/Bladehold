@@ -57,6 +57,25 @@ public class Health : MonoBehaviour, IDamageable
     }
 
     /// <summary>
+    ///     Multiplies the effective max health, preserving the current-health <em>fraction</em> — unlike
+    ///     <see cref="SetMaxHealth" />, which refills to full and is meant for pre-Start roster overrides.
+    ///     Used by <c>PlayerMount</c> to apply the Barded Steed multiplier when mounting a possibly
+    ///     wounded horse mid-run.
+    /// </summary>
+    public void ScaleMaxHealth(float multiplier)
+    {
+        if (multiplier <= 0f || Mathf.Approximately(multiplier, 1f))
+        {
+            return;
+        }
+
+        float fraction = MaxHealth > 0f ? currentHealth / MaxHealth : 1f;
+        maxHealthOverride = MaxHealth * multiplier;
+        currentHealth = maxHealthOverride.Value * fraction;
+        OnHealthChanged?.Invoke();
+    }
+
+    /// <summary>
     ///     Checked once health would reach zero, before <see cref="IsDead" /> latches or <see cref="OnDied" />
     ///     fires. A handler that wants to intercept a lethal hit (e.g. a revive effect) returns <c>true</c> and
     ///     is responsible for restoring health itself via <see cref="Revive" />; the death is then skipped

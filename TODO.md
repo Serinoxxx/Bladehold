@@ -1,5 +1,137 @@
 # TODO
 
+## Mounted Knight enemy + rideable Horse — Unity Editor wiring
+
+The C# is done. **Shared horse** (`Horse/` — new folder): `HorseSO.cs` (all locomotion/charge/trample
+tunables), `HorseMotor.cs` (player-mode driving: W/S accel/brake/reverse, A/D turn, held Shift at
+speed = charge; speeds × `StatType.HorseSpeedMultiplier`), `HorseAnimation.cs` (transform-delta →
+damped `Speed`/`Turn` animator params + `Rear`/`Charge`/`Death`, one script for AI/riderless/player
+modes), `HorseChargeDamage.cs` (the shared trample box — the `TrollSlamAttack` impulse-stamping shape
+with a per-target re-hit cooldown, used by both the knight's charge and the player's),
+`HorseMountable.cs` (jump-into-trigger mounting, occupancy-gated), `HorsePickupProxy.cs` (a ridden
+horse collects pickups on the rider's behalf — `Coin`/`HealthPack`/`ImpulseOrb`/`LightningOrb`
+redirect through it; `HealthPack` also heals the horse with the Stable Diet node). **Knight**
+(`Enemies/`): `MountedKnightSO.cs`, `MountedKnightBrain.cs` (standoff ring → aim → rear + telegraph
+lane pre-clamped with `NavMesh.Raycast` → `agent.Move` dash with the trample open → decelerate →
+cooldown), `MountedKnightRider.cs` (knight root = the spawned enemy; detaches the horse child at
+Awake, seat-syncs in LateUpdate, forwards all horse damage to the knight via `TryBlockDamage`,
+unseats him below 50% HP — enabling his stock goblin components, which ship disabled — and hands the
+horse over riderless at full HP; killed mounted = corpse-dismount, wave still clears). **Player**
+(`Player/`): `PlayerMount.cs` (mount/dismount state machine, invulnerable-while-mounted by
+forwarding hits to the horse, sword `SetReachBonus`/`SetIgnoredTarget` while mounted, Barded Steed
+`ScaleMaxHealth` once per horse), `MountedCombat.cs` (re-fires `StartAttack`/`IsHoldingAttack` since
+the Synty controller is disabled in the saddle), `MountedCombatLook.cs` (the `BowAimLook` sibling —
+spine yaw/pitch toward the camera while attacking/aiming mounted), `StartMountedSpawner.cs` (the
+Reincarnate Cavalier node). Core changes: `DamageTrigger` gained `SetReachBonus` (samples past the
+blade tip — no visual change) + `SetIgnoredTarget`; `Health.ScaleMaxHealth` (fraction-preserving);
+`PlayerBow` gained the `HorseArcheryUnlocked` gate + `SetIgnoredTarget`; `AIAttack` range is now
+planar XZ (saddle height); 6 new `StatType`s; `knight` row in `Config/Enemies.csv` (wave 7, 60 HP,
+dmg 4 → charge 16, max 1); `WaveSpawner.ApplyDefinition` routes damage to
+`MountedKnightBrain.SetDamage`; a `Dismount` action (X / gamepad East) added to the vendored
+`Controls.inputactions` + `InputReader.cs` (marked additions); `horse_*` branch in
+`Config/SkillTree.csv` off `range_ext`, `start_mounted` root in `Config/Reincarnate.csv`.
+
+- [ ] **Regenerate the input class**: select
+      `Assets/Third Party/Synty/AnimationBaseLocomotion/Samples/Scripts/InputSystem/Controls.inputactions`,
+      and Apply/"Generate C# Class" so `Controls.cs` picks up the new `Dismount` action (the
+      interface gains `OnDismount`, already implemented in `InputReader`). Until then dismount
+      falls back to a direct X-key read (keyboard only — `PlayerMount` logs a warning).
+- [ ] **Create SO asset instances**: a `HorseSO` (menu `Scriptable Objects/HorseSO` — defaults are
+      authored in-code: maxSpeed 8, chargeSpeed 12, trample 15 dmg / impulse 10/14), a
+      `MountedKnightSO` (`Scriptable Objects/MountedKnightSO` — standoff 12, rear 1.2s, charge 14
+      m/s ×4 dmg, dismount at 50%), and a horse `HealthSO` (~100 max health).
+- [ ] **Horse prefab** (`Bladehold Prefabs/Horse.prefab`) from
+      `Assets/Malbers Animations/Horse AnimSet Pro/Undead Horse/Models/Undead_Horse_Re.fbx`:
+      root with `Health` (+ horse `HealthSO`), `HorseAnimation`, `HorseChargeDamage`,
+      `HorsePickupProxy`, `CorpseDespawner`, `DisableCollidersOnDeath`, optional
+      `DamageNumberSpawner`, a body collider, and — **all disabled** — `NavMeshAgent`
+      (horse-sized), `CharacterController` (horse-sized), `HorseMotor`. Children: a `RiderSeat`
+      empty on the saddle (assign on `HorseMotor.riderSeat` and `MountedKnightRider.riderSeat`) and
+      a `HorseMountable` trigger collider over the saddle (**enabled** — riderless is the prefab's
+      default state). NO `Enemy`/`CoinDropper`/`EnemyRagdoll` — it's a vehicle: no kill credit, no
+      gold, animation-only death.
+  - [ ] **Horse animator controller**: params `Speed` (float, m/s), `Turn` (float -1..1), `Charge`
+        (bool), `Rear` (trigger), `Death` (trigger). Blend tree on Speed: `H_Idle_01` → `H_Walk` →
+        `H_Trot` → `H_Canter` → `H_Gallop` (blend the `_Left`/`_Right` variants on Turn), `Charge`
+        → a gallop/lean state, `Rear` → `H_Attack_Front_Legs`, `Death` → `H_Death01`. Clips under
+        `Assets/Malbers Animations/Horse AnimSet Pro/2 - Animations/Animations Clips/Horse/`.
+- [ ] **Knight prefab** (`Knight Enemy (Mounted).prefab`): knight ROOT with enabled `Health` (+
+      HealthSO), `Enemy`, `CoinDropper`, `DamageNumberSpawner`, `DisableCollidersOnDeath`,
+      `CorpseDespawner`, `EnemyRagdoll`, `MountedKnightRider`, `MountedKnightBrain`, optional
+      `PowerupDropper`, body capsule + `VulnerableSpot` head child; **disabled** (enabled at
+      dismount): `NavMeshAgent` (goblin-sized), `AIMovement`, `AIAttack`, `AIAnimation`,
+      `ImpulseReceiver`, `KnockbackReceiver`. Nest the Horse prefab as a child at the root origin
+      (`MountedKnightRider.Awake` detaches it at runtime); most refs auto-wire via `OnValidate`,
+      assign `riderSeat` + the SOs + `telegraphPrefab` by hand.
+  - [ ] **Knight model**: try `Undead_Knight.fbx` (same Malbers folder) imported as **Humanoid**
+        and retarget the goblin animator controller; if the rig won't map, fall back to a Synty
+        goblin rig with knight-ish materials. Add a `Riding` bool state (seated pose from the
+        Malbers `Rider/` clips, e.g. `Rider_Weapon_Sword` idle) and a `Dismount` trigger
+        (`Rider_Mount_Dismount_Left` or a simple cut); keep the stock `Attack`/`Death`/`Cheer`.
+  - [ ] **Telegraph prefab**: a flat ground quad (the Troll telegraph precedent) — it gets scaled
+        to (laneWidth, y, laneLength) and oriented along the charge; assign on
+        `MountedKnightBrain.telegraphPrefab`. Optional `MMF_Player`s: rear whinny → `rearFeedback`,
+        charge thunder → `chargeFeedback`.
+  - [ ] Register the prefab in `WaveSpawner.enemyPrefabs` under id `knight` (row already in
+        `Config/Enemies.csv`).
+- [ ] **Player prefab**: add `PlayerMount` (assign the sword `DamageTrigger` explicitly — the
+      VampiricBlade precedent; fill `componentsToDisableWhileMounted` with the
+      `SamplePlayerAnimationController`, `CombatFacing`, `AttackCancelsSprint` — NOT `InputReader`/
+      `PlayerAttack`/`PlayerBow`, they stay live for mounted combat, and NOT `PlayerMount` in
+      `PlayerDeath`'s list), `MountedCombat`, `MountedCombatLook`, `StartMountedSpawner` (assign
+      the Horse prefab). Everything else auto-wires.
+  - [ ] **Player animator**: add `IsMounted` (Bool) + `HorseSpeed` (Float) params and a "Riding"
+        layer — seated idle/gait blend on `HorseSpeed` from the Malbers `Rider/` clips — plus an
+        upper-body-masked attack layer above it **reusing the existing sword attack clips** (their
+        `OneHandedSwordAttack`/`PlaySwordWoosh` animation events must ride along, or the mounted
+        sword deals no damage); the bow layer sits above Riding so mounted archery poses compose.
+        Until wired, `PlayerMount` logs a one-time warning and everything works with the rig stuck
+        in its ground pose.
+- [ ] **Scene**: optionally place one riderless Horse prefab in `Bladehold Test Scene` for quick
+      mount testing (it needs no NavMesh; the player horse is CharacterController-driven).
+- [ ] **Skill icons**: `horse_unlock`/`horse_health`/`horse_speed`/`horse_heal`/`horse_archery`
+      (gold tree) and `start_mounted` (Reincarnate) have blank icons — assign in
+      **Bladehold > Skill Tree Editor** when art exists.
+- [ ] **Balance pass**: the `knight` CSV row, `HorseSO`, `MountedKnightSO`, horse `HealthSO`, the
+      `horse_*` node costs/positions, and `PlayerMount.mountedReachBonus` (0.6).
+
+## Manual verification (Mounted Knight + Horse)
+
+- [ ] Reach wave 7 (or dev-set next wave) — one knight spawns riding the horse; it circles at a
+      ~12m standoff instead of closing to melee.
+- [ ] Telegraph: the horse turns to face you, **rears** (front-legs clip) with a ground lane shown,
+      then charges dead straight along it — sidestepping the lane avoids everything; near a wall
+      the lane (and the run) is visibly shorter, and the horse never leaves the NavMesh.
+- [ ] Standing in the charge hurts (~16) and goblins in the lane ragdoll-fling exactly like
+      Impulse-buff hits; the charge is never parried; nothing is hit twice per pass.
+- [ ] Sword/arrow hits on the horse OR the knight both pop damage numbers on the knight; below half
+      HP he lands beside the horse and fights exactly like a goblin (chase, melee, knockback,
+      Impulse fling); Impulse hits while mounted never fling him, they just unseat him faster.
+- [ ] After the unseat the horse idles alive at **full HP**, is damageable, and shows no rider.
+- [ ] Kill the knight while still mounted (burst / `DebugWipeWave`) — corpse drops beside the
+      horse, coins + kill credit + corpse sink all run, the horse survives, and the **wave clears
+      with the horse alive**.
+- [ ] Without Saddle Up: jumping into the saddle does nothing. Buy it — jumping into a riderless
+      horse's saddle mounts (walking through the trigger does not); the camera follows.
+- [ ] W/S accelerates/brakes, A/D turns with gait blending; holding Shift at speed charges —
+      goblins ahead take damage and ragdoll-fling; X (and gamepad East after the input-class
+      regen) dismounts beside the horse.
+- [ ] Mounted, the player takes ZERO damage while enemy hits visibly drain the horse's HP; at 0 the
+      horse plays `H_Death01`, the player lands beside the corpse with controls back, and the dead
+      horse can't be re-mounted. Solid/Parry cooldowns are NOT consumed by mounted hits.
+- [ ] Mounted sword: swings connect noticeably farther with **no visible blade change**, and never
+      damage your own horse; dismounted, the reach returns to normal.
+- [ ] Bow from horseback only works with Horse Archer (aiming does nothing without it); arrows
+      never stop on the horse's own body.
+- [ ] Ride over coins/orbs/health packs — the player's wallet/buffs/health collect them (riderless
+      horses collect nothing); with Stable Diet, packs also heal a wounded horse.
+- [ ] Barded Steed raises the ridden horse's max HP (fraction-preserving on a wounded horse);
+      Thoroughbred visibly raises its speed.
+- [ ] Reincarnate (wiping the gold tree), buy Cavalier — the next run starts already mounted and
+      riding still works with zero gold-tree nodes; restart-from-wave while mounted reloads clean.
+- [ ] Die on foot next to a riderless horse — the corpse doesn't mount; die mid-ride (if ever
+      possible) — controls stay dead.
+
 ## Bow unlock skill — Unity Editor wiring
 
 The C# is done: `StatType.BowUnlocked` (base 0 = locked) is registered by `PlayerBow.Start`, and

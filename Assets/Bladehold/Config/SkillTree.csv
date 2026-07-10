@@ -43,3 +43,8 @@ parry,Parry,Chance to parry melee damage when facing your attacker,Increase parr
 counter,Counterstrike,Increase parry damage,Increase parry damage further,90,1.65,4,CounterstrikePercent,Flat,0.25|0.25|0.5|1,parry,26,6.5,Skill_Parry_nb,
 flamearrow,Flaming Arrows,Arrows deal fire damage and have a chance to instantly explode Bombers,Increase the chance to explode Bombers,90,1.47,5,FlamingArrowsDamagePercent;FlamingArrowsBomberDetonateChance,Flat;Flat,0.25|0|0|0|0;0.1,precision,24.5,13,Archerskill_05_firearrow,
 medpack,Field Medic,Increase Health Pack heal amount,Increase Health Pack heal amount further,60,1.46,6,HealthPackHealPercent,Flat,0.05,butter,25,8.5,skill_134_heal,
+horse_unlock,Saddle Up,Unlock horse riding: jump onto a riderless horse to mount and press X to dismount,,150,1,1,HorseRidingUnlocked,Flat,1,range_ext,26,11.5,,
+horse_health,Barded Steed,Increase your horse's max health,Increase your horse's max health further,60,1.4,5,HorseMaxHealthMultiplier,Percent,0.2,horse_unlock,25,12.5,,
+horse_speed,Thoroughbred,Increase your horse's speed,Increase your horse's speed further,60,1.4,5,HorseSpeedMultiplier,Percent,0.1,horse_unlock,27,12.5,,
+horse_heal,Stable Diet,Health Packs your horse runs over also heal the horse,,90,1,1,HorseHealFromPacks,Flat,1,horse_health,25,13.5,,
+horse_archery,Horse Archer,Use your bow while mounted,,120,1,1,HorseArcheryUnlocked,Flat,1,horse_speed,27,13.5,,

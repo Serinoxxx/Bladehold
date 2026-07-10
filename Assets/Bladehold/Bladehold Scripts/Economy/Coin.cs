@@ -56,6 +56,14 @@ public class Coin : MonoBehaviour
             return false;
         }
 
+        // A player-ridden horse collects on behalf of its rider (see HorsePickupProxy) — the coins
+        // go to the player's Wallet, never to the horse.
+        HorsePickupProxy proxy = collector.GetComponentInParent<HorsePickupProxy>();
+        if (proxy != null && proxy.Target != null)
+        {
+            collector = proxy.Target;
+        }
+
         // Only the holder of a Wallet (the player) can pick the coin up.
         Wallet wallet = collector.GetComponentInParent<Wallet>();
         if (wallet == null)

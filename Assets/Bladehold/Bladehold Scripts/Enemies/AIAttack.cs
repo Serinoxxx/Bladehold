@@ -165,8 +165,12 @@ public class AIAttack : MonoBehaviour
             return false;
         }
 
-        float sqrDistance = (targetPosition - transform.position).sqrMagnitude;
-        return sqrDistance <= attackData.attackRange * attackData.attackRange;
+        // Planar (XZ) distance: a mounted player sits ~1.8m up in the saddle, which would push the
+        // rider outside short melee ranges in 3D even when the horse is flank-to-face with the
+        // attacker. Ground-to-ground targets are unaffected (their height difference is ~0).
+        Vector3 toTarget = targetPosition - transform.position;
+        toTarget.y = 0f;
+        return toTarget.sqrMagnitude <= attackData.attackRange * attackData.attackRange;
     }
 
     private void StartAttack()

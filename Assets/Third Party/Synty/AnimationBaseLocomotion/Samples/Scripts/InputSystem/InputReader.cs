@@ -40,6 +40,11 @@ namespace Synty.AnimationBaseLocomotion.Samples.InputSystem
         public Action onAttackActivated;
         public Action onAttackDeactivated;
 
+        // Bladehold addition: dismount-from-horse action (X / gamepad East). Requires the Dismount
+        // action added to Controls.inputactions and the Controls C# class regenerated; until then
+        // OnDismount is never called (PlayerMount falls back to a direct X-key read).
+        public Action onDismountPerformed;
+
 
         /// <inheritdoc cref="OnEnable" />
         private void OnEnable()
@@ -181,6 +186,18 @@ namespace Synty.AnimationBaseLocomotion.Samples.InputSystem
             {
                 onAttackDeactivated?.Invoke();
             }
+        }
+
+        // Bladehold addition: see onDismountPerformed above. Becomes an IPlayerActions member once
+        // the Controls class is regenerated with the Dismount action; harmlessly unused before then.
+        public void OnDismount(InputAction.CallbackContext context)
+        {
+            if (!context.performed)
+            {
+                return;
+            }
+
+            onDismountPerformed?.Invoke();
         }
     }
 }

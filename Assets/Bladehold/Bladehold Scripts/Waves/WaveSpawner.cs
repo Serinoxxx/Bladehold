@@ -458,6 +458,7 @@ public class WaveSpawner : MonoBehaviour
             enemy.GetComponent<LightningStormAttack>()?.SetDamage(def.damage.Value);
             enemy.GetComponent<TrollSlamAttack>()?.SetDamage(def.damage.Value);
             enemy.GetComponent<BomberAttack>()?.SetDamage(def.damage.Value);
+            enemy.GetComponent<MountedKnightBrain>()?.SetDamage(def.damage.Value);
         }
         if (def.minGold.HasValue)
         {
