@@ -247,6 +247,45 @@ lightning-ball damage + chain proc, in `Enemies/LightningBall.cs`, bases registe
 - [ ] Add feedback/VFX on player when charged by a Storm Witch's ball (e.g. a small lightning flash + SFX) so the player knows the
       buff is active.
 
+## Chain Lightning bolt visual (SineVFX LightningSystemChain) — Unity Editor wiring
+
+The C# is done: `Player/ChainLightningVfx.cs` drives a single, reused SineVFX `LightningSystemChain`
+so a chain draws an animated bolt through the enemies it hops across (previously only the one-off
+`bounceVfxPrefab` flashed at each target). It owns a pool of world-stable anchor transforms, and
+`ShowChain(points)` snaps them to the captured hop positions, assigns them as the chain's
+`chainPoints`, flips `vfxEnabled` on, and auto-off after `flashDuration` (0.15s). `ChainLightning`
+collects the origin + each hop into `chainPointsBuffer` and calls `ShowChain` at the end of a chain;
+`chainVfx` auto-wires from `Player.Instance.GetComponentInChildren<ChainLightningVfx>()`. Reused
+single instance by design — if several sword hits in one swing each chain, the most recent wins the
+shared bolt (all damage still lands). Both new files added to `Assembly-CSharp.csproj`; build clean.
+
+- [ ] **Player prefab** (`Assets/Bladehold/Bladehold Prefabs/Player.prefab`): drag in a
+      **`SingleVFXOnly`** Chain prefab as a child of the player —
+      `Assets/Third Party/SineVFX/LightningSystem/CompleteEffectsPrefabs/SingleVFXOnly/Chain/LS_Chain_0X.prefab`
+      (pick a look; the `04_ColorBlend` variants read as electric-blue). **Not** a `WithExampleMeshes`
+      variant — those carry visible demo spheres. Clear/ignore its authored `chainPoints` (we overwrite
+      them at runtime).
+- [ ] Add a **`ChainLightningVfx`** component on the player root; assign its `lightningChain` to the
+      child `LightningSystemChain` (auto-wires via `OnValidate` if it's the only one in children).
+      Defaults for `flashDuration` (0.25) and `maxAnchors` (16) are fine. `ChainLightningVfx` now
+      **forces `autoScaleEnabled = false` and sets `masterScale = boltScale` at startup** — the raw
+      prefab ships with `autoScaleEnabled = true` and a null `autoScaleAnchor`, which NREs every frame
+      in `ProcessAutoScale()` and stops the bolt rendering, so this must stay code-driven. No manual
+      autoScale wiring needed.
+- [ ] On the existing **`ChainLightning`** component, leave `chainVfx` blank to auto-wire, or drag the
+      `ChainLightningVfx` in explicitly. (The old `bounceVfxPrefab` per-target flash still works and
+      complements the bolt — keep or clear as desired.)
+- [ ] Tune `ChainLightningVfx.boltScale` (default 1.5) so the arc reads at gameplay camera distance;
+      bump it up if the bolt still looks too thin for enemy-to-enemy spans.
+
+## Manual verification (chain lightning bolt)
+
+- [ ] Buy Chain Lightning, pick up a Lightning Orb, hit a goblin in a crowd → a visible animated bolt
+      arcs from the hit point through each chained goblin (matching the damage numbers), then fades.
+- [ ] Kill/scatter enemies so a chain finds no second target → no bolt (needs ≥2 points), no errors.
+- [ ] Run around while chaining → the bolt stays anchored in the world for its flash (doesn't drag
+      along with the player).
+
 
 ## Manual verification (skill icons + new skill lines)
 

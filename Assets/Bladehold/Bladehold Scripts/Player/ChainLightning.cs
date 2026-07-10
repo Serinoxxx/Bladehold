@@ -27,10 +27,15 @@ public class ChainLightning : MonoBehaviour
     [SerializeField] private LayerMask enemyLayers = ~0;
     [Tooltip("Optional cosmetic VFX instantiated at each bounce's target.")]
     [SerializeField] private GameObject bounceVfxPrefab;
+    [Tooltip("Optional; draws the SineVFX bolt through the chain's hops. Defaults to Player.Instance's ChainLightningVfx.")]
+    [SerializeField] private ChainLightningVfx chainVfx;
 
     private const int MaxOverlapResults = 32;
     private readonly Collider[] overlapBuffer = new Collider[MaxOverlapResults];
     private readonly HashSet<IDamageable> excluded = new HashSet<IDamageable>();
+    // Reused per chain so ShowChain feeds the SineVFX bolt without per-hit allocation: the origin
+    // hit point followed by each hop target, in order.
+    private readonly List<Vector3> chainPointsBuffer = new List<Vector3>();
 
     private bool anyError = false;
 
@@ -43,6 +48,10 @@ public class ChainLightning : MonoBehaviour
         if (stats == null)
         {
             stats = Player.Instance != null ? Player.Instance.Stats : null;
+        }
+        if (chainVfx == null)
+        {
+            chainVfx = Player.Instance != null ? Player.Instance.GetComponentInChildren<ChainLightningVfx>() : null;
         }
 
         if (swordTrigger == null)
@@ -131,6 +140,9 @@ public class ChainLightning : MonoBehaviour
         }
         Vector3 origin = hitPoint;
 
+        chainPointsBuffer.Clear();
+        chainPointsBuffer.Add(origin);
+
         for (int i = 0; i < bounces; i++)
         {
             if (!TryFindNearestTarget(origin, chainRadius, out IDamageable found, out Vector3 foundPosition))
@@ -161,6 +173,13 @@ public class ChainLightning : MonoBehaviour
             }
 
             origin = foundPosition;
+            chainPointsBuffer.Add(foundPosition);
+        }
+
+        // Draw the connecting bolt through every hop that landed (origin + at least one target).
+        if (chainVfx != null && chainPointsBuffer.Count >= 2)
+        {
+            chainVfx.ShowChain(chainPointsBuffer);
         }
     }
 
