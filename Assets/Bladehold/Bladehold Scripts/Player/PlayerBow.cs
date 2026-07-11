@@ -73,7 +73,7 @@ public struct ArrowImpact
     public int chargeLevel;
 }
 
-public class PlayerBow : MonoBehaviour
+public class PlayerBow : MonoBehaviour, IChargedAimWeapon
 {
     [Tooltip("Synty InputReader that raises the aim and attack press/release events. Usually on the player root.")]
     [SerializeField] private InputReader inputReader;
@@ -160,6 +160,12 @@ public class PlayerBow : MonoBehaviour
 
     /// <summary>True while the bow is between shots and can't fire yet.</summary>
     public bool IsCoolingDown => CooldownFraction < 1f;
+
+    // Aim-camera framing surfaced for BowAimCamera (see IChargedAimWeapon) — the values live on BowSO.
+    public float AimCameraDistance => config != null ? config.aimCameraDistance : 2.75f;
+    public float AimCameraHorizontalOffset => config != null ? config.aimCameraHorizontalOffset : 0.7f;
+    public float AimFieldOfViewPercent => config != null ? config.aimFieldOfViewPercent : 1f;
+    public float AimBlendSeconds => config != null ? config.aimBlendSeconds : 0.2f;
 
     /// <summary>
     ///     A target arrows fly through in addition to the wielder — the horse under a mounted

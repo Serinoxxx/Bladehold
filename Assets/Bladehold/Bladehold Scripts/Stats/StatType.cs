@@ -138,6 +138,21 @@ public enum StatType
     HorseArcheryUnlocked,
     /// <summary>1 = each run starts already mounted on a spawned horse (the Reincarnate "Cavalier" node; grants riding by itself — see <see cref="HorseRidingUnlocked" />).</summary>
     StartMounted,
+
+    /// <summary>1 = the Berserker's throwing axe is unlocked and can be wound up (hold aim); 0 = locked (aiming does nothing, melee stays out). Gated by the "Throwing Axe" node — the BowUnlocked convention.</summary>
+    AxeThrowUnlocked,
+    /// <summary>Damage of one throw per enemy hit, before charge/crit/multipliers. Base comes from ThrownAxeSO.baseDamage.</summary>
+    AxeThrowDamage,
+    /// <summary>How many charge levels the throw wind-up can reach while aiming. Base comes from ThrownAxeSO (the throw charges out of the box, like the bow's draw).</summary>
+    AxeThrowMaxChargeLevels,
+    /// <summary>Extra throw damage per charge level held (e.g. 0.5 = +50% per level).</summary>
+    AxeThrowChargeDamageBonus,
+    /// <summary>Knockback impulse each throw hit shoves its target with (charge amplifies it further via ThrownAxeSO.knockbackPerChargeLevel).</summary>
+    AxeThrowKnockback,
+    /// <summary>How many enemies one uncharged throw can pierce through in its line (charge adds ThrownAxeSO.piercePerChargeLevel more per level).</summary>
+    AxeThrowPierceCount,
+    /// <summary>Width of the throw's flight line in metres — enemies within it count as hit.</summary>
+    AxeThrowWidth,
 }
 
 /// <summary>

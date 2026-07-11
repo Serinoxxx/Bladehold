@@ -69,6 +69,13 @@ public class PlayerClassController : MonoBehaviour
     /// <summary>The active class's melee DamageTrigger.</summary>
     public DamageTrigger ActiveMeleeTrigger { get; private set; }
 
+    /// <summary>
+    ///     The active class's hold-aim weapon (the Swordsman's bow, the Berserker's thrown axe), if
+    ///     any — the first <see cref="IChargedAimWeapon" /> in the active slot's classComponents. The
+    ///     shared aim UI/camera fall back to this when their serialized PlayerBow is benched.
+    /// </summary>
+    public IChargedAimWeapon ActiveAimWeapon { get; private set; }
+
     /// <summary>All wired class slots, for the DevConsole class-switch cheat and the class-select UI.</summary>
     public IReadOnlyList<ClassSlot> Slots => slots ?? Array.Empty<ClassSlot>();
 
@@ -134,6 +141,18 @@ public class PlayerClassController : MonoBehaviour
 
         ActiveClass = active.definition;
         ActiveMeleeTrigger = active.meleeTrigger;
+
+        if (active.classComponents != null)
+        {
+            foreach (Behaviour component in active.classComponents)
+            {
+                if (component is IChargedAimWeapon aimWeapon)
+                {
+                    ActiveAimWeapon = aimWeapon;
+                    break;
+                }
+            }
+        }
 
         foreach (ClassSlot slot in slots)
         {

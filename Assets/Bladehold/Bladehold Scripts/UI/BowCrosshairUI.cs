@@ -1,15 +1,16 @@
 using UnityEngine;
 
 /// <summary>
-///     Screen-centre crosshair for the bow. Fades a <see cref="CanvasGroup" /> in while
-///     <see cref="PlayerBow.IsAiming" /> (polled, the <see cref="SwordChargeFeedback" /> pattern) and
-///     back out on release, and tightens the reticle as the draw gains charge levels so full draw
-///     reads at a glance. Lives on the crosshair UI object under the HUD canvas; the visuals (Image
-///     sprite, size, colour) are authored on the object itself.
+///     Screen-centre crosshair for the active class's hold-aim weapon (bow / thrown axe). Fades a
+///     <see cref="CanvasGroup" /> in while <see cref="IChargedAimWeapon.IsAiming" /> (polled, the
+///     <see cref="SwordChargeFeedback" /> pattern) and back out on release, and tightens the reticle
+///     as the draw gains charge levels so full draw reads at a glance. Lives on the crosshair UI
+///     object under the HUD canvas; the visuals (Image sprite, size, colour) are authored on the
+///     object itself.
 /// </summary>
 public class BowCrosshairUI : MonoBehaviour
 {
-    [Tooltip("The player's bow. Defaults to the one on Player.Instance.")]
+    [Tooltip("The player's bow, used while it's the active class's aim weapon. When benched (disabled), the class controller's ActiveAimWeapon takes over. Defaults to the one on Player.Instance.")]
     [SerializeField] private PlayerBow bow;
     [Tooltip("Faded in while aiming. Usually on this object.")]
     [SerializeField] private CanvasGroup canvasGroup;
@@ -23,6 +24,7 @@ public class BowCrosshairUI : MonoBehaviour
     [Tooltip("Seconds the reticle takes to settle on each new charge step.")]
     [SerializeField] private float tightenSeconds = 0.1f;
 
+    private IChargedAimWeapon weapon;
     private float currentScale = 1f;
     private bool anyError = false;
 
@@ -40,16 +42,13 @@ public class BowCrosshairUI : MonoBehaviour
 
     private void Start()
     {
-        // The bow lives on the player prefab, the crosshair on the HUD canvas — reach it through the
-        // Player singleton rather than a scene lookup.
-        if (bow == null && Player.Instance != null)
-        {
-            bow = Player.Instance.GetComponentInChildren<PlayerBow>();
-        }
+        // The weapon lives on the player prefab, the crosshair on the HUD canvas — reach it through
+        // the Player singleton rather than a scene lookup.
+        weapon = AimWeaponResolver.Resolve(bow);
 
-        if (bow == null)
+        if (weapon == null)
         {
-            Debug.LogError("PlayerBow is not assigned and none was found on Player.Instance.");
+            Debug.LogError("No aim weapon found: assign the bow, or ensure the class controller's active class carries an IChargedAimWeapon.");
             anyError = true;
         }
         if (canvasGroup == null)
@@ -82,13 +81,13 @@ public class BowCrosshairUI : MonoBehaviour
         }
 
         float fadeStep = fadeSeconds > 0f ? Time.deltaTime / fadeSeconds : 1f;
-        canvasGroup.alpha = Mathf.MoveTowards(canvasGroup.alpha, bow.IsAiming ? 1f : 0f, fadeStep);
+        canvasGroup.alpha = Mathf.MoveTowards(canvasGroup.alpha, weapon.IsAiming ? 1f : 0f, fadeStep);
 
         // Tighten toward full-charge scale as the draw levels up; snap open again on release.
         float targetScale = 1f;
-        if (bow.IsAiming && bow.MaxChargeLevels > 0)
+        if (weapon.IsAiming && weapon.MaxChargeLevels > 0)
         {
-            float chargeFraction = Mathf.Clamp01((float)bow.ChargeLevel / bow.MaxChargeLevels);
+            float chargeFraction = Mathf.Clamp01((float)weapon.ChargeLevel / weapon.MaxChargeLevels);
             targetScale = Mathf.Lerp(1f, fullChargeScale, chargeFraction);
         }
         float tightenStep = tightenSeconds > 0f ? Time.deltaTime / tightenSeconds : 1f;

@@ -2,25 +2,29 @@ using Unity.Cinemachine;
 using UnityEngine;
 
 /// <summary>
-///     Over-the-shoulder aim camera for the bow. While <see cref="PlayerBow.IsAiming" /> (polled, the
-///     <see cref="SwordChargeFeedback" /> pattern) the gameplay <see cref="CinemachineCamera" />'s
-///     Third Person Follow boom is blended in close and off to the side, and its lens field of view
-///     scales by <see cref="BowSO.aimFieldOfViewPercent" /> (1 = unchanged) — all tuned on
-///     <see cref="BowSO" />. Everything goes through Cinemachine's public fields, so the reflection
-///     the old Synty-controller version needed is gone. The resting framing is captured once in
-///     <c>Start</c>; releasing aim blends everything back to it. This also owns the gameplay
-///     camera's resting field of view for <see cref="GameSettingsService" />'s FOV setting (see
-///     <see cref="SetRestingFieldOfView" />), since it's already the only component holding this
-///     camera's lens reference.
+///     Over-the-shoulder aim camera for the active class's hold-aim weapon (bow / thrown axe). While
+///     <see cref="IChargedAimWeapon.IsAiming" /> (polled, the <see cref="SwordChargeFeedback" />
+///     pattern) the gameplay <see cref="CinemachineCamera" />'s Third Person Follow boom is blended
+///     in close and off to the side, and its lens field of view scales by the weapon's
+///     <see cref="IChargedAimWeapon.AimFieldOfViewPercent" /> (1 = unchanged) — the framing values
+///     live on each weapon's own SO and surface through the interface. The weapon is the serialized
+///     bow when it's the active class's (enabled), else
+///     <see cref="PlayerClassController.ActiveAimWeapon" />. Everything goes through Cinemachine's
+///     public fields, so the reflection the old Synty-controller version needed is gone. The resting
+///     framing is captured once in <c>Start</c>; releasing aim blends everything back to it. This
+///     also owns the gameplay camera's resting field of view for <see cref="GameSettingsService" />'s
+///     FOV setting (see <see cref="SetRestingFieldOfView" />), since it's already the only component
+///     holding this camera's lens reference.
 /// </summary>
 public class BowAimCamera : MonoBehaviour
 {
+    [Tooltip("The player's bow, used while it's the active class's aim weapon. When benched (disabled), the class controller's ActiveAimWeapon takes over.")]
     [SerializeField] private PlayerBow bow;
-    [SerializeField] private BowSO config;
     [Tooltip("The gameplay CinemachineCamera whose Third Person Follow boom and lens the aim blend drives. Auto-found in children.")]
     [SerializeField] private CinemachineCamera aimCamera;
 
     private CinemachineThirdPersonFollow follow;
+    private IChargedAimWeapon weapon;
     private float baseDistance;
     private float baseHorizontalOffset;
     private float baseFieldOfView;
@@ -44,14 +48,10 @@ public class BowAimCamera : MonoBehaviour
 
     private void Start()
     {
-        if (bow == null)
+        weapon = AimWeaponResolver.Resolve(bow);
+        if (weapon == null)
         {
-            Debug.LogError("PlayerBow is not assigned or found on the GameObject.");
-            anyError = true;
-        }
-        if (config == null)
-        {
-            Debug.LogError("BowSO is not assigned in the inspector.");
+            Debug.LogError("BowAimCamera found no aim weapon (assign the bow, or ensure the class controller's active class carries an IChargedAimWeapon).");
             anyError = true;
         }
         if (aimCamera == null)
@@ -86,8 +86,8 @@ public class BowAimCamera : MonoBehaviour
             return;
         }
 
-        float target = bow.IsAiming ? 1f : 0f;
-        float speed = config.aimBlendSeconds > 0f ? Time.deltaTime / config.aimBlendSeconds : 1f;
+        float target = weapon.IsAiming ? 1f : 0f;
+        float speed = weapon.AimBlendSeconds > 0f ? Time.deltaTime / weapon.AimBlendSeconds : 1f;
         float newBlend = Mathf.MoveTowards(blend, target, speed);
         if (Mathf.Approximately(newBlend, blend) && Mathf.Approximately(blend, target))
         {
@@ -97,12 +97,13 @@ public class BowAimCamera : MonoBehaviour
 
         // Ease the linear blend so the zoom settles softly at both ends.
         float eased = Mathf.SmoothStep(0f, 1f, blend);
-        follow.CameraDistance = Mathf.Lerp(baseDistance, config.aimCameraDistance, eased);
+        follow.CameraDistance = Mathf.Lerp(baseDistance, weapon.AimCameraDistance, eased);
         Vector3 shoulder = follow.ShoulderOffset;
-        shoulder.x = Mathf.Lerp(baseHorizontalOffset, config.aimCameraHorizontalOffset, eased);
+        shoulder.x = Mathf.Lerp(baseHorizontalOffset, weapon.AimCameraHorizontalOffset, eased);
         follow.ShoulderOffset = shoulder;
-        aimCamera.Lens.FieldOfView = Mathf.Lerp(baseFieldOfView, baseFieldOfView * config.aimFieldOfViewPercent, eased);
+        aimCamera.Lens.FieldOfView = Mathf.Lerp(baseFieldOfView, baseFieldOfView * weapon.AimFieldOfViewPercent, eased);
     }
+
 
     /// <summary>
     ///     Sets the resting (non-aim) field of view the aim blend returns to, applying it immediately

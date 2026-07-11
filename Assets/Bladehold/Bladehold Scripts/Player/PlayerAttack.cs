@@ -27,6 +27,8 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private PlayerStats stats;
     [Tooltip("Optional: the player's bow. While it is aiming, attack presses fire arrows instead of swinging, so the sword hold-to-charge is skipped.")]
     [SerializeField] private PlayerBow bow;
+    [Tooltip("Optional: the berserker's throwing axe. While it is aiming, attack presses throw instead of swinging, so the melee hold-to-charge is skipped.")]
+    [SerializeField] private PlayerThrownAxe thrownAxe;
 
     [Tooltip("Seconds of holding the attack button to gain each charge level (level 1 at 1×, level 2 at 2×, ...).")]
     [SerializeField] private float chargeTimePerLevel = 1f;
@@ -73,6 +75,10 @@ public class PlayerAttack : MonoBehaviour
         if (bow == null)
         {
             bow = GetComponentInChildren<PlayerBow>();
+        }
+        if (thrownAxe == null)
+        {
+            thrownAxe = GetComponentInChildren<PlayerThrownAxe>();
         }
     }
 
@@ -158,9 +164,10 @@ public class PlayerAttack : MonoBehaviour
     {
         if (anyError) return;
 
-        // While the bow is drawn, this press fires an arrow (PlayerBow suppresses the swing) — don't
-        // start timing a sword charge that can never land.
+        // While the bow or thrown axe is drawn, this press fires it instead (the aim weapon
+        // suppresses the swing) — don't start timing a melee charge that can never land.
         if (bow != null && bow.IsAiming) return;
+        if (thrownAxe != null && thrownAxe.IsAiming) return;
 
         ChargeLevel = 0;
         AttackDamageMultiplier = 1f;

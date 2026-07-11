@@ -547,3 +547,37 @@ Reincarnate tree on the first Reincarnate click, and the second click ("Begin Ne
 - [ ] Die → Reincarnate: class panel appears beside the Reincarnate tree, current class highlighted.
 - [ ] Pick Berserker → "Begin Next Life": next run is the Berserker with an empty gold tree.
 - [ ] Reincarnate without touching the panel: class unchanged.
+
+**Stage C (throwing axe) — done in C#**: `Player/PlayerThrownAxe.cs` (the `PlayerBow` skeleton:
+hold aim = wind-up in charge levels tuned on `Player/ThrownAxeSO.cs`, press attack = throw — a
+hitscan **sphere cast**, a straight line with `AxeThrowWidth` metres of width, damaging + knocking
+back every unique enemy along it with a fresh crit roll each, up to a pierce budget
+(`AxeThrowPierceCount` + charge × `piercePerChargeLevel`), stopping at environment or when the
+budget runs out; melee suppressed while aiming exactly like the bow; **`AxeThrowUnlocked` base is
+temporarily 1** until the `axe_unlock` node ships in Stage E). `Player/AxeProjectileVisual.cs`
+(cosmetic spinning axe flying to the line's end, the `BowTracer` sibling).
+`Player/IChargedAimWeapon.cs` + `Player/AimWeaponResolver.cs`: `BowAimCamera`, `BowCrosshairUI`,
+and `BowReloadUI` now poll whichever aim weapon the active class carries (serialized bow while
+enabled, else `PlayerClassController.ActiveAimWeapon`) — aim-camera framing values surface through
+the interface from each weapon's SO, so `BowAimCamera` no longer needs its `BowSO` reference.
+7 new StatTypes (`AxeThrow*`). `PlayerAttack` also skips melee charge while the axe aims.
+
+- [ ] **ThrownAxeSO asset** (menu `Scriptable Objects/ThrownAxeSO`): defaults are authored in-code
+      (dmg 25, range 25 m, cooldown 0.6 s, width 0.6 m, pierce 2, charge 3 levels @ +50%/level,
+      knockback 6 + 25%/level; aim-camera block mirrors BowSO).
+- [ ] **Throwing-axe visual prefab**: an axe mesh + optional trail with `AxeProjectileVisual`;
+      assign on `PlayerThrownAxe.projectilePrefab`.
+- [ ] **Player.prefab**: add `PlayerThrownAxe` to the root **disabled**; assign the SO; optional
+      `meleeWeaponModel` (the 1H_Axe) / `thrownAxeModel` (an axe prop in the throwing hand) for the
+      in-hand swap while aiming. Add the component to the **berserker slot's classComponents** on
+      `PlayerClassController` so the class system enables it (and the aim UI finds it).
+- [ ] Optional: berserker override controller re-skins the bow layer's aim/fire states with 2H
+      wind-up/throw poses (the axe drives the same `IsAiming`/`BowFire` params).
+
+**Manual verification (Stage C)**
+- [ ] Berserker: hold aim → camera shoulders in, crosshair fades in and tightens with charge;
+      release → back to normal. Attack while aiming throws (no melee swing).
+- [ ] A charged throw pierces more goblins in a visible line, knocks them back harder; the reload
+      radial runs between throws.
+- [ ] Swordsman: bow behaves exactly as before (camera/crosshair/reload unchanged).
+- [ ] Mounted berserker: aiming does nothing (no mounted throwing yet — intended).
