@@ -46,6 +46,7 @@ public class RunTelemetry : MonoBehaviour
     private InputReader inputReader;
     private SamplePlayerAnimationController controller;
     private DamageTrigger swordTrigger;
+    private PlayerThrownAxe thrownAxe;
     private SkillTreeService goldTree;
     private ReincarnateService reincarnateTree;
     private FieldInfo isSprintingField;
@@ -198,6 +199,14 @@ public class RunTelemetry : MonoBehaviour
         {
             swordTrigger.OnHit += HandleSwordHit;
         }
+        // The Berserker's thrown axe feeds the same damage-dealt accumulators (note: bow damage is
+        // not telemetered today — the axe is included deliberately, since face-tank balance can't
+        // be read without its share of the damage).
+        thrownAxe = player.GetComponentInChildren<PlayerThrownAxe>(true);
+        if (thrownAxe != null)
+        {
+            thrownAxe.OnHit += HandleSwordHit;
+        }
         if (inputReader != null)
         {
             inputReader.onAttackDeactivated += HandleAttackReleased;
@@ -272,6 +281,10 @@ public class RunTelemetry : MonoBehaviour
         if (swordTrigger != null)
         {
             swordTrigger.OnHit -= HandleSwordHit;
+        }
+        if (thrownAxe != null)
+        {
+            thrownAxe.OnHit -= HandleSwordHit;
         }
         if (inputReader != null)
         {

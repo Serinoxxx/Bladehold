@@ -609,3 +609,36 @@ throw and added **flat** to every target of that one attack). DevConsole shows a
 - [ ] Hold a charged swing / axe wind-up, tank a goblin hit, release → that attack's numbers jump
       (needs a `pain_1` node or a temporary PainIntoPowerPercent base > 0 to see it pre-Stage-E).
 - [ ] Swordsman: no rage readout in the dev console, no behaviour change.
+
+**Stage E (berserker skill tree + rage bar + telemetry) — done in C#**:
+`Config/SkillTreeBerserker.csv` — 32 rows carried over from the gold tree (all melee/crit/charge/
+knockback/vamp/impulse/lightning/conduit/parry/solid/economy/mount lines work on the axe unchanged,
+descriptions re-worded sword→axe) with the 17 bow rows dropped (incl. horse_archery), prereqs
+scrubbed (`sword_dmg`/`sprint` now link to `axe_unlock`), plus 9 new nodes in the old bow footprint:
+`axe_unlock` (Throwing Axe, 60g), `axe_dmg` (Heavier Head ×7), `axe_pierce` (Skull Splitter ×5),
+`axe_width` (Wide Arc ×4), `axe_knock` (Crushing Throw ×4), `axe_charge` (Wound Up ×3, +1 level
++25%/level), `pain_1` (Pain into Power ×4: 50/75/100/125%), `rage_fury` (Boiling Blood ×5,
++15%/lvl gain), `rage_retain` (Slow Burn ×4, +20%/lvl retention). `AxeThrowUnlocked` base flipped
+back to **0** (locked until `axe_unlock`). `UI/RageBarUI.cs` (polls `RageFraction`, drives a Filled
+Image + optional TMP label; hides itself when the class has no enabled RageBuff). `RunTelemetry`
+now also accumulates thrown-axe hits into damage-dealt (bow damage was never telemetered; the axe
+is included deliberately for face-tank balance reading).
+
+- [ ] **Berserker SkillTreeSO asset** (menu `Scriptable Objects/SkillTreeSO`), csv =
+      `Config/SkillTreeBerserker.csv`, hasHeaderRow on; **copy the gold tree SO's `icons` list**
+      so the carried-over nodes' icon names resolve (the 9 new nodes ship without icons — add via
+      the Skill Tree Editor's drag-and-drop later). Sanity-check in **Bladehold > Skill Tree
+      Editor** (parse errors surface on save/reload).
+- [ ] Assign the new tree SO on the **berserker `ClassDefinitionSO.skillTree`** (swordsman stays
+      null = default gold tree).
+- [ ] **HUD rage bar**: a Filled Image (+ frame, + optional TMP number) under the HUD canvas with
+      `RageBarUI`; it hides itself for the Swordsman automatically.
+
+**Manual verification (Stage E)**
+- [ ] Berserker death screen shows the berserker tree (axe/pain/rage branch where the bow was);
+      Swordsman still shows the gold tree. Node icons render on carried-over nodes.
+- [ ] Fresh berserker: aiming does nothing until `axe_unlock` is bought; after buying, the full
+      Stage C loop works and `axe_*` nodes visibly raise damage/pierce/width/knockback/charge.
+- [ ] `pain_1`/`rage_fury`/`rage_retain` purchases visibly change the Stage D behaviours.
+- [ ] Rage bar fills/drains in sync with the DevConsole readout; absent for the Swordsman.
+- [ ] Telemetry damage-dealt rows include thrown-axe hits.

@@ -218,9 +218,9 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
 
         // Register the authored SO values as the stat bases; skill nodes layer on top without ever
         // mutating the asset (the PlayerBow convention).
-        // TEMPORARY until the berserker tree ships: AxeThrowUnlocked base 1 so the axe is playable in
-        // the Stage C prototype. The axe_unlock node flips this to the usual base-0 lock (Stage E).
-        stats.SetBase(StatType.AxeThrowUnlocked, 1f);
+        // The axe itself is gated: base 0 = locked until the "Throwing Axe" node is bought (the
+        // BowUnlocked convention).
+        stats.SetBase(StatType.AxeThrowUnlocked, 0f);
         stats.SetBase(StatType.AxeThrowDamage, config.baseDamage);
         stats.SetBase(StatType.AxeThrowMaxChargeLevels, config.baseMaxChargeLevels);
         stats.SetBase(StatType.AxeThrowChargeDamageBonus, config.baseChargeDamageBonus);
