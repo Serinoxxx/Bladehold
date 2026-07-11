@@ -92,6 +92,16 @@ public class PlayerMount : MonoBehaviour
     private bool hasDismountAction;
     private bool anyError = false;
 
+    /// <summary>
+    ///     Re-points at the active class's melee DamageTrigger. Called by
+    ///     <see cref="PlayerClassController" /> in Awake — mounting (which applies the reach bonus and
+    ///     ignored-target to this trigger) can only happen later, during gameplay.
+    /// </summary>
+    public void SetSwordTrigger(DamageTrigger trigger)
+    {
+        swordTrigger = trigger;
+    }
+
     private void OnValidate()
     {
         if (health == null)

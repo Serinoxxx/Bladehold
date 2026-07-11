@@ -51,6 +51,15 @@ public class PlayerAttack : MonoBehaviour
     /// </summary>
     public float AttackDamageMultiplier { get; private set; } = 1f;
 
+    /// <summary>
+    ///     Per-class charge pacing (heavier weapons charge slower). Called by
+    ///     <see cref="PlayerClassController" /> in Awake; the serialized value is the Swordsman default.
+    /// </summary>
+    public void SetChargeTimePerLevel(float seconds)
+    {
+        chargeTimePerLevel = seconds;
+    }
+
     private void OnValidate()
     {
         if (inputReader == null)

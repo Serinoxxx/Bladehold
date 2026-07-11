@@ -168,7 +168,10 @@ public class RunTelemetry : MonoBehaviour
         controller = player.GetComponentInChildren<SamplePlayerAnimationController>(true);
 
         swordTrigger = null;
-        foreach (DamageTrigger trigger in player.GetComponentsInChildren<DamageTrigger>(true))
+        // Exclude inactive children: with per-class weapons, the benched class's weapon still carries
+        // a ReadsPlayerStats trigger — bind the live one only. (Still binds "first found" if a third
+        // active ReadsPlayerStats trigger ever appears.)
+        foreach (DamageTrigger trigger in player.GetComponentsInChildren<DamageTrigger>(false))
         {
             if (trigger.ReadsPlayerStats)
             {
@@ -229,7 +232,11 @@ public class RunTelemetry : MonoBehaviour
         yield return null;
 
         Wallet wallet = Player.Instance != null ? Player.Instance.Wallet : null;
-        string detail = Invariant($"startWave={RunState.StartingWave};gold={(wallet != null ? wallet.Coins : 0)};goldNodes={CountOwned(goldTree)};reincNodes={CountOwned(reincarnateTree)}");
+        PlayerClassController classController = Player.Instance != null ? Player.Instance.GetComponent<PlayerClassController>() : null;
+        string classId = classController != null && classController.ActiveClass != null
+            ? classController.ActiveClass.id
+            : SaveSystem.Load().playerClassId;
+        string detail = Invariant($"startWave={RunState.StartingWave};class={classId};gold={(wallet != null ? wallet.Coins : 0)};goldNodes={CountOwned(goldTree)};reincNodes={CountOwned(reincarnateTree)}");
         AppendRow("run_start", wave: Invariant($"{RunState.StartingWave}"), runSeconds: "0", detail: detail);
     }
 

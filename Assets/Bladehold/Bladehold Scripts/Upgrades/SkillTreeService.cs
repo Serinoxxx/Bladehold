@@ -48,6 +48,18 @@ public class SkillTreeService : MonoBehaviour, ISkillTreeService
 
     private void Start()
     {
+        // Per-class tree: the active class (resolved by PlayerClassController in Awake, strictly
+        // before any Start) may carry its own SkillTreeSO; null keeps the serialized default (the
+        // Swordsman tree). Saved ids not in the active tree are skipped below, never rewritten, so
+        // switching class leaves the other class's purchases dormant rather than lost.
+        PlayerClassController classController = Player.Instance != null
+            ? Player.Instance.GetComponent<PlayerClassController>()
+            : null;
+        if (classController != null && classController.ActiveClass != null && classController.ActiveClass.skillTree != null)
+        {
+            tree = classController.ActiveClass.skillTree;
+        }
+
         if (tree == null)
         {
             Debug.LogError("SkillTreeSO is not assigned in the inspector.");

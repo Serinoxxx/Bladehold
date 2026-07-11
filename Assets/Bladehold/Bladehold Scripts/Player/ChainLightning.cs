@@ -39,6 +39,15 @@ public class ChainLightning : MonoBehaviour
 
     private bool anyError = false;
 
+    /// <summary>
+    ///     Re-points at the active class's melee DamageTrigger. Called by
+    ///     <see cref="PlayerClassController" /> in Awake, before Start subscribes.
+    /// </summary>
+    public void SetSwordTrigger(DamageTrigger trigger)
+    {
+        swordTrigger = trigger;
+    }
+
     private void Start()
     {
         if (buff == null)

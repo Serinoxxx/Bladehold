@@ -33,6 +33,13 @@ public class SaveData
     /// </summary>
     public List<string> purchasedReincarnateNodeIds = new List<string>();
 
+    /// <summary>
+    ///     Id of the player's chosen class (matches a <see cref="ClassDefinitionSO.id" /> wired into
+    ///     <see cref="PlayerClassController" />'s slots). Chosen when reincarnating (or via the
+    ///     DevConsole cheat) and applied on the next scene load. Progress, not a setting.
+    /// </summary>
+    public string playerClassId = "swordsman";
+
     /// <summary>Linear 0-1 volumes applied by <see cref="GameSettingsService" />.</summary>
     public float masterVolume = 0.5f;
     public float musicVolume = 0.5f;
@@ -77,6 +84,7 @@ public class SaveData
         reincarnatePoints = defaults.reincarnatePoints;
         purchasedNodeIds.Clear();
         purchasedReincarnateNodeIds.Clear();
+        playerClassId = defaults.playerClassId;
     }
 
     /// <summary>

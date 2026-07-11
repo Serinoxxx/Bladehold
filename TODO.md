@@ -481,3 +481,52 @@ authored description. `SkillTreeView` passes the service into both `Show` call s
       **authored** description unchanged (no block).
 - [ ] Hover a **purchased** node → name keeps its numeral, cost shows "Owned", authored description.
 - [ ] Repeat on the **Reincarnate** tree — points/values render, no null-refs.
+
+## Berserker class prototype — Unity Editor wiring
+
+The C# lands in stages (A: class infrastructure, B: reincarnate class select, C: throwing axe,
+D: rage + pain into power, E: berserker skill tree + rage bar). **Stage A is done in C#**:
+`Player/ClassDefinitionSO.cs` (per-class asset: id, display name/blurb, optional
+`AnimatorOverrideController`, per-class `chargeTimePerLevel`, optional per-class `SkillTreeSO`),
+`Player/PlayerClassController.cs` (on the player root; in **Awake** — strictly before every Start —
+reads `SaveData.playerClassId`, activates the chosen slot's weapon GameObjects and class components
+while deactivating the rest (an inactive weapon never registers the shared `SwordDamage`/range/crit
+bases, so two `readsPlayerStats` triggers can't clobber each other), re-points
+`AnimationEvents`/`VampiricBlade`/`ChainLightning`/`ImpulseHitFeedback`/`PlayerMount` at the active
+melee `DamageTrigger` via new setters, applies the class's animator override + charge pacing).
+`SkillTreeService.Start` now adopts the active class's `skillTree` when set (saved ids missing from
+the active tree were already skipped, so the other class's purchases just go dormant).
+`SaveData.playerClassId` ("swordsman" default, wiped by `ResetProgress`). DevConsole gained a class
+◄/► picker + "Switch & Reload" cheat; telemetry `run_start` now logs `class=` and binds only the
+**active** weapon's trigger.
+
+- [ ] **Axe weapon prefab** (`Bladehold Prefabs/1H_Axe.prefab`): duplicate `1H_Sword.prefab`, swap
+      the mesh for an axe model, create a new `DamageSO` (~1.4× sword baseDamage) + `DamageTriggerSO`
+      for it, keep BladeSweep `Blade Base`/`Blade Tip` on the new mesh and `readsPlayerStats` ON.
+      Nest under the same right-hand bone in `Player.prefab`, **inactive** by default. Re-assign the
+      copy's out-of-prefab refs (they don't survive duplication): `DamageTrigger.playerAttack`,
+      `SwordHitFeedback.animator`, `SwordChargeFeedback.playerAttack`.
+- [ ] **Berserker AnimatorOverrideController** based on `AC_Sidekick_Masculine.controller`: override
+      the Attack-layer 1H clip with `Assets/Third Party/Kevin Iglesias/Human Animations/Animations/
+      Male/Combat/2H/HumanM@Attack2H01.fbx` (or a Synty `A_MOD_SWD_Heavy*` clip). **Bake animation
+      events on the new clip's import settings**: `PlaySwordWoosh` early in the swing and
+      `OneHandedSwordAttack` on the impact frame — same names as the 1H clip, so `AnimationEvents`
+      routes them to whichever weapon is active. A missing event = silent no-hit swings.
+- [ ] **ClassDefinitionSO assets ×2** (menu `Scriptable Objects/ClassDefinitionSO`):
+      `swordsman` (displayName "Swordsman", null override, chargeTimePerLevel 1.0, null skillTree)
+      and `berserker` (displayName "Berserker", the override controller, ~1.2, skillTree left null
+      until Stage E).
+- [ ] **Player.prefab**: add `PlayerClassController` to the root. Slot 0 = swordsman: weaponObjects
+      `[1H_Sword]`, meleeTrigger/hitFeedback = the sword's, classComponents `[PlayerBow,
+      FreezingDraw]`. Slot 1 = berserker: weaponObjects `[1H_Axe]`, the axe's trigger/feedback,
+      classComponents empty for now (gains `PlayerThrownAxe`/`RageBuff`/`PainIntoPower` in stages
+      C/D). The shared-component refs (`AnimationEvents`, `PlayerAttack`, `VampiricBlade`,
+      `ChainLightning`, `ImpulseHitFeedback`, `PlayerMount`, child `Animator`) auto-wire via
+      OnValidate — verify they resolved.
+
+**Manual verification (Stage A)**
+- [ ] Swordsman unchanged end-to-end: swing, charge, bow, vamp/lightning, mount, tree, reincarnate.
+- [ ] Dev console (backquote) → Class picker → "Switch to Berserker & Reload": axe in hand, sword
+      gone; axe swings deal the axe SO's damage; sword skill nodes (Sharpened Edge etc.) scale it.
+- [ ] Console shows no base-clobber weirdness: only one weapon's `DamageTrigger` registers bases.
+- [ ] Telemetry CSV `run_start` row carries `class=berserker` after the switch.
