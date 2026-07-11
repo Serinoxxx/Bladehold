@@ -49,6 +49,8 @@ public class DeathScreen : MonoBehaviour
     [SerializeField] private GameObject goldTreePanel;
     [Tooltip("Optional: the Reincarnate skill-tree panel; hidden until the player clicks Reincarnate, then shown so banked points can be spent before the new run starts.")]
     [SerializeField] private GameObject reincarnateTreePanel;
+    [Tooltip("Optional: the class-select panel shown alongside the Reincarnate tree, so the player can reincarnate as a different class. Leave unassigned to keep the current class.")]
+    [SerializeField] private ClassSelectPanel classSelectPanel;
     [Tooltip("Seconds to fade the screen in.")]
     [SerializeField] private float fadeDuration = 1f;
 
@@ -95,10 +97,15 @@ public class DeathScreen : MonoBehaviour
         canvasGroup.interactable = false;
         canvasGroup.blocksRaycasts = false;
 
-        // The Reincarnate tree only appears after the player commits to reincarnating.
+        // The Reincarnate tree (and the class picker beside it) only appears after the player
+        // commits to reincarnating.
         if (reincarnateTreePanel != null)
         {
             reincarnateTreePanel.SetActive(false);
+        }
+        if (classSelectPanel != null)
+        {
+            classSelectPanel.gameObject.SetActive(false);
         }
 
         tryAgainButton.onClick.AddListener(RestartFromLevelOne);
@@ -271,6 +278,13 @@ public class DeathScreen : MonoBehaviour
 
         if (reincarnateBanked)
         {
+            // The next life may be a different class: persist the picker's choice so
+            // PlayerClassController applies it when the scene reloads. The saved class is the
+            // picker's pre-selection, so an untouched panel is a no-op.
+            if (classSelectPanel != null && !string.IsNullOrEmpty(classSelectPanel.SelectedClassId))
+            {
+                PlayerClassController.SetSavedClass(classSelectPanel.SelectedClassId);
+            }
             ReincarnateService.Instance.CompleteReincarnate();
             return;
         }
@@ -285,6 +299,10 @@ public class DeathScreen : MonoBehaviour
             goldTreePanel.SetActive(false);
         }
         reincarnateTreePanel.SetActive(true);
+        if (classSelectPanel != null)
+        {
+            classSelectPanel.gameObject.SetActive(true);
+        }
 
         // The old run is already gone (gold tree wiped, wave reset) — the only way forward is the new run.
         tryAgainButton.gameObject.SetActive(false);

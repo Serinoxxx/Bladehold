@@ -530,3 +530,20 @@ the active tree were already skipped, so the other class's purchases just go dor
       gone; axe swings deal the axe SO's damage; sword skill nodes (Sharpened Edge etc.) scale it.
 - [ ] Console shows no base-clobber weirdness: only one weapon's `DamageTrigger` registers bases.
 - [ ] Telemetry CSV `run_start` row carries `class=berserker` after the switch.
+
+**Stage B (reincarnate class select) — done in C#**: `UI/ClassSelectPanel.cs` (authored buttons, one
+per `ClassDefinitionSO`; fills name/description labels, toggles a selected highlight, pre-selects
+the saved class so an untouched panel keeps it) and `DeathScreen` hooks: the panel appears with the
+Reincarnate tree on the first Reincarnate click, and the second click ("Begin Next Life") persists
+`SelectedClassId` via `PlayerClassController.SetSavedClass` right before the scene reload.
+
+- [ ] **Class-select panel** under the death-screen canvas, next to `reincarnateTreePanel`:
+      a `ClassSelectPanel` with two authored buttons (Swordsman / Berserker), each with a name TMP
+      label, an optional description TMP label, and an optional selected-highlight object. Assign
+      the two `ClassDefinitionSO` assets, then assign the panel on `DeathScreen.classSelectPanel`.
+      Active/inactive state doesn't matter — `DeathScreen.Start` hides it until points are banked.
+
+**Manual verification (Stage B)**
+- [ ] Die → Reincarnate: class panel appears beside the Reincarnate tree, current class highlighted.
+- [ ] Pick Berserker → "Begin Next Life": next run is the Berserker with an empty gold tree.
+- [ ] Reincarnate without touching the panel: class unchanged.
