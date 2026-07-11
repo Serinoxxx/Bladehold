@@ -153,6 +153,13 @@ public enum StatType
     AxeThrowPierceCount,
     /// <summary>Width of the throw's flight line in metres — enemies within it count as hit.</summary>
     AxeThrowWidth,
+
+    /// <summary>Fraction of damage taken while charging a melee swing or winding up a throw that's banked and added flat to that attack's damage (the Berserker's "Pain into Power" line). 0 = locked.</summary>
+    PainIntoPowerPercent,
+    /// <summary>Unitless multiplier on how fast the Berserker's rage builds from dealing/taking damage (base 1.0, the MoveSpeed convention — see RageBuff).</summary>
+    RageGainMultiplier,
+    /// <summary>Unitless multiplier on how long rage lingers: scales the decay grace window up and the drain rate down (base 1.0).</summary>
+    RageRetentionMultiplier,
 }
 
 /// <summary>

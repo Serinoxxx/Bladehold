@@ -55,6 +55,12 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
     [Tooltip("Played on every throw.")]
     [SerializeField] private MMF_Player throwFeedback;
 
+    [Header("Class mechanics (optional)")]
+    [Tooltip("Optional: the Berserker's Rage buff. While raging, throw damage scales by its multiplier. Defaults to the one on this GameObject.")]
+    [SerializeField] private RageBuff rageBuff;
+    [Tooltip("Optional: the Berserker's Pain into Power. Damage banked from hits taken mid-wind-up is consumed per throw and added flat to every enemy pierced. Defaults to the one on this GameObject.")]
+    [SerializeField] private PainIntoPower painIntoPower;
+
     [Tooltip("Optional: the player's mount. There is no mounted throwing — aiming from the saddle does nothing.")]
     [SerializeField] private PlayerMount mount;
 
@@ -132,6 +138,14 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
         if (mount == null)
         {
             mount = GetComponent<PlayerMount>();
+        }
+        if (rageBuff == null)
+        {
+            rageBuff = GetComponent<RageBuff>();
+        }
+        if (painIntoPower == null)
+        {
+            painIntoPower = GetComponent<PainIntoPower>();
         }
     }
 
@@ -387,6 +401,10 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
         }
         OnThrown?.Invoke();
 
+        // Pain into Power (Berserker): the pool banked from hits taken mid-wind-up fuels this whole
+        // throw — consumed once, so every enemy pierced shares the same flat bonus.
+        float painBonus = painIntoPower != null ? painIntoPower.ConsumeBonus() : 0f;
+
         float width = Mathf.Max(0.05f, stats.GetValue(StatType.AxeThrowWidth));
         int pierceBudget = Mathf.Max(1, Mathf.RoundToInt(
             stats.GetValue(StatType.AxeThrowPierceCount) + ChargeLevel * config.piercePerChargeLevel));
@@ -420,7 +438,7 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
             }
 
             Vector3 hitPoint = HitPointOf(hit, origin, direction);
-            Damage damage = BuildThrowDamage(origin);
+            Damage damage = BuildThrowDamage(origin, painBonus);
             damageable.ReceiveDamage(damage);
             OnHit?.Invoke(damageable, damage, hitPoint);
             damaged++;
@@ -479,7 +497,7 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
         return (aimPoint - origin).normalized;
     }
 
-    private Damage BuildThrowDamage(Vector3 origin)
+    private Damage BuildThrowDamage(Vector3 origin, float painBonus)
     {
         float value = stats.GetValue(StatType.AxeThrowDamage);
         value *= 1f + ChargeLevel * stats.GetValue(StatType.AxeThrowChargeDamageBonus);
@@ -496,6 +514,15 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
         {
             value *= allDamage;
         }
+
+        // Rage (Berserker): more damage the angrier the player is (the DamageTrigger read pattern).
+        if (rageBuff != null && rageBuff.IsActive)
+        {
+            value *= rageBuff.DamageMultiplier;
+        }
+
+        // Pain into Power: damage tanked mid-wind-up comes back flat, on top of every multiplier.
+        value += painBonus;
 
         return new Damage
         {

@@ -94,6 +94,17 @@ public class Health : MonoBehaviour, IDamageable
     /// </summary>
     public event Func<Damage, bool> TryBlockDamage;
 
+    /// <summary>
+    ///     Checked after <see cref="TryBlockDamage" />, before any health is lost. Each handler returns
+    ///     a multiplier on the incoming damage (1 = unchanged, 0.7 = 30% reduction); all handlers'
+    ///     returns multiply together, clamped to at least 0. The <see cref="Damage.value" /> is scaled
+    ///     in place — each hit is a fresh <see cref="Damage" /> instance — so <see cref="OnDamaged" />
+    ///     listeners (damage numbers, telemetry, knockback) all see the mitigated value. Unlike the
+    ///     two negate-hooks above this one shapes damage rather than cancelling it (e.g. the
+    ///     Berserker's rage damage reduction).
+    /// </summary>
+    public event Func<Damage, float> ScaleDamageTaken;
+
     public void ReceiveDamage(Damage damage)
     {
         if (IsDead)
@@ -105,6 +116,8 @@ public class Health : MonoBehaviour, IDamageable
         {
             return;
         }
+
+        damage.value *= DamageTakenMultiplier(damage);
 
         currentHealth -= damage.value;
 
@@ -170,6 +183,21 @@ public class Health : MonoBehaviour, IDamageable
             }
         }
         return false;
+    }
+
+    private float DamageTakenMultiplier(Damage damage)
+    {
+        if (ScaleDamageTaken == null)
+        {
+            return 1f;
+        }
+
+        float multiplier = 1f;
+        foreach (Delegate handler in ScaleDamageTaken.GetInvocationList())
+        {
+            multiplier *= ((Func<Damage, float>)handler).Invoke(damage);
+        }
+        return Mathf.Max(0f, multiplier);
     }
 
     private bool PreventDeath()

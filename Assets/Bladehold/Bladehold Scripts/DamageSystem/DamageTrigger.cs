@@ -49,6 +49,12 @@ public class DamageTrigger : MonoBehaviour
     [Tooltip("Optional: the player's Impulse buff. When set and active, hits are stamped with impulse force/power (flinging enemies — see ImpulseReceiver) and gain the buff's stack damage multiplier. Falls back to the Player's own ImpulseBuff when left empty. Only used when 'Reads Player Stats' is on.")]
     [SerializeField] ImpulseBuff impulseBuff;
 
+    [Tooltip("Optional: the Berserker's Rage buff. While raging, damage scales by its multiplier. Falls back to the Player's own RageBuff when left empty. Only used when 'Reads Player Stats' is on.")]
+    [SerializeField] RageBuff rageBuff;
+
+    [Tooltip("Optional: the Berserker's Pain into Power. Damage banked from hits taken mid-charge is consumed on Activate and added flat to every target of that swing. Falls back to the Player's own PainIntoPower when left empty. Only used when 'Reads Player Stats' is on.")]
+    [SerializeField] PainIntoPower painIntoPower;
+
     [Tooltip("Knockback impulse applied by this hitbox when NOT reading player stats (e.g. an ability hitbox like the Death Nova). Ignored when 'Reads Player Stats' is on, where knockback comes from PlayerStats instead.")]
     [SerializeField] float knockbackForce = 0f;
 
@@ -72,6 +78,7 @@ public class DamageTrigger : MonoBehaviour
     float deactivateTime;
     int activePointCount;
     float reachBonus;
+    float activationPainBonus;
 
     bool anyError = false;
 
@@ -132,10 +139,19 @@ public class DamageTrigger : MonoBehaviour
             ApplyRangeScale();
 
             // Missing buff is not an error — the Impulse feature is optional (the DeathNova
-            // stats-fallback idiom).
+            // stats-fallback idiom). Same for the Berserker's rage/pain components: on the
+            // Swordsman they're disabled and stay permanently neutral.
             if (impulseBuff == null && Player.Instance != null)
             {
                 impulseBuff = Player.Instance.GetComponentInChildren<ImpulseBuff>();
+            }
+            if (rageBuff == null && Player.Instance != null)
+            {
+                rageBuff = Player.Instance.GetComponentInChildren<RageBuff>();
+            }
+            if (painIntoPower == null && Player.Instance != null)
+            {
+                painIntoPower = Player.Instance.GetComponentInChildren<PainIntoPower>();
             }
         }
         else if (Player.Instance != null && ReferenceEquals(ownerDamageable, Player.Instance.Damageable))
@@ -194,6 +210,10 @@ public class DamageTrigger : MonoBehaviour
         isActive = true;
         deactivateTime = Time.time + damageTriggerSO.duration;
         hitTargets.Clear();
+
+        // Pain into Power (Berserker): the pool banked from hits taken mid-charge fuels this whole
+        // activation — consumed once, so every target of the swing shares the same flat bonus.
+        activationPainBonus = readsPlayerStats && painIntoPower != null ? painIntoPower.ConsumeBonus() : 0f;
 
         if (detectionMode == DetectionMode.BladeSweep)
         {
@@ -387,6 +407,16 @@ public class DamageTrigger : MonoBehaviour
             impulseForce = impulseBuff.CurrentImpulseForce
                 * (1f + chargeLevel * stats.GetValue(StatType.ChargeKnockbackBonus));
         }
+
+        // Rage (Berserker): more damage the angrier the player is (the ImpulseBuff read pattern).
+        if (rageBuff != null && rageBuff.IsActive)
+        {
+            value *= rageBuff.DamageMultiplier;
+        }
+
+        // Pain into Power (Berserker): damage tanked mid-charge comes back flat, on top of every
+        // multiplier — "adds to the damage of that attack".
+        value += activationPainBonus;
 
         return new Damage
         {

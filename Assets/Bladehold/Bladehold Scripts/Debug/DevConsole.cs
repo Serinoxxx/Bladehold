@@ -69,6 +69,7 @@ public class DevConsole : MonoBehaviour
         DrawWaveControls();
         DrawEnemySpawnControls();
         DrawClassControls();
+        DrawRageReadout();
 
         // Perf stress tests: burst-spawn into the current wave, ignoring the concurrent cap.
         GUILayout.Label("Spawn Goblins (stress test)");
@@ -248,6 +249,27 @@ public class DevConsole : MonoBehaviour
             Time.timeScale = 1f;
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
+    }
+
+    /// <summary>
+    ///     Live readout of the Berserker's rage meter (and any banked Pain-into-Power bonus) so the
+    ///     loop is verifiable before the HUD rage bar exists. Hidden for classes without a RageBuff.
+    /// </summary>
+    private void DrawRageReadout()
+    {
+        RageBuff rage = Player.Instance != null ? Player.Instance.GetComponent<RageBuff>() : null;
+        if (rage == null || !rage.isActiveAndEnabled)
+        {
+            return;
+        }
+
+        string line = $"Rage {rage.CurrentRage:0}/{rage.MaxRage:0}";
+        PainIntoPower pain = Player.Instance.GetComponent<PainIntoPower>();
+        if (pain != null && pain.isActiveAndEnabled && pain.StoredBonus > 0f)
+        {
+            line += $"  |  Pain +{pain.StoredBonus:0.#}";
+        }
+        GUILayout.Label(line);
     }
 
     private void DrawSpawnBurstButton(int count)

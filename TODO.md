@@ -581,3 +581,31 @@ the interface from each weapon's SO, so `BowAimCamera` no longer needs its `BowS
       radial runs between throws.
 - [ ] Swordsman: bow behaves exactly as before (camera/crosshair/reload unchanged).
 - [ ] Mounted berserker: aiming does nothing (no mounted throwing yet — intended).
+
+**Stage D (rage + pain into power) — done in C#**: `Health` gained its third alter-hook,
+**`ScaleDamageTaken`** (`event Func<Damage, float>` — handlers return multipliers, products
+combined, `Damage.value` scaled in place so damage numbers/telemetry/knockback all see the
+mitigated value; CLAUDE.md's Health paragraph updated). `Player/RageSO.cs` + `Player/RageBuff.cs`
+(the rage meter: builds from dealing damage — melee `OnHit` via the class controller's active
+trigger, plus `PlayerThrownAxe.OnHit` — and ×4 from taking damage; drains after an idle grace;
+at full meter +50% damage (read by `DamageTrigger`/`PlayerThrownAxe` like `ImpulseBuff`), +20% move
+speed (quantized signed-delta MoveSpeed percent modifiers), −30% damage taken (the new hook); gain
+and retention are the upgradeable half via `RageGainMultiplier`/`RageRetentionMultiplier`, base
+1.0). `Player/PainIntoPower.cs` (damage taken while melee-charging or axe-aiming banks
+`PainIntoPowerPercent` — base 0 = locked — of it; consumed once per melee activation /
+throw and added **flat** to every target of that one attack). DevConsole shows a live
+`Rage 62/100 | Pain +8` readout for the Berserker. 3 new StatTypes.
+
+- [ ] **RageSO asset** (menu `Scriptable Objects/RageSO`): defaults authored in-code (max 100,
+      +1 rage/dmg dealt, +4 rage/dmg taken, 3 s grace then −10/s; at full: +50% dmg, +20% move,
+      −30% taken).
+- [ ] **Player.prefab**: add `RageBuff` (assign the RageSO) and `PainIntoPower` to the root,
+      both **disabled**; add both to the berserker slot's `classComponents` on
+      `PlayerClassController`.
+
+**Manual verification (Stage D)**
+- [ ] Berserker: rage climbs on hits dealt AND (faster) on hits taken; decays after ~3 s idle.
+- [ ] At high rage: bigger damage numbers, visibly faster run, smaller incoming damage numbers.
+- [ ] Hold a charged swing / axe wind-up, tank a goblin hit, release → that attack's numbers jump
+      (needs a `pain_1` node or a temporary PainIntoPowerPercent base > 0 to see it pre-Stage-E).
+- [ ] Swordsman: no rage readout in the dev console, no behaviour change.
