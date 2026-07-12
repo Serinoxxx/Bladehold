@@ -215,10 +215,87 @@ public class PlayerClassController : MonoBehaviour
             {
                 animator.runtimeAnimatorController = ActiveClass.animatorOverride;
             }
+            if (ActiveClass.characterModelPrefab != null && animator != null)
+            {
+                SwapCharacterModel(ActiveClass.characterModelPrefab);
+            }
             if (playerAttack != null)
             {
                 playerAttack.SetChargeTimePerLevel(ActiveClass.chargeTimePerLevel);
             }
+        }
+    }
+
+    /// <summary>
+    ///     Swaps the visible character onto the shared rig: every SkinnedMeshRenderer in the class's
+    ///     model prefab is re-bound onto the existing skeleton by bone name (Synty Sidekicks share the
+    ///     rig, so names match 1:1) and parented under the Animator, then the authored model's
+    ///     renderers are disabled. Nothing else moves — the Animator, animation events, weapon bones,
+    ///     and camera targets all stay exactly as wired. Runs in Awake; the class is fixed for the
+    ///     scene's lifetime, so the swap is never undone (the reload-based switching rule).
+    /// </summary>
+    private void SwapCharacterModel(GameObject modelPrefab)
+    {
+        Transform rigRoot = animator.transform;
+
+        var bonesByName = new Dictionary<string, Transform>();
+        foreach (Transform bone in rigRoot.GetComponentsInChildren<Transform>(true))
+        {
+            bonesByName[bone.name] = bone;
+        }
+
+        // Captured before the new renderers arrive so only the authored model gets hidden.
+        SkinnedMeshRenderer[] authoredRenderers = rigRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+
+        GameObject instance = Instantiate(modelPrefab);
+        int swapped = 0;
+        foreach (SkinnedMeshRenderer renderer in instance.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+        {
+            Transform[] sourceBones = renderer.bones;
+            Transform[] mappedBones = new Transform[sourceBones.Length];
+            bool allBonesFound = true;
+            for (int i = 0; i < sourceBones.Length; i++)
+            {
+                if (sourceBones[i] == null || !bonesByName.TryGetValue(sourceBones[i].name, out mappedBones[i]))
+                {
+                    allBonesFound = false;
+                    break;
+                }
+            }
+            if (!allBonesFound)
+            {
+                Debug.LogWarning($"PlayerClassController: renderer '{renderer.name}' on class model '{modelPrefab.name}' references bones the player rig doesn't have — skipped. Class models must share the rig's skeleton (Synty Sidekicks do).");
+                continue;
+            }
+
+            renderer.bones = mappedBones;
+            if (renderer.rootBone != null && bonesByName.TryGetValue(renderer.rootBone.name, out Transform mappedRoot))
+            {
+                renderer.rootBone = mappedRoot;
+            }
+
+            Transform rendererTransform = renderer.transform;
+            rendererTransform.SetParent(rigRoot, false);
+            rendererTransform.localPosition = Vector3.zero;
+            rendererTransform.localRotation = Quaternion.identity;
+            rendererTransform.localScale = Vector3.one;
+            renderer.gameObject.SetActive(true);
+            swapped++;
+        }
+        // Whatever's left of the instantiated prefab is just its now-meshless skeleton.
+        Destroy(instance);
+
+        if (swapped == 0)
+        {
+            Debug.LogError($"PlayerClassController: no SkinnedMeshRenderer in class model '{modelPrefab.name}' could bind to the player rig — the authored model stays visible.");
+            return;
+        }
+
+        // Disabled rather than destroyed: the prefab instance keeps its authored state, and other
+        // components on those GameObjects are untouched.
+        foreach (SkinnedMeshRenderer renderer in authoredRenderers)
+        {
+            renderer.enabled = false;
         }
     }
 
