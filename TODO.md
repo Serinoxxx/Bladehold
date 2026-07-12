@@ -1,5 +1,93 @@
 # TODO
 
+## Between-wave intermission (slow-mo + stats + Recover/Hold the Line) + Loot chests — Unity Editor wiring
+
+The C# is done. **Hold the Line economy** (`Economy/HoldTheLineBonus.cs`): a scene-singleton greed
+meter — `Extend()` banks one more consecutive Hold by adding `StatType.HoldTheLineGoldPerWave`
+(base 5%, registered in `Start`) as a stacking Percent modifier on `StatType.GoldDropMultiplier`
+(so `CoinDropper` needs zero changes — it already reads the multiplier fresh per kill). Both loss
+conditions reset the whole stack: player `Health.OnDied` and `Gate.OnAnyGateDestroyed` (the two
+fail-states — the gate must be re-enabled in the scene). Exposes `Instance`/`Multiplier`/
+`StackCount`/`OnChanged`; optional `extendFeedback`/`resetFeedback` MMF_Players. **Wave flow**
+(`Waves/WaveSpawner.cs`): after each `WaveCleared`, `RunWaves` now fires the new
+`IntermissionStarted` event and parks on `WaitForPlayerChoice` until the UI calls `ChooseRecover()`
+(normal countdown next) or `ChooseHoldTheLine()` (skips the countdown — next wave lands
+immediately). **With no subscriber the spawner proceeds exactly as before**, so the game runs
+un-wired. New top-level `IntermissionChoice` enum. **Intermission UI**
+(`Waves/WaveIntermissionUI.cs` + `UI/WaveStatsPanel.cs`): the orchestrator plays a slow-mo
+MMF_Player, reveals the stats, shows the two choices, opens the skill-tree panel on Recover, and
+frees/re-locks the cursor (the `DeathScreen` pattern); the stats panel snapshots per-wave deltas
+(`WaveStarted` → clear) and count-up-animates goblins/gold/total + Hold multiplier on unscaled
+time. **Loot chests** (`Chests/Chest.cs`, `Chests/ChestLootTableSO.cs`, `Chests/ChestSpawner.cs`):
+a chest is just a `Health` target (hit/break juice on its `damageFeedback`/`deathFeedback`
+MMF_Players — no new hit script), dropping guaranteed gold (a `Coin`) + one weighted bonus item
+from existing pickups; the spawner scatters N per wave on `WaveStarted` (NavMesh-snapped, away from
+the player, weighted by chest level). **Reincarnate node** `greedy_stand` ("Greedy Stand", +2%/wave
+per level ×4) added to `Config/Reincarnate.csv`. New `StatType.HoldTheLineGoldPerWave`.
+
+- [ ] **Re-enable the gate in the scene** (your task) — the second fail-state. `HoldTheLineBonus`
+      and the intermission already listen for `Gate.OnAnyGateDestroyed`; nothing else to wire for it.
+- [ ] **HoldTheLineBonus**: add the component to a scene object (the player root or a systems object
+      — it finds `Player.Instance.Stats` itself). Optional: assign `extendFeedback` (a chime/flash
+      when the bonus grows) and `resetFeedback` (a deflating stinger on loss). `baseGoldPerWave` 0.05.
+- [ ] **Intermission canvas** (new, or a panel on the HUD canvas):
+  - [ ] A root object with `WaveIntermissionUI`; assign `spawner`/`holdTheLineBonus`/`statsPanel`
+        (auto-wire via `OnValidate`), `intermissionRoot`, `choiceButtons` (container), the two
+        `Button`s (`recoverButton` "Recover and Upgrade", `holdTheLineButton` "Hold the Line"), a
+        `continueButton` (shown with the tree), and `skillTreePanel`.
+  - [ ] `waveClearFeedback` MMF_Player = an **MMF Timescale Modifier** (~0.15× for ~0.5s, ease-out)
+        + optional **MMF Bloom / Chromatic Aberration (URP)** grade + a riser **MMF Sound**. Keep its
+        total duration ≤ `slowMoRealSeconds` (0.7) — the UI waits that long for the slow-mo to restore
+        before it hard-freezes time, so they don't fight over `Time.timeScale`.
+  - [ ] **Set every intermission MMF_Player to Unscaled time mode** (the MMF_Player's *TimeScale Mode:
+        Unscaled*) — the stats/choice screen runs at `Time.timeScale = 0`, so scaled feedbacks freeze.
+  - [ ] `WaveStatsPanel` on a child; assign the TMP labels (`waveLabel`, `goblinsSlainText`,
+        `goldEarnedText`, `totalGoldText`, optional `bonusMultiplierText`), optional fill `Image`s
+        (`goblinsBar`/`goldBar`), and per-line reveal MMF_Players (pop + tick sound + `MMF_TMPText`
+        reveal). Tune `countUpDuration`/`lineStagger`.
+  - [ ] `skillTreePanel` = a panel hosting a `SkillTreeView` bound to `SkillTreeService.Instance`
+        (same as the death-screen gold tree — reuse that prefab/panel or make a sibling).
+- [ ] **Chest prefabs** (one per level/model): `Collider` **on a layer inside the sword
+      `DamageTrigger.hitLayers` mask** (else BladeSweep won't hit it), a **kinematic** `Rigidbody`
+      (or none), `Health` (+ a per-level `HealthSO`), `MMHealthBar` + `HealthBarUI`, `Chest`
+      (assign `lootTable`, `coinPrefab`, your explosion `breakVfxPrefab`). Assign `Health`'s
+      `damageFeedback` (squash/flash/thunk/splinters) and `deathFeedback` (big boom + hit-stop).
+      **Do NOT add `ImpulseReceiver`/`KnockbackReceiver`** — that's what makes chests impulse-immune.
+  - [ ] **ChestLootTableSO assets** (menu `Scriptable Objects/ChestLootTableSO`), one per tier:
+        set `minGold`/`maxGold`, `bonusItemChance`, and the weighted `items` roster from existing
+        pickup prefabs (`HealthPack`, `LightningOrb`, `ImpulseOrb`, a gold-bag `Coin`).
+  - [ ] Place a **`ChestSpawner`** in the scene; fill `chestPrefabs` (prefab + weight + unlockWave
+        per level), `minPerWave`/`maxPerWave`, and optional `spawnPoints`.
+- [ ] **Greedy Stand icon**: `greedy_stand` ships with a blank icon — assign a sprite via
+      **Bladehold > Skill Tree Editor** (and re-save so the row parses), or it shows no icon.
+- [ ] **Balance**: `baseGoldPerWave` (5%), the `greedy_stand` cost/growth/maxLevel, chest
+      `HealthSO`s / loot tables / per-wave counts, and the slow-mo strength/duration.
+- [ ] **Optional polish**: a persistent HUD indicator for the live Hold multiplier
+      (`HoldTheLineBonus.Instance.Multiplier` / `OnChanged`). (The choice screen freezes time — the
+      loot window is the unfrozen countdown after choosing Hold the Line.)
+
+## Manual verification (intermission + chests)
+
+- [ ] Clear a wave → brief slow-mo, then **time freezes** and the stats cascade in (goblins/gold
+      count up, bars wipe) with the cursor freed; the player can't move or loot while deciding.
+- [ ] "Hold the Line" → time resumes and the **pre-wave countdown runs as a loot window** (grab the
+      coins on the cleared field before the next wave hits); coin drops are visibly larger, and
+      holding wave after wave stacks the bonus higher (`bonusMultiplierText` / HUD climbing x1.05 →
+      x1.10 → …).
+- [ ] "Recover and Upgrade" → the skill tree opens **still frozen** (untimed shopping); buy nodes,
+      hit Continue → time resumes and the next wave starts **immediately** (no loot window). The
+      banked Hold multiplier is retained (not grown, not reset).
+- [ ] Die, or let the gate be destroyed → the Hold multiplier resets to x1 (verify the indicator
+      drops immediately and the next run starts fresh); checkpoint restart returns to the died-on wave.
+- [ ] With no intermission UI in the scene, waves still chain via the normal countdown (un-wired
+      safety).
+- [ ] Chests spawn each wave, away from the player; smashing one depletes its health bar, plays hit
+      feedback per swing, and on break plays the explosion + drops gold plus sometimes one item
+      (health pack / lightning orb / impulse orb).
+- [ ] A chest is **never** flung or knocked by impulse-buffed / knockback sword hits (kinematic,
+      no `ImpulseReceiver`); different chest levels show different models/health/loot.
+- [ ] Reincarnate, buy **Greedy Stand** → the per-wave Hold bonus is visibly larger on the next run.
+
 ## Mounted Knight enemy + rideable Horse — Unity Editor wiring
 
 The C# is done. **Shared horse** (`Horse/` — new folder): `HorseSO.cs` (all locomotion/charge/trample
@@ -565,8 +653,10 @@ the interface from each weapon's SO, so `BowAimCamera` no longer needs its `BowS
 - [ ] **ThrownAxeSO asset** (menu `Scriptable Objects/ThrownAxeSO`): defaults are authored in-code
       (dmg 25, range 25 m, cooldown 0.6 s, width 0.6 m, pierce 2, charge 3 levels @ +50%/level,
       knockback 6 + 25%/level; aim-camera block mirrors BowSO).
-- [ ] **Throwing-axe visual prefab**: an axe mesh + optional trail with `AxeProjectileVisual`;
-      assign on `PlayerThrownAxe.projectilePrefab`.
+- [ ] **Throwing-axe projectile prefab**: an axe mesh + optional trail with `AxeProjectile`
+      (renamed from `AxeProjectileVisual` — see the projectile-axe follow-up section below);
+      assign on `PlayerThrownAxe.projectilePrefab`. **Now required, not cosmetic** — the projectile
+      carries the throw's damage.
 - [ ] **Player.prefab**: add `PlayerThrownAxe` to the root **disabled**; assign the SO; optional
       `meleeWeaponModel` (the 1H_Axe) / `thrownAxeModel` (an axe prop in the throwing hand) for the
       in-hand swap while aiming. Add the component to the **berserker slot's classComponents** on
@@ -642,3 +732,52 @@ is included deliberately for face-tank balance reading).
 - [ ] `pain_1`/`rage_fury`/`rage_retain` purchases visibly change the Stage D behaviours.
 - [ ] Rage bar fills/drains in sync with the DevConsole readout; absent for the Swordsman.
 - [ ] Telemetry damage-dealt rows include thrown-axe hits.
+
+**Berserker follow-ups (projectile axe + Boomerang + class model swap) — done in C#**:
+The throwing axe is now a **real projectile**: `Player/AxeProjectile.cs` (renamed from
+`AxeProjectileVisual.cs` — no longer a cosmetic tracer, it *carries the damage*; a missing prefab
+is now a Start error on `PlayerThrownAxe`). It flies at `ThrownAxeSO.projectileSpeed`
+(deliberately slow, default 12 m/s) and every `FixedUpdate` **sphere casts from its last position
+to its current one** (radius = `AxeThrowWidth`/2, so the existing "Wide Arc" nodes are the
+axe-area skill — they widen the swept damage volume *and* scale the prop visually), damaging each
+unique enemy once per leg via `PlayerThrownAxe.CreateHitDamage` (fresh crit roll per target;
+charge + Pain into Power captured at release and carried by the axe) until the pierce budget runs
+out or terrain lodges it; hits flow back through `PlayerThrownAxe.ReportHit`, so `RageBuff` and
+telemetry `OnHit` listeners are unchanged. New **Boomerang** node (`axe_boomerang`, 120g, prereq
+`axe_charge`, new `AxeBoomerangUnlocked` StatType, base 0 = locked): the axe turns around on
+terrain/pierce-spend/max-range and homes back to the hand at `ThrownAxeSO.returnSpeedMultiplier`
+× speed, damaging enemies on the return leg too (fresh target set + pierce budget; return ignores
+terrain, despawns on catch). And classes now swap the **character model**:
+`ClassDefinitionSO.characterModelPrefab` (null = keep authored, i.e. Swordsman) —
+`PlayerClassController.Awake` re-binds each of the prefab's `SkinnedMeshRenderer`s onto the
+existing rig **by bone name** (Synty Sidekicks share the skeleton) and disables the authored
+renderers, so the Animator, animation events, weapon bones, and camera need no re-wiring.
+
+- [ ] **Throwing-axe projectile prefab** (if not already made in Stage C): axe mesh + optional
+      trail with `AxeProjectile`; assign on `PlayerThrownAxe.projectilePrefab` — now **required**.
+      Inspector tunables (spin, linger, `catchRadius` 0.75 m, safety `maxLifetimeSeconds` 15)
+      have sane defaults. New `ThrownAxeSO` fields (`projectileSpeed` 12, `returnSpeedMultiplier`
+      1.25) pick up their in-code defaults on the existing asset — just eyeball them.
+- [ ] **Berserker character model**: pick a Synty Sidekick character prefab (same skeleton as the
+      player rig; only its `SkinnedMeshRenderer`s are used — bone-attached static props won't
+      carry over) and assign it on the **berserker `ClassDefinitionSO.characterModelPrefab`**.
+      Swordsman stays null (keeps the authored model).
+- [ ] **Berserker SkillTreeSO**: reload the tree asset (or just re-save in **Bladehold > Skill
+      Tree Editor**) so the new `axe_boomerang` row parses; optionally drag an icon onto it.
+
+**Manual verification (follow-ups)**
+- [ ] Throw: the axe visibly travels (slow enough to outrun briefly), damaging goblins *as it
+      passes them* — damage numbers pop along the flight, not all at once on release.
+- [ ] A goblin sprinting across the axe's path between physics ticks still gets hit (the
+      last-to-current sweep) — hard to force, but no "walked through it unharmed" moments.
+- [ ] Without Boomerang: the axe lodges in terrain / its last pierced target and despawns.
+- [ ] Buy `axe_boomerang`: the axe turns around at walls/max range and flies back to the hand,
+      hitting goblins on the return (an enemy straddling the turnaround point gets hit twice —
+      once per leg). It despawns in the hand; no orphaned axes after 15 s even when sprinting away.
+- [ ] Wide Arc purchases visibly fatten the projectile and let it clip goblins farther off-line.
+- [ ] Rage still builds from axe hits; telemetry damage-dealt still includes them.
+- [ ] Reincarnate into Berserker: the character model is the assigned Sidekick, animating
+      normally (walk/sprint/swing/aim all play; no T-pose, no floating meshes); weapons still sit
+      in the hand. Back to Swordsman: original model, no leftovers.
+- [ ] Player death/ragdoll-free flows unaffected by the model swap (death anim plays on the
+      swapped mesh).
