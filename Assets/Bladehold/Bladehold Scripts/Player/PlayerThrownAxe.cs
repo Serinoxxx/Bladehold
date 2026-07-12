@@ -9,10 +9,13 @@ using UnityEngine;
 ///     with the arrow swapped for a piercing line. Holding aim (the Synty <see cref="InputReader" />'s
 ///     <c>onAimActivated</c>/<c>onAimDeactivated</c> events) winds the throw up in discrete charge
 ///     levels (the bow-draw convention, tuned on <see cref="ThrownAxeSO" />); pressing attack while
-///     aiming hurls the axe: a hitscan <b>sphere cast</b> — a straight line with
-///     <see cref="StatType.AxeThrowWidth" /> metres of width — that damages and knocks back every
-///     enemy along it up to a pierce budget (<see cref="StatType.AxeThrowPierceCount" /> + charge),
-///     stopping early at solid environment or when the budget runs out. Charge raises damage,
+///     aiming hurls the axe: a slow, real <b>projectile</b> (<see cref="AxeProjectile" />) that
+///     damages and knocks back enemies as it travels — a swept line
+///     <see cref="StatType.AxeThrowWidth" /> metres wide, sphere-cast from its last position to its
+///     current one every physics tick so nothing tunnels through — up to a pierce budget
+///     (<see cref="StatType.AxeThrowPierceCount" /> + charge), stopping at solid environment or when
+///     the budget runs out. With the "Boomerang" node (<see cref="StatType.AxeBoomerangUnlocked" />)
+///     it then flies back to the hand, hitting enemies on the return leg too. Charge raises damage,
 ///     knockback, and pierce together — the "wind up and bowl through the horde" fantasy.
 ///
 ///     Melee suppression, animator params (<c>IsAiming</c>/<c>BowFire</c>, optional), model swap,
@@ -47,9 +50,11 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
     [Tooltip("Throwing-axe model shown in hand while aiming. Optional.")]
     [SerializeField] private GameObject thrownAxeModel;
 
-    [Header("Visuals & feedback (optional)")]
-    [Tooltip("Spinning-axe prop instantiated per throw to draw the flight (the BowTracer sibling).")]
-    [SerializeField] private AxeProjectileVisual projectilePrefab;
+    [Header("Projectile")]
+    [Tooltip("Spinning-axe projectile instantiated per throw. REQUIRED — the projectile carries the throw's damage, not just its looks.")]
+    [SerializeField] private AxeProjectile projectilePrefab;
+
+    [Header("Feedback (optional)")]
     [Tooltip("Played when aiming starts (wind-up sound).")]
     [SerializeField] private MMF_Player drawFeedback;
     [Tooltip("Played on every throw.")]
@@ -106,8 +111,8 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
 
     private const int MaxCastHits = 64;
 
+    // Kept only for the aim-direction raycast — the per-hit sweeping lives on AxeProjectile now.
     private readonly RaycastHit[] castBuffer = new RaycastHit[MaxCastHits];
-    private readonly HashSet<IDamageable> hitTargets = new HashSet<IDamageable>();
 
     private IDamageable ownerDamageable;
     private int startAttackHash;
@@ -171,6 +176,11 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
             Debug.LogError("Player Animator is not assigned or found; the thrown axe can't suppress melee swings while aiming.");
             anyError = true;
         }
+        if (projectilePrefab == null)
+        {
+            Debug.LogError("AxeProjectile prefab is not assigned — the projectile carries the throw's damage, so throws would do nothing.");
+            anyError = true;
+        }
 
         if (anyError)
         {
@@ -227,6 +237,8 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
         stats.SetBase(StatType.AxeThrowKnockback, config.baseKnockback);
         stats.SetBase(StatType.AxeThrowPierceCount, config.basePierceCount);
         stats.SetBase(StatType.AxeThrowWidth, config.baseWidth);
+        // Boomerang is its own gate: base 0 = the axe lodges where it stops, until the node is bought.
+        stats.SetBase(StatType.AxeBoomerangUnlocked, 0f);
 
         Subscribe();
     }
@@ -382,9 +394,10 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
     }
 
     /// <summary>
-    ///     One throw: a sphere cast (a straight line with width) from the hand toward the crosshair,
-    ///     damaging and knocking back every unique enemy along it — each with a fresh damage roll —
-    ///     until the pierce budget runs out or solid environment stops the axe.
+    ///     One throw: launches an <see cref="AxeProjectile" /> toward the crosshair carrying
+    ///     everything decided at release time (charge, pierce budget, Pain into Power bonus). The
+    ///     projectile does the damaging as it flies and calls back into
+    ///     <see cref="CreateHitDamage" />/<see cref="ReportHit" /> per enemy swept.
     /// </summary>
     private void Throw()
     {
@@ -409,53 +422,26 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
         int pierceBudget = Mathf.Max(1, Mathf.RoundToInt(
             stats.GetValue(StatType.AxeThrowPierceCount) + ChargeLevel * config.piercePerChargeLevel));
 
-        int count = Physics.SphereCastNonAlloc(origin, width * 0.5f, direction, castBuffer, config.maxRange, hitLayers, QueryTriggerInteraction.Collide);
-        Array.Sort(castBuffer, 0, count, HitDistanceComparer.Instance);
-
-        Vector3 endPoint = origin + direction * config.maxRange;
-        hitTargets.Clear();
-        int damaged = 0;
-
-        for (int i = 0; i < count; i++)
+        AxeProjectile projectile = Instantiate(projectilePrefab, origin, Quaternion.LookRotation(direction));
+        projectile.Launch(this, new AxeProjectile.LaunchSpec
         {
-            RaycastHit hit = castBuffer[i];
-            IDamageable damageable = ResolveDamageable(hit.collider);
-
-            if (damageable == null)
-            {
-                // Trigger colliders with no damageable (coins, orbs, hitboxes) don't stop the axe.
-                if (!hit.collider.isTrigger)
-                {
-                    endPoint = HitPointOf(hit, origin, direction);
-                    break;
-                }
-                continue;
-            }
-
-            if (damageable == ownerDamageable || !hitTargets.Add(damageable))
-            {
-                continue;
-            }
-
-            Vector3 hitPoint = HitPointOf(hit, origin, direction);
-            Damage damage = BuildThrowDamage(origin, painBonus);
-            damageable.ReceiveDamage(damage);
-            OnHit?.Invoke(damageable, damage, hitPoint);
-            damaged++;
-
-            if (damaged >= pierceBudget)
-            {
-                // Out of penetration: the axe lodges in this target.
-                endPoint = hitPoint;
-                break;
-            }
-        }
-
-        if (projectilePrefab != null)
-        {
-            AxeProjectileVisual projectile = Instantiate(projectilePrefab, origin, Quaternion.identity);
-            projectile.Show(origin, endPoint);
-        }
+            origin = origin,
+            direction = direction,
+            speed = config.projectileSpeed,
+            maxRange = config.maxRange,
+            radius = width * 0.5f,
+            pierceBudget = pierceBudget,
+            hitLayers = hitLayers,
+            chargeLevel = ChargeLevel,
+            painBonus = painBonus,
+            owner = ownerDamageable,
+            boomerang = stats.GetValue(StatType.AxeBoomerangUnlocked) >= 1f,
+            returnSpeedMultiplier = config.returnSpeedMultiplier,
+            returnTarget = throwOrigin,
+            // Wide Arc widens the damage sweep — scale the prop with it so the upgrade reads
+            // visually (the SwordRange localScale convention).
+            visualScale = width / Mathf.Max(0.05f, config.baseWidth),
+        });
     }
 
     /// <summary>
@@ -497,10 +483,22 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
         return (aimPoint - origin).normalized;
     }
 
-    private Damage BuildThrowDamage(Vector3 origin, float painBonus)
+    /// <summary>
+    ///     Builds one enemy's worth of throw damage — called by the in-flight <see cref="AxeProjectile" />
+    ///     per target so every enemy gets a fresh crit roll (the <see cref="DamageTrigger" /> convention).
+    ///     Charge and the Pain into Power bonus were fixed at release time and travel with the axe;
+    ///     <paramref name="sourcePosition" /> is the axe's position just before the hit, so knockback
+    ///     shoves along the flight line.
+    /// </summary>
+    public Damage CreateHitDamage(int chargeLevel, float painBonus, Vector3 sourcePosition)
     {
+        if (anyError)
+        {
+            return new Damage { value = 0f, type = DamageType.sharp, sourcePosition = sourcePosition };
+        }
+
         float value = stats.GetValue(StatType.AxeThrowDamage);
-        value *= 1f + ChargeLevel * stats.GetValue(StatType.AxeThrowChargeDamageBonus);
+        value *= 1f + chargeLevel * stats.GetValue(StatType.AxeThrowChargeDamageBonus);
 
         // Crits share the melee stats so Keen Eye/Critical Damage benefit both weapons (the bow convention).
         bool crit = UnityEngine.Random.value < stats.GetValue(StatType.CritChance);
@@ -529,33 +527,27 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
             value = value,
             type = DamageType.sharp,
             isCritical = crit,
-            sourcePosition = origin,
+            sourcePosition = sourcePosition,
             knockbackForce = stats.GetValue(StatType.AxeThrowKnockback)
-                * (1f + ChargeLevel * config.knockbackPerChargeLevel),
+                * (1f + chargeLevel * config.knockbackPerChargeLevel),
         };
     }
 
-    /// <summary>
-    ///     A sphere cast that starts overlapping a collider reports distance 0 and a zero hit point —
-    ///     fall back to the collider's closest point so feedback/lodge positions stay sane.
-    /// </summary>
-    private static Vector3 HitPointOf(RaycastHit hit, Vector3 origin, Vector3 direction)
+    /// <summary>Raises <see cref="OnHit" /> for a hit the in-flight <see cref="AxeProjectile" /> landed, so RageBuff/telemetry listeners see projectile hits exactly like the old hitscan ones.</summary>
+    public void ReportHit(IDamageable target, Damage damage, Vector3 hitPoint)
     {
-        if (hit.distance > 0f)
-        {
-            return hit.point;
-        }
-        return hit.collider.ClosestPoint(origin + direction * 0.1f);
+        OnHit?.Invoke(target, damage, hitPoint);
     }
 
-    /// <summary>Distance-sorts cast hits without allocating a comparison delegate per throw (the PlayerBow shape).</summary>
-    private class HitDistanceComparer : IComparer<RaycastHit>
+    /// <summary>Distance-sorts cast hits without allocating a comparison delegate per sweep (the PlayerBow shape). Shared with <see cref="AxeProjectile" />.</summary>
+    public class HitDistanceComparer : IComparer<RaycastHit>
     {
         public static readonly HitDistanceComparer Instance = new HitDistanceComparer();
         public int Compare(RaycastHit a, RaycastHit b) => a.distance.CompareTo(b.distance);
     }
 
-    private static IDamageable ResolveDamageable(Collider collider)
+    /// <summary>Finds the IDamageable a collider belongs to, walking up the hierarchy. Shared with <see cref="AxeProjectile" />.</summary>
+    public static IDamageable ResolveDamageable(Collider collider)
     {
         if (!collider.TryGetComponent(out IDamageable damageable))
         {

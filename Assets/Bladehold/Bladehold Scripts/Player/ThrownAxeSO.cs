@@ -14,11 +14,19 @@ public class ThrownAxeSO : ScriptableObject
     [Tooltip("Damage of one throw per enemy hit, before charge/crit/multipliers. Registered as the AxeThrowDamage stat base.")]
     public float baseDamage = 25f;
 
-    [Tooltip("Maximum flight distance of a throw, in metres.")]
+    [Tooltip("Maximum flight distance of a throw, in metres. With Boomerang this is where the axe turns around.")]
     public float maxRange = 25f;
 
     [Tooltip("Minimum seconds between throws while holding aim.")]
     public float throwCooldownSeconds = 0.6f;
+
+    [Header("Flight (the axe is a real projectile — AxeProjectile does the damaging as it travels)")]
+    [Tooltip("Metres per second the thrown axe flies. Deliberately slow — the axe is a lingering hazard the horde walks into, not a hitscan bolt.")]
+    public float projectileSpeed = 12f;
+
+    [Header("Boomerang (locked until the axe_boomerang node sets AxeBoomerangUnlocked)")]
+    [Tooltip("Return-leg speed as a multiple of projectileSpeed (the flick of the wrist coming home).")]
+    public float returnSpeedMultiplier = 1.25f;
 
     [Header("Charge (power builds while aiming, the bow-draw convention)")]
     [Tooltip("Seconds of aiming to gain each charge level (level 1 at 1x, level 2 at 2x, ...).")]

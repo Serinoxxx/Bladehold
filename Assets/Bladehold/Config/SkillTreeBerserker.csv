@@ -37,6 +37,7 @@ axe_pierce,Skull Splitter,Throws pierce through more enemies,Pierce through one 
 axe_width,Wide Arc,Widen the throw's path,Widen the throw's path further,90,1.4,4,AxeThrowWidth,Flat,0.25,axe_pierce,22.5,14,,
 axe_knock,Crushing Throw,Increase throw knockback,Increase throw knockback further,75,1.4,4,AxeThrowKnockback,Flat,4,axe_unlock,21.5,13,,
 axe_charge,Wound Up,More throw damage per second wound up,+1 max charge level,90,1.44,3,AxeThrowMaxChargeLevels;AxeThrowChargeDamageBonus,Flat;Flat,1;0.25,axe_dmg,23.5,13,,
+axe_boomerang,Boomerang,"Your axe returns to you after striking terrain, spending its pierce, or flying its full range — hitting enemies on the way back too",,120,1,1,AxeBoomerangUnlocked,Flat,1,axe_charge,23.5,14,,
 pain_1,Pain into Power,Damage taken while charging any attack is added to that attack's damage,Convert more damage taken into power,90,1.5,4,PainIntoPowerPercent,Flat,0.5|0.25|0.25|0.25,axe_knock,21.5,14,,
 rage_fury,Boiling Blood,Build rage faster,Build rage even faster,75,1.4,5,RageGainMultiplier,Percent,0.15,axe_width,22.5,15.5,,
 rage_retain,Slow Burn,Rage lingers longer before draining,Rage lingers even longer,90,1.4,4,RageRetentionMultiplier,Percent,0.2,rage_fury,23.5,15.5,,
