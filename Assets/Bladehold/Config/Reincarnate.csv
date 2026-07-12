@@ -5,3 +5,4 @@ nova_revive,Second Wind,Also revive at 50% health when the Death Nova triggers,I
 golden,Golden Scent,Chance for a spawned goblin to be a Golden Goblin; golden goblins drop bonus gold,Increase Golden Goblin chance and bonus gold,6,1.33,4,GoldenGoblinChance;GoldenGoblinGoldBonusPercent,Flat;Flat,0.05;0.5|0.5|1|2,,2,0,Creatures_09_golden_guard,1
 deathgold,Grave Robber,Auto-collect 25% of the gold on the ground when you die,Auto-collect more of the gold when you die,5,1.34,4,GoldOnDeathPickupPercent,Flat,0.25,,4,0,Skill_GraveyardSouls_nb,1
 start_mounted,Cavalier,Begin every run already mounted on a warhorse — no gold-tree riding node needed,,8,1,1,StartMounted,Flat,1,,6,0,,1
+greedy_stand,Greedy Stand,"Hold the Line banks +2% more gold per wave you stay out on the front line",Increase the per-wave Hold the Line gold bonus,6,1.3,4,HoldTheLineGoldPerWave,Flat,0.02,,8,0,,1

@@ -26,6 +26,14 @@ using UnityEngine.AI;
 ///     signal), and stops spawning when the player dies. UI reacts via the events below; the spawner stays
 ///     unaware of what listens.
 /// </summary>
+/// <summary>The player's between-wave choice, awaited by <see cref="WaveSpawner" /> after each clear.</summary>
+public enum IntermissionChoice
+{
+    Pending,
+    Recover,
+    HoldTheLine,
+}
+
 public class WaveSpawner : MonoBehaviour
 {
     public static WaveSpawner Instance;
@@ -76,6 +84,15 @@ public class WaveSpawner : MonoBehaviour
     /// <summary>Raised when every goblin in a wave has been killed, carrying the cleared wave number.</summary>
     public event Action<int> WaveCleared;
 
+    /// <summary>
+    ///     Raised after a wave clears and the between-wave choice opens (Recover vs Hold the Line),
+    ///     carrying the wave that just cleared. A UI (<see cref="WaveIntermissionUI" />) subscribes,
+    ///     shows the stats screen, and calls <see cref="ChooseRecover" />/<see cref="ChooseHoldTheLine" />.
+    ///     With no subscriber the spawner proceeds straight to the next countdown, so the game stays
+    ///     playable when the intermission UI isn't wired.
+    /// </summary>
+    public event Action<int> IntermissionStarted;
+
     /// <summary>The wave currently in progress (or about to start), 1-based.</summary>
     public int CurrentWave { get; private set; }
 
@@ -93,6 +110,8 @@ public class WaveSpawner : MonoBehaviour
     private bool anyError = false;
     private int? nextWaveOverride;  // dev-console override applied when the current wave clears
     private bool spawningPaused;    // dev-console: pauses SpawnLoop's automatic trickle-spawn
+    private IntermissionChoice pendingChoice; // the between-wave choice being awaited (see WaitForPlayerChoice)
+    private bool skipNextCountdown; // set by a Hold-the-Line choice so the next wave begins immediately
 
     /// <summary>The wave that will begin next: the dev-console override if one is set, otherwise the
     /// natural successor mid-wave, or the wave the intermission is counting down to.</summary>
@@ -261,7 +280,13 @@ public class WaveSpawner : MonoBehaviour
             // Remember the wave we're on so a death mid-wave can restart from it.
             RunState.StartingWave = CurrentWave;
 
-            yield return StartCoroutine(Countdown());
+            // "Recover and Upgrade" skips the pre-wave countdown — the player spent the (frozen)
+            // intermission upgrading. "Hold the Line" keeps it as a loot window on the cleared field.
+            if (!skipNextCountdown)
+            {
+                yield return StartCoroutine(Countdown());
+            }
+            skipNextCountdown = false;
             if (runOver)
             {
                 yield break;
@@ -281,9 +306,67 @@ public class WaveSpawner : MonoBehaviour
             }
 
             waveInProgress = false;
-            WaveCleared?.Invoke(CurrentWave);
+            int clearedWave = CurrentWave;
+            WaveCleared?.Invoke(clearedWave);
             CurrentWave = nextWaveOverride ?? CurrentWave + 1;
             nextWaveOverride = null;
+
+            // Open the between-wave choice (stats screen + Recover/Hold the Line). Parks the loop until
+            // the UI answers; a no-op when no intermission UI is listening.
+            yield return StartCoroutine(WaitForPlayerChoice(clearedWave));
+            if (runOver)
+            {
+                yield break;
+            }
+        }
+    }
+
+    /// <summary>
+    ///     After a wave clears, opens the between-wave choice: fires <see cref="IntermissionStarted" />
+    ///     and waits for the UI to call <see cref="ChooseRecover" /> or <see cref="ChooseHoldTheLine" />.
+    ///     Recover sets <see cref="skipNextCountdown" /> so the next wave begins immediately (the player
+    ///     upgraded during the frozen intermission); Hold the Line keeps the countdown as a loot window.
+    ///     With no <see cref="IntermissionStarted" /> subscriber (no UI wired) it returns at once, so the
+    ///     loop runs its normal countdown next iteration — the pre-intermission behaviour.
+    /// </summary>
+    private IEnumerator WaitForPlayerChoice(int clearedWave)
+    {
+        if (IntermissionStarted == null)
+        {
+            yield break;
+        }
+
+        pendingChoice = IntermissionChoice.Pending;
+        IntermissionStarted.Invoke(clearedWave);
+
+        while (pendingChoice == IntermissionChoice.Pending && !runOver)
+        {
+            yield return null;
+        }
+
+        if (pendingChoice == IntermissionChoice.Recover)
+        {
+            skipNextCountdown = true;
+        }
+    }
+
+    /// <summary>UI entry point: recover and upgrade — the next wave begins immediately (the player
+    /// upgraded during the frozen intermission, so there's no loot window to earn).</summary>
+    public void ChooseRecover()
+    {
+        if (pendingChoice == IntermissionChoice.Pending)
+        {
+            pendingChoice = IntermissionChoice.Recover;
+        }
+    }
+
+    /// <summary>UI entry point: hold the line — the next wave runs its normal pre-wave countdown, which
+    /// doubles as a window to loot the cleared field before the assault resumes.</summary>
+    public void ChooseHoldTheLine()
+    {
+        if (pendingChoice == IntermissionChoice.Pending)
+        {
+            pendingChoice = IntermissionChoice.HoldTheLine;
         }
     }
 

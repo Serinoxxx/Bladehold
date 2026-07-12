@@ -44,6 +44,8 @@ public enum StatType
     GoldenGoblinGoldBonusPercent,
     /// <summary>Fraction (0-1) of the gold currently on the ground that's auto-collected when the player dies.</summary>
     GoldOnDeathPickupPercent,
+    /// <summary>Extra gold-drop bonus banked per consecutive "Hold the Line" wave (0.05 = +5% per wave, added as a Percent modifier on GoldDropMultiplier). Base 0.05 registered by HoldTheLineBonus; the Reincarnate "Greedy Stand" node raises it.</summary>
+    HoldTheLineGoldPerWave,
 
     /// <summary>Per-spawn chance (0-1) that a goblin spawns as an Impulse Goblin (drops an Impulse Orb on death). 0 = the Impulse feature locked.</summary>
     ImpulseGoblinChance,
@@ -151,8 +153,10 @@ public enum StatType
     AxeThrowKnockback,
     /// <summary>How many enemies one uncharged throw can pierce through in its line (charge adds ThrownAxeSO.piercePerChargeLevel more per level).</summary>
     AxeThrowPierceCount,
-    /// <summary>Width of the throw's flight line in metres — enemies within it count as hit.</summary>
+    /// <summary>Width of the throw's flight path in metres — the projectile's swept damage diameter; enemies within it count as hit (the "Wide Arc" area line).</summary>
     AxeThrowWidth,
+    /// <summary>1 = the thrown axe boomerangs: after striking terrain, spending its pierce, or reaching max range it flies back to the Berserker, damaging enemies on the return leg too (fresh pierce budget). 0 = locked — the axe lodges where it stops. Gated by the "Boomerang" node.</summary>
+    AxeBoomerangUnlocked,
 
     /// <summary>Fraction of damage taken while charging a melee swing or winding up a throw that's banked and added flat to that attack's damage (the Berserker's "Pain into Power" line). 0 = locked.</summary>
     PainIntoPowerPercent,
