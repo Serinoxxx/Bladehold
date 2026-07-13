@@ -1,5 +1,76 @@
 # TODO
 
+## Enemy roster Phase ①+② — Dwarf, Ancient Warrior, Big Ork, Forest Guardian, Mystic, Evil God — Unity Editor wiring
+
+The C# is done (`ENEMY_TYPES_PLAN.md` Phases ① and ②) **and the generator was already run
+headlessly** — all six prefab variants exist, their SO assets are created, and the six ids are
+registered in `EnemyPrefabMap.asset` (which the run created; the hand-built mappings are still
+missing from it — see the next entry). **Six new `Config/Enemies.csv` rows** (ids `dwarf` w3,
+`ancient_warrior` w5, `big_ork` w7, `forest_guardian` w8, `mystic` w10, `evil_god` w16 — the
+plan's draft numbers, inserted in unlock-wave order so common types keep chance-roll priority).
+Phase ① is CSV + manifest only (stock `AIAttack` melee). Phase ②: **Forest Guardian** reuses
+`Enemies/LightningBallAttack.cs` with its own generator-created `ForestGuardianAttackSO`
+(ballSpeed 12, cooldown 2 — fast straight bolts); **Mystic** got `Enemies/HomingOrbAttack.cs` +
+`HomingOrbAttackSO.cs` + `Enemies/HomingOrb.cs` (the `LightningBallAttack`/`LightningBall`
+skeleton plus per-tick `Vector3.RotateTowards` steering capped at `turnRateDegPerSec` 60, giving
+up after `homingSeconds` 2.5 so a committed dodge always works; deliberately a copy, not a
+subclass — the Conduit skill interaction stays LightningBall/Storm Witch-only); **Evil God** got
+`Enemies/RadialBurstAttack.cs` + `RadialBurstAttackSO.cs` (every 5s within 16m — no line of
+sight — releases 8 `LightningBall`s at even angles anchored on its facing; range is NOT
+re-checked at the apex, a committed boss burst always comes out). Both new attacks join the
+`?.SetDamage(...)` chain in `WaveSpawner.ApplyDefinition`.
+**`Bladehold Prefabs/HomingOrb.prefab` was hand-authored** (a copy of `LightningBall.prefab`
+YAML with the script swapped; script GUID pinned via a hand-written `HomingOrb.cs.meta`) so the
+generator could wire it headlessly. Five new manifest entries in `Editor/EnemyManifest.cs`
+(all six enemies incl. the pre-seeded `dwarf`); the three casters disable base `AIAttack`,
+stand off (`navStoppingDistance` 8/8/10), and remove `GoldenGoblin`/`ImpulseGoblin` (the Storm
+Witch precedent).
+
+- [ ] **Prereq — the next entry's map-asset items**: `EnemyPrefabMap.asset` now exists (the
+      generator run created it with the six generated ids) but still needs the hand-built
+      mappings added (`goblin`, `goblin_brute`, `storm_witch`, `troll`) **and** assignment on
+      `WaveSpawner` (Bladehold Test Scene) and `EnemyZoo` before ANY type can spawn.
+- [ ] **Animator (cosmetic gap, not blocking)**: all three casters fire the existing `Attack`
+      trigger, so they play the goblin melee swing as their "cast". Attacks still deal damage on
+      their wind-up timers; add proper cast states/clips on the shared goblin controller when
+      animation time exists.
+- [ ] **Projectile art pass**: Forest Guardian and Evil God currently fire the shared (Storm
+      Witch blue) `LightningBall.prefab`, and `HomingOrb.prefab` is visually identical to it —
+      re-tint per enemy (duplicate prefab + material swap for the Guardian/God, material swap on
+      HomingOrb) and repoint the manifest `wire` paths, then re-run the generator.
+- [ ] **Per-enemy materials**: all six use the goblin body (user decision 2026-07-13 — manual art
+      pass). When materials exist, set `materialPath` on each manifest entry and re-run.
+- [ ] **Optional MMF juice**: `startAttackFeedback` on the three casters' attack components
+      (cast whoosh/glow); hit feedback is already carried by the projectiles.
+- [ ] **Balance pass**: all six CSV rows are the plan's draft numbers; also
+      `ForestGuardianAttackSO` (range 14, dmg 3, speed 12, cooldown 2), `MysticAttackSO`
+      (range 12, dmg 4, orbSpeed 4, turn 60°/s, homing 2.5s, cooldown 4), `EvilGodBurstSO`
+      (range 16, dmg 5, count 8, speed 5, cooldown 5).
+
+## Manual verification (enemy roster Phase ①+②)
+
+- [ ] DevConsole `DebugSetNextWave 3` → dwarves spawn: tiny (0.7×), very fast, die in one hit,
+      2 guaranteed ramping +1 per wave, no per-wave cap.
+- [ ] Wave 5 → Ancient Warriors mix in (normal-looking, 20 HP, ~25% of slots, 1 ramping); wave 7 →
+      Big Orks (1.35×, hit for 6, max 2 alive, impulse resistance 4: sword impulse at power 3
+      knocks down, 4+ ragdolls).
+- [ ] Wave 8 → Forest Guardian stands off ~8m and fires **fast straight** balls every ~2s that
+      hurt for 3 — strafing sideways dodges them; it never melees.
+- [ ] Wave 10 → Mystic's orb **visibly curves to chase you**; running laterally then cutting back
+      after ~2.5s makes it whiff (it flies straight once homing expires); outrunning it works
+      (orb 4 m/s < player run speed).
+- [ ] Wave 16 → Evil God (rare, max 1, 1.5×, 220 HP) releases an 8-projectile ring every ~5s even
+      with walls/no line of sight between you; the gaps are walkable; consecutive rings are
+      rotated (they follow its facing); impulse never ragdolls it (resistance 50).
+- [ ] Negative: none of the three casters ever spawns as a golden/impulse variant (components
+      removed); no projectile ever damages its own caster; a caster killed mid-windup fires
+      nothing; all projectile hits are **never parried** (elemental) — check with Parry maxed.
+- [ ] Player death → casters stop firing and cheer; a Mystic orb already in flight stops homing
+      at the corpse (coasts straight).
+- [ ] Enemy Zoo scene → all six new types appear with CSV overrides applied (scales/speeds read
+      correctly).
+- [ ] Wave accounting: kill an Evil God while its ring is still in flight → wave clears normally.
+
 ## Enemy prefab map + prefab generator — Unity Editor wiring
 
 The C# is done. **Prefab map refactor** (`Enemies/EnemyPrefabMapSO.cs`): the id → prefab mapping
@@ -18,19 +89,18 @@ seeded with a structure-free `dwarf` entry (the smoke test; no `Enemies.csv` row
 spawn in waves). Hand-built variants (Brute/Storm Witch/Troll) deliberately have no manifest entry.
 The 20-enemy roadmap that will consume this lives in `ENEMY_TYPES_PLAN.md`.
 
-- [ ] **Create the map asset** (menu `Scriptable Objects/EnemyPrefabMapSO`) at
-      `Assets/Bladehold/Bladehold Scripts/Enemies/EnemyPrefabMap.asset` (the exact path the
-      generator writes to) and fill the existing mappings: `goblin` → `Goblin Enemy (Base)`,
-      `goblin_brute` → `Goblin Brute Enemy Variant`, `storm_witch` → `Storm Witch Enemy Variant`,
-      `troll` → `Troll Enemy Variant`. (`bomber`/`knight` stay unmapped until their prefabs exist —
+- [ ] **Fill the hand-built mappings in the map asset** — the asset itself now exists (the
+      generator run created `Assets/Bladehold/Bladehold Scripts/Enemies/EnemyPrefabMap.asset` with
+      the six generated ids): add `goblin` → `Goblin Enemy (Base)`, `goblin_brute` →
+      `Goblin Brute Enemy Variant`, `storm_witch` → `Storm Witch Enemy Variant`, `troll` →
+      `Troll Enemy Variant`. (`bomber`/`knight` stay unmapped until their prefabs exist —
       same as before the refactor.)
 - [ ] **Assign the asset** on the `WaveSpawner` in `Bladehold Test Scene.unity` (`prefabMap`,
       hand-assigned — the old `enemyPrefabs` list rows are gone) **and** on the `EnemyZoo`
       component in the Enemy Zoo scene (`prefabMap`).
-- [ ] **Run the generator once**: **Bladehold > Generate Enemy Prefabs** — expect
-      `Dwarf Enemy Variant.prefab` to appear in `Bladehold Prefabs/`, a `dwarf` entry added to the
-      map asset, and a console warning that `dwarf` has no `Enemies.csv` row (expected until
-      Phase ① of `ENEMY_TYPES_PLAN.md`).
+- [x] **Run the generator once** — done headlessly 2026-07-14 (Phase ①+② session): all six
+      variants created, map asset created with the six generated ids, idempotency re-run clean.
+      (`dwarf` also got its `Enemies.csv` row, so no missing-row warning applies anymore.)
 
 ## Manual verification (enemy prefab map + generator)
 

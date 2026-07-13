@@ -92,5 +92,144 @@ internal static class EnemyManifest
             id = "dwarf",
             prefabName = "Dwarf Enemy Variant",
         },
+
+        // Ancient Warrior: standard balanced melee — a pure stat variant (Enemies.csv row only).
+        new EnemySpec
+        {
+            id = "ancient_warrior",
+            prefabName = "Ancient Warrior Enemy Variant",
+        },
+
+        // Big Ork: heavy melee — high damage, medium speed, big scale; again all stats in the CSV.
+        new EnemySpec
+        {
+            id = "big_ork",
+            prefabName = "Big Ork Enemy Variant",
+        },
+
+        // Forest Guardian: fast straight projectiles — zero new code, the Storm Witch's
+        // LightningBallAttack with its own SO (high projectile speed, short cooldown). Re-tinted
+        // projectile prefab is a manual art pass; until then it fires the shared LightningBall.
+        new EnemySpec
+        {
+            id = "forest_guardian",
+            soFolder = "Forest Guardian",
+            prefabName = "Forest Guardian Enemy Variant",
+            disableBaseAIAttack = true,
+            navStoppingDistance = 8f,
+            removeComponents = new[] { typeof(GoldenGoblin), typeof(ImpulseGoblin) },
+            children = new[] { new ChildSpec { name = "Projectile Spawn", localPosition = new Vector3(0f, 1.4f, 0.4f) } },
+            assets = new[]
+            {
+                new SoSpec
+                {
+                    soType = typeof(LightningBallAttackSO),
+                    assetName = "ForestGuardianAttackSO",
+                    initDefaults = so =>
+                    {
+                        var data = (LightningBallAttackSO)so;
+                        data.attackRange = 14f;
+                        data.damage = 3f;
+                        data.ballSpeed = 12f; // Fast and straight — the type's identity vs. the witch's slow ball.
+                        data.ballLifetime = 4f;
+                        data.attackCooldown = 2f;
+                    },
+                },
+            },
+            components = new[]
+            {
+                new ComponentSpec
+                {
+                    type = typeof(LightningBallAttack),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "attackData", ctx.LoadedAsset("ForestGuardianAttackSO"));
+                        EnemyPrefabGenerator.SetReference(so, "animator", ctx.ChildAnimator);
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                        EnemyPrefabGenerator.SetReference(so, "firePoint", ctx.FindOrCreateChild("Projectile Spawn", new Vector3(0f, 1.4f, 0.4f)).transform);
+                        EnemyPrefabGenerator.SetReference(so, "ballPrefab", LoadProjectile<LightningBall>("Assets/Bladehold/Bladehold Prefabs/LightningBall.prefab"));
+                    },
+                },
+            },
+        },
+
+        // Mystic: slow homing orbs (HomingOrbAttack/HomingOrb — the LightningBallAttack skeleton
+        // plus turn-rate-capped steering that gives up after homingSeconds). SO defaults are
+        // authored on HomingOrbAttackSO itself, so no initDefaults needed.
+        new EnemySpec
+        {
+            id = "mystic",
+            soFolder = "Mystic",
+            prefabName = "Mystic Enemy Variant",
+            disableBaseAIAttack = true,
+            navStoppingDistance = 8f,
+            removeComponents = new[] { typeof(GoldenGoblin), typeof(ImpulseGoblin) },
+            children = new[] { new ChildSpec { name = "Projectile Spawn", localPosition = new Vector3(0f, 1.4f, 0.4f) } },
+            assets = new[]
+            {
+                new SoSpec { soType = typeof(HomingOrbAttackSO), assetName = "MysticAttackSO" },
+            },
+            components = new[]
+            {
+                new ComponentSpec
+                {
+                    type = typeof(HomingOrbAttack),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "attackData", ctx.LoadedAsset("MysticAttackSO"));
+                        EnemyPrefabGenerator.SetReference(so, "animator", ctx.ChildAnimator);
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                        EnemyPrefabGenerator.SetReference(so, "firePoint", ctx.FindOrCreateChild("Projectile Spawn", new Vector3(0f, 1.4f, 0.4f)).transform);
+                        EnemyPrefabGenerator.SetReference(so, "orbPrefab", LoadProjectile<HomingOrb>("Assets/Bladehold/Bladehold Prefabs/HomingOrb.prefab"));
+                    },
+                },
+            },
+        },
+
+        // Evil God: rare wave-16 mini-boss firing 360° radial bursts (RadialBurstAttack — reuses
+        // the LightningBall projectile class; no line of sight needed). SO defaults authored on
+        // RadialBurstAttackSO itself.
+        new EnemySpec
+        {
+            id = "evil_god",
+            soFolder = "Evil God",
+            prefabName = "Evil God Enemy Variant",
+            disableBaseAIAttack = true,
+            navStoppingDistance = 10f,
+            removeComponents = new[] { typeof(GoldenGoblin), typeof(ImpulseGoblin) },
+            children = new[] { new ChildSpec { name = "Burst Origin", localPosition = new Vector3(0f, 1.6f, 0f) } },
+            assets = new[]
+            {
+                new SoSpec { soType = typeof(RadialBurstAttackSO), assetName = "EvilGodBurstSO" },
+            },
+            components = new[]
+            {
+                new ComponentSpec
+                {
+                    type = typeof(RadialBurstAttack),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "attackData", ctx.LoadedAsset("EvilGodBurstSO"));
+                        EnemyPrefabGenerator.SetReference(so, "animator", ctx.ChildAnimator);
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                        EnemyPrefabGenerator.SetReference(so, "firePoint", ctx.FindOrCreateChild("Burst Origin", new Vector3(0f, 1.6f, 0f)).transform);
+                        EnemyPrefabGenerator.SetReference(so, "ballPrefab", LoadProjectile<LightningBall>("Assets/Bladehold/Bladehold Prefabs/LightningBall.prefab"));
+                    },
+                },
+            },
+        },
     };
+
+    /// <summary>Loads a projectile prefab's component for wiring, throwing when the prefab is
+    /// missing or lacks the component — a silent null here would only surface as a Start error at
+    /// spawn time.</summary>
+    private static T LoadProjectile<T>(string path) where T : Component
+    {
+        var component = AssetDatabase.LoadAssetAtPath<T>(path);
+        if (component == null)
+        {
+            throw new InvalidOperationException($"Projectile prefab '{path}' is missing or has no {typeof(T).Name} component.");
+        }
+        return component;
+    }
 }

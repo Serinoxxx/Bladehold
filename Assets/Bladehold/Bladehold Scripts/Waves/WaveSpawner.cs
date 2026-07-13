@@ -517,6 +517,8 @@ public class WaveSpawner : MonoBehaviour
         {
             enemy.GetComponent<AIAttack>()?.SetDamage(def.damage.Value);
             enemy.GetComponent<LightningBallAttack>()?.SetDamage(def.damage.Value);
+            enemy.GetComponent<HomingOrbAttack>()?.SetDamage(def.damage.Value);
+            enemy.GetComponent<RadialBurstAttack>()?.SetDamage(def.damage.Value);
             enemy.GetComponent<LightningStormAttack>()?.SetDamage(def.damage.Value);
             enemy.GetComponent<TrollSlamAttack>()?.SetDamage(def.damage.Value);
             enemy.GetComponent<BomberAttack>()?.SetDamage(def.damage.Value);
