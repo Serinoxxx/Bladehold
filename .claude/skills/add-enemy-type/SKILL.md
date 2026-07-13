@@ -5,7 +5,7 @@ description: Use when adding a new enemy type to Bladehold — attack/behaviour 
 
 # Add an enemy type
 
-Enemies are roster-driven: a row in `Assets/Bladehold/Config/Enemies.csv` + a prefab mapped by id in `WaveSpawner.enemyPrefabs`. Most of a new enemy is **reused stock components** — usually only the attack/behaviour script is new.
+Enemies are roster-driven: a row in `Assets/Bladehold/Config/Enemies.csv` + a prefab mapped by id in the shared `EnemyPrefabMap.asset` (`EnemyPrefabMapSO` — read by both `WaveSpawner` and `EnemyZoo`). Most of a new enemy is **reused stock components** — usually only the attack/behaviour script is new, and the prefab itself is built by the generator (see Step 3).
 
 ## Ground truth first
 
@@ -39,11 +39,11 @@ Rules for the new component:
 - Stop on the player's death (subscribe `Player.Instance.Health.OnDied` — goblins Cheer) and on your own `Health.OnDied` (corpses don't tick).
 - **Expose `SetDamage(float)`** (and any other CSV-overridable number) as a per-instance setter, then add your component to the `?.SetDamage(...)` chain in `WaveSpawner.ApplyDefinition` — overrides are applied right after `Instantiate`, **before the instance's `Start`** (the `MarkGolden` timing trick), so `Start` must respect an already-set override.
 
-## Step 3 — Prefab component checklist (goes in the TODO entry; base it on a goblin variant)
+## Step 3 — Build the prefab with the generator (`/generate-enemy-prefabs`)
 
-`Health` (+ per-type `HealthSO`), `Enemy` (kill credit), `AIMovement` (+ `AIMovementSO` — horde-scaling knobs live there), `AIAnimation`, your attack component (+SO), `CoinDropper`, `CorpseDespawner`, `DisableCollidersOnDeath`, `KnockbackReceiver`, `EnemyRagdoll` + `ImpulseReceiver`, `DamageNumberSpawner`, a `VulnerableSpot` head child (arrow headshots), optional `GoldenGoblin`/`ImpulseGoblin`/`PowerupDropper`/`AITargetSelector`, `MMHealthBar` + `HealthBarUI`. Animator triggers by convention: `Attack`, `Death`, `Cheer` (+ custom, e.g. Bomber's `LightFuse`).
+Don't hand-build the prefab: author an `EnemySpec` in `Editor/EnemyManifest.cs` and run **Bladehold > Generate Enemy Prefabs** — it creates the goblin-base variant, the per-enemy SO assets, wires references, and registers the id in `EnemyPrefabMap.asset` automatically. See the `generate-enemy-prefabs` skill for the manifest schema and rules (never add manifest entries for the hand-built Brute/Storm Witch/Troll variants).
 
-Finally: register the prefab under the CSV id in **`WaveSpawner.enemyPrefabs`** (Editor wiring — rows without a mapping are skipped with a warning) and in the **`EnemyZoo`** scene's mirror map.
+The goblin base already carries the full stock component set every enemy inherits: `Health`, `Enemy` (kill credit), `AIMovement` + `AIAnimation`, `AIAttack`, `CoinDropper`, `CorpseDespawner`, `DisableCollidersOnDeath`, `KnockbackReceiver`, `EnemyRagdoll` + `ImpulseReceiver`, `DamageNumberSpawner`, `AITargetSelector`, `GoldenGoblin`/`ImpulseGoblin`/`PowerupDropper`. The manifest entry only describes the *deltas*: your attack component (+SO), base-`AIAttack` disable, marker-component removals, fire-point children, stopping distance. Animator triggers by convention: `Attack`, `Death`, `Cheer` (+ custom, e.g. Bomber's `LightFuse`) — new animator states stay manual (TODO entry).
 
 ## Pitfalls
 
@@ -55,5 +55,5 @@ Finally: register the prefab under the CSV id in **`WaveSpawner.enemyPrefabs`** 
 ## Finish protocol
 
 1. `/compile-check` (new files added to `Assembly-CSharp.csproj` first).
-2. `/editor-wiring-todo` — SO asset, prefab checklist, animator additions, `WaveSpawner.enemyPrefabs` registration, balance pass; manual verification modeled on the Bomber entry (spawn wave, behaviour beats, death accounting, negative cases).
+2. `/editor-wiring-todo` — whatever the generator can't do (animator additions, MMF juice, VFX/materials, balance pass); manual verification modeled on the Bomber entry (spawn wave, behaviour beats, death accounting, negative cases).
 3. Commit directly to `main` and push.

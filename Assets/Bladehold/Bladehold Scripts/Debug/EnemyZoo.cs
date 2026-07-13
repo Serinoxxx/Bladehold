@@ -22,18 +22,10 @@ using UnityEngine.AI;
 /// </summary>
 public class EnemyZoo : MonoBehaviour
 {
-    /// <summary>Inspector mapping from a roster CSV id to its prefab (mirrors the WaveSpawner map).</summary>
-    [Serializable]
-    private class EnemyPrefabEntry
-    {
-        public string id;
-        public GameObject prefab;
-    }
-
     [Header("Roster")]
     [SerializeField] private EnemyRosterSO roster;
-    [Tooltip("Maps each roster CSV id to its prefab. Rows without a mapping are skipped (with a warning).")]
-    [SerializeField] private EnemyPrefabEntry[] enemyPrefabs;
+    [Tooltip("The shared id → prefab map asset (the same one the WaveSpawner uses). Rows without a mapping are skipped (with a warning).")]
+    [SerializeField] private EnemyPrefabMapSO prefabMap;
     [Tooltip("Apply each row's CSV stat overrides (health/damage/scale/…) so the gallery matches what waves spawn.")]
     [SerializeField] private bool applyRosterOverrides = true;
 
@@ -98,6 +90,12 @@ public class EnemyZoo : MonoBehaviour
             anyError = true;
             return;
         }
+        if (prefabMap == null)
+        {
+            Debug.LogError("EnemyZoo: no EnemyPrefabMapSO assigned.");
+            anyError = true;
+            return;
+        }
 
         BuildSpawnables();
         if (spawnables.Count == 0)
@@ -117,12 +115,12 @@ public class EnemyZoo : MonoBehaviour
         ClearExtraSpawns();
     }
 
-    /// <summary>Pairs each roster row with its inspector-mapped prefab, mirroring WaveSpawner's wiring.</summary>
+    /// <summary>Pairs each roster row with its prefab from the shared map asset — the same wiring WaveSpawner uses.</summary>
     private void BuildSpawnables()
     {
         foreach (EnemyDefinition def in roster.Enemies)
         {
-            GameObject prefab = FindPrefab(def.id);
+            GameObject prefab = prefabMap.FindPrefab(def.id);
             if (prefab == null)
             {
                 Debug.LogWarning($"EnemyZoo: roster row '{def.id}' has no prefab mapping; skipping.");
@@ -135,22 +133,6 @@ public class EnemyZoo : MonoBehaviour
             }
             spawnables.Add(new Spawnable { def = def, prefab = prefab });
         }
-    }
-
-    private GameObject FindPrefab(string id)
-    {
-        if (enemyPrefabs == null)
-        {
-            return null;
-        }
-        foreach (EnemyPrefabEntry entry in enemyPrefabs)
-        {
-            if (entry != null && entry.id == id)
-            {
-                return entry.prefab;
-            }
-        }
-        return null;
     }
 
     private void BuildGallery()

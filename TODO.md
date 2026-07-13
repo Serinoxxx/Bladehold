@@ -1,5 +1,51 @@
 # TODO
 
+## Enemy prefab map + prefab generator — Unity Editor wiring
+
+The C# is done. **Prefab map refactor** (`Enemies/EnemyPrefabMapSO.cs`): the id → prefab mapping
+moved out of the two scene inspector lists into one `EnemyPrefabMapSO` asset — `Waves/WaveSpawner.cs`
+and `Debug/EnemyZoo.cs` now hold a single `prefabMap` field (validated in `Start` with the `anyError`
+idiom) instead of their duplicated `EnemyPrefabEntry[]` arrays; `FindPrefab` lives on the SO.
+**⚠ The game spawns NOTHING until the asset below is created and assigned in both scenes.**
+**Generator** (`Editor/EnemyPrefabGenerator.cs` + `Editor/EnemyManifest.cs`, see the
+`generate-enemy-prefabs` skill): **Bladehold > Generate Enemy Prefabs** builds prefab *variants* of
+`Goblin Enemy (Base)` from declarative `EnemySpec` manifest entries (the `SettingsMenuGenerator` /
+`SkillTreePreviewBuilder` PrefabUtility + `SerializedObject` precedents) — creates missing per-enemy
+SO assets (never overwrites existing ones), wires serialized refs (fails loudly on renamed fields),
+disables/removes base components per spec, and registers the id in the map asset. Idempotent;
+headless entry `EnemyPrefabGenerator.GenerateAll` for `-batchmode -executeMethod`. The manifest is
+seeded with a structure-free `dwarf` entry (the smoke test; no `Enemies.csv` row yet, so it can't
+spawn in waves). Hand-built variants (Brute/Storm Witch/Troll) deliberately have no manifest entry.
+The 20-enemy roadmap that will consume this lives in `ENEMY_TYPES_PLAN.md`.
+
+- [ ] **Create the map asset** (menu `Scriptable Objects/EnemyPrefabMapSO`) at
+      `Assets/Bladehold/Bladehold Scripts/Enemies/EnemyPrefabMap.asset` (the exact path the
+      generator writes to) and fill the existing mappings: `goblin` → `Goblin Enemy (Base)`,
+      `goblin_brute` → `Goblin Brute Enemy Variant`, `storm_witch` → `Storm Witch Enemy Variant`,
+      `troll` → `Troll Enemy Variant`. (`bomber`/`knight` stay unmapped until their prefabs exist —
+      same as before the refactor.)
+- [ ] **Assign the asset** on the `WaveSpawner` in `Bladehold Test Scene.unity` (`prefabMap`,
+      hand-assigned — the old `enemyPrefabs` list rows are gone) **and** on the `EnemyZoo`
+      component in the Enemy Zoo scene (`prefabMap`).
+- [ ] **Run the generator once**: **Bladehold > Generate Enemy Prefabs** — expect
+      `Dwarf Enemy Variant.prefab` to appear in `Bladehold Prefabs/`, a `dwarf` entry added to the
+      map asset, and a console warning that `dwarf` has no `Enemies.csv` row (expected until
+      Phase ① of `ENEMY_TYPES_PLAN.md`).
+
+## Manual verification (enemy prefab map + generator)
+
+- [ ] Enter Play mode → waves spawn goblins exactly as before the refactor (brutes from wave 4,
+      storm witches from 6, troll wave 8 — spot-check with DevConsole `DebugSetNextWave`).
+- [ ] Open the Enemy Zoo scene → the gallery still populates one of every mapped roster type with
+      CSV overrides applied.
+- [ ] After the generator run: `Dwarf Enemy Variant.prefab` opens as a **variant** of
+      `Goblin Enemy (Base)` (header shows the base as its parent), scale 1, all stock goblin
+      components present and enabled.
+- [ ] Re-run **Bladehold > Generate Enemy Prefabs** → console reports an update, `git status`
+      shows no changes (idempotency), and nothing in the map asset is duplicated.
+- [ ] Negative: waves never spawn a dwarf (no CSV row), and the Brute/Storm Witch/Troll variants
+      are untouched by the generator run (`git status` clean on their .prefab files).
+
 ## Between-wave intermission (slow-mo + stats + Recover/Hold the Line) + Loot chests — Unity Editor wiring
 
 The C# is done. **Hold the Line economy** (`Economy/HoldTheLineBonus.cs`): a scene-singleton greed

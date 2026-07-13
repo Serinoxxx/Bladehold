@@ -38,16 +38,6 @@ public class WaveSpawner : MonoBehaviour
 {
     public static WaveSpawner Instance;
 
-    /// <summary>Inspector mapping from a roster CSV id to the prefab that spawns for it.</summary>
-    [Serializable]
-    private class EnemyPrefabEntry
-    {
-        [Tooltip("Must match an id in the roster CSV.")]
-        public string id;
-        [Tooltip("The enemy prefab. Must have a Health component (death is tracked via Health.OnDied).")]
-        public GameObject prefab;
-    }
-
     /// <summary>A roster row paired with its prefab, plus this type's live-count (for its concurrent
     /// cap) and per-wave spawn count (for its minSpawn guarantee).</summary>
     private class SpawnType
@@ -61,8 +51,8 @@ public class WaveSpawner : MonoBehaviour
     [Header("What to spawn")]
     [Tooltip("CSV-driven enemy roster. The first row is the unlimited fallback type; later rows roll their spawnChance per spawn.")]
     [SerializeField] private EnemyRosterSO roster;
-    [Tooltip("Maps each roster CSV id to its prefab. Roster rows without a mapping here are skipped (with a warning) until one is added.")]
-    [SerializeField] private EnemyPrefabEntry[] enemyPrefabs;
+    [Tooltip("The shared id → prefab map asset (also used by the EnemyZoo gallery). Roster rows without a mapping there are skipped (with a warning) until one is added.")]
+    [SerializeField] private EnemyPrefabMapSO prefabMap;
     [SerializeField] private WaveConfigSO config;
 
     [Header("Where to spawn")]
@@ -167,6 +157,11 @@ public class WaveSpawner : MonoBehaviour
             Debug.LogError("EnemyRosterSO is not assigned in the inspector.");
             anyError = true;
         }
+        else if (prefabMap == null)
+        {
+            Debug.LogError("EnemyPrefabMapSO is not assigned in the inspector.");
+            anyError = true;
+        }
         else
         {
             BuildSpawnTypes();
@@ -213,18 +208,18 @@ public class WaveSpawner : MonoBehaviour
     }
 
     /// <summary>
-    ///     Pairs each roster row with its inspector-mapped prefab. Rows without a prefab (or with an
-    ///     invalid one) are skipped with a warning, so designers can author CSV rows ahead of the
-    ///     prefab arriving. No fallback row surviving is a hard error — there'd be nothing to spawn.
+    ///     Pairs each roster row with its prefab from the shared map asset. Rows without a prefab (or
+    ///     with an invalid one) are skipped with a warning, so designers can author CSV rows ahead of
+    ///     the prefab arriving. No fallback row surviving is a hard error — there'd be nothing to spawn.
     /// </summary>
     private void BuildSpawnTypes()
     {
         foreach (EnemyDefinition def in roster.Enemies)
         {
-            GameObject prefab = FindPrefab(def.id);
+            GameObject prefab = prefabMap.FindPrefab(def.id);
             if (prefab == null)
             {
-                Debug.LogWarning($"Enemy roster row '{def.id}' has no prefab entry on the WaveSpawner; that type won't spawn.");
+                Debug.LogWarning($"Enemy roster row '{def.id}' has no entry in the enemy prefab map; that type won't spawn.");
                 continue;
             }
             if (prefab.GetComponent<Health>() == null)
@@ -240,22 +235,6 @@ public class WaveSpawner : MonoBehaviour
             Debug.LogError("No spawnable enemy types: the roster is empty or no row has a valid prefab entry.");
             anyError = true;
         }
-    }
-
-    private GameObject FindPrefab(string id)
-    {
-        if (enemyPrefabs == null)
-        {
-            return null;
-        }
-        foreach (EnemyPrefabEntry entry in enemyPrefabs)
-        {
-            if (entry != null && entry.id == id)
-            {
-                return entry.prefab;
-            }
-        }
-        return null;
     }
 
     private void HandlePlayerDied()
