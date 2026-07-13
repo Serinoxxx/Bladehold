@@ -104,6 +104,25 @@ public static class StatDisplay
         { StatType.FlamingArrowsBomberDetonateChance, new Info("Bomber Detonate Chance", StatFormat.Percent) },
 
         { StatType.HealthPackHealPercent, new Info("Health Pack Heal", StatFormat.Percent) },
+
+        { StatType.WandDamage, new Info("Wand Damage", StatFormat.Number) },
+        { StatType.WandMaxChargeLevels, new Info("Wand Charge Levels", StatFormat.Integer) },
+        { StatType.WandChargeDamageBonus, new Info("Wand Charge Damage / level", StatFormat.Percent) },
+        { StatType.WandKnockback, new Info("Wand Knockback", StatFormat.Number) },
+
+        { StatType.MageImbuementDuration, new Info("Imbuement Duration", StatFormat.Seconds) },
+        { StatType.MageImbuementMaxCharges, new Info("Element Charges", StatFormat.Integer) },
+        { StatType.MageImbuementBonusPerCharge, new Info("Damage / charge", StatFormat.Percent) },
+        { StatType.MageRunestoneCharges, new Info("Runestone Charges", StatFormat.Integer) },
+
+        { StatType.MageFireDamagePercent, new Info("Fire Bonus Damage", StatFormat.Percent) },
+        { StatType.MageFireExplosionDamagePercent, new Info("Explosion Damage", StatFormat.Percent) },
+        { StatType.MageFireExplosionRadius, new Info("Explosion Radius", StatFormat.Number) },
+        { StatType.MageFlameZoneDuration, new Info("Burning Ground Duration", StatFormat.Seconds) },
+        { StatType.MageFlameZoneDamagePercent, new Info("Burning Ground Damage", StatFormat.Percent) },
+
+        { StatType.MageIceSlowPercent, new Info("Chill Slow", StatFormat.Percent) },
+        { StatType.MageIceSlowDurationSeconds, new Info("Chill Duration", StatFormat.Seconds) },
     };
 
     /// <summary>Friendly label for a stat; falls back to the enum name split on capital letters.</summary>

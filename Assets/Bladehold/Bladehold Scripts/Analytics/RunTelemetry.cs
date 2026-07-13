@@ -47,6 +47,7 @@ public class RunTelemetry : MonoBehaviour
     private SamplePlayerAnimationController controller;
     private DamageTrigger swordTrigger;
     private PlayerThrownAxe thrownAxe;
+    private PlayerWand wand;
     private SkillTreeService goldTree;
     private ReincarnateService reincarnateTree;
     private FieldInfo isSprintingField;
@@ -207,6 +208,13 @@ public class RunTelemetry : MonoBehaviour
         {
             thrownAxe.OnHit += HandleSwordHit;
         }
+        // The Mage's wand likewise (its elemental riders/zones/chains are not telemetered — the
+        // chain-lightning precedent; direct weapon damage is the balance signal).
+        wand = player.GetComponentInChildren<PlayerWand>(true);
+        if (wand != null)
+        {
+            wand.OnHit += HandleSwordHit;
+        }
         if (inputReader != null)
         {
             inputReader.onAttackDeactivated += HandleAttackReleased;
@@ -285,6 +293,10 @@ public class RunTelemetry : MonoBehaviour
         if (thrownAxe != null)
         {
             thrownAxe.OnHit -= HandleSwordHit;
+        }
+        if (wand != null)
+        {
+            wand.OnHit -= HandleSwordHit;
         }
         if (inputReader != null)
         {

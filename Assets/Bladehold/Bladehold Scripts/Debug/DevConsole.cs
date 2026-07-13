@@ -70,6 +70,7 @@ public class DevConsole : MonoBehaviour
         DrawEnemySpawnControls();
         DrawClassControls();
         DrawRageReadout();
+        DrawImbuementReadout();
 
         // Perf stress tests: burst-spawn into the current wave, ignoring the concurrent cap.
         GUILayout.Label("Spawn Goblins (stress test)");
@@ -270,6 +271,24 @@ public class DevConsole : MonoBehaviour
             line += $"  |  Pain +{pain.StoredBonus:0.#}";
         }
         GUILayout.Label(line);
+    }
+
+    /// <summary>
+    ///     Live readout of the Mage's imbuement (element, charges, remaining seconds) so the loop is
+    ///     verifiable before the HUD element widget exists. Hidden for classes without a MageImbuement
+    ///     (the DrawRageReadout shape).
+    /// </summary>
+    private void DrawImbuementReadout()
+    {
+        MageImbuement imbuement = Player.Instance != null ? Player.Instance.GetComponentInChildren<MageImbuement>() : null;
+        if (imbuement == null || !imbuement.isActiveAndEnabled)
+        {
+            return;
+        }
+
+        GUILayout.Label(imbuement.IsActive
+            ? $"Imbue: {imbuement.CurrentElement} x{imbuement.ChargeCount} ({imbuement.RemainingSeconds:0.#}s)"
+            : "Imbue: none");
     }
 
     private void DrawSpawnBurstButton(int count)

@@ -781,3 +781,149 @@ renderers, so the Animator, animation events, weapon bones, and camera need no r
       in the hand. Back to Swordsman: original model, no leftovers.
 - [ ] Player death/ragdoll-free flows unaffected by the model swap (death anim plays on the
       swapped mesh).
+
+## Mage class (staff + wand + elemental imbuement)
+
+**Stage A (class shell + PlayerAttack refactor) — done in C#**:
+`Player/PlayerAttack.cs` no longer hard-types `PlayerBow`/`PlayerThrownAxe` for aim suppression —
+it now asks `PlayerClassController.ActiveAimWeapon` (the `IChargedAimWeapon` the class controller
+already resolves in Awake), so the wand (and any future class's aim weapon) suppresses the melee
+charge with zero further edits. A missing class controller (e.g. `SkillTreePreview.unity`)
+degrades to "no suppression". Everything else about adding a class is data-driven — no other code.
+
+- [ ] **Staff weapon prefab** (`1H_Staff`): duplicate the sword weapon object, swap the mesh for a
+      staff, give it its own `DamageSO` (~sword-level damage — the Mage's squish is kit-side, not
+      melee-nerf-side) + `DamageTriggerSO`; BladeSweep `Blade Base`/`Blade Tip` along the shaft,
+      `readsPlayerStats` ON. Nest under the right-hand bone in `Player.prefab`, **inactive**.
+      Re-assign the out-of-prefab refs (`DamageTrigger.playerAttack`, `SwordHitFeedback.animator`,
+      `SwordChargeFeedback.playerAttack`) — they don't survive duplication (the 1H_Axe precedent).
+- [ ] **Mage AnimatorOverrideController** based on `AC_Sidekick_Masculine.controller`: staff attack
+      clip(s); **bake the `PlaySwordWoosh` + `OneHandedSwordAttack` animation events** on the clip
+      import (missing events = silent no-hit swings).
+- [ ] **ClassDefinitionSO asset** `mage` (menu `Scriptable Objects/ClassDefinitionSO`): id `mage`
+      (never rename once shipped), displayName "Mage", description blurb, the override controller,
+      a robed Synty Sidekick on `characterModelPrefab`, `chargeTimePerLevel` ~1.1, `skillTree` =
+      the Mage tree SO (Stage E below).
+- [ ] **Player.prefab**: third `PlayerClassController` slot — definition = mage SO, weaponObjects
+      `[1H_Staff]`, meleeTrigger/hitFeedback = the staff's, classComponents `[PlayerWand,
+      MageImbuement]` (both added below, both **disabled** on the prefab).
+- [ ] **ClassSelectPanel**: third authored `ClassOption` (button + name/description labels +
+      highlight) wired to the mage SO.
+
+**Stage B (wand: hold-aim magic missile) — done in C#**:
+`Player/WandSO.cs` (tunables incl. aim-camera block), `Player/PlayerWand.cs` (the `PlayerThrownAxe`
+skeleton: aim/charge/cooldown/melee-suppression/animator params `IsAiming`+`BowFire`/model swap;
+implements `IChargedAimWeapon` so the shared aim camera/crosshair/reload UI work via
+`ActiveAimWeapon`; registers `WandUnlocked` **0 = locked**, `WandDamage` 12, `WandMaxChargeLevels`
+3, `WandChargeDamageBonus` 0.5, `WandKnockback` 2; damage = shared crit stats ×
+`AllDamageMultiplier` × per-target Ice Breaker, `type = elemental`, stamps `Damage.source`),
+`Player/MagicMissileProjectile.cs` (SphereCast-swept real projectile, no pierce; collects
+`ElementNode`s it flies past and keeps going; per-element child visuals via `SetElement`).
+`RunTelemetry` accumulates wand hits into damage-dealt (the axe precedent; elemental
+riders/zones/chains stay untelemetered like chain lightning).
+
+- [ ] **WandSO asset** (menu `Scriptable Objects/WandSO`).
+- [ ] **Magic-missile prefab**: glow mesh/trail + `MagicMissileProjectile`; author the per-element
+      child visuals (neutral bolt, fireball, spark, frost) all inactive; optional impact VFX.
+- [ ] **`PlayerWand` on the player root, disabled**: assign WandSO + missile prefab + castOrigin
+      (wand tip / chest) + hitLayers (the bow's mask); optional in-hand wand model + staff model
+      for the aim swap; add to the mage slot's classComponents (it must be the slot's first
+      `IChargedAimWeapon`).
+
+**Stages C+D (imbuement core + element effects + runestones) — done in C#**:
+`Player/ElementType.cs` (Fire/Lightning/Ice — append-only), `Player/MageImbuementSO.cs`,
+`Player/MageImbuement.cs` — the one shared buff (ImpulseBuff skeleton + element identity):
+timed + charge-stacked, **pickup RESETS the timer** (never adds); same element = +1 charge
+(capped), different = replace at 1 charge; runestone = replace with `MageRunestoneCharges`
+(base 2) charges, same-element runestone = timer-only; expiry clears all. Listens to the staff
+trigger's + wand's `OnHit`: a flat elemental damage rider per charge (+ Searing Focus on fire),
+then per element — **Fire** explosion (direct OverlapSphere at the hit point once Combustion is
+owned; skips the direct target) + `Player/FlameZone.cs` burning ground (a player-owned
+`LightningStormZone` clone with an enemy-layer mask, one zone per 2 s, NavMesh-snapped) once
+Scorched Earth is owned; **Lightning** arcs via the existing `ChainLightning.ForceChain` (new
+`excludeTarget` param; the Mage tree raises the shared `ChainLightning*` stats — a Mage never
+activates the orb buff, so the two paths can't double-fire); **Ice** applies `SlowStatus`
+(Ice Breaker pays off through the staff's existing per-target check and the wand's mirror of it).
+`Economy/ElementNode.cs` (4th pickup sibling; a failed grant does NOT consume it, so non-Mages
+leave nodes lying; 60 s lifetime; `TryCollectRemote` for wand flybys),
+`Waves/ElementNodeSpawner.cs` (ChestSpawner idiom, self-disables for non-Mage runs),
+`Waves/Runestone.cs` (IDamageable arena furniture; only player-`source` hits activate it —
+`DamageTrigger.BuildDamage` (readsPlayerStats branch) and the wand now stamp `Damage.source`, so
+enemy melee/Storm-Witch splash can never flip the element; per-stone 1 s cooldown),
+`UI/MageElementUI.cs` (RageBarUI pattern: element icon/tint, charge count, time fill; self-hides),
+DevConsole `DrawImbuementReadout()` (`Imbue: Fire x3 (8.2s)`).
+
+- [ ] **MageImbuementSO asset** (menu `Scriptable Objects/MageImbuementSO`).
+- [ ] **`MageImbuement` on the player root, disabled**: assign the SO, the **staff's**
+      DamageTrigger (explicit — the VampiricBlade rule), the wand, enemyLayers (exclude player /
+      gates / runestones / environment), per-element styles (aura child objects + activation MMFs
+      + HUD icon sprites + tints), deactivation MMF, explosion VFX prefab, FlameZone prefab; add
+      to the mage slot's classComponents.
+- [ ] **3 ElementNode prefabs** (fire/lightning/ice): tinted orb mesh + trigger collider +
+      `ElementNode` (set the element!) + DamageNumbersPro popup + pickup MMF.
+- [ ] **FlameZone prefab**: looping ground-fire VFX + `FlameZone`; optional per-tick burn VFX/SFX.
+- [ ] **Explosion VFX prefab** (cosmetic; the damage is code-side).
+- [ ] **`ElementNodeSpawner` scene object** near the arena centre (spawnRadius ~12, min 2 / max 4
+      per wave) — safe to leave in the scene for all classes, it self-disables.
+- [ ] **3 Runestone prefabs placed near the gate** in `Bladehold Test Scene`: rock mesh + **solid**
+      collider + `Runestone` (set the element) + activate/fizzle MMFs + per-element glow. Layer
+      check: runestones must be inside the staff's + wand's `hitLayers` but **outside**
+      `MageImbuement.enemyLayers` and `ChainLightning.enemyLayers` (chains/explosions/zones must
+      never flip elements — switching is a deliberate, aimed act).
+- [ ] **ChestLootTableSO**: add the 3 node prefabs as bonus items at low weight (~0.5) — a
+      non-Mage chest roll leaves an inert node that expires (bounded waste, like a full-HP
+      HealthPack).
+- [ ] **HUD `MageElementUI` widget** under the HUD canvas: element icon Image + Filled time Image
+      + optional "x3" TMP label, an `activeGroup` child for the active-only contents; hides itself
+      for other classes.
+
+**Stage E (Mage skill tree) — done in C#**:
+`Config/SkillTreeMage.csv` — carried melee/crit/charge/knockback/vamp/plunder/sprint/impulse/
+alldmg/medpack/horse lines reworded sword→staff, with the Berserker's axe/rage branch and the
+gold tree's `solid`/`parry`/`counter` (glass cannon — no defensive lines) and orb-lightning family
+dropped; 19 new nodes: `wand_unlock` (60g) → `wand_dmg`/`wand_charge`; fire line `fire_dmg` →
+`fire_explode` (Combustion) → `fire_radius`/`fire_zone` (Scorched Earth) → `fire_zone_up`;
+lightning line `light_unlock` (grants ChainLightningBounces+DamagePercent) →
+`light_bounce`/`light_dmg`/`light_crit`; ice line `ice_deep` → `ice_dur` → `ice_break`; imbuement
+QoL `imbue_dur`/`imbue_power`/`imbue_max` → `rune_charges` (runestones 2→3→4 charges) in the old
+lightning-family footprint (x 29–30). New StatTypes: 5 wand + 11 Mage (see `Stats/StatType.cs`),
+with `StatDisplay` rows.
+
+- [ ] **Mage SkillTreeSO asset** (menu `Scriptable Objects/SkillTreeSO`), csv =
+      `Config/SkillTreeMage.csv`, hasHeaderRow on; **copy the gold tree SO's `icons` list** so
+      carried-over icon names resolve (the 19 new nodes ship without icons). Sanity-check in
+      **Bladehold > Skill Tree Editor**; assign on the mage `ClassDefinitionSO.skillTree`.
+
+**Manual verification (Mage)**
+- [ ] Swordsman + Berserker regress-check first: bow aim and axe aim still suppress the melee
+      charge (the PlayerAttack refactor's risk); Parry/Counterstrike still work (the
+      `Damage.source` stamp is additive); `SkillTreePreview` scene throws no NPEs.
+- [ ] DevConsole → Switch to Mage & Reload: robed model, staff swings, melee nodes scale it;
+      telemetry `run_start` shows `class=mage`.
+- [ ] Fresh Mage: aiming does nothing until `wand_unlock`; after buying — aim shoulders the camera
+      in, crosshair + cooldown radial work, missiles fly and damage; charge scales damage; no
+      mounted casting.
+- [ ] Element nodes scatter on wave start (Mage only); walk-over imbues (aura + HUD + DevConsole
+      readout); same element = +1 charge & timer reset; different element = swap at 1 charge;
+      expiry clears everything at once; imbued staff and wand hits pop a second elemental damage
+      number scaling with charges.
+- [ ] Fire: rider only until `fire_explode`; then explosions at hit points (neighbours damaged,
+      direct target not double-dipped); `fire_zone` adds burning ground, max one per 2 s, ticking
+      enemies but never the player/gate/chests. Wand + fire reads as a fireball.
+- [ ] Lightning: inert until `light_unlock`; then hits arc (never back into the struck enemy);
+      a Lightning Orb pickup does NOT start the old orb buff for the Mage (no double chains).
+- [ ] Ice: hits visibly slow (agent + animator); `ice_break` (Shatter) raises staff AND wand
+      damage vs chilled targets; `ice_dur` lingers the slow.
+- [ ] Runestones: blast from range = element swap with 2 charges (3/4 with `rune_charges`);
+      same-element re-blast = timer refresh only; goblin attacks / Storm Witch storms hitting the
+      stone never flip the element; non-Mage blast = fizzle feedback only.
+- [ ] Wand missile flying over a ground node collects it mid-flight without stopping.
+- [ ] Chest bonus rolls can drop element nodes; a non-Mage walking over one leaves it lying (it
+      expires after ~60 s).
+- [ ] Reincarnate wipe restores every gate (wand locked, fire/lightning lines inert).
+
+**Mage follow-ups (recorded, not scheduled)**
+- [ ] Extract a shared pickup base class — `ElementNode` is the fourth sibling of
+      Coin/ImpulseOrb/LightningOrb; a fifth pickup (or a second remote-collect consumer) is the cue.
+- [ ] Optional: `LightningOrb` grants a Lightning imbuement charge to a Mage instead of a dead
+      no-op consume.

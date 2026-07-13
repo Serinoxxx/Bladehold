@@ -426,6 +426,10 @@ public class DamageTrigger : MonoBehaviour
             sourcePosition = transform.position,
             impulsePower = impulsePower,
             impulseForce = impulseForce,
+            // Player-owned hit: lets Runestones tell a player blast from enemy splash damage. Safe
+            // for every other consumer — Counterstrike only reads source off hits the *player*
+            // receives, and this trigger never damages its owner.
+            source = ownerDamageable,
         };
     }
 }

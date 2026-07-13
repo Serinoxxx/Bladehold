@@ -117,16 +117,18 @@ public class ChainLightning : MonoBehaviour
 
     /// <summary>
     ///     Runs a chain regardless of the buff's timer — the lightning source is external (an Unstable
-    ///     Orbs detonation, a Conduit-deflected Storm Witch ball), not the player's charged blade.
-    ///     Still stat-gated: a no-op until the Chain Lightning unlock grants bounces/damage.
+    ///     Orbs detonation, a Conduit-deflected Storm Witch ball, a Mage lightning-imbued hit), not the
+    ///     player's charged blade. Still stat-gated: a no-op until something grants bounces/damage.
+    ///     <paramref name="excludeTarget" /> keeps the first hop from arcing straight back into the
+    ///     enemy that triggered the chain (pass the enemy that was just hit, when there is one).
     /// </summary>
-    public void ForceChain(float triggeringDamage, Vector3 hitPoint)
+    public void ForceChain(float triggeringDamage, Vector3 hitPoint, IDamageable excludeTarget = null)
     {
         if (anyError)
         {
             return;
         }
-        Chain(null, triggeringDamage, hitPoint);
+        Chain(excludeTarget, triggeringDamage, hitPoint);
     }
 
     private void Chain(IDamageable target, float triggeringDamage, Vector3 hitPoint)

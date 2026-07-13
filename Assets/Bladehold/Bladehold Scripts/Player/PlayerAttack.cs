@@ -25,10 +25,8 @@ public class PlayerAttack : MonoBehaviour
     [Tooltip("Synty InputReader that raises the attack press/release events. Usually on the player root.")]
     [SerializeField] private InputReader inputReader;
     [SerializeField] private PlayerStats stats;
-    [Tooltip("Optional: the player's bow. While it is aiming, attack presses fire arrows instead of swinging, so the sword hold-to-charge is skipped.")]
-    [SerializeField] private PlayerBow bow;
-    [Tooltip("Optional: the berserker's throwing axe. While it is aiming, attack presses throw instead of swinging, so the melee hold-to-charge is skipped.")]
-    [SerializeField] private PlayerThrownAxe thrownAxe;
+    [Tooltip("Optional: the class controller, polled for the active class's aim weapon. While that weapon is aiming, attack presses fire it instead of swinging, so the melee hold-to-charge is skipped.")]
+    [SerializeField] private PlayerClassController classController;
 
     [Tooltip("Seconds of holding the attack button to gain each charge level (level 1 at 1×, level 2 at 2×, ...).")]
     [SerializeField] private float chargeTimePerLevel = 1f;
@@ -72,13 +70,9 @@ public class PlayerAttack : MonoBehaviour
         {
             stats = GetComponent<PlayerStats>();
         }
-        if (bow == null)
+        if (classController == null)
         {
-            bow = GetComponentInChildren<PlayerBow>();
-        }
-        if (thrownAxe == null)
-        {
-            thrownAxe = GetComponentInChildren<PlayerThrownAxe>();
+            classController = GetComponentInParent<PlayerClassController>();
         }
     }
 
@@ -164,10 +158,11 @@ public class PlayerAttack : MonoBehaviour
     {
         if (anyError) return;
 
-        // While the bow or thrown axe is drawn, this press fires it instead (the aim weapon
-        // suppresses the swing) — don't start timing a melee charge that can never land.
-        if (bow != null && bow.IsAiming) return;
-        if (thrownAxe != null && thrownAxe.IsAiming) return;
+        // While the active class's aim weapon (bow/axe/wand) is drawn, this press fires it instead
+        // (the aim weapon suppresses the swing) — don't start timing a melee charge that can never
+        // land. A missing class controller (e.g. SkillTreePreview) just means no suppression.
+        IChargedAimWeapon aimWeapon = classController != null ? classController.ActiveAimWeapon : null;
+        if (aimWeapon != null && aimWeapon.IsAiming) return;
 
         ChargeLevel = 0;
         AttackDamageMultiplier = 1f;

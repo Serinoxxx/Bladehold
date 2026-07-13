@@ -164,6 +164,42 @@ public enum StatType
     RageGainMultiplier,
     /// <summary>Unitless multiplier on how long rage lingers: scales the decay grace window up and the drain rate down (base 1.0).</summary>
     RageRetentionMultiplier,
+
+    /// <summary>1 = the Mage's wand is unlocked and can be aimed (hold aim); 0 = locked (aiming does nothing, staff stays out). Gated by the "Wand" node — the BowUnlocked convention.</summary>
+    WandUnlocked,
+    /// <summary>Damage of one magic missile before charge/crit/multipliers. Base comes from WandSO.baseDamage.</summary>
+    WandDamage,
+    /// <summary>How many charge levels the wand can reach while aiming. Base comes from WandSO (the wand charges out of the box, like the bow's draw).</summary>
+    WandMaxChargeLevels,
+    /// <summary>Extra missile damage per charge level held (e.g. 0.5 = +50% per level).</summary>
+    WandChargeDamageBonus,
+    /// <summary>Knockback impulse each missile hit shoves its target with. Base comes from WandSO.baseKnockback.</summary>
+    WandKnockback,
+
+    /// <summary>Seconds the Mage's elemental imbuement lasts per refresh — every node pickup resets the timer to this (the "Lingering Element" line). Base comes from MageImbuementSO.</summary>
+    MageImbuementDuration,
+    /// <summary>Maximum element charges the imbuement can stack (the "Overflowing Vessel" line). Base comes from MageImbuementSO.</summary>
+    MageImbuementMaxCharges,
+    /// <summary>Extra elemental damage dealt per held element charge, as a fraction of the triggering hit (0.10 = +10% per charge; the "Elemental Mastery" line). Base comes from MageImbuementSO.</summary>
+    MageImbuementBonusPerCharge,
+    /// <summary>Element charges granted when the Mage blasts a runestone of a different element (the "Runic Attunement" line). Base 2 — runestones work out of the box.</summary>
+    MageRunestoneCharges,
+
+    /// <summary>Extra fraction of the triggering hit dealt while Fire-imbued, on top of the per-charge bonus (the "Searing Focus" line). Base comes from MageImbuementSO.</summary>
+    MageFireDamagePercent,
+    /// <summary>Fraction of a Fire-imbued hit's damage dealt to enemies around the hit point (the "Combustion" node). 0 = explosions locked.</summary>
+    MageFireExplosionDamagePercent,
+    /// <summary>Radius in metres of the Fire explosion (the "Greater Fireball" line scales it with Percent modifiers). Base comes from MageImbuementSO.</summary>
+    MageFireExplosionRadius,
+    /// <summary>Seconds a Fire ground zone burns (the "Scorched Earth" node). 0 = flame zones locked.</summary>
+    MageFlameZoneDuration,
+    /// <summary>Fraction of the triggering hit's damage each flame-zone tick deals (the "Everburning" line raises it). Base comes from MageImbuementSO; inert until MageFlameZoneDuration is above 0.</summary>
+    MageFlameZoneDamagePercent,
+
+    /// <summary>Fraction (0-1) Ice-imbued hits slow their target (the "Deep Chill" line). Base comes from MageImbuementSO — ice slows out of the box.</summary>
+    MageIceSlowPercent,
+    /// <summary>Seconds an Ice-imbued hit's slow lasts (SlowDurationBonusSeconds adds on top). Base comes from MageImbuementSO.</summary>
+    MageIceSlowDurationSeconds,
 }
 
 /// <summary>
