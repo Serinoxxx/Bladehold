@@ -33,6 +33,10 @@ One-off bypass without touching config: `git -c credential.helper= -c credential
 
 Whenever a change needs manual steps in the Unity Editor that can't be done by editing files headlessly (creating `ScriptableObject` asset instances, wiring prefab/scene references, animator/clip work, art/audio), record them in **`TODO.md`** at the project root — not a scratch/plan file — since that's the durable, cross-session record of what's done in code versus what still needs Editor wiring. Follow the existing format already used there (Reincarnate system, Sword combat overhaul, Skill icons, Storm Witch): a short "what's done in C#" blurb with file pointers, a wiring checklist, and a "Manual verification" checklist.
 
+## Project skills
+
+Recurring expansion work has step-by-step recipes in `.claude/skills/` — **invoke the matching skill before starting** rather than working from this doc alone (they encode the exemplars, pitfalls, and *current* CSV formats, which this doc lags): `add-skill-line` (skill-tree nodes / player mechanics), `add-player-class`, `add-enemy-type`, `compile-check` (headless C# verification via `dotnet build`), `editor-wiring-todo` (the TODO.md entry format).
+
 ## Code layout
 
 First-party game code lives **only** in `Assets/Bladehold/Bladehold Scripts/` (note the space in the folder name), organized into subfolders: `Player/`, `Enemies/`, `DamageSystem/`, `Economy/`, `Chests/`, `Save/`, `UI/`, `Waves/`, `Stats/`, `Upgrades/`, `Reincarnate/`, `Analytics/`, plus `Editor/` for editor-only tooling (compiled out of builds by Unity's special-folder rule). Designer-editable data that isn't a `ScriptableObject` lives in `Assets/Bladehold/Config/` (`SkillTree.csv`, `Reincarnate.csv`, `Enemies.csv`). All first-party scenes live in `Assets/Bladehold/Bladehold Scenes/` (currently `Bladehold Test Scene.unity`, the real gameplay scene, and `SkillTreePreview.unity`) — new scenes go here, not under the old `Assets/Scenes/` (removed) or a vendored sample's folder.
