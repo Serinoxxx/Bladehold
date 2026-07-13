@@ -21,7 +21,7 @@ Ground rules that apply to every enemy below:
 - **Animator**: any new trigger needs a manual state on the shared goblin controller (TODO entry
   per enemy). Until then attacks still deal damage on their wind-up timers — they just don't animate.
 
-## Phase ① — CSV-only (no new code)
+## Phase ① — CSV-only (no new code) — **SHIPPED 2026-07-14** (rows + generated variants; wiring/balance in TODO.md)
 
 | Enemy | Concept | Draft CSV row (`id,display,hp,dmg,minG,maxG,speed,scale,unlock,chance,minSpawn,maxConc,impRes`) |
 |---|---|---|
@@ -33,7 +33,7 @@ Ground rules that apply to every enemy below:
 Manifest entries: structure-free (the `dwarf` seed entry is already in `EnemyManifest.cs` as the
 generator smoke test — add its CSV row when this phase lands). Stock `AIAttack` does the rest.
 
-## Phase ② — projectile family
+## Phase ② — projectile family — **SHIPPED 2026-07-14** (HomingOrb/RadialBurst code + generated variants; projectile re-tints are manual art in TODO.md)
 
 Shared exemplar: `LightningBallAttack` + `LightningBall` (Storm Witch). All three disable base
 `AIAttack`, set `navStoppingDistance`, add a fire-point child.
