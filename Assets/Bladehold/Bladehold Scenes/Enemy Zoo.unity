@@ -1062,15 +1062,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyZoo
   roster: {fileID: 11400000, guid: eac1e853de017fa438e6312de81cfa7f, type: 2}
-  enemyPrefabs:
-  - id: goblin
-    prefab: {fileID: 494112403358464087, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
-  - id: goblin_brute
-    prefab: {fileID: 3683623392950716979, guid: 50e96ce329a9be4438fc8f479d635ce8, type: 3}
-  - id: storm_witch
-    prefab: {fileID: 6126306671088186872, guid: 66056b45ab863574b86c1d9dfde93d95, type: 3}
-  - id: troll
-    prefab: {fileID: 3683623392950716979, guid: 60820cae7e950ba41ad3457bb835cf1a, type: 3}
+  prefabMap: {fileID: 11400000, guid: ec2bcfc9825f30a45a7140a508f003f2, type: 2}
   applyRosterOverrides: 1
   galleryOrigin: {x: 0, y: 0, z: 0}
   columnSpacing: 3

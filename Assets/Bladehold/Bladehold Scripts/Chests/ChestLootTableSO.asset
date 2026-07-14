@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fdbfcf95b9d8673488bb79dd8f8cc3e2, type: 3}
+  m_Name: ChestLootTableSO
+  m_EditorClassIdentifier: Assembly-CSharp::ChestLootTableSO
+  minGold: 10
+  maxGold: 25
+  bonusItemChance: 0.6
+  items:
+  - prefab: {fileID: 5845664704562408726, guid: 92f143bba9ad8ab4994355f284767f9f, type: 3}
+    weight: 0.33
+  - prefab: {fileID: 7079346730698314184, guid: a38aa5f22f982f24cbd881d596177eb4, type: 3}
+    weight: 0.33
+  - prefab: {fileID: 8019402753956281808, guid: 037de146862d39643ad9ddec066f45a7, type: 3}
+    weight: 0.33
