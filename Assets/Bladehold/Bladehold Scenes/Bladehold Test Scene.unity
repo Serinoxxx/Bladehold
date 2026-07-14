@@ -2382,13 +2382,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 191759538}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0.7071073, y: 0.00000021937635, z: 0.7071063, w: 0.00000043627483}
   m_LocalPosition: {x: -0.134, y: -0.304, z: -0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1953732777}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -180, y: 90, z: 0}
 --- !u!114 &191759540
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2423,7 +2423,7 @@ SphereCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Radius: 0.75
-  m_Center: {x: 0, y: -0.5, z: 0}
+  m_Center: {x: 0, y: 0.5, z: 0}
 --- !u!1 &198617730
 GameObject:
   m_ObjectHideFlags: 0
@@ -15716,7 +15716,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HorseMotor
   horseData: {fileID: 11400000, guid: 1f88751aa60a1b746811f135aff2c54f, type: 2}
-  characterController: {fileID: 5319640845365248738}
+  characterController: {fileID: 1483505530}
   health: {fileID: 1483505529}
   chargeDamage: {fileID: 1483505526}
   horseAnimation: {fileID: 1483505528}
@@ -15778,12 +15778,12 @@ CharacterController:
   m_Enabled: 0
   serializedVersion: 3
   m_Height: 2
-  m_Radius: 0.5
+  m_Radius: 0.8
   m_SlopeLimit: 45
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: 0, y: 0.96, z: 0.61}
 --- !u!195 &1483505531
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -22572,6 +22572,10 @@ PrefabInstance:
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: a274d0079c7700741a14b8633be1f677, type: 2}
+    - target: {fileID: 9500000, guid: c1aab2ae7d1628e4b970dd191b1e8fcc, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 13700000, guid: c1aab2ae7d1628e4b970dd191b1e8fcc, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -25220,6 +25224,10 @@ PrefabInstance:
     - target: {fileID: 7878518536322400475, guid: be0f2663fd7cb6c46beae542739c68de, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8728884186380818493, guid: be0f2663fd7cb6c46beae542739c68de, type: 3}
+      propertyPath: m_Antialiasing
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8728884186380818493, guid: be0f2663fd7cb6c46beae542739c68de, type: 3}
       propertyPath: 'm_Cameras.Array.data[0]'
