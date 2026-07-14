@@ -229,8 +229,8 @@ public class PlayerClassController : MonoBehaviour
     /// <summary>
     ///     Swaps the visible character onto the shared rig: every SkinnedMeshRenderer in the class's
     ///     model prefab is re-bound onto the existing skeleton by bone name (Synty Sidekicks share the
-    ///     rig, so names match 1:1) and parented under the Animator, then the authored model's
-    ///     renderers are disabled. Nothing else moves — the Animator, animation events, weapon bones,
+    ///     base rig; outfit-only bones like cape danglers are grafted on under their same-named parent)
+    ///     and parented under the Animator, then the authored model's renderers are disabled. Nothing else moves — the Animator, animation events, weapon bones,
     ///     and camera targets all stay exactly as wired. Runs in Awake; the class is fixed for the
     ///     scene's lifetime, so the swap is never undone (the reload-based switching rule).
     /// </summary>
@@ -256,15 +256,27 @@ public class PlayerClassController : MonoBehaviour
             bool allBonesFound = true;
             for (int i = 0; i < sourceBones.Length; i++)
             {
-                if (sourceBones[i] == null || !bonesByName.TryGetValue(sourceBones[i].name, out mappedBones[i]))
+                if (sourceBones[i] == null)
                 {
                     allBonesFound = false;
                     break;
                 }
+                if (!bonesByName.TryGetValue(sourceBones[i].name, out mappedBones[i]))
+                {
+                    // Outfit-specific bones (cape/armour danglers like abac_dyn_*) don't exist on
+                    // the base Sidekick rig — graft the missing subtree onto its same-named parent
+                    // bone. Ungrafted, they just ride along with that parent (no Animator input).
+                    if (!TryGraftBone(sourceBones[i], bonesByName))
+                    {
+                        allBonesFound = false;
+                        break;
+                    }
+                    mappedBones[i] = bonesByName[sourceBones[i].name];
+                }
             }
             if (!allBonesFound)
             {
-                Debug.LogWarning($"PlayerClassController: renderer '{renderer.name}' on class model '{modelPrefab.name}' references bones the player rig doesn't have — skipped. Class models must share the rig's skeleton (Synty Sidekicks do).");
+                Debug.LogWarning($"PlayerClassController: renderer '{renderer.name}' on class model '{modelPrefab.name}' references bones the player rig doesn't have (and can't graft) — skipped. Class models must share the rig's base skeleton (Synty Sidekicks do).");
                 continue;
             }
 
@@ -297,6 +309,35 @@ public class PlayerClassController : MonoBehaviour
         {
             renderer.enabled = false;
         }
+    }
+
+    /// <summary>
+    ///     Moves a bone subtree the rig is missing onto the rig, under its same-named parent bone,
+    ///     preserving local transforms — the skeleton proportions are identical, so the grafted
+    ///     bones land in exactly their authored pose. Grafts the topmost missing ancestor so a
+    ///     whole dangler chain moves as one piece. Registers every grafted transform in the map.
+    /// </summary>
+    private static bool TryGraftBone(Transform missing, Dictionary<string, Transform> bonesByName)
+    {
+        Transform top = missing;
+        while (top.parent != null && !bonesByName.ContainsKey(top.parent.name))
+        {
+            top = top.parent;
+        }
+        if (top.parent == null)
+        {
+            return false;
+        }
+
+        top.SetParent(bonesByName[top.parent.name], false);
+        foreach (Transform grafted in top.GetComponentsInChildren<Transform>(true))
+        {
+            if (!bonesByName.ContainsKey(grafted.name))
+            {
+                bonesByName[grafted.name] = grafted;
+            }
+        }
+        return true;
     }
 
     private void Start()

@@ -1,5 +1,207 @@
 # TODO
 
+## Horse crowd handling — no-block riding through enemies — Unity Editor wiring
+
+The C# is done, and there is **no required wiring** — only verification and a balance pass.
+`Horse/HorseMotor.cs` + `Horse/HorseSO.cs` fix the jerky horse-vs-horde collisions three ways.
+**(1) No physical blocking:** `SetRider` now ORs `HorseSO.crowdLayers` (new `LayerMask`, default
+Enemy | Ragdoll = layers 7|8) into the horse `CharacterController.excludeLayers`, so the ridden
+horse never collides with, wedges on, or climbs over enemy capsules or ragdoll bones — level
+geometry still collides normally. **(2) Gentle crowd nudge + soft drag:** each frame `HorseMotor`
+overlap-scans a sphere (`crowdPushRadius` 3, centred `crowdForwardOffset` 1 ahead) on
+`crowdLayers`; live on-NavMesh enemies inside are shouldered aside with a lateral
+`NavMeshAgent.Move` (the `KnockbackReceiver` agent.Move idiom) at `crowdPushSpeed` (4 m/s), scaled
+by horse speed and by distance falloff — a standing horse shoves nobody. Dead, ragdolling and
+knocked-down enemies (`Health.IsDead`, `ImpulseReceiver.IsIncapacitated`, off-NavMesh agents) are
+skipped. Enemies in the front half of the scan each shave `crowdDragPerEnemy` (0.12) off the
+*target* speed, floored at `crowdMinSpeedFraction` (0.35) — so riding into a horde eases the horse
+off smoothly instead of a hard physical stop; the trample momentum-bleed on flings still stacks on
+top. **(3) No unstuck-boost:** after `CharacterController.Move`, `CurrentSpeed` is reconciled down
+toward the horizontal forward speed *actually achieved* at `blockedSpeedReconcileRate` (30 m/s²),
+so speed can no longer be "banked" while wedged on a wall/prop and burst out at full speed when
+the obstruction clears. All seven tunables are new `HorseSO` fields; the existing `HorseSO.asset`
+picks up the C# defaults automatically (no asset edit needed). Knight-AI and riderless modes are
+untouched (the motor is disabled there; `excludeLayers` is only set on `SetRider`).
+
+- [ ] Open `HorseSO.asset` once and confirm the new **Crowd (player mode)** fields deserialized
+      with their defaults, especially that `crowdLayers` shows **Enemy, Ragdoll** (the default is
+      authored as raw layer indices 7|8 — if the layer list ever gets reordered this mask is the
+      one thing that silently breaks both the pass-through and the nudge).
+- [ ] Balance pass in one line: `crowdPushRadius` (3), `crowdForwardOffset` (1), `crowdPushSpeed`
+      (4), `crowdDragPerEnemy` (0.12), `crowdMinSpeedFraction` (0.35), `blockedSpeedReconcileRate`
+      (30) are first-guess numbers — tune in Play mode against a `DebugSpawnBurst` horde.
+
+## Manual verification (horse crowd handling)
+
+- [ ] Mount and ride straight into a dense group (`DebugSpawnBurst(30)` from the DevConsole,
+      then ride in): the horse **passes through/among enemies without stopping, climbing up over
+      them, or jittering** — enemies visibly part sideways around it and the horse's speed eases
+      down smoothly, never below roughly a third of full speed.
+- [ ] **`excludeLayers` actually works on the CharacterController in this Unity version** (it has
+      had regressions historically): while overlapping enemies, the horse must show zero collision
+      pops. If it still bumps, the layer exclusion is the failing piece — check
+      `characterController.excludeLayers` in the Inspector during Play mode.
+- [ ] Wedge the horse against a wall or big prop at full charge, hold W a moment, then steer free:
+      the horse walks away at low speed — **no full-speed burst forward** the instant it unsticks.
+- [ ] Below trample speed, ride slowly through enemies: they are nudged aside but take **no
+      damage and are never flung** (the trample window stays speed-gated as before).
+- [ ] A stationary mounted horse surrounded by attackers: enemies are **not** pushed away while
+      the horse stands still (they must still be able to melee it).
+- [ ] Kill enemies mid-gallop with the trample: ragdolling/flung bodies and corpses neither block
+      the horse nor get agent-nudged (no corpse sliding).
+- [ ] Dismount inside a crowd: the on-foot player still collides with enemies normally (the
+      exclusion is on the horse's controller only).
+- [ ] Knight-AI encounter (or EnemyZoo): the mounted knight's horse behaviour is unchanged — its
+      charge still uses the NavMeshAgent and paces itself.
+
+## Horse hoofbeat audio — Unity Editor wiring
+
+The C# is done. New `Horse/HorseHoofbeatAudio.cs` polls `HorseMotor.NormalizedSpeed` every frame
+(the `HorseAnimation` idiom — `HorseMotor` raises no speed-changed event) and, while above
+`minSpeedFraction` (default 0.05, i.e. basically any movement), fires a random clip from
+`hoofbeatSounds` through a plain `AudioSource.PlayOneShot` on a countdown timer, picking a random
+`pitch` in `[minPitch, maxPitch]` (default 0.9–1.1) on every play for variation. The timer interval
+is `Lerp(slowInterval, fastInterval, NormalizedSpeed)` (defaults 0.5s at a bare walk down to 0.18s
+at full charge speed), so hoofbeats speed up with the horse rather than looping at a fixed rate.
+Works in all three riding modes since it only reads `HorseMotor`'s speed properties, which stay
+truthful regardless of driver (matches the `HorseAnimation` doc comment). `OnValidate` auto-wires
+both `horseMotor` and `audioSource` from the same GameObject; there is no scene/prefab component
+addition beyond the ones listed below.
+
+- [ ] Add `HorseHoofbeatAudio` to the Horse prefab (same object as `HorseMotor`/`Health` — likely
+      the prefab root). **`horseMotor`/`audioSource` auto-wire** via `OnValidate` if an
+      `AudioSource` already exists on that object; otherwise add one first (2D or 3D per how the
+      horse's other sounds are set up — check `HorseChargeDamage`/`HorseAnimation` siblings for an
+      existing `AudioSource` to match spatial blend/rolloff settings before adding a new one).
+- [ ] **Hand-assign** `hoofbeatSounds` — an array of 2-4 varied hoof/gallop clips. No placeholder
+      clips exist yet; source or record some.
+- [ ] Balance pass in one line: `minSpeedFraction` (0.05), `slowInterval`/`fastInterval`
+      (0.5/0.18s), and `minPitch`/`maxPitch` (0.9/1.1) are first-guess numbers — tune in Play mode
+      against the actual clips once assigned.
+
+## Manual verification (horse hoofbeat audio)
+
+- [ ] Mount the horse and walk forward slowly: hoofbeats play at a slow, steady cadence with
+      slightly varying pitch each time.
+- [ ] Shift-charge to full speed: hoofbeat cadence audibly speeds up toward the fast interval.
+- [ ] Stop moving (release input, let the horse coast to a stop): hoofbeats stop once speed drops
+      below the walk threshold — no hoofbeats while stationary.
+- [ ] Dismount and remount, and separately let the horse die while mounted: no lingering/looping
+      hoofbeat audio after dismount or death.
+- [ ] If a riderless or knight-AI horse is reachable (EnemyZoo or a mounted knight encounter),
+      confirm hoofbeats also play for that horse's own movement, not just the player-ridden one.
+
+## Horse charge rebalance — speed-scaled trample, stamina, hit slowdown, camera smoothing — Unity Editor wiring
+
+The C# is done. **Speed-gated trample**: `Horse/HorseMotor.cs` now opens the shared
+`Horse/HorseChargeDamage.cs` window on pure momentum (`HorseSO.trampleMinSpeedFraction` of
+stat-scaled max speed, default 0.55) instead of on the Shift-charge — the horse always tramples
+above that speed, charging or not. Damage/impulse scale with speed via
+`HorseChargeDamage.SetSpeedFactor` (updated per frame by the motor): `trampleMinDamageFraction`
+(default 0.35) of `chargeDamage`/`impulsePower`/`impulseForce` right at the threshold, linearly
+up to 1.0 at full (stat-scaled) charge speed — so a full-tilt charge is the only thing that deals
+the old full numbers. The knight's AI charge is untouched (`BeginCharge` defaults the new
+`driveChargeAnimation` param to true and the factor to 1). The gallop-lean `Charge` animator bool
+now tracks the actual Shift-charge (driven by `HorseMotor`, not the trample window), so a fast
+trot doesn't lean. **Stamina**: new `HorseSO` pool (`maxStamina` 100, `staminaDrainPerSecond` 25,
+`staminaRegenPerSecond` 15) drained only while actually charging; hitting empty sets
+`IsExhausted`, which locks Shift until stamina recovers past `exhaustedRecoveryFraction` (0.35 —
+hysteresis, no stutter). **Hit slowdown**: `HorseMotor` subscribes to `HorseChargeDamage.OnHit`
+(player mode only — guarded on `inputReader`); each victim costs
+`hitSpeedLossFraction` (0.04) + `hitSpeedLossPerResistance` (0.02) × the victim's
+`ImpulseReceiver.CurrentResistance` (new public accessor over the roster CSV resistance) of
+current speed — goblins (0) barely register, a Troll (50) clamps to a full stop and the speed
+drop closes the trample window itself. **Camera**: `Player/PlayerCameraPivot.cs` gained
+position `SmoothDamp` — `positionSmoothTime` (0 = snap, on-foot default unchanged) and
+`mountedPositionSmoothTime` (0.2) selected via a `PlayerMount` ref (auto-wired from parents,
+falls back to `Player.Instance`), filtering the riding-animation bob out of the pivot while
+still tracking the horse. **Stamina HUD**: new `UI/HorseStaminaUI.cs` — shows on
+`PlayerMount.OnMountedChanged`, polls `HorseMotor.NormalizedStamina` into an Image fill (the
+`SwordChargeFeedback` polling idiom), tints red-ish while exhausted.
+
+- [ ] `HorseSO.asset` (`Bladehold Prefabs/Horse/HorseSO.asset`) picks up the new field defaults
+      automatically on reserialize — open it once and sanity-check: Max Stamina 100, Drain 25,
+      Regen 15, Exhausted Recovery Fraction 0.35, Trample Min Speed Fraction 0.55, Trample Min
+      Damage Fraction 0.35, Hit Speed Loss Fraction 0.04, Hit Speed Loss Per Resistance 0.02.
+- [ ] **Stamina bar canvas**: under the HUD canvas add a `HorseStamina` group (e.g. a slim bar
+      above the hotbar/health area): background Image + a child **Filled** Image (Horizontal,
+      Left origin). Add `HorseStaminaUI` to the canvas: **hand-assign** `container` (the group
+      root), `fillImage` (the filled Image); `mount` self-wires from `Player.Instance` in Start.
+      No OnValidate auto-wire here — all refs are hand-assigned.
+- [ ] `PlayerCameraPivot` (on the camera pivot object): confirm the new `mount` ref auto-filled
+      via OnValidate/`Player.Instance` fallback (inspector shows it after the first prefab/scene
+      reserialize); leave `positionSmoothTime` 0 unless on-foot smoothing is wanted too.
+- [ ] Balance pass in one line: `trampleMinSpeedFraction`, `trampleMinDamageFraction`,
+      `hitSpeedLossFraction`/`hitSpeedLossPerResistance`, stamina drain/regen, and
+      `mountedPositionSmoothTime` are all first-guess numbers — tune in Play mode.
+
+## Manual verification (horse charge rebalance)
+
+- [ ] Ride at full W without Shift: above roughly half speed the horse tramples goblins in its
+      path (damage numbers pop), for visibly less damage than a full Shift-charge; below a trot
+      it deals nothing.
+- [ ] Shift-charge into goblins at full speed: old-strength hits and ragdoll flings still happen;
+      the gallop-lean plays **only** while Shift-charging, never during a plain fast trot.
+- [ ] Charge into a Goblin Brute (resistance 3) — the horse sheds a little speed per hit; charge
+      into the Troll (wave 8, resistance 50, or `DebugSetNextWave`) — the horse stops dead and
+      the trample window closes (no further damage while stationary).
+- [ ] Hold Shift continuously: stamina bar drains in ~4s, the horse drops out of the charge, and
+      Shift does nothing while the bar is red; after it refills past ~1/3 it charges again.
+- [ ] Stamina bar appears on mount, disappears on dismount (X) and on horse death; no bar while
+      on foot.
+- [ ] Camera while riding: no more per-stride jerking at trot/gallop — the camera glides with the
+      horse (compare a gallop before/after by toggling `mountedPositionSmoothTime` to 0).
+- [ ] Negative: the mounted knight enemy's telegraphed charge behaves exactly as before (full
+      damage, gallop lean during its charge, no slowdown when it tramples the player).
+- [ ] Negative: chests are never flung by a low-speed trample (no `ImpulseReceiver` — they take
+      the reduced damage only), and the rider/horse never damage themselves.
+- [ ] Dismount at speed / horse dies mid-charge: no stuck trample window (ClearRider ends both
+      charge and trample); remount works and stamina persists per horse.
+
+## Player default model swap (PlayerModelSwapWindow) — Unity Editor wiring
+
+The C# is done: `Editor/PlayerModelSwapWindow.cs`, an editor window (**Bladehold > Player Model
+Swap**) that is the edit-time twin of `PlayerClassController.SwapCharacterModel` — it rebinds every
+`SkinnedMeshRenderer` in a chosen character model prefab onto the Player's existing skeleton **by
+bone name** (same dictionary-remap logic), parents the renderers under the Animator, destroys the
+clone's leftover duplicate skeleton, and disables (or, via a toggle, deletes pure-mesh-holder)
+authored renderers. Because the bone Transforms never change, everything hanging off the skeleton —
+weapons under the hand bones, `DamageTrigger.bladeBase`/`bladeTip`, `AnimationEvents`, camera
+targets — stays wired untouched. Full Undo support (one collapsed group). **Outfit-only bones**
+(cape/armour danglers like the FantasyKnights' `abac_dyn_*` — the base Sidekick rig from
+`A_MOD_BL_Idle_Crouching_Femn.fbx` doesn't have them) are **grafted** onto the rig under their
+same-named parent bone with local transforms preserved, so they ride along unanimated; only a
+bone with no same-named ancestor anywhere fails (renderer skipped, console warning names the
+bone). The same graft logic was mirrored into `PlayerClassController.SwapCharacterModel` so
+per-class runtime swaps handle outfit bones too. Models:
+`Assets/Synty/SidekickCharacters/Characters/FantasyKnights/FantasyKnights_01..06`.
+This bakes a **permanent authored default** into the prefab — distinct from the per-class runtime
+swap via `ClassDefinitionSO.characterModelPrefab`, which remains for class-specific models.
+
+- [ ] **Run the swap** on `Bladehold Prefabs/Player.prefab`: open it in **Prefab Mode**, open
+      **Bladehold > Player Model Swap** (Player root auto-fills from the open prefab stage), assign
+      the new model prefab (e.g. `FantasyKnights_0X.prefab`), click **Swap Model**, then **save the
+      prefab (Ctrl+S)** — the console logs how many renderers bound.
+- [ ] Leave **Delete old renderers** off on the first run (old renderers are only disabled —
+      trivially reversible by re-enabling them); flip it on and re-run later if the dead mesh
+      objects should be cleaned out.
+
+## Manual verification (player default model swap)
+
+- [ ] In Prefab Mode after the swap: the new model's meshes sit under the Animator child, posed on
+      the skeleton (not T-posed at the origin), and the old body meshes are hidden — **no
+      double-body**.
+- [ ] Play mode: locomotion, sprint, and attack animations all deform the new model correctly
+      (proves the bone rebind, not just the parenting).
+- [ ] The knight's outfit pieces (tabard/cape/armour danglers — the grafted `*_dyn_*` bones) sit
+      in their authored pose and follow the body; nothing is stretched to the origin.
+- [ ] The sword still sits in the hand bone and swings still damage goblins with hit VFX at the
+      blade (**proves `bladeBase`/`bladeTip` and the weapon parenting survived**).
+- [ ] Charge-up feedback, death animation + death screen, and mounting the horse all still work.
+- [ ] Restart from the death screen: the new model persists across the scene reload (it's authored
+      in the prefab, not runtime state).
+- [ ] Negative: no console warnings about skipped renderers/missing bones during the swap.
+
 ## Enemy roster Phases ③–⑤ — Ancient Queen, Forest Witch, Mutant Guy, Medusa, Spirit Demon, Dark Elf, Slayer, Red Demon, Pig Butcher, Barbarian Giant, Fort Golem, Mechanical Golem — Unity Editor wiring
 
 The C# is done and the generator was run headlessly (all 12 variants built + mapped; idempotency

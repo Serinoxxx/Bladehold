@@ -21,7 +21,7 @@ public class ClassDefinitionSO : ScriptableObject
     [Tooltip("Applied to the player rig's Animator on load, swapping attack clips while keeping the shared state graph. Null = keep the controller as authored (the Swordsman).")]
     public AnimatorOverrideController animatorOverride;
 
-    [Tooltip("Character model prefab swapped onto the shared player rig at scene load — a Synty Sidekick sharing the rig's skeleton (bone names must match 1:1). Its SkinnedMeshRenderers are re-bound onto the existing bones by name, so the Animator, animation events, weapon bones, and camera all keep working untouched. Null = keep the model as authored (the Swordsman).")]
+    [Tooltip("Character model prefab swapped onto the shared player rig at scene load — a Synty Sidekick sharing the rig's base skeleton (bone names match; outfit-only bones like cape danglers are grafted on automatically). Its SkinnedMeshRenderers are re-bound onto the existing bones by name, so the Animator, animation events, weapon bones, and camera all keep working untouched. Null = keep the model as authored (the Swordsman).")]
     public GameObject characterModelPrefab;
 
     [Tooltip("Seconds of holding the attack button per melee charge level for this class (heavier weapons charge slower).")]

@@ -17,17 +17,25 @@ MonoBehaviour:
   acceleration: 6
   deceleration: 8
   brakeDeceleration: 12
-  turnDegreesPerSecond: 90
+  turnDegreesPerSecond: 180
   gravity: -20
   rearSeconds: 1.2
   chargeSpeed: 12
   chargeAcceleration: 10
   chargeMinSpeedFraction: 0.5
-  chargeDamage: 15
+  maxStamina: 100
+  staminaDrainPerSecond: 25
+  staminaRegenPerSecond: 15
+  exhaustedRecoveryFraction: 0.35
+  trampleMinSpeedFraction: 0.55
+  trampleMinDamageFraction: 0.35
+  hitSpeedLossFraction: 0.2
+  hitSpeedLossPerResistance: 0.1
+  chargeDamage: 5
   damageType: 1
-  impulsePower: 10
-  impulseForce: 14
+  impulsePower: 20
+  impulseForce: 28
   hitCooldownSeconds: 1
-  hitBoxHalfExtents: {x: 1.2, y: 1.2, z: 1.6}
-  hitBoxForwardOffset: 1.8
+  hitBoxHalfExtents: {x: 0.8, y: 0.8, z: 1.2}
+  hitBoxForwardOffset: 2.19
   dismountLocalOffset: {x: 1.4, y: 0, z: 0}

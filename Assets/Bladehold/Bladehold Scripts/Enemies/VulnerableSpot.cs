@@ -8,7 +8,7 @@ using UnityEngine;
 ///     live on the stat so skill nodes can raise them, per the "expose upgradeable numbers as stats"
 ///     convention.
 /// </summary>
-[RequireComponent(typeof(Collider))]
+[RequireComponent(typeof(SphereCollider))]
 public class VulnerableSpot : MonoBehaviour
 {
 }

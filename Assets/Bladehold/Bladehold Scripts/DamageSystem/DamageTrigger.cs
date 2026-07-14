@@ -26,6 +26,9 @@ public class DamageTrigger : MonoBehaviour
     [Tooltip("Blade Sweep only: tip-side end of the blade.")]
     [SerializeField] Transform bladeTip;
 
+    [Tooltip("How thick is the blade? leave at zero for raycast instead of spherecast")]
+    [SerializeField] float bladeRadius = 0f; 
+
     [Tooltip("Blade Sweep only: number of sample points along the blade at 100% Sword Range. Scales with the Sword Range stat when 'Reads Player Stats' is on.")]
     [SerializeField] int basePointCount = 5;
 
@@ -194,6 +197,12 @@ public class DamageTrigger : MonoBehaviour
         reachBonus = Mathf.Max(0f, value);
     }
 
+    float thicknessBonus;
+    public void SetThicknessBonus(float value)
+    {
+        thicknessBonus = Mathf.Max(0f, value);
+    }
+
     /// <summary>
     ///     A target this trigger skips in addition to the wielder — e.g. the horse under a mounted
     ///     player, which sits directly inside the blade's (reach-extended) arc. Null = none.
@@ -266,10 +275,25 @@ public class DamageTrigger : MonoBehaviour
             float distance = delta.magnitude;
             if (distance <= 0.0001f) continue;
 
-            if (!Physics.Raycast(previousPos, delta / distance, out RaycastHit hit, distance, hitLayers, QueryTriggerInteraction.Collide))
+
+            var totalRadius = bladeRadius + thicknessBonus;
+            RaycastHit hit;
+            if (totalRadius > 0)
             {
-                continue;
+                if (!Physics.SphereCast(previousPos, totalRadius, delta / distance, out hit, distance, hitLayers, QueryTriggerInteraction.Collide))
+                {
+                    continue;
+                }
             }
+            else
+            {
+                if (!Physics.Raycast(previousPos, delta / distance, out hit, distance, hitLayers, QueryTriggerInteraction.Collide))
+                {
+                    continue;
+                }
+            }
+
+            
 
             if (!TryHitTarget(hit.collider, cap, hit.point)) return;
         }

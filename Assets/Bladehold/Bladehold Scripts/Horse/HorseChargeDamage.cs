@@ -40,6 +40,8 @@ public class HorseChargeDamage : MonoBehaviour
     private IDamageable source;
     private IDamageable rider;
     private float damagePerHit;
+    private float speedFactor = 1f;
+    private bool drivingChargeAnimation;
     private bool anyError = false;
 
     private void OnValidate()
@@ -98,9 +100,12 @@ public class HorseChargeDamage : MonoBehaviour
     ///     the horse's own Health for the player's); <paramref name="riderDamageable" /> is an extra
     ///     exclusion for the seated rider (null when the driver IS the source, e.g. the knight).
     ///     <paramref name="damage" /> is the per-hit value (roster-scaled for the knight,
-    ///     <see cref="HorseSO.chargeDamage" /> for the player).
+    ///     <see cref="HorseSO.chargeDamage" /> for the player). Pass
+    ///     <paramref name="driveChargeAnimation" /> false when the caller owns the gallop-lean state
+    ///     itself — the player's trample window opens at plain running speed, where the charge lean
+    ///     would look wrong (<see cref="HorseMotor" /> drives it from the actual Shift-charge instead).
     /// </summary>
-    public void BeginCharge(IDamageable chargeSource, IDamageable riderDamageable, float damage)
+    public void BeginCharge(IDamageable chargeSource, IDamageable riderDamageable, float damage, bool driveChargeAnimation = true)
     {
         if (anyError || (health != null && health.IsDead))
         {
@@ -110,12 +115,24 @@ public class HorseChargeDamage : MonoBehaviour
         source = chargeSource;
         rider = riderDamageable;
         damagePerHit = damage;
+        speedFactor = 1f;
+        drivingChargeAnimation = driveChargeAnimation;
         IsCharging = true;
 
-        if (horseAnimation != null)
+        if (horseAnimation != null && drivingChargeAnimation)
         {
             horseAnimation.SetCharging(true);
         }
+    }
+
+    /// <summary>
+    ///     Scales the next hits' damage and impulse by the horse's current momentum (1 = the full
+    ///     BeginCharge values). <see cref="HorseMotor" /> updates this every frame while its trample
+    ///     window is open; the knight's fixed-speed AI charge never calls it and stays at 1.
+    /// </summary>
+    public void SetSpeedFactor(float factor)
+    {
+        speedFactor = Mathf.Max(0f, factor);
     }
 
     /// <summary>Closes the trample window and prunes expired re-hit cooldown entries.</summary>
@@ -128,7 +145,7 @@ public class HorseChargeDamage : MonoBehaviour
 
         IsCharging = false;
 
-        if (horseAnimation != null)
+        if (horseAnimation != null && drivingChargeAnimation)
         {
             horseAnimation.SetCharging(false);
         }
@@ -175,11 +192,11 @@ public class HorseChargeDamage : MonoBehaviour
 
             damageable.ReceiveDamage(new Damage
             {
-                value = damagePerHit,
+                value = damagePerHit * speedFactor,
                 type = horseData.damageType,
                 sourcePosition = transform.position,
-                impulsePower = horseData.impulsePower,
-                impulseForce = horseData.impulseForce,
+                impulsePower = horseData.impulsePower * speedFactor,
+                impulseForce = horseData.impulseForce * speedFactor,
                 source = source,
                 unparryable = true,
             });

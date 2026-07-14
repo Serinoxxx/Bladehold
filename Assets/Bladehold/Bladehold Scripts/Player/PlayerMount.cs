@@ -47,6 +47,9 @@ public class PlayerMount : MonoBehaviour
     [Tooltip("Extra sword reach while mounted, as a fraction of blade length (0.6 = 60% longer sweep). No visual change.")]
     [SerializeField] private float mountedReachBonus = 0.6f;
 
+    [Tooltip("Extra sword thickness while mounted, Added to the radius. No visual change.")]
+    [SerializeField] private float mountedThicknessBonus = 0.6f;
+
     [Header("Animator params (optional wiring)")]
     [SerializeField] private string isMountedBool = "IsMounted";
     [SerializeField] private string horseSpeedFloat = "HorseSpeed";
@@ -376,6 +379,7 @@ public class PlayerMount : MonoBehaviour
         // Mounted sword: longer sweep (no visual), and neither blade nor arrows carve the mount.
         IDamageable horseDamageable = horseHealth;
         swordTrigger.SetReachBonus(mountedReachBonus);
+        swordTrigger.SetThicknessBonus(mountedThicknessBonus);
         swordTrigger.SetIgnoredTarget(horseDamageable);
         if (bow != null)
         {

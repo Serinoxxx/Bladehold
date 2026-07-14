@@ -51,6 +51,7 @@ public class EnemyRagdoll : MonoBehaviour
 
     private readonly List<Rigidbody> bodies = new List<Rigidbody>();
     private readonly List<Collider> boneColliders = new List<Collider>();
+    private SkinnedMeshRenderer[] meshRenderers;
     private bool isBuilt = false;
     private bool buildFailed = false;
     private bool anyError = false;
@@ -141,6 +142,15 @@ public class EnemyRagdoll : MonoBehaviour
             return;
         }
 
+        // While simulating, the bones fly far from the root transform, but each SkinnedMeshRenderer's
+        // culling bounds stay anchored where the root was left (the launch point) — so the camera can
+        // cull a fully visible airborne body, which reads as the mesh flickering or vanishing mid-air.
+        // updateWhenOffscreen recomputes the bounds from the actual skinned pose every frame instead.
+        foreach (SkinnedMeshRenderer meshRenderer in meshRenderers)
+        {
+            meshRenderer.updateWhenOffscreen = true;
+        }
+
         foreach (Collider c in boneColliders)
         {
             c.enabled = true;
@@ -185,7 +195,8 @@ public class EnemyRagdoll : MonoBehaviour
     /// <summary>Ends the simulation for a live recovery; bones keep their landed pose until the animator retakes them.</summary>
     public void ExitRagdoll()
     {
-        Deactivate();
+        // Restore cheap anchored bounds: the caller snaps the root back under the body immediately.
+        Deactivate(restoreAnchoredBounds: true);
     }
 
     /// <summary>
@@ -195,14 +206,25 @@ public class EnemyRagdoll : MonoBehaviour
     /// </summary>
     public void FreezeCorpse()
     {
-        Deactivate();
+        // A corpse settles wherever the bones landed while the root stays at the launch point, so
+        // anchored bounds would be just as wrong as mid-flight — keep the per-frame bounds until the
+        // corpse despawns (bounded cost: CorpseManager caps how many corpses linger).
+        Deactivate(restoreAnchoredBounds: false);
     }
 
-    private void Deactivate()
+    private void Deactivate(bool restoreAnchoredBounds)
     {
         if (!IsRagdolled)
         {
             return;
+        }
+
+        if (restoreAnchoredBounds)
+        {
+            foreach (SkinnedMeshRenderer meshRenderer in meshRenderers)
+            {
+                meshRenderer.updateWhenOffscreen = false;
+            }
         }
 
         foreach (Rigidbody body in bodies)
@@ -290,6 +312,10 @@ public class EnemyRagdoll : MonoBehaviour
 
         // Only the fast-moving core gets speculative CCD; per-limb CCD isn't worth the cost.
         Pelvis.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+
+        // Cached here (not Start) so un-flung enemies pay nothing; EnterRagdoll flips these to
+        // per-frame bounds while the bones are away from the root.
+        meshRenderers = GetComponentsInChildren<SkinnedMeshRenderer>();
         return true;
     }
 

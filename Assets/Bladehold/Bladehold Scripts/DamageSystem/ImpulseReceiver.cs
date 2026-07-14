@@ -53,8 +53,9 @@ public class ImpulseReceiver : MonoBehaviour
     // Animator trigger for the knockdown reaction. Wire KnockdownEnter/Exit states driven by this.
     [SerializeField] private string knockdownTrigger = "Knockdown";
 
-    // Animator STATE (not trigger) played directly when standing up after a ragdoll landing — the
-    // animator was disabled mid-flight, which reset its state machine, so a trigger would be lost.
+    // Animator STATE (not trigger) played directly when standing up after a ragdoll landing (the
+    // animator was disabled mid-flight, which reset its state machine, so a trigger would be lost)
+    // and cross-faded to after a knockdown (the Knockdown state has no exit transitions of its own).
     [SerializeField] private string getUpStateName = "GetUp";
 
     // Must match AIAnimation's cheer trigger: a Cheer fired into the disabled mid-flight animator is
@@ -79,6 +80,9 @@ public class ImpulseReceiver : MonoBehaviour
     private bool anyError = false;
 
     private float Resistance => resistanceOverride ?? (config != null ? config.defaultResistance : 0f);
+
+    /// <summary>The effective impulse resistance (roster override or config default) — read by <see cref="HorseMotor" /> to scale trample speed loss by victim heft.</summary>
+    public float CurrentResistance => Resistance;
 
     /// <summary>
     ///     Per-instance resistance override (e.g. <see cref="WaveSpawner" /> applying an enemy type's
@@ -293,6 +297,22 @@ public class ImpulseReceiver : MonoBehaviour
             yield return null;
         }
 
+        // The Knockdown state has no exit transitions of its own — nothing in the controller knows
+        // when the AI wants back up — so steer the animator out explicitly; GetUp's exit-time
+        // transition then returns it to locomotion.
+        animator.CrossFadeInFixedTime(getUpStateHash, 0.2f, 0);
+
+        for (float elapsed = 0f; elapsed < config.getUpSeconds; elapsed += Time.deltaTime)
+        {
+            if (State == ImpulseState.Corpse || health.IsDead)
+            {
+                // Died mid-get-up: the Death transition has already taken the animator; leave the
+                // AI down for the corpse.
+                yield break;
+            }
+            yield return null;
+        }
+
         Resume();
     }
 
@@ -412,6 +432,13 @@ public class ImpulseReceiver : MonoBehaviour
     {
         State = ImpulseState.Normal;
         SetAiEnabled(true);
+
+        // KnockdownRoutine halted the agent in place and nothing else restarts it — AIMovement's
+        // SetDestination doesn't clear isStopped. (The fling path already cleared it on re-seat.)
+        if (agent.enabled && agent.isOnNavMesh)
+        {
+            agent.isStopped = false;
+        }
 
         if (playerHealth != null && playerHealth.IsDead)
         {

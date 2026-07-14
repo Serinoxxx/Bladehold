@@ -692,7 +692,7 @@ MonoBehaviour:
           Quantized: 0
           TargetBPM: 120
         AutomatedTargetAcquisition:
-          Mode: 0
+          Mode: 2
           ChildIndex: 0
         RandomizeOutput: 0
         RandomMultiplier: {x: 0.8, y: 1}
@@ -730,13 +730,13 @@ MonoBehaviour:
           ButtonText: 
         Owner: {fileID: 7912436904582978793}
         DebugActive: 0
-        BoundRenderer: {fileID: 6038025332297535481}
+        BoundRenderer: {fileID: 0}
         ExtraBoundRenderers: []
         Mode: 0
         PropertyName: _Tint
         FlickerDuration: 0.2
         FlickerPeriod: 0.04
-        FlickerColor: {r: 1, g: 0.078431375, b: 0.078431375, a: 1}
+        FlickerColor: {r: 1, g: 1, b: 1, a: 1}
         MaterialIndexes: 
         UseMaterialPropertyBlocks: 0
         SpriteRendererTextureProperty: _MainTex

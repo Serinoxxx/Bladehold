@@ -38,8 +38,17 @@ public class PlayerCameraPivot : MonoBehaviour
     [Tooltip("Lock and hide the cursor on Start, like the vendored controller did.")]
     [SerializeField] private bool hideCursor = true;
 
+    [Header("Position smoothing")]
+    [Tooltip("Optional: the player's mount, so mounted smoothing can kick in. Auto-wired from parents, falling back to Player.Instance.")]
+    [SerializeField] private PlayerMount mount;
+    [Tooltip("SmoothDamp time on the pivot position on foot. 0 = snap to the follow target (the original behaviour).")]
+    [SerializeField] private float positionSmoothTime = 0f;
+    [Tooltip("SmoothDamp time on the pivot position while mounted — absorbs the riding animation's saddle bob so the camera tracks the horse's actual motion instead of jerking with the rider.")]
+    [SerializeField] private float mountedPositionSmoothTime = 0.2f;
+
     private float yaw;
     private float pitch;
+    private Vector3 smoothVelocity;
     private bool anyError = false;
 
     /// <summary>Look sensitivity; <see cref="InputSettingsBinder" /> is the intended writer.</summary>
@@ -65,6 +74,10 @@ public class PlayerCameraPivot : MonoBehaviour
         {
             followTarget = inputReader.transform.Find("SyntyPlayer_LookAt");
         }
+        if (mount == null)
+        {
+            mount = GetComponentInParent<PlayerMount>();
+        }
     }
 
     private void Start()
@@ -83,6 +96,12 @@ public class PlayerCameraPivot : MonoBehaviour
         if (anyError)
         {
             return;
+        }
+
+        // Mounted smoothing is optional flavor — no mount component just means on-foot smoothing always.
+        if (mount == null && Player.Instance != null)
+        {
+            mount = Player.Instance.GetComponent<PlayerMount>();
         }
 
         if (hideCursor)
@@ -111,6 +130,20 @@ public class PlayerCameraPivot : MonoBehaviour
         pitch += delta.y * sensitivity * (InvertY ? 1f : -1f);
         pitch = Mathf.Clamp(pitch, tiltBounds.x, tiltBounds.y);
 
-        transform.SetPositionAndRotation(followTarget.position, Quaternion.Euler(pitch, yaw, 0f));
+        // While mounted the follow target bobs with the riding animation; SmoothDamp filters that
+        // high-frequency motion out while still tracking the horse's real movement.
+        float smoothTime = mount != null && mount.IsMounted ? mountedPositionSmoothTime : positionSmoothTime;
+        Vector3 position;
+        if (smoothTime > 0f)
+        {
+            position = Vector3.SmoothDamp(transform.position, followTarget.position, ref smoothVelocity, smoothTime);
+        }
+        else
+        {
+            position = followTarget.position;
+            smoothVelocity = Vector3.zero;
+        }
+
+        transform.SetPositionAndRotation(position, Quaternion.Euler(pitch, yaw, 0f));
     }
 }
