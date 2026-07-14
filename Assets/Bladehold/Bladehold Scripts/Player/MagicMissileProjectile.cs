@@ -20,8 +20,31 @@ using UnityEngine;
 ///     flight or the direct hit; elemental effects come from <see cref="MageImbuement" /> listening
 ///     to the wand's <see cref="PlayerWand.OnHit" />.
 /// </summary>
-public class MagicMissileProjectile : MonoBehaviour
+public class MagicMissileProjectile : MonoBehaviour, IPlayerProjectile
 {
+    /// <summary>Current world position, for the whirlwind's radius check.</summary>
+    public Vector3 Position => transform.position;
+
+    /// <summary>Destroys the missile mid-flight without dealing its damage (the Barbarian Giant's whirlwind).</summary>
+    public void Shatter()
+    {
+        if (impactVfxPrefab != null)
+        {
+            Instantiate(impactVfxPrefab, transform.position, Quaternion.identity);
+        }
+        Destroy(gameObject);
+    }
+
+    private void OnEnable()
+    {
+        PlayerProjectileRegistry.Register(this);
+    }
+
+    private void OnDisable()
+    {
+        PlayerProjectileRegistry.Unregister(this);
+    }
+
     /// <summary>Everything a shot decides at release time, captured so the missile stays truthful to the wind-up that launched it.</summary>
     public struct LaunchSpec
     {

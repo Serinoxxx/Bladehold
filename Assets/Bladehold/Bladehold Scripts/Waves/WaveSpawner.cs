@@ -523,6 +523,11 @@ public class WaveSpawner : MonoBehaviour
             enemy.GetComponent<TrollSlamAttack>()?.SetDamage(def.damage.Value);
             enemy.GetComponent<BomberAttack>()?.SetDamage(def.damage.Value);
             enemy.GetComponent<MountedKnightBrain>()?.SetDamage(def.damage.Value);
+            enemy.GetComponent<HookProjectileAttack>()?.SetDamage(def.damage.Value);
+            enemy.GetComponent<WhirlwindAttack>()?.SetDamage(def.damage.Value);
+            enemy.GetComponent<SlayerDashAttack>()?.SetDamage(def.damage.Value);
+            enemy.GetComponent<LeapSlamAttack>()?.SetDamage(def.damage.Value);
+            enemy.GetComponent<PinballCharge>()?.SetDamage(def.damage.Value);
         }
         if (def.minGold.HasValue)
         {
@@ -690,6 +695,45 @@ public class WaveSpawner : MonoBehaviour
         killedThisWave++;
         // SpawnLoop sees the freed slot and spawns a replacement if any enemies are still owed; RunWaves
         // sees killedThisWave reach the total and clears the wave.
+    }
+
+    /// <summary>
+    ///     Adopts an enemy spawned by something other than this spawner (the Fort Golem's
+    ///     <see cref="MinionSpawner" />) into the current wave's accounting: the wave total and alive
+    ///     set both grow by one, so the wave clears only once the extra enemy is dead too.
+    ///     <c>remainingToSpawn</c> is deliberately untouched — external enemies never route through
+    ///     <c>SpawnEnemy</c> (the debug-cheat precedent), so the trickle-spawner's budget is not
+    ///     theirs to consume. Returns false (and adopts nothing) outside a live wave — external
+    ///     enemies still work standalone, since kill credit/coins/corpses are all
+    ///     <see cref="Health" />-event-driven.
+    /// </summary>
+    public bool RegisterExternalEnemy(GameObject enemy)
+    {
+        if (anyError || runOver || !waveInProgress || enemy == null)
+        {
+            return false;
+        }
+
+        Health health = enemy.GetComponent<Health>();
+        if (health == null || health.IsDead)
+        {
+            return false;
+        }
+
+        waveGoblinTotal++;
+        aliveCount++;
+
+        // The same self-unsubscribing death handler every spawned enemy gets.
+        aliveEnemies.Add(health);
+        Action handler = null;
+        handler = () =>
+        {
+            health.OnDied -= handler;
+            aliveEnemies.Remove(health);
+            HandleEnemyDied();
+        };
+        health.OnDied += handler;
+        return true;
     }
 
     /// <summary>

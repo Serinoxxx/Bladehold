@@ -218,6 +218,357 @@ internal static class EnemyManifest
                 },
             },
         },
+        // ---- Phase ③: auras & on-death ----
+
+        // Ancient Queen: armored melee elite — light hits glance off (ArmorPlating on
+        // Health.ScaleDamageTaken); the counter is charged swings. Melee stays the stock AIAttack.
+        new EnemySpec
+        {
+            id = "ancient_queen",
+            soFolder = "Ancient Queen",
+            prefabName = "Ancient Queen Enemy Variant",
+            assets = new[]
+            {
+                new SoSpec { soType = typeof(ArmorPlatingSO), assetName = "AncientQueenArmorSO" },
+            },
+            components = new[]
+            {
+                new ComponentSpec
+                {
+                    type = typeof(ArmorPlating),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "data", ctx.LoadedAsset("AncientQueenArmorSO"));
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                    },
+                },
+            },
+        },
+
+        // Forest Witch: support healer — AllyAura heals nearby enemies (heal-only v1), never
+        // herself. Golden/impulse rolls removed (the Storm Witch caster precedent).
+        new EnemySpec
+        {
+            id = "forest_witch",
+            soFolder = "Forest Witch",
+            prefabName = "Forest Witch Enemy Variant",
+            removeComponents = new[] { typeof(GoldenGoblin), typeof(ImpulseGoblin) },
+            assets = new[]
+            {
+                new SoSpec { soType = typeof(AllyAuraSO), assetName = "ForestWitchAuraSO" },
+            },
+            components = new[]
+            {
+                new ComponentSpec
+                {
+                    type = typeof(AllyAura),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "data", ctx.LoadedAsset("ForestWitchAuraSO"));
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                    },
+                },
+            },
+        },
+
+        // Mutant Guy: melee chaser that leaves a ToxicPoolZone where it dies (hand-authored
+        // ToxicPool.prefab; a green light is the pre-art visual — see TODO.md).
+        new EnemySpec
+        {
+            id = "mutant_guy",
+            soFolder = "Mutant Guy",
+            prefabName = "Mutant Guy Enemy Variant",
+            assets = new[]
+            {
+                new SoSpec { soType = typeof(ToxicPoolOnDeathSO), assetName = "MutantToxicPoolSO" },
+            },
+            components = new[]
+            {
+                new ComponentSpec
+                {
+                    type = typeof(ToxicPoolOnDeath),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "data", ctx.LoadedAsset("MutantToxicPoolSO"));
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                        EnemyPrefabGenerator.SetReference(so, "poolPrefab", LoadProjectile<ToxicPoolZone>("Assets/Bladehold/Bladehold Prefabs/ToxicPool.prefab"));
+                    },
+                },
+            },
+        },
+
+        // Medusa: melee body with a cone slow gaze (MedusaGazeAura — static refcount guards the
+        // MoveSpeed modifier). Golden/impulse rolls removed (caster precedent).
+        new EnemySpec
+        {
+            id = "medusa",
+            soFolder = "Medusa",
+            prefabName = "Medusa Enemy Variant",
+            removeComponents = new[] { typeof(GoldenGoblin), typeof(ImpulseGoblin) },
+            assets = new[]
+            {
+                new SoSpec { soType = typeof(MedusaGazeAuraSO), assetName = "MedusaGazeSO" },
+            },
+            components = new[]
+            {
+                new ComponentSpec
+                {
+                    type = typeof(MedusaGazeAura),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "data", ctx.LoadedAsset("MedusaGazeSO"));
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                    },
+                },
+            },
+        },
+
+        // ---- Phase ④: movement specials ----
+
+        // Spirit Demon: no body-blocking — its own AIMovementSO with both avoidance tiers off, and
+        // the body capsule excludes the enemy layer (7) so other enemies pass through it. Ghost
+        // material is the manual art pass; the CSV gives it 50 impulse resistance (a ragdolling
+        // ghost reads wrong).
+        new EnemySpec
+        {
+            id = "spirit_demon",
+            soFolder = "Spirit Demon",
+            prefabName = "Spirit Demon Enemy Variant",
+            assets = new[]
+            {
+                new SoSpec
+                {
+                    soType = typeof(AIMovementSO),
+                    assetName = "SpiritDemonMovementSO",
+                    initDefaults = so =>
+                    {
+                        var data = (AIMovementSO)so;
+                        data.nearAvoidance = UnityEngine.AI.ObstacleAvoidanceType.NoObstacleAvoidance;
+                        data.farAvoidance = UnityEngine.AI.ObstacleAvoidanceType.NoObstacleAvoidance;
+                    },
+                },
+            },
+            components = new[]
+            {
+                new ComponentSpec
+                {
+                    type = typeof(AIMovement),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "movementSO", ctx.LoadedAsset("SpiritDemonMovementSO"));
+                    },
+                },
+                new ComponentSpec
+                {
+                    type = typeof(CapsuleCollider),
+                    wire = (so, ctx) => SetExcludeLayers(so, 1 << 7), // the enemy layer
+                },
+            },
+        },
+
+        // Dark Elf: melee skirmisher that burst-strafes when the player lines it up (DodgeDash —
+        // timer v1 of the plan's open "when targeted" question).
+        new EnemySpec
+        {
+            id = "dark_elf",
+            soFolder = "Dark Elf",
+            prefabName = "Dark Elf Enemy Variant",
+            assets = new[]
+            {
+                new SoSpec { soType = typeof(DodgeDashSO), assetName = "DarkElfDodgeSO" },
+            },
+            components = new[]
+            {
+                new ComponentSpec
+                {
+                    type = typeof(DodgeDash),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "data", ctx.LoadedAsset("DarkElfDodgeSO"));
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                        EnemyPrefabGenerator.SetReference(so, "movement", ctx.Movement);
+                        EnemyPrefabGenerator.SetReference(so, "agent", ctx.Root.GetComponent<UnityEngine.AI.NavMeshAgent>());
+                    },
+                },
+            },
+        },
+
+        // Slayer: telegraphed line dash (SlayerDashAttack — red lane, then near-instant sweep +
+        // Warp). The dash IS its melee: base AIAttack disabled (the Troll precedent).
+        new EnemySpec
+        {
+            id = "slayer",
+            soFolder = "Slayer",
+            prefabName = "Slayer Enemy Variant",
+            disableBaseAIAttack = true,
+            assets = new[]
+            {
+                new SoSpec { soType = typeof(SlayerDashAttackSO), assetName = "SlayerDashSO" },
+            },
+            components = new[]
+            {
+                new ComponentSpec
+                {
+                    type = typeof(SlayerDashAttack),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "attackData", ctx.LoadedAsset("SlayerDashSO"));
+                        EnemyPrefabGenerator.SetReference(so, "animator", ctx.ChildAnimator);
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                        EnemyPrefabGenerator.SetReference(so, "movement", ctx.Movement);
+                        EnemyPrefabGenerator.SetReference(so, "agent", ctx.Root.GetComponent<UnityEngine.AI.NavMeshAgent>());
+                        EnemyPrefabGenerator.SetReference(so, "telegraphPrefab", LoadPrefab("Assets/Bladehold/Bladehold Prefabs/SlamTelegraph.prefab"));
+                    },
+                },
+            },
+        },
+
+        // Red Demon: leap & slam (LeapSlamAttack — TrollSlam telegraph at the player, parabolic
+        // flight, impulse-stamped landing). Base AIAttack disabled (the Troll precedent).
+        new EnemySpec
+        {
+            id = "red_demon",
+            soFolder = "Red Demon",
+            prefabName = "Red Demon Enemy Variant",
+            disableBaseAIAttack = true,
+            assets = new[]
+            {
+                new SoSpec { soType = typeof(LeapSlamAttackSO), assetName = "RedDemonLeapSO" },
+            },
+            components = new[]
+            {
+                new ComponentSpec
+                {
+                    type = typeof(LeapSlamAttack),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "attackData", ctx.LoadedAsset("RedDemonLeapSO"));
+                        EnemyPrefabGenerator.SetReference(so, "animator", ctx.ChildAnimator);
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                        EnemyPrefabGenerator.SetReference(so, "movement", ctx.Movement);
+                        EnemyPrefabGenerator.SetReference(so, "agent", ctx.Root.GetComponent<UnityEngine.AI.NavMeshAgent>());
+                        EnemyPrefabGenerator.SetReference(so, "telegraphPrefab", LoadPrefab("Assets/Bladehold/Bladehold Prefabs/SlamTelegraph.prefab"));
+                    },
+                },
+            },
+        },
+
+        // ---- Phase ⑤: the hard four ----
+
+        // Pig Butcher: parryable hook projectile that drags the player into chopping range
+        // (HookProjectileAttack + hand-authored HookProjectile.prefab + PlayerPullReceiver on the
+        // Player prefab — the receiver wiring is manual, see TODO.md). Base melee stays enabled:
+        // the hook exists to feed it.
+        new EnemySpec
+        {
+            id = "pig_butcher",
+            soFolder = "Pig Butcher",
+            prefabName = "Pig Butcher Enemy Variant",
+            children = new[] { new ChildSpec { name = "Hook Spawn", localPosition = new Vector3(0f, 1.4f, 0.4f) } },
+            assets = new[]
+            {
+                new SoSpec { soType = typeof(HookProjectileAttackSO), assetName = "PigButcherHookSO" },
+            },
+            components = new[]
+            {
+                new ComponentSpec
+                {
+                    type = typeof(HookProjectileAttack),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "attackData", ctx.LoadedAsset("PigButcherHookSO"));
+                        EnemyPrefabGenerator.SetReference(so, "animator", ctx.ChildAnimator);
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                        EnemyPrefabGenerator.SetReference(so, "firePoint", ctx.FindOrCreateChild("Hook Spawn", new Vector3(0f, 1.4f, 0.4f)).transform);
+                        EnemyPrefabGenerator.SetReference(so, "hookPrefab", LoadProjectile<HookProjectile>("Assets/Bladehold/Bladehold Prefabs/HookProjectile.prefab"));
+                    },
+                },
+            },
+        },
+
+        // Barbarian Giant: permanent whirlwind — periodic unparryable pulse + eats thrown
+        // axes/magic missiles mid-flight (IPlayerProjectile registry). No collider is added, so
+        // the hitscan bow is never eaten. The whirlwind IS its melee: base AIAttack disabled.
+        new EnemySpec
+        {
+            id = "barbarian_giant",
+            soFolder = "Barbarian Giant",
+            prefabName = "Barbarian Giant Enemy Variant",
+            disableBaseAIAttack = true,
+            assets = new[]
+            {
+                new SoSpec { soType = typeof(WhirlwindAttackSO), assetName = "BarbarianWhirlwindSO" },
+            },
+            components = new[]
+            {
+                new ComponentSpec
+                {
+                    type = typeof(WhirlwindAttack),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "attackData", ctx.LoadedAsset("BarbarianWhirlwindSO"));
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                    },
+                },
+            },
+        },
+
+        // Fort Golem: slow walking dwarf factory (MinionSpawner → WaveSpawner.RegisterExternalEnemy;
+        // capped so a camped golem can't flood the wave). Weak base melee stays enabled.
+        new EnemySpec
+        {
+            id = "fort_golem",
+            soFolder = "Fort Golem",
+            prefabName = "Fort Golem Enemy Variant",
+            assets = new[]
+            {
+                new SoSpec { soType = typeof(MinionSpawnerSO), assetName = "FortGolemSpawnerSO" },
+            },
+            components = new[]
+            {
+                new ComponentSpec
+                {
+                    type = typeof(MinionSpawner),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "data", ctx.LoadedAsset("FortGolemSpawnerSO"));
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                        EnemyPrefabGenerator.SetReference(so, "minionPrefab", LoadPrefab("Assets/Bladehold/Bladehold Prefabs/Dwarf Enemy Variant.prefab"));
+                        EnemyPrefabGenerator.SetReference(so, "roster", LoadAsset<EnemyRosterSO>("Assets/Bladehold/Bladehold Scripts/Enemies/EnemyRosterSO.asset"));
+                    },
+                },
+            },
+        },
+
+        // Mechanical Golem: pinball charge — rev-up telegraph, then wall-bouncing contact-damage
+        // careen (NavMesh.Raycast reflection), Warp re-seat. The charge IS its melee: base
+        // AIAttack disabled. High CSV impulse resistance stands in for a non-goblin silhouette.
+        new EnemySpec
+        {
+            id = "mechanical_golem",
+            soFolder = "Mechanical Golem",
+            prefabName = "Mechanical Golem Enemy Variant",
+            disableBaseAIAttack = true,
+            assets = new[]
+            {
+                new SoSpec { soType = typeof(PinballChargeSO), assetName = "MechGolemChargeSO" },
+            },
+            components = new[]
+            {
+                new ComponentSpec
+                {
+                    type = typeof(PinballCharge),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "attackData", ctx.LoadedAsset("MechGolemChargeSO"));
+                        EnemyPrefabGenerator.SetReference(so, "animator", ctx.ChildAnimator);
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                        EnemyPrefabGenerator.SetReference(so, "movement", ctx.Movement);
+                        EnemyPrefabGenerator.SetReference(so, "agent", ctx.Root.GetComponent<UnityEngine.AI.NavMeshAgent>());
+                    },
+                },
+            },
+        },
     };
 
     /// <summary>Loads a projectile prefab's component for wiring, throwing when the prefab is
@@ -231,5 +582,49 @@ internal static class EnemyManifest
             throw new InvalidOperationException($"Projectile prefab '{path}' is missing or has no {typeof(T).Name} component.");
         }
         return component;
+    }
+
+    /// <summary>Loads a plain prefab for wiring (telegraphs, minion variants), throwing when missing.</summary>
+    private static GameObject LoadPrefab(string path)
+    {
+        var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+        if (prefab == null)
+        {
+            throw new InvalidOperationException($"Prefab '{path}' doesn't exist.");
+        }
+        return prefab;
+    }
+
+    /// <summary>Loads a non-prefab asset for wiring (the roster), throwing when missing.</summary>
+    private static T LoadAsset<T>(string path) where T : UnityEngine.Object
+    {
+        var asset = AssetDatabase.LoadAssetAtPath<T>(path);
+        if (asset == null)
+        {
+            throw new InvalidOperationException($"Asset '{path}' doesn't exist.");
+        }
+        return asset;
+    }
+
+    /// <summary>Sets a collider's Exclude Layers mask (LayerMask fields serialize as a nested
+    /// m_Bits on some Unity versions — handle both), failing loudly when the field is missing.</summary>
+    private static void SetExcludeLayers(SerializedObject serialized, int mask)
+    {
+        SerializedProperty property = serialized.FindProperty("m_ExcludeLayers");
+        if (property == null)
+        {
+            throw new InvalidOperationException($"{serialized.targetObject.GetType().Name} has no serialized 'm_ExcludeLayers' — renamed?");
+        }
+        if (property.propertyType == SerializedPropertyType.LayerMask || property.propertyType == SerializedPropertyType.Integer)
+        {
+            property.intValue = mask;
+            return;
+        }
+        SerializedProperty bits = property.FindPropertyRelative("m_Bits");
+        if (bits == null)
+        {
+            throw new InvalidOperationException("m_ExcludeLayers has no usable value field (neither LayerMask nor m_Bits).");
+        }
+        bits.longValue = (uint)mask;
     }
 }

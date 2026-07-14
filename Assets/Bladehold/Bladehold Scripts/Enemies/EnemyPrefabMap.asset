@@ -25,3 +25,27 @@ MonoBehaviour:
     prefab: {fileID: 2980287588630456594, guid: b78425f764df89b44bb91a2990ba16de, type: 3}
   - id: evil_god
     prefab: {fileID: 166622320198827342, guid: 3474c7f1e7fe8324783fc146ae7444fc, type: 3}
+  - id: ancient_queen
+    prefab: {fileID: 8608062666623121320, guid: 9eeeab239fdd25f42b9b82f1da339bf2, type: 3}
+  - id: forest_witch
+    prefab: {fileID: 6785018808573626020, guid: ac6a9ecc4721c1e4ea6e710356499843, type: 3}
+  - id: mutant_guy
+    prefab: {fileID: 3938200730349283218, guid: 5d616dab4fb01884290bd498ebd91c1d, type: 3}
+  - id: medusa
+    prefab: {fileID: 7861937522113167949, guid: db8f4f173b75c60439dd53671dd71547, type: 3}
+  - id: spirit_demon
+    prefab: {fileID: 8060077876616514606, guid: 0bc410534040603419de48fbb0c45bba, type: 3}
+  - id: dark_elf
+    prefab: {fileID: 7842645986042942580, guid: 574b2a180c220e243b4c6a5d8349cb4b, type: 3}
+  - id: slayer
+    prefab: {fileID: 5740309257760278140, guid: 58e778a6e263e93468ae0ac4460455d8, type: 3}
+  - id: red_demon
+    prefab: {fileID: 3465988455581753208, guid: 1f895af66de915d4d942a78c4571b1c6, type: 3}
+  - id: pig_butcher
+    prefab: {fileID: 3511928800634640644, guid: 325262a1d03d3604fac8cea3117a1bf8, type: 3}
+  - id: barbarian_giant
+    prefab: {fileID: 1889106475099741005, guid: a5bca8d519cb0fb4783db3d7b99eb74b, type: 3}
+  - id: fort_golem
+    prefab: {fileID: 1703500330218015595, guid: 3dfc31070a5218b40a933a5ecba7a26a, type: 3}
+  - id: mechanical_golem
+    prefab: {fileID: 8753354553516220514, guid: 14e2840987c73c24e85d8d49f3614751, type: 3}

@@ -1,0 +1,123 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &9196729814527662133
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 494112403358464087, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_Name
+      value: Mechanical Golem Enemy Variant
+      objectReference: {fileID: 0}
+    - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 2.0292327
+      objectReference: {fileID: 0}
+    - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.00000016006126
+      objectReference: {fileID: 0}
+    - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 6.311174
+      objectReference: {fileID: 0}
+    - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8780529840763675578, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 494112403358464087, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 608670149113469762}
+  m_SourcePrefab: {fileID: 100100000, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+--- !u!114 &765488785710340935 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8448426296968807282, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+  m_PrefabInstance: {fileID: 9196729814527662133}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8753354553516220514}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fbbc2048d5b01e48874c730dc14a696, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AIMovement
+--- !u!195 &2153635153978072120 stripped
+NavMeshAgent:
+  m_CorrespondingSourceObject: {fileID: 7080334578233263117, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+  m_PrefabInstance: {fileID: 9196729814527662133}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6785208116765105722 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2416392165065999887, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+  m_PrefabInstance: {fileID: 9196729814527662133}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8753354553516220514}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db56e9d19beb0f64c87b16fb7d59a889, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Health
+--- !u!95 &7206493320487181426 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 1991649265611916359, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+  m_PrefabInstance: {fileID: 9196729814527662133}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &8753354553516220514 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 494112403358464087, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+  m_PrefabInstance: {fileID: 9196729814527662133}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &608670149113469762
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8753354553516220514}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 909e7e07a524dbf4a8159fabae376cff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PinballCharge
+  animator: {fileID: 7206493320487181426}
+  health: {fileID: 6785208116765105722}
+  movement: {fileID: 765488785710340935}
+  agent: {fileID: 2153635153978072120}
+  attackData: {fileID: 11400000, guid: a766a238ff33f2245a13002e9778a6b7, type: 2}
+  revFeedback: {fileID: 0}
+  bounceFeedback: {fileID: 0}
+  revTrigger: Attack

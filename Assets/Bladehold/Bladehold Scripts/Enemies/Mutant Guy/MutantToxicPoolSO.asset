@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 277cd214ac03a1a4cafd4d89a861c7e7, type: 3}
+  m_Name: MutantToxicPoolSO
+  m_EditorClassIdentifier: Assembly-CSharp::ToxicPoolOnDeathSO
+  poolRadius: 2.5
+  poolDuration: 6
+  tickInterval: 0.75
+  tickDamage: 2
+  damageType: 2

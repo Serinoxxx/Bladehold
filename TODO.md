@@ -1,5 +1,132 @@
 # TODO
 
+## Enemy roster Phases ③–⑤ — Ancient Queen, Forest Witch, Mutant Guy, Medusa, Spirit Demon, Dark Elf, Slayer, Red Demon, Pig Butcher, Barbarian Giant, Fort Golem, Mechanical Golem — Unity Editor wiring
+
+The C# is done and the generator was run headlessly (all 12 variants built + mapped; idempotency
+re-run clean) — this completes the 20-enemy roadmap in `ENEMY_TYPES_PLAN.md`. Twelve new
+`Config/Enemies.csv` rows (`forest_witch` w9, `mutant_guy` w9, `spirit_demon` w10,
+`ancient_queen` w11, `dark_elf` w11, `medusa` w12, `slayer` w13, `pig_butcher` w14, `red_demon`
+w15, `barbarian_giant` w17, `fort_golem` w18, `mechanical_golem` w19 — the plan's draft numbers).
+**Phase ③**: `Enemies/ArmorPlating.cs` (Queen — `Health.ScaleDamageTaken`, the `RageBuff`
+precedent: hits under `lightHitThreshold` ×0.4, charged swings pass), `Enemies/AllyAura.cs`
+(Witch — 1 Hz `OverlapSphere` heal of `Enemy` roots via `Health.Heal`, never herself),
+`Enemies/ToxicPoolOnDeath.cs` + `ToxicPoolZone.cs` (Mutant — `OnDied` listener, the `CoinDropper`
+idiom, spawning a `LightningStormZone` copy-tune: unparryable elemental ticks, hits enemies too),
+`Enemies/MedusaGazeAura.cs` (cone test = the `Parry` facing shape; MoveSpeed Percent modifier with
+exact-negative removal — the `HoldTheLineBonus` idiom — behind a **static refcount** so two
+Medusas can't stack). **Phase ④**: Spirit Demon is config-only (own `AIMovementSO` with both
+avoidance tiers off + capsule `excludeLayers` = enemy layer 7, both generator-wired; CSV impulse
+resistance 50), `Enemies/DodgeDash.cs` (Dark Elf — timer v1 of "when targeted": near + in the
+player's facing cone → NavMesh.Raycast-checked lateral `agent.Move` burst),
+`Enemies/SlayerDashAttack.cs` (locked lane, `NavMesh.Raycast` pre-clamp — the
+`MountedKnightBrain` beats — stretched `SlamTelegraph`, capsule-overlap sweep, `agent.Warp`;
+unparryable), `Enemies/LeapSlamAttack.cs` (Red Demon — TrollSlam telegraph at the player,
+parabolic flight with agent disabled, `SamplePosition`+`Warp` re-seat, the Troll's
+impulse-stamped impact block). **Phase ⑤**: `Enemies/HookProjectileAttack.cs` +
+`HookProjectile.cs` (Pig Butcher — sharp, PARRYABLE, `Damage.source`-stamped so Counterstrike
+punishes him; the pull only fires if damage actually landed, probed via a momentary `OnDamaged`
+subscription) + **`Player/PlayerPullReceiver.cs`** (CharacterController.Move drag — walls
+interrupt via `CollisionFlags.Sides`; no-op mounted/dead; never re-enables controls over a
+corpse — the `PlayerMount` dead-guard), `Enemies/WhirlwindAttack.cs` (Barbarian Giant — periodic
+unparryable pulse + shatters `IPlayerProjectile`s) + **`Player/IPlayerProjectile.cs`**
+(`PlayerProjectileRegistry.Live`, the `EnemyRagdoll.ActiveCount` flavor, implemented by
+`AxeProjectile`/`MagicMissileProjectile` in `OnEnable`/`OnDisable`; bow is hitscan — untouched,
+and the whirlwind adds no collider so it can't eat arrows), `Enemies/MinionSpawner.cs` (Fort
+Golem — dwarves via the public `WaveSpawner.ApplyDefinition`, registered through the **new
+`WaveSpawner.RegisterExternalEnemy`**: grows `waveGoblinTotal`/alive set, never
+`remainingToSpawn`; graceful no-op outside a live wave; capped at `maxAliveMinions` 6),
+`Enemies/PinballCharge.cs` (Mechanical Golem — rev telegraph, agent detached, `NavMesh.Raycast`
+wall reflection, contact damage with per-target re-hit window, `Warp` re-seat). All five new
+attacks joined the `?.SetDamage(...)` chain in `ApplyDefinition`. Two prefabs were hand-authored
+(the HomingOrb precedent, script GUIDs pinned via `.meta`): `ToxicPool.prefab` (zone script + a
+green point light as the pre-art visual) and `HookProjectile.prefab` (re-uses the lightning-ball
+sphere look). Every SO's defaults are authored in-code; the shared `SlamTelegraph.prefab` serves
+Slayer/Red Demon telegraphs.
+
+- [ ] **Player prefab — `PlayerPullReceiver`** (`Bladehold Prefabs/Player.prefab`): add the
+      component on the player root (next to `Health`/`PlayerMount`). `health`/
+      `characterController`/`mount` auto-wire via `OnValidate`; **hand-fill
+      `componentsToDisableWhilePulled`** with the `SamplePlayerAnimationController`,
+      `CombatFacing`, `AttackCancelsSprint` (the PlayerMount list — NOT `InputReader`, NOT this
+      component). Optional `pulledFeedback` (yank + grunt). Until wired, hooks damage but the drag
+      fights the controller (a warning logs).
+  - [ ] Also add `PlayerPullReceiver` to `PlayerDeath`'s disable list? **No** — it must stay
+        enabled to refuse pulls while dead (it checks `health.IsDead` itself).
+- [ ] **Animator (cosmetic gaps, not blocking)**: Slayer/Red Demon/Pinball rev/Hook throw all fire
+      the existing `Attack` trigger (goblin swing stands in for their wind-ups); the Barbarian's
+      whirlwind has **no** animation at all (he just walks). Proper states/clips per enemy when
+      animation time exists. All attacks deal damage on timers regardless.
+- [ ] **Art passes**: ToxicPool is a bare green light — needs a ground decal/particles
+      (`ToxicPoolZone.tickVfxPrefab`/`tickSfx` are wireable slots); HookProjectile reuses the
+      lightning-ball sphere — needs a hook model + chain trail; Spirit Demon ghost material,
+      whirlwind spin VFX (`WhirlwindAttack.spinFeedback`), leap/land VFX
+      (`LeapSlamAttack.impactVfxPrefab`), pinball sparks (`bounceFeedback`), per-enemy materials
+      for all 12 (set `materialPath` in the manifest + re-run the generator).
+- [ ] **Optional MMF juice**: every new component exposes optional feedback slots
+      (`windupFeedback`/`dashFeedback`/`slamFeedback`/`revFeedback`/`spawnFeedback`/
+      `healFeedback`/`gazeCaughtFeedback`/`startAttackFeedback`/`pulledFeedback`).
+- [ ] **Balance pass**: all 12 CSV rows are plan drafts; SO defaults to tune —
+      `AncientQueenArmorSO` (threshold 15 / ×0.4), `ForestWitchAuraSO` (r6, 2 HP/s),
+      `MutantToxicPoolSO` (r2.5, 6s, 2/0.75s), `MedusaGazeSO` (r10, 35°, 50% slow),
+      `DarkElfDodgeSO` (5m, dot 0.7, 3.5m dash, 2s cd), `SlayerDashSO` (lane 12×1.6, 0.9s tell,
+      5s cd), `RedDemonLeapSO` (r12, 0.8s+0.7s, slam r3.5, imp 3/12, 6s cd), `PigButcherHookSO`
+      (r12, hook 11 m/s, pull 0.5s→2m, 6s cd), `BarbarianWhirlwindSO` (r3.5, 1s pulse),
+      `FortGolemSpawnerSO` (2/8s, cap 6), `MechGolemChargeSO` (rev 1.2s, 14 m/s ×4s, rehit 1s,
+      6s cd).
+
+## Manual verification (enemy roster Phases ③–⑤)
+
+- [ ] **Ancient Queen** (w11): uncharged sword hits show visibly shrunken damage numbers (~×0.4);
+      a fully charged Heavy Strike hits for full damage. Numbers match what her health actually
+      loses (the ScaleDamageTaken contract).
+- [ ] **Forest Witch** (w9): wounded goblins near her visibly regain health (damage numbers you
+      dealt get 'undone'); kill her first and the healing stops. She never heals herself; the
+      player is never healed by her.
+- [ ] **Mutant Guy** (w9): on death a green-lit patch appears at the corpse; standing in it ticks
+      ~2 damage per ¾s for ~6s, then it vanishes. It also hurts goblins that wander in. The ticks
+      are never parried (elemental + unparryable). The corpse itself is never re-damaged by its
+      own pool (no phantom damage numbers over the body).
+- [ ] **Medusa** (w12): walking into her frontal cone visibly halves your move speed (sprint
+      too — MoveSpeed feeds the binder); stepping out of the cone or killing her restores it
+      exactly. **Two Medusas gazing at once slow you no further than one**, and killing one of the
+      two keeps the slow until the other's gaze breaks. Die while gazed → restart is at full speed.
+- [ ] **Spirit Demon** (w10): other goblins walk straight through it (no shoulder-barging), and it
+      never body-blocks the horde; the sword still hits it normally (it's on the enemy layer for
+      hitLayers). Impulse hits never ragdoll it (resistance 50).
+- [ ] **Dark Elf** (w11): face one at close range — it periodically bursts sideways out of your
+      line; hitting it mid-dodge is hard but possible. It never dodges through walls, and never
+      dodges when approached from behind (you're not facing it).
+- [ ] **Slayer** (w13): a red lane appears pointing at where you stood, ~1s later the slayer is
+      instantly at the far end and anything in the lane (you, goblins) took 8 unparryable damage.
+      Sidestep the lane during the tell → zero damage. Near a wall the lane (and dash) is
+      visibly shorter. It has no regular melee swing.
+- [ ] **Red Demon** (w15): a slam circle appears under you, the demon crouches, arcs through the
+      air, and lands ON the circle — standing outside it when he lands takes nothing; inside,
+      heavy damage and nearby goblins ragdoll-fling. Kill him mid-air (bow) → corpse drops where
+      it was, no slam, wave accounting fine.
+- [ ] **Pig Butcher** (w14, needs PlayerPullReceiver wired): the hook projectile is visible and
+      slow enough to sidestep; getting hit yanks you toward him for ~½s into melee range where he
+      swings. **Parry (facing him) or a Solid block negates BOTH the damage and the pull**;
+      Counterstrike after a parried hook damages HIM. Hooked while a wall is between you → the
+      drag stops at the wall. Hooks do nothing while mounted.
+- [ ] **Barbarian Giant** (w17): standing next to him ticks heavy damage every second (never
+      parried); **Berserker thrown axes and Mage missiles visibly vanish when they enter his
+      radius** (no damage numbers), while **bow arrows hit him normally**. Axes still boomerang
+      home if they never enter the radius.
+- [ ] **Fort Golem** (w18): every ~8s it clanks out 2 dwarves beside itself, up to 6 alive; kill
+      the golem and production stops (existing dwarves live on). **The wave does not clear until
+      spawned dwarves are also dead** (registration), and minion kills pay gold/count in stats
+      exactly like normal dwarves. `DebugWipeWave` kills registered minions too.
+- [ ] **Mechanical Golem** (w19): revs in place (~1.2s tell), then careens in a straight line,
+      visibly bouncing off arena walls like a pinball for ~4s; contact hurts (12, unparryable,
+      goblins clipped get flung) but the same target isn't ground repeatedly (≥1s between hits).
+      It resumes normal chasing exactly where the charge ended (no off-mesh stranding), and never
+      leaves the arena.
+- [ ] Global negatives: none of the new specials ever damages its own enemy (`source`/owner
+      guards); every enemy stops attacking and cheers on player death (whirlwind pulses stop, no
+      new hooks/leaps/charges); all 12 appear in the Enemy Zoo with CSV overrides applied;
+      `DebugSetNextWave` to each unlock wave spawns the right type.
+
 ## Enemy roster Phase ①+② — Dwarf, Ancient Warrior, Big Ork, Forest Guardian, Mystic, Evil God — Unity Editor wiring
 
 The C# is done (`ENEMY_TYPES_PLAN.md` Phases ① and ②) **and the generator was already run

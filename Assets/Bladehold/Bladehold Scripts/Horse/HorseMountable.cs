@@ -65,7 +65,7 @@ public class HorseMountable : MonoBehaviour
         if (player == null) return;
 
         PlayerMount mount = player.GetComponent<PlayerMount>();
-        if (mount == null || mount.IsMounted || !mount.CanRide) return;
+        if (mount == null || mount.IsMounted) return; // || !mount.CanRide) return;
 
         // Mounting is a deliberate jump into the saddle, not a walk-by.
         if (mount.CharacterController != null && mount.CharacterController.isGrounded) return;

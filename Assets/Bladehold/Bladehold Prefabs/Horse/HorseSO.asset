@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17c2221a00438f74aa0255ae357a3331, type: 3}
+  m_Name: HorseSO
+  m_EditorClassIdentifier: Assembly-CSharp::HorseSO
+  maxSpeed: 8
+  reverseSpeed: 2
+  acceleration: 6
+  deceleration: 8
+  brakeDeceleration: 12
+  turnDegreesPerSecond: 90
+  gravity: -20
+  rearSeconds: 1.2
+  chargeSpeed: 12
+  chargeAcceleration: 10
+  chargeMinSpeedFraction: 0.5
+  chargeDamage: 15
+  damageType: 1
+  impulsePower: 10
+  impulseForce: 14
+  hitCooldownSeconds: 1
+  hitBoxHalfExtents: {x: 1.2, y: 1.2, z: 1.6}
+  hitBoxForwardOffset: 1.8
+  dismountLocalOffset: {x: 1.4, y: 0, z: 0}

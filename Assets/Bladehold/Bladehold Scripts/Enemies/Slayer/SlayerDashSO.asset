@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c2277d0b4e26e546a841948ce19575d, type: 3}
+  m_Name: SlayerDashSO
+  m_EditorClassIdentifier: Assembly-CSharp::SlayerDashAttackSO
+  triggerRange: 10
+  maxDashDistance: 12
+  laneWidth: 1.6
+  damage: 8
+  damageType: 0
+  telegraphSeconds: 0.9
+  attackCooldown: 5

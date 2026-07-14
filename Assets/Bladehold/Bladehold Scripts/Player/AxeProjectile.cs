@@ -24,8 +24,31 @@ using UnityEngine;
 ///
 ///     The prefab owns all the looks (mesh, trail, spin tunables below).
 /// </summary>
-public class AxeProjectile : MonoBehaviour
+public class AxeProjectile : MonoBehaviour, IPlayerProjectile
 {
+    /// <summary>Current world position, for the whirlwind's radius check.</summary>
+    public Vector3 Position => transform.position;
+
+    /// <summary>
+    ///     Destroys the axe mid-flight without landing more hits (the Barbarian Giant's whirlwind).
+    ///     Safe — the axe already destroys itself mid-flight liberally, and
+    ///     <see cref="PlayerThrownAxe" /> keeps no in-flight reference.
+    /// </summary>
+    public void Shatter()
+    {
+        Destroy(gameObject);
+    }
+
+    private void OnEnable()
+    {
+        PlayerProjectileRegistry.Register(this);
+    }
+
+    private void OnDisable()
+    {
+        PlayerProjectileRegistry.Unregister(this);
+    }
+
     /// <summary>Everything a throw decides at release time, captured so the axe stays truthful to the wind-up that launched it.</summary>
     public struct LaunchSpec
     {

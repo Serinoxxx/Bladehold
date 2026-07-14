@@ -309,7 +309,7 @@ public class PlayerMount : MonoBehaviour
     /// </summary>
     public bool TryMount(HorseMotor horse)
     {
-        if (anyError || IsMounted || !CanRide || horse == null) return false;
+        if (anyError || IsMounted || horse == null) return false; //|| !CanRide
 
         Health horseHealth = horse.Health;
         if (horseHealth == null || horseHealth.IsDead) return false;

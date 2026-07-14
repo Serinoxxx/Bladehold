@@ -1,0 +1,125 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &3945956741359183663
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 494112403358464087, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_Name
+      value: Red Demon Enemy Variant
+      objectReference: {fileID: 0}
+    - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 2.0292327
+      objectReference: {fileID: 0}
+    - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.00000016006126
+      objectReference: {fileID: 0}
+    - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 6.311174
+      objectReference: {fileID: 0}
+    - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8780529840763675578, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 494112403358464087, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5002098002197574612}
+  m_SourcePrefab: {fileID: 100100000, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+--- !u!114 &1678265278285111584 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2416392165065999887, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+  m_PrefabInstance: {fileID: 3945956741359183663}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3465988455581753208}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db56e9d19beb0f64c87b16fb7d59a889, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Health
+--- !u!95 &3269922067192144744 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 1991649265611916359, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+  m_PrefabInstance: {fileID: 3945956741359183663}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &3465988455581753208 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 494112403358464087, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+  m_PrefabInstance: {fileID: 3945956741359183663}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &5002098002197574612
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3465988455581753208}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a63051e298722084099c1bece25e6e2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LeapSlamAttack
+  animator: {fileID: 3269922067192144744}
+  health: {fileID: 1678265278285111584}
+  movement: {fileID: 4898804013050405981}
+  agent: {fileID: 6089073914574005026}
+  attackData: {fileID: 11400000, guid: 1ee792b0458ef044e9f3ffc95551114f, type: 2}
+  telegraphPrefab: {fileID: 5856850007466671987, guid: e5dd6852d515fe64487dfd3ccf2f43b4, type: 3}
+  impactVfxPrefab: {fileID: 0}
+  windupFeedback: {fileID: 0}
+  slamFeedback: {fileID: 0}
+  attackTrigger: Attack
+--- !u!114 &4898804013050405981 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8448426296968807282, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+  m_PrefabInstance: {fileID: 3945956741359183663}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3465988455581753208}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fbbc2048d5b01e48874c730dc14a696, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AIMovement
+--- !u!195 &6089073914574005026 stripped
+NavMeshAgent:
+  m_CorrespondingSourceObject: {fileID: 7080334578233263117, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+  m_PrefabInstance: {fileID: 3945956741359183663}
+  m_PrefabAsset: {fileID: 0}
