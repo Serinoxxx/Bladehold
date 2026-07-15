@@ -39,6 +39,9 @@ public class HorseBarGroupUI : MonoBehaviour
             mount = Player.Instance.GetComponent<PlayerMount>();
 
         if (mount == null)
+            mount = FindObjectOfType<PlayerMount>();
+
+        if (mount == null)
         {
             Debug.LogError("[HorseBarGroupUI] PlayerMount not found — assign it or ensure Player.Instance has one.");
             _anyError = true;

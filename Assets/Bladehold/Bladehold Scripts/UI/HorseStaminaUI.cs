@@ -34,6 +34,9 @@ public class HorseStaminaUI : MonoBehaviour
             mount = Player.Instance.GetComponent<PlayerMount>();
 
         if (mount == null)
+            mount = FindObjectOfType<PlayerMount>();
+
+        if (mount == null)
         {
             Debug.LogError("[HorseStaminaUI] PlayerMount is not assigned and could not be found on the Player.");
             _anyError = true;

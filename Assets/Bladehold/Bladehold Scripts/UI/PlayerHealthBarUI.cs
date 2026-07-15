@@ -23,6 +23,17 @@ public class PlayerHealthBarUI : MonoBehaviour
 
         if (health == null)
         {
+            Player p = FindObjectOfType<Player>();
+            if (p != null)
+            {
+                health = p.Health;
+                if (health == null)
+                    health = p.GetComponent<Health>();
+            }
+        }
+
+        if (health == null)
+        {
             Debug.LogError("[PlayerHealthBarUI] Health not found — assign it or ensure Player.Instance is present.");
             _anyError = true;
         }
