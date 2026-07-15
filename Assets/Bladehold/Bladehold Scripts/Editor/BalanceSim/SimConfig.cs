@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 
+
 namespace Bladehold.BalanceSim
 {
     /// <summary>
@@ -18,6 +19,20 @@ namespace Bladehold.BalanceSim
         /// <summary>Raw <c>key=value</c> override lines, applied by <see cref="SimOverrides" />.</summary>
         public List<string> overrides = new List<string>();
         public bool emitTrials = false;
+
+        /// <summary>
+        ///     Calibration mode: wave → node ids purchased in that wave's intermission, replayed verbatim
+        ///     instead of the profile's upgrade policy — isolates the combat model from spending behaviour.
+        ///     Null = use the policy (the normal path).
+        /// </summary>
+        public Dictionary<int, List<string>> purchaseScript = null;
+
+        // Calibration mode (CLI -simCalibrate / window "Calibrate" button)
+        public bool calibrate = false;
+        /// <summary>Profile whose combat model is judged against the real runs.</summary>
+        public string calibrateProfile = "average";
+        /// <summary>Blank = persistentDataPath/Telemetry (where RunTelemetry writes).</summary>
+        public string telemetryDir = "";
 
         /// <summary>Safety cap on simulated seconds per wave — a wave taking longer counts as stalled.</summary>
         public float maxWaveSeconds = 600f;

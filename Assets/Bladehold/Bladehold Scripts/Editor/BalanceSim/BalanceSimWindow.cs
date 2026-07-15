@@ -27,6 +27,8 @@ namespace Bladehold.BalanceSim
         private string error;
         private Vector2 scroll;
         private int selectedProfileTab;
+        private string calibrateProfile = "average";
+        private string calibrationResult;
 
         [MenuItem("Bladehold/Balance Simulator")]
         public static void Open()
@@ -49,6 +51,39 @@ namespace Bladehold.BalanceSim
                 EditorGUILayout.Space();
                 DrawResultsTable();
                 EditorGUILayout.EndScrollView();
+            }
+        }
+
+        private void DrawCalibration()
+        {
+            EditorGUILayout.BeginHorizontal();
+            calibrateProfile = EditorGUILayout.TextField(new GUIContent("Calibrate as",
+                "Profile whose combat model is compared against your real Telemetry runs (purchases replayed verbatim)"),
+                calibrateProfile);
+            if (GUILayout.Button("Calibrate vs Telemetry", GUILayout.Width(160)))
+            {
+                try
+                {
+                    EditorUtility.DisplayProgressBar("Balance Sim", "Replaying telemetry runs…", 0.5f);
+                    string calOut = Path.Combine("BalanceReports", $"calibration_{DateTime.Now:yyyyMMdd_HHmmss}");
+                    var cfg = new SimConfig { trials = Mathf.Max(1, trials), seed = seed };
+                    var mape = CalibrationLoader.RunCalibration(cfg, calibrateProfile.Trim(), "", calOut);
+                    calibrationResult = "MAPE — " + string.Join(", ", mape.Select(kv => $"{kv.Key}: {kv.Value:P0}"))
+                        + $"  →  {calOut}\\calibration.csv";
+                }
+                catch (Exception e)
+                {
+                    calibrationResult = e.Message;
+                }
+                finally
+                {
+                    EditorUtility.ClearProgressBar();
+                }
+            }
+            EditorGUILayout.EndHorizontal();
+            if (!string.IsNullOrEmpty(calibrationResult))
+            {
+                EditorGUILayout.HelpBox(calibrationResult, MessageType.Info);
             }
         }
 
@@ -78,8 +113,13 @@ namespace Bladehold.BalanceSim
                 {
                     EditorUtility.RevealInFinder(Path.Combine(Path.GetFullPath(output.outDir), "summary.json"));
                 }
+                if (GUILayout.Button("Open report.html", GUILayout.Height(24)))
+                {
+                    Application.OpenURL("file:///" + Path.GetFullPath(Path.Combine(output.outDir, "report.html")).Replace('\\', '/'));
+                }
             }
             EditorGUILayout.EndHorizontal();
+            DrawCalibration();
         }
 
         private void RunSim()
@@ -155,6 +195,8 @@ namespace Bladehold.BalanceSim
                 + $"p90 {Percentiles.Of(deaths, 90f):0.#} ({result.trials.Count(t => t.deathWave == 0)}/{result.TrialCount} survived the horizon)",
                 EditorStyles.boldLabel);
 
+            DrawCharts(result);
+
             EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
             Cell("Wave", 42, true);
             Cell("Alive%", 52, true);
@@ -183,6 +225,59 @@ namespace Bladehold.BalanceSim
                 Cell(Fmt(Percentiles.Median(result.WaveMetric(wave, r => r.goldEarned))), 46);
                 Cell(result.ModalPurchases(wave), 0);
                 EditorGUILayout.EndHorizontal();
+            }
+        }
+
+        /// <summary>Death-wave histogram + HP p10–p90 band with a median polyline, drawn with DrawRect
+        /// (Handles for the line, Repaint only) — no dependencies, matches the report.html charts.</summary>
+        private void DrawCharts(ProfileResult result)
+        {
+            float maxHp = output.world.playerMaxHealth;
+
+            // --- Death histogram ---
+            EditorGUILayout.LabelField("Death wave histogram (green = survived horizon)", EditorStyles.miniBoldLabel);
+            Rect histRect = GUILayoutUtility.GetRect(10, 64, GUILayout.ExpandWidth(true));
+            EditorGUI.DrawRect(histRect, new Color(0.12f, 0.13f, 0.15f));
+            var counts = new int[maxWaves + 2];
+            foreach (TrialResult trial in result.trials)
+            {
+                counts[trial.deathWave == 0 ? maxWaves + 1 : Mathf.Clamp(trial.deathWave, 1, maxWaves)]++;
+            }
+            int maxCount = Mathf.Max(1, counts.Max());
+            float barW = histRect.width / (maxWaves + 1);
+            for (int i = 1; i < counts.Length; i++)
+            {
+                if (counts[i] == 0) continue;
+                float h = counts[i] / (float)maxCount * (histRect.height - 4f);
+                var bar = new Rect(histRect.x + (i - 1) * barW + 1, histRect.yMax - h - 2, barW - 2, h);
+                EditorGUI.DrawRect(bar, i == counts.Length - 1
+                    ? new Color(0.49f, 0.84f, 0.49f)
+                    : new Color(0.94f, 0.44f, 0.44f));
+            }
+
+            // --- HP trajectory band + median line ---
+            EditorGUILayout.LabelField("HP at wave end (median line, p10–p90 band)", EditorStyles.miniBoldLabel);
+            Rect hpRect = GUILayoutUtility.GetRect(10, 72, GUILayout.ExpandWidth(true));
+            EditorGUI.DrawRect(hpRect, new Color(0.12f, 0.13f, 0.15f));
+            int lastWave = 1;
+            for (int w = maxWaves; w >= 1; w--) { if (result.SurvivalRate(w) > 0f) { lastWave = w; break; } }
+            float colW = hpRect.width / Mathf.Max(1, lastWave);
+            var medians = new List<Vector3>();
+            for (int w = 1; w <= lastWave; w++)
+            {
+                List<float> hp = result.WaveMetric(w, r => r.hpEnd, includeFatal: false);
+                if (hp.Count == 0) continue;
+                float lo = Percentiles.Of(hp, 10f) / maxHp, hi = Percentiles.Of(hp, 90f) / maxHp;
+                float med = Percentiles.Median(hp) / maxHp;
+                float x = hpRect.x + (w - 0.5f) * colW;
+                EditorGUI.DrawRect(new Rect(x - colW * 0.4f, hpRect.yMax - hi * hpRect.height,
+                    colW * 0.8f, Mathf.Max(1f, (hi - lo) * hpRect.height)), new Color(0.29f, 0.56f, 0.85f, 0.33f));
+                medians.Add(new Vector3(x, hpRect.yMax - med * hpRect.height, 0f));
+            }
+            if (Event.current.type == EventType.Repaint && medians.Count > 1)
+            {
+                Handles.color = new Color(0.29f, 0.56f, 0.85f);
+                Handles.DrawAAPolyLine(2.5f, medians.ToArray());
             }
         }
 

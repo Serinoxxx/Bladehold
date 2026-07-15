@@ -17,6 +17,8 @@ namespace Bladehold.BalanceSim
         private readonly UpgradePolicyKind kind;
         private readonly PlayerProfile profile;
         private readonly Dictionary<string, int> levels = new Dictionary<string, int>();
+        /// <summary>Calibration: wave → node ids to replay instead of the policy (see SimConfig.purchaseScript).</summary>
+        private readonly Dictionary<int, List<string>> purchaseScript;
         public readonly List<string> purchases = new List<string>();
 
         /// <summary>Stats a survival-minded player prioritizes.</summary>
@@ -30,11 +32,13 @@ namespace Bladehold.BalanceSim
 
         private bool nextPickIsSurvival = true; // Balanced alternation state
 
-        public UpgradePolicy(SimWorld world, PlayerStats stats, PlayerProfile profile)
+        public UpgradePolicy(SimWorld world, PlayerStats stats, PlayerProfile profile,
+            Dictionary<int, List<string>> purchaseScript = null)
         {
             tree = world.goldTree;
             this.stats = stats;
             this.profile = profile;
+            this.purchaseScript = purchaseScript;
             kind = profile.upgradePolicy;
 
             // node.<id>=<level> overrides: granted free at run start, effects applied per level
@@ -53,9 +57,37 @@ namespace Bladehold.BalanceSim
 
         public int GetLevel(string id) => levels.TryGetValue(id, out int level) ? level : 0;
 
-        /// <summary>Spends as much gold as the policy wants; returns the remaining gold.</summary>
-        public int Spend(int gold)
+        /// <summary>Spends as much gold as the policy wants (or replays the purchase script for this wave); returns the remaining gold.</summary>
+        public int Spend(int gold, int wave)
         {
+            if (purchaseScript != null)
+            {
+                // Replay mode: apply exactly what the real run bought after this wave, spending sim
+                // gold (allowed to go negative — the real player evidently could afford it, and the
+                // point is to hold the upgrade trajectory fixed, not to re-judge affordability).
+                if (purchaseScript.TryGetValue(wave, out List<string> ids))
+                {
+                    foreach (string id in ids)
+                    {
+                        SkillNode node = tree.GetById(id);
+                        if (node == null)
+                        {
+                            continue; // node renamed since the telemetry run
+                        }
+                        int level = GetLevel(id) + 1;
+                        if (level > node.maxLevel)
+                        {
+                            continue;
+                        }
+                        gold -= node.CostForLevel(level);
+                        levels[id] = level;
+                        ApplyLevel(node, level);
+                        purchases.Add($"{id}:{level}");
+                    }
+                }
+                return gold;
+            }
+
             if (kind == UpgradePolicyKind.None)
             {
                 return gold;

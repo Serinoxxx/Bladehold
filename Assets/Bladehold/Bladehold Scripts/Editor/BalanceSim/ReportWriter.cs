@@ -25,6 +25,7 @@ namespace Bladehold.BalanceSim
             File.WriteAllText(Path.Combine(outDir, "summary.json"), BuildSummaryJson(cfg, world, results, findings));
             File.WriteAllText(Path.Combine(outDir, "findings.json"),
                 JsonConvert.SerializeObject(findings, Formatting.Indented));
+            File.WriteAllText(Path.Combine(outDir, "report.html"), HtmlReport.Build(cfg, world, results, findings));
             if (cfg.emitTrials)
             {
                 File.WriteAllText(Path.Combine(outDir, "trials.csv"), BuildTrialsCsv(results));

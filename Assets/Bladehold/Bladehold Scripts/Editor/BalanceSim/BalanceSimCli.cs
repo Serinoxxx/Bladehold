@@ -29,6 +29,23 @@ namespace Bladehold.BalanceSim
             try
             {
                 SimConfig cfg = ParseArgs(Environment.GetCommandLineArgs());
+
+                if (cfg.calibrate)
+                {
+                    string calOut = string.IsNullOrEmpty(cfg.outDir)
+                        ? Path.Combine("BalanceReports", $"calibration_{DateTime.Now:yyyyMMdd_HHmmss}")
+                        : cfg.outDir;
+                    Dictionary<string, float> mape =
+                        CalibrationLoader.RunCalibration(cfg, cfg.calibrateProfile, cfg.telemetryDir, calOut);
+                    string mapeLine = "[BalanceSim] calibration MAPE — "
+                        + string.Join(", ", mape.Select(kv => $"{kv.Key}: {kv.Value:P0}"));
+                    Console.WriteLine(mapeLine);
+                    Debug.Log(mapeLine);
+                    Console.WriteLine($"[BalanceSim] report: {Path.GetFullPath(calOut)}");
+                    EditorApplication.Exit(0);
+                    return;
+                }
+
                 SimRunOutput output = SimRunner.Run(cfg);
 
                 string summaryLine = SummaryLine(output, cfg);
@@ -97,6 +114,15 @@ namespace Bladehold.BalanceSim
                         break;
                     case "-simEmitTrials":
                         cfg.emitTrials = true;
+                        break;
+                    case "-simCalibrate":
+                        cfg.calibrate = true;
+                        break;
+                    case "-simCalibrateProfile":
+                        cfg.calibrateProfile = Next(args, ref i);
+                        break;
+                    case "-simTelemetryDir":
+                        cfg.telemetryDir = Next(args, ref i);
                         break;
                 }
             }

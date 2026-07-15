@@ -34,7 +34,7 @@ namespace Bladehold.BalanceSim
             var rng = new Random(SeedFor(cfg.seed, profile.id, trialIndex));
             simStats.Reset();
             PlayerStats stats = simStats.Stats;
-            var policy = new UpgradePolicy(world, stats, profile);
+            var policy = new UpgradePolicy(world, stats, profile, cfg.purchaseScript);
             var spawner = new SpawnModel(world, rng);
 
             var result = new TrialResult();
@@ -220,7 +220,7 @@ namespace Bladehold.BalanceSim
                 }
 
                 // --- Between waves: shopping (WaveSpawner's intermission; no regen exists, so HP carries) ---
-                gold = policy.Spend(gold);
+                gold = policy.Spend(gold, wave);
                 record.goldUnspent = gold;
                 record.purchases = policy.purchases.Skip(purchasesBefore).ToList();
                 purchasesBefore = policy.purchases.Count;
