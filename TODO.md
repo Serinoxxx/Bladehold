@@ -1,5 +1,103 @@
 # TODO
 
+## Screen-space Health / Stamina Bars (Synty Warrior UI + Feel) — Unity Editor wiring
+
+Four C# scripts are done (`PlayerHealthBarUI`, `HorseHealthBarUI`, `HorseBarGroupUI`,
+`HorseStaminaUI` upgraded). All use `MMProgressBar` (Feel) for animated lerp fills and delayed-bar
+drain. `HorseBarGroupUI` uses `MMF_Player` feedbacks for the mount/dismount slide-in animation.
+
+The scene still needs a canvas hierarchy and wired references:
+
+### 1 — Build the BottomHUD hierarchy inside the existing HUD Canvas
+
+Add a child `BottomHUD` anchored to **bottom-center** (`Stretch X`, anchor min Y=0, max Y=0,
+pivot Y=0), offset ~80 px from the bottom edge. Suggested layout (horizontal stack, left-to-right):
+
+```
+HUD Canvas (Screen Space – Overlay)
+  └─ BottomHUD                       ← HorizontalLayoutGroup, spacing 24
+      ├─ PlayerHealthGroup            ← always visible; HorizontalLayoutGroup
+      │   ├─ HealthIcon               ← Image: ICON_FantasyWarrior_Stat_Health_01_Clean.png
+      │   │                             (Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/Icons_Stats/)
+      │   └─ PlayerHealthBar          ← MMProgressBar (see wiring below)
+      │       ├─ Background           ← Image: SPR_FantasyWarrior_Bar_Horizontal_04.png
+      │       │                         (Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/FantasyWarrior/)
+      │       ├─ Delayed              ← Image (orange fill) – assign to MMProgressBar.DelayedBarDecreasing
+      │       └─ Fill                 ← Image (red fill)   – assign to MMProgressBar.ForegroundBar
+      │
+      └─ HorseGroup                   ← HorseBarGroupUI + CanvasGroup; starts hidden (alpha 0)
+          ├─ HorseIcon                ← Image: ICON_SM_Item_Horseshoe_01.png
+          │                             (Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/Icons_Resources/)
+          ├─ HorseHealthGroup         ← HorizontalLayoutGroup
+          │   ├─ HeartIcon (optional) ← Image: ICON_FantasyWarrior_Stat_Health_01_Clean.png
+          │   └─ HorseHealthBar       ← MMProgressBar (foreground red, delayed orange)
+          │       ├─ Background
+          │       ├─ Delayed
+          │       └─ Fill
+          └─ HorseStaminaGroup        ← HorizontalLayoutGroup
+              ├─ SpeedIcon            ← Image: ICON_FantasyWarrior_Stat_Speed_01_Clean.png
+              └─ HorseStaminaBar      ← MMProgressBar (foreground green; Fill Image also assigned to
+                  ├─ Background         HorseStaminaUI.fillImage for exhaustion tinting)
+                  └─ Fill
+```
+
+### 2 — MMProgressBar settings (apply to each bar)
+
+| Setting | Value |
+|---|---|
+| FillMode | FillAmount |
+| BarDirection | LeftToRight |
+| TimeScale | UnscaledTime |
+| LerpForegroundBar | ✓ (speed 10–15) |
+| DelayedBarDecreasing | assign Delayed child |
+| SetInitialFillValueOnStart | ✓, InitialFillValue 1.0 |
+
+For `HorseStaminaBar`: leave `DelayedBarDecreasing` unassigned (stamina regen is fast; no drain ghost needed).
+
+### 3 — Attach scripts
+
+| GameObject | Component | Key fields |
+|---|---|---|
+| `PlayerHealthGroup` | `PlayerHealthBarUI` | `progressBar` → PlayerHealthBar |
+| `HorseHealthGroup` | `HorseHealthBarUI` | `progressBar` → HorseHealthBar |
+| `HorseGroup` | `HorseBarGroupUI` | `mountShowFeedback`, `mountHideFeedback` |
+| `HorseStaminaGroup` | `HorseStaminaUI` | `progressBar` → HorseStaminaBar; `fillImage` → HorseStaminaBar/Fill |
+
+All `PlayerMount`/`Health` refs auto-wire from `Player.Instance` when left empty.
+
+### 4 — Wire MMF_Player feedbacks on HorseGroup
+
+**Mount Show (`mountShowFeedback`)** — new MMF_Player on HorseGroup:
+- `MMF_CanvasGroupAlpha`: target = HorseGroup CanvasGroup, 0 → 1, duration 0.3 s, curve EaseOut
+- `MMF_Scale` (Punch): target = HorseGroup RectTransform, punch Y=0.08, duration 0.25 s
+- Optionally `MMF_Position` offset: anchor pos shift Y +20 → 0, duration 0.3 s, EaseOut
+
+**Mount Hide (`mountHideFeedback`)** — separate MMF_Player:
+- `MMF_CanvasGroupAlpha`: target = HorseGroup CanvasGroup, 1 → 0, duration 0.2 s
+
+Both feedbacks: set **Timing > Timescale Mode = Unscaled** (so they play during slow-mo intermission).
+
+### 5 — Bar visual polish (Synty sprites)
+
+- Set the `Background` images to `SPR_FantasyWarrior_Bar_Horizontal_04.png` (sliced, border ~8 px)
+  or `SPR_FantasyWarrior_Bar_Horizontal_05.png` for a narrower bar style
+- Tint the player health Fill red `(1, 0.2, 0.2)`, horse health Fill a slightly different red,
+  stamina Fill green `(0.25, 0.85, 0.3)` — `HorseStaminaUI` overrides this at runtime for exhaustion
+- Add a frame overlay using `SPR_HUD_FantasyWarrior_Frame_Box_Small_01.png` or a Box Background
+  sprite behind the whole BottomHUD for a parchment/fantasy feel
+
+### 6 — Verify
+
+- [ ] Player health bar always visible; losing health causes fill to drain with delayed orange ghost
+- [ ] Mounting a horse: HorseGroup slides/fades in (MMF animation plays)
+- [ ] Horse stamina bar drains green while galloping; tints orange when exhausted
+- [ ] Horse health bar drains when enemies hit the horse
+- [ ] Dismounting: HorseGroup fades out
+- [ ] Horse dying (auto-dismount): HorseGroup fades out
+- [ ] No errors in Console when starting from a non-mounted state
+
+---
+
 ## Enemy roster Phases ③–⑤ — Ancient Queen, Forest Witch, Mutant Guy, Medusa, Spirit Demon, Dark Elf, Slayer, Red Demon, Pig Butcher, Barbarian Giant, Fort Golem, Mechanical Golem — Unity Editor wiring
 
 The C# is done and the generator was run headlessly (all 12 variants built + mapped; idempotency
