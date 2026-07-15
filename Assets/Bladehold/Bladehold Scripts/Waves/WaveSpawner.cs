@@ -541,15 +541,30 @@ public class WaveSpawner : MonoBehaviour
         {
             enemy.GetComponent<ImpulseReceiver>()?.SetResistance(def.impulseResistance.Value);
         }
-        if (!Mathf.Approximately(def.scale, 1f))
+        if (!Mathf.Approximately(def.scale, 1f) || enemy.transform.localScale.y != 1f)
         {
-            enemy.transform.localScale *= def.scale;
-            // Agent dimensions don't follow transform scale, so scale them to match the visual.
+            float targetScale = def.scale;
+            enemy.transform.localScale = Vector3.one * targetScale;
+
             NavMeshAgent agent = enemy.GetComponent<NavMeshAgent>();
             if (agent != null)
             {
-                agent.radius *= def.scale;
-                agent.height *= def.scale;
+                // Reset agent dimensions relative to base goblin prefab defaults (0.5 radius, 2.0 height)
+                // and scale them, rather than multiplying the active agent size which would double-scale.
+                agent.radius = 0.5f * targetScale;
+                agent.height = 2f * targetScale;
+                
+                // Adjust the baseOffset to lower the pivot and keep the feet planted on the ground.
+                // The visual mesh feet are offset by 0.08 units vertically in the base prefab.
+                agent.baseOffset = -0.08f * targetScale;
+            }
+        }
+        else
+        {
+            NavMeshAgent agent = enemy.GetComponent<NavMeshAgent>();
+            if (agent != null)
+            {
+                agent.baseOffset = -0.08f;
             }
         }
     }

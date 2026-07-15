@@ -129,7 +129,7 @@ AnimatorState:
   - {fileID: 2307766008179787436}
   m_StateMachineBehaviours: []
   m_Position: {x: 50, y: 50, z: 0}
-  m_IKOnFeet: 0
+  m_IKOnFeet: 1
   m_WriteDefaultValues: 1
   m_Mirror: 0
   m_SpeedParameterActive: 0
@@ -2126,7 +2126,7 @@ AnimatorState:
   m_Transitions: []
   m_StateMachineBehaviours: []
   m_Position: {x: 50, y: 50, z: 0}
-  m_IKOnFeet: 0
+  m_IKOnFeet: 1
   m_WriteDefaultValues: 1
   m_Mirror: 0
   m_SpeedParameterActive: 0
@@ -3496,7 +3496,7 @@ AnimatorState:
   - {fileID: 895432502103074310}
   m_StateMachineBehaviours: []
   m_Position: {x: 50, y: 50, z: 0}
-  m_IKOnFeet: 0
+  m_IKOnFeet: 1
   m_WriteDefaultValues: 1
   m_Mirror: 0
   m_SpeedParameterActive: 0
@@ -3723,7 +3723,7 @@ AnimatorController:
     m_Controller: {fileID: 9100000}
   - m_Name: MoveSpeed
     m_Type: 1
-    m_DefaultFloat: 0
+    m_DefaultFloat: 1
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 9100000}
@@ -3821,7 +3821,7 @@ AnimatorController:
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
-    m_DefaultBool: 0
+    m_DefaultBool: 1
     m_Controller: {fileID: 9100000}
   - m_Name: FallingDuration
     m_Type: 1
@@ -3970,7 +3970,7 @@ AnimatorController:
     m_Behaviours: []
     m_BlendingMode: 0
     m_SyncedLayerIndex: -1
-    m_DefaultWeight: 1
+    m_DefaultWeight: 0
     m_IKPass: 0
     m_SyncedLayerAffectsTiming: 0
     m_Controller: {fileID: 9100000}
@@ -6454,15 +6454,6 @@ AnimatorStateMachine:
   - {fileID: -6707327981856735448}
   m_EntryTransitions: []
   m_StateMachineTransitions:
-  - first: {fileID: 1790282451161604178}
-    second:
-    - {fileID: -8118438887669713725}
-    - {fileID: 3219769585347100239}
-    - {fileID: 8207573239289224496}
-    - {fileID: -3263827556414112360}
-    - {fileID: -1537389802226702764}
-    - {fileID: -8454007508122442119}
-    - {fileID: -494253774927471600}
   - first: {fileID: 6604365710422616744}
     second:
     - {fileID: -3517661301517864862}
@@ -6481,6 +6472,15 @@ AnimatorStateMachine:
     - {fileID: 3452755659886607670}
     - {fileID: 4348406899900917072}
     - {fileID: -2710829411721907783}
+  - first: {fileID: 1790282451161604178}
+    second:
+    - {fileID: -8118438887669713725}
+    - {fileID: 3219769585347100239}
+    - {fileID: 8207573239289224496}
+    - {fileID: -3263827556414112360}
+    - {fileID: -1537389802226702764}
+    - {fileID: -8454007508122442119}
+    - {fileID: -494253774927471600}
   - first: {fileID: -5154619669261682928}
     second:
     - {fileID: 3300079922274740214}
