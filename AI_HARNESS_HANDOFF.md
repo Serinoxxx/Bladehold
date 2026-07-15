@@ -58,7 +58,7 @@ Code lives in `Assets/Bladehold/Bladehold Scripts/Editor/BalanceSim/`; data in `
 - [x] D2. `report.html` — `HtmlReport.cs`, wired into `ReportWriter.WriteAll`. Self-contained (inline CSS + static SVG, zero external requests). Per profile: survival curve, HP band, clear-time band, death histogram; findings table up top. Verified headless: `BalanceReports/phaseD_verify/report.html` = 21 KB, 16 SVGs (4 profiles × 4 charts), 12 polylines.
 - [x] D3. `CalibrationLoader.cs` — parses RunTelemetry CSVs, replays each run's real gold-tree purchases verbatim (`SimConfig.purchaseScript` → `UpgradePolicy.Spend(gold, wave)`), emits `calibration.csv` (run × wave × metric: real vs sim-median vs drift%) + `calibration_mape.json`. CLI `-simCalibrate [-simCalibrateProfile <id>] [-simTelemetryDir <path>]`; window "Calibrate vs Telemetry" button. Verified headless against **188 real Swordsman runs** (exit 0) — see finding below.
   - Deviation from plan: MAPE is written to its **own `calibration_mape.json`**, not folded into `summary.json` (calibration is a separate run mode from the projection, so it has no `summary.json` to fold into). Same data, cleaner separation.
-- [x] D4. Committed to `main` + push (Phase D BalanceSim files only; csproj/asset churn intentionally excluded — Unity regenerates csprojs, the asset churn is unrelated Editor noise).
+- [x] D4. Committed in `816f70c2` + pushed (Phase D BalanceSim files only; csproj/asset churn intentionally excluded — Unity regenerates csprojs, the asset churn is unrelated Editor noise).
 
 v3 (calibration parameter fitting; Berserker/Mage class support) is deliberately deferred — see plan.
 
