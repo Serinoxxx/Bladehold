@@ -108,4 +108,6 @@ re-applies structure/wiring, never overwrites existing SO assets, and refreshes 
 
 `/compile-check` (manifest edits compile in `Assembly-CSharp-Editor.csproj`), `/editor-wiring-todo`
 for whatever stays manual (animator states for new triggers, MMF juice, VFX/materials, balance),
-commit to `main` and push.
+commit to `main` and push. The generator's menu item can also run without leaving the session via
+the MCP bridge (`/unity-editor-mcp`) when the Editor is open; roster-number changes get a
+`/balance-sim` baseline pass.

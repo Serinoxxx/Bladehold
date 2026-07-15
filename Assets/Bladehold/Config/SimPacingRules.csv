@@ -1,0 +1,7 @@
+id,profile,policy,metric,waveMin,waveMax,min,max,severity,message
+bad_no_upg_dies,bad_noupgrades,none,death_wave_median,,,3,6,fail,"A no-upgrade bad player must die on waves 3-6"
+bad_dies_eventually,bad,cheapest,death_wave_p90,,,,12,fail,"Even upgrading, a bad player shouldn't reach wave 12+"
+good_survives_early,good,dpsGreedy,survival_rate,8,,0.9,,fail,"A good player should almost always reach wave 8"
+good_is_challenged,good,dpsGreedy,min_hp_fraction_med,5,10,,0.6,warn,"A good player should drop below 60% HP somewhere in waves 5-10"
+good_not_invincible,good,dpsGreedy,death_wave_p90,,,,25,warn,"Good players should still die by wave 25 at p90"
+waves_not_sluggish,,,clear_seconds_med,3,15,15,90,warn,"Median wave clear (waves 3+) should stay between 15s and 90s"

@@ -47,5 +47,5 @@ A new CSV under `Assets/Bladehold/Config/` + a `SkillTreeSO` asset assigned on t
 ## Finish protocol
 
 1. `/compile-check` after each stage (add new files to `Assembly-CSharp.csproj` first).
-2. `/editor-wiring-todo` — one entry per stage, matching the Berserker Stage A–E entries in `TODO.md` (SO assets, prefab slot wiring, animator override + baked events, class-select button, icons, balance).
+2. `/editor-wiring-todo` — one entry per stage, matching the Berserker Stage A–E entries in `TODO.md` (SO assets, prefab slot wiring, animator override + baked events, class-select button, icons, balance). With the Editor open, `/editor-wire` executes the MCP-doable items (baked animation events stay human).
 3. Commit each stage directly to `main` and push.
