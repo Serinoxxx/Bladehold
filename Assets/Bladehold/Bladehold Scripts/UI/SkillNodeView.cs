@@ -61,6 +61,29 @@ public class SkillNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     public event Action<SkillNodeView> HoverEntered;
     public event Action<SkillNodeView> HoverExited;
 
+    private void Awake()
+    {
+        // These are pure UI feedbacks that must keep playing while the game hard-freezes time
+        // (Time.timeScale = 0 during the wave intermission and after a gate falls, both of which
+        // show a skill tree). Forced here so authored feedbacks can't silently stay Scaled.
+        ForceUnscaledTime(spawnFeedback);
+        ForceUnscaledTime(hoverFeedback);
+        ForceUnscaledTime(purchaseFeedback);
+    }
+
+    private static void ForceUnscaledTime(MMF_Player player)
+    {
+        if (player == null)
+        {
+            return;
+        }
+        player.ForceTimescaleMode = true;
+        player.ForcedTimescaleMode = TimescaleModes.Unscaled;
+        // The player's own sequencing (delays, pauses) runs on its own clock, separate from the
+        // per-feedback mode above — freeze-proof that too.
+        player.PlayerTimescaleMode = TimescaleModes.Unscaled;
+    }
+
     public void Bind(SkillNode node, ISkillTreeService service, Action<string> onClicked)
     {
         this.node = node;
