@@ -1,5 +1,5 @@
 id,displayName,description,upgradeText,cost,growth,maxLevel,stat,kind,amount,prereqs,x,y,icon,root
-sword_dmg,Sharpened Edge,Increase sword damage,Sharpen the blade further,15,1.4,10,SwordDamage,Flat,1|2|3|4|5|6|7|8|9|10,bow_unlock;butter;knock_1;plunder,22.5,9.5,AttackDoubleSword_1_nobg,1
+sword_dmg,Sharpened Edge,Increase sword damage,Sharpen the blade further,15,1.4,10,SwordDamage,Flat,1|2|3|4|5|6|7|8|9|10,bow_unlock;butter;hp_1;knock_1;plunder,22.5,9.5,AttackDoubleSword_1_nobg,1
 range_ext,Extended Blade,Increase sword range,Extend the blade further,21,1.45,4,SwordRange,Percent,0.25,butter;charge_unlock;solid,26,9.5,Warriorskill_41_nobg,
 butter,Like Butter,Sword cuts through more enemies,Cut through one more enemy,30,1.38,8,MaxHitsPerSwing,Flat,1,medpack;range_ext;sword_dmg,25,9.5,Warriorskill_21_nobg,
 move_1,Fleet Footed,Increase move speed,Increase move speed further,24,2,3,MoveSpeed,Percent,0.05,plunder;vamp,22.5,6,Aura_Speed_nb,
@@ -23,9 +23,9 @@ lightbounce,Arc Chain,Increase chain lightning bounces,Increase chain lightning 
 lightdmg,Overcharged Bolts,Increase chain lightning damage,Increase chain lightning damage further,90,1.58,3,ChainLightningDamagePercent,Flat,0.15,lightning_unlock,29,8.5,Big_Lightning_nobg,
 lightcrit,Static Discharge,Increase chain lightning crit chance,Increase chain lightning crit chance further,105,1.57,2,ChainLightningCritChance,Flat,0.1,lightbounce,30,8.5,Critical_strike_nobg,
 alldmg,Raw Power,Increase all damage,Increase all damage further,180,1.47,6,AllDamageMultiplier,Percent,.1,plunder,21.5,7,Warriorskill_44_nobg,
-bow_unlock,Bow,Unlock the bow: hold aim to draw and fire arrows,,60,1,1,BowUnlocked,Flat,1,multishot;pickuparrow_1;sprint;sword_dmg,22.5,12,bow_shot1_nobg,
+bow_unlock,Bow,Unlock the bow: hold aim to draw and fire arrows,,60,1,1,BowUnlocked,Flat,1,bow_dmg;multishot;pickuparrow_1;sprint;sword_dmg,22.5,12,bow_shot1_nobg,
 multishot,Multi Shot,Fire an additional arrow with reduced damage,Fire one more additional arrow,75,1.4,7,BowMultishotArrows,Flat,1,bow_unlock;precision;swiftarrow,23.5,12,Skill_MultiArrowShoot_nb,
-swiftarrow,Swift Arrows,Arrows fly faster and drop less over distance,Increase arrow speed further,75,1.4,5,BowArrowSpeed,Percent,0.2,multishot;flamearrow,24.5,12,,
+swiftarrow,Swift Arrows,Arrows fly faster and drop less over distance,Increase arrow speed further,75,1.4,5,BowArrowSpeed,Percent,0.2,multishot;flamearrow,24.5,12,Archerskill_01_nobg,
 multidmg,Heavy Arrows,Increase additional arrow damage proportional to main arrow,Increase additional arrow damage further,90,1.35,6,BowMultishotDamagePercent,Flat,0.15|0.15|0.05|0.15|0.15|0.1,freezedraw;unstableorbs_1,21.5,14,Archerskill_12,
 bounce,Bounce Shot,Chance for arrows to bounce to additional enemies,Increase bounce chance,90,1.47,5,BowBounceChance,Flat,0.2,brainfreeze;icebreaker;imparrow_1;unstableorbs_1,22.5,15.5,Skill_321_magicarrows,
 precision,Precision Shot,Increase vulnerable hit damage,Increase vulnerable hit damage further,75,1.4,7,BowPrecisionDamageBonus,Flat,1|0.5|0.5|0.5|0.5|0.5|0.5,flamearrow;multishot;pickuparrow_1,23.5,13,Archerskill_50_goodaim,
@@ -49,3 +49,6 @@ horse_health,Barded Steed,Increase your horse's max health,Increase your horse's
 horse_speed,Thoroughbred,Increase your horse's speed,Increase your horse's speed further,60,1.4,5,HorseSpeedMultiplier,Percent,0.1,horse_unlock,27,12.5,,
 horse_heal,Stable Diet,Health Packs your horse runs over also heal the horse,,90,1,1,HorseHealFromPacks,Flat,1,horse_health,25,13.5,,
 horse_archery,Horse Archer,Use your bow while mounted,,120,1,1,HorseArcheryUnlocked,Flat,1,horse_speed,27,13.5,,
+hp_1,Vitality,Increase max health,Increase max health further,45,1.5,5,PlayerMaxHealthMultiplier,Percent,0.1,hp_2;sword_dmg,23.5,9.5,skill_134_heal,
+hp_2,Vigor,Greatly increase max health,Greatly increase max health further,75,1.6,3,PlayerMaxHealthMultiplier,Percent,0.25,hp_1,24,10.5,skill_134_heal,
+bow_dmg,Stronger String,Increase bow damage,Increase bow damage further,45,1.5,5,BowDamage,Flat,1|2|3|4|5,bow_unlock,22.5,11,bow_shot1_nobg,

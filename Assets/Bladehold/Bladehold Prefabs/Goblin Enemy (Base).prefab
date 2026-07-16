@@ -450,6 +450,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 646796617839358021}
   - {fileID: 5567555939424968253}
   - {fileID: 7488025537993424580}
   - {fileID: 542235257677758826}
@@ -482,7 +483,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac88efbfcc5e45e42b0d9d6cbb65212c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AIAnimation
-  animator: {fileID: 1991649265611916359}
+  animator: {fileID: 7357122731707151607}
   agent: {fileID: 7080334578233263117}
   movementData: {fileID: 11400000, guid: 12c4a1b98935e144fbb340671b8eef6b, type: 2}
   health: {fileID: 2416392165065999887}
@@ -805,7 +806,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20efafe3f21b4944a9192633a74e944d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AIAttack
-  animator: {fileID: 1991649265611916359}
+  animator: {fileID: 7357122731707151607}
   health: {fileID: 2416392165065999887}
   attackData: {fileID: 11400000, guid: 9be715cbbce5a2a4fa016e21b6a1c596, type: 2}
   targetSelector: {fileID: 6317806685617389453}
@@ -882,7 +883,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CorpseDespawner
   health: {fileID: 2416392165065999887}
-  animator: {fileID: 1991649265611916359}
+  animator: {fileID: 7357122731707151607}
   config: {fileID: 11400000, guid: ec82f81ded53c164e8360ca39a9dbe3a, type: 2}
 --- !u!114 &6317806685617389453
 MonoBehaviour:
@@ -909,7 +910,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5359f5d66e32c6b4eb37ee03ebab4315, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyRagdoll
-  animator: {fileID: 1991649265611916359}
+  animator: {fileID: 7357122731707151607}
   config: {fileID: 11400000, guid: 0dc3a05117208104ebded74f15a5fa59, type: 2}
   corpseDespawner: {fileID: 8820226531336169178}
 --- !u!114 &7287549992360804403
@@ -927,7 +928,7 @@ MonoBehaviour:
   health: {fileID: 2416392165065999887}
   agent: {fileID: 7080334578233263117}
   ragdoll: {fileID: 2774917170554717151}
-  animator: {fileID: 1991649265611916359}
+  animator: {fileID: 7357122731707151607}
   rootCollider: {fileID: 4165309427327923282}
   aiMovement: {fileID: 8448426296968807282}
   aiAnimation: {fileID: 4497168724745371170}
@@ -2577,6 +2578,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 8993c9fb4ee484b4594d38397102a015, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1193340829816115258, guid: 8993c9fb4ee484b4594d38397102a015, type: 3}
       propertyPath: m_Layer
       value: 7
@@ -2745,11 +2750,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -2349476437193732044, guid: 8993c9fb4ee484b4594d38397102a015, type: 3}
   m_PrefabInstance: {fileID: 5388935038143822294}
   m_PrefabAsset: {fileID: 0}
---- !u!95 &1991649265611916359 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 8993c9fb4ee484b4594d38397102a015, type: 3}
-  m_PrefabInstance: {fileID: 5388935038143822294}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &5567555939424968253 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 8993c9fb4ee484b4594d38397102a015, type: 3}
@@ -2798,3 +2798,80 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59cfd3ee7cc3f4f4e88929ac8e296897, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VulnerableSpot
+--- !u!1001 &5631740338424806437
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 4881413148910990634}
+    m_Modifications:
+    - target: {fileID: 2899814424574904530, guid: 21f84703d5009d747a4454b9ab0d921b, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: c8b8d86c69b762249a3b672b2f085f21, type: 2}
+    - target: {fileID: 5106545309382691936, guid: 21f84703d5009d747a4454b9ab0d921b, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5106545309382691936, guid: 21f84703d5009d747a4454b9ab0d921b, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5106545309382691936, guid: 21f84703d5009d747a4454b9ab0d921b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5106545309382691936, guid: 21f84703d5009d747a4454b9ab0d921b, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5106545309382691936, guid: 21f84703d5009d747a4454b9ab0d921b, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5106545309382691936, guid: 21f84703d5009d747a4454b9ab0d921b, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5106545309382691936, guid: 21f84703d5009d747a4454b9ab0d921b, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5106545309382691936, guid: 21f84703d5009d747a4454b9ab0d921b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5106545309382691936, guid: 21f84703d5009d747a4454b9ab0d921b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5106545309382691936, guid: 21f84703d5009d747a4454b9ab0d921b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6884194854392619717, guid: 21f84703d5009d747a4454b9ab0d921b, type: 3}
+      propertyPath: m_Name
+      value: GoblinFighter_04
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 9069818185071653982, guid: 21f84703d5009d747a4454b9ab0d921b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
+    - targetCorrespondingSourceObject: {fileID: 9069818185071653982, guid: 21f84703d5009d747a4454b9ab0d921b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
+  m_SourcePrefab: {fileID: 100100000, guid: 21f84703d5009d747a4454b9ab0d921b, type: 3}
+--- !u!4 &646796617839358021 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5106545309382691936, guid: 21f84703d5009d747a4454b9ab0d921b, type: 3}
+  m_PrefabInstance: {fileID: 5631740338424806437}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &7357122731707151607 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 2899814424574904530, guid: 21f84703d5009d747a4454b9ab0d921b, type: 3}
+  m_PrefabInstance: {fileID: 5631740338424806437}
+  m_PrefabAsset: {fileID: 0}

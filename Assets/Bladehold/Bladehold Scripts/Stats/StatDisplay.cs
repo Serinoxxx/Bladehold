@@ -78,6 +78,7 @@ public static class StatDisplay
         { StatType.ChainLightningCritChance, new Info("Lightning Crit Chance", StatFormat.Percent) },
 
         { StatType.AllDamageMultiplier, new Info("All Damage", StatFormat.Multiplier) },
+        { StatType.PlayerMaxHealthMultiplier, new Info("Max Health", StatFormat.Multiplier) },
 
         { StatType.BowDamage, new Info("Bow Damage", StatFormat.Number) },
         { StatType.BowMaxChargeLevels, new Info("Bow Charge Levels", StatFormat.Integer) },

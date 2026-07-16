@@ -1,5 +1,17 @@
 # TODO
 
+## Max Health and Bow Damage Skills — Unity Editor wiring
+
+The C# is done. Added `PlayerMaxHealthMultiplier` to `StatType.cs` and a new `PlayerMaxHealthBinder` component to scale the player's max health based on the stat. Also added `hp_1` (Vitality), `hp_2` (Vigor), and `bow_dmg` (Stronger String) nodes to `SkillTree.csv`.
+
+- [ ] **Player prefab — `PlayerMaxHealthBinder`** (`Bladehold Prefabs/Player.prefab`): add the component on the player root (next to `Health` and `PlayerStats`). Both `stats` and `health` refs auto-wire via `OnValidate`.
+- [ ] **Skill icons**: `hp_1`, `hp_2`, and `bow_dmg` currently reuse `skill_134_heal` and `bow_shot1_nobg`. Assign better sprites via **Bladehold > Skill Tree Editor** if desired.
+- [ ] **Balance pass**: tune cost/growth and amounts for the new nodes in `SkillTree.csv`.
+
+## Manual verification (Max Health and Bow Damage Skills)
+
+- [ ] Purchase Vitality and Vigor in the skill tree; verify the player's max health visibly increases in the UI and in actual hit points.
+- [ ] Purchase Stronger String; verify arrow damage numbers increase.
 ## Arrow projectiles + Swift Arrows skill — Unity Editor wiring
 
 The C# is done. Arrows are no longer hitscan: `Player/ArrowProjectile.cs` is a real projectile
@@ -17,22 +29,19 @@ convention). **With `arrowPrefab` unassigned the bow degrades to the old hitscan
 `swiftarrow` ("Swift Arrows", `BowArrowSpeed` Percent +0.2/level, 5 levels, cost 75 growth 1.4,
 prereqs `multishot;flamearrow`, at 24.5,12). `Stats/StatDisplay.cs` has the "Arrow Speed" entry.
 
-- [ ] Create the arrow prefab: a small arrow mesh (or a stretched capsule placeholder) with a
-      `TrailRenderer` child (this replaces the old `BowTracer` streak as the shot's look — match its
-      width/gradient), the `ArrowProjectile` component on the root (tunables `lingerSeconds` 1.5,
-      `maxLifetimeSeconds` 15), **no collider and no Rigidbody** (it sweeps its own physics casts).
-      Orientation: the mesh must point down local +Z (flight direction).
-- [ ] On the Player prefab's `PlayerBow`, hand-assign the new **Arrow Prefab** field (nothing
-      auto-wires it — the tracer fallback hides a missed assignment, so check the Console for the
-      "falls back to instant hitscan" warning).
-- [ ] `BowSO` asset: confirm the new serialized defaults deserialized (`baseArrowSpeed` 30,
-      `arrowGravity` 9.81, `arrowRadius` 0.05) — tune speed/gravity for feel ("fairly slow with
-      visible drop" is the design intent).
-- [ ] Skill icon: `swiftarrow` has a blank icon — assign one via **Bladehold > Skill Tree Editor**
-      (drag-and-drop registers the sprite in the SO's `icons` list; the Archer skill sheet has speed
-      arrow candidates).
-- [ ] Balance pass: `swiftarrow` cost 75 / growth 1.4 / +20%×5 levels and its 24.5,12 tree position
-      are placeholders, as are `baseArrowSpeed`/`arrowGravity`.
+- [x] Create the arrow prefab — done via MCP: `Bladehold Prefabs/ArrowProjectile.prefab`, reusing
+      the StuckArrow's Synty `Wep_Arrow_Primitive_01` model (tip at root, shaft down -Z, model
+      rotated +90°X) plus a `Trail` child TrailRenderer matching the BowTracer look (Default-Line
+      material, width 0.05, white→transparent, time 0.25 s). No collider/Rigidbody.
+- [x] On the Player prefab's `PlayerBow`, hand-assign the new **Arrow Prefab** field — done via MCP
+      (assigned on `SidekickSyntyCharacter`, re-queried to confirm it stuck).
+- [x] `BowSO` asset defaults verified via MCP (`baseArrowSpeed` 30, `arrowGravity` 9.81,
+      `arrowRadius` 0.05). **HUMAN:** tune speed/gravity for feel ("fairly slow with visible drop"
+      is the design intent).
+- [x] Skill icon: `swiftarrow` — done via MCP: `Archerskill_01_nobg` (the one unused Archer sheet
+      sprite) registered in `SkillTreeSO.icons` and set in the CSV; `GetIcon` verified resolving.
+- [ ] **HUMAN:** Balance pass: `swiftarrow` cost 75 / growth 1.4 / +20%×5 levels and its 24.5,12
+      tree position are placeholders, as are `baseArrowSpeed` 30 / `arrowGravity` 9.81 (feel check).
 
 ## Manual verification (arrow projectiles + Swift Arrows)
 

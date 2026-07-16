@@ -74,6 +74,9 @@ public enum StatType
     /// </summary>
     AllDamageMultiplier,
 
+    /// <summary>Unitless multiplier on the player's maximum health (base 1.0, the MoveSpeed convention).</summary>
+    PlayerMaxHealthMultiplier,
+
     /// <summary>1 = the bow is unlocked and can be drawn (hold aim); 0 = locked (aiming does nothing, sword stays out). Gated by the "Bow" skill node.</summary>
     BowUnlocked,
     /// <summary>Damage of one arrow before charge/crit/multipliers. Base comes from BowSO.baseDamage.</summary>

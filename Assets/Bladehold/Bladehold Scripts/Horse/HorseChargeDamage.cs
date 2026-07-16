@@ -1,3 +1,4 @@
+using MoreMountains.Feedbacks;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -23,6 +24,7 @@ public class HorseChargeDamage : MonoBehaviour
     [SerializeField] private HorseAnimation horseAnimation;
     [Tooltip("Layers the trample can hit.")]
     [SerializeField] private LayerMask hitLayers = ~0;
+    [SerializeField] private MMF_Player hitFeedback;
 
     /// <summary>Fired once per trample hit with the victim and the (approximate) hit point.</summary>
     public event Action<IDamageable, Vector3> OnHit;
@@ -200,6 +202,11 @@ public class HorseChargeDamage : MonoBehaviour
                 source = source,
                 unparryable = true,
             });
+
+            if (hitFeedback != null)
+            {
+                hitFeedback.PlayFeedbacks();
+            }
 
             OnHit?.Invoke(damageable, collider.ClosestPoint(center));
         }

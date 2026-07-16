@@ -10922,6 +10922,7 @@ MonoBehaviour:
   playerAnimator: {fileID: 3663620996007313722}
   swordModel: {fileID: 4103658122623789462}
   bowModel: {fileID: 457783407429013535}
+  arrowPrefab: {fileID: 5077474153231109285, guid: 0b920c3bbaacd4141a30aac7fc065986, type: 3}
   tracerPrefab: {fileID: 6461299207872465346, guid: 96f96ed4061392241a998c6b760b69bf, type: 3}
   drawFeedback: {fileID: 9096973897892025506}
   fireFeedback: {fileID: 2388480790343458676}

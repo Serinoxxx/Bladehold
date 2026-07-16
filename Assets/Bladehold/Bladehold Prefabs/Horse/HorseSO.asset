@@ -38,4 +38,13 @@ MonoBehaviour:
   hitCooldownSeconds: 1
   hitBoxHalfExtents: {x: 0.8, y: 0.8, z: 1.2}
   hitBoxForwardOffset: 2.19
+  crowdLayers:
+    serializedVersion: 2
+    m_Bits: 384
+  crowdPushRadius: 3
+  crowdForwardOffset: 1
+  crowdPushSpeed: 4
+  crowdDragPerEnemy: 0.06
+  crowdMinSpeedFraction: 0.17
+  blockedSpeedReconcileRate: 30
   dismountLocalOffset: {x: 1.4, y: 0, z: 0}
