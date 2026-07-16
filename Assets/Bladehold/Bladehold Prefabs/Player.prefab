@@ -9667,6 +9667,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
       insertIndex: -1
       addedObject: {fileID: 628982002110065904}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8010178808368797352}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8676661925207136709}
   m_SourcePrefab: {fileID: 100100000, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
 --- !u!4 &190421269890890082 stripped
 Transform:
@@ -10546,6 +10552,7 @@ MonoBehaviour:
   componentsToDisable:
   - {fileID: 6674464755654316294}
   - {fileID: 6872381413864324108}
+  - {fileID: 1123551956803832767}
   deathTrigger: Death
 --- !u!114 &9087728008629332351
 MonoBehaviour:
@@ -11197,6 +11204,36 @@ MonoBehaviour:
   pitchClampDegrees: 90
   blendSeconds: 0.25
   attackLingerSeconds: 0.8
+--- !u!114 &8010178808368797352
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8033356972124291578}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7cade2422bb13c64197e3f58c793dfbc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Parry
+  health: {fileID: 46043393445266479}
+  stats: {fileID: 0}
+  parryFeedback: {fileID: 0}
+  facingDotThreshold: 0.3
+--- !u!114 &8676661925207136709
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8033356972124291578}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77827a83e6310804997e9b14df79803b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Counterstrike
+  parry: {fileID: 8010178808368797352}
+  stats: {fileID: 0}
 --- !u!4 &8319765117670202089 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8013909246233647550, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}

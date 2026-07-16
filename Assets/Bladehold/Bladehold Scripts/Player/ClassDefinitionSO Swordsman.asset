@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb9387e3046a24149a84101c10ce5f95, type: 3}
+  m_Name: ClassDefinitionSO Swordsman
+  m_EditorClassIdentifier: Assembly-CSharp::ClassDefinitionSO
+  id: swordsman
+  displayName: Swordsman
+  description: A disciplined blade-master. Balanced speed and steel, with a longbow
+    for picking off the horde at range.
+  animatorOverride: {fileID: 0}
+  characterModelPrefab: {fileID: 0}
+  chargeTimePerLevel: 1
+  skillTree: {fileID: 0}

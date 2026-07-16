@@ -251,10 +251,11 @@ generator could wire it headlessly. Five new manifest entries in `Editor/EnemyMa
 stand off (`navStoppingDistance` 8/8/10), and remove `GoldenGoblin`/`ImpulseGoblin` (the Storm
 Witch precedent).
 
-- [ ] **Prereq — the next entry's map-asset items**: `EnemyPrefabMap.asset` now exists (the
+- [x] **Prereq — the next entry's map-asset items**: `EnemyPrefabMap.asset` now exists (the
       generator run created it with the six generated ids) but still needs the hand-built
       mappings added (`goblin`, `goblin_brute`, `storm_witch`, `troll`) **and** assignment on
       `WaveSpawner` (Bladehold Test Scene) and `EnemyZoo` before ANY type can spawn.
+      *(2026-07-16: done — see the enemy-prefab-map section below.)*
 - [ ] **Animator (cosmetic gap, not blocking)**: all three casters fire the existing `Attack`
       trigger, so they play the goblin melee swing as their "cast". Attacks still deal damage on
       their wind-up timers; add proper cast states/clips on the shared goblin controller when
@@ -314,15 +315,16 @@ seeded with a structure-free `dwarf` entry (the smoke test; no `Enemies.csv` row
 spawn in waves). Hand-built variants (Brute/Storm Witch/Troll) deliberately have no manifest entry.
 The 20-enemy roadmap that will consume this lives in `ENEMY_TYPES_PLAN.md`.
 
-- [ ] **Fill the hand-built mappings in the map asset** — the asset itself now exists (the
+- [x] **Fill the hand-built mappings in the map asset** — the asset itself now exists (the
       generator run created `Assets/Bladehold/Bladehold Scripts/Enemies/EnemyPrefabMap.asset` with
       the six generated ids): add `goblin` → `Goblin Enemy (Base)`, `goblin_brute` →
       `Goblin Brute Enemy Variant`, `storm_witch` → `Storm Witch Enemy Variant`, `troll` →
       `Troll Enemy Variant`. (`bomber`/`knight` stay unmapped until their prefabs exist —
-      same as before the refactor.)
-- [ ] **Assign the asset** on the `WaveSpawner` in `Bladehold Test Scene.unity` (`prefabMap`,
+      same as before the refactor.) *(2026-07-16: all four added; map has 22 entries.)*
+- [x] **Assign the asset** on the `WaveSpawner` in `Bladehold Test Scene.unity` (`prefabMap`,
       hand-assigned — the old `enemyPrefabs` list rows are gone) **and** on the `EnemyZoo`
-      component in the Enemy Zoo scene (`prefabMap`).
+      component in the Enemy Zoo scene (`prefabMap`). *(2026-07-16: WaveSpawner assigned;
+      EnemyZoo already had it.)*
 - [x] **Run the generator once** — done headlessly 2026-07-14 (Phase ①+② session): all six
       variants created, map asset created with the six generated ids, idempotency re-run clean.
       (`dwarf` also got its `Enemies.csv` row, so no missing-row warning applies anymore.)
@@ -366,11 +368,13 @@ from existing pickups; the spawner scatters N per wave on `WaveStarted` (NavMesh
 the player, weighted by chest level). **Reincarnate node** `greedy_stand` ("Greedy Stand", +2%/wave
 per level ×4) added to `Config/Reincarnate.csv`. New `StatType.HoldTheLineGoldPerWave`.
 
-- [ ] **Re-enable the gate in the scene** (your task) — the second fail-state. `HoldTheLineBonus`
+- [x] **Re-enable the gate in the scene** (your task) — the second fail-state. `HoldTheLineBonus`
       and the intermission already listen for `Gate.OnAnyGateDestroyed`; nothing else to wire for it.
-- [ ] **HoldTheLineBonus**: add the component to a scene object (the player root or a systems object
+      *(2026-07-16: `Gate_Test` re-activated in `Bladehold Test Scene`.)*
+- [x] **HoldTheLineBonus**: add the component to a scene object (the player root or a systems object
       — it finds `Player.Instance.Stats` itself). Optional: assign `extendFeedback` (a chime/flash
       when the bonus grows) and `resetFeedback` (a deflating stinger on loss). `baseGoldPerWave` 0.05.
+      *(2026-07-16: added to the `WaveSpawner` object; optional feedbacks left unassigned — no audio picked yet.)*
 - [ ] **Intermission canvas** (new, or a panel on the HUD canvas):
   - [ ] A root object with `WaveIntermissionUI`; assign `spawner`/`holdTheLineBonus`/`statsPanel`
         (auto-wire via `OnValidate`), `intermissionRoot`, `choiceButtons` (container), the two
@@ -643,12 +647,13 @@ their own `Health` alongside `sourcePosition` (previously melee attacks against 
 set either). New `parry_*`/`counter_*` rows already in `Config/SkillTree.csv` (fresh column at
 x=6, y=0-8, chained off `solid_1`).
 
-- [ ] **Player prefab** (`Assets/Bladehold/Bladehold Prefabs/Player.prefab`):
-  - [ ] Add a `Parry` component on the player root (next to `Health`/`DamageBlocker`); optionally
+- [x] **Player prefab** (`Assets/Bladehold/Bladehold Prefabs/Player.prefab`):
+  - [x] Add a `Parry` component on the player root (next to `Health`/`DamageBlocker`); optionally
         assign a `parryFeedback` `MMF_Player` (a parry clang/flash) and tune `facingDotThreshold`
         (0.3 default — wider than dead-on, but not the whole front hemisphere).
-  - [ ] Add a `Counterstrike` component on the player root; `parry` auto-wires via `OnValidate`
-        (`GetComponent<Parry>()`).
+        *(2026-07-16: added on `SidekickSyntyCharacter` next to `Health`/`DamageBlocker`; `parryFeedback` left unassigned, threshold at default.)*
+  - [x] Add a `Counterstrike` component on the player root; `parry` auto-wires via `OnValidate`
+        (`GetComponent<Parry>()`). *(2026-07-16: added + `parry` ref verified wired.)*
 - [ ] **Skill icon**: `parry_*`/`counter_*` reuse already-registered icon names
       (`Warriorskill_18_block`, `IncreaseStrength_2/3/4_nobg`), so no new icon drag-and-drop should
       be needed — confirm they render in **Bladehold > Skill Tree Editor**.
@@ -799,12 +804,14 @@ Attack hold comes from `InputReader` press/release events; bow aim reads `Player
 movement is detected via the `CharacterController`, so the controller's own strafe rotation takes
 over untouched the moment the player moves.
 
-- [ ] **Player prefab** (`Assets/Bladehold/Bladehold Prefabs/Player.prefab`): add a `CombatFacing`
+- [x] **Player prefab** (`Assets/Bladehold/Bladehold Prefabs/Player.prefab`): add a `CombatFacing`
       component on the player root. `inputReader`/`bow`/`characterController` auto-wire via
       `OnValidate`; `facingCamera` defaults to `Camera.main`. Defaults for `rotationSmoothing` (10,
       matching the controller) and `stationarySpeedThreshold` (0.1) should be fine.
-- [ ] **PlayerDeath**: add the new `CombatFacing` component to `PlayerDeath`'s inspector list of
+      *(2026-07-16: was already on `SidekickSyntyCharacter` with all refs wired — verified.)*
+- [x] **PlayerDeath**: add the new `CombatFacing` component to `PlayerDeath`'s inspector list of
       control components it disables on death, so a corpse holding attack doesn't keep turning.
+      *(2026-07-16: appended to `componentsToDisable`.)*
 
 ## Manual verification (combat facing)
 
@@ -849,10 +856,12 @@ the active tree were already skipped, so the other class's purchases just go dor
       events on the new clip's import settings**: `PlaySwordWoosh` early in the swing and
       `OneHandedSwordAttack` on the impact frame — same names as the 1H clip, so `AnimationEvents`
       routes them to whichever weapon is active. A missing event = silent no-hit swings.
-- [ ] **ClassDefinitionSO assets ×2** (menu `Scriptable Objects/ClassDefinitionSO`):
+- [x] **ClassDefinitionSO assets ×2** (menu `Scriptable Objects/ClassDefinitionSO`):
       `swordsman` (displayName "Swordsman", null override, chargeTimePerLevel 1.0, null skillTree)
       and `berserker` (displayName "Berserker", the override controller, ~1.2, skillTree left null
-      until Stage E).
+      until Stage E). *(2026-07-16: both created in `Bladehold Scripts/Player/` with
+      id/displayName/description only — berserker's `animatorOverride` and ~1.2 chargeTime still
+      pending the Stage A axe/animator work.)*
 - [ ] **Player.prefab**: add `PlayerClassController` to the root. Slot 0 = swordsman: weaponObjects
       `[1H_Sword]`, meleeTrigger/hitFeedback = the sword's, classComponents `[PlayerBow,
       FreezingDraw]`. Slot 1 = berserker: weaponObjects `[1H_Axe]`, the axe's trigger/feedback,
@@ -874,11 +883,15 @@ the saved class so an untouched panel keeps it) and `DeathScreen` hooks: the pan
 Reincarnate tree on the first Reincarnate click, and the second click ("Begin Next Life") persists
 `SelectedClassId` via `PlayerClassController.SetSavedClass` right before the scene reload.
 
-- [ ] **Class-select panel** under the death-screen canvas, next to `reincarnateTreePanel`:
+- [x] **Class-select panel** under the death-screen canvas, next to `reincarnateTreePanel`:
       a `ClassSelectPanel` with two authored buttons (Swordsman / Berserker), each with a name TMP
       label, an optional description TMP label, and an optional selected-highlight object. Assign
       the two `ClassDefinitionSO` assets, then assign the panel on `DeathScreen.classSelectPanel`.
       Active/inactive state doesn't matter — `DeathScreen.Start` hides it until points are banked.
+      *(2026-07-16: built — `ReincarnateSkillTree` narrowed to 1200 wide at x=-280, panel in the
+      freed right strip; two Synty-framed cards (weapon icon + name + description + gold glow
+      highlight, `AC_Button_FantasyWarrior_Basic_01` animator), options + `DeathScreen.classSelectPanel`
+      wired. Play-mode verified: pre-selects saved class, click switches highlight/`SelectedClassId`.)*
 
 **Manual verification (Stage B)**
 - [ ] Die → Reincarnate: class panel appears beside the Reincarnate tree, current class highlighted.
