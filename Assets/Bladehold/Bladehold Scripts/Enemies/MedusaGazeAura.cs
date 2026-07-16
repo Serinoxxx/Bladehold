@@ -19,6 +19,12 @@ public class MedusaGazeAura : MonoBehaviour
     [SerializeField] private Health health;
     [Tooltip("Optional feedback played each time this medusa's gaze catches the player (a stony chord).")]
     [SerializeField] private MMF_Player gazeCaughtFeedback;
+    [Tooltip("The lightning effect component to enable when gazing at the player.")]
+    [SerializeField] private LightningSystemChain lightningEffect;
+    [Tooltip("Transform on the Medusa to use as the origin for the lightning chain (e.g., an eye or head bone).")]
+    [SerializeField] private Transform lightningOriginPoint;
+    [Tooltip("Offset from the player's origin for the lightning chain.")]
+    [SerializeField] private Vector3 lightningTargetOffset = new Vector3(0, 1.5f, 0);
 
     // How many medusas currently hold the player in their gaze, and the exact percent the first
     // one applied (so the last release cancels precisely even if the SO is retuned mid-run).
@@ -33,6 +39,8 @@ public class MedusaGazeAura : MonoBehaviour
     private bool isDead = false;
     private bool playerDead = false;
     private bool anyError = false;
+
+    private Transform lightningTargetTransform;
 
     private void OnValidate()
     {
@@ -85,6 +93,13 @@ public class MedusaGazeAura : MonoBehaviour
             playerHealth.OnDied += HandlePlayerDied;
         }
 
+        if (!anyError)
+        {
+            lightningTargetTransform = new GameObject("LightningTarget").transform;
+            lightningTargetTransform.SetParent(player, false);
+            lightningTargetTransform.localPosition = lightningTargetOffset;
+        }
+
         lastTickTime = Time.time - Random.value * data.tickInterval;
     }
 
@@ -102,6 +117,8 @@ public class MedusaGazeAura : MonoBehaviour
         {
             playerHealth.OnDied -= HandlePlayerDied;
         }
+
+        if (lightningTargetTransform != null) Destroy(lightningTargetTransform.gameObject);
     }
 
     private void HandleDied()
@@ -170,6 +187,13 @@ public class MedusaGazeAura : MonoBehaviour
         {
             gazeCaughtFeedback.PlayFeedbacks();
         }
+
+        if (lightningEffect != null)
+        {
+            Transform origin = lightningOriginPoint != null ? lightningOriginPoint : transform;
+            lightningEffect.chainPoints = new Transform[] { origin, lightningTargetTransform };
+            lightningEffect.gameObject.SetActive(true);
+        }
     }
 
     private void ReleaseGaze()
@@ -185,6 +209,11 @@ public class MedusaGazeAura : MonoBehaviour
         {
             // Add the exact negative back — the HoldTheLineBonus cancellation idiom.
             stats.AddModifier(StatType.MoveSpeed, ModifierKind.Percent, appliedSlowPercent);
+        }
+
+        if (lightningEffect != null)
+        {
+            lightningEffect.gameObject.SetActive(false);
         }
     }
 }

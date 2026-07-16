@@ -407,7 +407,7 @@ public class LocomotionAnimator
 
         _animator.SetBool(_isStoppedHash, _isStopped);
         _animator.SetBool(_isStartingHash, _isStarting);
-        _animator.SetBool(_isStrafingHash, input.IsStrafing);
+        _animator.SetFloat(_isStrafingHash, input.IsStrafing ? 1f : 0f);
         _animator.SetBool(_isWalkingHash, input.IsWalking);
         _animator.SetBool(_isCrouchingHash, input.IsCrouching);
         _animator.SetBool(_isGroundedHash, input.IsGrounded);
