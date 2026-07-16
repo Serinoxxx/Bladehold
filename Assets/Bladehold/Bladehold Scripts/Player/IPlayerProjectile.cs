@@ -4,9 +4,9 @@ using UnityEngine;
 /// <summary>
 ///     A player-fired projectile currently in flight, registered while alive so enemy effects (the
 ///     Barbarian Giant's whirlwind) can find and destroy it mid-air. Implemented by
-///     <see cref="AxeProjectile" /> and <see cref="MagicMissileProjectile" /> via
-///     <c>OnEnable</c>/<c>OnDisable</c>. The bow is hitscan, so it has no projectile to register —
-///     whirlwinds simply don't interact with arrows.
+///     <see cref="AxeProjectile" />, <see cref="MagicMissileProjectile" />, and
+///     <see cref="ArrowProjectile" /> via <c>OnEnable</c>/<c>OnDisable</c> — so whirlwinds swat
+///     arrows out of the air like everything else.
 /// </summary>
 public interface IPlayerProjectile
 {

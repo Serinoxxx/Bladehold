@@ -89,6 +89,7 @@ public static class StatDisplay
         { StatType.BowStormArrows, new Info("Storm Arrows", StatFormat.Integer) },
         { StatType.BowPickupArrows, new Info("Retriever", StatFormat.Integer) },
         { StatType.BowPrecisionDamageBonus, new Info("Precision Damage", StatFormat.Percent) },
+        { StatType.BowArrowSpeed, new Info("Arrow Speed", StatFormat.Number) },
 
         { StatType.FreezingDrawSlowPercent, new Info("Freezing Draw Slow", StatFormat.Percent) },
         { StatType.BrainFreezeSlowPercent, new Info("Brain Freeze Slow", StatFormat.Percent) },

@@ -10,8 +10,14 @@ using UnityEngine;
 ///     starts drawing: power builds in discrete charge levels while the aim is held (the
 ///     <see cref="PlayerAttack" /> convention — each level takes another
 ///     <see cref="BowSO.chargeTimePerLevel" /> seconds, capped at <see cref="StatType.BowMaxChargeLevels" />).
-///     Pressing attack (left click) while aiming fires a hitscan arrow rendered as a
-///     <see cref="BowTracer" /> line streak, then the draw restarts for the next shot.
+///     Pressing attack (left click) while aiming fires an <see cref="ArrowProjectile" /> — a real
+///     projectile (the <see cref="AxeProjectile" /> convention) that flies at
+///     <see cref="StatType.BowArrowSpeed" /> and drops under <see cref="BowSO.arrowGravity" />, so
+///     distant shots must be aimed above the target; the "Swift Arrows" line speeds arrows up, which
+///     also flattens the arc (less flight time = quadratically less drop). The projectile calls back
+///     into <see cref="ApplyArrowHit" /> when it strikes something, so every arrow skill line behaves
+///     exactly as it did when arrows were hitscan. With no arrow prefab wired the bow degrades to the
+///     old hitscan + <see cref="BowTracer" /> streak. After each shot the draw restarts for the next.
 ///
 ///     While aiming the sword can't swing: the vendored controller fires its <c>StartAttack</c>
 ///     animator trigger on every attack press, so this component clears that trigger (and the
@@ -96,8 +102,12 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
     [Tooltip("Bow model shown while aiming. Optional (no bow model exists yet).")]
     [SerializeField] private GameObject bowModel;
 
+    [Header("Projectile")]
+    [Tooltip("ArrowProjectile prefab instantiated per arrow — a real projectile with travel speed and drop. Unassigned = arrows fall back to instant hitscan (the pre-projectile behaviour).")]
+    [SerializeField] private ArrowProjectile arrowPrefab;
+
     [Header("Visuals & feedback (optional)")]
-    [Tooltip("BowTracer prefab instantiated per arrow (and per bounce) to draw the shot.")]
+    [Tooltip("BowTracer prefab instantiated per bounce arc (and per arrow while the bow is still hitscan) to draw the shot.")]
     [SerializeField] private BowTracer tracerPrefab;
     [Tooltip("Played when aiming starts (draw sound / zoom).")]
     [SerializeField] private MMF_Player drawFeedback;
@@ -285,12 +295,18 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         // The bow never damages its wielder (the DamageTrigger owner idiom).
         ownerDamageable = GetComponentInParent<IDamageable>();
 
+        if (arrowPrefab == null)
+        {
+            Debug.LogWarning("PlayerBow: no ArrowProjectile prefab assigned — arrows fall back to instant hitscan (no travel speed or drop) until the arrow prefab is wired (see TODO.md).");
+        }
+
         // Register the authored SO values as the stat bases; skill nodes layer on top without ever
         // mutating the asset. Everything at 0 is a locked skill line.
         // The bow itself is gated: base 0 = locked until the "Bow" skill node is bought (unlike the
         // sword, which is free out of the box).
         stats.SetBase(StatType.BowUnlocked, 0f);
         stats.SetBase(StatType.BowDamage, config.baseDamage);
+        stats.SetBase(StatType.BowArrowSpeed, config.baseArrowSpeed);
         stats.SetBase(StatType.BowMaxChargeLevels, config.baseMaxChargeLevels);
         stats.SetBase(StatType.BowChargeDamageBonus, config.baseChargeDamageBonus);
         stats.SetBase(StatType.BowMultishotArrows, 0f);
@@ -531,12 +547,37 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
     }
 
     /// <summary>
-    ///     One hitscan arrow: finds the first thing it strikes, damages it (with charge, crit,
-    ///     precision, impulse, and global multipliers applied), then runs the storm/bounce/pickup
-    ///     skill effects and draws the tracer.
+    ///     One arrow. With an <see cref="arrowPrefab" /> wired, launches a real
+    ///     <see cref="ArrowProjectile" /> that flies, drops, and calls <see cref="ApplyArrowHit" />
+    ///     back when it strikes something; without one, falls back to the original instant hitscan.
+    ///     Either way the hit gets charge, crit, precision, impulse, and global multipliers, then the
+    ///     storm/bounce and per-path pickup/orb skill effects.
     /// </summary>
     private void FireArrow(Vector3 origin, Vector3 direction, float damageScale, bool isMainArrow)
     {
+        if (arrowPrefab != null)
+        {
+            ArrowProjectile arrow = Instantiate(arrowPrefab, origin, Quaternion.LookRotation(direction));
+            arrow.Launch(this, new ArrowProjectile.LaunchSpec
+            {
+                origin = origin,
+                direction = direction,
+                speed = stats.GetValue(StatType.BowArrowSpeed),
+                gravity = config.arrowGravity,
+                maxRange = config.maxRange,
+                radius = config.arrowRadius,
+                hitLayers = hitLayers,
+                chargeLevel = ChargeLevel,
+                damageScale = damageScale,
+                isMainArrow = isMainArrow,
+                owner = ownerDamageable,
+                ignoredTarget = ignoredTarget,
+                collectPickups = stats.GetValue(StatType.BowPickupArrows) >= 1f,
+                detonateOrbs = isMainArrow && stats.GetValue(StatType.BowUnstableOrbs) >= 1f,
+            });
+            return;
+        }
+
         Vector3 endPoint = origin + direction * config.maxRange;
 
         if (TryHitscan(origin, direction, out RaycastHit hit, out IDamageable target, out bool hitVulnerableSpot, out VulnerableSpot vulnerableSpot))
@@ -550,7 +591,7 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         // the pickup sweep, so a detonated orb can't also be collected as a buff.
         if (isMainArrow && stats.GetValue(StatType.BowUnstableOrbs) >= 1f)
         {
-            DetonateOrbsAlongPath(origin, endPoint, damageScale);
+            DetonateOrbsAlongPath(origin, endPoint, damageScale, ChargeLevel);
         }
 
         // Pickup Arrows: sweep the flight path for coins/orbs, whoever the arrow hit.
@@ -559,10 +600,29 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
             CollectPickupsAlongPath(origin, endPoint);
         }
 
-        if (target == null)
+        if (target != null)
+        {
+            ApplyArrowHit(target, endPoint, direction, hit.collider, hitVulnerableSpot, vulnerableSpot, damageScale, ChargeLevel);
+        }
+    }
+
+    /// <summary>
+    ///     Everything that happens when an arrow strikes a damageable target — damage (charge, crit,
+    ///     precision, impulse, global multipliers), the impact events, and the on-hit skill lines
+    ///     (Flaming Arrows, Exploding Heads, Brain Freeze, Midas, Storm Arrow, Bounce Shot). Shared by
+    ///     the hitscan fallback and <see cref="ArrowProjectile" />'s impact callback;
+    ///     <paramref name="chargeLevel" /> is the draw level captured when the arrow left the bow
+    ///     (the <see cref="AxeProjectile.LaunchSpec" /> convention — the draw restarts during flight).
+    /// </summary>
+    public void ApplyArrowHit(IDamageable target, Vector3 hitPoint, Vector3 direction, Collider hitCollider, bool hitVulnerableSpot, VulnerableSpot vulnerableSpot, float damageScale, int chargeLevel)
+    {
+        if (anyError || target == null)
         {
             return;
         }
+
+        Vector3 endPoint = hitPoint;
+        Vector3 origin = arrowOrigin != null ? arrowOrigin.position : transform.position;
 
         // Flaming Arrows: a winning roll detonates a Bomber on the spot — rolled before the
         // arrow's own damage lands, so a lethal arrow can't rob the skill of its explosion (a
@@ -573,7 +633,7 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
             bomberComponent.GetComponentInParent<BomberAttack>()?.Detonate();
         }
 
-        Damage damage = BuildArrowDamage(origin, damageScale, hitVulnerableSpot);
+        Damage damage = BuildArrowDamage(origin, damageScale, hitVulnerableSpot, chargeLevel);
         target.ReceiveDamage(damage);
         OnHit?.Invoke(target, damage, endPoint);
         OnArrowImpact?.Invoke(new ArrowImpact
@@ -582,10 +642,10 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
             damage = damage,
             point = endPoint,
             direction = direction,
-            hitCollider = hit.collider,
+            hitCollider = hitCollider,
             hitVulnerableSpot = hitVulnerableSpot,
             vulnerableSpot = vulnerableSpot,
-            chargeLevel = ChargeLevel,
+            chargeLevel = chargeLevel,
         });
 
         // Flaming Arrows: bonus fire damage as its own elemental hit on the same target (the
@@ -708,14 +768,15 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         return false;
     }
 
-    /// <summary>Distance-sorts raycast hits without allocating a comparison delegate per shot.</summary>
-    private class HitDistanceComparer : System.Collections.Generic.IComparer<RaycastHit>
+    /// <summary>Distance-sorts raycast hits without allocating a comparison delegate per shot (shared with <see cref="ArrowProjectile" />, the PlayerThrownAxe precedent).</summary>
+    public class HitDistanceComparer : System.Collections.Generic.IComparer<RaycastHit>
     {
         public static readonly HitDistanceComparer Instance = new HitDistanceComparer();
         public int Compare(RaycastHit a, RaycastHit b) => a.distance.CompareTo(b.distance);
     }
 
-    private static IDamageable ResolveDamageable(Collider collider)
+    /// <summary>Finds the damageable a collider belongs to, if any (shared with <see cref="ArrowProjectile" />).</summary>
+    public static IDamageable ResolveDamageable(Collider collider)
     {
         if (!collider.TryGetComponent(out IDamageable damageable))
         {
@@ -724,10 +785,10 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         return damageable;
     }
 
-    private Damage BuildArrowDamage(Vector3 origin, float damageScale, bool hitVulnerableSpot)
+    private Damage BuildArrowDamage(Vector3 origin, float damageScale, bool hitVulnerableSpot, int chargeLevel)
     {
         float value = stats.GetValue(StatType.BowDamage);
-        value *= 1f + ChargeLevel * stats.GetValue(StatType.BowChargeDamageBonus);
+        value *= 1f + chargeLevel * stats.GetValue(StatType.BowChargeDamageBonus);
 
         // Crits share the sword's stats so Keen Eye/Critical Damage benefit both weapons.
         bool crit = UnityEngine.Random.value < stats.GetValue(StatType.CritChance);
@@ -760,9 +821,9 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         if (stats.GetValue(StatType.BowImpulseArrows) >= 1f && impulseBuff != null && impulseBuff.IsActive)
         {
             value *= impulseBuff.DamageMultiplier;
-            impulsePower = impulseBuff.CurrentImpulsePower + ChargeLevel * impulseBuff.PowerPerChargeLevel;
+            impulsePower = impulseBuff.CurrentImpulsePower + chargeLevel * impulseBuff.PowerPerChargeLevel;
             impulseForce = impulseBuff.CurrentImpulseForce
-                * (1f + ChargeLevel * stats.GetValue(StatType.ChargeKnockbackBonus));
+                * (1f + chargeLevel * stats.GetValue(StatType.ChargeKnockbackBonus));
         }
 
         return new Damage
@@ -822,8 +883,8 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         SpawnTracer(hitPoint, bestPosition);
     }
 
-    /// <summary>Pickup Arrows: collect any coin/orb pickups within a capsule along the arrow's flight path.</summary>
-    private void CollectPickupsAlongPath(Vector3 from, Vector3 to)
+    /// <summary>Pickup Arrows: collect any coin/orb pickups within a capsule along the arrow's flight path. <see cref="ArrowProjectile" /> calls this per tick segment as it flies.</summary>
+    public void CollectPickupsAlongPath(Vector3 from, Vector3 to)
     {
         GameObject collector = Player.Instance != null ? Player.Instance.gameObject : gameObject;
         int count = Physics.OverlapCapsuleNonAlloc(from, to, config.pickupRadius, overlapBuffer, ~0, QueryTriggerInteraction.Collide);
@@ -860,8 +921,9 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
     ///     Unstable Orbs: detonates every Impulse/Lightning Orb the main arrow's ray crosses — an
     ///     impulse blast around an Impulse Orb, a buff-independent chain lightning around a Lightning
     ///     Orb, each fuelled by this arrow's damage. The orb is consumed (no buff granted).
+    ///     <see cref="ArrowProjectile" /> calls this per tick segment as the main arrow flies.
     /// </summary>
-    private void DetonateOrbsAlongPath(Vector3 from, Vector3 to, float damageScale)
+    public void DetonateOrbsAlongPath(Vector3 from, Vector3 to, float damageScale, int chargeLevel)
     {
         Vector3 delta = to - from;
         float distance = delta.magnitude;
@@ -888,7 +950,7 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
             if (!damageRolled)
             {
                 // One representative (non-precision) damage roll fuels every detonation on this shot.
-                arrowDamage = BuildArrowDamage(from, damageScale, hitVulnerableSpot: false).value;
+                arrowDamage = BuildArrowDamage(from, damageScale, hitVulnerableSpot: false, chargeLevel).value;
                 damageRolled = true;
             }
 

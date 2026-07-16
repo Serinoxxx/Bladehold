@@ -1,5 +1,63 @@
 # TODO
 
+## Arrow projectiles + Swift Arrows skill — Unity Editor wiring
+
+The C# is done. Arrows are no longer hitscan: `Player/ArrowProjectile.cs` is a real projectile
+(the `AxeProjectile` convention — per-`FixedUpdate` sphere cast from previous to current position so
+nothing tunnels, `IPlayerProjectile` registration so Barbarian whirlwinds can shatter arrows) that
+flies at the new `StatType.BowArrowSpeed` (base from `BowSO.baseArrowSpeed`, default 30 m/s) and
+drops under `BowSO.arrowGravity` (default 9.81 m/s²) — so distant shots must be aimed high, and
+faster arrows drop quadratically less. `Player/PlayerBow.cs` spawns one per arrow from a new
+serialized `arrowPrefab` field and the projectile calls back into the extracted
+`PlayerBow.ApplyArrowHit(...)`, so every arrow skill line (crit/precision/flaming/exploding
+heads/brain freeze/midas/storm/bounce, plus the per-flight-segment Pickup Arrows and Unstable Orbs
+sweeps) behaves exactly as before; charge level is captured at release (the `AxeProjectile.LaunchSpec`
+convention). **With `arrowPrefab` unassigned the bow degrades to the old hitscan + `BowTracer`**
+(a one-time `Start` warning says so), so the game runs before this wiring. New CSV row:
+`swiftarrow` ("Swift Arrows", `BowArrowSpeed` Percent +0.2/level, 5 levels, cost 75 growth 1.4,
+prereqs `multishot;flamearrow`, at 24.5,12). `Stats/StatDisplay.cs` has the "Arrow Speed" entry.
+
+- [ ] Create the arrow prefab: a small arrow mesh (or a stretched capsule placeholder) with a
+      `TrailRenderer` child (this replaces the old `BowTracer` streak as the shot's look — match its
+      width/gradient), the `ArrowProjectile` component on the root (tunables `lingerSeconds` 1.5,
+      `maxLifetimeSeconds` 15), **no collider and no Rigidbody** (it sweeps its own physics casts).
+      Orientation: the mesh must point down local +Z (flight direction).
+- [ ] On the Player prefab's `PlayerBow`, hand-assign the new **Arrow Prefab** field (nothing
+      auto-wires it — the tracer fallback hides a missed assignment, so check the Console for the
+      "falls back to instant hitscan" warning).
+- [ ] `BowSO` asset: confirm the new serialized defaults deserialized (`baseArrowSpeed` 30,
+      `arrowGravity` 9.81, `arrowRadius` 0.05) — tune speed/gravity for feel ("fairly slow with
+      visible drop" is the design intent).
+- [ ] Skill icon: `swiftarrow` has a blank icon — assign one via **Bladehold > Skill Tree Editor**
+      (drag-and-drop registers the sprite in the SO's `icons` list; the Archer skill sheet has speed
+      arrow candidates).
+- [ ] Balance pass: `swiftarrow` cost 75 / growth 1.4 / +20%×5 levels and its 24.5,12 tree position
+      are placeholders, as are `baseArrowSpeed`/`arrowGravity`.
+
+## Manual verification (arrow projectiles + Swift Arrows)
+
+- [ ] Buy `bow_unlock`, aim and fire: an arrow visibly travels (not instant) and arcs downward;
+      at long range you must aim above a goblin to land the hit.
+- [ ] Point-blank and mid-range shots still hit what the crosshair covers; headshots on a
+      `VulnerableSpot` still trigger Precision/Brain Freeze/Exploding Heads (buy those nodes and
+      check the popups/blast).
+- [ ] Multi Shot extras fan out and each flies as its own dropping projectile; Bounce Shot still
+      arcs a `BowTracer` streak from the impact to a second enemy.
+- [ ] With Retriever, an arrow lobbed over a coin field collects along its curved path; with
+      Unstable Orbs, the main arrow detonates an Impulse/Lightning Orb it flies through.
+- [ ] Stuck-arrow props still appear in corpses at the impact point (`StuckArrowSpawner` listens to
+      the same `OnArrowImpact`), and impact sound/blood (`BowHitFeedback`) plays at the landing spot,
+      not at the bow.
+- [ ] Buy Swift Arrows tiers (skill-tree tooltip shows Arrow Speed before→after): arrows get visibly
+      faster and the arc flattens — same aim point lands higher on distant targets.
+- [ ] A Barbarian Giant's whirlwind swats arrows out of the air (new behaviour — arrows were
+      immune as hitscan).
+- [ ] Mounted with Horse Archer: arrows never hit your own horse (the ignored-target pass-through).
+- [ ] Charge a full draw, fire, and immediately release aim: the landing damage number reflects the
+      charged shot (charge captured at release, not at impact).
+- [ ] Unassign the arrow prefab temporarily: the bow falls back to hitscan tracers and logs the
+      one-time warning (then re-assign).
+
 ## Screen-space Health / Stamina Bars (Synty Warrior UI + Feel) — Unity Editor wiring
 
 Four C# scripts are done (`PlayerHealthBarUI`, `HorseHealthBarUI`, `HorseBarGroupUI`,

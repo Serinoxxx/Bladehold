@@ -96,6 +96,8 @@ public enum StatType
     BowPickupArrows,
     /// <summary>Extra damage fraction against VulnerableSpot colliders (e.g. 1.0 = +100% = double damage). 0 = Precision Shot locked.</summary>
     BowPrecisionDamageBonus,
+    /// <summary>Arrow flight speed in metres per second (base from BowSO.baseArrowSpeed). Faster arrows spend less time falling, so the "Swift Arrows" line flattens the drop arc too.</summary>
+    BowArrowSpeed,
 
     /// <summary>Fraction (0-1) enemies near the player are slowed while the bow is drawn (the "Freezing Draw" line). 0 = locked.</summary>
     FreezingDrawSlowPercent,
