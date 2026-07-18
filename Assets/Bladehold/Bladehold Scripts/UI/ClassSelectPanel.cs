@@ -68,11 +68,11 @@ public class ClassSelectPanel : MonoBehaviour
             {
                 option.nameLabel.text = string.IsNullOrEmpty(option.definition.displayName)
                     ? option.definition.id
-                    : option.definition.displayName;
+                    : option.definition.LocalizedDisplayName;
             }
             if (option.descriptionLabel != null)
             {
-                option.descriptionLabel.text = option.definition.description;
+                option.descriptionLabel.text = option.definition.LocalizedDescription;
             }
 
             // Capture the loop variable for the click closure.

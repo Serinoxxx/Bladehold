@@ -74,6 +74,13 @@ public class InputSettingsBinder : MonoBehaviour
         cameraPivot.Sensitivity = sensitivity;
     }
 
+    /// <summary>Gamepad right-stick look speed in degrees per second at full deflection.</summary>
+    public void ApplyGamepadSensitivity(float degreesPerSecond)
+    {
+        if (anyError) return;
+        cameraPivot.GamepadSensitivity = degreesPerSecond;
+    }
+
     public void ApplyInvertY(bool invert)
     {
         if (anyError) return;

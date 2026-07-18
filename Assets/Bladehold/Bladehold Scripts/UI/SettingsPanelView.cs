@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -32,8 +33,13 @@ public class SettingsPanelView : MonoBehaviour
 
     [Header("Controls")]
     [SerializeField] private Slider sensitivitySlider;
+    [SerializeField] private Slider gamepadSensitivitySlider;
     [SerializeField] private Toggle invertXToggle;
     [SerializeField] private Toggle invertYToggle;
+
+    [Header("Language")]
+    [Tooltip("Optional: UI language picker. Options are built in code — 'Auto (System)' followed by every Loc.SupportedLanguages entry in its own native name.")]
+    [SerializeField] private TMP_Dropdown languageDropdown;
 
     [Header("Video")]
     [SerializeField] private Slider fieldOfViewSlider;
@@ -108,6 +114,12 @@ public class SettingsPanelView : MonoBehaviour
         musicVolumeSlider.onValueChanged.AddListener(HandleMusicVolumeChanged);
         sfxVolumeSlider.onValueChanged.AddListener(HandleSfxVolumeChanged);
         sensitivitySlider.onValueChanged.AddListener(HandleSensitivityChanged);
+        if (gamepadSensitivitySlider != null) gamepadSensitivitySlider.onValueChanged.AddListener(HandleGamepadSensitivityChanged);
+        if (languageDropdown != null)
+        {
+            BuildLanguageOptions();
+            languageDropdown.onValueChanged.AddListener(HandleLanguageChanged);
+        }
         fieldOfViewSlider.onValueChanged.AddListener(HandleFieldOfViewChanged);
         maxRagdollsSlider.onValueChanged.AddListener(HandleMaxRagdollsChanged);
         if (invertXToggle != null) invertXToggle.onValueChanged.AddListener(HandleInvertXChanged);
@@ -135,6 +147,8 @@ public class SettingsPanelView : MonoBehaviour
         if (musicVolumeSlider != null) musicVolumeSlider.onValueChanged.RemoveListener(HandleMusicVolumeChanged);
         if (sfxVolumeSlider != null) sfxVolumeSlider.onValueChanged.RemoveListener(HandleSfxVolumeChanged);
         if (sensitivitySlider != null) sensitivitySlider.onValueChanged.RemoveListener(HandleSensitivityChanged);
+        if (gamepadSensitivitySlider != null) gamepadSensitivitySlider.onValueChanged.RemoveListener(HandleGamepadSensitivityChanged);
+        if (languageDropdown != null) languageDropdown.onValueChanged.RemoveListener(HandleLanguageChanged);
         if (fieldOfViewSlider != null) fieldOfViewSlider.onValueChanged.RemoveListener(HandleFieldOfViewChanged);
         if (maxRagdollsSlider != null) maxRagdollsSlider.onValueChanged.RemoveListener(HandleMaxRagdollsChanged);
         if (invertXToggle != null) invertXToggle.onValueChanged.RemoveListener(HandleInvertXChanged);
@@ -180,6 +194,43 @@ public class SettingsPanelView : MonoBehaviour
         maxRagdollsSlider.SetValueWithoutNotify(settings.MaxRagdolls);
         if (invertXToggle != null) invertXToggle.SetIsOnWithoutNotify(settings.InvertX);
         if (invertYToggle != null) invertYToggle.SetIsOnWithoutNotify(settings.InvertY);
+        if (gamepadSensitivitySlider != null) gamepadSensitivitySlider.SetValueWithoutNotify(settings.GamepadSensitivity);
+        if (languageDropdown != null) languageDropdown.SetValueWithoutNotify(LanguageCodeToIndex(settings.LanguageCode));
+    }
+
+    /// <summary>
+    ///     Dropdown option 0 is "Auto (System)" (persisted as ""); the rest are
+    ///     <see cref="Loc.SupportedLanguages" /> in order, each shown in its own native name —
+    ///     a language name is its own localization, so these stay hardcoded.
+    /// </summary>
+    private static readonly string[] LanguageNativeNames =
+        { "English", "Français", "Italiano", "Deutsch", "Español", "Русский", "简体中文", "日本語", "한국어" };
+
+    private void BuildLanguageOptions()
+    {
+        var options = new List<string> { Loc.Get("settings.language_auto") };
+        for (int i = 0; i < Loc.SupportedLanguages.Length; i++)
+        {
+            options.Add(i < LanguageNativeNames.Length ? LanguageNativeNames[i] : Loc.SupportedLanguages[i]);
+        }
+        languageDropdown.ClearOptions();
+        languageDropdown.AddOptions(options);
+    }
+
+    private static int LanguageCodeToIndex(string code)
+    {
+        if (string.IsNullOrEmpty(code))
+        {
+            return 0;
+        }
+        int index = System.Array.IndexOf(Loc.SupportedLanguages, code);
+        return index >= 0 ? index + 1 : 0;
+    }
+
+    private void HandleLanguageChanged(int index)
+    {
+        string code = index <= 0 || index > Loc.SupportedLanguages.Length ? "" : Loc.SupportedLanguages[index - 1];
+        GameSettingsService.Instance?.SetLanguage(code);
     }
 
     private void BuildRebindRowsIfNeeded()
@@ -208,7 +259,51 @@ public class SettingsPanelView : MonoBehaviour
             }
         }
 
+        WireRebindGridNavigation();
         rebindRowsBuilt = true;
+    }
+
+    /// <summary>
+    ///     Explicit gamepad navigation over the generated rebind grid — Unity's automatic mode gets
+    ///     lost in the label + two-button rows (it happily jumps columns diagonally). Each column
+    ///     links vertically to the nearest enabled button; the two columns of a row link
+    ///     horizontally.
+    /// </summary>
+    private void WireRebindGridNavigation()
+    {
+        for (int i = 0; i < rebindRows.Count; i++)
+        {
+            SetColumnNavigation(rebindRows[i].KbmButton, FindColumnNeighbor(i, -1, true), FindColumnNeighbor(i, +1, true), null, rebindRows[i].GamepadButton);
+            SetColumnNavigation(rebindRows[i].GamepadButton, FindColumnNeighbor(i, -1, false), FindColumnNeighbor(i, +1, false), rebindRows[i].KbmButton, null);
+        }
+    }
+
+    private Button FindColumnNeighbor(int rowIndex, int direction, bool kbmColumn)
+    {
+        for (int i = rowIndex + direction; i >= 0 && i < rebindRows.Count; i += direction)
+        {
+            Button candidate = kbmColumn ? rebindRows[i].KbmButton : rebindRows[i].GamepadButton;
+            if (candidate != null && candidate.interactable)
+            {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    private static void SetColumnNavigation(Button button, Button up, Button down, Button left, Button right)
+    {
+        if (button == null)
+        {
+            return;
+        }
+        Navigation nav = button.navigation;
+        nav.mode = Navigation.Mode.Explicit;
+        nav.selectOnUp = up;
+        nav.selectOnDown = down;
+        nav.selectOnLeft = left;
+        nav.selectOnRight = right;
+        button.navigation = nav;
     }
 
     /// <summary>
@@ -259,6 +354,7 @@ public class SettingsPanelView : MonoBehaviour
     private void HandleMusicVolumeChanged(float value) => GameSettingsService.Instance?.SetMusicVolume(value);
     private void HandleSfxVolumeChanged(float value) => GameSettingsService.Instance?.SetSfxVolume(value);
     private void HandleSensitivityChanged(float value) => GameSettingsService.Instance?.SetSensitivity(value);
+    private void HandleGamepadSensitivityChanged(float value) => GameSettingsService.Instance?.SetGamepadSensitivity(value);
     private void HandleFieldOfViewChanged(float value) => GameSettingsService.Instance?.SetFieldOfView(value);
     private void HandleMaxRagdollsChanged(float value) => GameSettingsService.Instance?.SetMaxRagdolls(Mathf.RoundToInt(value));
     private void HandleInvertXChanged(bool value) => GameSettingsService.Instance?.SetInvertX(value);
@@ -267,7 +363,7 @@ public class SettingsPanelView : MonoBehaviour
     private void HandleResetSettingsClicked()
     {
         confirmDialog.Show(
-            "Reset all settings to their defaults? Progress is not affected.",
+            Loc.Get("settings.reset_confirm"),
             () =>
             {
                 GameSettingsService settings = GameSettingsService.Instance;
@@ -283,13 +379,13 @@ public class SettingsPanelView : MonoBehaviour
                     row.RefreshPathLabel();
                 }
             },
-            confirmLabel: "Reset");
+            confirmLabel: Loc.Get("settings.reset"));
     }
 
     private void HandleDeleteSaveClicked()
     {
         confirmDialog.Show(
-            "Delete all saved progress? Settings are kept. This cannot be undone.",
+            Loc.Get("settings.delete_save_confirm"),
             () =>
             {
                 // Wipe only the progress half of the save — settings survive a save wipe.

@@ -70,23 +70,23 @@ public class WaveUI : MonoBehaviour
 
     private void HandleCountdownTick(int secondsRemaining)
     {
-        SetMessage($"Wave starts in {secondsRemaining}");
+        SetMessage(Loc.Format("wave.starts_in", secondsRemaining));
     }
 
     private void HandleWaveStarted(int waveNumber)
     {
         if (waveLabel != null)
         {
-            waveLabel.text = $"Wave {waveNumber}";
+            waveLabel.text = Loc.Format("wave.label", waveNumber);
         }
 
-        SetMessage("BEGIN");
+        SetMessage(Loc.Get("wave.begin"));
         clearMessageRoutine = StartCoroutine(ClearMessageAfter(beginMessageDuration));
     }
 
     private void HandleWaveCleared(int waveNumber)
     {
-        SetMessage("Wave Cleared!");
+        SetMessage(Loc.Get("wave.cleared"));
     }
 
     private void SetMessage(string text)

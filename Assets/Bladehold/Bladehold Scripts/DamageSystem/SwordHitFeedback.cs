@@ -28,6 +28,8 @@ public class SwordHitFeedback : MonoBehaviour
     [SerializeField] private ParticleSystem bloodParticlePrefab;
     [Tooltip("Used instead of Blood Particle Prefab on a critical hit, if assigned.")]
     [SerializeField] private ParticleSystem critBloodParticlePrefab;
+    [Tooltip("Used instead of Blood Particle Prefab when the target has no blood — e.g. a smashable Chest.")]
+    [SerializeField] private ParticleSystem inanimateHitParticlePrefab;
     [Tooltip("Particle burst size and speed both scale with damage up to this many points of damage, then cap.")]
     [SerializeField] private float damageForMaxParticles = 20f;
     [SerializeField] private int minParticles = 3;
@@ -88,7 +90,7 @@ public class SwordHitFeedback : MonoBehaviour
     private void HandleHit(IDamageable target, Damage damage, Vector3 point)
     {
         PlayRandomClip(damage.isCritical && critHitSounds.Length > 0 ? critHitSounds : hitSounds);
-        SpawnBlood(point, damage.value, damage.isCritical);
+        SpawnHitParticles(target, point, damage.value, damage.isCritical);
     }
 
     private void HandleBlocked()
@@ -105,9 +107,12 @@ public class SwordHitFeedback : MonoBehaviour
         audioSource.PlayOneShot(clips[Random.Range(0, clips.Length)]);
     }
 
-    private void SpawnBlood(Vector3 point, float damageValue, bool isCritical)
+    private void SpawnHitParticles(IDamageable target, Vector3 point, float damageValue, bool isCritical)
     {
-        ParticleSystem prefab = isCritical && critBloodParticlePrefab != null ? critBloodParticlePrefab : bloodParticlePrefab;
+        bool isInanimate = target is Component targetComponent && targetComponent.GetComponentInParent<Chest>() != null;
+        ParticleSystem prefab = isInanimate
+            ? inanimateHitParticlePrefab
+            : (isCritical && critBloodParticlePrefab != null ? critBloodParticlePrefab : bloodParticlePrefab);
         if (prefab == null) return;
 
         float damageFactor = damageForMaxParticles > 0f ? Mathf.Clamp01(damageValue / damageForMaxParticles) : 1f;

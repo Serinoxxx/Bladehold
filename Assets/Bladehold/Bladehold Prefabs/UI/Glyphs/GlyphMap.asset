@@ -1,0 +1,80 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1524cfd0abb507a46aba563daf05c09c, type: 3}
+  m_Name: GlyphMap
+  m_EditorClassIdentifier: Assembly-CSharp::GlyphMapSO
+  gamepadGlyphs:
+  - controlName: buttonSouth
+    sprite: {fileID: 21300000, guid: 15a4f1d900c35fd4091f6970c5250a44, type: 3}
+  - controlName: buttonEast
+    sprite: {fileID: 21300000, guid: e311023e5bfd1434d9701f9d89d81e40, type: 3}
+  - controlName: buttonWest
+    sprite: {fileID: 21300000, guid: 285ddf711bd3f514b8133995d2cbf6a1, type: 3}
+  - controlName: buttonNorth
+    sprite: {fileID: 21300000, guid: 31ee23fffb9af0c4ba9abbba3d9ea467, type: 3}
+  - controlName: leftShoulder
+    sprite: {fileID: 21300000, guid: 28c34b18ad3c2cf4dacc46ef515a44aa, type: 3}
+  - controlName: rightShoulder
+    sprite: {fileID: 21300000, guid: b8ce06b86768d104eb2dedb6613b32bc, type: 3}
+  - controlName: leftTrigger
+    sprite: {fileID: 21300000, guid: c1f07a24972f24642a1afa80ecc751b3, type: 3}
+  - controlName: rightTrigger
+    sprite: {fileID: 21300000, guid: 90747b6873deba94dab91c3716fc1b81, type: 3}
+  - controlName: start
+    sprite: {fileID: 21300000, guid: ecf39456e341c8640a5c4aec5de3f5aa, type: 3}
+  - controlName: select
+    sprite: {fileID: 21300000, guid: 012e86c8f21080f489ce17c3c801ee1a, type: 3}
+  - controlName: dpad
+    sprite: {fileID: 21300000, guid: 28a2584424aa3c047aa9cee78ca7d5b0, type: 3}
+  - controlName: dpad/up
+    sprite: {fileID: 21300000, guid: da8ea6d62f0e3c94bbda8e058c9f3c7c, type: 3}
+  - controlName: dpad/down
+    sprite: {fileID: 21300000, guid: 89f30a08eead66f42950829bce3cde4b, type: 3}
+  - controlName: dpad/left
+    sprite: {fileID: 21300000, guid: 5039bb2d1f9c2a54cb6a2256d0e4e157, type: 3}
+  - controlName: dpad/right
+    sprite: {fileID: 21300000, guid: f2ff97c44ca3f5748a104958663efb0f, type: 3}
+  - controlName: leftStick
+    sprite: {fileID: 21300000, guid: 880680bfe2cb9cf44ad9d0cbef8e7c27, type: 3}
+  - controlName: rightStick
+    sprite: {fileID: 21300000, guid: 711c6b146bba2b548bd88baec505a92f, type: 3}
+  - controlName: leftStickPress
+    sprite: {fileID: 21300000, guid: 2178cd8ab7cb8954995e0cd677a9740d, type: 3}
+  - controlName: rightStickPress
+    sprite: {fileID: 21300000, guid: 5e3963bcddf92494c804b6d4215fff02, type: 3}
+  keyboardMouseGlyphs:
+  - controlName: leftButton
+    sprite: {fileID: 21300000, guid: 3fc063021eaa5eb4cb710e15a38ceb6c, type: 3}
+  - controlName: rightButton
+    sprite: {fileID: 21300000, guid: 78d618b10af7f9b4db2600f77fdce06c, type: 3}
+  - controlName: middleButton
+    sprite: {fileID: 21300000, guid: 2734641fa5d0d564598e94945db5c28f, type: 3}
+  - controlName: scroll
+    sprite: {fileID: 21300000, guid: 2734641fa5d0d564598e94945db5c28f, type: 3}
+  - controlName: upArrow
+    sprite: {fileID: 21300000, guid: 1981e49fd7f976542ba50bc3e5542223, type: 3}
+  - controlName: downArrow
+    sprite: {fileID: 21300000, guid: 76420674bf03fb94c82f0ca1e3789857, type: 3}
+  - controlName: leftArrow
+    sprite: {fileID: 21300000, guid: ddaeb2186c724d84f8751b90def5ad04, type: 3}
+  - controlName: rightArrow
+    sprite: {fileID: 21300000, guid: 2ef9a18df52fada488557ffd51a94d1c, type: 3}
+  - controlName: space
+    sprite: {fileID: 21300000, guid: 7072f3358fdb9b54daf7e3e18e1c36d5, type: 3}
+  - controlName: tab
+    sprite: {fileID: 21300000, guid: d33b775a595011e469b6dde621a1309b, type: 3}
+  - controlName: enter
+    sprite: {fileID: 21300000, guid: 8eff536e73ba2ae449dbb2baa3463bf1, type: 3}
+  - controlName: backspace
+    sprite: {fileID: 21300000, guid: d3ca901a7e6d27a4b91fadff96d2ef26, type: 3}
+  blankKeycap: {fileID: 21300000, guid: ecd15159b03516f42809f043a7747895, type: 3}
+  blankKeycapWide: {fileID: 21300000, guid: af24d69515d658047b7bb1016a67d7df, type: 3}

@@ -60,6 +60,26 @@ public class SkillNode
     public string upgradeText = "";
 
     /// <summary>
+    ///     <see cref="Loc" /> key prefix for this node's text, stamped by <see cref="SkillTreeSO" /> from
+    ///     its own key prefix + the node id (e.g. <c>skill.gold.sword_dmg</c>). The UI appends
+    ///     <c>.name</c>/<c>.desc</c>/<c>.upgrade</c> — see the Localized* properties below. Empty when the
+    ///     owning tree has no prefix configured (then everything falls back to the CSV English).
+    /// </summary>
+    public string locKey = "";
+
+    /// <summary>The display name in the active language, falling back to the gameplay CSV's English.</summary>
+    public string LocalizedDisplayName =>
+        string.IsNullOrEmpty(locKey) ? displayName : Loc.Get(locKey + ".name", displayName);
+
+    /// <summary>The unlock text in the active language, falling back to the gameplay CSV's English.</summary>
+    public string LocalizedDescription =>
+        string.IsNullOrEmpty(locKey) ? description : Loc.Get(locKey + ".desc", description);
+
+    /// <summary>The upgrade text in the active language; empty (in both languages) falls back to <see cref="LocalizedDescription" /> at the callsite.</summary>
+    public string LocalizedUpgradeText =>
+        string.IsNullOrEmpty(locKey) || string.IsNullOrEmpty(upgradeText) ? upgradeText : Loc.Get(locKey + ".upgrade", upgradeText);
+
+    /// <summary>
     ///     Name of this node's icon sprite, resolved against the owning <see cref="SkillTreeSO" />'s icon
     ///     list by <see cref="SkillTreeSO.GetIcon" />. Empty = no icon.
     /// </summary>

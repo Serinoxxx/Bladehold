@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SkillTreeSO
   csv: {fileID: 4900000, guid: cf8432d0993e70c48b102c4e1ffbb6a5, type: 3}
   hasHeaderRow: 1
+  locKeyPrefix: skill.berserker
   icons:
   - {fileID: 21300000, guid: f6c8c305f9ce40345b7576a4a324d2bf, type: 3}
   - {fileID: 21300000, guid: 79cd9a88c6ab4e343bb0e133d880bcc5, type: 3}

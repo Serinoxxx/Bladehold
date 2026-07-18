@@ -198,7 +198,14 @@ public static class EnemyPrefabGenerator
         root.name = spec.prefabName;
         root.transform.localScale = Vector3.one * spec.rootScale;
 
-        if (!string.IsNullOrEmpty(spec.materialPath))
+        // A model swapped in by the Enemy Manager wins over the manifest material: the manifest's
+        // materialPath targets the goblin base mesh, which the swap disabled, and re-applying it to
+        // whatever GetComponentInChildren finds first would paint the wrong renderer.
+        if (!string.IsNullOrEmpty(spec.materialPath) && root.GetComponentInChildren<ModelSwapRecord>(true) != null)
+        {
+            Debug.Log($"EnemyPrefabGenerator: '{spec.id}' has a swapped model (ModelSwapRecord); skipping the manifest material apply.");
+        }
+        else if (!string.IsNullOrEmpty(spec.materialPath))
         {
             var material = AssetDatabase.LoadAssetAtPath<Material>(spec.materialPath);
             if (material == null)

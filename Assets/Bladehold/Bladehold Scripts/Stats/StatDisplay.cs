@@ -127,8 +127,19 @@ public static class StatDisplay
         { StatType.MageIceSlowDurationSeconds, new Info("Chill Duration", StatFormat.Seconds) },
     };
 
-    /// <summary>Friendly label for a stat; falls back to the enum name split on capital letters.</summary>
+    /// <summary>
+    ///     Friendly label for a stat: the localized <c>stat.&lt;StatType&gt;</c> entry when one exists,
+    ///     else this table's English (which doubles as the Strings.csv source text, kept in sync by the
+    ///     Localization Sync window), else the enum name split on capital letters.
+    /// </summary>
     public static string Label(StatType stat)
+    {
+        string english = Table.TryGetValue(stat, out Info info) ? info.label : SplitCamelCase(stat.ToString());
+        return Loc.Get("stat." + stat, english);
+    }
+
+    /// <summary>The untranslated English label — the sync tool's source text for Strings.csv rows.</summary>
+    public static string EnglishLabel(StatType stat)
     {
         return Table.TryGetValue(stat, out Info info) ? info.label : SplitCamelCase(stat.ToString());
     }
@@ -145,7 +156,7 @@ public static class StatDisplay
             case StatFormat.Multiplier:
                 return Mathf.RoundToInt(value * 100f) + "%";
             case StatFormat.Seconds:
-                return value.ToString("0.##") + "s";
+                return value.ToString("0.##") + Loc.Get("stat.suffix.seconds", "s");
             default:
                 return value.ToString("0.##");
         }

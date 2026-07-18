@@ -105,7 +105,7 @@ public class WaveStatsPanel : MonoBehaviour
 
         if (waveLabel != null)
         {
-            waveLabel.text = $"Wave {clearedWave} Cleared";
+            waveLabel.text = Loc.Format("wavestats.cleared", clearedWave);
         }
 
         // Bonus multiplier line — hidden unless a Hold-the-Line streak is banked.
@@ -116,15 +116,15 @@ public class WaveStatsPanel : MonoBehaviour
             bonusMultiplierText.gameObject.SetActive(show);
             if (show)
             {
-                bonusMultiplierText.text = $"x{mult:0.00} Gold Bonus";
+                bonusMultiplierText.text = Loc.Format("wavestats.gold_bonus", mult.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture));
             }
         }
 
-        yield return CountUp(goblinsSlainText, goblinsBar, "Goblins Slain: {0}", killed, goblinsRevealFeedback);
+        yield return CountUp(goblinsSlainText, goblinsBar, Loc.Get("wavestats.goblins_slain"), killed, goblinsRevealFeedback);
         yield return new WaitForSecondsRealtime(lineStagger);
-        yield return CountUp(goldEarnedText, goldBar, "Gold Earned: {0}", gold, goldRevealFeedback);
+        yield return CountUp(goldEarnedText, goldBar, Loc.Get("wavestats.gold_earned"), gold, goldRevealFeedback);
         yield return new WaitForSecondsRealtime(lineStagger);
-        yield return CountUp(totalGoldText, null, "Total Gold: {0}", total, totalRevealFeedback);
+        yield return CountUp(totalGoldText, null, Loc.Get("wavestats.total_gold"), total, totalRevealFeedback);
     }
 
     private IEnumerator CountUp(TMP_Text label, Image bar, string format, int target, MMF_Player feedback)

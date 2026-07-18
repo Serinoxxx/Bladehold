@@ -22,16 +22,16 @@ public class DeathScreen : MonoBehaviour
     [SerializeField] private CanvasGroup canvasGroup;
     [Tooltip("Optional headline label, set per loss condition (see the two title strings below).")]
     [SerializeField] private TMP_Text titleText;
-    [Tooltip("Headline when the player died.")]
-    [SerializeField] private string playerDiedTitle = "You Died";
-    [Tooltip("Headline when a gate fell (gate defense).")]
-    [SerializeField] private string gateFellTitle = "The Gate Has Fallen";
+    [Tooltip("Loc key of the headline when the player died.")]
+    [SerializeField] private string playerDiedTitleKey = "death.player_title";
+    [Tooltip("Loc key of the headline when a gate fell (gate defense).")]
+    [SerializeField] private string gateFellTitleKey = "death.gate_title";
     [Tooltip("Optional: a failure-reason banner played to completion before this screen fades in. Must live outside this screen's CanvasGroup. Leave unassigned to fade the death screen in immediately, as before.")]
     [SerializeField] private FailureBanner failureBanner;
-    [Tooltip("Banner message when the player died.")]
-    [SerializeField] private string playerDiedReason = "The hero has fallen. All hope is lost.";
-    [Tooltip("Banner message when a gate fell (gate defense).")]
-    [SerializeField] private string gateFellReason = "The gate was destroyed. We were overrun.";
+    [Tooltip("Loc key of the banner message when the player died.")]
+    [SerializeField] private string playerDiedReasonKey = "death.player_reason";
+    [Tooltip("Loc key of the banner message when a gate fell (gate defense).")]
+    [SerializeField] private string gateFellReasonKey = "death.gate_reason";
     [SerializeField] private TMP_Text goblinsKilledText;
     [SerializeField] private TMP_Text goldEarnedText;
     [SerializeField] private TMP_Text totalGoldText;
@@ -146,7 +146,7 @@ public class DeathScreen : MonoBehaviour
 
     private void HandlePlayerDied()
     {
-        ShowRunOver(playerDiedTitle, playerDiedReason);
+        ShowRunOver(Loc.Get(playerDiedTitleKey), Loc.Get(playerDiedReasonKey));
     }
 
     private void HandleGateDestroyed(Gate gate)
@@ -154,7 +154,7 @@ public class DeathScreen : MonoBehaviour
         // Unlike a player death, the player is still alive and controllable — freeze time so the
         // run visibly ends behind the screen. Reload() restores the timescale.
         Time.timeScale = 0f;
-        ShowRunOver(gateFellTitle, gateFellReason);
+        ShowRunOver(Loc.Get(gateFellTitleKey), Loc.Get(gateFellReasonKey));
     }
 
     private void ShowRunOver(string title, string failureReason)
@@ -176,15 +176,15 @@ public class DeathScreen : MonoBehaviour
 
         if (goblinsKilledText != null)
         {
-            goblinsKilledText.text = $"Goblins Slain: {killed}";
+            goblinsKilledText.text = Loc.Format("wavestats.goblins_slain", killed);
         }
         if (goldEarnedText != null)
         {
-            goldEarnedText.text = $"Gold Earned: {earned}";
+            goldEarnedText.text = Loc.Format("wavestats.gold_earned", earned);
         }
         if (totalGoldText != null)
         {
-            totalGoldText.text = $"Total Gold: {total}";
+            totalGoldText.text = Loc.Format("wavestats.total_gold", total);
         }
 
         // Only offer "restart from current wave" if there's a wave in progress to return to.
@@ -194,7 +194,7 @@ public class DeathScreen : MonoBehaviour
             restartCurrentWaveButton.gameObject.SetActive(hasWave);
             if (hasWave && restartCurrentWaveLabel != null)
             {
-                restartCurrentWaveLabel.text = $"Restart Wave {WaveSpawner.Instance.CurrentWave}";
+                restartCurrentWaveLabel.text = Loc.Format("death.restart_wave", WaveSpawner.Instance.CurrentWave);
             }
         }
 
@@ -204,7 +204,7 @@ public class DeathScreen : MonoBehaviour
             reincarnateButton.gameObject.SetActive(hasService);
             if (hasService && reincarnatePreviewLabel != null)
             {
-                reincarnatePreviewLabel.text = $"Reincarnate (+{ReincarnateService.Instance.PreviewPointsForReincarnate()} pts)";
+                reincarnatePreviewLabel.text = Loc.Format("death.reincarnate", ReincarnateService.Instance.PreviewPointsForReincarnate());
             }
         }
 
@@ -312,7 +312,7 @@ public class DeathScreen : MonoBehaviour
         }
         if (reincarnatePreviewLabel != null)
         {
-            reincarnatePreviewLabel.text = "Begin Next Life";
+            reincarnatePreviewLabel.text = Loc.Get("death.begin_next_life");
         }
     }
 

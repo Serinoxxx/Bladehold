@@ -14,6 +14,9 @@ public class EnemyDefinition
     public string id;
     public string displayName;
 
+    /// <summary>The display name in the active language (Strings.csv key <c>enemy.&lt;id&gt;.name</c>), falling back to the roster CSV's English.</summary>
+    public string LocalizedDisplayName => Loc.Get("enemy." + id + ".name", displayName);
+
     /// <summary>Overrides <see cref="HealthSO.maxHealth" />. Blank = prefab default.</summary>
     public float? health;
 

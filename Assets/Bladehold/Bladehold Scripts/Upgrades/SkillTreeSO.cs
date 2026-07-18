@@ -51,6 +51,12 @@ public class SkillTreeSO : ScriptableObject
     [Tooltip("Skip the first CSV row as a header.")]
     [SerializeField] private bool hasHeaderRow = true;
 
+    [Tooltip("Loc key prefix for this tree's node text, e.g. 'skill.gold' -> keys like 'skill.gold.sword_dmg.name' in Strings.csv. Blank = tree text is never localized (CSV English only).")]
+    [SerializeField] private string locKeyPrefix = "";
+
+    /// <summary>Loc key prefix for this tree's nodes (see <see cref="SkillNode.locKey" />); read by the Localization Sync window.</summary>
+    public string LocKeyPrefix => locKeyPrefix;
+
     [Tooltip("Sprites the CSV's 'icon' column can reference by sprite asset name.")]
     [SerializeField] private Sprite[] icons;
 
@@ -205,6 +211,7 @@ public class SkillTreeSO : ScriptableObject
         var node = new SkillNode
         {
             id = id,
+            locKey = string.IsNullOrEmpty(locKeyPrefix) ? "" : locKeyPrefix + "." + id,
             displayName = f[1].Trim(),
             description = f[2].Trim(),
             upgradeText = f[3].Trim(),

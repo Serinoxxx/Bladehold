@@ -31,9 +31,6 @@ public class HorseSO : ScriptableObject
     [Tooltip("Constant downward acceleration applied through the CharacterController.")]
     public float gravity = -20f;
 
-    [Tooltip("Seconds the rear animation locks the horse in place (mount flavor / knight telegraph pose).")]
-    public float rearSeconds = 1.2f;
-
     [Header("Charge (player mode)")]
     [Tooltip("Top speed in m/s while Shift-charging.")]
     public float chargeSpeed = 12f;

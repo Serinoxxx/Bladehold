@@ -127,7 +127,8 @@ public class PauseMenuView : MonoBehaviour
         }
     }
 
-    private void ShowMainButtons()
+    /// <summary>Public so pad-cancel (MenuFocusController.onCancel on the Settings panel) can bind it in the inspector.</summary>
+    public void ShowMainButtons()
     {
         if (settingsPanel != null) settingsPanel.SetActive(false);
         if (photoModePanelRoot != null) photoModePanelRoot.SetActive(false);

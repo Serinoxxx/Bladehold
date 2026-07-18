@@ -69,6 +69,7 @@ public class DevConsole : MonoBehaviour
         DrawWaveControls();
         DrawEnemySpawnControls();
         DrawClassControls();
+        DrawLanguageControls();
         DrawRageReadout();
         DrawImbuementReadout();
 
@@ -249,6 +250,42 @@ public class DevConsole : MonoBehaviour
             PlayerClassController.SetSavedClass(selected.id);
             Time.timeScale = 1f;
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+    }
+
+    /// <summary>
+    ///     Language cheats: one button per supported language plus the pseudo-locale ("XX" — wraps all
+    ///     localized text as [«…»] so unconverted hardcoded strings stand out in a play-mode sweep).
+    ///     Routes through GameSettingsService when present so the choice persists like the picker's;
+    ///     falls back to a session-only Loc.SetLanguage without one.
+    /// </summary>
+    private void DrawLanguageControls()
+    {
+        GUILayout.Label($"Language ({Loc.Language})");
+        GUILayout.BeginHorizontal();
+        foreach (string code in Loc.SupportedLanguages)
+        {
+            if (GUILayout.Button(code.ToUpperInvariant(), GUILayout.Height(ButtonHeight)))
+            {
+                SetLanguage(code);
+            }
+        }
+        if (GUILayout.Button("XX", GUILayout.Height(ButtonHeight)))
+        {
+            SetLanguage(Loc.PseudoLocale);
+        }
+        GUILayout.EndHorizontal();
+    }
+
+    private static void SetLanguage(string code)
+    {
+        if (GameSettingsService.Instance != null)
+        {
+            GameSettingsService.Instance.SetLanguage(code);
+        }
+        else
+        {
+            Loc.SetLanguage(code);
         }
     }
 

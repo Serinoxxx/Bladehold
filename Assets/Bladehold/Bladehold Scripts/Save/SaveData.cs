@@ -74,6 +74,20 @@ public class SaveData
     public string inputBindingOverridesJson = "";
 
     /// <summary>
+    ///     UI language code ("en", "fr", … — see <see cref="Loc.SupportedLanguages" />). Empty string
+    ///     means auto-detect from <see cref="UnityEngine.Application.systemLanguage" />.
+    /// </summary>
+    public string languageCode = "";
+
+    /// <summary>
+    ///     Gamepad right-stick look speed in degrees per second at full deflection, applied by
+    ///     <see cref="GameSettingsService" /> via <see cref="InputSettingsBinder.ApplyGamepadSensitivity" />.
+    ///     Separate from <see cref="mouseSensitivity" /> because stick input is a held ±1 value scaled by
+    ///     time, not a per-frame pixel delta.
+    /// </summary>
+    public float gamepadLookSensitivity = 180f;
+
+    /// <summary>
     ///     Wipes all progress (gold, both skill trees' purchases, Reincarnate points) back to a fresh
     ///     save while leaving every settings field untouched. Used by the settings menu's Delete Save.
     /// </summary>
@@ -104,5 +118,7 @@ public class SaveData
         invertLookY = defaults.invertLookY;
         fieldOfView = defaults.fieldOfView;
         inputBindingOverridesJson = defaults.inputBindingOverridesJson;
+        languageCode = defaults.languageCode;
+        gamepadLookSensitivity = defaults.gamepadLookSensitivity;
     }
 }

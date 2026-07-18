@@ -2922,6 +2922,8 @@ MonoBehaviour:
   inputReader: {fileID: 6872381413864324108}
   followTarget: {fileID: 5452955501477197508}
   sensitivity: 0.5
+  gamepadSensitivity: 180
+  gamepadResponseExponent: 2
   tiltBounds: {x: -70, y: 70}
   hideCursor: 1
   mount: {fileID: 0}
@@ -8187,6 +8189,10 @@ PrefabInstance:
       propertyPath: animator
       value: 
       objectReference: {fileID: 3663620996007313722}
+    - target: {fileID: 2879380361252328939, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
+      propertyPath: inanimateHitParticlePrefab
+      value: 
+      objectReference: {fileID: 198633821086180066, guid: 101d62f0a3e4fef4eab61adb79c845df, type: 3}
     - target: {fileID: 3565413609109626299, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
       propertyPath: m_Layer
       value: 6
@@ -9673,6 +9679,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8676661925207136709}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7214617300407179875}
   m_SourcePrefab: {fileID: 100100000, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
 --- !u!4 &190421269890890082 stripped
 Transform:
@@ -11138,7 +11147,10 @@ MonoBehaviour:
   health: {fileID: 46043393445266479}
   characterController: {fileID: 6129945842767665454}
   mount: {fileID: 1504036595472203636}
-  componentsToDisableWhilePulled: []
+  componentsToDisableWhilePulled:
+  - {fileID: 6674464755654316294}
+  - {fileID: 1123551956803832767}
+  - {fileID: 2420221355282876127}
   pulledFeedback: {fileID: 0}
 --- !u!114 &1504036595472203636
 MonoBehaviour:
@@ -11235,6 +11247,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Counterstrike
   parry: {fileID: 8010178808368797352}
   stats: {fileID: 0}
+--- !u!114 &7214617300407179875
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8033356972124291578}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74bbc2c750cbb764fa44d6ac70f6ba0f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerMaxHealthBinder
+  stats: {fileID: 5156588240620538864}
+  health: {fileID: 46043393445266479}
 --- !u!4 &8319765117670202089 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8013909246233647550, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}

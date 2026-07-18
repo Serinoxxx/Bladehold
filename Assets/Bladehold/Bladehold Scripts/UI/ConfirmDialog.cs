@@ -68,11 +68,18 @@ public class ConfirmDialog : MonoBehaviour
         if (cancelButton != null) cancelButton.onClick.RemoveListener(HandleCancel);
     }
 
-    public void Show(string message, Action onConfirmed, Action onCancelled = null, string confirmLabel = "Confirm")
+    public void Show(string message, Action onConfirmed, Action onCancelled = null, string confirmLabel = null)
     {
         if (anyError)
         {
             return;
+        }
+
+        // Default resolved here rather than in the signature so the localized text is fetched at
+        // show time (a compile-time default couldn't react to language changes).
+        if (string.IsNullOrEmpty(confirmLabel))
+        {
+            confirmLabel = Loc.Get("common.confirm");
         }
 
         onConfirm = onConfirmed;
@@ -101,6 +108,9 @@ public class ConfirmDialog : MonoBehaviour
         StopAllCoroutines();
         StartCoroutine(FadeOutThen(callback));
     }
+
+    /// <summary>Public cancel entry point so pad-cancel (MenuFocusController.onCancel) can bind it in the inspector — same path as the Cancel button.</summary>
+    public void Cancel() => HandleCancel();
 
     private void HandleCancel()
     {

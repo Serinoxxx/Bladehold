@@ -33,6 +33,10 @@ public class RebindButtonView : MonoBehaviour
     private int gamepadBindingIndex = -1;
     private RebindingOperation activeRebind;
 
+    /// <summary>Column buttons, exposed so <see cref="SettingsPanelView" /> can wire explicit gamepad navigation across the grid.</summary>
+    public Button KbmButton => kbmButton;
+    public Button GamepadButton => gamepadButton;
+
     /// <summary>Binds this row to an action; pass -1 for a column the action has no binding in.</summary>
     public void Bind(InputAction boundAction, int kbmIndex, int gamepadIndex, string displayLabel)
     {
@@ -91,10 +95,10 @@ public class RebindButtonView : MonoBehaviour
             : EmptyBindingText;
     }
 
-    private void HandleKbmClick() => StartRebind(kbmBindingIndex, kbmBindingPathLabel);
-    private void HandleGamepadClick() => StartRebind(gamepadBindingIndex, gamepadBindingPathLabel);
+    private void HandleKbmClick() => StartRebind(kbmBindingIndex, kbmBindingPathLabel, gamepadColumn: false);
+    private void HandleGamepadClick() => StartRebind(gamepadBindingIndex, gamepadBindingPathLabel, gamepadColumn: true);
 
-    private void StartRebind(int bindingIndex, TMP_Text pathLabel)
+    private void StartRebind(int bindingIndex, TMP_Text pathLabel, bool gamepadColumn)
     {
         if (action == null || bindingIndex < 0 || activeRebind != null)
         {
@@ -103,11 +107,11 @@ public class RebindButtonView : MonoBehaviour
 
         if (pathLabel != null)
         {
-            pathLabel.text = "Press any key...";
+            pathLabel.text = Loc.Get("rebind.press_any_key");
         }
         PauseMenuController.Instance?.SetToggleEnabled(false);
 
-        activeRebind = InputRebindHelper.StartRebind(action, bindingIndex, HandleRebindFinished, HandleRebindFinished);
+        activeRebind = InputRebindHelper.StartRebind(action, bindingIndex, HandleRebindFinished, HandleRebindFinished, gamepadColumn);
     }
 
     private void HandleRebindFinished()

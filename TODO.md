@@ -1,10 +1,297 @@
 # TODO
 
+## Localization + Controller support — Unity Editor wiring
+
+The C# is done. **Localization**: a static `Localization/Loc.cs` (the `SaveSystem` lazy-static +
+`ResetStatics` pattern) reads `Assets/Bladehold/Resources/Localization/Strings.csv` (UTF-8 **with
+BOM**; header `key,context,en,fr,it,de,es,ru,zh,ja,ko`; literal `\n` = line break; dev pseudo-locale
+`xx` renders `[«english»]`). `Loc.Get(key)` / `Get(key, englishFallback)` / `Format(key, args)`
+(InvariantCulture) / `SetLanguage` + `OnLanguageChanged`. `Localization/LocalizedText.cs` binds a
+TMP label to a key (OnEnable + language-change refresh). Gameplay CSVs stay untouched: `SkillTreeSO`
+gained a serialized `locKeyPrefix` that stamps `SkillNode.locKey` (`<prefix>.<id>`), and
+`SkillNode`/`EnemyDefinition`/`ClassDefinitionSO` expose `Localized*` properties falling back to the
+live CSV/asset English — so the CSV editor windows can never clobber a translation.
+**Bladehold > Localization > Sync Keys** (`Editor/LocalizationSyncWindow.cs`) appends missing
+`skill.*`/`enemy.*`/`class.*`/`stat.*` rows (en auto-filled/refreshed, orphans reported never
+deleted). All hardcoded UI strings converted to keys (`WaveUI`, `WaveStatsPanel`, `DeathScreen` —
+title/reason string fields are now **key** fields — `SkillNodeView`/`SkillTooltip` (costSuffix
+"gold"/"pts" now doubles as a `common.*` key), `ConfirmDialog`, `RebindButtonView`,
+`ScreenshotModePanel`, `ClassSelectPanel`, `StatDisplay.Label` → `stat.<StatType>`). Language lives
+in `SaveData.languageCode` ("" = auto) via `GameSettingsService.SetLanguage`; picker dropdown code
+in `SettingsPanelView` (`languageDropdown`, options built in code with native names).
+**Controller**: `Input/InputDeviceWatcher.cs` (static, `onActionChange`-filtered) exposes
+`Current`/`GamepadActive`/`SchemeChanged`/`BindingsChanged` (raised by
+`GameSettingsService.PersistInputOverrides`/`ResetToDefaults`). `PlayerCameraPivot` now branches:
+mouse keeps raw-delta × sensitivity, pad uses `GamepadSensitivity` (deg/sec, new
+`SaveData.gamepadLookSensitivity` default 180, slider range 30–360 via
+`GameSettingsService.SetGamepadSensitivity` → `InputSettingsBinder.ApplyGamepadSensitivity`) ×
+deltaTime with a squared response curve. `Input/GlyphMapSO.cs` + `Input/InputGlyph.cs` map a
+binding's **effectivePath** control name → sprite per family (unmapped keys = blank keycap + TMP
+overlay of the key name). `UI/HintEntryView.cs` + `UI/ControlHintBar.cs` build glyph+label hint rows
+from action names (rebind-following) or fixed per-family paths; auto-fade optional
+(`autoHideSeconds`). `UI/MenuFocusController.cs` (per panel: default selection under pad, reselect
+on death/escape, `restrictTo` focus trap, polls pad **B** for `onCancel`),
+`UI/ScrollRectAutoScroll.cs` (keeps pad selection visible), `UI/CursorAutoHider.cs` (hides cursor
+on pad, only touches `Cursor.visible`). Rebind columns are now device-exclusive
+(`InputRebindHelper.StartRebind(..., gamepadColumn)`: pad column matches `<Gamepad>` only, cancels
+via pad Select; KBM column excludes gamepads) and `SettingsPanelView.WireRebindGridNavigation` sets
+explicit column-wise Navigation on the generated grid. **Skill tree on pad**:
+`Settings/MenuInputActions.cs` gained a `UiNav` map (TreePan=RS, TreeZoom=LT/RT 1DAxis,
+NodeNav=left stick+dpad, TabPrev/TabNext=LB/RB, Buy=A); `UI/SkillTreePadController.cs` (own
+`MenuInputActions` instance, UiNav enabled only while its panel is active + pad in use) drives new
+`SkillTreeView` public API (`PanBy`/`ZoomBy` viewport-center pivot/`CenterOn`/`PurchaseNode`/
+`VisibleNodeViews`/`IsNodeInViewport`/`ShowTooltipFor`), spatial flick selection over authored grid
+coords (75° cone, distance/alignment score), `SkillNodeView.SetSelected` (highlight object or 1.12×
+scale fallback + hover feedback), `SkillTooltip.ShowAtRect` (pinned anchor mode, same pivot flip).
+`ProjectSettings` default resolution is now 1920×1080 (was 1024×768). **Left in place
+deliberately**: `Assets/InputSystem_Actions.inputactions` — it is registered as Unity's
+project-wide actions config (`com.unity.input.settings.actions` in `EditorBuildSettings.asset`);
+unused by gameplay but deleting it dangles that entry.
+
+Wiring checklist — localization:
+- [x] Set `locKeyPrefix` on the four tree assets: gold tree SO → `skill.gold`, Berserker →
+      `skill.berserker`, Mage → `skill.mage`, Reincarnate → `skill.reinc` (inspector field on each
+      `SkillTreeSO` asset). *(2026-07-19: done via MCP for the three that exist — gold/Berserker/
+      Reincarnate. The Mage tree SO asset doesn't exist yet (still open in the Mage entry); set
+      `skill.mage` on it when it's created.)*
+- [x] Run **Bladehold > Localization > Sync Keys** — expect ~300+ added rows (`skill.*`, `enemy.*`,
+      `class.*`, `stat.*`) with en filled; commit the grown `Strings.csv`. *(2026-07-19: ran the
+      sync via MCP (reflection into `LocalizationSyncWindow.Sync`) — 401 added, 0 orphans; CSV now
+      448 rows, en filled, BOM intact. Note: the sync logged "skipped tree" for nothing — all three
+      existing trees + roster synced; Mage keys will appear once its tree SO exists.)*
+- [x] Add a **Language** row to the Settings panel's General tab (a `TMP_Dropdown` — clone a
+      MenuLabel + add a TMP_Dropdown, or build a MenuDropdown prefab) and hand-assign it to
+      `SettingsPanelView.languageDropdown`. Options are built in code — leave the dropdown's
+      authored option list empty. *(2026-07-19: done via MCP — `Row Language` in GeneralTabContent,
+      TMP_DefaultControls dropdown tinted to the menu grey, options empty, field assigned. The
+      dropdown is default-TMP styled — restyle to the Synty frame look if it reads off-brand.
+      Note: **Bladehold > Generate Settings Menu doesn't know about this row** — a regenerate
+      would drop it; fold it into `SettingsMenuGenerator` if the menu ever gets regenerated.)*
+- [x] Add a **Gamepad Look Sensitivity** MenuSlider row (min 30, max 360, whole numbers) to the
+      Controls tab and hand-assign `SettingsPanelView.gamepadSensitivitySlider`. *(2026-07-19:
+      done via MCP — cloned `Row Sensitivity` into ControlsTabContent index 0, min 30 / max 360 /
+      whole numbers / default 180, field assigned. Same generator caveat as the Language row.)*
+- [x] Add `LocalizedText` components (+ key) to static scene/prefab labels: settings row labels
+      (`settings.*` keys — add rows to Strings.csv as you go), tab buttons General/Controls, pause
+      menu buttons, DeathScreen title is code-driven already, ConfirmDialog Cancel button label
+      (`common.cancel`), class card static chrome. Runtime-set labels need nothing.
+      *(2026-07-19: done via MCP — 22 labels tagged (10 General rows incl. the new Language row,
+      gamepad row, rebind headers, back/tabs/reset/delete, 4 pause buttons, confirm-Cancel).
+      19 new `settings.*`/`pause.*` rows appended to Strings.csv **with all 9 translations filled**.
+      Class cards have no static chrome — name/description are code-driven by `ClassSelectPanel`,
+      so nothing to tag there. Existing `settings.reset`/`settings.delete` rows are the *confirm
+      dialog* labels; the scene buttons got new `settings.reset_settings`/`settings.delete_save`.)*
+- [ ] **HUMAN: Fonts**: import Noto Sans (Regular+SemiBold), Noto Sans SC, JP, KR into
+      `Assets/Bladehold/Fonts/`; generate TMP SDF assets — NotoSans static 2048 atlas with
+      Latin-Extended-A + Latin-1 Supplement + Cyrillic + General Punctuation; SC/JP/KR **dynamic**
+      multi-atlas 4096 (ship-time static bake from Strings.csv characters is a later TODO). Add all
+      four (order: NotoSans, SC, JP, KR) to the **fallback list** of LiberationSans SDF, Texturina
+      _18pt-SemiBold SDF, Grenze-SemiBold SDF **and** TMP Settings global fallbacks. Known
+      simplification: SC before JP = shared Han chars use SC forms.
+- [x] Fill translations for any keys added after this session's seed (machine first pass is fine —
+      the seeded ~45 UI rows are already filled for all 9 languages). *(2026-07-19: machine first
+      pass done — all 401 generated rows filled for fr/it/de/es/ru/zh/ja/ko via parallel LLM
+      translation; every row verified to parse to exactly 11 columns through `CsvUtil.SplitLine`,
+      BOM preserved. Native-speaker review still worthwhile before ship.)*
+
+Wiring checklist — controller/glyphs/hints:
+- [x] *(2026-07-19: done via MCP — all 33 sprites resolved, none missing; asset at the path below.)*
+      Create `GlyphMapSO` asset (menu Scriptable Objects/GlyphMapSO) at
+      `Assets/Bladehold/Bladehold Prefabs/UI/Glyphs/GlyphMap.asset`. Gamepad entries (sprites from
+      `Assets/Synty/InterfaceCore/Sprites/Icons_Input/Xbox` + `GamepadGeneric`, use `_Clean`
+      variants): `buttonSouth`→A, `buttonEast`→B, `buttonWest`→X, `buttonNorth`→Y,
+      `leftShoulder`→LB, `rightShoulder`→RB, `leftTrigger`→LT, `rightTrigger`→RT, `start`→Menu,
+      `select`→Share, `dpad`+`dpad/up|down|left|right`, `leftStick`/`rightStick` (GamepadGeneric
+      stick icons), `leftStickPress`/`rightStickPress` (L3/R3). KBM entries (from `MouseKeyboard`):
+      `leftButton`/`rightButton`/`middleButton` mouse icons, `scroll` (mouse middle), arrows,
+      `space`/`tab`/`enter`/`backspace`. Assign `blankKeycap` = `ICON_Input_PC_Button_Clean`,
+      `blankKeycapWide` = `ICON_Input_PC_Medium_Clean`. Ensure these PNGs import as **Sprite (2D
+      and UI)** — InterfaceCore imports them as sprites already.
+- [x] Create an **InputGlyph prefab** (Image + child TMP overlay text, ~48×48) and a **HintEntry
+      prefab** (HorizontalLayoutGroup: InputGlyph + TMP label using a Bladehold HUD font); assign
+      `GlyphMap.asset` on the InputGlyph. *(2026-07-19: done via MCP — both under
+      `Bladehold Prefabs/UI/Glyphs/`, label font = Texturina_18pt-SemiBold SDF, all refs wired.)*
+- [x] *(2026-07-19: done via MCP — all six entries authored as specified; hint.* keys were already
+      seeded in Strings.csv.)*
+      **Gameplay hint bar**: under HUD Canvas add a bottom-right `ControlHintBar`
+      (HorizontalLayoutGroup, child alignment lower-right) with `entryPrefab` = HintEntry,
+      `autoHideSeconds` ≈ 12. Entries (actionName / locKey / english): `Attack`/`hint.attack`/
+      Attack, `Aim`/`hint.aim`/Aim, `Sprint`/`hint.sprint`/Sprint, `Jump`/`hint.jump`/Jump,
+      `Dismount`/`hint.dismount`/Dismount, and a fixed-path row kbm `<Keyboard>/escape`, pad
+      `<Gamepad>/start`, `hint.pause`/Pause.
+- [x] *(2026-07-19: done via MCP — `TreeHintBar` under the DeathScreen panel root (shows/hides with
+      the death-screen CanvasGroup), all five fixed-path entries authored as specified.)*
+      **Skill-tree hint bar**: under the DeathScreen canvas (bottom, active with the tree panels) a
+      second `ControlHintBar`, `autoHideSeconds` = 0, fixed-path entries: Pan (kbm blank, pad
+      `<Gamepad>/rightStick`, `hint.tree.pan`), Zoom (kbm `<Mouse>/scroll`, pad
+      `<Gamepad>/rightTrigger`, `hint.tree.zoom`), Buy (kbm `<Mouse>/leftButton`, pad
+      `<Gamepad>/buttonSouth`, `hint.tree.buy`), Switch Tab (kbm blank, pad
+      `<Gamepad>/rightShoulder`, `hint.tree.tabs`), Back (kbm `<Keyboard>/escape`, pad
+      `<Gamepad>/buttonEast`, `hint.back`).
+- [x] Add **`MenuFocusController`** to: PauseMenuView root (default = Resume button, onCancel →
+      resume), SettingsPanelView root (default = General tab button, onCancel → back to pause),
+      ConfirmDialog root (default = **Cancel** button, `restrictTo` = its own rect, onCancel →
+      cancel button onClick), DeathScreen buttons panel (default = Try Again, no onCancel,
+      **disableCancel on** while the skill tree pad controller is active — B is not "back" there),
+      WaveIntermissionUI (default = Hold the Line button, no onCancel), ClassSelectPanel (default =
+      first class card). Hand-assign every `defaultSelectable`.
+      *(2026-07-19: done via MCP for the five panels that exist — persistent onCancel listeners
+      verified (resume = `PauseMenuController.SetPaused(false)`; settings-back =
+      `PauseMenuView.ShowMainButtons`, made public; confirm-cancel = new public
+      `ConfirmDialog.Cancel()` wrapper; DeathScreen root got default=Try Again + disableCancel on).
+      **WaveIntermissionUI is not in the scene** — the intermission canvas from its own entry was
+      never built; add its MenuFocusController when that canvas exists.)*
+- [x] Add **`ScrollRectAutoScroll`** to the settings Controls-tab ScrollRect object.
+      *(2026-07-19: added on `RebindScrollView` via MCP.)*
+- [x] Add **`CursorAutoHider`** once, e.g. on the PauseMenuCanvas root. *(2026-07-19: done via MCP.)*
+- [x] Add **`SkillTreePadController`** beside both `SkillTreeView`s (GoldSkillTree +
+      ReincarnateSkillTree objects; auto-wires `treeView` via OnValidate). Wire `onTabPrev`/
+      `onTabNext` to the death screen TabsRow buttons' onClick (prev/next tab).
+      *(2026-07-19: components added + `treeView` explicitly assigned on both via MCP.
+      **`onTabPrev`/`onTabNext` left empty — the death screen has no TabsRow**; the checklist was
+      written against a tab row that was never built (the death screen swaps panels via the
+      Reincarnate button instead). Wire these when/if a death-screen tab row exists.)*
+- [ ] Optional: assign `selectedHighlight` on the SkillNode prefabs (a ring/glow child) — without
+      it pad selection falls back to a 1.12× scale pulse.
+
+Wiring checklist — resolution/aspect:
+- [x] Set `matchWidthOrHeight` = **0.5** on all five canvases (HUD Canvas, DeathScreen, WaveCanvas,
+      CoinCanvas — PauseMenuCanvas is already 0.5). *(2026-07-19: done via MCP — the four were at 1.0.)*
+- [x] **ClassSelectPanel**: replace center anchor + anchoredPosition.x=600 with right-edge
+      anchoring (anchorMin/Max x = 1, pivot x = 1, anchoredPosition.x ≈ −40), same size.
+      *(2026-07-19: done via MCP — anchoredPosition.x came out −80 (not −40) because that's what
+      exactly preserves the panel's current on-screen rect (560 wide, right edge 80 in from the
+      canvas edge); size/y untouched.)*
+- [x] **Skill-tree viewports** (GoldSkillTree + ReincarnateSkillTree, currently fixed
+      1759.58×691.6 centered): convert to stretch anchors with margins that reproduce the current
+      16:9 framing (≈80 left/right, current top/bottom offsets). Pan/zoom clamps adapt at runtime —
+      no code change. *(2026-07-19: done via MCP — gold offsets L/R 80.25, top −186.17 / bottom
+      202.17; reincarnate L 80 / R 640 (the class-panel strip) with the same vertical offsets;
+      rect sizes verified unchanged at 16:9.)*
+- [x] Verify MainButtonsPanel/TabsRow anchors keep them on-screen in a 1280×800 Game view.
+      *(2026-07-19: checked anchors via MCP — both are center-anchored with small fixed rects
+      (320×260 / 100×100), which cannot clip at 1280×800 with match 0.5; the visual pass is
+      covered by the resolution-sweep item in Manual verification.)*
+
+## Manual verification (Localization + Controller)
+
+- [ ] **Language switch live**: pause → Settings → Language → Français: settings labels, pause
+      buttons, wave countdown ("La vague commence dans 5"), skill node names/tooltips, class cards
+      all switch without reload; back to Auto (System) restores English (on an EN system).
+- [ ] **Font fallbacks**: switch to Русский then 简体中文 then 日本語 then 한국어 — no tofu (□)
+      anywhere: settings, death screen, tooltips, wave messages.
+- [ ] **Pseudo-locale sweep**: DevConsole → set language `xx` (add a cheat button or call
+      `Loc.SetLanguage("xx")` via console) — every screen shows `[«…»]`-wrapped text; any bare
+      English string is a missed conversion.
+- [ ] **Persistence**: pick Deutsch, quit play mode, replay — still Deutsch. Reset Settings →
+      language back to Auto and pad sensitivity back to 180.
+- [ ] **CSV round-trip safety**: open Bladehold > Skill Tree Editor, save the gold tree unchanged —
+      `Strings.csv` untouched, localized node names still resolve in play mode.
+- [ ] **Pad look**: with a controller, right-stick look feels the same at 30 fps
+      (`Application.targetFrameRate = 30` via DevConsole) and 144 fps; mouse look unchanged;
+      Gamepad Look Sensitivity slider visibly changes turn rate; invert toggles apply to the stick
+      too.
+- [ ] **Pad gameplay**: full wave on pad only — move/sprint(RB)/jump(A)/attack(RT incl. charge)/
+      aim(LT)/mount+dismount(B)/lock-on(R3) all work; attack cancels sprint.
+- [ ] **Glyphs flip live**: HUD hints show LMB/RMB/Shift on mouse input, flip to RT/LT/RB within
+      one input on the pad, and back on mouse move. Rebind Attack (pad) to X — HUD glyph updates
+      immediately; Reset Settings restores RT.
+- [ ] **Pad menus**: Start opens pause with Resume selected; d-pad navigates; A activates; B backs
+      out of Settings → pause → resumes. Sliders adjust with d-pad left/right. Rebind grid: no
+      diagonal jumps, selection scrolls the list, pad column rebind only accepts pad controls
+      (cancel = Select), KBM column ignores the pad. Cursor hides while pad active, returns on
+      mouse move — and is never re-shown mid-gameplay.
+- [ ] **Pad death screen loop**: die → Try Again selected; LB/RB switch Gold/Reincarnate/Class
+      tabs; on the tree RS pans (clamped at edges), LT/RT zoom eases around the viewport center,
+      left-stick flicks step the selection along the graph (tooltip pinned beside the node, view
+      pans to follow off-screen moves), A buys (feedback + auto-center, gold deducts), reincarnate
+      flow + class pick + Begin Next Life all pad-only. Mouse hover still works and clears the pad
+      highlight.
+- [ ] **Intermission on pad**: wave cleared → Hold the Line selected by default; both choices work;
+      frozen-time UI (tooltips, hint bar fade, focus pulses) still animates (unscaled).
+- [ ] **Negative cases**: stick drift never flips glyphs to pad while typing (deadzone-filtered);
+      pad B during gameplay never opens/closes menus; the tree's Buy (A) never double-fires a
+      selected DeathScreen button (UiNav is enabled only while the tree panel is open — verify a
+      tree-tab A press doesn't also click Try Again); chest/enemy behaviour unchanged (no gameplay
+      systems touched beyond camera look).
+- [ ] **Resolution sweep**: Game view at 1280×800, 1920×1080, 2560×1080, 3440×1440, 1024×768 —
+      pause/settings (scrolled to bottom), death screen all three tabs, class select fully
+      on-screen, intermission, HUD hint bar, tooltip near all four screen edges; nothing clipped or
+      off-screen.
+
+## Enemy Manager window — Unity Editor wiring
+
+The C# is done. **Bladehold > Enemy Manager** (`Editor/EnemyManagerWindow.cs`) is a one-stop
+enemy-tuning window: a roster list (from `Config/Enemies.csv` via the shared
+`Enemies/EnemyRosterSO.asset`) plus four tabs. **Stats** (`Editor/EnemyStatsTab.cs`) edits a row's
+CSV cells — optional-override semantics preserved, blank ≠ 0, untouched cells round-trip
+byte-for-byte including the hand-aligned padding (`Editor/EnemyCsvIO.cs`, the `SkillTreeCsvIO`
+pattern; save = write file → `ImportAsset` → `roster.Reload()`); pending edits live in
+`Editor/EnemyManagerSession.cs` (a `ScriptableSingleton`, the `SkillTreeEditSession` pattern) so
+they survive domain reloads and play-mode round-trips until the explicit **Save to CSV**. In play
+mode, edits re-apply instantly to live zoo enemies through the new
+`WaveSpawner.ApplyDefinitionLive` (same setter chain as `ApplyDefinition`, but health goes through
+the new `Health.SetMaxHealth(value, preserveFraction: true)` overload — the `ScaleMaxHealth`
+semantics — so a half-dead test subject stays half-dead). **Model** (`Editor/EnemyModelTab.cs`)
+swaps a Sidekick-rig character model onto the enemy's prefab variant via
+`Editor/ModelSwapUtility.cs` (the `PlayerModelSwapWindow` bone-name rebind, now shared; that window
+delegates to it), baked with `LoadPrefabContents`/`SaveAsPrefabAsset` and recorded in a
+`Enemies/ModelSwapRecord.cs` marker — authored renderers are disabled not deleted (revertible), and
+`EnemyPrefabGenerator.Apply` now skips its manifest `materialPath` when a record is present so
+re-runs can't paint over a swap. **Animation** (`Editor/EnemyAnimationTab.cs`) browses the Synty +
+Kevin Iglesias clip libraries, previews any Humanoid clip on the enemy in an isolated
+`Editor/EnemyAnimPreviewStage.cs` (a `PreviewSceneStage`; scrub/play driven by
+`Editor/EnemyAnimSampler.cs`, an edit-mode PlayableGraph on the child Animator — the
+`BowPropAnimator` pattern, root pinned so root-motion clips can't walk away), and assigns clips
+into a per-variant `AnimatorOverrideController` (`Bladehold Animations/Overrides/AOC_<name>`,
+created on first use, edited in place after — never nested) wired as the variant's controller.
+**Zoo** (`Editor/EnemyZooTab.cs`) drives the play-mode `EnemyZoo` via its new public API
+(`TrySelect`/`SpawnBatchOf`/`SetBattleMode`/`ApplyLiveDefinition`; `extraSpawns` are now id-tagged).
+The animation-baking scope (GameObjectRecorder + baked ragdoll falls) was **dropped by request
+2026-07-18** — the Bake tab does not exist.
+
+- [x] **Reconnect the MCP bridge** (Window > MCP for Unity > Reconnect) — the WebSocket dropped
+      mid-session; the remaining items were verified headlessly (compile) but not yet in-Editor.
+      *(2026-07-19: bridge responding again — console reads/asset edits working.)*
+- [ ] **Model tab round-trip check**: pick a low-stakes type (dwarf), swap
+      `Assets/Synty/SidekickCharacters/Characters/GoblinFighters/GoblinFighter_02/GoblinFighter_02.prefab`
+      onto it, confirm the variant gains a `ModelSwapRecord` (added renderer names listed, authored
+      renderers disabled), then **Revert to Authored Model** and confirm `git diff` on the variant
+      prefab is clean.
+- [ ] **Generator idempotence**: with a swap in place on any manifest-generated variant, run
+      **Bladehold > Generate Enemy Prefabs** — the console should log "skipping the manifest
+      material apply" for that id and the swap must survive (`git diff` shows no renderer churn).
+- [ ] **Animation preview smoke test**: Animation tab → Open Preview Stage on the goblin → pick a
+      Kevin Iglesias attack clip → scrub and Play. Retarget sanity: no T-pose, feet roughly
+      planted. Close the stage via the breadcrumb — the preview instance must not leak into the
+      open scene.
+- [ ] **AOC apply**: assign a different Attack clip on a variant ("◄ use previewed" or the object
+      field), confirm `Bladehold Animations/Overrides/AOC_<name>.overrideController` is created and
+      set as the variant's controller, then in the zoo the enemy attacks with the new clip and
+      damage timing is unchanged (wall-clock `windupToApex`, not animation events).
+- [ ] **HUMAN: balance/UX pass** on the window itself — column labels, one-shot hint list
+      (`EnemyAnimationTab.OneShotHints`), zoo batch-size cap (500), whatever feels off in use.
+
+## Manual verification (Enemy Manager)
+
+- [x] CSV round-trip: no-edit save is byte-identical; a single Stats edit changes exactly one CSV
+      line (verified via MCP 2026-07-18).
+- [x] Live edits: in the zoo, halving/doubling a type's health preserves each live enemy's damage
+      fraction; batch spawn + battle-mode toggle work from the window (verified via MCP 2026-07-18).
+- [ ] Edit a stat, enter play mode, exit — the "unsaved changes" banner still shows the pending
+      edit; Reload discards it; Save to CSV persists it and the zoo picks it up on next play.
+- [ ] Row-0 guard: with Goblin selected, Delete is greyed out; scheduling fields are disabled and
+      the fallback note shows.
+- [ ] A model-swapped enemy in the zoo animates normally (locomotion, attack, death) and its
+      hitboxes/weapons still work — the swap only touches renderers.
+- [ ] An AOC-overridden enemy in a real wave (Bladehold Test Scene, `DebugSetNextWave` to its
+      unlock wave) plays the new clip — the override is on the prefab, not zoo-only.
+
 ## Max Health and Bow Damage Skills — Unity Editor wiring
 
 The C# is done. Added `PlayerMaxHealthMultiplier` to `StatType.cs` and a new `PlayerMaxHealthBinder` component to scale the player's max health based on the stat. Also added `hp_1` (Vitality), `hp_2` (Vigor), and `bow_dmg` (Stronger String) nodes to `SkillTree.csv`.
 
-- [ ] **Player prefab — `PlayerMaxHealthBinder`** (`Bladehold Prefabs/Player.prefab`): add the component on the player root (next to `Health` and `PlayerStats`). Both `stats` and `health` refs auto-wire via `OnValidate`.
+- [x] **Player prefab — `PlayerMaxHealthBinder`** (`Bladehold Prefabs/Player.prefab`): add the component on the player root (next to `Health` and `PlayerStats`). Both `stats` and `health` refs auto-wire via `OnValidate`. *(2026-07-19: added via MCP on `SidekickSyntyCharacter`; `stats`/`health` refs verified wired in the prefab file.)*
 - [ ] **Skill icons**: `hp_1`, `hp_2`, and `bow_dmg` currently reuse `skill_134_heal` and `bow_shot1_nobg`. Assign better sprites via **Bladehold > Skill Tree Editor** if desired.
 - [ ] **Balance pass**: tune cost/growth and amounts for the new nodes in `SkillTree.csv`.
 
@@ -208,13 +495,21 @@ green point light as the pre-art visual) and `HookProjectile.prefab` (re-uses th
 sphere look). Every SO's defaults are authored in-code; the shared `SlamTelegraph.prefab` serves
 Slayer/Red Demon telegraphs.
 
-- [ ] **Player prefab — `PlayerPullReceiver`** (`Bladehold Prefabs/Player.prefab`): add the
+- [x] **Player prefab — `PlayerPullReceiver`** (`Bladehold Prefabs/Player.prefab`): add the
       component on the player root (next to `Health`/`PlayerMount`). `health`/
       `characterController`/`mount` auto-wire via `OnValidate`; **hand-fill
       `componentsToDisableWhilePulled`** with the `SamplePlayerAnimationController`,
       `CombatFacing`, `AttackCancelsSprint` (the PlayerMount list — NOT `InputReader`, NOT this
       component). Optional `pulledFeedback` (yank + grunt). Until wired, hooks damage but the drag
       fights the controller (a warning logs).
+      *(2026-07-18: verified via MCP — component is on `SidekickSyntyCharacter` with `health`/
+      `characterController`/`mount` auto-wired, but `componentsToDisableWhilePulled` is still an
+      empty array and `pulledFeedback` is unassigned. The hand-fill sub-task below is still open.)*
+  - [x] **Hand-fill `componentsToDisableWhilePulled`** on the existing `PlayerPullReceiver` with
+        `SamplePlayerAnimationController`, `CombatFacing`, `AttackCancelsSprint` — currently empty,
+        so a hook still fights the controller (warning logs). *(2026-07-19: filled via MCP with all
+        three components from the same GameObject; prefab saved. `pulledFeedback` still unassigned —
+        optional juice, no audio picked.)*
   - [ ] Also add `PlayerPullReceiver` to `PlayerDeath`'s disable list? **No** — it must stay
         enabled to refuse pulls while dead (it checks `health.IsDead` itself).
 - [ ] **Animator (cosmetic gaps, not blocking)**: Slayer/Red Demon/Pinball rev/Hook throw all fire
@@ -459,17 +754,44 @@ per level ×4) added to `Config/Reincarnate.csv`. New `StatType.HoldTheLineGoldP
         reveal). Tune `countUpDuration`/`lineStagger`.
   - [ ] `skillTreePanel` = a panel hosting a `SkillTreeView` bound to `SkillTreeService.Instance`
         (same as the death-screen gold tree — reuse that prefab/panel or make a sibling).
-- [ ] **Chest prefabs** (one per level/model): `Collider` **on a layer inside the sword
+- [x] **Chest prefabs** (one per level/model): `Collider` **on a layer inside the sword
       `DamageTrigger.hitLayers` mask** (else BladeSweep won't hit it), a **kinematic** `Rigidbody`
       (or none), `Health` (+ a per-level `HealthSO`), `MMHealthBar` + `HealthBarUI`, `Chest`
       (assign `lootTable`, `coinPrefab`, your explosion `breakVfxPrefab`). Assign `Health`'s
       `damageFeedback` (squash/flash/thunk/splinters) and `deathFeedback` (big boom + hit-stop).
       **Do NOT add `ImpulseReceiver`/`KnockbackReceiver`** — that's what makes chests impulse-immune.
-  - [ ] **ChestLootTableSO assets** (menu `Scriptable Objects/ChestLootTableSO`), one per tier:
+      *(2026-07-18: verified via MCP — `Bladehold Scripts/Chests/Loot Chest.prefab` exists with
+      `Health` (`LootChestHealth.asset`), `Chest`, `MeshCollider`, and an `MMF_Player`. **Only one
+      tier exists** (no per-level variants yet), and it has **no `MMHealthBar`/`HealthBarUI`** —
+      the enemy-pattern health bar is still missing. Confirm `ImpulseReceiver`/`KnockbackReceiver`
+      are genuinely absent before considering this fully done.)*
+  - [x] **Add `MMHealthBar` + `HealthBarUI` to `Loot Chest.prefab`** (missing — confirmed via MCP).
+        *(2026-07-19: done via MCP — components copied from the goblin's configured HealthBar and
+        pasted on the chest root; `HealthBarUI.health`/`healthBar` re-pointed at the chest's own
+        `Health`/`MMHealthBar`. Also re-confirmed the prefab carries **no**
+        `ImpulseReceiver`/`KnockbackReceiver` — full component list checked.)*
+  - [x] **Chest now disappears after breaking** *(2026-07-18)*: `Chest.HandleDied` previously
+        never destroyed or disabled anything — a broken chest stayed a solid, hittable mesh
+        forever. Added a `destroyDelay` (default 2s — long enough for `deathFeedback`/`breakVfx`
+        to play), disables all child `Collider`s immediately on death, then `Destroy(gameObject,
+        destroyDelay)`. Compile-checked clean; no corpse pipeline needed since chests aren't
+        `Enemy`s.
+  - [x] **Sword hit VFX on chests was always blood** *(2026-07-18)*: `SwordHitFeedback` played its
+        `bloodParticlePrefab` on every hit regardless of target, including chests. Added a new
+        `inanimateHitParticlePrefab` field, used instead of blood when the hit target resolves to
+        a `Chest` (`target.GetComponentInParent<Chest>() != null`); wired on the Player prefab's
+        sword to `Assets/Synty/PolygonParticleFX/Prefabs/FX_Impact_Large_01.prefab` via
+        `manage_prefabs modify_contents` (headless — no prefab-stage save-prompt risk).
+  - [x] **ChestLootTableSO assets** (menu `Scriptable Objects/ChestLootTableSO`), one per tier:
         set `minGold`/`maxGold`, `bonusItemChance`, and the weighted `items` roster from existing
         pickup prefabs (`HealthPack`, `LightningOrb`, `ImpulseOrb`, a gold-bag `Coin`).
-  - [ ] Place a **`ChestSpawner`** in the scene; fill `chestPrefabs` (prefab + weight + unlockWave
+        *(2026-07-18: verified via MCP — `Chests/ChestLootTableSO.asset` exists; only one tier.)*
+  - [x] Place a **`ChestSpawner`** in the scene; fill `chestPrefabs` (prefab + weight + unlockWave
         per level), `minPerWave`/`maxPerWave`, and optional `spawnPoints`.
+        *(2026-07-18: verified via MCP — a `Chest Spawner` GameObject is in `Bladehold Test Scene`,
+        `chestPrefabs` has one entry (Loot Chest, weight 100, unlockWave 0), `minPerWave` 1 /
+        `maxPerWave` 3, `spawnRadius` 12, `minPlayerDistance` 5. `spawnPoints` is empty (falls back
+        to radius-based placement) — fine per the script's design.)*
 - [ ] **Greedy Stand icon**: `greedy_stand` ships with a blank icon — assign a sprite via
       **Bladehold > Skill Tree Editor** (and re-save so the row parses), or it shows no icon.
 - [ ] **Balance**: `baseGoldPerWave` (5%), the `greedy_stand` cost/growth/maxLevel, chest
@@ -536,11 +858,13 @@ dmg 4 → charge 16, max 1); `WaveSpawner.ApplyDefinition` routes damage to
       and Apply/"Generate C# Class" so `Controls.cs` picks up the new `Dismount` action (the
       interface gains `OnDismount`, already implemented in `InputReader`). Until then dismount
       falls back to a direct X-key read (keyboard only — `PlayerMount` logs a warning).
-- [ ] **Create SO asset instances**: a `HorseSO` (menu `Scriptable Objects/HorseSO` — defaults are
+- [x] **Create SO asset instances**: a `HorseSO` (menu `Scriptable Objects/HorseSO` — defaults are
       authored in-code: maxSpeed 8, chargeSpeed 12, trample 15 dmg / impulse 10/14), a
       `MountedKnightSO` (`Scriptable Objects/MountedKnightSO` — standoff 12, rear 1.2s, charge 14
       m/s ×4 dmg, dismount at 50%), and a horse `HealthSO` (~100 max health).
-- [ ] **Horse prefab** (`Bladehold Prefabs/Horse.prefab`) from
+      *(2026-07-18: verified via MCP — `HorseSO.asset`, `MountedKnightSO.asset`, and
+      `HorseHealthSO.asset` all exist under `Bladehold Prefabs/Horse/`.)*
+- [x] **Horse prefab** (`Bladehold Prefabs/Horse.prefab`) from
       `Assets/Malbers Animations/Horse AnimSet Pro/Undead Horse/Models/Undead_Horse_Re.fbx`:
       root with `Health` (+ horse `HealthSO`), `HorseAnimation`, `HorseChargeDamage`,
       `HorsePickupProxy`, `CorpseDespawner`, `DisableCollidersOnDeath`, optional
@@ -550,11 +874,24 @@ dmg 4 → charge 16, max 1); `WaveSpawner.ApplyDefinition` routes damage to
       a `HorseMountable` trigger collider over the saddle (**enabled** — riderless is the prefab's
       default state). NO `Enemy`/`CoinDropper`/`EnemyRagdoll` — it's a vehicle: no kill credit, no
       gold, animation-only death.
+      *(2026-07-18: done via MCP — a fully-built `Horse` GameObject was already sitting in
+      `Bladehold Test Scene` (all the components above, `RiderSeat` with `HorseMountable` nested
+      under the animated rig), so it was converted in place with
+      `manage_prefabs create_from_gameobject` into `Bladehold Prefabs/Horse/Horse.prefab`; the
+      scene instance is now linked to it. **Note**: the body has no standalone Collider — only the
+      `CharacterController` (disabled until a rider mounts) and the `HorseMountable` trigger. A
+      riderless horse currently can't be hit by the sword (no active collider on its hit layer)
+      until that's addressed — flag for a follow-up if combat against riderless horses matters.
+      `Health.damageFeedback`/`deathFeedback` are also still unassigned.)*
   - [ ] **Horse animator controller**: params `Speed` (float, m/s), `Turn` (float -1..1), `Charge`
         (bool), `Rear` (trigger), `Death` (trigger). Blend tree on Speed: `H_Idle_01` → `H_Walk` →
         `H_Trot` → `H_Canter` → `H_Gallop` (blend the `_Left`/`_Right` variants on Turn), `Charge`
         → a gallop/lean state, `Rear` → `H_Attack_Front_Legs`, `Death` → `H_Death01`. Clips under
         `Assets/Malbers Animations/Horse AnimSet Pro/2 - Animations/Animations Clips/Horse/`.
+        *(2026-07-18: appears already built — the scene's horse Animator has working `Speed`/
+        `Turn`/`Charge`/`Rear`/`Death` params per `HorseAnimation`'s own param-presence check
+        logging no warnings in a play-mode smoke test — but the blend tree states/clips weren't
+        individually verified, so leaving this unchecked pending an explicit look in the Editor.)*
 - [ ] **Knight prefab** (`Knight Enemy (Mounted).prefab`): knight ROOT with enabled `Health` (+
       HealthSO), `Enemy`, `CoinDropper`, `DamageNumberSpawner`, `DisableCollidersOnDeath`,
       `CorpseDespawner`, `EnemyRagdoll`, `MountedKnightRider`, `MountedKnightBrain`, optional
@@ -574,12 +911,26 @@ dmg 4 → charge 16, max 1); `WaveSpawner.ApplyDefinition` routes damage to
         charge thunder → `chargeFeedback`.
   - [ ] Register the prefab in `WaveSpawner.enemyPrefabs` under id `knight` (row already in
         `Config/Enemies.csv`).
-- [ ] **Player prefab**: add `PlayerMount` (assign the sword `DamageTrigger` explicitly — the
+- [x] **Player prefab**: add `PlayerMount` (assign the sword `DamageTrigger` explicitly — the
       VampiricBlade precedent; fill `componentsToDisableWhileMounted` with the
       `SamplePlayerAnimationController`, `CombatFacing`, `AttackCancelsSprint` — NOT `InputReader`/
       `PlayerAttack`/`PlayerBow`, they stay live for mounted combat, and NOT `PlayerMount` in
       `PlayerDeath`'s list), `MountedCombat`, `MountedCombatLook`, `StartMountedSpawner` (assign
       the Horse prefab). Everything else auto-wires.
+      *(2026-07-18: verified via MCP — `PlayerMount`/`MountedCombat`/`MountedCombatLook` are all on
+      `SidekickSyntyCharacter`; `PlayerMount.swordTrigger` is explicitly assigned to `1H_Sword`'s
+      `DamageTrigger`, `bow` is wired, and `componentsToDisableWhileMounted` has 3 entries filled.
+      **`StartMountedSpawner` is NOT present** — and can't be usefully added yet since there's no
+      Horse prefab to assign it (see below). Re-open this once the Horse prefab exists.)*
+  - [x] **Mount rear no longer locks movement** *(2026-07-18)*: mounting used to call
+        `HorseMotor.TriggerRear()`, which held `targetSpeed`/`TurnInput` at zero for
+        `HorseSO.rearSeconds` (~1.2s) as if it were the knight's charge telegraph — so a
+        freshly-mounted player couldn't move until the rear finished. `TriggerRear()` was the only
+        caller of that lock (the knight's own telegraph calls `HorseAnimation.TriggerRear()`
+        directly, bypassing `HorseMotor` entirely), so the lock was dead weight for its one actual
+        use. Simplified `HorseMotor.TriggerRear()` to just play the animation — cosmetic only, no
+        movement lock — and removed the now-unused `IsRearing`/`rearRoutine`/`HorseSO.rearSeconds`.
+        Compile-checked clean; play-mode smoke test showed no new errors.
   - [ ] **Player animator**: add `IsMounted` (Bool) + `HorseSpeed` (Float) params and a "Riding"
         layer — seated idle/gait blend on `HorseSpeed` from the Malbers `Rider/` clips — plus an
         upper-body-masked attack layer above it **reusing the existing sword attack clips** (their
@@ -721,9 +1072,11 @@ x=6, y=0-8, chained off `solid_1`).
         *(2026-07-16: added on `SidekickSyntyCharacter` next to `Health`/`DamageBlocker`; `parryFeedback` left unassigned, threshold at default.)*
   - [x] Add a `Counterstrike` component on the player root; `parry` auto-wires via `OnValidate`
         (`GetComponent<Parry>()`). *(2026-07-16: added + `parry` ref verified wired.)*
-- [ ] **Skill icon**: `parry_*`/`counter_*` reuse already-registered icon names
+- [x] **Skill icon**: `parry_*`/`counter_*` reuse already-registered icon names
       (`Warriorskill_18_block`, `IncreaseStrength_2/3/4_nobg`), so no new icon drag-and-drop should
-      be needed — confirm they render in **Bladehold > Skill Tree Editor**.
+      be needed — confirm they render in **Bladehold > Skill Tree Editor**. *(2026-07-19: verified
+      via MCP — the rows now use `Paladinskill_43_dodge`/`Skill_Parry_nb` and both resolve through
+      `SkillTreeSO.GetIcon`.)*
 - [ ] **Balance pass**: tune the placeholder costs/positions of the new rows to taste.
 
 ## Manual verification (Parry + Counterstrike)
@@ -827,24 +1180,30 @@ collects the origin + each hop into `chainPointsBuffer` and calls `ShowChain` at
 single instance by design — if several sword hits in one swing each chain, the most recent wins the
 shared bolt (all damage still lands). Both new files added to `Assembly-CSharp.csproj`; build clean.
 
-- [ ] **Player prefab** (`Assets/Bladehold/Bladehold Prefabs/Player.prefab`): drag in a
+- [x] **Player prefab** (`Assets/Bladehold/Bladehold Prefabs/Player.prefab`): drag in a
       **`SingleVFXOnly`** Chain prefab as a child of the player —
       `Assets/Third Party/SineVFX/LightningSystem/CompleteEffectsPrefabs/SingleVFXOnly/Chain/LS_Chain_0X.prefab`
       (pick a look; the `04_ColorBlend` variants read as electric-blue). **Not** a `WithExampleMeshes`
       variant — those carry visible demo spheres. Clear/ignore its authored `chainPoints` (we overwrite
       them at runtime).
-- [ ] Add a **`ChainLightningVfx`** component on the player root; assign its `lightningChain` to the
+      *(2026-07-18: verified via MCP — `LS_Chain_04_ColorBlend_01` is a child of
+      `SidekickSyntyCharacter`, carrying `LightningSystemChain`.)*
+- [x] Add a **`ChainLightningVfx`** component on the player root; assign its `lightningChain` to the
       child `LightningSystemChain` (auto-wires via `OnValidate` if it's the only one in children).
       Defaults for `flashDuration` (0.25) and `maxAnchors` (16) are fine. `ChainLightningVfx` now
       **forces `autoScaleEnabled = false` and sets `masterScale = boltScale` at startup** — the raw
       prefab ships with `autoScaleEnabled = true` and a null `autoScaleAnchor`, which NREs every frame
       in `ProcessAutoScale()` and stops the bolt rendering, so this must stay code-driven. No manual
       autoScale wiring needed.
-- [ ] On the existing **`ChainLightning`** component, leave `chainVfx` blank to auto-wire, or drag the
+      *(2026-07-18: verified via MCP — `ChainLightningVfx` present with `lightningChain` wired to
+      `LS_Chain_04_ColorBlend_01`, `flashDuration` 1.0, `maxAnchors` 16.)*
+- [x] On the existing **`ChainLightning`** component, leave `chainVfx` blank to auto-wire, or drag the
       `ChainLightningVfx` in explicitly. (The old `bounceVfxPrefab` per-target flash still works and
       complements the bolt — keep or clear as desired.)
-- [ ] Tune `ChainLightningVfx.boltScale` (default 1.5) so the arc reads at gameplay camera distance;
+- [x] Tune `ChainLightningVfx.boltScale` (default 1.5) so the arc reads at gameplay camera distance;
       bump it up if the bolt still looks too thin for enemy-to-enemy spans.
+      *(2026-07-18: still at the default 1.5 — nothing bumped, but the wiring itself is complete;
+      re-tune only if it reads too thin in play.)*
 
 ## Manual verification (chain lightning bolt)
 

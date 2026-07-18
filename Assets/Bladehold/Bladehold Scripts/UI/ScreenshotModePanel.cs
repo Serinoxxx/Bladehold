@@ -165,7 +165,7 @@ public class ScreenshotModePanel : MonoBehaviour
             return;
         }
 
-        savedLabel.text = $"Saved to {path}";
+        savedLabel.text = Loc.Format("screenshot.saved_to", path);
         savedLabel.gameObject.SetActive(true);
         savedLabelTimer = savedLabelSeconds;
     }

@@ -34,6 +34,8 @@ public class GameSettingsService : MonoBehaviour
     public bool InvertY => saveData.invertLookY;
     public int MaxRagdolls => saveData.maxRagdolls;
     public float FieldOfView => saveData.fieldOfView;
+    public string LanguageCode => saveData.languageCode;
+    public float GamepadSensitivity => saveData.gamepadLookSensitivity;
 
     /// <summary>Raised whenever any setting changes, so UI showing current values can refresh.</summary>
     public event Action OnSettingsChanged;
@@ -74,10 +76,13 @@ public class GameSettingsService : MonoBehaviour
         SetMixerVolume("SfxVolume", saveData.sfxVolume);
         ApplyMaxRagdolls(saveData.maxRagdolls);
 
+        Loc.SetLanguage(saveData.languageCode);
+
         InputSettingsBinder inputSettings = Player.Instance != null ? Player.Instance.InputSettings : null;
         if (inputSettings != null)
         {
             inputSettings.ApplySensitivity(saveData.mouseSensitivity);
+            inputSettings.ApplyGamepadSensitivity(saveData.gamepadLookSensitivity);
             inputSettings.ApplyInvertX(saveData.invertLookX);
             inputSettings.ApplyInvertY(saveData.invertLookY);
             inputSettings.LoadBindingOverridesFromJson(saveData.inputBindingOverridesJson);
@@ -137,6 +142,24 @@ public class GameSettingsService : MonoBehaviour
         Persist();
     }
 
+    /// <summary>Switches the UI language ("" = auto-detect from the OS) and persists the choice.</summary>
+    public void SetLanguage(string code)
+    {
+        saveData.languageCode = code ?? "";
+        Loc.SetLanguage(saveData.languageCode);
+        Persist();
+    }
+
+    public void SetGamepadSensitivity(float value)
+    {
+        saveData.gamepadLookSensitivity = Mathf.Clamp(value, 30f, 360f);
+        if (Player.Instance != null && Player.Instance.InputSettings != null)
+        {
+            Player.Instance.InputSettings.ApplyGamepadSensitivity(saveData.gamepadLookSensitivity);
+        }
+        Persist();
+    }
+
     public void SetInvertX(bool value)
     {
         saveData.invertLookX = value;
@@ -167,6 +190,7 @@ public class GameSettingsService : MonoBehaviour
 
         saveData.inputBindingOverridesJson = Player.Instance.InputSettings.SaveBindingOverridesToJson();
         SaveSystem.Save(saveData);
+        InputDeviceWatcher.NotifyBindingsChanged();
     }
 
     /// <summary>
@@ -186,6 +210,7 @@ public class GameSettingsService : MonoBehaviour
 
         ApplyAll();
         Persist();
+        InputDeviceWatcher.NotifyBindingsChanged();
     }
 
     private void ApplyMaxRagdolls(int value)

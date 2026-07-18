@@ -57,6 +57,26 @@ public class Health : MonoBehaviour, IDamageable
     }
 
     /// <summary>
+    ///     Per-instance max-health override for a <em>live</em> instance (the Enemy Manager tweaking a
+    ///     zoo enemy mid-fight). With <paramref name="preserveFraction" /> the current-health fraction
+    ///     is kept (the <see cref="ScaleMaxHealth" /> semantics) instead of refilling to full, so a
+    ///     half-dead test subject stays half-dead when its max changes.
+    /// </summary>
+    public void SetMaxHealth(float value, bool preserveFraction)
+    {
+        if (!preserveFraction)
+        {
+            SetMaxHealth(value);
+            return;
+        }
+
+        float fraction = MaxHealth > 0f ? Mathf.Clamp01(currentHealth / MaxHealth) : 1f;
+        maxHealthOverride = value;
+        currentHealth = value * fraction;
+        OnHealthChanged?.Invoke();
+    }
+
+    /// <summary>
     ///     Multiplies the effective max health, preserving the current-health <em>fraction</em> — unlike
     ///     <see cref="SetMaxHealth" />, which refills to full and is meant for pre-Start roster overrides.
     ///     Used by <c>PlayerMount</c> to apply the Barded Steed multiplier when mounting a possibly

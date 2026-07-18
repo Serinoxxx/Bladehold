@@ -18,6 +18,12 @@ public class ClassDefinitionSO : ScriptableObject
     [Tooltip("Short player-facing blurb for the class-select UI.")]
     [TextArea] public string description;
 
+    /// <summary>The class name in the active language (Strings.csv key <c>class.&lt;id&gt;.name</c>), falling back to this asset's English.</summary>
+    public string LocalizedDisplayName => Loc.Get("class." + id + ".name", displayName);
+
+    /// <summary>The class blurb in the active language (Strings.csv key <c>class.&lt;id&gt;.desc</c>), falling back to this asset's English.</summary>
+    public string LocalizedDescription => Loc.Get("class." + id + ".desc", description);
+
     [Tooltip("Applied to the player rig's Animator on load, swapping attack clips while keeping the shared state graph. Null = keep the controller as authored (the Swordsman).")]
     public AnimatorOverrideController animatorOverride;
 

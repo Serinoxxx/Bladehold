@@ -33,6 +33,10 @@ public class PlayerCameraPivot : MonoBehaviour
     [SerializeField] private Transform followTarget;
     [Tooltip("Look sensitivity multiplying the raw mouse delta (the vendored _mouseSensitivity scale). Overwritten on Start by the saved setting via InputSettingsBinder.")]
     [SerializeField] private float sensitivity = 0.5f;
+    [Tooltip("Gamepad look speed in degrees per second at full stick deflection. Overwritten on Start by the saved setting via InputSettingsBinder.")]
+    [SerializeField] private float gamepadSensitivity = 180f;
+    [Tooltip("Exponent shaping stick response: 1 = linear, 2 = quadratic (finer aim near center, same max speed).")]
+    [SerializeField] private float gamepadResponseExponent = 2f;
     [Tooltip("Pitch clamp in degrees: x = furthest up (negative), y = furthest down.")]
     [SerializeField] private Vector2 tiltBounds = new Vector2(-70f, 70f);
     [Tooltip("Lock and hide the cursor on Start, like the vendored controller did.")]
@@ -56,6 +60,13 @@ public class PlayerCameraPivot : MonoBehaviour
     {
         get => sensitivity;
         set => sensitivity = value;
+    }
+
+    /// <summary>Gamepad look speed in degrees per second at full deflection; <see cref="InputSettingsBinder" /> is the intended writer.</summary>
+    public float GamepadSensitivity
+    {
+        get => gamepadSensitivity;
+        set => gamepadSensitivity = value;
     }
 
     /// <summary>Inverts horizontal look (no vendored equivalent existed).</summary>
@@ -124,10 +135,24 @@ public class PlayerCameraPivot : MonoBehaviour
             return;
         }
 
+        // The Look action feeds _mouseDelta from both devices, but they mean different things: a
+        // mouse reports a per-frame pixel delta (already framerate-shaped — apply raw, the vendored
+        // convention), while a stick reports a held ±1 deflection that must be scaled by deltaTime
+        // and its own deg/sec sensitivity or turn speed varies with framerate.
         Vector2 delta = inputReader._mouseDelta;
-        yaw += delta.x * sensitivity * (InvertX ? -1f : 1f);
+        if (InputDeviceWatcher.GamepadActive)
+        {
+            float magnitude = Mathf.Clamp01(delta.magnitude);
+            float shaped = Mathf.Pow(magnitude, Mathf.Max(1f, gamepadResponseExponent));
+            delta = (magnitude > 0f ? delta / magnitude : Vector2.zero) * (shaped * gamepadSensitivity * Time.deltaTime);
+        }
+        else
+        {
+            delta *= sensitivity;
+        }
+        yaw += delta.x * (InvertX ? -1f : 1f);
         // Vendored sign convention: not inverted means mouse-up looks up (pitch toward negative).
-        pitch += delta.y * sensitivity * (InvertY ? 1f : -1f);
+        pitch += delta.y * (InvertY ? 1f : -1f);
         pitch = Mathf.Clamp(pitch, tiltBounds.x, tiltBounds.y);
 
         // While mounted the follow target bobs with the riding animation; SmoothDamp filters that

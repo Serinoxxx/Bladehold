@@ -29,6 +29,10 @@ public class SkillNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     [SerializeField] private GameObject purchasedTick;
     [Tooltip("Shown on teased nodes — the one-step-ahead preview that can't be bought yet.")]
     [SerializeField] private GameObject teasedLock;
+    [Tooltip("Optional highlight shown while this node is the gamepad selection. Falls back to a scale pulse when unassigned.")]
+    [SerializeField] private GameObject selectedHighlight;
+    [Tooltip("Uniform scale applied while pad-selected when no selectedHighlight object is assigned.")]
+    [SerializeField] private float selectedFallbackScale = 1.12f;
 
     [Header("Feedbacks (optional)")]
     [Tooltip("Played when a prereq purchase reveals this node (not on initial tree build — the death screen is alpha-hidden but active then, and every node would fire at scene load).")]
@@ -91,8 +95,8 @@ public class SkillNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         this.onClicked = onClicked;
         bindFrame = Time.frameCount;
 
-        if (nameText != null) nameText.text = node.displayName;
-        if (costText != null) costText.text = service.GetCost(node) + costSuffix;
+        if (nameText != null) nameText.text = node.LocalizedDisplayName;
+        if (costText != null) costText.text = FormatCost(service.GetCost(node));
 
         if (icon != null)
         {
@@ -119,12 +123,12 @@ public class SkillNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     public void BindPreview(string displayName, int cost, int maxLevel, Sprite iconSprite)
     {
         if (nameText != null) nameText.text = displayName;
-        if (costText != null) costText.text = cost + costSuffix;
+        if (costText != null) costText.text = FormatCost(cost);
         if (levelText != null)
         {
             bool multiLevel = maxLevel > 1;
             levelText.gameObject.SetActive(multiLevel);
-            if (multiLevel) levelText.text = "0/" + maxLevel;
+            if (multiLevel) levelText.text = Loc.Format("skill.level_progress", 0, maxLevel);
         }
         if (icon != null)
         {
@@ -187,6 +191,35 @@ public class SkillNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         HoverExited?.Invoke(this);
     }
 
+    /// <summary>
+    ///     Marks this node as the gamepad selection (the pad's equivalent of hover): shows the
+    ///     highlight (or a scale pulse) and plays the hover feedback on gaining selection.
+    /// </summary>
+    public void SetSelected(bool selected)
+    {
+        if (isSelected == selected)
+        {
+            return;
+        }
+        isSelected = selected;
+
+        if (selectedHighlight != null)
+        {
+            selectedHighlight.SetActive(selected);
+        }
+        else
+        {
+            transform.localScale = selected ? Vector3.one * selectedFallbackScale : Vector3.one;
+        }
+
+        if (selected && hoverFeedback != null)
+        {
+            hoverFeedback.PlayFeedbacks();
+        }
+    }
+
+    private bool isSelected;
+
     /// <summary>Called by <see cref="SkillTreeView" /> when this node's purchase went through.</summary>
     public void PlayPurchaseFeedback()
     {
@@ -208,6 +241,12 @@ public class SkillNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         bool maxed = service.IsMaxed(node);
         bool revealed = service.IsRevealed(node);
         bool teased = service.IsTeased(node);
+
+        // Re-resolved on every refresh so a language switch (which triggers RefreshAll) re-renders names.
+        if (nameText != null)
+        {
+            nameText.text = node.LocalizedDisplayName;
+        }
 
         // Fully hidden nodes (more than one step past the frontier) are not shown at all; teased ones
         // show dimmed as a preview of what buying their prereq unlocks.
@@ -237,7 +276,7 @@ public class SkillNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         {
             bool showLevel = node.maxLevel > 1 && !teased;
             if (levelText.gameObject.activeSelf != showLevel) levelText.gameObject.SetActive(showLevel);
-            if (showLevel) levelText.text = level + "/" + node.maxLevel;
+            if (showLevel) levelText.text = Loc.Format("skill.level_progress", level, node.maxLevel);
         }
         if (icon != null && icon.enabled)
         {
@@ -251,7 +290,22 @@ public class SkillNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         }
         if (costText != null)
         {
-            costText.text = maxed ? "Maxed" : service.GetCost(node) + costSuffix;
+            costText.text = maxed ? Loc.Get("common.maxed") : FormatCost(service.GetCost(node));
         }
+    }
+
+    /// <summary>
+    ///     Renders a cost with the localized currency word: the serialized <see cref="costSuffix" />
+    ///     ("gold" / "pts") doubles as a <c>common.*</c> loc key, falling back to the authored text
+    ///     for suffixes with no Strings.csv entry. Blank suffix = bare number, as before.
+    /// </summary>
+    private string FormatCost(int cost)
+    {
+        string suffix = costSuffix != null ? costSuffix.Trim() : "";
+        if (suffix.Length == 0)
+        {
+            return cost.ToString();
+        }
+        return Loc.Format("skill.cost", cost, Loc.Get("common." + suffix, suffix));
     }
 }

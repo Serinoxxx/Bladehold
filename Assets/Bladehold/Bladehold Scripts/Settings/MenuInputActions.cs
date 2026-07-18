@@ -15,6 +15,19 @@ public class MenuInputActions
     public InputActionMap Menu { get; }
     public InputAction TogglePause { get; }
 
+    /// <summary>
+    ///     Enabled only while a skill-tree screen is open (see <see cref="SkillTreePadController" />):
+    ///     gamepad pan/zoom/selection over the tree plus tab switching. Gameplay is dead or frozen
+    ///     whenever these screens show, so reusing gameplay's trigger/button controls can't conflict.
+    /// </summary>
+    public InputActionMap UiNav { get; }
+    public InputAction TreePan { get; }
+    public InputAction TreeZoom { get; }
+    public InputAction NodeNav { get; }
+    public InputAction TabPrev { get; }
+    public InputAction TabNext { get; }
+    public InputAction Buy { get; }
+
     /// <summary>Enabled only while <see cref="ScreenshotModeController" /> is active.</summary>
     public InputActionMap ScreenshotFly { get; }
     public InputAction Move { get; }
@@ -31,6 +44,29 @@ public class MenuInputActions
         TogglePause = Menu.AddAction("TogglePause", InputActionType.Button);
         TogglePause.AddBinding("<Keyboard>/escape");
         TogglePause.AddBinding("<Gamepad>/start");
+
+        UiNav = new InputActionMap("UiNav");
+
+        TreePan = UiNav.AddAction("TreePan", InputActionType.Value);
+        TreePan.AddBinding("<Gamepad>/rightStick");
+
+        TreeZoom = UiNav.AddAction("TreeZoom", InputActionType.Value);
+        TreeZoom.AddCompositeBinding("1DAxis")
+            .With("Positive", "<Gamepad>/rightTrigger")
+            .With("Negative", "<Gamepad>/leftTrigger");
+
+        NodeNav = UiNav.AddAction("NodeNav", InputActionType.Value);
+        NodeNav.AddBinding("<Gamepad>/leftStick");
+        NodeNav.AddBinding("<Gamepad>/dpad");
+
+        TabPrev = UiNav.AddAction("TabPrev", InputActionType.Button);
+        TabPrev.AddBinding("<Gamepad>/leftShoulder");
+
+        TabNext = UiNav.AddAction("TabNext", InputActionType.Button);
+        TabNext.AddBinding("<Gamepad>/rightShoulder");
+
+        Buy = UiNav.AddAction("Buy", InputActionType.Button);
+        Buy.AddBinding("<Gamepad>/buttonSouth");
 
         ScreenshotFly = new InputActionMap("ScreenshotFly");
 
@@ -61,14 +97,18 @@ public class MenuInputActions
 
     public void EnableMenu() => Menu.Enable();
     public void DisableMenu() => Menu.Disable();
+    public void EnableUiNav() => UiNav.Enable();
+    public void DisableUiNav() => UiNav.Disable();
     public void EnableScreenshotFly() => ScreenshotFly.Enable();
     public void DisableScreenshotFly() => ScreenshotFly.Disable();
 
     public void Dispose()
     {
         Menu.Disable();
+        UiNav.Disable();
         ScreenshotFly.Disable();
         Menu.Dispose();
+        UiNav.Dispose();
         ScreenshotFly.Dispose();
     }
 }

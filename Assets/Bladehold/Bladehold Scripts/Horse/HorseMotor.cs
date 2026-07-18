@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using Synty.AnimationBaseLocomotion.Samples.InputSystem;
 using UnityEngine;
@@ -64,9 +63,6 @@ public class HorseMotor : MonoBehaviour
     /// <summary>True while an emptied stamina pool locks charging (clears at the recovery threshold).</summary>
     public bool IsExhausted { get; private set; }
 
-    /// <summary>True while the rear pose holds the horse in place (see <see cref="TriggerRear" />).</summary>
-    public bool IsRearing { get; private set; }
-
     /// <summary>The horse's own Health, for the mount's damage forwarding and death handling.</summary>
     public Health Health => health;
 
@@ -83,7 +79,6 @@ public class HorseMotor : MonoBehaviour
     private PlayerStats stats;
     private bool sprintHeld;
     private float verticalVelocity;
-    private Coroutine rearRoutine;
     private float crowdFactor = 1f;
     private readonly Collider[] crowdBuffer = new Collider[MaxCrowdResults];
     private readonly HashSet<NavMeshAgent> crowdScratch = new HashSet<NavMeshAgent>();
@@ -209,28 +204,15 @@ public class HorseMotor : MonoBehaviour
         enabled = false;
     }
 
-    /// <summary>Plays the rear and holds the horse in place for <see cref="HorseSO.rearSeconds" /> (mount flavor).</summary>
+    /// <summary>Plays the rear animation as mount flavor — cosmetic only; movement is never locked, so the rider can move immediately.</summary>
     public void TriggerRear()
     {
-        if (anyError || health.IsDead || IsRearing) return;
+        if (anyError || health.IsDead) return;
 
         if (horseAnimation != null)
         {
             horseAnimation.TriggerRear();
         }
-        if (rearRoutine != null)
-        {
-            StopCoroutine(rearRoutine);
-        }
-        rearRoutine = StartCoroutine(RearRoutine());
-    }
-
-    private IEnumerator RearRoutine()
-    {
-        IsRearing = true;
-        yield return new WaitForSeconds(horseData.rearSeconds);
-        IsRearing = false;
-        rearRoutine = null;
     }
 
     private void Unsubscribe()
@@ -281,11 +263,7 @@ public class HorseMotor : MonoBehaviour
         UpdateCrowd(dt);
 
         float targetSpeed;
-        if (IsRearing)
-        {
-            targetSpeed = 0f;
-        }
-        else if (move.y > 0f)
+        if (move.y > 0f)
         {
             targetSpeed = effectiveMax * move.y * crowdFactor;
         }
@@ -315,7 +293,7 @@ public class HorseMotor : MonoBehaviour
         CurrentSpeed = Mathf.MoveTowards(CurrentSpeed, targetSpeed, rate * dt);
 
         // Steering: full rate regardless of speed feels responsive; the blend tree leans via Turn.
-        TurnInput = IsRearing ? 0f : Mathf.Clamp(move.x, -1f, 1f);
+        TurnInput = Mathf.Clamp(move.x, -1f, 1f);
         if (TurnInput != 0f)
         {
             transform.Rotate(0f, TurnInput * horseData.turnDegreesPerSecond * dt, 0f);

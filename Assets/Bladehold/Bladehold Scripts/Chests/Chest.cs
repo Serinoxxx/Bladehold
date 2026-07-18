@@ -28,6 +28,8 @@ public class Chest : MonoBehaviour
     [SerializeField] private Vector3 dropOffset = new Vector3(0f, 0.5f, 0f);
     [Tooltip("Loot is scattered within this radius so multiple drops don't stack in one spot.")]
     [SerializeField] private float scatterRadius = 0.6f;
+    [Tooltip("Seconds after breaking before the chest itself is destroyed — long enough for deathFeedback/breakVfx to play out.")]
+    [SerializeField] private float destroyDelay = 2f;
 
     private bool anyError = false;
 
@@ -94,6 +96,14 @@ public class Chest : MonoBehaviour
         {
             Instantiate(bonus, ScatterPoint(), Quaternion.identity);
         }
+
+        // Stop blocking the sword/nav immediately; the broken chest itself lingers just long enough
+        // for deathFeedback/breakVfx to play, then disappears (it has no corpse pipeline to sink it).
+        foreach (Collider col in GetComponentsInChildren<Collider>())
+        {
+            col.enabled = false;
+        }
+        Destroy(gameObject, destroyDelay);
     }
 
     private Vector3 ScatterPoint()

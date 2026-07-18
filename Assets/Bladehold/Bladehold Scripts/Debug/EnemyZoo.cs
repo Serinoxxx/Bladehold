@@ -66,9 +66,16 @@ public class EnemyZoo : MonoBehaviour
         public Behaviour[] attacks;
     }
 
+    // An on-demand spawn tagged with its roster id, so live stat re-applies can find it.
+    private struct ExtraSpawn
+    {
+        public string id;
+        public GameObject instance;
+    }
+
     private readonly List<Spawnable> spawnables = new List<Spawnable>();
     private readonly List<ZooEntry> gallery = new List<ZooEntry>();
-    private readonly List<GameObject> extraSpawns = new List<GameObject>();
+    private readonly List<ExtraSpawn> extraSpawns = new List<ExtraSpawn>();
 
     private bool battleMode;
     private bool anyError;
@@ -233,7 +240,7 @@ public class EnemyZoo : MonoBehaviour
         }
     }
 
-    private void RespawnGallery()
+    public void RespawnGallery()
     {
         ClearGallery();
         BuildGallery();
@@ -258,7 +265,7 @@ public class EnemyZoo : MonoBehaviour
             GameObject instance = SpawnInstance(pick, origin + offset, Quaternion.identity);
             if (instance != null)
             {
-                extraSpawns.Add(instance);
+                extraSpawns.Add(new ExtraSpawn { id = pick.def.id, instance = instance });
             }
         }
     }
@@ -277,14 +284,98 @@ public class EnemyZoo : MonoBehaviour
 
     private void ClearExtraSpawns()
     {
-        foreach (GameObject go in extraSpawns)
+        foreach (ExtraSpawn spawn in extraSpawns)
         {
-            if (go != null)
+            if (spawn.instance != null)
             {
-                Destroy(go);
+                Destroy(spawn.instance);
             }
         }
         extraSpawns.Clear();
+    }
+
+    // ---- Editor-tool API (Enemy Manager window) ----------------------------
+
+    /// <summary>Whether the zoo booted with a valid roster + prefab map and can take commands.</summary>
+    public bool IsReady => !anyError && spawnables.Count > 0;
+
+    public bool BattleMode => battleMode;
+
+    public void SetBattleMode(bool on)
+    {
+        if (battleMode != on)
+        {
+            ToggleBattle();
+        }
+    }
+
+    /// <summary>Points the spawn picker at a roster id. False when the id has no spawnable (no prefab mapping).</summary>
+    public bool TrySelect(string id)
+    {
+        for (int i = 0; i < spawnables.Count; i++)
+        {
+            if (spawnables[i].def.id == id)
+            {
+                pickerIndex = i;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>Spawns a batch of the given type at the spawn point (always live, like the panel's Spawn button).</summary>
+    public bool SpawnBatchOf(string id, int count)
+    {
+        if (!TrySelect(id))
+        {
+            return false;
+        }
+        batchSize = Mathf.Clamp(count, 1, 500);
+        batchText = batchSize.ToString();
+        SpawnBatch();
+        return true;
+    }
+
+    /// <summary>
+    ///     Replaces a roster row's definition for this zoo session (future spawns use it) and re-applies
+    ///     it to every live instance of that type via <see cref="WaveSpawner.ApplyDefinitionLive" /> —
+    ///     current damage fractions survive the tweak. Returns how many live instances were updated.
+    ///     The roster asset itself is untouched; saving is the Enemy Manager's explicit CSV save.
+    /// </summary>
+    public int ApplyLiveDefinition(EnemyDefinition def)
+    {
+        if (def == null || string.IsNullOrEmpty(def.id))
+        {
+            return 0;
+        }
+
+        for (int i = 0; i < spawnables.Count; i++)
+        {
+            if (spawnables[i].def.id == def.id)
+            {
+                spawnables[i] = new Spawnable { def = def, prefab = spawnables[i].prefab };
+            }
+        }
+
+        int updated = 0;
+        foreach (ZooEntry entry in gallery)
+        {
+            if (entry.def.id == def.id && entry.instance != null)
+            {
+                entry.def = def;
+                WaveSpawner.ApplyDefinitionLive(entry.instance, def);
+                updated++;
+            }
+        }
+        foreach (ExtraSpawn spawn in extraSpawns)
+        {
+            if (spawn.id == def.id && spawn.instance != null)
+            {
+                WaveSpawner.ApplyDefinitionLive(spawn.instance, def);
+                updated++;
+            }
+        }
+        return updated;
     }
 
     // ---- IMGUI -----------------------------------------------------------

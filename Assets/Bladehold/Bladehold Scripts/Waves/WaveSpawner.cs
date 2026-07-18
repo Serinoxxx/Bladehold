@@ -509,9 +509,22 @@ public class WaveSpawner : MonoBehaviour
     /// through the same single source of truth.</summary>
     public static void ApplyDefinition(GameObject enemy, EnemyDefinition def)
     {
+        ApplyDefinitionInternal(enemy, def, preserveHealthFraction: false);
+    }
+
+    /// <summary>Re-applies a roster row's overrides to an already-running instance (the Enemy
+    /// Manager tweaking a live zoo enemy). Identical to <see cref="ApplyDefinition" /> except the
+    /// health override keeps the instance's current damage fraction instead of refilling it.</summary>
+    public static void ApplyDefinitionLive(GameObject enemy, EnemyDefinition def)
+    {
+        ApplyDefinitionInternal(enemy, def, preserveHealthFraction: true);
+    }
+
+    private static void ApplyDefinitionInternal(GameObject enemy, EnemyDefinition def, bool preserveHealthFraction)
+    {
         if (def.health.HasValue)
         {
-            enemy.GetComponent<Health>()?.SetMaxHealth(def.health.Value);
+            enemy.GetComponent<Health>()?.SetMaxHealth(def.health.Value, preserveHealthFraction);
         }
         if (def.damage.HasValue)
         {

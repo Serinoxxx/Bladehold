@@ -12,11 +12,29 @@ using RebindingOperation = UnityEngine.InputSystem.InputActionRebindingExtension
 /// </summary>
 public static class InputRebindHelper
 {
-    public static RebindingOperation StartRebind(InputAction action, int bindingIndex, Action onComplete, Action onCancel)
+    /// <summary>
+    ///     <paramref name="gamepadColumn" /> keeps each column on its own device family: the Gamepad
+    ///     column only accepts gamepad controls (cancel via the pad's Select button, since Esc may not
+    ///     be reachable in a pad session), the Keyboard/Mouse column excludes gamepads (and, as
+    ///     before, the mouse — pointer buttons stay reserved for UI).
+    /// </summary>
+    public static RebindingOperation StartRebind(InputAction action, int bindingIndex, Action onComplete, Action onCancel, bool gamepadColumn = false)
     {
-        return action.PerformInteractiveRebinding(bindingIndex)
-            .WithControlsExcluding("Mouse")
-            .WithCancelingThrough("<Keyboard>/escape")
+        RebindingOperation operation = action.PerformInteractiveRebinding(bindingIndex);
+        if (gamepadColumn)
+        {
+            operation
+                .WithControlsHavingToMatchPath("<Gamepad>")
+                .WithCancelingThrough("<Gamepad>/select");
+        }
+        else
+        {
+            operation
+                .WithControlsExcluding("Mouse")
+                .WithControlsExcluding("<Gamepad>")
+                .WithCancelingThrough("<Keyboard>/escape");
+        }
+        return operation
             .OnMatchWaitForAnother(0.1f)
             .OnComplete(op =>
             {
