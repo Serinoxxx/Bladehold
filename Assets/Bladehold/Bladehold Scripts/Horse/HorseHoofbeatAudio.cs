@@ -1,37 +1,41 @@
 using UnityEngine;
 
 /// <summary>
-///     Hoofbeat sound while the horse moves: polls <see cref="HorseMotor.NormalizedSpeed" /> each
-///     frame (the <see cref="HorseAnimation" /> idiom — HorseMotor raises no speed-changed event) and
-///     fires a random clip from <see cref="hoofbeatSounds" /> at a random pitch on a timer whose
-///     interval shortens with speed, so a walk clops slower than a gallop. Silent below
-///     <see cref="minSpeedFraction" /> (standing still / barely moving).
+///     Hoofbeat sound while the horse moves: a single looping gait bed (real recorded hoofbeats,
+///     not a synthesized clop) that stays playing the whole time and is shaped by
+///     <see cref="HorseMotor.NormalizedSpeed" /> each frame (the <see cref="HorseAnimation" /> idiom —
+///     HorseMotor raises no speed-changed event) — volume fades in/out at the walk/stop threshold and
+///     pitch rises with speed so the same loop reads as a brisker gait at a gallop, instead of
+///     retriggering discrete one-shot clops on a timer (which reads as spaced-out taps rather than a
+///     rolling gait, especially at low speed where the interval is longest).
 /// </summary>
 public class HorseHoofbeatAudio : MonoBehaviour
 {
     [SerializeField] private HorseMotor horseMotor;
     [SerializeField] private AudioSource audioSource;
 
-    [Header("Clips")]
-    [SerializeField] private AudioClip[] hoofbeatSounds;
+    [Header("Clip")]
+    [Tooltip("Looping gait bed, e.g. a recorded multi-horse walk/trot cycle. Played continuously; speed only changes its volume and pitch.")]
+    [SerializeField] private AudioClip gallopLoop;
+
+    [Header("Volume")]
+    [Tooltip("Volume once fully cross-faded in at full charge speed.")]
+    [SerializeField] private float maxVolume = 1f;
+
+    [Tooltip("Seconds for volume to fade fully in/out when crossing the moving/stopped threshold.")]
+    [SerializeField] private float volumeFadeTime = 0.35f;
 
     [Header("Pitch")]
-    [Tooltip("Random pitch is picked in this range on every play, for variation.")]
-    [SerializeField] private float minPitch = 0.9f;
-    [SerializeField] private float maxPitch = 1.1f;
+    [Tooltip("Playback pitch at a bare walk (NormalizedSpeed near Min Speed Fraction).")]
+    [SerializeField] private float minPitch = 0.85f;
 
-    [Header("Timing")]
-    [Tooltip("Fraction of (stat-scaled) charge speed below which the horse is considered stopped — no hoofbeats play.")]
+    [Tooltip("Playback pitch at full charge speed (NormalizedSpeed = 1) — raised so the same loop reads as a quicker gait.")]
+    [SerializeField] private float maxPitch = 1.35f;
+
+    [Tooltip("Fraction of (stat-scaled) charge speed below which the horse is considered stopped — the loop fades out and pauses.")]
     [Range(0f, 1f)]
     [SerializeField] private float minSpeedFraction = 0.05f;
 
-    [Tooltip("Seconds between hoofbeats at a bare walk (NormalizedSpeed near Min Speed Fraction).")]
-    [SerializeField] private float slowInterval = 0.5f;
-
-    [Tooltip("Seconds between hoofbeats at full charge speed (NormalizedSpeed = 1).")]
-    [SerializeField] private float fastInterval = 0.18f;
-
-    private float timer;
     private bool anyError = false;
 
     private void OnValidate()
@@ -58,6 +62,18 @@ public class HorseHoofbeatAudio : MonoBehaviour
             Debug.LogError("AudioSource component is not assigned or found on the GameObject.");
             anyError = true;
         }
+        if (gallopLoop == null)
+        {
+            Debug.LogError("Gallop Loop clip is not assigned.");
+            anyError = true;
+        }
+
+        if (anyError) return;
+
+        audioSource.clip = gallopLoop;
+        audioSource.loop = true;
+        audioSource.volume = 0f;
+        audioSource.Play();
     }
 
     private void Update()
@@ -65,24 +81,15 @@ public class HorseHoofbeatAudio : MonoBehaviour
         if (anyError) return;
 
         float normalizedSpeed = horseMotor.NormalizedSpeed;
-        if (normalizedSpeed < minSpeedFraction)
+        bool moving = normalizedSpeed >= minSpeedFraction;
+
+        float targetVolume = moving ? maxVolume : 0f;
+        float fadeStep = volumeFadeTime > 0f ? Time.deltaTime / volumeFadeTime : 1f;
+        audioSource.volume = Mathf.MoveTowards(audioSource.volume, targetVolume, fadeStep);
+
+        if (moving)
         {
-            timer = 0f;
-            return;
+            audioSource.pitch = Mathf.Lerp(minPitch, maxPitch, normalizedSpeed);
         }
-
-        timer -= Time.deltaTime;
-        if (timer > 0f) return;
-
-        PlayRandomHoofbeat();
-        timer = Mathf.Lerp(slowInterval, fastInterval, normalizedSpeed);
-    }
-
-    private void PlayRandomHoofbeat()
-    {
-        if (hoofbeatSounds == null || hoofbeatSounds.Length == 0) return;
-
-        audioSource.pitch = Random.Range(minPitch, maxPitch);
-        audioSource.PlayOneShot(hoofbeatSounds[Random.Range(0, hoofbeatSounds.Length)]);
     }
 }
