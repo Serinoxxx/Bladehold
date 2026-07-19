@@ -13,10 +13,14 @@ MonoBehaviour:
   m_Name: ClassDefinitionSO Swordsman
   m_EditorClassIdentifier: Assembly-CSharp::ClassDefinitionSO
   id: swordsman
-  displayName: Swordsman
-  description: A disciplined blade-master. Balanced speed and steel, with a longbow
+  displayName: Ranger
+  description: A woodland marksman. Balanced speed and steel up close, with a longbow
     for picking off the horde at range.
   animatorOverride: {fileID: 0}
   characterModelPrefab: {fileID: 0}
   chargeTimePerLevel: 1
   skillTree: {fileID: 0}
+  keySkillIds:
+  - bow_unlock
+  - multishot
+  - flamearrow

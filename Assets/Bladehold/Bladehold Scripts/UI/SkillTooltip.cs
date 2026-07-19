@@ -61,7 +61,14 @@ public class SkillTooltip : MonoBehaviour
     ///     still-buyable stat effect — a live "before → after (+%)" block for the <em>next</em> level is
     ///     read from <see cref="Player.Instance" />'s stats.
     /// </summary>
-    public void Show(SkillNode node, ISkillTreeService service)
+    public void Show(SkillNode node, ISkillTreeService service) => Show(node, service, true);
+
+    /// <summary>
+    ///     <paramref name="showLiveImprovement" /> = false skips the before → after stat block: it reads
+    ///     <see cref="Player.Instance" />'s current stats, which is wrong when previewing a class that
+    ///     isn't the active one (the class-select screen's Key Skills row).
+    /// </summary>
+    public void Show(SkillNode node, ISkillTreeService service, bool showLiveImprovement)
     {
         if (node == null || service == null)
         {
@@ -73,7 +80,9 @@ public class SkillTooltip : MonoBehaviour
         int cost = service.GetCost(node);
 
         if (nameText != null) nameText.text = BuildName(node);
-        var (beforeAfter, percentIncrease) = GetImprovementValues(node, level, maxed);
+        var (beforeAfter, percentIncrease) = showLiveImprovement
+            ? GetImprovementValues(node, level, maxed)
+            : (null, null);
         if (descriptionText != null) descriptionText.text = DescriptionFor(node, level);
         if (beforeAfterText != null) beforeAfterText.text = beforeAfter;
         if (percentIncreaseText != null) percentIncreaseText.text = percentIncrease;

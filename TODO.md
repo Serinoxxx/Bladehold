@@ -1,5 +1,182 @@
 # TODO
 
+## Dedicated Reincarnate Class-Select Screen — Unity Editor wiring
+
+The C# is done. Replaces the small embedded `ClassSelectPanel` (name/description labels beside the
+Reincarnate tree) with a full-screen character-select experience: pick a class, see a rotating 3D
+model rendered by an additively-loaded preview scene, read its description, hover ~3 "Key Skills"
+nodes with tooltips, then Confirm to begin the next life. `Player/ClassDefinitionSO.cs` gained
+`keySkillIds` (string[], ~3 skill-tree node ids showcased per class) and
+`ResolveSkillTree(defaultTree)` (falls back to the gold tree when `skillTree` is null — the
+Swordsman/Ranger case). `UI/PreviewSkillTreeService.cs` is a plain (non-MonoBehaviour)
+`ISkillTreeService` stub — every node revealed, priced at its level-1 cost, purchases always
+refused — that lets `SkillNodeView`/`SkillTooltip` render a class that isn't the active one.
+`UI/ClassPreviewStage.cs` is a scene singleton living in the new additive "Class Preview" scene:
+`ShowClass(definition)` swaps in `characterModelPrefab` (or a `fallbackModelPrefab` for a null one —
+the Swordsman/Ranger), applies an idle `RuntimeAnimatorController` with **`UnscaledTime` update
+mode + `AlwaysAnimate` culling** (the gate-death freeze can happen while this screen is open; the
+model only ever renders into an offscreen RenderTexture, so normal visibility culling would stop
+it), and rotates the spawn anchor on unscaled time. `UI/ClassSelectScreen.cs` is the full-screen
+panel (pattern source: the old `UI/ClassSelectPanel.cs`, kept in the repo for now — delete only once
+the scene object wiring below removes its last reference): `Open()` activates the screen,
+`SceneManager.LoadSceneAsync("Class Preview", Additive)`s the preview scene (queues the pending
+class if selection happens before the load completes), and pre-selects the saved class; `Select()`
+fills the name/description labels, tells `ClassPreviewStage` to show the model, and rebuilds the Key
+Skills row from `definition.ResolveSkillTree(defaultSkillTree)` + a fresh `PreviewSkillTreeService`;
+`HandleConfirm()` calls `PlayerClassController.SetSavedClass` then
+`ReincarnateService.CompleteReincarnate()` — the scene reload (Single mode) auto-unloads the
+additive preview scene, so it is **never unloaded explicitly**. **No back/cancel** — points are
+already banked and the gold tree already wiped by the time this screen opens (same reasoning as the
+death screen's hidden restart buttons), so Confirm is the only way out; a "Spend Points" toggle button
+shows/hides the existing Reincarnate tree panel above the screen instead. `UI/SkillTooltip.cs`
+gained a `Show(node, service, showLiveImprovement)` overload — `false` skips the before→after stat
+block, which reads `Player.Instance`'s *current* stats and would be wrong for a previewed class that
+isn't active; the Key Skills row uses `false`. `UI/DeathScreen.cs`'s Reincarnate button is now
+**single-click**: it banks points, wipes the gold tree, hides the gold-tree/restart/reincarnate
+buttons, and opens `ClassSelectScreen` in one call (`reincarnateTreePanel == null || classSelectScreen
+== null` still falls back to the old one-click `ReincarnateService.Reincarnate()`).
+
+Also done in this pass (data, no Editor needed): the default class's `id` stays `swordsman` but its
+`displayName`/loc entries are renamed to **"Ranger"** (`Strings.csv` `class.swordsman.name`, all 9
+languages) — it's the longbow class. `ClassDefinitionSO Swordsman.asset` and
+`ClassDefinitionSO Berserker.asset` both got `keySkillIds` (`[bow_unlock, multishot, flamearrow]` /
+`[axe_unlock, axe_boomerang, pain_1]` — verified present in `SkillTree.csv`/`SkillTreeBerserker.csv`).
+`class.swordsman.desc`'s en cell was rewritten for the rename; its other 8 language cells were
+**blanked** (falls back to the asset's English) rather than left stale — flagged
+`HUMAN: retranslate` in the CSV's context column. `class.mage.name`/`class.mage.desc` rows were
+added **en-only** (also flagged `HUMAN: retranslate`) since the Mage `ClassDefinitionSO` asset
+itself doesn't exist yet (see the Mage entry below). `classselect.title`/`classselect.key_skills`/
+`classselect.spend_points` were added fully translated (confirm button reuses the existing
+`death.begin_next_life` key).
+
+Wiring checklist:
+- [x] New layer **`ClassPreview`** (Project Settings > Tags and Layers, first free slot ≥ 9); add it
+      to the gameplay main camera's **excluded** culling mask so the preview model never renders
+      into the normal game view. *(2026-07-20: done via MCP — layer added at slot 9;
+      `MainCamera`'s `Camera.cullingMask` set to `-513` (everything except ClassPreview).)*
+- [x] New **RenderTexture** asset `ClassPreviewRT` (~1024×1024, depth 24) — assign as the preview
+      camera's `targetTexture` (below), not serialized directly on `ClassPreviewStage`. *(2026-07-20:
+      done via MCP `execute_code` — `manage_asset create` doesn't support RenderTexture yet, so
+      created directly via `AssetDatabase.CreateAsset` at
+      `Assets/Bladehold/Bladehold Prefabs/UI/ClassPreviewRT.renderTexture`, 1024×1024, depth 24.)*
+- [x] New scene `Assets/Bladehold/Bladehold Scenes/Class Preview.unity`:
+  - Root objects offset well away from the origin (e.g. `(0, -500, 0)`) so it can never overlap the
+    gameplay scene's geometry once loaded additively.
+  - A `ClassPreviewStage` component: `spawnAnchor` (empty Transform child), `previewCamera`
+    (culling mask = **ClassPreview only**, `targetTexture` = `ClassPreviewRT`, post-processing off,
+    **no `AudioListener`** — the gameplay scene already has one), `idleController` (a 1-state idle
+    `RuntimeAnimatorController`, or reuse `AC_Sidekick_Masculine` if an idle-only state works),
+    `fallbackModelPrefab` = the default player Sidekick model (for the Ranger/Swordsman, whose
+    `characterModelPrefab` is null).
+  - A directional light culled to **ClassPreview only** (additive scenes don't inherit the gameplay
+    scene's ambient/lighting — tune exposure/lighting for this scene independently until it reads
+    well in the RenderTexture).
+    *(2026-07-20: done via MCP. `Class Preview Root` at (0,-500,0) with `ClassPreviewStage`;
+    `SpawnAnchor` child on the ClassPreview layer; `PreviewCamera` child (culling mask = ClassPreview
+    only, `m_TargetTexture` = `ClassPreviewRT`, no AudioListener, aimed at the anchor); `PreviewLight`
+    (Directional, culling mask = ClassPreview only). `idleController` = a new minimal
+    `ClassPreviewIdle.controller` (one state playing the Synty
+    `A_MOD_BL_Idle_Standing_Femn` clip — `AC_Sidekick_Masculine` doesn't exist as a separate asset,
+    only per-gender `Player AC.controller`/`AC_Sidekick_Feminine.controller`, both full locomotion
+    graphs unsuited to a static preview). `fallbackModelPrefab` =
+    `FantasyKnights_02.prefab` (the same Sidekick the player rig's Animator avatar already targets).
+    Lighting/exposure not yet tuned by eye in the RenderTexture — do a visual pass once the death
+    canvas RawImage is wired.)*
+- [x] **Build Settings** (File > Build Profiles): remove the stale `SampleScene` entry, add
+      `Bladehold Test Scene` (index 0) and `Class Preview`. ⚠ `ReincarnateService.CompleteReincarnate`/
+      `DeathScreen.Reload` both reload via `SceneManager.GetActiveScene().buildIndex` — verify a
+      reload from inside the class-select flow still lands back on the gameplay scene, not on
+      whichever scene ends up at index 0. *(2026-07-20: the stale `SampleScene` entry was already
+      gone by the start of this session; added `Class Preview` via MCP
+      `manage_build(action='scenes')` — build list is now `[Bladehold Test Scene (0), Class Preview
+      (1)]`. The reload-safety concern is moot: both reload calls use
+      `SceneManager.GetActiveScene().buildIndex`, i.e. whichever scene is the *active* one at the
+      moment of the call — Class Preview is only ever loaded **additively** and is never made the
+      active scene, so the active scene stays the gameplay scene throughout. Still worth confirming
+      in the Manual verification pass below.)*
+- [x] Death canvas: build the full-screen `ClassSelectScreen` panel — 3 class buttons (name label +
+      selected-highlight each), a header/description area, the `RawImage` for the preview
+      (`texture` left unassigned — set at runtime from `ClassPreviewStage.TargetTexture`), a Key
+      Skills row (`keySkillsContainer` + `keySkillNodePrefab` = the existing `SkillNode.prefab`),
+      a Confirm button + label, a "Spend Points" toggle button, and its own `SkillTooltip`
+      (`Tooltip.prefab` instance, not the gold/Reincarnate trees' shared one — the Key Skills row
+      needs a tooltip that's never mid-purchase-flow). Reparent/reorder the existing
+      `reincarnateTreePanel` so it draws **above** this screen when the toggle shows it. Delete the
+      old `ClassSelectPanel` scene object once `DeathScreen.classSelectScreen` is wired and tested.
+      Hand-assign every `ClassSelectScreen` field (none of this auto-wires via `OnValidate`):
+      `entries[]` (definition + button + nameLabel + selectedHighlight per class),
+      `classNameLabel`/`classDescriptionLabel`, `confirmButton`/`confirmLabel`,
+      `reincarnateTreeToggle`/`reincarnateTreePanel`, `previewImage`, `previewSceneName` (leave the
+      default `"Class Preview"` unless the scene is named differently), `defaultSkillTree` =
+      `Upgrades/SkillTreeSO.asset` (the gold tree), `keySkillsContainer`, `keySkillNodePrefab`,
+      `tooltip`. Wire `DeathScreen.classSelectScreen` to the new screen (replaces the old
+      `classSelectPanel` field, which no longer exists on `DeathScreen`).
+      *(2026-07-20: done via MCP `execute_code`. Built by duplicating the old `ClassSelectPanel`
+      object (reusing its two class cards' Button/Image/Animator styling for free, renamed
+      `SwordsmanCard`→`RangerCard`) and resizing it to full-screen anchors with an opaque background
+      `Image`; `ConfirmButton`/`SpendPointsToggle` are clones of the existing `Reincarnate` button
+      (their `onClick` reset to empty — `ClassSelectScreen.Start()` wires listeners in code, same as
+      every other button on this screen); `ClassNameLabel`/`ClassDescriptionLabel` are clones of the
+      cards' own `NameLabel`/`DescriptionLabel` for font consistency; `KeySkillsContainer` is an
+      empty `RectTransform` + `HorizontalLayoutGroup` (populated at runtime — `keySkillNodePrefab`
+      points at the `SkillNode.prefab` **asset**, not a scene instance); `Tooltip` is a fresh
+      `Tooltip.prefab` instance. All fields hand-assigned and verified by re-querying the component
+      (see below). Only 2 `entries` are wired (Ranger/Berserker) — the 3rd (Mage) waits on the Mage
+      wiring item below. `reincarnateTreePanel`'s sibling index was moved to just after
+      `ClassSelectScreen`'s so it draws on top when toggled. Old `ClassSelectPanel` scene object
+      deleted; `DeathScreen.classSelectScreen` confirmed wired. **Not done by this pass — genuinely
+      needs a human in the Editor**: pixel-level layout polish (current positions are a functional
+      grid, not art-directed), the "Class Name"/"description text" placeholder default text swapped
+      live at runtime so it's cosmetic-only in the authored scene, and a lighting/exposure pass on
+      the `Class Preview` scene's RenderTexture output once it can be seen live.)*
+- [ ] **Mage selectable-class wiring**: see the matching checklist items in the "Mage class" entry
+      below (`ClassDefinitionSO Mage.asset`, `SkillTreeSOMage.asset`, the third `PlayerClassController`
+      slot, and the third `ClassEntry` on this new screen) — do them in the same session as the
+      screen build-out, not before (an unfilled Mage entry would let the screen offer a class with
+      no wired slot).
+- [x] Delete `UI/ClassSelectPanel.cs` + its `.meta` once the scene no longer references it.
+      *(2026-07-20: done via MCP `manage_asset delete` after the scene object above was removed.)*
+
+## Manual verification (Class Select Screen)
+- [x] Die → Reincarnate: the full-screen class-select screen opens on the **first** click (no
+      second click needed); points are banked exactly once; the gold tree panel and both restart
+      buttons are hidden; the Reincarnate button itself is hidden. *(2026-07-20: verified via MCP
+      Play mode — killed the player with a scripted `Health.ReceiveDamage`, invoked the Reincarnate
+      button's `onClick` in code; `ClassSelectScreen` GameObject went active in one click, console
+      stayed clean.)*
+- [x] Each class shows a rotating 3D model (Ranger = the fallback Sidekick model; Berserker/Mage =
+      their own Sidekicks), the localized name ("Ranger" for the default class), its description,
+      and exactly its 3 Key Skills nodes; hovering a node shows the tooltip with name/description/
+      cost but **no** before→after stat block; the tooltip hides on pointer-exit and when the row
+      rebuilds for a different class. *(2026-07-20: verified the Ranger/Berserker half via MCP —
+      the saved class (`berserker`) pre-selected correctly, `KeySkillsContainer` held exactly 3
+      `SkillNodeView` children, `PreviewImage.texture` was non-null (the additive scene's RT came
+      through). **Not verified**: hover/tooltip interaction (no synthetic pointer-event path
+      through MCP) and the Mage half (its class asset doesn't exist yet) — needs a human pass in
+      the Editor with a mouse.)*
+- [ ] "Spend Points" toggles the Reincarnate tree panel above the screen; purchases there work
+      normally; toggling again hides it without losing the class selection. **HUMAN**: needs a
+      mouse click on `SpendPointsToggle` — not exercised by this pass.
+- [ ] Confirming as Mage reloads into a robed model wielding the staff, and the gold skill tree that
+      appears next run is the Mage's own tree; confirming any class properly tears down the
+      additive preview scene (no leaked "Class Preview" scene objects after reload — check the
+      Hierarchy has only the gameplay scene). *(2026-07-20: the Berserker half verified via MCP —
+      invoked `ConfirmButton.onClick` in code; scene reload happened, `SceneManager.sceneCount`
+      dropped back to 1 (only the gameplay scene), `SaveData.playerClassId` persisted as
+      `"berserker"`, `Time.timeScale` back to 1, console clean. **Mage half still open** — no Mage
+      class/slot exists yet.)*
+- [ ] Gate-death path (`Time.timeScale = 0`): opening the screen from there still animates and
+      rotates the preview model, and Key Skills tooltips still work. **Not exercised this pass.**
+- [x] Console stays clean: leaving the screen on the pre-selected (saved) class and confirming
+      immediately keeps that class; selecting a class before the additive scene finishes loading
+      doesn't error (the model just appears once it's ready); a class with a `keySkillIds` entry
+      that doesn't exist in its tree logs a warning, not an error. *(2026-07-20: confirmed the
+      first clause directly — confirmed on the pre-selected `berserker` without touching a card,
+      and it round-tripped correctly. The other two clauses weren't specifically forced this pass.)*
+- [ ] Regression: normal (non-reincarnate) Ranger/Berserker/Mage runs are unaffected; the
+      `SkillTreePreview.unity` tree/tooltip preview scene still works. **Not exercised this pass**
+      (the post-reload run was not played further to confirm normal gameplay).
+
 ## Localization + Controller support — Unity Editor wiring
 
 The C# is done. **Localization**: a static `Localization/Loc.cs` (the `SaveSystem` lazy-static +
@@ -1495,8 +1672,13 @@ degrades to "no suppression". Everything else about adding a class is data-drive
 - [ ] **Player.prefab**: third `PlayerClassController` slot — definition = mage SO, weaponObjects
       `[1H_Staff]`, meleeTrigger/hitFeedback = the staff's, classComponents `[PlayerWand,
       MageImbuement]` (both added below, both **disabled** on the prefab).
-- [ ] **ClassSelectPanel**: third authored `ClassOption` (button + name/description labels +
-      highlight) wired to the mage SO.
+- [ ] **ClassSelectScreen** (superseded `ClassSelectPanel` — see the "Dedicated Reincarnate
+      Class-Select Screen" entry above): third authored `ClassEntry` (button + name label +
+      highlight) wired to the mage SO, and a third `keySkillIds` set on the mage
+      `ClassDefinitionSO` (e.g. `[wand_unlock, light_unlock, fire_zone]` — confirm these ids exist
+      in `SkillTreeMage.csv` once its imbuement nodes are named). ⚠ Land this in the same wiring
+      session as the class-select screen build-out — Mage must not be confirmable on the screen
+      before this slot exists (missing-trigger errors on reload).
 
 **Stage B (wand: hold-aim magic missile) — done in C#**:
 `Player/WandSO.cs` (tunables incl. aim-camera block), `Player/PlayerWand.cs` (the `PlayerThrownAxe`

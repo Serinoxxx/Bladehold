@@ -8,6 +8,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Bladehold/Bladehold Scenes/Bladehold Test Scene.unity
     guid: 0528651d2ec284e4ba423e3942645a70
+  - enabled: 1
+    path: Assets/Bladehold/Bladehold Scenes/Class Preview.unity
+    guid: 2fe271814a868a540ba6306b36455f16
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: 38f78d68449feb14783c9753605fe827, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

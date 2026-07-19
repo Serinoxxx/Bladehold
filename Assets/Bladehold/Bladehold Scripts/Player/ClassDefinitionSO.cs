@@ -35,4 +35,10 @@ public class ClassDefinitionSO : ScriptableObject
 
     [Tooltip("This class's gold skill tree. Null = SkillTreeService's serialized default (the Swordsman tree).")]
     public SkillTreeSO skillTree;
+
+    [Tooltip("Skill-tree node ids showcased as this class's \"Key Skills\" on the class-select screen (~3).")]
+    public string[] keySkillIds;
+
+    /// <summary>This class's skill tree, falling back to <paramref name="defaultTree" /> when <see cref="skillTree" /> is unset (the Swordsman).</summary>
+    public SkillTreeSO ResolveSkillTree(SkillTreeSO defaultTree) => skillTree != null ? skillTree : defaultTree;
 }
