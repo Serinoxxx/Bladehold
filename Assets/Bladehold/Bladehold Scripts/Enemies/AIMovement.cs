@@ -1,3 +1,4 @@
+using MoreMountains.Feedbacks;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -8,6 +9,8 @@ public class AIMovement : MonoBehaviour
     [SerializeField] Health health;
     [Tooltip("Optional target-selection layer (gate defense). Without it, the agent chases the player as before.")]
     [SerializeField] AITargetSelector targetSelector;
+    [Tooltip("Optional: played once when this enemy starts chasing (spawn aggro bark/growl).")]
+    [SerializeField] MMF_Player aggroFeedback;
 
     Player player;
     Health playerHealth;
@@ -116,6 +119,11 @@ public class AIMovement : MonoBehaviour
         {
             playerHealth = player.Health;
             playerHealth.OnDied += HandlePlayerDied;
+        }
+
+        if (aggroFeedback != null)
+        {
+            aggroFeedback.PlayFeedbacks();
         }
     }
 

@@ -1,3 +1,4 @@
+using MoreMountains.Feedbacks;
 using TMPro;
 using UnityEngine;
 
@@ -8,8 +9,12 @@ using UnityEngine;
 public class CoinUI : MonoBehaviour
 {
     [SerializeField] private TMP_Text label;
+    [Tooltip("Optional: played (e.g. a label pop/scale) whenever the total increases.")]
+    [SerializeField] private MMF_Player gainFeedback;
 
     private Wallet wallet;
+    private int previousCoins;
+    private bool hasPreviousCoins;
     private bool anyError = false;
 
     private void OnValidate()
@@ -58,5 +63,12 @@ public class CoinUI : MonoBehaviour
     private void UpdateLabel(int coins)
     {
         label.text = coins.ToString();
+
+        if (gainFeedback != null && hasPreviousCoins && coins > previousCoins)
+        {
+            gainFeedback.PlayFeedbacks();
+        }
+        previousCoins = coins;
+        hasPreviousCoins = true;
     }
 }

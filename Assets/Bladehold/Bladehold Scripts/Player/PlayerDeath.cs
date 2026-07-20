@@ -1,3 +1,4 @@
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -18,6 +19,9 @@ public class PlayerDeath : MonoBehaviour
 
     // Animator trigger fired on death. Wire a death state driven by this in the Animator.
     [SerializeField] private string deathTrigger = "Death";
+
+    [Tooltip("Optional: played at the moment of death (impact/scream/slow-mo), before the death screen fades in.")]
+    [SerializeField] private MMF_Player deathMomentFeedback;
 
     private int deathTriggerHash;
     private bool anyError = false;
@@ -78,5 +82,10 @@ public class PlayerDeath : MonoBehaviour
         }
 
         animator.SetTrigger(deathTriggerHash);
+
+        if (deathMomentFeedback != null)
+        {
+            deathMomentFeedback.PlayFeedbacks();
+        }
     }
 }

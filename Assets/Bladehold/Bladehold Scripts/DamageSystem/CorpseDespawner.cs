@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -16,6 +17,8 @@ public class CorpseDespawner : MonoBehaviour
     [SerializeField] private Health health;
     [SerializeField] private Animator animator;
     [SerializeField] private CorpseConfigSO config;
+    [Tooltip("Optional: played when the corpse starts sinking (thud/dust).")]
+    [SerializeField] private MMF_Player sinkFeedback;
 
     /// <summary>
     ///     Raised once, when the sink actually begins (timer or early cap-despawn). Listeners that
@@ -132,6 +135,10 @@ public class CorpseDespawner : MonoBehaviour
         }
         isSinking = true;
         OnDespawnStarted?.Invoke();
+        if (sinkFeedback != null)
+        {
+            sinkFeedback.PlayFeedbacks();
+        }
 
         // An early despawn may arrive before the animator-disable delay has elapsed.
         animator.enabled = false;

@@ -1,5 +1,153 @@
 # TODO
 
+## Juice pass: missing MMF feedback hooks — Unity Editor wiring
+
+The C# is done. An audit of every reactive system found a batch of gameplay moments with no
+`MMF_Player` feedback at all, and a few with a hook but no field. All of the below follow the
+existing "`[SerializeField] private MMF_Player fooFeedback;` + `if (fooFeedback != null)
+fooFeedback.PlayFeedbacks();`" convention (the `DamageBlocker`/`AIAttack` precedent) — every field
+is optional (null-safe) so nothing breaks if left unassigned. **Per user direction: give each new
+`MMF_Player`'s Sound feedback *multiple* clips in its random-clip list rather than one static clip;
+where only one suitable clip exists, use that single clip with pitch randomized ~±10% instead
+(same Sound feedback, `RandomizePitch` on, range ~0.9–1.1) — never a single static clip at fixed
+pitch.** Skip the skill-tree node hover/purchase area entirely — it already has its own dedicated
+purchase/hover sounds (`SkillNodeView`), out of scope for this pass.
+
+New/changed fields, one `MMF_Player` each unless noted:
+- `Player/Counterstrike.cs`: `counterFeedback` — plays when a counterstrike lands on the attacker.
+- `Player/VampiricBlade.cs`: `lifestealFeedback` — plays whenever lifesteal heals the player.
+- `Player/ChainLightning.cs`: `chainFeedback` — plays once whenever a chain actually fires (crackle/zap).
+- `Player/DeathNova.cs`: `novaFeedback` — plays when the blast fires, before the revive check.
+- `Player/PlayerDeath.cs`: `deathMomentFeedback` — plays at the moment of death, before the death screen fades in.
+- `Player/PlayerMount.cs`: `mountFeedback` (on `TryMount`) and `dismountFeedback` (on `Dismount`).
+- `DamageSystem/CorpseDespawner.cs`: `sinkFeedback` — plays when the corpse starts sinking (thud/dust).
+- `UI/CoinUI.cs`: `gainFeedback` — plays (label pop/scale) whenever the coin total increases (not on the initial fill).
+- `Waves/WaveUI.cs`: `waveStartFeedback` — plays on `WaveStarted` (horn/sting), alongside the existing "BEGIN" message.
+- `Enemies/AIMovement.cs`: `aggroFeedback` — plays once in `Start()` (spawn/first-chase bark/growl).
+- `Player/AnimationEvents.cs`: new `footstepFeedback` field + public `Footstep()` method, meant to be
+  called from a **footstep animation event** on the player's locomotion clips (both feet call the
+  same method — the existing `OneHandedSwordAttack`/`PlaySwordWoosh` event-method precedent).
+- New component `Player/LowHealthWarning.cs`: `warningFeedback` (a **looping** feedback — heartbeat
+  sound / vignette pulse), started via `PlayFeedbacks()` when health fraction drops to/below
+  `threshold` (default 0.25, inspector-tunable), stopped via `StopFeedbacks()` when healed back
+  above or on death. Not yet placed on the player GameObject.
+- New component `UI/UIClickFeedback.cs`: generic `[RequireComponent(typeof(Button))]` add-on,
+  `clickFeedback` plays on the button's `onClick`. Not yet added to any button.
+
+New SFX imported (cherry-picked from owned-but-unimported Asset Store packages via Asset Inventory,
+**not** bulk-imported — see the note below for what was deliberately left out):
+- `Bladehold Audio/SFX/Footsteps/`: `Footstep_Gravel_01-04.wav` (Universal Sound FX), `Footstep_Dirt_01-03.wav`
+  (Pro Sound Collection) — two surface variants for variety; pick whichever reads better for the
+  Test Scene's ground material, or split them across surface types if the scene has both.
+- `Bladehold Audio/SFX/UI/`: `UI_Click_01.wav`, `UI_Click_02.wav` (Universal Sound FX).
+- `Bladehold Audio/SFX/Enemy Aggro/`: `Enemy_Growl_01.wav`, `Enemy_Grunt_01.wav` (Universal Sound FX) —
+  candidates for `AIMovement.aggroFeedback`. Only one of each was pulled since only one instance
+  exists per type in the source pack; **use the pitch-randomize approach** described above.
+- `Bladehold Audio/SFX/Chest/`: `Chest_Open_01.wav`, `Chest_Open_02.wav` (Fantasy Game Sound Effects) —
+  candidates for a **new, distinct** non-lethal-hit sound on `Chest`'s `Health.damageFeedback`
+  (currently shares whatever generic hit sound is assigned; `Health.deathFeedback` already covers
+  the smash-on-break separately, so this only needs the creak/rattle side).
+- **Deliberately not pulled**: a "goblin aggro" bark from Bestiary Monster Bundle Vol 1 — its
+  `Goblin_Attack_01/02/03.wav` files are **already imported and in use**
+  (`Bladehold Audio/SFX/Goblin/Goblin_Attack_01-05.wav`, byte-identical — confirmed via checksum),
+  so pulling them again would just be the same sound played twice for two different moments; the
+  pack has no separate aggro/idle-growl category for goblins. Its `Orc_Scream_01.wav` was
+  considered but is tonally an alert scream, not a fit for `aggroFeedback`'s "just spotted you"
+  beat — worth revisiting if/when an Orc enemy type is added (there's already an unused `Ork` audio
+  folder suggesting one was planned). **User: if you want a genuinely distinct goblin aggro sound,
+  you'll need to source one** — nothing else in the owned-package cache fit better than what's
+  already in the project.
+- Low-health heartbeat: no dedicated pack found. `Assets/Third Party/Feel/NiceVibrations/Demo/DemoAssets/HapticClipsDemo/Sounds/NVHeartbeats.wav`
+  exists in the project (vendored Feel demo asset, currently unused) and is a usable placeholder for
+  `LowHealthWarning.warningFeedback` until something better is sourced.
+- Torch crackle / ambient wind loop: nothing suitable found anywhere (owned packages or vendored) —
+  **source separately** if ambient audio juice is wanted later.
+
+Wiring checklist:
+- [x] Most of the below was wired live via UnityMCP `execute_code` (creating `MMF_Player`/`MMF_Sound`
+      children, setting `RandomSfx`/`Sfx`+pitch, and assigning fields via `SerializedObject`) rather
+      than by hand — turns out `MMF_Player`/`MMFeedbacks` are plain C# with a public API
+      (`AddFeedback(Type)`, `FeedbacksList`), so this doesn't actually require the Editor GUI. Scene
+      saved (`EditorSceneManager.SaveOpenScenes`), console checked clean of new errors/warnings
+      afterward. *(2026-07-20: done via MCP.)*
+- [x] **Footsteps**: rather than baking animation events onto the vendored Synty locomotion clips
+      (too manual per user — editing `Assets/Third Party/` clip assets is also out of convention),
+      added `Player/PlayerFootsteps.cs` instead: reads the locomotion state's own
+      `AnimatorStateInfo.normalizedTime` each frame (layer `locomotionLayer`, default 0) and fires
+      `AnimationEvents.Footstep()` whenever it crosses one of the inspector-tunable
+      `footstepPhases` fractions (0-1 of the gait cycle; default guess is a plain two-beat cycle at
+      `{0, 0.5}` for left/right). Gated off while airborne (`IsGrounded` false), mounted (`IsMounted`
+      true), or nearly stationary (`MoveSpeed` below `minMoveSpeed`, default 0.1) so it doesn't fire
+      during idle/jump/attack/riding. Added to the player and auto-wired via `OnValidate`
+      (`animator`/`animationEvents` both resolved on add — confirmed via MCP re-query).
+      `footstepFeedback` on `AnimationEvents` already points at `FootstepMMF` (`RandomSfx` = all 7
+      staged footstep clips). *(2026-07-20: done via MCP — component added, refs auto-wired, scene
+      saved.)* **User: this is a guess, not measured from the clip** — tune `footstepPhases` (and
+      `locomotionLayer` if the Synty controller's locomotion isn't on layer 0) by eye/ear in Play
+      mode; the two-beat default is very unlikely to be exactly right for a real walk/run cycle.
+- [x] **Low-health warning**: `LowHealthWarning` component added to the player, `health` wired to the
+      player's own `Health`, `warningFeedback` wired to a new `LowHealthMMF` child using
+      `NVHeartbeats.wav` with `Timing.RepeatForever` set so it loops. *(2026-07-20: done via MCP.)*
+      Still worth a Play-mode pass to tune `threshold` (default 0.25) and confirm the heartbeat
+      placeholder reads well — swap for a better clip if/when one is sourced.
+- [x] **UI clicks**: `UIClickFeedback` added to the death screen's `tryAgainButton`/
+      `restartCurrentWaveButton`/`reincarnateButton`, the pause menu's `resumeButton`/
+      `settingsButton`/`backFromSettingsButton`/`photoModeButton`/`quitButton`, and
+      `ConfirmDialog`'s `confirmButton`/`cancelButton` — all sharing one `UIClickSharedMMF`
+      (`RandomSfx` = `UI_Click_01.wav`/`UI_Click_02.wav`) per panel. Skill-tree buy buttons
+      untouched, as instructed. *(2026-07-20: done via MCP.)* Class-select screen buttons weren't
+      touched (its confirm button lives in a scene not open during this pass) — same recipe if
+      wanted.
+- [x] **Enemy aggro**: all four goblin prefabs (`Goblin Enemy (Base)`, `Goblin Enemy Variant`,
+      `Goblin Brute Enemy`, `Goblin Brute Enemy Variant` — each has its own `AIMovement`, not a
+      shared one) got an `AggroMMF` child wired to `aggroFeedback`, alternating
+      `Enemy_Growl_01.wav`/`Enemy_Grunt_01.wav` with `MinPitch`/`MaxPitch` 0.9–1.1 (single clip each,
+      per the pitch-randomize rule). *(2026-07-20: done via MCP.)* **Still worth a Play-mode
+      listen**: since it fires in every enemy's own `Start()`, a wave of 10+ goblins spawning
+      together will growl in a burst — if too noisy, gate it behind a spawn-chance roll instead.
+- [x] **Chest hit vs. break**: `Loot Chest.prefab`'s `Health.damageFeedback` (previously pointing at
+      the same root `MMF_Player` the death/break feedback likely also touches) now points at a new
+      `ChestCreakMMF` child (`RandomSfx` = `Chest_Open_01.wav`/`Chest_Open_02.wav`); `deathFeedback`
+      untouched. *(2026-07-20: done via MCP.)*
+- [x] **Counterstrike / VampiricBlade / ChainLightning / DeathNova**: wired to new MMF children on
+      the player reusing existing clips — `CounterstrikeMMF`/`LifestealMMF` each single-clip +
+      pitch-varied (`electric_lightning_blast_01.wav` / `magic_flame_of_light_01.wav` — imperfect
+      thematic fits, reused only because nothing better existed; reconsider once
+      better-matched SFX are sourced), `ChainZapMMF` (all 3 `electric_lightning_blast_0*.wav`,
+      random), `DeathNovaBlastMMF` (`_02`/`_03` random). *(2026-07-20: done via MCP.)*
+- [ ] **PlayerDeath.deathMomentFeedback / PlayerMount.mountFeedback / PlayerMount.dismountFeedback**:
+      `MMF_Player`s created and wired (`DeathMomentMMF`, `MountMMF`, `DismountMMF`) but **left with no
+      clip assigned** — nothing in the project or the searched owned packages fit a death-impact
+      stinger or a horse mount/dismount thud/whoosh. Source clips and drop them into the `Sfx`/
+      `RandomSfx` fields (or add a non-audio feedback like a camera shake/flash instead).
+- [ ] **CoinUI.gainFeedback**: wired to `CoinGainMMF` (`RandomSfx` =
+      `Fantasy_Game_Item_Organic_Coin_Collect_A/B.wav`). *(2026-07-20: done via MCP.)* Consider also
+      adding a non-audio scale-pop on the label for the visual half of this juice beat — audio-only
+      right now.
+- [ ] **WaveUI.waveStartFeedback**: `MMF_Player` created and wired (`WaveStartMMF`) but **left with
+      no clip** — no horn/fanfare one-shot was found in the project or the searched packs. Source one
+      (or reuse a `Skill Tree/` stinger if its tone works out of context) and assign it.
+
+## Manual verification (Juice pass)
+- [ ] Walking/running on the Test Scene's ground plays a footstep sound in time with the animation,
+      for every gait (walk, run, sprint) and both feet — silence on any one gait means a missing
+      animation event on that clip.
+- [ ] Dropping below the low-health threshold starts a looping heartbeat; healing back above (or
+      picking up a health pack) stops it; dying also stops it (no heartbeat still playing under the
+      death screen).
+- [ ] Each wired UI button plays a click sound on press; skill-tree buy buttons are unaffected
+      (still just their existing purchase sound, no double-triggering).
+- [ ] A fresh wave of goblins spawning growls/grunts without becoming an overwhelming noise wall —
+      if it's too much, that's the cue to gate `aggroFeedback` behind a spawn-chance roll instead.
+- [ ] Hitting a chest (non-lethal) plays a distinct creak from the final smash-on-break sound.
+- [ ] Counterstrike/lifesteal/chain-lightning/death-nova each play their new sound exactly when
+      their existing mechanic already fires (no new visual/behavioural change, audio-only).
+- [ ] Mounting and dismounting a horse each play their own one-shot; a lethal hit forwarded to the
+      horse (auto-dismount) still plays the dismount sound.
+- [ ] Coin total ticking up on pickup plays the gain feedback; the very first UI fill on scene load
+      does **not** trigger it (guarded by `hasPreviousCoins`).
+- [ ] A new wave beginning plays the wave-start sting alongside the existing "BEGIN" text.
+
 ## Dedicated Reincarnate Class-Select Screen — Unity Editor wiring
 
 The C# is done. Replaces the small embedded `ClassSelectPanel` (name/description labels beside the

@@ -1,3 +1,4 @@
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -22,6 +23,8 @@ public class DeathNova : MonoBehaviour
     [SerializeField] private DeathNovaSO config;
     [Tooltip("Optional; defaults to Player.Instance.Stats.")]
     [SerializeField] private PlayerStats stats;
+    [Tooltip("Optional: played when the nova blast fires, before the revive check.")]
+    [SerializeField] private MMF_Player novaFeedback;
 
     private float cooldownRemaining;
     private bool anyError = false;
@@ -105,6 +108,10 @@ public class DeathNova : MonoBehaviour
 
         cooldownRemaining = Mathf.Max(1f, stats.GetValue(StatType.DeathNovaCooldown));
         novaHitbox.Activate();
+        if (novaFeedback != null)
+        {
+            novaFeedback.PlayFeedbacks();
+        }
 
         float revivePercent = Mathf.Clamp01(stats.GetValue(StatType.DeathNovaRevivePercent));
         if (revivePercent <= 0f)

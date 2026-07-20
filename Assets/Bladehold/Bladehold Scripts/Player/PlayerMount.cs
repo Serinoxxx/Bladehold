@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using MoreMountains.Feedbacks;
 using Synty.AnimationBaseLocomotion.Samples.InputSystem;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -54,6 +55,11 @@ public class PlayerMount : MonoBehaviour
     [SerializeField] private string isMountedBool = "IsMounted";
     [SerializeField] private string horseSpeedFloat = "HorseSpeed";
     [SerializeField] private string ridingLayerName = "Riding";
+
+    [Tooltip("Optional: played the moment the player mounts a horse.")]
+    [SerializeField] private MMF_Player mountFeedback;
+    [Tooltip("Optional: played the moment the player dismounts.")]
+    [SerializeField] private MMF_Player dismountFeedback;
 
     /// <summary>Raised with true on mount, false on dismount — for cosmetic listeners (camera, UI).</summary>
     public event Action<bool> OnMountedChanged;
@@ -387,6 +393,10 @@ public class PlayerMount : MonoBehaviour
         }
 
         horse.TriggerRear();
+        if (mountFeedback != null)
+        {
+            mountFeedback.PlayFeedbacks();
+        }
         OnMountedChanged?.Invoke(true);
         return true;
     }
@@ -458,6 +468,10 @@ public class PlayerMount : MonoBehaviour
         currentMountable = null;
         currentProxy = null;
 
+        if (dismountFeedback != null)
+        {
+            dismountFeedback.PlayFeedbacks();
+        }
         OnMountedChanged?.Invoke(false);
     }
 

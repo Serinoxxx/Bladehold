@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -29,6 +30,8 @@ public class ChainLightning : MonoBehaviour
     [SerializeField] private GameObject bounceVfxPrefab;
     [Tooltip("Optional; draws the SineVFX bolt through the chain's hops. Defaults to Player.Instance's ChainLightningVfx.")]
     [SerializeField] private ChainLightningVfx chainVfx;
+    [Tooltip("Optional: played once whenever a chain actually fires (crackle/zap).")]
+    [SerializeField] private MMF_Player chainFeedback;
 
     private const int MaxOverlapResults = 32;
     private readonly Collider[] overlapBuffer = new Collider[MaxOverlapResults];
@@ -191,6 +194,11 @@ public class ChainLightning : MonoBehaviour
         if (chainVfx != null && chainPointsBuffer.Count >= 2)
         {
             chainVfx.ShowChain(chainPointsBuffer);
+        }
+
+        if (chainFeedback != null && chainPointsBuffer.Count >= 2)
+        {
+            chainFeedback.PlayFeedbacks();
         }
     }
 

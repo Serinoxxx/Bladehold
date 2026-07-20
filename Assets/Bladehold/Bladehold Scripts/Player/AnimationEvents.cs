@@ -1,9 +1,12 @@
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 public class AnimationEvents : MonoBehaviour
 {
     [SerializeField] DamageTrigger oneHandedSwordDamageTrigger;
     [SerializeField] SwordHitFeedback swordHitFeedback;
+    [Tooltip("Played on every footstep animation event (assign a Sound feedback with several clips/random pitch — left/right foot both call the same method).")]
+    [SerializeField] MMF_Player footstepFeedback;
 
     /// <summary>
     ///     Points the attack events at the active class's weapon. Called by
@@ -31,5 +34,14 @@ public class AnimationEvents : MonoBehaviour
     public void PlaySwordWoosh()
     {
         swordHitFeedback.PlayWoosh();
+    }
+
+    /// <summary>Called from a footstep animation event on the locomotion clips (both feet call this).</summary>
+    public void Footstep()
+    {
+        if (footstepFeedback != null)
+        {
+            footstepFeedback.PlayFeedbacks();
+        }
     }
 }

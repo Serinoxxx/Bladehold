@@ -1,4 +1,5 @@
 using System.Collections;
+using MoreMountains.Feedbacks;
 using TMPro;
 using UnityEngine;
 
@@ -17,6 +18,8 @@ public class WaveUI : MonoBehaviour
     [SerializeField] private TMP_Text waveLabel;
     [Tooltip("Seconds the \"BEGIN\" message stays on screen before clearing.")]
     [SerializeField] private float beginMessageDuration = 1.5f;
+    [Tooltip("Optional: played when a new wave begins (horn/sting).")]
+    [SerializeField] private MMF_Player waveStartFeedback;
 
     private Coroutine clearMessageRoutine;
     private bool anyError = false;
@@ -82,6 +85,11 @@ public class WaveUI : MonoBehaviour
 
         SetMessage(Loc.Get("wave.begin"));
         clearMessageRoutine = StartCoroutine(ClearMessageAfter(beginMessageDuration));
+
+        if (waveStartFeedback != null)
+        {
+            waveStartFeedback.PlayFeedbacks();
+        }
     }
 
     private void HandleWaveCleared(int waveNumber)

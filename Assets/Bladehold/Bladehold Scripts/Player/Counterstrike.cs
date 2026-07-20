@@ -1,3 +1,4 @@
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -14,6 +15,8 @@ public class Counterstrike : MonoBehaviour
     [SerializeField] private Parry parry;
     [Tooltip("Optional; defaults to Player.Instance.Stats.")]
     [SerializeField] private PlayerStats stats;
+    [Tooltip("Optional: played when a counterstrike lands on the attacker.")]
+    [SerializeField] private MMF_Player counterFeedback;
 
     private bool anyError = false;
 
@@ -80,5 +83,10 @@ public class Counterstrike : MonoBehaviour
             type = DamageType.sharp,
             sourcePosition = transform.position,
         });
+
+        if (counterFeedback != null)
+        {
+            counterFeedback.PlayFeedbacks();
+        }
     }
 }

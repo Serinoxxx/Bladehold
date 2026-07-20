@@ -1,3 +1,4 @@
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -14,6 +15,8 @@ public class VampiricBlade : MonoBehaviour
     [SerializeField] private Health health;
     [Tooltip("Optional; defaults to Player.Instance.Stats.")]
     [SerializeField] private PlayerStats stats;
+    [Tooltip("Optional: played whenever lifesteal heals the player.")]
+    [SerializeField] private MMF_Player lifestealFeedback;
 
     private bool anyError = false;
 
@@ -84,5 +87,10 @@ public class VampiricBlade : MonoBehaviour
         }
 
         health.Heal(damage.value * fraction);
+
+        if (lifestealFeedback != null)
+        {
+            lifestealFeedback.PlayFeedbacks();
+        }
     }
 }
