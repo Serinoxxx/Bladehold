@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: e7196d0541b91bf4f8cab39924cb6d49
+timeCreated: 1505961902
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 0
+  packageName: POLYGON Dungeon
+  packageVersion: 1.10.1
+  assetPath: Assets/Synty/Weapons/SM_Wep_Greatsword_Straight_01/SM_Wep_Greatsword_Straight_01.prefab
+  uploadId: 0

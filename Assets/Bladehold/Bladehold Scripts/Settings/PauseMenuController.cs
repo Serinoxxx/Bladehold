@@ -112,7 +112,7 @@ public class PauseMenuController : MonoBehaviour
         }
 
         IsPaused = paused;
-        Time.timeScale = paused ? 0f : 1f;
+        Time.timeScale = paused ? 0f : GameSettingsService.TargetTimeScale;
         Cursor.lockState = paused ? CursorLockMode.None : CursorLockMode.Locked;
         Cursor.visible = paused;
 

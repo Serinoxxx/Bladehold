@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: a35ace788dde59742ad85dfd1d5697e2
+timeCreated: 1584484899
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 43775549497339092
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 0
+  packageName: POLYGON Fantasy Kingdom
+  packageVersion: 1.12.4
+  assetPath: Assets/Synty/Weapons/SM_Wep_Axe_10/SM_Wep_Axe_10_Convex.asset
+  uploadId: 0

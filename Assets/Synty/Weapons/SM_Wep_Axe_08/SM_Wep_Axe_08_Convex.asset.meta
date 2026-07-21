@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: f013462b005080940a18cfe170ea6537
+timeCreated: 1584484932
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 43652451387198918
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 0
+  packageName: POLYGON Fantasy Kingdom
+  packageVersion: 1.12.4
+  assetPath: Assets/Synty/Weapons/SM_Wep_Axe_08/SM_Wep_Axe_08_Convex.asset
+  uploadId: 0

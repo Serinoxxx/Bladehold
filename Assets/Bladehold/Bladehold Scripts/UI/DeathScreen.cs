@@ -165,6 +165,22 @@ public class DeathScreen : MonoBehaviour
         }
         shown = true;
 
+        GameObject hudGO = GameObject.Find("HUD Canvas");
+        if (hudGO != null)
+        {
+            CanvasGroup hudCG = hudGO.GetComponent<CanvasGroup>();
+            if (hudCG != null)
+            {
+                hudCG.alpha = 0f;
+                hudCG.interactable = false;
+                hudCG.blocksRaycasts = false;
+            }
+            else
+            {
+                hudGO.SetActive(false);
+            }
+        }
+
         if (titleText != null)
         {
             titleText.text = title;
@@ -301,7 +317,7 @@ public class DeathScreen : MonoBehaviour
     {
         // Reload the active scene; scene-scoped singletons (GameStats, Wallet) reset naturally, while the
         // wave to resume from rides across the reload in the static RunState.
-        Time.timeScale = 1f; // ensure normal speed resumes even if something paused time on death.
+        Time.timeScale = GameSettingsService.TargetTimeScale; // ensure normal speed resumes even if something paused time on death.
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);

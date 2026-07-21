@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: eca7ededb3db2234c90bef2213ce5799
+timeCreated: 1505961427
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 0
+  packageName: POLYGON Dungeon
+  packageVersion: 1.10.1
+  assetPath: Assets/Synty/Weapons/SM_Wep_HandAxe_01/SM_Wep_HandAxe_01.prefab
+  uploadId: 0

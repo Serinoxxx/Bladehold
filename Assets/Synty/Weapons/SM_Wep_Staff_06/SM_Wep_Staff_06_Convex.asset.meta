@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 0e4bf9821457d694ca256c445c2fe42d
+timeCreated: 1584484933
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 43141050669360262
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 0
+  packageName: POLYGON Fantasy Kingdom
+  packageVersion: 1.12.4
+  assetPath: Assets/Synty/Weapons/SM_Wep_Staff_06/SM_Wep_Staff_06_Convex.asset
+  uploadId: 0

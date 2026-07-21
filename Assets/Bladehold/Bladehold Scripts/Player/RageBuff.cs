@@ -56,11 +56,11 @@ public class RageBuff : MonoBehaviour
     {
         if (health == null)
         {
-            health = GetComponent<Health>();
+            health = GetComponentInParent<Health>();
         }
         if (stats == null)
         {
-            stats = GetComponent<PlayerStats>();
+            stats = GetComponentInParent<PlayerStats>();
         }
         if (thrownAxe == null)
         {
@@ -88,7 +88,7 @@ public class RageBuff : MonoBehaviour
 
         if (meleeTrigger == null)
         {
-            PlayerClassController classController = GetComponent<PlayerClassController>();
+            PlayerClassController classController = GetComponentInParent<PlayerClassController>();
             meleeTrigger = classController != null ? classController.ActiveMeleeTrigger : null;
         }
 

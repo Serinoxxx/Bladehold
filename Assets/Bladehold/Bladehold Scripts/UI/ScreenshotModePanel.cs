@@ -18,7 +18,10 @@ public class ScreenshotModePanel : MonoBehaviour
     private class SettingRow
     {
         public PhotoSetting setting;
+        [Tooltip("Optional: slider for float settings.")]
         public Slider slider;
+        [Tooltip("Optional: toggle for boolean settings.")]
+        public Toggle toggle;
         [Tooltip("Optional: resets the slider to the value the setting had when Photo Mode was entered.")]
         public Button resetButton;
     }
@@ -66,18 +69,27 @@ public class ScreenshotModePanel : MonoBehaviour
 
         foreach (SettingRow row in rows)
         {
-            if (row.slider == null)
-            {
-                continue;
-            }
-
             PhotoSetting setting = row.setting;
-            Slider slider = row.slider;
-            slider.onValueChanged.AddListener(value => screenshotMode.Set(setting, value));
-            if (row.resetButton != null)
+            
+            if (row.slider != null)
             {
-                row.resetButton.onClick.AddListener(() =>
-                    slider.value = Mathf.Clamp(screenshotMode.GetEnterValue(setting), slider.minValue, slider.maxValue));
+                Slider slider = row.slider;
+                slider.onValueChanged.AddListener(value => screenshotMode.Set(setting, value));
+                if (row.resetButton != null)
+                {
+                    row.resetButton.onClick.AddListener(() =>
+                        slider.value = Mathf.Clamp(screenshotMode.GetEnterValue(setting), slider.minValue, slider.maxValue));
+                }
+            }
+            else if (row.toggle != null)
+            {
+                Toggle toggle = row.toggle;
+                toggle.onValueChanged.AddListener(value => screenshotMode.Set(setting, value ? 1f : 0f));
+                if (row.resetButton != null)
+                {
+                    row.resetButton.onClick.AddListener(() =>
+                        toggle.isOn = screenshotMode.GetEnterValue(setting) > 0.5f);
+                }
             }
         }
 
@@ -117,6 +129,7 @@ public class ScreenshotModePanel : MonoBehaviour
         foreach (SettingRow row in rows)
         {
             if (row.slider != null) row.slider.onValueChanged.RemoveAllListeners();
+            if (row.toggle != null) row.toggle.onValueChanged.RemoveAllListeners();
             if (row.resetButton != null) row.resetButton.onClick.RemoveAllListeners();
         }
     }
@@ -148,13 +161,17 @@ public class ScreenshotModePanel : MonoBehaviour
 
         foreach (SettingRow row in rows)
         {
-            if (row.slider == null)
-            {
-                continue;
-            }
+            float sceneValue = screenshotMode.Get(row.setting);
 
-            float value = Mathf.Clamp(screenshotMode.Get(row.setting), row.slider.minValue, row.slider.maxValue);
-            row.slider.SetValueWithoutNotify(value);
+            if (row.slider != null)
+            {
+                float clamped = Mathf.Clamp(sceneValue, row.slider.minValue, row.slider.maxValue);
+                row.slider.SetValueWithoutNotify(clamped);
+            }
+            else if (row.toggle != null)
+            {
+                row.toggle.SetIsOnWithoutNotify(sceneValue > 0.5f);
+            }
         }
     }
 

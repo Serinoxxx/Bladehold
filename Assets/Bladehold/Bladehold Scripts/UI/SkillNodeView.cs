@@ -95,7 +95,14 @@ public class SkillNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         this.onClicked = onClicked;
         bindFrame = Time.frameCount;
 
-        if (nameText != null) nameText.text = node.LocalizedDisplayName;
+        if (nameText != null)
+        {
+            nameText.text = node.LocalizedDisplayName;
+            nameText.enableAutoSizing = true;
+            nameText.fontSizeMin = 10f;
+            nameText.textWrappingMode = TextWrappingModes.NoWrap;
+            nameText.overflowMode = TextOverflowModes.Truncate;
+        }
         if (costText != null) costText.text = FormatCost(service.GetCost(node));
 
         if (icon != null)
@@ -122,7 +129,14 @@ public class SkillNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     /// </summary>
     public void BindPreview(string displayName, int cost, int maxLevel, Sprite iconSprite)
     {
-        if (nameText != null) nameText.text = displayName;
+        if (nameText != null)
+        {
+            nameText.text = displayName;
+            nameText.enableAutoSizing = true;
+            nameText.fontSizeMin = 10f;
+            nameText.textWrappingMode = TextWrappingModes.NoWrap;
+            nameText.overflowMode = TextOverflowModes.Truncate;
+        }
         if (costText != null) costText.text = FormatCost(cost);
         if (levelText != null)
         {

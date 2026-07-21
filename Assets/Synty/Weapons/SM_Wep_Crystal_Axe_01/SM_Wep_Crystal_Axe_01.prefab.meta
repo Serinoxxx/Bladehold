@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 48610ef49478fca47a49e4e3c55f8c8a
+timeCreated: 1505961428
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 0
+  packageName: POLYGON Dungeon
+  packageVersion: 1.10.1
+  assetPath: Assets/Synty/Weapons/SM_Wep_Crystal_Axe_01/SM_Wep_Crystal_Axe_01.prefab
+  uploadId: 0

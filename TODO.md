@@ -1,5 +1,43 @@
 # TODO
 
+## Mage and Berserker Class Configuration — Unity Editor wiring
+## Mage, Berserker, and Swordsman Class Configuration — Unity Editor wiring
+
+The C# is mostly done, and missing icons in `SkillTreeBerserker.csv` and `SkillTreeMage.csv` have been filled out with the closest matching Unity sprites. We also found that `PlayerClassController` was entirely missing from the `Player.prefab`, so the `EditorFixer.cs` script now adds it and populates all 3 class slots. 
+
+**Manual Verification & Wiring:**
+After running **Tools > Fix Player Classes**, open `Assets/Bladehold/Bladehold Prefabs/Player.prefab` and inspect the newly added `PlayerClassController` component on the root:
+- [ ] Unity's `OnValidate` should auto-wire `AnimationEvents`, `PlayerAttack`, etc. (if any are blank, just assign them from the player's children).
+- [ ] Expand the **Slots** list. There are now 3 slots (Swordsman, Berserker, Mage).
+- [ ] For the **Swordsman** (slot 0): Assign the Swordsman's sword and bow GameObjects to the `weaponObjects` array. Add `PlayerBow` and `FreezingDraw` components to the `classComponents` array. Assign `meleeTrigger` and `hitFeedback`.
+- [ ] For the **Berserker** (slot 1): Assign the Berserker's axe GameObject to the `weaponObjects` array. Add `PlayerThrownAxe`, `RageBuff`, and `PainIntoPower` components to the `classComponents` array. Assign `meleeTrigger` and `hitFeedback`.
+- [ ] For the **Mage** (slot 2): Assign the Mage's wand GameObject to the `weaponObjects` array. Add the `PlayerWand` component to the `classComponents` array. Assign `meleeTrigger` and `hitFeedback`.
+- [ ] Save the prefab!
+
+## Manual verification (Mage and Berserker Classes)
+- [ ] Open the game and die to reach the Class Select screen.
+- [ ] Verify the Mage class shows the correct wand/magic "Key Skills" and uses the Mage model (once assigned).
+- [ ] Select Berserker and confirm to start a new life. Verify the player model changes to the Berserker, the axe is equipped, and the Berserker skill tree is active.
+- [ ] Select Mage and confirm to start a new life. Verify the player model changes to the Mage, the wand is equipped, and the Mage skill tree is active.
+
+## Game Speed Setting — Unity Editor wiring
+
+The C# is done. A global game speed setting (0.1x to 2.0x) has been added to the settings menu. `SaveData` gained a `gameSpeed` field, and `GameSettingsService` gained a `GameSpeed` property, a `TargetTimeScale` static property, and a `SetGameSpeed` method to manage it globally. All previous hardcoded `Time.timeScale = 1f` calls across the codebase (e.g. unpausing, death screen, wave intermission) were replaced with `Time.timeScale = GameSettingsService.TargetTimeScale` so they respect the setting when resuming time. `SettingsPanelView` was wired to read and write a new `gameSpeedSlider` field, restoring defaults correctly.
+
+Wiring checklist:
+- [x] **Game Speed slider UI row**: Add a **Game Speed** row to the Settings panel's General tab (clone the existing `Max Ragdolls` or `Sensitivity` row). *(Done via MCP)*
+- [x] Set the slider's min value to 0.1, max value to 2.0, and uncheck "Whole Numbers". *(Done via MCP)*
+- [x] Assign this new slider to `SettingsPanelView.gameSpeedSlider`. *(Done via MCP)*
+- [x] Ensure a localization key `settings.game_speed` (or similar) is added to `Strings.csv` and assigned via `LocalizedText` for the label. *(Done via MCP)*
+
+## Manual verification (Game Speed Setting)
+- [ ] Opening the settings menu correctly displays the Game Speed slider.
+- [ ] Adjusting the game speed slider instantly affects the gameplay speed when unpaused.
+- [ ] Pausing the game correctly stops time (`Time.timeScale = 0`), and unpausing restores it to the newly set Game Speed rather than returning to `1.0`.
+- [ ] Die and click Try Again: the reloaded scene respects the previously set game speed.
+- [ ] Reset Settings in the settings menu returns the game speed to `1.0` both in the slider and gameplay.
+- [ ] Delete Save keeps the game speed setting untouched while wiping progress.
+
 ## Juice pass: missing MMF feedback hooks — Unity Editor wiring
 
 The C# is done. An audit of every reactive system found a batch of gameplay moments with no

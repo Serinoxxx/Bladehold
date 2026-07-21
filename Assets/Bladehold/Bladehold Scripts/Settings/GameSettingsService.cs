@@ -23,6 +23,9 @@ public class GameSettingsService : MonoBehaviour
 
     [Tooltip("Mixer exposing MasterVolume/MusicVolume/SfxVolume float parameters (in dB), e.g. MMSoundManagerAudioMixer.")]
     [SerializeField] private AudioMixer mixer;
+    
+    [Tooltip("Optional: the scene's Global Volume, for applying post-processing settings.")]
+    [SerializeField] private UnityEngine.Rendering.Volume globalVolume;
 
     private SaveData saveData;
 
@@ -34,8 +37,15 @@ public class GameSettingsService : MonoBehaviour
     public bool InvertY => saveData.invertLookY;
     public int MaxRagdolls => saveData.maxRagdolls;
     public float FieldOfView => saveData.fieldOfView;
+    public float GameSpeed => saveData.gameSpeed;
     public string LanguageCode => saveData.languageCode;
     public float GamepadSensitivity => saveData.gamepadLookSensitivity;
+    public bool PostProcessingEnabled => saveData.postProcessingEnabled;
+    public float PostProcessingBloom => saveData.postProcessingBloom;
+    public float PostProcessingVignette => saveData.postProcessingVignette;
+    public float PostProcessingExposure => saveData.postProcessingExposure;
+
+    public static float TargetTimeScale => Instance != null ? Instance.GameSpeed : 1f;
 
     /// <summary>Raised whenever any setting changes, so UI showing current values can refresh.</summary>
     public event Action OnSettingsChanged;
@@ -71,10 +81,17 @@ public class GameSettingsService : MonoBehaviour
     /// <summary>Re-applies every persisted setting to the live systems. Called once on <see cref="Start" />.</summary>
     public void ApplyAll()
     {
+        if (globalVolume == null)
+        {
+            globalVolume = FindFirstObjectByType<UnityEngine.Rendering.Volume>();
+        }
+
         ApplyMasterVolume(saveData.masterVolume);
         SetMixerVolume("MusicVolume", saveData.musicVolume);
         SetMixerVolume("SfxVolume", saveData.sfxVolume);
         ApplyMaxRagdolls(saveData.maxRagdolls);
+        ApplyGameSpeed(saveData.gameSpeed);
+        ApplyPostProcessing();
 
         Loc.SetLanguage(saveData.languageCode);
 
@@ -139,6 +156,41 @@ public class GameSettingsService : MonoBehaviour
         {
             Player.Instance.AimCamera.SetRestingFieldOfView(saveData.fieldOfView);
         }
+        Persist();
+    }
+
+    public void SetGameSpeed(float value)
+    {
+        saveData.gameSpeed = Mathf.Clamp(value, 0.1f, 2f);
+        ApplyGameSpeed(saveData.gameSpeed);
+        Persist();
+    }
+
+    public void SetPostProcessingEnabled(bool value)
+    {
+        saveData.postProcessingEnabled = value;
+        ApplyPostProcessing();
+        Persist();
+    }
+
+    public void SetPostProcessingBloom(float value)
+    {
+        saveData.postProcessingBloom = Mathf.Clamp(value, 0f, 5f);
+        ApplyPostProcessing();
+        Persist();
+    }
+
+    public void SetPostProcessingVignette(float value)
+    {
+        saveData.postProcessingVignette = Mathf.Clamp01(value);
+        ApplyPostProcessing();
+        Persist();
+    }
+
+    public void SetPostProcessingExposure(float value)
+    {
+        saveData.postProcessingExposure = Mathf.Clamp(value, -5f, 5f);
+        ApplyPostProcessing();
         Persist();
     }
 
@@ -218,6 +270,14 @@ public class GameSettingsService : MonoBehaviour
         EnemyRagdoll.MaxActive = value;
     }
 
+    private void ApplyGameSpeed(float value)
+    {
+        if (Time.timeScale > 0f)
+        {
+            Time.timeScale = value;
+        }
+    }
+
     private void ApplyMasterVolume(float value)
     {
         AudioListener.volume = value;
@@ -239,5 +299,41 @@ public class GameSettingsService : MonoBehaviour
     {
         SaveSystem.Save(saveData);
         OnSettingsChanged?.Invoke();
+    }
+
+    private void ApplyPostProcessing()
+    {
+        if (globalVolume == null || globalVolume.profile == null)
+        {
+            return;
+        }
+
+        // Toggle entire volume weight or active state
+        globalVolume.weight = saveData.postProcessingEnabled ? 1f : 0f;
+
+        if (saveData.postProcessingEnabled)
+        {
+            if (globalVolume.profile.TryGet(out UnityEngine.Rendering.Universal.Bloom bloom))
+            {
+                bloom.intensity.overrideState = true;
+                bloom.intensity.value = saveData.postProcessingBloom;
+            }
+            if (globalVolume.profile.TryGet(out UnityEngine.Rendering.Universal.Vignette vignette))
+            {
+                vignette.intensity.overrideState = true;
+                vignette.intensity.value = saveData.postProcessingVignette;
+            }
+            if (globalVolume.profile.TryGet(out UnityEngine.Rendering.Universal.ColorAdjustments colorAdjustments))
+            {
+                colorAdjustments.postExposure.overrideState = true;
+                colorAdjustments.postExposure.value = saveData.postProcessingExposure;
+            }
+            else
+            {
+                colorAdjustments = globalVolume.profile.Add<UnityEngine.Rendering.Universal.ColorAdjustments>(true);
+                colorAdjustments.postExposure.overrideState = true;
+                colorAdjustments.postExposure.value = saveData.postProcessingExposure;
+            }
+        }
     }
 }

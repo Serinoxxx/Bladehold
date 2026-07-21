@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 0edd4641d57e402479349a244200c246
+timeCreated: 1505961423
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 0
+  packageName: POLYGON Dungeon
+  packageVersion: 1.10.1
+  assetPath: Assets/Synty/Weapons/SM_Wep_Staff_DoubleBlade_01/SM_Wep_Staff_DoubleBlade_01.prefab
+  uploadId: 0

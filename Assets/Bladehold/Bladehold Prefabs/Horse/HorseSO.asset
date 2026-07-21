@@ -19,7 +19,6 @@ MonoBehaviour:
   brakeDeceleration: 12
   turnDegreesPerSecond: 180
   gravity: -20
-  rearSeconds: 1.2
   chargeSpeed: 12
   chargeAcceleration: 10
   chargeMinSpeedFraction: 0.5
@@ -33,8 +32,8 @@ MonoBehaviour:
   hitSpeedLossPerResistance: 0.1
   chargeDamage: 5
   damageType: 1
-  impulsePower: 20
-  impulseForce: 28
+  impulsePower: 8
+  impulseForce: 16
   hitCooldownSeconds: 1
   hitBoxHalfExtents: {x: 0.8, y: 0.8, z: 1.2}
   hitBoxForwardOffset: 2.19

@@ -21,8 +21,10 @@ public class SettingsPanelView : MonoBehaviour
     [Header("Tabs")]
     [SerializeField] private Button generalTabButton;
     [SerializeField] private Button controlsTabButton;
+    [SerializeField] private Button postProcessingTabButton;
     [SerializeField] private GameObject generalTabContent;
     [SerializeField] private GameObject controlsTabContent;
+    [SerializeField] private GameObject postProcessingTabContent;
     [SerializeField] private Color tabSelectedColor = new Color(0.3f, 0.45f, 0.55f);
     [SerializeField] private Color tabUnselectedColor = new Color(0.2f, 0.2f, 0.24f);
 
@@ -46,9 +48,16 @@ public class SettingsPanelView : MonoBehaviour
 
     [Header("Performance")]
     [SerializeField] private Slider maxRagdollsSlider;
+    [SerializeField] private Slider gameSpeedSlider;
     [Tooltip("Parent under which one RebindButtonView is instantiated per remappable action row.")]
     [SerializeField] private Transform rebindListParent;
     [SerializeField] private RebindButtonView rebindRowPrefab;
+
+    [Header("Post Processing")]
+    [SerializeField] private Toggle postProcessingEnabledToggle;
+    [SerializeField] private Slider postProcessingBloomSlider;
+    [SerializeField] private Slider postProcessingVignetteSlider;
+    [SerializeField] private Slider postProcessingExposureSlider;
 
     [Header("Reset / delete")]
     [SerializeField] private Button resetSettingsButton;
@@ -84,9 +93,9 @@ public class SettingsPanelView : MonoBehaviour
             Debug.LogError("Field of View slider is not assigned in the inspector.");
             anyError = true;
         }
-        if (maxRagdollsSlider == null)
+        if (maxRagdollsSlider == null || gameSpeedSlider == null)
         {
-            Debug.LogError("Max Ragdolls slider is not assigned in the inspector.");
+            Debug.LogError("Max Ragdolls slider / Game Speed slider is not assigned in the inspector.");
             anyError = true;
         }
         if (resetSettingsButton == null || deleteSaveButton == null || confirmDialog == null)
@@ -103,6 +112,10 @@ public class SettingsPanelView : MonoBehaviour
         {
             Debug.LogError("Tab buttons/contents are not all assigned in the inspector.");
             anyError = true;
+        }
+        if (postProcessingTabButton == null || postProcessingTabContent == null)
+        {
+            Debug.LogWarning("Post Processing tab is not assigned. Please regenerate the UI.");
         }
 
         if (anyError)
@@ -122,12 +135,20 @@ public class SettingsPanelView : MonoBehaviour
         }
         fieldOfViewSlider.onValueChanged.AddListener(HandleFieldOfViewChanged);
         maxRagdollsSlider.onValueChanged.AddListener(HandleMaxRagdollsChanged);
+        gameSpeedSlider.onValueChanged.AddListener(HandleGameSpeedChanged);
         if (invertXToggle != null) invertXToggle.onValueChanged.AddListener(HandleInvertXChanged);
         if (invertYToggle != null) invertYToggle.onValueChanged.AddListener(HandleInvertYChanged);
+        
+        if (postProcessingEnabledToggle != null) postProcessingEnabledToggle.onValueChanged.AddListener(HandlePostProcessingEnabledChanged);
+        if (postProcessingBloomSlider != null) postProcessingBloomSlider.onValueChanged.AddListener(HandlePostProcessingBloomChanged);
+        if (postProcessingVignetteSlider != null) postProcessingVignetteSlider.onValueChanged.AddListener(HandlePostProcessingVignetteChanged);
+        if (postProcessingExposureSlider != null) postProcessingExposureSlider.onValueChanged.AddListener(HandlePostProcessingExposureChanged);
+
         resetSettingsButton.onClick.AddListener(HandleResetSettingsClicked);
         deleteSaveButton.onClick.AddListener(HandleDeleteSaveClicked);
         generalTabButton.onClick.AddListener(ShowGeneralTab);
         controlsTabButton.onClick.AddListener(ShowControlsTab);
+        if (postProcessingTabButton != null) postProcessingTabButton.onClick.AddListener(ShowPostProcessingTab);
     }
 
     private void OnEnable()
@@ -151,23 +172,34 @@ public class SettingsPanelView : MonoBehaviour
         if (languageDropdown != null) languageDropdown.onValueChanged.RemoveListener(HandleLanguageChanged);
         if (fieldOfViewSlider != null) fieldOfViewSlider.onValueChanged.RemoveListener(HandleFieldOfViewChanged);
         if (maxRagdollsSlider != null) maxRagdollsSlider.onValueChanged.RemoveListener(HandleMaxRagdollsChanged);
+        if (gameSpeedSlider != null) gameSpeedSlider.onValueChanged.RemoveListener(HandleGameSpeedChanged);
         if (invertXToggle != null) invertXToggle.onValueChanged.RemoveListener(HandleInvertXChanged);
         if (invertYToggle != null) invertYToggle.onValueChanged.RemoveListener(HandleInvertYChanged);
+
+        if (postProcessingEnabledToggle != null) postProcessingEnabledToggle.onValueChanged.RemoveListener(HandlePostProcessingEnabledChanged);
+        if (postProcessingBloomSlider != null) postProcessingBloomSlider.onValueChanged.RemoveListener(HandlePostProcessingBloomChanged);
+        if (postProcessingVignetteSlider != null) postProcessingVignetteSlider.onValueChanged.RemoveListener(HandlePostProcessingVignetteChanged);
+        if (postProcessingExposureSlider != null) postProcessingExposureSlider.onValueChanged.RemoveListener(HandlePostProcessingExposureChanged);
+
         if (resetSettingsButton != null) resetSettingsButton.onClick.RemoveListener(HandleResetSettingsClicked);
         if (deleteSaveButton != null) deleteSaveButton.onClick.RemoveListener(HandleDeleteSaveClicked);
         if (generalTabButton != null) generalTabButton.onClick.RemoveListener(ShowGeneralTab);
         if (controlsTabButton != null) controlsTabButton.onClick.RemoveListener(ShowControlsTab);
+        if (postProcessingTabButton != null) postProcessingTabButton.onClick.RemoveListener(ShowPostProcessingTab);
     }
 
-    private void ShowGeneralTab() => ShowTab(general: true);
-    private void ShowControlsTab() => ShowTab(general: false);
+    private void ShowGeneralTab() => ShowTab(general: true, controls: false, postProcessing: false);
+    private void ShowControlsTab() => ShowTab(general: false, controls: true, postProcessing: false);
+    private void ShowPostProcessingTab() => ShowTab(general: false, controls: false, postProcessing: true);
 
-    private void ShowTab(bool general)
+    private void ShowTab(bool general, bool controls, bool postProcessing)
     {
         if (generalTabContent != null) generalTabContent.SetActive(general);
-        if (controlsTabContent != null) controlsTabContent.SetActive(!general);
+        if (controlsTabContent != null) controlsTabContent.SetActive(controls);
+        if (postProcessingTabContent != null) postProcessingTabContent.SetActive(postProcessing);
         TintTabButton(generalTabButton, general);
-        TintTabButton(controlsTabButton, !general);
+        TintTabButton(controlsTabButton, controls);
+        TintTabButton(postProcessingTabButton, postProcessing);
     }
 
     private void TintTabButton(Button tabButton, bool selected)
@@ -192,10 +224,15 @@ public class SettingsPanelView : MonoBehaviour
         sensitivitySlider.SetValueWithoutNotify(settings.Sensitivity);
         fieldOfViewSlider.SetValueWithoutNotify(settings.FieldOfView);
         maxRagdollsSlider.SetValueWithoutNotify(settings.MaxRagdolls);
+        gameSpeedSlider.SetValueWithoutNotify(settings.GameSpeed);
         if (invertXToggle != null) invertXToggle.SetIsOnWithoutNotify(settings.InvertX);
         if (invertYToggle != null) invertYToggle.SetIsOnWithoutNotify(settings.InvertY);
         if (gamepadSensitivitySlider != null) gamepadSensitivitySlider.SetValueWithoutNotify(settings.GamepadSensitivity);
         if (languageDropdown != null) languageDropdown.SetValueWithoutNotify(LanguageCodeToIndex(settings.LanguageCode));
+        if (postProcessingEnabledToggle != null) postProcessingEnabledToggle.SetIsOnWithoutNotify(settings.PostProcessingEnabled);
+        if (postProcessingBloomSlider != null) postProcessingBloomSlider.SetValueWithoutNotify(settings.PostProcessingBloom);
+        if (postProcessingVignetteSlider != null) postProcessingVignetteSlider.SetValueWithoutNotify(settings.PostProcessingVignette);
+        if (postProcessingExposureSlider != null) postProcessingExposureSlider.SetValueWithoutNotify(settings.PostProcessingExposure);
     }
 
     /// <summary>
@@ -357,8 +394,14 @@ public class SettingsPanelView : MonoBehaviour
     private void HandleGamepadSensitivityChanged(float value) => GameSettingsService.Instance?.SetGamepadSensitivity(value);
     private void HandleFieldOfViewChanged(float value) => GameSettingsService.Instance?.SetFieldOfView(value);
     private void HandleMaxRagdollsChanged(float value) => GameSettingsService.Instance?.SetMaxRagdolls(Mathf.RoundToInt(value));
+    private void HandleGameSpeedChanged(float value) => GameSettingsService.Instance?.SetGameSpeed(value);
     private void HandleInvertXChanged(bool value) => GameSettingsService.Instance?.SetInvertX(value);
     private void HandleInvertYChanged(bool value) => GameSettingsService.Instance?.SetInvertY(value);
+    
+    private void HandlePostProcessingEnabledChanged(bool value) => GameSettingsService.Instance?.SetPostProcessingEnabled(value);
+    private void HandlePostProcessingBloomChanged(float value) => GameSettingsService.Instance?.SetPostProcessingBloom(value);
+    private void HandlePostProcessingVignetteChanged(float value) => GameSettingsService.Instance?.SetPostProcessingVignette(value);
+    private void HandlePostProcessingExposureChanged(float value) => GameSettingsService.Instance?.SetPostProcessingExposure(value);
 
     private void HandleResetSettingsClicked()
     {
@@ -394,7 +437,7 @@ public class SettingsPanelView : MonoBehaviour
                 SaveSystem.Save(data);
 
                 RunState.StartingWave = 1; // a fresh save shouldn't resume mid-run.
-                Time.timeScale = 1f; // ensure the reloaded scene doesn't start paused.
+                Time.timeScale = GameSettingsService.TargetTimeScale; // ensure the reloaded scene doesn't start paused.
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             },
             confirmLabel: "Delete");

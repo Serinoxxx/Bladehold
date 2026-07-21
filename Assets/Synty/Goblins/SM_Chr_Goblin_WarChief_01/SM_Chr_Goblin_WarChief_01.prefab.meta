@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 9877270705d01b540aeaa38895b9f95b
+timeCreated: 1545006158
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 0
+  packageName: POLYGON Dungeon
+  packageVersion: 1.10.1
+  assetPath: Assets/Synty/Goblins/SM_Chr_Goblin_WarChief_01/SM_Chr_Goblin_WarChief_01.prefab
+  uploadId: 0

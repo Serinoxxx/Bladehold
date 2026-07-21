@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: b7290dd9a4b832e4f8566b940003ba62
+timeCreated: 1582595263
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 0
+  packageName: POLYGON Fantasy Kingdom
+  packageVersion: 1.12.4
+  assetPath: Assets/Synty/Weapons/SM_Wep_Sword_02/SM_Wep_Sword_02.prefab
+  uploadId: 0

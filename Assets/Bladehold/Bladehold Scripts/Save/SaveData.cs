@@ -66,6 +66,10 @@ public class SaveData
     /// </summary>
     public float fieldOfView = 90f;
 
+    /// <summary>Global game speed multiplier (0.1 - 2.0).</summary>
+    public float gameSpeed = 1f;
+
+
     /// <summary>
     ///     Serialized Input System binding overrides for the vendored gameplay Controls asset (button
     ///     remapping), produced by <see cref="InputSettingsBinder.SaveBindingOverridesToJson" />. Empty
@@ -86,6 +90,11 @@ public class SaveData
     ///     time, not a per-frame pixel delta.
     /// </summary>
     public float gamepadLookSensitivity = 180f;
+
+    public bool postProcessingEnabled = true;
+    public float postProcessingBloom = 1f;
+    public float postProcessingVignette = 0.25f;
+    public float postProcessingExposure = 0f;
 
     /// <summary>
     ///     Wipes all progress (gold, both skill trees' purchases, Reincarnate points) back to a fresh
@@ -117,8 +126,13 @@ public class SaveData
         invertLookX = defaults.invertLookX;
         invertLookY = defaults.invertLookY;
         fieldOfView = defaults.fieldOfView;
+        gameSpeed = defaults.gameSpeed;
         inputBindingOverridesJson = defaults.inputBindingOverridesJson;
         languageCode = defaults.languageCode;
         gamepadLookSensitivity = defaults.gamepadLookSensitivity;
+        postProcessingEnabled = defaults.postProcessingEnabled;
+        postProcessingBloom = defaults.postProcessingBloom;
+        postProcessingVignette = defaults.postProcessingVignette;
+        postProcessingExposure = defaults.postProcessingExposure;
     }
 }

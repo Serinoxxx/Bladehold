@@ -132,7 +132,7 @@ public class PlayerWand : MonoBehaviour, IChargedAimWeapon
         }
         if (stats == null)
         {
-            stats = GetComponent<PlayerStats>();
+            stats = GetComponentInParent<PlayerStats>();
         }
         if (playerAnimator == null)
         {
@@ -141,7 +141,7 @@ public class PlayerWand : MonoBehaviour, IChargedAimWeapon
         }
         if (mount == null)
         {
-            mount = GetComponent<PlayerMount>();
+            mount = GetComponentInParent<PlayerMount>();
         }
         if (imbuement == null)
         {

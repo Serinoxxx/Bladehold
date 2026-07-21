@@ -24,6 +24,10 @@ public enum PhotoSetting
     FocusDistance,
     Aperture,
     FieldOfView,
+    ToggleLensFlare,
+    ToggleHUD,
+    ToggleVignette,
+    ToggleDepthOfField,
 }
 
 /// <summary>
@@ -48,6 +52,8 @@ public class ScreenshotModeController : MonoBehaviour
     [SerializeField] private Volume globalVolume;
     [Tooltip("Canvas groups hidden for the single frame a screenshot is captured, so the UI doesn't appear in it.")]
     [SerializeField] private CanvasGroup[] hideOnCapture;
+    [Tooltip("Optional: HUD canvas group to toggle during photo mode.")]
+    [SerializeField] private CanvasGroup hudCanvasGroup;
     [SerializeField] private string screenshotFolderName = "Screenshots";
 
     public bool IsActive { get; private set; }
@@ -79,6 +85,13 @@ public class ScreenshotModeController : MonoBehaviour
     private bool cachedExposureOverride, cachedContrastOverride, cachedSaturationOverride;
     private float cachedFocusDistance, cachedAperture;
     private bool cachedFocusDistanceOverride, cachedApertureOverride;
+    
+    private UnityEngine.Rendering.LensFlareComponentSRP lensFlare;
+    private bool cachedLensFlareActive;
+
+    private bool originalHudActive;
+    private bool cachedVignetteActive;
+    private bool cachedDepthOfFieldActive;
 
     private void OnValidate()
     {
@@ -141,6 +154,34 @@ public class ScreenshotModeController : MonoBehaviour
         {
             originalSunIntensity = sunLight.intensity;
             originalSunRotation = sunLight.transform.rotation;
+            lensFlare = sunLight.GetComponent<UnityEngine.Rendering.LensFlareComponentSRP>();
+            if (lensFlare == null)
+            {
+                lensFlare = UnityEngine.Object.FindFirstObjectByType<UnityEngine.Rendering.LensFlareComponentSRP>();
+            }
+            if (lensFlare != null)
+            {
+                cachedLensFlareActive = lensFlare.enabled;
+            }
+        }
+        else
+        {
+            lensFlare = UnityEngine.Object.FindFirstObjectByType<UnityEngine.Rendering.LensFlareComponentSRP>();
+            if (lensFlare != null)
+            {
+                cachedLensFlareActive = lensFlare.enabled;
+            }
+        }
+
+        if (hudCanvasGroup == null)
+        {
+            GameObject hudGO = GameObject.Find("HUD");
+            if (hudGO != null) hudCanvasGroup = hudGO.GetComponent<CanvasGroup>();
+        }
+
+        if (hudCanvasGroup != null)
+        {
+            originalHudActive = hudCanvasGroup.alpha > 0.01f;
         }
 
         CacheAndEnsureVolumeOverrides();
@@ -180,6 +221,18 @@ public class ScreenshotModeController : MonoBehaviour
         {
             sunLight.intensity = originalSunIntensity;
             sunLight.transform.rotation = originalSunRotation;
+        }
+
+        if (lensFlare != null)
+        {
+            lensFlare.enabled = cachedLensFlareActive;
+        }
+
+        if (hudCanvasGroup != null)
+        {
+            hudCanvasGroup.alpha = originalHudActive ? 1f : 0f;
+            hudCanvasGroup.interactable = originalHudActive;
+            hudCanvasGroup.blocksRaycasts = originalHudActive;
         }
 
         RestoreVolumeOverrides();
@@ -224,6 +277,24 @@ public class ScreenshotModeController : MonoBehaviour
             case PhotoSetting.FieldOfView:
                 if (mainCamera != null) mainCamera.fieldOfView = value;
                 break;
+            case PhotoSetting.ToggleLensFlare:
+                if (lensFlare != null) lensFlare.enabled = value > 0.5f;
+                break;
+            case PhotoSetting.ToggleHUD:
+                if (hudCanvasGroup != null)
+                {
+                    bool hudOn = value > 0.5f;
+                    hudCanvasGroup.alpha = hudOn ? 1f : 0f;
+                    hudCanvasGroup.interactable = hudOn;
+                    hudCanvasGroup.blocksRaycasts = hudOn;
+                }
+                break;
+            case PhotoSetting.ToggleVignette:
+                if (vignette != null) vignette.active = value > 0.5f;
+                break;
+            case PhotoSetting.ToggleDepthOfField:
+                if (depthOfField != null) depthOfField.active = value > 0.5f;
+                break;
         }
     }
 
@@ -243,6 +314,10 @@ public class ScreenshotModeController : MonoBehaviour
             case PhotoSetting.FocusDistance: return depthOfField != null ? depthOfField.focusDistance.value : 0f;
             case PhotoSetting.Aperture: return depthOfField != null ? depthOfField.aperture.value : 0f;
             case PhotoSetting.FieldOfView: return mainCamera != null ? mainCamera.fieldOfView : 60f;
+            case PhotoSetting.ToggleLensFlare: return lensFlare != null && lensFlare.enabled ? 1f : 0f;
+            case PhotoSetting.ToggleHUD: return hudCanvasGroup != null && hudCanvasGroup.alpha > 0.01f ? 1f : 0f;
+            case PhotoSetting.ToggleVignette: return vignette != null && vignette.active ? 1f : 0f;
+            case PhotoSetting.ToggleDepthOfField: return depthOfField != null && depthOfField.active ? 1f : 0f;
             default: return 0f;
         }
     }
@@ -263,6 +338,10 @@ public class ScreenshotModeController : MonoBehaviour
             case PhotoSetting.FocusDistance: return cachedFocusDistance;
             case PhotoSetting.Aperture: return cachedAperture;
             case PhotoSetting.FieldOfView: return originalFov;
+            case PhotoSetting.ToggleLensFlare: return cachedLensFlareActive ? 1f : 0f;
+            case PhotoSetting.ToggleHUD: return originalHudActive ? 1f : 0f;
+            case PhotoSetting.ToggleVignette: return cachedVignetteActive ? 1f : 0f;
+            case PhotoSetting.ToggleDepthOfField: return cachedDepthOfFieldActive ? 1f : 0f;
             default: return 0f;
         }
     }
@@ -384,6 +463,9 @@ public class ScreenshotModeController : MonoBehaviour
         cachedFocusDistanceOverride = depthOfField.focusDistance.overrideState;
         cachedAperture = depthOfField.aperture.value;
         cachedApertureOverride = depthOfField.aperture.overrideState;
+        cachedDepthOfFieldActive = depthOfField.active;
+        
+        if (vignette != null) cachedVignetteActive = vignette.active;
     }
 
     private void RestoreVolumeOverrides()
@@ -429,11 +511,14 @@ public class ScreenshotModeController : MonoBehaviour
                 depthOfField.focusDistance.overrideState = cachedFocusDistanceOverride;
                 depthOfField.aperture.value = cachedAperture;
                 depthOfField.aperture.overrideState = cachedApertureOverride;
+                depthOfField.active = cachedDepthOfFieldActive;
             }
             else if (globalVolume.profile.Has<DepthOfField>())
             {
                 globalVolume.profile.Remove<DepthOfField>();
             }
         }
+        
+        if (vignette != null) vignette.active = cachedVignetteActive;
     }
 }

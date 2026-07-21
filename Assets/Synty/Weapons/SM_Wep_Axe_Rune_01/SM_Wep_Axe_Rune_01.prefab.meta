@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 333115a38baafb145a712bf764f1284d
+timeCreated: 1505961426
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 0
+  packageName: POLYGON Dungeon
+  packageVersion: 1.10.1
+  assetPath: Assets/Synty/Weapons/SM_Wep_Axe_Rune_01/SM_Wep_Axe_Rune_01.prefab
+  uploadId: 0

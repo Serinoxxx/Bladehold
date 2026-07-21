@@ -133,7 +133,7 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
         }
         if (stats == null)
         {
-            stats = GetComponent<PlayerStats>();
+            stats = GetComponentInParent<PlayerStats>();
         }
         if (playerAnimator == null)
         {
@@ -142,7 +142,7 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
         }
         if (mount == null)
         {
-            mount = GetComponent<PlayerMount>();
+            mount = GetComponentInParent<PlayerMount>();
         }
         if (rageBuff == null)
         {
@@ -150,7 +150,7 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
         }
         if (painIntoPower == null)
         {
-            painIntoPower = GetComponent<PainIntoPower>();
+            painIntoPower = GetComponentInParent<PainIntoPower>();
         }
     }
 

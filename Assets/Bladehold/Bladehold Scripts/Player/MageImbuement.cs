@@ -119,7 +119,7 @@ public class MageImbuement : MonoBehaviour
     {
         if (stats == null)
         {
-            stats = GetComponent<PlayerStats>();
+            stats = GetComponentInParent<PlayerStats>();
         }
         if (wand == null)
         {

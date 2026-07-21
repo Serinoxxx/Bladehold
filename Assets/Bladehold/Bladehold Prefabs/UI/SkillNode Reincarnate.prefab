@@ -784,7 +784,7 @@ MonoBehaviour:
   costText: {fileID: 3409831784859456453}
   levelText: {fileID: 0}
   border: {fileID: 8300000000000000104}
-  icon: {fileID: 0}
+  icon: {fileID: 8846684940015416130}
   purchasedTick: {fileID: 8300000000000000201}
   teasedLock: {fileID: 8300000000000000301}
   selectedHighlight: {fileID: 0}

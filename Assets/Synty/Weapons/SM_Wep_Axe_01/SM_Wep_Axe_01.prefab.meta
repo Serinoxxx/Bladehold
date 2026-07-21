@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 4b6fcb8e3035f79438ac1e8d590423f0
+timeCreated: 1582595228
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 0
+  packageName: POLYGON Fantasy Kingdom
+  packageVersion: 1.12.4
+  assetPath: Assets/Synty/Weapons/SM_Wep_Axe_01/SM_Wep_Axe_01.prefab
+  uploadId: 0

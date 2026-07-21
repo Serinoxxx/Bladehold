@@ -221,7 +221,7 @@ public class ReincarnateService : MonoBehaviour, ISkillTreeService
         if (anyError) return;
 
         // Ensure normal speed resumes even if something paused time on death, mirroring DeathScreen.Reload().
-        Time.timeScale = 1f;
+        Time.timeScale = GameSettingsService.TargetTimeScale;
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 

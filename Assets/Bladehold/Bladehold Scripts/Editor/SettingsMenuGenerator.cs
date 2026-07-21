@@ -280,6 +280,8 @@ public static class SettingsMenuGenerator
         generalTabGO.name = "GeneralTabButton";
         GameObject controlsTabGO = Instantiate(buttonPrefab, tabsRow);
         controlsTabGO.name = "ControlsTabButton";
+        GameObject postProcessingTabGO = Instantiate(buttonPrefab, tabsRow);
+        postProcessingTabGO.name = "PostProcessingTabButton";
 
         RectTransform generalContent = CreateVerticalContainer("GeneralTabContent", content, 10f, new RectOffset(0, 0, 0, 0));
         generalContent.gameObject.AddComponent<LayoutElement>().flexibleHeight = 1f;
@@ -303,6 +305,14 @@ public static class SettingsMenuGenerator
         RectTransform rebindScroll = CreateScrollView(controlsContent, "RebindScrollView", 220f, out Transform rebindContent);
         rebindScroll.GetComponent<LayoutElement>().flexibleHeight = 1f;
 
+        RectTransform postProcessingContent = CreateVerticalContainer("PostProcessingTabContent", content, 10f, new RectOffset(0, 0, 0, 0));
+        postProcessingContent.gameObject.AddComponent<LayoutElement>().flexibleHeight = 1f;
+
+        CreateToggleRow(postProcessingContent, "Enable Post Processing", out Toggle ppEnabledToggle);
+        CreateSliderRow(postProcessingContent, "Bloom", out Slider ppBloomSlider, 0f, 5f, 1f, 2);
+        CreateSliderRow(postProcessingContent, "Vignette", out Slider ppVignetteSlider, 0f, 1f, 0.25f, 2);
+        CreateSliderRow(postProcessingContent, "Exposure", out Slider ppExposureSlider, -5f, 5f, 0f, 2);
+
         AddButtonRow(content, "ResetSettingsButton", 40f);
         AddButtonRow(content, "DeleteSaveButton", 40f);
 
@@ -311,8 +321,10 @@ public static class SettingsMenuGenerator
         SettingsPanelView view = panel.gameObject.AddComponent<SettingsPanelView>();
         SetField(view, "generalTabButton", generalTabGO.GetComponent<Button>());
         SetField(view, "controlsTabButton", controlsTabGO.GetComponent<Button>());
+        SetField(view, "postProcessingTabButton", postProcessingTabGO.GetComponent<Button>());
         SetField(view, "generalTabContent", generalContent.gameObject);
         SetField(view, "controlsTabContent", controlsContent.gameObject);
+        SetField(view, "postProcessingTabContent", postProcessingContent.gameObject);
         SetField(view, "masterVolumeSlider", masterSlider);
         SetField(view, "musicVolumeSlider", musicSlider);
         SetField(view, "sfxVolumeSlider", sfxSlider);
@@ -323,6 +335,10 @@ public static class SettingsMenuGenerator
         SetField(view, "fieldOfViewSlider", fieldOfViewSlider);
         SetField(view, "rebindListParent", rebindContent);
         SetField(view, "rebindRowPrefab", GetOrCreateRebindRowPrefab().GetComponent<RebindButtonView>());
+        SetField(view, "postProcessingEnabledToggle", ppEnabledToggle);
+        SetField(view, "postProcessingBloomSlider", ppBloomSlider);
+        SetField(view, "postProcessingVignetteSlider", ppVignetteSlider);
+        SetField(view, "postProcessingExposureSlider", ppExposureSlider);
         SetField(view, "resetSettingsButton", content.Find("ResetSettingsButton").GetComponent<Button>());
         SetField(view, "deleteSaveButton", content.Find("DeleteSaveButton").GetComponent<Button>());
         SetField(view, "confirmDialog", confirmDialogGO.GetComponent<ConfirmDialog>());
@@ -331,11 +347,13 @@ public static class SettingsMenuGenerator
         SetButtonLabel(content.Find("DeleteSaveButton").GetComponent<Button>(), "Delete Save");
         SetButtonLabel(generalTabGO.GetComponent<Button>(), "General");
         SetButtonLabel(controlsTabGO.GetComponent<Button>(), "Controls");
+        SetButtonLabel(postProcessingTabGO.GetComponent<Button>(), "Post Processing");
 
         // SettingsPanelView.OnEnable re-selects the General tab at runtime; this just makes the
         // generated scene match that default.
         generalContent.gameObject.SetActive(true);
         controlsContent.gameObject.SetActive(false);
+        postProcessingContent.gameObject.SetActive(false);
 
         return panel.gameObject;
     }
@@ -460,12 +478,28 @@ public static class SettingsMenuGenerator
             (PhotoSetting.FieldOfView, "Field of View", 20f, 90f, 60f),
         };
 
-        var sliders = new Slider[settings.Length];
-        var resetButtons = new Button[settings.Length];
+        (PhotoSetting setting, string label, bool defaultValue)[] toggles =
+        {
+            (PhotoSetting.ToggleLensFlare, "Lens Flare", true),
+            (PhotoSetting.ToggleHUD, "Hide HUD", true),
+            (PhotoSetting.ToggleVignette, "Vignette", true),
+            (PhotoSetting.ToggleDepthOfField, "Depth of Field", true),
+        };
+
+        var sliders = new Slider[settings.Length + toggles.Length];
+        var togglesControls = new Toggle[settings.Length + toggles.Length];
+        var resetButtons = new Button[settings.Length + toggles.Length];
+        
         for (int i = 0; i < settings.Length; i++)
         {
             CreatePhotoSliderRow(scrollContent, settings[i].label, settings[i].min, settings[i].max, settings[i].defaultValue,
                 out sliders[i], out resetButtons[i]);
+        }
+        
+        for (int i = 0; i < toggles.Length; i++)
+        {
+            CreatePhotoToggleRow(scrollContent, toggles[i].label, toggles[i].defaultValue,
+                out togglesControls[settings.Length + i], out resetButtons[settings.Length + i]);
         }
 
         RectTransform buttonsRow = CreateUIObject("ButtonsRow", content, typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(LayoutElement));
@@ -495,13 +529,22 @@ public static class SettingsMenuGenerator
 
         SerializedObject panelSO = new SerializedObject(panelView);
         SerializedProperty rowsProp = panelSO.FindProperty("rows");
-        rowsProp.arraySize = settings.Length;
+        rowsProp.arraySize = settings.Length + toggles.Length;
         for (int i = 0; i < settings.Length; i++)
         {
             SerializedProperty element = rowsProp.GetArrayElementAtIndex(i);
             element.FindPropertyRelative("setting").intValue = (int)settings[i].setting;
             element.FindPropertyRelative("slider").objectReferenceValue = sliders[i];
+            element.FindPropertyRelative("toggle").objectReferenceValue = null;
             element.FindPropertyRelative("resetButton").objectReferenceValue = resetButtons[i];
+        }
+        for (int i = 0; i < toggles.Length; i++)
+        {
+            SerializedProperty element = rowsProp.GetArrayElementAtIndex(settings.Length + i);
+            element.FindPropertyRelative("setting").intValue = (int)toggles[i].setting;
+            element.FindPropertyRelative("slider").objectReferenceValue = null;
+            element.FindPropertyRelative("toggle").objectReferenceValue = togglesControls[settings.Length + i];
+            element.FindPropertyRelative("resetButton").objectReferenceValue = resetButtons[settings.Length + i];
         }
         panelSO.ApplyModifiedProperties();
 
@@ -519,6 +562,22 @@ public static class SettingsMenuGenerator
         slider.minValue = min;
         slider.maxValue = max;
         slider.value = value;
+
+        GameObject resetGO = Instantiate(iconButtonPrefab, row);
+        resetGO.name = "ResetButton";
+        LayoutElement resetLayout = resetGO.AddComponent<LayoutElement>();
+        resetLayout.preferredWidth = 26f;
+        resetLayout.flexibleWidth = 0f;
+        resetButton = resetGO.GetComponent<Button>();
+    }
+
+    private static void CreatePhotoToggleRow(Transform parent, string labelText, bool value, out Toggle toggle, out Button resetButton)
+    {
+        RectTransform row = CreateLabeledRow(parent, labelText, togglePrefab, 32f, 0f, out GameObject controlInstance);
+        row.GetChild(0).GetComponent<LayoutElement>().preferredWidth = 150f;
+
+        toggle = controlInstance.GetComponent<Toggle>();
+        toggle.isOn = value;
 
         GameObject resetGO = Instantiate(iconButtonPrefab, row);
         resetGO.name = "ResetButton";

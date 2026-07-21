@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 38ce606b147d3264ea5f95107e17883b
+timeCreated: 1584484887
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 43515019993419064
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 0
+  packageName: POLYGON Fantasy Kingdom
+  packageVersion: 1.12.4
+  assetPath: Assets/Synty/Weapons/SM_Wep_Mace_03/SM_Wep_Mace_03_Convex.asset
+  uploadId: 0

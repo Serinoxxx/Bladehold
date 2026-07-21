@@ -37,15 +37,15 @@ public class PainIntoPower : MonoBehaviour
     {
         if (stats == null)
         {
-            stats = GetComponent<PlayerStats>();
+            stats = GetComponentInParent<PlayerStats>();
         }
         if (health == null)
         {
-            health = GetComponent<Health>();
+            health = GetComponentInParent<Health>();
         }
         if (playerAttack == null)
         {
-            playerAttack = GetComponent<PlayerAttack>();
+            playerAttack = GetComponentInParent<PlayerAttack>();
         }
         if (thrownAxe == null)
         {

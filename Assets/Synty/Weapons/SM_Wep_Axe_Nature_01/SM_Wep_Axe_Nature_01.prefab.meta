@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 984357422a249c34e96a5e3550b4420b
+timeCreated: 1505961426
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 0
+  packageName: POLYGON Dungeon
+  packageVersion: 1.10.1
+  assetPath: Assets/Synty/Weapons/SM_Wep_Axe_Nature_01/SM_Wep_Axe_Nature_01.prefab
+  uploadId: 0

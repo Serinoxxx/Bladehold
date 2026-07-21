@@ -456,6 +456,7 @@ Transform:
   - {fileID: 1087637032071154229}
   - {fileID: 5471986414881692052}
   - {fileID: 5162559885091352084}
+  - {fileID: 3364624220237847863}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &4269543280300910785
@@ -976,6 +977,37 @@ MonoBehaviour:
   health: {fileID: 2416392165065999887}
   dropTable: {fileID: 11400000, guid: a934a2f3cd5fd364e8e7791c07f025e2, type: 2}
   dropOffset: {x: 0, y: 0.5, z: 0}
+--- !u!1 &4616585396617252247
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3364624220237847863}
+  m_Layer: 7
+  m_Name: AttackHitPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3364624220237847863
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4616585396617252247}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.083, z: 0.728}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4881413148910990634}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5523990517535919116
 GameObject:
   m_ObjectHideFlags: 0
@@ -2396,7 +2428,7 @@ MonoBehaviour:
         Mode: 2
         ObjectPoolSize: 5
         MutualizePools: 0
-        ParentTransform: {fileID: 1562094300431198690}
+        ParentTransform: {fileID: 3364624220237847863}
         CachedRecycle: 1
         ParticlesPrefab: {fileID: 198690249993889400, guid: ba1ddd059de115f44b44ff52413832aa, type: 3}
         RandomParticlePrefabs: []
@@ -3015,11 +3047,6 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 2077097536962833559}
   m_SourcePrefab: {fileID: 100100000, guid: 8993c9fb4ee484b4594d38397102a015, type: 3}
---- !u!4 &1562094300431198690 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -2349476437193732044, guid: 8993c9fb4ee484b4594d38397102a015, type: 3}
-  m_PrefabInstance: {fileID: 5388935038143822294}
-  m_PrefabAsset: {fileID: 0}
 --- !u!95 &1991649265611916359 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 8993c9fb4ee484b4594d38397102a015, type: 3}

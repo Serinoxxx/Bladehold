@@ -213,7 +213,7 @@ public class WaveIntermissionUI : MonoBehaviour
 
         // Unfreeze and re-lock the cursor for gameplay look. Both commit paths (Hold / Continue) route
         // through here, so time always resumes exactly once.
-        Time.timeScale = 1f;
+        Time.timeScale = GameSettingsService.TargetTimeScale;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }

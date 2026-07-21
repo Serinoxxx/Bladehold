@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 36512a7c06f8f7146b1aa59444e9093b
+timeCreated: 1584484944
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 43660395493951916
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 0
+  packageName: POLYGON Fantasy Kingdom
+  packageVersion: 1.12.4
+  assetPath: Assets/Synty/Weapons/SM_Wep_Sword_03/SM_Wep_Sword_03_Convex.asset
+  uploadId: 0

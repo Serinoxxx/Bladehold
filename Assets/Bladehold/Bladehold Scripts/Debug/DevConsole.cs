@@ -91,7 +91,7 @@ public class DevConsole : MonoBehaviour
             data.ResetProgress();
             SaveSystem.Save(data);
             RunState.StartingWave = 1;
-            Time.timeScale = 1f; // ensure normal speed resumes even if something paused time on death.
+            Time.timeScale = GameSettingsService.TargetTimeScale; // ensure normal speed resumes even if something paused time on death.
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
     }
@@ -245,11 +245,24 @@ public class DevConsole : MonoBehaviour
         }
         GUILayout.EndHorizontal();
 
-        if (selected != null && GUILayout.Button($"Switch to {label} & Reload", GUILayout.Height(ButtonHeight)))
+        if (selected != null)
         {
-            PlayerClassController.SetSavedClass(selected.id);
-            Time.timeScale = 1f;
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            if (GUILayout.Button($"Switch to {label} & Reload", GUILayout.Height(ButtonHeight)))
+            {
+                PlayerClassController.SetSavedClass(selected.id);
+                Time.timeScale = GameSettingsService.TargetTimeScale;
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            }
+            if (GUILayout.Button($"Switch to {label} & Wipe Progress", GUILayout.Height(ButtonHeight)))
+            {
+                PlayerClassController.SetSavedClass(selected.id);
+                SaveData data = SaveSystem.Load();
+                data.ResetProgress();
+                SaveSystem.Save(data);
+                RunState.StartingWave = 1;
+                Time.timeScale = GameSettingsService.TargetTimeScale;
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            }
         }
     }
 
