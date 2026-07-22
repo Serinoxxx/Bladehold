@@ -420,7 +420,7 @@ public class HorseMotor : MonoBehaviour
             Health enemyHealth = agent.GetComponent<Health>();
             if (enemyHealth != null && enemyHealth.IsDead) continue;
 
-            ImpulseReceiver receiver = agent.GetComponent<ImpulseReceiver>();
+            KnockbackReceiver receiver = agent.GetComponent<KnockbackReceiver>();
             if (receiver != null && receiver.IsIncapacitated) continue;
 
             Vector3 toEnemy = agent.transform.position - transform.position;
@@ -473,7 +473,7 @@ public class HorseMotor : MonoBehaviour
         float resistance = 0f;
         if (victim is Component victimComponent)
         {
-            ImpulseReceiver receiver = victimComponent.GetComponentInParent<ImpulseReceiver>();
+            KnockbackReceiver receiver = victimComponent.GetComponentInParent<KnockbackReceiver>();
             if (receiver != null)
             {
                 resistance = receiver.CurrentResistance;

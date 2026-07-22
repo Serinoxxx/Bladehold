@@ -61,6 +61,11 @@ public class AIAnimation : MonoBehaviour
             Debug.LogError("Animator component is not assigned or found on the GameObject.");
             anyError = true;
         }
+        else if (animator.gameObject.GetComponent<EnemyAnimationEvents>() == null)
+        {
+            animator.gameObject.AddComponent<EnemyAnimationEvents>();
+        }
+
         if (agent == null)
         {
             Debug.LogError("NavMeshAgent component is not assigned or found on the GameObject.");
@@ -81,6 +86,8 @@ public class AIAnimation : MonoBehaviour
         {
             return;
         }
+
+        animator.applyRootMotion = false;
 
         locomotion = new LocomotionAnimator(
             animator,

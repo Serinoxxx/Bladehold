@@ -1573,6 +1573,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7878518536322400475}
   - component: {fileID: 6087743525908991930}
+  - component: {fileID: 750790735201583508}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -1626,18 +1627,18 @@ MonoBehaviour:
     - {fileID: 6103277860756355011}
   - definition: {fileID: 11400000, guid: b8bd097fe0432fd47b997c9bdffdf080, type: 2}
     weaponObjects:
-    - {fileID: 5069731715739408251}
-    meleeTrigger: {fileID: 1385601990044069648}
-    hitFeedback: {fileID: 7415870910017827878}
+    - {fileID: 1914903598473155407}
+    meleeTrigger: {fileID: 3556331140146632137}
+    hitFeedback: {fileID: 4938886051864039167}
     classComponents:
     - {fileID: 1884176435561181024}
     - {fileID: 1189341416886070749}
     - {fileID: 2251505163923793700}
   - definition: {fileID: 11400000, guid: 3744ccb9d8259274593759d4464f9df8, type: 2}
     weaponObjects:
-    - {fileID: 1817668088143163247}
-    meleeTrigger: {fileID: 1385601990044069648}
-    hitFeedback: {fileID: 7415870910017827878}
+    - {fileID: 2397259762771066973}
+    meleeTrigger: {fileID: 760402401777354459}
+    hitFeedback: {fileID: 9177684110434262509}
     classComponents:
     - {fileID: 3199331394848741230}
     - {fileID: 301137670904236349}
@@ -1648,6 +1649,23 @@ MonoBehaviour:
   impulseHitFeedback: {fileID: 8241250634216195633}
   playerMount: {fileID: 1504036595472203636}
   animator: {fileID: 3663620996007313722}
+--- !u!114 &750790735201583508
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 635090733411138093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57aa5e8ecb142cd4d96c0fe115c3a713, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ActiveBuffWeaponGlow
+  classController: {fileID: 0}
+  impulseBuff: {fileID: 0}
+  emissiveColor: {r: 0, g: 1.5, b: 2.5, a: 2.5}
+  emissiveKeyword: _EMISSION
+  emissiveColorProperty: _EmissionColor
 --- !u!1 &758177441954652393
 GameObject:
   m_ObjectHideFlags: 0
@@ -9531,18 +9549,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b53f8c2ce704f964883753f3b8fa43fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerWand
-  inputReader: {fileID: 0}
-  stats: {fileID: 0}
-  config: {fileID: 0}
+  inputReader: {fileID: 6872381413864324108}
+  stats: {fileID: 5156588240620538864}
+  config: {fileID: 11400000, guid: a998568bd235b834e89d0421808b8b55, type: 2}
   aimCamera: {fileID: 0}
   castOrigin: {fileID: 0}
   hitLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  playerAnimator: {fileID: 0}
+  playerAnimator: {fileID: 3663620996007313722}
   meleeWeaponModel: {fileID: 0}
   wandModel: {fileID: 0}
-  projectilePrefab: {fileID: 0}
+  projectilePrefab: {fileID: 3842860532206535057, guid: 4ec5999defdb1cb419f1e0a43b38721c, type: 3}
   drawFeedback: {fileID: 0}
   fireFeedback: {fileID: 0}
   imbuement: {fileID: 301137670904236349}
@@ -9561,7 +9579,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MageImbuement
   config: {fileID: 11400000, guid: 51c80e792bcad3f4dac823d17a6c9e5b, type: 2}
   stats: {fileID: 0}
-  staffTrigger: {fileID: 0}
+  staffTrigger: {fileID: 760402401777354459}
   wand: {fileID: 3199331394848741230}
   chainLightning: {fileID: 0}
   enemyLayers:
@@ -10687,7 +10705,7 @@ MonoBehaviour:
     AmplitudeGain: 1
     FrequencyGain: 1
     Duration: 1
-    m_NoiseOffsets: {x: 0, y: 0, z: 0}
+    m_NoiseOffsets: {x: -649.99536, y: 544.48193, z: 945.86035}
 --- !u!1 &7935680308292509471
 GameObject:
   m_ObjectHideFlags: 0
@@ -16958,8 +16976,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RageBuff
   config: {fileID: 11400000, guid: b277c718030ef8c49a90e0adc89cd658, type: 2}
-  health: {fileID: 0}
-  stats: {fileID: 0}
+  health: {fileID: 46043393445266479}
+  stats: {fileID: 5156588240620538864}
   meleeTrigger: {fileID: 0}
   thrownAxe: {fileID: 1884176435561181024}
 --- !u!114 &2251505163923793700
@@ -16974,8 +16992,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d14a7a9954efdb2479c17b21dbf225b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PainIntoPower
-  stats: {fileID: 0}
-  health: {fileID: 0}
+  stats: {fileID: 5156588240620538864}
+  health: {fileID: 46043393445266479}
   playerAttack: {fileID: 0}
   thrownAxe: {fileID: 1884176435561181024}
 --- !u!114 &1884176435561181024
@@ -16990,15 +17008,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2b0df167c984274990af8fa0e66c171, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerThrownAxe
-  inputReader: {fileID: 0}
-  stats: {fileID: 0}
+  inputReader: {fileID: 6872381413864324108}
+  stats: {fileID: 5156588240620538864}
   config: {fileID: 0}
   aimCamera: {fileID: 0}
   throwOrigin: {fileID: 0}
   hitLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  playerAnimator: {fileID: 0}
+  playerAnimator: {fileID: 3663620996007313722}
   meleeWeaponModel: {fileID: 0}
   thrownAxeModel: {fileID: 0}
   projectilePrefab: {fileID: 0}
@@ -18795,11 +18813,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4091894705380858, guid: 4b6fcb8e3035f79438ac1e8d590423f0, type: 3}
   m_PrefabInstance: {fileID: 5070672146945398271}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &5069731715739408251 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1666109015589508, guid: 4b6fcb8e3035f79438ac1e8d590423f0, type: 3}
-  m_PrefabInstance: {fileID: 5070672146945398271}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &5293704151778522771
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -19869,9 +19882,25 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6519288246009007488, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
   m_PrefabInstance: {fileID: 6388411306759686150}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &760402401777354459 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5919225009398288093, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
+  m_PrefabInstance: {fileID: 6388411306759686150}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2397259762771066973}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa30f21178bed5d449a8c172ce3f19f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DamageTrigger
 --- !u!4 &2022430497129592845 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4952041965036466187, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
+  m_PrefabInstance: {fileID: 6388411306759686150}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &2397259762771066973 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8785666567801047131, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
   m_PrefabInstance: {fileID: 6388411306759686150}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &2400710370006388519 stripped
@@ -19890,6 +19919,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6da43522623d4704e979466dc7650b65, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MoreMountains.Tools::MoreMountains.Feedbacks.MMF_Player
+--- !u!114 &9177684110434262509 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2879380361252328939, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
+  m_PrefabInstance: {fileID: 6388411306759686150}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2397259762771066973}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3f89d11cb87e0149a62387daff213c9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SwordHitFeedback
 --- !u!1001 &7169712588158311188
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -20076,7 +20116,7 @@ PrefabInstance:
       objectReference: {fileID: 8033356972124291578}
     - target: {fileID: 5919225009398288093, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
       propertyPath: bladeRadius
-      value: 0.25
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 5919225009398288093, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
       propertyPath: impulseBuff
@@ -20565,6 +20605,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8789121434888947489, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
   m_PrefabInstance: {fileID: 7169712588158311188}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1914903598473155407 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8785666567801047131, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
+  m_PrefabInstance: {fileID: 7169712588158311188}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2866189811545402143 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4952041965036466187, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
@@ -20575,7 +20620,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5919225009398288093, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
   m_PrefabInstance: {fileID: 7169712588158311188}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1914903598473155407}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: aa30f21178bed5d449a8c172ce3f19f7, type: 3}
@@ -20586,6 +20631,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6519288246009007488, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
   m_PrefabInstance: {fileID: 7169712588158311188}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &4938886051864039167 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2879380361252328939, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
+  m_PrefabInstance: {fileID: 7169712588158311188}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1914903598473155407}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3f89d11cb87e0149a62387daff213c9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SwordHitFeedback
 --- !u!1001 &7187004258203303083
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -20946,6 +21002,10 @@ PrefabInstance:
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: e63c26dbffa803941b0a143cfa8e8719, type: 2}
+    - target: {fileID: 5866666021909216657, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6016349230849131448, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
       propertyPath: m_Layer
       value: 6
@@ -22815,7 +22875,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d6a298a30af0884182637db100987fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RageBuff
-  config: {fileID: 0}
+  config: {fileID: 11400000, guid: b277c718030ef8c49a90e0adc89cd658, type: 2}
   health: {fileID: 46043393445266479}
   stats: {fileID: 5156588240620538864}
   meleeTrigger: {fileID: 3556331140146632137}
@@ -23203,6 +23263,10 @@ PrefabInstance:
     - target: {fileID: 7026693026539742034, guid: 044e592295947d84c8489bcf8fea2fd9, type: 3}
       propertyPath: m_Name
       value: Wep_RecurveBow_01
+      objectReference: {fileID: 0}
+    - target: {fileID: 7026693026539742034, guid: 044e592295947d84c8489bcf8fea2fd9, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7589606574519855731, guid: 044e592295947d84c8489bcf8fea2fd9, type: 3}
       propertyPath: m_Enabled

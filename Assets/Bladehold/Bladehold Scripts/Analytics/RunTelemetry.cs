@@ -249,7 +249,7 @@ public class RunTelemetry : MonoBehaviour
         yield return null;
 
         Wallet wallet = Player.Instance != null ? Player.Instance.Wallet : null;
-        PlayerClassController classController = Player.Instance != null ? Player.Instance.GetComponent<PlayerClassController>() : null;
+        PlayerClassController classController = UnityEngine.Object.FindAnyObjectByType<PlayerClassController>();
         string classId = classController != null && classController.ActiveClass != null
             ? classController.ActiveClass.id
             : SaveSystem.Load().playerClassId;

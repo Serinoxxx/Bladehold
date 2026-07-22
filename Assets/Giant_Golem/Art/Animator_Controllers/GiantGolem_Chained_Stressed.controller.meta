@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 2e626821b68577042a66ff3f71853ff9
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265460
+  packageName: Giant Golem
+  packageVersion: 1.0
+  assetPath: Assets/Giant_Golem/Art/Animator_Controllers/GiantGolem_Chained_Stressed.controller
+  uploadId: 627630

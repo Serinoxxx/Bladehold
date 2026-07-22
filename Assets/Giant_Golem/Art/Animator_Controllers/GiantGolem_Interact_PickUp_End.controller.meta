@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: fba4d761d81402b4d97d5c1979768e20
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265460
+  packageName: Giant Golem
+  packageVersion: 1.0
+  assetPath: Assets/Giant_Golem/Art/Animator_Controllers/GiantGolem_Interact_PickUp_End.controller
+  uploadId: 627630

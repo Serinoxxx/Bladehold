@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: fd41b8d6abb034f408b9c29e74642616
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265460
+  packageName: Giant Golem
+  packageVersion: 1.0
+  assetPath: Assets/Giant_Golem/Art/Animator_Controllers/GiantGolem_Attack_Swing_Behind_Low01.controller
+  uploadId: 627630

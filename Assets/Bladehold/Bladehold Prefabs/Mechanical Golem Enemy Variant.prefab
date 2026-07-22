@@ -736,6 +736,37 @@ MonoBehaviour:
           ButtonText: Debug Stop Sound
         ResetSequentialIndexButton:
           ButtonText: Reset Sequential Index
+--- !u!1 &7734946756855305125
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2575371357768608325}
+  m_Layer: 7
+  m_Name: Chest Laser Fire Point
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2575371357768608325
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7734946756855305125}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.4, z: 0.4}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4332210432156167455}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &7834118640890938739
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -791,7 +822,11 @@ PrefabInstance:
     - target: {fileID: 95902137545226380, guid: 5aed7f791a03c2a4ba0040d2fa161639, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: c8b8d86c69b762249a3b672b2f085f21, type: 2}
+      objectReference: {fileID: 22100000, guid: c853d3b1d958a664ead53133fdf4be4b, type: 2}
+    - target: {fileID: 95902137545226380, guid: 5aed7f791a03c2a4ba0040d2fa161639, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -939,7 +974,8 @@ PrefabInstance:
       propertyPath: animator
       value: 
       objectReference: {fileID: 7920942351156477439}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 6790884973619429240, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
     m_RemovedGameObjects:
     - {fileID: 5046351605578515591, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
     m_AddedGameObjects:
@@ -952,10 +988,16 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1382276312003058142}
+    - targetCorrespondingSourceObject: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2575371357768608325}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 494112403358464087, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 608670149113469762}
+    - targetCorrespondingSourceObject: {fileID: 494112403358464087, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4144312268166047013}
   m_SourcePrefab: {fileID: 100100000, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
 --- !u!114 &765488785710340935 stripped
 MonoBehaviour:
@@ -1001,7 +1043,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8753354553516220514}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 909e7e07a524dbf4a8159fabae376cff, type: 3}
   m_Name: 
@@ -1013,4 +1055,24 @@ MonoBehaviour:
   attackData: {fileID: 11400000, guid: a766a238ff33f2245a13002e9778a6b7, type: 2}
   revFeedback: {fileID: 4008814915501487209}
   bounceFeedback: {fileID: 6321290625184687011}
+  revTrigger: Attack
+--- !u!114 &4144312268166047013
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8753354553516220514}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 824591af3b6c0a44cbb1018e3fae2b04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LaserBeamAttack
+  animator: {fileID: 7920942351156477439}
+  health: {fileID: 6785208116765105722}
+  movement: {fileID: 765488785710340935}
+  agent: {fileID: 2153635153978072120}
+  attackData: {fileID: 11400000, guid: a901d0dacde571b4a8639d2c75393a04, type: 2}
+  firePoint: {fileID: 2575371357768608325}
+  laserPrefab: {fileID: 1293375810718194, guid: 69cd5bfdab535e54f87fbb6abae1a60b, type: 3}
   revTrigger: Attack

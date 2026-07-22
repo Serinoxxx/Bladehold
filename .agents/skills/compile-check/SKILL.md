@@ -26,11 +26,10 @@ For every file you created this session:
    ```
 3. Rebuild.
 
-This temporary hand-edit is safe despite CLAUDE.md's "don't hand-edit generated csprojs" rule — that rule means *don't treat them as durable*; Unity overwrites them on its next refresh anyway. Do **not** commit csproj/slnx changes; they're not tracked deliverables. If the Editor is open in the background it auto-regenerates csprojs and creates `.meta` files for new scripts on focus.
+This temporary hand-edit is safe despite AGENTS.md's "don't hand-edit generated csprojs" rule — that rule means *don't treat them as durable*; Unity overwrites them on its next refresh anyway. Do **not** commit csproj/slnx changes; they're not tracked deliverables. If the Editor is open in the background it auto-regenerates csprojs and creates `.meta` files for new scripts on focus.
 
-## Interpreting results
+## Refreshing Unity Editor
 
-- Fix every **error**; ignore pre-existing warnings you didn't introduce.
-- A clean build proves syntax/API correctness only — behaviour still needs Play-mode verification, which belongs in the TODO.md manual-verification checklist (`/editor-wiring-todo`).
+After verifying via `dotnet build`, call `refresh_unity` via `unityMCP` to trigger Unity's AssetDatabase refresh and script compilation in the running Editor instance.
 
 Run this before writing the TODO entry and before every commit.

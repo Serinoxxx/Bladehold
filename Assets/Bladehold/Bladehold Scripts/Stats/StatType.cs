@@ -51,12 +51,6 @@ public enum StatType
     ImpulseGoblinChance,
     /// <summary>Seconds of Impulse buff granted per orb picked up (added to any remaining time). 0 = locked; orbs grant nothing.</summary>
     ImpulseOrbDuration,
-    /// <summary>
-    ///     Resistance-piercing rating stamped on sword hits while the Impulse buff is active. Against an
-    ///     enemy of resistance r: power >= r flings (full ragdoll), power >= r-1 knocks down, else only
-    ///     normal knockback. Each point also launches flings harder (ImpulseSO.forcePerPower).
-    /// </summary>
-    ImpulsePower,
 
     /// <summary>Seconds of Chain Lightning buff granted per Lightning Orb picked up. 0 = locked; orbs grant nothing.</summary>
     ChainLightningOrbDuration,

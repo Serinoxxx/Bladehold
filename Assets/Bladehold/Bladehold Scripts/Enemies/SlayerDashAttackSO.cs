@@ -23,7 +23,10 @@ public class SlayerDashAttackSO : ScriptableObject
 
     [Header("Timing")]
     [Tooltip("Seconds the red lane telegraph shows before the dash executes.")]
-    public float telegraphSeconds = 0.9f;
+    public float telegraphSeconds = 1.6f;
+
+    [Tooltip("Seconds the lerped dash travel takes to move from start to end.")]
+    public float dashDuration = 0.2f;
 
     [Tooltip("Minimum seconds between dashes.")]
     public float attackCooldown = 5f;

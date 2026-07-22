@@ -1,5 +1,69 @@
 # TODO
 
+## Troll and Elemental Golem Animations & Scale — Unity Editor wiring
+
+The C# and AnimatorOverrideController setup is done via `EnemyAnimationSetup.cs`.
+1. **Troll**: Created `Troll Override.overrideController` wrapping `Enemy AC (Goblin).controller`, mapped to Giant Golem FBX clips (`GiantGolem_Idle`, `GiantGolem_Move_Walk_Forward`, `GiantGolem_Interact_PickUp_ThrowToGround`, `GiantGolem_Idle_Death01`, `GiantGolem_Idle_Roar01`) from `Assets/Giant_Golem/Art/Animations/`. Wired controller to `Troll Enemy Variant.prefab`. Updated `Enemies.csv` troll scale column to `4.8` (3x original 1.6).
+2. **Elemental Golem**: Created `Elemental Golem Override.overrideController` wrapping `Enemy AC (Goblin).controller`, mapped to Brute Warrior FBX clips (`Brute@RangeAttack1` for boulder grab & throw attack, `Brute@Idle`, `Brute@Walk`, `Brute@Death`, `Brute@SpecialAttack1`) from `Assets/ExplosiveLLC/Brute Warrior Mecanim Animation Pack/Animations/`. Wired controller to `Elemental Golem Enemy Variant.prefab`.
+
+Wiring checklist:
+- [x] **Troll Animations & Scale**:
+  - `Troll Override.overrideController` created and mapped to Giant Golem animations. *(2026-07-22: done via EnemyAnimationSetup)*
+  - `Troll Enemy Variant.prefab` Animator assigned `Troll Override.overrideController`. *(2026-07-22: done via EnemyAnimationSetup)*
+  - `Config/Enemies.csv` row 10 (`troll`) scale updated to `4.8` (3x size). *(2026-07-22: done via EnemyAnimationSetup)*
+- [x] **Elemental Golem Animations**:
+  - `Elemental Golem Override.overrideController` created and mapped to Brute Warrior animations (`Brute@RangeAttack1` for boulder throw). *(2026-07-22: done via EnemyAnimationSetup)*
+  - `Elemental Golem Enemy Variant.prefab` Animator assigned `Elemental Golem Override.overrideController`. *(2026-07-22: done via EnemyAnimationSetup)*
+
+## Manual verification (Troll & Elemental Golem)
+- [ ] **Troll Visuals & Size**: Open `Enemy Zoo.unity` or run `DebugSpawnBurst troll 1` in DevConsole. Verify Troll is 3x its former size (scale 4.8) and plays Giant Golem idle, walk, attack, and death animations.
+- [ ] **Elemental Golem Boulder Throw**: Run `DebugSpawnBurst elemental_golem 1`. Verify Elemental Golem plays the Brute Warrior grab-and-throw animation when launching its boulder.
+
+
+## Active Buffs UI and Weapon Glow — Unity Editor wiring
+
+The C# is done. We replaced the old separate Impulse/Knockback skill logic by consolidating around `knockbackForce` and multiplying it when the `ImpulseBuff` is active. Instead of orbs dropping from specific enemies, killing an impulse goblin instantly grants the buff (and similarly for lightning witch). We added an `ActiveBuffsUI` panel that dynamically shows a `BuffIconUI` (with a radial timer and exact seconds) for any active buffs on the player. We also added `ActiveBuffWeaponGlow` which listens to `ImpulseBuff` and enables the `_EMISSION` material keyword on the active weapon renderer, turning it vivid blue while the buff is active.
+
+Wiring checklist:
+- [x] **Player Prefab updates**:
+  - Open `Assets/Bladehold/Bladehold Prefabs/Player.prefab`.
+  - Added `ActiveBuffWeaponGlow` component to `Player` prefab and active scene instance via MCP. *(2026-07-22: done via MCP)*
+- [x] **UI Prefabs & Scene Wiring**:
+  - Created `BuffIconUI.prefab` (`Assets/Bladehold/Bladehold Prefabs/UI/BuffIconUI.prefab`) with background, icon, radial fill, name text, timer text, and configured 3 MMF Feedbacks (`AppearMMF`, `PulseMMF`, `ExpireMMF`). *(2026-07-22: done via MCP)*
+  - Created `ActiveBuffsContainer` on `HUD Canvas` with `HorizontalLayoutGroup` & `ContentSizeFitter`. *(2026-07-22: done via MCP)*
+  - Added and wired `ActiveBuffsUI` component with `iconPrefab`, `iconContainer`, `impulseIcon`, and `lightningIcon`. *(2026-07-22: done via MCP)*
+
+## Manual verification (Active Buffs)
+- [ ] **Weapon Glow**: Play the game, trigger the Impulse buff (e.g. by killing an impulse goblin). Verify your currently equipped weapon starts glowing vivid blue. Wait for it to expire, verify the glow disappears.
+- [ ] **Buff UI**: When the buff activates, verify the UI panel appears with the correct icon, the word "IMPULSE", and a radial fill that ticks down smoothly, with the text turning red under 3 seconds.
+- [ ] **Chain Lightning Buff**: Trigger the Chain Lightning buff and verify its icon ("LIGHTNING") also appears and ticks down.
+- [ ] **Class Swapping**: Die and select a different class. Verify that the new class's weapon properly glows when the buff is acquired.
+
+
+## Golem Enemy Types Overhaul — Unity Editor wiring
+
+The C# is done. We cut down the enemy roster in `Enemies.csv` by introducing an `enabled` column, disabling several stat-variant enemies (Dwarf, Goblin Brute, Big Ork, etc.) to focus on unique behaviors. We implemented three distinct attacks for the Golem enemies: `Mechanical Golem` uses a sweeping `LaserBeamAttack` (elemental damage boxcast) from its chest; `Elemental Golem` lobs a `BoulderProjectile` (`BoulderThrowAttack`, blunt damage with AoE); and `Fort Golem` rains arrows in an area via `ArrowBarrageZone` (`ArrowBarrageAttack`, sharp damage). `EnemyManifest.cs` has been updated to generate prefabs for these golems with their respective attack components and child fire points.
+
+Wiring checklist:
+- [x] **Create Prefabs**:
+  - [x] `Assets/Bladehold/Bladehold Prefabs/ArrowBarrageZone.prefab` (must have `ArrowBarrageZone` component). Add an area indicator (like a decal or particle system) and assign it to the prefab.
+  - [x] `Assets/Bladehold/Bladehold Prefabs/BoulderProjectile.prefab` (must have `BoulderProjectile` component). Add a boulder mesh, Rigidbody, and Collider.
+- [ ] **Apply Colossal Animations**:
+  - The user has colossal animations they want to apply to one of the enemies. Decide which golem gets them (likely `Fort Golem` or `Elemental Golem`) and swap their `Animator`'s controller to use the colossal animation clips.
+- [x] **Run EnemyPrefabGenerator**:
+  - Once the `ArrowBarrageZone` and `BoulderProjectile` prefabs exist, run **Tools > Generate Enemy Prefabs** to rebuild the `Mechanical Golem Enemy Variant`, `Elemental Golem Enemy Variant`, and `Fort Golem Enemy Variant` prefabs.
+- [ ] **Check Component References**:
+  - Open the generated golem prefabs and ensure `LaserBeamAttack`, `BoulderThrowAttack`, and `ArrowBarrageAttack` have their `animator`, `health`, `movement`, and `firePoint` fields correctly wired by the generator.
+- [ ] **VFX/SFX**:
+  - Assign hit/impact VFX and SFX prefabs/clips to `ArrowBarrageZone.hitVfxPrefab`, `BoulderProjectile.impactVfxPrefab`, etc.
+  - The Mechanical Golem uses a basic `LineRenderer` for its laser. Consider replacing it or dressing it up with particle systems.
+
+## Manual verification (Golem Enemies)
+- [ ] **Mechanical Golem**: Use `DebugSpawnBurst mechanical_golem 1` in the DevConsole. Verify it stops and charges its chest laser, then sweeps the laser towards the player, dealing tick damage.
+- [ ] **Elemental Golem**: Use `DebugSpawnBurst elemental_golem 1`. Verify it lobs a boulder in a parabolic arc at the player's position, dealing AoE damage upon impact.
+- [ ] **Fort Golem**: Use `DebugSpawnBurst fort_golem 1`. Verify it creates an arrow barrage zone at the player's location that rains damage ticks over time.
+- [ ] **Disabled Enemies**: Run waves 1-10 normally or check `WaveSpawner` logs to ensure disabled enemies (like Dwarf or Goblin Brute) do not spawn.
+
 ## Mage and Berserker Class Configuration — Unity Editor wiring
 ## Mage, Berserker, and Swordsman Class Configuration — Unity Editor wiring
 

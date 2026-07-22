@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 9e8d0959c5a4691468af5c1e8e919941
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265460
+  packageName: Giant Golem
+  packageVersion: 1.0
+  assetPath: Assets/Giant_Golem/Art/Animator_Controllers/GiantGolem_CriticalHit_Kneel_Start.controller
+  uploadId: 627630

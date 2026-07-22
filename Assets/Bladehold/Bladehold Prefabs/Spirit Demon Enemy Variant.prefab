@@ -161,23 +161,65 @@ PrefabInstance:
     - target: {fileID: 95226846252001880, guid: 9984be23625843a48a44d88aae5669f2, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: c8b8d86c69b762249a3b672b2f085f21, type: 2}
+      objectReference: {fileID: 22100000, guid: c853d3b1d958a664ead53133fdf4be4b, type: 2}
+    - target: {fileID: 95226846252001880, guid: 9984be23625843a48a44d88aae5669f2, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1661403789295708, guid: 9984be23625843a48a44d88aae5669f2, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 0}
+      addedObject: {fileID: 5477500586463722503}
     - targetCorrespondingSourceObject: {fileID: 1661403789295708, guid: 9984be23625843a48a44d88aae5669f2, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 0}
+      addedObject: {fileID: 6603562954839308125}
   m_SourcePrefab: {fileID: 100100000, guid: 9984be23625843a48a44d88aae5669f2, type: 3}
 --- !u!4 &8668600090502059996 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4615360315754548, guid: 9984be23625843a48a44d88aae5669f2, type: 3}
   m_PrefabInstance: {fileID: 8673203356189777896}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &8671838820558856116 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1661403789295708, guid: 9984be23625843a48a44d88aae5669f2, type: 3}
+  m_PrefabInstance: {fileID: 8673203356189777896}
+  m_PrefabAsset: {fileID: 0}
+--- !u!135 &5477500586463722503
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8671838820558856116}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.4
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &6603562954839308125
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8671838820558856116}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59cfd3ee7cc3f4f4e88929ac8e296897, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VulnerableSpot
 --- !u!95 &8723252782343435696 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 95226846252001880, guid: 9984be23625843a48a44d88aae5669f2, type: 3}

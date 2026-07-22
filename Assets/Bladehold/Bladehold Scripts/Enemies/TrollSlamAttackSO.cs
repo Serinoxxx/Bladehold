@@ -25,9 +25,7 @@ public class TrollSlamAttackSO : ScriptableObject
     [Tooltip("Type of damage dealt.")]
     public DamageType damageType = DamageType.blunt;
 
-    [Header("Impulse (reuses the player's fling/resistance system)")]
-    [Tooltip("Impulse rating stamped on every slam hit, compared against each victim's impulse resistance (ImpulseReceiver): at or above resistance = ragdoll fling, within 1 below = knockdown. High enough by default to fling every goblin type.")]
-    public float impulsePower = 10f;
-    [Tooltip("Launch speed in m/s for victims the impulse flings.")]
-    public float impulseForce = 12f;
+    [Header("Knockback (reuses the player's knockback/resistance system)")]
+    [Tooltip("Knockback rating stamped on every slam hit, compared against each victim's knockback resistance (KnockbackReceiver): at or above resistance = ragdoll fling, within 1 below = knockdown. High enough by default to fling every goblin type.")]
+    public float knockbackForce = 12f;
 }

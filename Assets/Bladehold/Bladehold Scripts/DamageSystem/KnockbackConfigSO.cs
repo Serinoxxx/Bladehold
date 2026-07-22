@@ -1,18 +1,19 @@
 using UnityEngine;
 
 /// <summary>
-///     Gameplay tunables for the Impulse fling reaction (<see cref="ImpulseReceiver" />): the
-///     resistance defaults, launch shaping, landing detection, and NavMesh recovery. The player-side
-///     numbers (orb duration, power, force bases) live on <see cref="ImpulseSO" /> instead — this
-///     asset is the enemy/reaction side. The horde-safety cap on simultaneous ragdolls is a
-///     player-facing setting instead (<see cref="EnemyRagdoll.MaxActive" />, set by
-///     <see cref="GameSettingsService" />), since it trades physics fidelity for performance.
+///     Gameplay tunables for the Knockback reactions (<see cref="KnockbackReceiver" />): the
+///     resistance defaults, launch shaping, landing detection, NavMesh recovery, and sliding. 
+///     The horde-safety cap on simultaneous ragdolls is a player-facing setting instead 
+///     (<see cref="EnemyRagdoll.MaxActive" />, set by <see cref="GameSettingsService" />).
 /// </summary>
-[CreateAssetMenu(fileName = "ImpulseConfigSO", menuName = "Scriptable Objects/ImpulseConfigSO")]
-public class ImpulseConfigSO : ScriptableObject
+[CreateAssetMenu(fileName = "KnockbackConfigSO", menuName = "Scriptable Objects/KnockbackConfigSO")]
+public class KnockbackConfigSO : ScriptableObject
 {
-    [Tooltip("Impulse resistance used when the roster CSV leaves the column blank. Against resistance r: power >= r flings, power >= r-1 knocks down, else nothing extra. 0 = base goblins always fling.")]
+    [Tooltip("Knockback resistance used when the roster CSV leaves the column blank. Against resistance r: force >= r flings, force >= r-1 knocks down, else slides.")]
     public float defaultResistance = 0f;
+
+    [Tooltip("Seconds the knockback slide lasts (when force < r-1); the push decays linearly to zero over this time.")]
+    public float slideDuration = 0.18f;
 
     [Header("Launch")]
     [Tooltip("Launch elevation above the horizontal, in degrees. 60 sends enemies properly skyward.")]

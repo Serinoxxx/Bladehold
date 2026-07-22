@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 729c6e74bd7ddef4daf87a0edbce876c, type: 3}
   m_Name: SkillTreeSOMage
   m_EditorClassIdentifier: Assembly-CSharp::SkillTreeSO
-  csv: {fileID: 0}
+  csv: {fileID: 4900000, guid: b4ca8b7195b9deb44b44b8d35c3ad28c, type: 3}
   hasHeaderRow: 1
   locKeyPrefix: skill.mage
+  sharedIcons: {fileID: 11400000, guid: 2d81cb9fe011b9641a4f95b712620435, type: 2}
   icons: []

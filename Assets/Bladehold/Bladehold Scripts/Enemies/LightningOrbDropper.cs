@@ -10,9 +10,6 @@ using UnityEngine;
 public class LightningOrbDropper : MonoBehaviour
 {
     [SerializeField] private Health health;
-    [SerializeField] private LightningOrb orbPrefab;
-    [Tooltip("World-space offset from this transform where the orb spawns.")]
-    [SerializeField] private Vector3 dropOffset = new Vector3(0f, 0.5f, 0f);
     [Tooltip("Instantiated at this enemy's position on death.")]
     [SerializeField] private GameObject deathVfxPrefab;
     [SerializeField] private AudioClip deathSfx;
@@ -34,12 +31,6 @@ public class LightningOrbDropper : MonoBehaviour
             Debug.LogError("Health component is not assigned or found on the GameObject.");
             anyError = true;
         }
-        if (orbPrefab == null)
-        {
-            Debug.LogError("LightningOrb prefab is not assigned in the inspector.");
-            anyError = true;
-        }
-
         if (anyError)
         {
             return;
@@ -67,6 +58,9 @@ public class LightningOrbDropper : MonoBehaviour
             AudioSource.PlayClipAtPoint(deathSfx, transform.position);
         }
 
-        Instantiate(orbPrefab, transform.position + dropOffset, Quaternion.identity);
+        if (Player.Instance != null)
+        {
+            Player.Instance.GetComponentInChildren<ChainLightningBuff>()?.CollectOrb();
+        }
     }
 }

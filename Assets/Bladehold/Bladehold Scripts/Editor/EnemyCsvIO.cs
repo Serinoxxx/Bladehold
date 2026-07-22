@@ -16,7 +16,7 @@ using UnityEngine;
 [Serializable]
 public class EnemyRow
 {
-    public const int ColumnCount = 13;
+    public const int ColumnCount = 14;
 
     public const int ColId = 0;
     public const int ColDisplayName = 1;
@@ -30,7 +30,8 @@ public class EnemyRow
     public const int ColSpawnChance = 9;
     public const int ColMinSpawn = 10;
     public const int ColMaxConcurrent = 11;
-    public const int ColImpulseResistance = 12;
+    public const int ColKnockbackResistance = 12;
+    public const int ColEnabled = 13;
 
     public string[] cells = new string[ColumnCount];
 
@@ -94,7 +95,8 @@ public class EnemyRow
             spawnChance = OptionalFloat(Get(ColSpawnChance)) ?? 0f,
             minSpawn = OptionalInt(Get(ColMinSpawn)) ?? 0,
             maxConcurrent = OptionalInt(Get(ColMaxConcurrent)) ?? 0,
-            impulseResistance = OptionalFloat(Get(ColImpulseResistance)),
+            knockbackResistance = OptionalFloat(Get(ColKnockbackResistance)),
+            enabled = OptionalBool(Get(ColEnabled)) ?? true,
         };
 
         if (def.minGold.HasValue != def.maxGold.HasValue)
@@ -135,6 +137,15 @@ public class EnemyRow
         }
         return int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out int v) ? v : (int?)null;
     }
+
+    private static bool? OptionalBool(string s)
+    {
+        if (string.IsNullOrEmpty(s))
+        {
+            return null;
+        }
+        return bool.TryParse(s, out bool v) ? v : (bool?)null;
+    }
 }
 
 /// <summary>
@@ -145,7 +156,7 @@ public class EnemyRow
 /// </summary>
 public static class EnemyCsvIO
 {
-    public const string DefaultHeader = "id,displayName,health,damage,minGold,maxGold,speed,scale,unlockWave,spawnChance,minSpawn,maxConcurrent,impulseResistance";
+    public const string DefaultHeader = "id,displayName,health,damage,minGold,maxGold,speed,scale,unlockWave,spawnChance,minSpawn,maxConcurrent,knockbackResistance,enabled";
 
     /// <summary>
     ///     Parses the roster's CSV into editable raw rows. Returns an empty list (and a null csvAsset)

@@ -530,6 +530,7 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
             sourcePosition = sourcePosition,
             knockbackForce = stats.GetValue(StatType.AxeThrowKnockback)
                 * (1f + chargeLevel * config.knockbackPerChargeLevel),
+            isProjectile = true,
         };
     }
 

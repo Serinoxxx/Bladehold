@@ -31,11 +31,8 @@ public class PinballChargeSO : ScriptableObject
     [Tooltip("Seconds before the same target can be contact-hit again within one charge.")]
     public float rehitSeconds = 1f;
 
-    [Tooltip("Impulse fling rating stamped on contact hits (enemies clipped by the pinball get flung).")]
-    public float impulsePower = 2f;
-
-    [Tooltip("Launch speed of a successful fling.")]
-    public float impulseForce = 10f;
+    [Tooltip("Knockback fling rating stamped on contact hits (enemies clipped by the pinball get flung).")]
+    public float knockbackForce = 10f;
 
     [Header("Timing")]
     [Tooltip("Minimum seconds between charges.")]

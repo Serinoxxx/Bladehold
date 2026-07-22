@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 8f455b6b7cdf5e84293c9c075b0b083b
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265460
+  packageName: Giant Golem
+  packageVersion: 1.0
+  assetPath: Assets/Giant_Golem/Scripts/SimpleCameraController.cs
+  uploadId: 627630

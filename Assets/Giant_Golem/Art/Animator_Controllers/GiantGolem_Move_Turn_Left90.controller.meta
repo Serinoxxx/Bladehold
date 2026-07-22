@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 88ed39d521e9c2249bda379bb5ed1e13
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265460
+  packageName: Giant Golem
+  packageVersion: 1.0
+  assetPath: Assets/Giant_Golem/Art/Animator_Controllers/GiantGolem_Move_Turn_Left90.controller
+  uploadId: 627630

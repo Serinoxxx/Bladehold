@@ -511,6 +511,7 @@ public class PlayerWand : MonoBehaviour, IChargedAimWeapon
             knockbackForce = stats.GetValue(StatType.WandKnockback),
             // Player-owned hit: lets runestones tell a wand blast from enemy splash damage.
             source = ownerDamageable,
+            isProjectile = true,
         };
     }
 

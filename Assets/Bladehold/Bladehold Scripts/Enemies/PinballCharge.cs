@@ -300,8 +300,7 @@ public class PinballCharge : MonoBehaviour
                 value = damageOverride ?? attackData.damage,
                 type = attackData.damageType,
                 sourcePosition = transform.position,
-                impulsePower = attackData.impulsePower,
-                impulseForce = attackData.impulseForce,
+                knockbackForce = attackData.knockbackForce,
                 source = ownerDamageable,
                 unparryable = true,
             });

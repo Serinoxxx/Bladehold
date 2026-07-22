@@ -52,12 +52,19 @@ public class SkillTreeService : MonoBehaviour, ISkillTreeService
         // before any Start) may carry its own SkillTreeSO; null keeps the serialized default (the
         // Swordsman tree). Saved ids not in the active tree are skipped below, never rewritten, so
         // switching class leaves the other class's purchases dormant rather than lost.
-        PlayerClassController classController = Player.Instance != null
-            ? Player.Instance.GetComponent<PlayerClassController>()
-            : null;
-        if (classController != null && classController.ActiveClass != null && classController.ActiveClass.skillTree != null)
+        PlayerClassController classController = UnityEngine.Object.FindAnyObjectByType<PlayerClassController>();
+        if (classController != null)
         {
-            tree = classController.ActiveClass.skillTree;
+            Debug.Log($"[SkillTreeService] Found PlayerClassController. ActiveClass: {(classController.ActiveClass != null ? classController.ActiveClass.id : "null")}");
+            if (classController.ActiveClass != null && classController.ActiveClass.skillTree != null)
+            {
+                tree = classController.ActiveClass.skillTree;
+                Debug.Log($"[SkillTreeService] Swapped tree to {tree.name}");
+            }
+        }
+        else
+        {
+            Debug.Log("[SkillTreeService] PlayerClassController NOT FOUND in scene!");
         }
 
         if (tree == null)

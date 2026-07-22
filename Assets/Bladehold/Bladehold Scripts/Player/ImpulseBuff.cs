@@ -10,7 +10,7 @@ using UnityEngine;
 ///     see <see cref="ImpulseReceiver" />) and multiplies damage by the stack bonus.
 ///
 ///     Each orb adds <see cref="StatType.ImpulseOrbDuration" /> seconds to the remaining time and one
-///     stack; every stack beyond the first adds extra force and damage (<see cref="ImpulseSO" />).
+///     stack; every stack beyond the first adds extra knockback force and damage (<see cref="ImpulseSO" />).
 ///     All stacks expire together when the timer runs out. <see cref="PlayerStats" /> has no timed
 ///     modifiers, so the buff owns its own countdown (the <see cref="DeathNova" /> cooldown idiom);
 ///     scene reload resets it naturally. Unlocking is the <see cref="StatType.ImpulseOrbDuration" />
@@ -35,6 +35,7 @@ public class ImpulseBuff : MonoBehaviour
     public event Action OnChanged;
 
     public float RemainingSeconds { get; private set; }
+    public float MaxSeconds { get; private set; }
     public int StackCount { get; private set; }
 
     private bool anyError = false;
@@ -45,18 +46,10 @@ public class ImpulseBuff : MonoBehaviour
     public float DamageMultiplier =>
         IsActive ? 1f + (StackCount - 1) * config.damagePerExtraStackPercent : 1f;
 
-    /// <summary>The resistance-piercing rating stamped on hits (before the charge bonus).</summary>
-    public float CurrentImpulsePower => anyError ? 0f : stats.GetValue(StatType.ImpulsePower);
-
-    /// <summary>Extra Impulse Power per attack charge level (see <see cref="ImpulseSO.powerPerChargeLevel" />).</summary>
-    public float PowerPerChargeLevel => anyError ? 0f : config.powerPerChargeLevel;
-
-    /// <summary>Launch speed (m/s) stamped on hits, folding in the power and stack bonuses (charge is applied by <see cref="DamageTrigger" />).</summary>
-    public float CurrentImpulseForce => anyError
-        ? 0f
-        : config.baseImpulseForce
-          * (1f + CurrentImpulsePower * config.forcePerPower)
-          * (1f + (StackCount - 1) * config.forcePerExtraStackPercent);
+    /// <summary>Multiplier on the sword's knockback force (e.g. 1.5x at 1 stack).</summary>
+    public float KnockbackMultiplier => anyError
+        ? 1f
+        : IsActive ? StackCount * config.knockbackMultiplierPerStack : 1f;
 
     private void Start()
     {
@@ -82,7 +75,6 @@ public class ImpulseBuff : MonoBehaviour
         }
 
         stats.SetBase(StatType.ImpulseOrbDuration, config.baseOrbDurationSeconds);
-        stats.SetBase(StatType.ImpulsePower, config.basePower);
 
         if (auraVisual != null)
         {
@@ -123,6 +115,7 @@ public class ImpulseBuff : MonoBehaviour
 
         bool wasActive = IsActive;
         RemainingSeconds += granted;
+        MaxSeconds = RemainingSeconds;
         StackCount++;
 
         if (!wasActive)

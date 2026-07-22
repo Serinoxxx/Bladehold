@@ -890,7 +890,8 @@ MonoBehaviour:
   movement: {fileID: 4344859505446534489}
   agent: {fileID: 3112192463884384806}
   attackData: {fileID: 11400000, guid: 69d0b9c7c1e630442b20602e2cebd25e, type: 2}
-  telegraphPrefab: {fileID: 5856850007466671987, guid: e5dd6852d515fe64487dfd3ccf2f43b4, type: 3}
+  telegraphPrefab: {fileID: 1129913580746370203, guid: 7bd9ddf3ad0ab1c4c887618ffc469a3f, type: 3}
+  trailPrefab: {fileID: 1218474259193278, guid: 32880282445ce1e46b8159e9eb1d8a6a, type: 3}
   windupFeedback: {fileID: 755052826063880149}
   dashFeedback: {fileID: 3646428335415140882}
   attackTrigger: Attack
@@ -960,7 +961,11 @@ PrefabInstance:
     - target: {fileID: 95149039229069712, guid: b2739774a07ffdb459c1bd60e3ef4f10, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: c8b8d86c69b762249a3b672b2f085f21, type: 2}
+      objectReference: {fileID: 22100000, guid: 141fcf065f8acd0469df78825ad433e2, type: 2}
+    - target: {fileID: 95149039229069712, guid: b2739774a07ffdb459c1bd60e3ef4f10, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

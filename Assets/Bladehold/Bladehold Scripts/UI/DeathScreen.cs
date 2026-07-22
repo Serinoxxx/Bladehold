@@ -238,8 +238,7 @@ public class DeathScreen : MonoBehaviour
         // PlayerCameraPivot locks/hides the cursor for gameplay look; the skill tree needs it
         // free to click buttons. Freed only now so no cursor floats over the banner. Reload()
         // re-locks it before restarting.
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        CursorLockManager.SetUnlock("DeathScreen", true);
 
         yield return FadeIn();
     }
@@ -318,8 +317,7 @@ public class DeathScreen : MonoBehaviour
         // Reload the active scene; scene-scoped singletons (GameStats, Wallet) reset naturally, while the
         // wave to resume from rides across the reload in the static RunState.
         Time.timeScale = GameSettingsService.TargetTimeScale; // ensure normal speed resumes even if something paused time on death.
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        CursorLockManager.SetUnlock("DeathScreen", false);
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }

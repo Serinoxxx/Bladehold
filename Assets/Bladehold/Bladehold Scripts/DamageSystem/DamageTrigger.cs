@@ -85,8 +85,18 @@ public class DamageTrigger : MonoBehaviour
 
     bool anyError = false;
 
+    bool initialized = false;
+
     private void Start()
     {
+        Init();
+    }
+
+    private void Init()
+    {
+        if (initialized) return;
+        initialized = true;
+
         if (damageTriggerSO == null)
         {
             Debug.LogError("DamageTriggerSO is not assigned in the inspector.");
@@ -214,6 +224,7 @@ public class DamageTrigger : MonoBehaviour
 
     public void Activate()
     {
+        Init();
         if (anyError) return;
 
         isActive = true;
@@ -417,19 +428,11 @@ public class DamageTrigger : MonoBehaviour
         }
 
         // Impulse buff: extra damage per orb stack, plus the fling stamp. Charge amplifies the
-        // launch through the same ChargeKnockbackBonus stat as knockback (impulse is
-        // knockback-flavoured, so the Amplified Knockback line boosts both), and pierces extra
-        // resistance per level (powerPerChargeLevel) so charging helps topple resistant enemies.
-        float impulseForce = 0f;
-        float impulsePower = 0f;
+        // launch through the same ChargeKnockbackBonus stat as knockback.
         if (impulseBuff != null && impulseBuff.IsActive)
         {
             value *= impulseBuff.DamageMultiplier;
-
-            int chargeLevel = playerAttack != null ? playerAttack.ChargeLevel : 0;
-            impulsePower = impulseBuff.CurrentImpulsePower + chargeLevel * impulseBuff.PowerPerChargeLevel;
-            impulseForce = impulseBuff.CurrentImpulseForce
-                * (1f + chargeLevel * stats.GetValue(StatType.ChargeKnockbackBonus));
+            knockback *= impulseBuff.KnockbackMultiplier;
         }
 
         // Rage (Berserker): more damage the angrier the player is (the ImpulseBuff read pattern).
@@ -448,8 +451,6 @@ public class DamageTrigger : MonoBehaviour
             isCritical = crit,
             knockbackForce = knockback,
             sourcePosition = transform.position,
-            impulsePower = impulsePower,
-            impulseForce = impulseForce,
             // Player-owned hit: lets Runestones tell a player blast from enemy splash damage. Safe
             // for every other consumer — Counterstrike only reads source off hits the *player*
             // receives, and this trigger never damages its owner.

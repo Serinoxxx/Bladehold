@@ -17,9 +17,6 @@ using UnityEngine;
 public class ImpulseGoblin : MonoBehaviour
 {
     [SerializeField] private Health health;
-    [SerializeField] private ImpulseOrb orbPrefab;
-    [Tooltip("World-space offset from this transform where the orb spawns.")]
-    [SerializeField] private Vector3 dropOffset = new Vector3(0f, 0.5f, 0f);
 
     [Header("Impulse visual (cosmetic, optional)")]
     [Tooltip("Renderer(s) swapped to impulseAuraMaterial when this goblin is marked. Mirror GoldenGoblin's list.")]
@@ -110,9 +107,9 @@ public class ImpulseGoblin : MonoBehaviour
             AudioSource.PlayClipAtPoint(deathSfx, transform.position);
         }
 
-        if (orbPrefab != null)
+        if (Player.Instance != null)
         {
-            Instantiate(orbPrefab, transform.position + dropOffset, Quaternion.identity);
+            Player.Instance.GetComponentInChildren<ImpulseBuff>()?.CollectOrb();
         }
     }
 }

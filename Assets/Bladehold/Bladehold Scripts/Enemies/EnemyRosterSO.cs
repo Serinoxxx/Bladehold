@@ -50,8 +50,11 @@ public class EnemyDefinition
     /// <summary>Maximum of this type alive at once. 0 or blank = unlimited.</summary>
     public int maxConcurrent = 0;
 
-    /// <summary>Overrides the prefab ImpulseReceiver's impulse resistance. Blank = prefab default.</summary>
-    public float? impulseResistance;
+    /// <summary>Overrides the prefab KnockbackReceiver's knockback resistance. Blank = prefab default.</summary>
+    public float? knockbackResistance;
+
+    /// <summary>Whether this enemy is allowed to spawn (from the new enabled column). Blank = true.</summary>
+    public bool enabled = true;
 }
 
 /// <summary>
@@ -61,7 +64,7 @@ public class EnemyDefinition
 ///     row's overrides to each spawned instance.
 ///
 ///     CSV columns (one type per row):
-///     <c>id, displayName, health, damage, minGold, maxGold, speed, scale, unlockWave, spawnChance, minSpawn, maxConcurrent, impulseResistance</c>
+///     <c>id, displayName, health, damage, minGold, maxGold, speed, scale, unlockWave, spawnChance, minSpawn, maxConcurrent, knockbackResistance, enabled</c>
 ///     <list type="bullet">
 ///         <item>The <b>first row is the fallback type</b> (spawned when no other type wins its
 ///         spawn-chance roll or all are at their concurrent cap), so it is effectively unlimited and
@@ -84,7 +87,7 @@ public class EnemyRosterSO : ScriptableObject
 
     [NonSerialized] private List<EnemyDefinition> enemies;
 
-    private const int ColumnCount = 13;
+    private const int ColumnCount = 14;
 
     /// <summary>All enemy types in CSV order (index 0 = the fallback type), parsed lazily.</summary>
     public IReadOnlyList<EnemyDefinition> Enemies
@@ -179,7 +182,8 @@ public class EnemyRosterSO : ScriptableObject
             spawnChance = ParseOptionalFloat(f[9], lineNumber, "spawnChance") ?? 0f,
             minSpawn = ParseOptionalInt(f[10], lineNumber, "minSpawn") ?? 0,
             maxConcurrent = ParseOptionalInt(f[11], lineNumber, "maxConcurrent") ?? 0,
-            impulseResistance = ParseOptionalFloat(f[12], lineNumber, "impulseResistance"),
+            knockbackResistance = ParseOptionalFloat(f[12], lineNumber, "knockbackResistance"),
+            enabled = ParseOptionalBool(f[13], lineNumber, "enabled") ?? true,
         };
 
         // Filling only one of the gold columns means a fixed drop of that amount.
@@ -230,6 +234,21 @@ public class EnemyRosterSO : ScriptableObject
             return null;
         }
         if (int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out int v))
+        {
+            return v;
+        }
+        Debug.LogError($"EnemyRosterSO '{name}': line {lineNumber} has invalid {field} '{s}'. Treating as blank.");
+        return null;
+    }
+
+    private bool? ParseOptionalBool(string s, int lineNumber, string field)
+    {
+        s = s.Trim();
+        if (string.IsNullOrEmpty(s))
+        {
+            return null;
+        }
+        if (bool.TryParse(s, out bool v))
         {
             return v;
         }

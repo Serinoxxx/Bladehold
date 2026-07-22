@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Karate Override
+  m_Controller: {fileID: 9100000, guid: c8b8d86c69b762249a3b672b2f085f21, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 3094330708855449807, guid: 73713b800e1d1cf43aead17462efb050, type: 3}
+    m_OverrideClip: {fileID: 7400000, guid: 2753fb3b61ec973458c643a06a1d7626, type: 3}
+  - m_OriginalClip: {fileID: 2750179953444534912, guid: 403924f64e79cc94183ad60cfdf30bba, type: 3}
+    m_OverrideClip: {fileID: 7400000, guid: 1ceb86b296fd2014e9633c67c8539458, type: 3}
+  - m_OriginalClip: {fileID: 938839363503991785, guid: 157baff9e0503ef4e8137cb763b79479, type: 3}
+    m_OverrideClip: {fileID: 7400000, guid: 6bf9f40fd8f2e094db7e05a84c8e421c, type: 3}
+  - m_OriginalClip: {fileID: 5201224315921631915, guid: ef441bb3bd4af124897071a0e42091b7, type: 3}
+    m_OverrideClip: {fileID: 7400000, guid: 651d553b4d043ea4da4acc726384732e, type: 3}
+  - m_OriginalClip: {fileID: 3094330708855449807, guid: c2f07439e693fa44aafbe0e6acebb19c, type: 3}
+    m_OverrideClip: {fileID: 7400000, guid: ac9975871f6774c44a6c33bf8da40c0c, type: 3}

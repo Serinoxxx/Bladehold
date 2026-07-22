@@ -815,15 +815,12 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         value *= damageScale;
 
         // Impulse Arrow: the orb buff stamps its fling rating onto arrows exactly the way the sword's
-        // DamageTrigger stamps swings (charge pierces resistance and amplifies the launch).
-        float impulsePower = 0f;
-        float impulseForce = 0f;
+        // DamageTrigger stamps swings.
+        float knockbackForce = 0f;
         if (stats.GetValue(StatType.BowImpulseArrows) >= 1f && impulseBuff != null && impulseBuff.IsActive)
         {
             value *= impulseBuff.DamageMultiplier;
-            impulsePower = impulseBuff.CurrentImpulsePower + chargeLevel * impulseBuff.PowerPerChargeLevel;
-            impulseForce = impulseBuff.CurrentImpulseForce
-                * (1f + chargeLevel * stats.GetValue(StatType.ChargeKnockbackBonus));
+            knockbackForce = config.knockbackBlastForce * impulseBuff.KnockbackMultiplier;
         }
 
         return new Damage
@@ -832,8 +829,8 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
             type = DamageType.sharp,
             isCritical = crit,
             sourcePosition = origin,
-            impulsePower = impulsePower,
-            impulseForce = impulseForce,
+            knockbackForce = knockbackForce,
+            isProjectile = true,
         };
     }
 
@@ -875,8 +872,7 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
             type = damage.type,
             isCritical = damage.isCritical,
             sourcePosition = hitPoint,
-            impulsePower = damage.impulsePower,
-            impulseForce = damage.impulseForce,
+            knockbackForce = damage.knockbackForce,
         };
         best.ReceiveDamage(bounceDamage);
         OnHit?.Invoke(best, bounceDamage, bestPosition);
@@ -995,8 +991,7 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
                 value = damageValue,
                 type = DamageType.blunt,
                 sourcePosition = center,
-                impulsePower = config.impulseBlastPower,
-                impulseForce = config.impulseBlastForce,
+                knockbackForce = config.knockbackBlastForce,
             });
         }
     }

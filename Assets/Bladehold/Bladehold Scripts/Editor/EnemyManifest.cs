@@ -64,6 +64,9 @@ internal static class EnemyManifest
         /// Witch pattern). The generator never creates materials — art is a manual pass.</summary>
         public string materialPath;
 
+        /// <summary>Optional path to an *existing* AnimatorOverrideController to apply to the rig's Animator.</summary>
+        public string animatorOverridePath;
+
         /// <summary>Disable the base goblin's melee <see cref="AIAttack" /> (disabled, never removed —
         /// matches the Storm Witch/Troll variants). Set when the enemy has its own attack component.</summary>
         public bool disableBaseAIAttack;
@@ -105,6 +108,7 @@ internal static class EnemyManifest
         {
             id = "big_ork",
             prefabName = "Big Ork Enemy Variant",
+            animatorOverridePath = "Assets/Bladehold/Bladehold Prefabs/Brute Override.overrideController",
         },
 
         // Forest Guardian: fast straight projectiles — zero new code, the Storm Witch's
@@ -161,6 +165,7 @@ internal static class EnemyManifest
             id = "mystic",
             soFolder = "Mystic",
             prefabName = "Mystic Enemy Variant",
+            animatorOverridePath = "Assets/Bladehold/Bladehold Prefabs/Ninja Override.overrideController",
             disableBaseAIAttack = true,
             navStoppingDistance = 8f,
             removeComponents = new[] { typeof(GoldenGoblin), typeof(ImpulseGoblin) },
@@ -227,6 +232,7 @@ internal static class EnemyManifest
             id = "ancient_queen",
             soFolder = "Ancient Queen",
             prefabName = "Ancient Queen Enemy Variant",
+            animatorOverridePath = "Assets/Bladehold/Bladehold Prefabs/Sorceress Override.overrideController",
             assets = new[]
             {
                 new SoSpec { soType = typeof(ArmorPlatingSO), assetName = "AncientQueenArmorSO" },
@@ -252,6 +258,7 @@ internal static class EnemyManifest
             id = "forest_witch",
             soFolder = "Forest Witch",
             prefabName = "Forest Witch Enemy Variant",
+            animatorOverridePath = "Assets/Bladehold/Bladehold Prefabs/Sorceress Override.overrideController",
             removeComponents = new[] { typeof(GoldenGoblin), typeof(ImpulseGoblin) },
             assets = new[]
             {
@@ -278,6 +285,7 @@ internal static class EnemyManifest
             id = "mutant_guy",
             soFolder = "Mutant Guy",
             prefabName = "Mutant Guy Enemy Variant",
+            animatorOverridePath = "Assets/Bladehold/Bladehold Prefabs/Karate Override.overrideController",
             assets = new[]
             {
                 new SoSpec { soType = typeof(ToxicPoolOnDeathSO), assetName = "MutantToxicPoolSO" },
@@ -304,6 +312,7 @@ internal static class EnemyManifest
             id = "medusa",
             soFolder = "Medusa",
             prefabName = "Medusa Enemy Variant",
+            animatorOverridePath = "Assets/Bladehold/Bladehold Prefabs/Sorceress Override.overrideController",
             removeComponents = new[] { typeof(GoldenGoblin), typeof(ImpulseGoblin) },
             assets = new[]
             {
@@ -373,6 +382,7 @@ internal static class EnemyManifest
             id = "dark_elf",
             soFolder = "Dark Elf",
             prefabName = "Dark Elf Enemy Variant",
+            animatorOverridePath = "Assets/Bladehold/Bladehold Prefabs/Ninja Override.overrideController",
             assets = new[]
             {
                 new SoSpec { soType = typeof(DodgeDashSO), assetName = "DarkElfDodgeSO" },
@@ -400,6 +410,7 @@ internal static class EnemyManifest
             id = "slayer",
             soFolder = "Slayer",
             prefabName = "Slayer Enemy Variant",
+            animatorOverridePath = "Assets/Bladehold/Bladehold Prefabs/Ninja Override.overrideController",
             disableBaseAIAttack = true,
             assets = new[]
             {
@@ -417,7 +428,8 @@ internal static class EnemyManifest
                         EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
                         EnemyPrefabGenerator.SetReference(so, "movement", ctx.Movement);
                         EnemyPrefabGenerator.SetReference(so, "agent", ctx.Root.GetComponent<UnityEngine.AI.NavMeshAgent>());
-                        EnemyPrefabGenerator.SetReference(so, "telegraphPrefab", LoadPrefab("Assets/Bladehold/Bladehold Prefabs/SlamTelegraph.prefab"));
+                        EnemyPrefabGenerator.SetReference(so, "telegraphPrefab", LoadPrefab("Assets/Bladehold/Bladehold Prefabs/ChargeTelegraph.prefab"));
+                        EnemyPrefabGenerator.SetReference(so, "trailPrefab", LoadPrefab("Assets/Synty/PolygonParticleFX/Prefabs/FX_Trail_Debris_01.prefab"));
                     },
                 },
             },
@@ -464,6 +476,7 @@ internal static class EnemyManifest
             id = "pig_butcher",
             soFolder = "Pig Butcher",
             prefabName = "Pig Butcher Enemy Variant",
+            animatorOverridePath = "Assets/Bladehold/Bladehold Prefabs/Brute Override.overrideController",
             children = new[] { new ChildSpec { name = "Hook Spawn", localPosition = new Vector3(0f, 1.4f, 0.4f) } },
             assets = new[]
             {
@@ -513,58 +526,91 @@ internal static class EnemyManifest
             },
         },
 
-        // Fort Golem: slow walking dwarf factory (MinionSpawner → WaveSpawner.RegisterExternalEnemy;
-        // capped so a camped golem can't flood the wave). Weak base melee stays enabled.
+        // Fort Golem: Arrow Barrage. Rains arrows at the player's position. Base melee stays enabled.
         new EnemySpec
         {
             id = "fort_golem",
             soFolder = "Fort Golem",
             prefabName = "Fort Golem Enemy Variant",
+            removeComponents = new[] { typeof(ImpulseGoblin) },
             assets = new[]
             {
-                new SoSpec { soType = typeof(MinionSpawnerSO), assetName = "FortGolemSpawnerSO" },
+                new SoSpec { soType = typeof(ArrowBarrageAttackSO), assetName = "FortGolemBarrageSO" },
             },
             components = new[]
             {
                 new ComponentSpec
                 {
-                    type = typeof(MinionSpawner),
+                    type = typeof(ArrowBarrageAttack),
                     wire = (so, ctx) =>
                     {
-                        EnemyPrefabGenerator.SetReference(so, "data", ctx.LoadedAsset("FortGolemSpawnerSO"));
+                        EnemyPrefabGenerator.SetReference(so, "attackData", ctx.LoadedAsset("FortGolemBarrageSO"));
+                        EnemyPrefabGenerator.SetReference(so, "animator", ctx.ChildAnimator);
                         EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
-                        EnemyPrefabGenerator.SetReference(so, "minionPrefab", LoadPrefab("Assets/Bladehold/Bladehold Prefabs/Dwarf Enemy Variant.prefab"));
-                        EnemyPrefabGenerator.SetReference(so, "roster", LoadAsset<EnemyRosterSO>("Assets/Bladehold/Bladehold Scripts/Enemies/EnemyRosterSO.asset"));
+                        EnemyPrefabGenerator.SetReference(so, "movement", ctx.Movement);
+                        EnemyPrefabGenerator.SetReference(so, "barrageZonePrefab", LoadPrefab("Assets/Bladehold/Bladehold Prefabs/ArrowBarrageZone.prefab"));
                     },
                 },
             },
         },
 
-        // Mechanical Golem: pinball charge — rev-up telegraph, then wall-bouncing contact-damage
-        // careen (NavMesh.Raycast reflection), Warp re-seat. The charge IS its melee: base
-        // AIAttack disabled. High CSV impulse resistance stands in for a non-goblin silhouette.
+        // Mechanical Golem: Chest Laser. Sweeping beam.
         new EnemySpec
         {
             id = "mechanical_golem",
             soFolder = "Mechanical Golem",
             prefabName = "Mechanical Golem Enemy Variant",
-            disableBaseAIAttack = true,
+            removeComponents = new[] { typeof(ImpulseGoblin) },
+            children = new[] { new ChildSpec { name = "Chest Laser Fire Point", localPosition = new Vector3(0f, 1.4f, 0.4f) } },
             assets = new[]
             {
-                new SoSpec { soType = typeof(PinballChargeSO), assetName = "MechGolemChargeSO" },
+                new SoSpec { soType = typeof(LaserBeamAttackSO), assetName = "MechGolemLaserSO" },
             },
             components = new[]
             {
                 new ComponentSpec
                 {
-                    type = typeof(PinballCharge),
+                    type = typeof(LaserBeamAttack),
                     wire = (so, ctx) =>
                     {
-                        EnemyPrefabGenerator.SetReference(so, "attackData", ctx.LoadedAsset("MechGolemChargeSO"));
+                        EnemyPrefabGenerator.SetReference(so, "attackData", ctx.LoadedAsset("MechGolemLaserSO"));
                         EnemyPrefabGenerator.SetReference(so, "animator", ctx.ChildAnimator);
                         EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
                         EnemyPrefabGenerator.SetReference(so, "movement", ctx.Movement);
                         EnemyPrefabGenerator.SetReference(so, "agent", ctx.Root.GetComponent<UnityEngine.AI.NavMeshAgent>());
+                        EnemyPrefabGenerator.SetReference(so, "firePoint", ctx.FindOrCreateChild("Chest Laser Fire Point", new Vector3(0f, 1.4f, 0.4f)).transform);
+                        EnemyPrefabGenerator.SetReference(so, "laserPrefab", LoadPrefab("Assets/Synty/PolygonParticleFX/Prefabs/FX_LazerBeam_01.prefab"));
+                    },
+                },
+            },
+        },
+
+        // Elemental Golem: Boulder throw.
+        new EnemySpec
+        {
+            id = "elemental_golem",
+            soFolder = "Elemental Golem",
+            prefabName = "Elemental Golem Enemy Variant",
+            disableBaseAIAttack = true,
+            removeComponents = new[] { typeof(ImpulseGoblin) },
+            children = new[] { new ChildSpec { name = "Boulder Spawn", localPosition = new Vector3(0f, 1.8f, 0.5f) } },
+            assets = new[]
+            {
+                new SoSpec { soType = typeof(BoulderThrowAttackSO), assetName = "ElementalGolemBoulderSO" },
+            },
+            components = new[]
+            {
+                new ComponentSpec
+                {
+                    type = typeof(BoulderThrowAttack),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "attackData", ctx.LoadedAsset("ElementalGolemBoulderSO"));
+                        EnemyPrefabGenerator.SetReference(so, "animator", ctx.ChildAnimator);
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                        EnemyPrefabGenerator.SetReference(so, "movement", ctx.Movement);
+                        EnemyPrefabGenerator.SetReference(so, "firePoint", ctx.FindOrCreateChild("Boulder Spawn", new Vector3(0f, 1.8f, 0.5f)).transform);
+                        EnemyPrefabGenerator.SetReference(so, "boulderPrefab", LoadProjectile<BoulderProjectile>("Assets/Bladehold/Bladehold Prefabs/BoulderProjectile.prefab"));
                     },
                 },
             },

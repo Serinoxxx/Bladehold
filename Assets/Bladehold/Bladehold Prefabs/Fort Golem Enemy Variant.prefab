@@ -455,7 +455,8 @@ PrefabInstance:
       propertyPath: animator
       value: 
       objectReference: {fileID: 4963301458325960959}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 6790884973619429240, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
     m_RemovedGameObjects:
     - {fileID: 5046351605578515591, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
     m_AddedGameObjects:
@@ -469,6 +470,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 494112403358464087, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4022364746228692894}
+    - targetCorrespondingSourceObject: {fileID: 494112403358464087, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1272685603031269852}
   m_SourcePrefab: {fileID: 100100000, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
 --- !u!1 &1703500330218015595 stripped
 GameObject:
@@ -492,6 +496,24 @@ MonoBehaviour:
   minionPrefab: {fileID: 2734389378671040378, guid: c595ed904bbf4af448abd3bbe3643373, type: 3}
   roster: {fileID: 11400000, guid: eac1e853de017fa438e6312de81cfa7f, type: 2}
   spawnFeedback: {fileID: 6947031554516049871}
+--- !u!114 &1272685603031269852
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1703500330218015595}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eaaad8d3964a6234cb73870a9c08d660, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ArrowBarrageAttack
+  animator: {fileID: 4963301458325960959}
+  health: {fileID: 3528504086844912947}
+  movement: {fileID: 7224243217091883086}
+  attackData: {fileID: 11400000, guid: 3e46f38fe2e7fa4418cebefcb041aca0, type: 2}
+  barrageZonePrefab: {fileID: 2585338380701939257, guid: 8331ed8e7d1e7fc40a862f2f47faa6cf, type: 3}
+  revTrigger: Attack
 --- !u!114 &3528504086844912947 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2416392165065999887, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
@@ -508,6 +530,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
   m_PrefabInstance: {fileID: 1260862874753725244}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &7224243217091883086 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8448426296968807282, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+  m_PrefabInstance: {fileID: 1260862874753725244}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1703500330218015595}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fbbc2048d5b01e48874c730dc14a696, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AIMovement
 --- !u!1001 &5023200523479918251
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -563,7 +596,11 @@ PrefabInstance:
     - target: {fileID: 95928138128809556, guid: fe16b94572a04254e9757241e9e92235, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: c8b8d86c69b762249a3b672b2f085f21, type: 2}
+      objectReference: {fileID: 22100000, guid: c853d3b1d958a664ead53133fdf4be4b, type: 2}
+    - target: {fileID: 95928138128809556, guid: fe16b94572a04254e9757241e9e92235, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

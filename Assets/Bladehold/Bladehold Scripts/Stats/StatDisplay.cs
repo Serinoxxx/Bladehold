@@ -70,7 +70,6 @@ public static class StatDisplay
 
         { StatType.ImpulseGoblinChance, new Info("Impulse Goblin Chance", StatFormat.Percent) },
         { StatType.ImpulseOrbDuration, new Info("Impulse Duration", StatFormat.Seconds) },
-        { StatType.ImpulsePower, new Info("Impulse Power", StatFormat.Number) },
 
         { StatType.ChainLightningOrbDuration, new Info("Lightning Duration", StatFormat.Seconds) },
         { StatType.ChainLightningBounces, new Info("Lightning Bounces", StatFormat.Integer) },

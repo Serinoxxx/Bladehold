@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 729806e164b6b324faf5c3b966d9c687
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265460
+  packageName: Giant Golem
+  packageVersion: 1.0
+  assetPath: Assets/Giant_Golem/Art/Animator_Controllers/GiantGolem_Move_Walk_ForwardRight.controller
+  uploadId: 627630

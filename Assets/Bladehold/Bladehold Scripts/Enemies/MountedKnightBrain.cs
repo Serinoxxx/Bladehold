@@ -25,6 +25,8 @@ public class MountedKnightBrain : MonoBehaviour
     [SerializeField] private NavMeshAgent horseAgent;
     [Tooltip("Flat quad stretched along the charge lane during the rear. Scaled to (lane width, 1, lane length).")]
     [SerializeField] private GameObject telegraphPrefab;
+    [Tooltip("Optional debris/particle trail prefab spawned on the horse during the charge.")]
+    [SerializeField] private GameObject trailPrefab;
     [Tooltip("World width of the telegraph lane; match the trample box's x extent (2 × HorseSO.hitBoxHalfExtents.x).")]
     [SerializeField] private float telegraphWidth = 2.4f;
     [Tooltip("Fallback charge damage before the chargeDamageMultiplier when no roster override arrives.")]
@@ -47,6 +49,7 @@ public class MountedKnightBrain : MonoBehaviour
     private Health playerHealth;
     private float? damageOverride;
     private GameObject activeTelegraph;
+    private GameObject activeTrail;
 
     private float nextRepathTime;
     private float lastChargeTime = Mathf.NegativeInfinity;
@@ -189,6 +192,13 @@ public class MountedKnightBrain : MonoBehaviour
         {
             Destroy(activeTelegraph);
             activeTelegraph = null;
+        }
+        if (activeTrail != null)
+        {
+            var psList = activeTrail.GetComponentsInChildren<ParticleSystem>();
+            foreach (var ps in psList) ps.Stop();
+            Destroy(activeTrail, 2f);
+            activeTrail = null;
         }
         if (chargeDamage != null)
         {
@@ -333,6 +343,11 @@ public class MountedKnightBrain : MonoBehaviour
             chargeFeedback.PlayFeedbacks();
         }
 
+        if (trailPrefab != null && activeTrail == null)
+        {
+            activeTrail = Instantiate(trailPrefab, horse.position, horse.rotation, horse);
+        }
+
         chargeTraveled = 0f;
         stallTimer = 0f;
         lastChargePosition = horse.position;
@@ -366,6 +381,14 @@ public class MountedKnightBrain : MonoBehaviour
 
         if (chargeTraveled >= chargeLaneLength + data.overshootDistance || stallTimer >= 0.2f)
         {
+            if (activeTrail != null)
+            {
+                var psList = activeTrail.GetComponentsInChildren<ParticleSystem>();
+                foreach (var ps in psList) ps.Stop();
+                Destroy(activeTrail, 2f);
+                activeTrail = null;
+            }
+
             chargeDamage.EndCharge();
             stateTimer = data.decelSeconds;
             state = KnightState.Recover;

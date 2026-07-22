@@ -32,6 +32,7 @@ public class ChainLightningBuff : MonoBehaviour
     public event Action OnChanged;
 
     public float RemainingSeconds { get; private set; }
+    public float MaxSeconds { get; private set; }
     public int StackCount { get; private set; }
 
     private bool anyError = false;
@@ -124,6 +125,7 @@ public class ChainLightningBuff : MonoBehaviour
 
         bool wasActive = IsActive;
         RemainingSeconds += granted;
+        MaxSeconds = RemainingSeconds;
         StackCount++;
 
         if (!wasActive)

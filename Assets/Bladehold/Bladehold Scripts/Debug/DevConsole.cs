@@ -6,11 +6,14 @@ using UnityEngine.SceneManagement;
 /// <summary>
 ///     In-game developer cheat console, toggled with the backquote/tilde key. Draws an IMGUI panel of
 ///     cheat buttons (add gold, advance wave, …); extend it by adding buttons in <see cref="DrawButtons" />.
-///     It bootstraps itself when play starts (Editor and development builds only), so it needs no scene
+///     It bootstraps itself when play starts, so it needs no scene
 ///     object and survives the death screen's scene reloads.
 /// </summary>
 public class DevConsole : MonoBehaviour
 {
+    public static DevConsole Instance { get; private set; }
+    public static bool IsVisible => Instance != null && Instance.visible;
+
     private const float PanelWidth = 220f;
     private const float Padding = 10f;
     private const float ButtonHeight = 32f;
@@ -20,8 +23,9 @@ public class DevConsole : MonoBehaviour
     private string nextWaveText = "";
     private int spawnTypeIndex;
     private int classIndex = -1;
+    private bool isGodMode;
+    private Health subscribedHealth;
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Bootstrap()
     {
@@ -29,7 +33,24 @@ public class DevConsole : MonoBehaviour
         consoleObject.AddComponent<DevConsole>();
         DontDestroyOnLoad(consoleObject);
     }
-#endif
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+    }
 
     private void Update()
     {
@@ -37,8 +58,52 @@ public class DevConsole : MonoBehaviour
         Keyboard keyboard = Keyboard.current;
         if (keyboard != null && keyboard[Key.Backquote].wasPressedThisFrame)
         {
-            visible = !visible;
+            SetVisible(!visible);
         }
+
+        UpdateGodModeSubscription();
+    }
+
+    public void SetVisible(bool value)
+    {
+        if (visible == value)
+        {
+            return;
+        }
+
+        visible = value;
+        CursorLockManager.SetUnlock("DevConsole", visible);
+    }
+
+    private void OnDisable()
+    {
+        if (subscribedHealth != null)
+        {
+            subscribedHealth.TryBlockDamage -= OnTryBlockDamage;
+            subscribedHealth = null;
+        }
+    }
+
+    private void UpdateGodModeSubscription()
+    {
+        Health currentHealth = Player.Instance != null ? Player.Instance.Health : null;
+        if (subscribedHealth != currentHealth)
+        {
+            if (subscribedHealth != null)
+            {
+                subscribedHealth.TryBlockDamage -= OnTryBlockDamage;
+            }
+            subscribedHealth = currentHealth;
+            if (subscribedHealth != null)
+            {
+                subscribedHealth.TryBlockDamage += OnTryBlockDamage;
+            }
+        }
+    }
+
+    private bool OnTryBlockDamage(Damage damage)
+    {
+        return isGodMode;
     }
 
     private void OnGUI()
@@ -56,6 +121,12 @@ public class DevConsole : MonoBehaviour
 
     private void DrawButtons()
     {
+        string godModeText = isGodMode ? "God Mode: ON" : "God Mode: OFF";
+        if (GUILayout.Button(godModeText, GUILayout.Height(ButtonHeight)))
+        {
+            isGodMode = !isGodMode;
+        }
+
         if (GUILayout.Button("+10,000 Gold", GUILayout.Height(ButtonHeight)))
         {
             // Singletons are re-created on scene reload, so resolve them per click rather than caching.
@@ -63,6 +134,15 @@ public class DevConsole : MonoBehaviour
             if (wallet != null)
             {
                 wallet.Add(10000);
+            }
+        }
+
+        if (GUILayout.Button("Die", GUILayout.Height(ButtonHeight)))
+        {
+            isGodMode = false;
+            if (Player.Instance != null && Player.Instance.TryGetComponent(out Health health))
+            {
+                health.ReceiveDamage(new Damage { value = 999999f, unparryable = true });
             }
         }
 
@@ -205,11 +285,14 @@ public class DevConsole : MonoBehaviour
     /// </summary>
     private void DrawClassControls()
     {
-        PlayerClassController controller = Player.Instance != null
-            ? Player.Instance.GetComponent<PlayerClassController>()
-            : null;
-        if (controller == null || controller.Slots.Count == 0)
+        PlayerClassController controller = UnityEngine.Object.FindAnyObjectByType<PlayerClassController>();
+        if (controller == null)
         {
+            return;
+        }
+        if (controller.Slots.Count == 0)
+        {
+            GUILayout.Label("Class (No slots configured)");
             return;
         }
 

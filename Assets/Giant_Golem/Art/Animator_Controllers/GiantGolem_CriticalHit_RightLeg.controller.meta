@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: ac5457f2e1200bb4aaedc64378ef57d9
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265460
+  packageName: Giant Golem
+  packageVersion: 1.0
+  assetPath: Assets/Giant_Golem/Art/Animator_Controllers/GiantGolem_CriticalHit_RightLeg.controller
+  uploadId: 627630

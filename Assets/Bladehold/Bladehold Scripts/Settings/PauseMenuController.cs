@@ -113,8 +113,7 @@ public class PauseMenuController : MonoBehaviour
 
         IsPaused = paused;
         Time.timeScale = paused ? 0f : GameSettingsService.TargetTimeScale;
-        Cursor.lockState = paused ? CursorLockMode.None : CursorLockMode.Locked;
-        Cursor.visible = paused;
+        CursorLockManager.SetUnlock("PauseMenu", paused);
 
         foreach (MonoBehaviour component in componentsToDisable)
         {

@@ -322,8 +322,7 @@ public class LeapSlamAttack : MonoBehaviour
                 value = damageOverride ?? attackData.damage,
                 type = attackData.damageType,
                 sourcePosition = center,
-                impulsePower = attackData.impulsePower,
-                impulseForce = attackData.impulseForce,
+                knockbackForce = attackData.knockbackForce,
                 source = ownerDamageable,
                 unparryable = true,
             });

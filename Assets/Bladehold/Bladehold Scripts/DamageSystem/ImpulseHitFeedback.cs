@@ -65,12 +65,12 @@ public class ImpulseHitFeedback : MonoBehaviour
 
     private void HandleHit(IDamageable target, Damage damage, Vector3 hitPoint)
     {
-        if (damage.impulseForce <= 0f)
+        if (damage.knockbackForce <= 0f)
         {
             return;
         }
 
-        float factor = Mathf.Clamp01(damage.impulseForce / forceForMaxPulse);
+        float factor = Mathf.Clamp01(damage.knockbackForce / forceForMaxPulse);
         SpawnBurst(hitPoint, factor);
         SpawnPulse(hitPoint, factor);
     }

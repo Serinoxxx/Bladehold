@@ -23,20 +23,6 @@ public class Damage
     public Vector3 sourcePosition;
 
     /// <summary>
-    ///     Impulse rating of this hit, compared against the target's impulse resistance by its
-    ///     <see cref="ImpulseReceiver" />: at resistance or above the target is ragdoll-flung, within 1
-    ///     below it is knocked down, further below nothing extra happens. 0 = no impulse on this hit.
-    ///     Stamped by <see cref="DamageTrigger" /> while the player's Impulse buff is active.
-    /// </summary>
-    public float impulsePower;
-
-    /// <summary>
-    ///     Launch speed in m/s (applied as a velocity change on the ragdoll bodies) when the impulse
-    ///     wins the resistance check. Already includes power/stack/charge amplification.
-    /// </summary>
-    public float impulseForce;
-
-    /// <summary>
     ///     The attacker's own damage sink (e.g. its <see cref="Health" />), if the hit came from a
     ///     single identifiable source. Used by retaliation effects (e.g. the player's Counterstrike
     ///     skill) to hit back at whoever landed the blocked hit. Null for hits with no single
@@ -51,6 +37,11 @@ public class Damage
     ///     omnidirectional auto-block, which isn't about facing an attacker.
     /// </summary>
     public bool unparryable;
+
+    /// <summary>
+    ///     True if the damage was dealt by a projectile (e.g. arrows, thrown axes, wand missiles) rather than a direct melee hit.
+    /// </summary>
+    public bool isProjectile;
 }
 
 public enum DamageType

@@ -17,5 +17,6 @@ MonoBehaviour:
   laneWidth: 1.6
   damage: 8
   damageType: 0
-  telegraphSeconds: 0.9
+  telegraphSeconds: 1.6
+  dashDuration: 0.2
   attackCooldown: 5

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 952385edf8d485b45acb05d8a2faf40d
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265460
+  packageName: Giant Golem
+  packageVersion: 1.0
+  assetPath: Assets/Giant_Golem/Art/Animator_Controllers/GiantGolem_Attack_Swing_TurnAround_Smash.controller
+  uploadId: 627630

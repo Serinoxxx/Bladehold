@@ -57,7 +57,10 @@ public class SkillTreeSO : ScriptableObject
     /// <summary>Loc key prefix for this tree's nodes (see <see cref="SkillNode.locKey" />); read by the Localization Sync window.</summary>
     public string LocKeyPrefix => locKeyPrefix;
 
-    [Tooltip("Sprites the CSV's 'icon' column can reference by sprite asset name.")]
+    [Tooltip("Central icons asset this tree can reference.")]
+    [SerializeField] private SkillTreeIconsSO sharedIcons;
+
+    [Tooltip("Sprites the CSV's 'icon' column can reference by sprite asset name. (Overrides sharedIcons if provided)")]
     [SerializeField] private Sprite[] icons;
 
     [NonSerialized] private List<SkillNode> nodes;
@@ -105,7 +108,17 @@ public class SkillTreeSO : ScriptableObject
             }
         }
 
-        return iconsByName.TryGetValue(iconName, out Sprite found) ? found : null;
+        if (iconsByName.TryGetValue(iconName, out Sprite found) && found != null)
+        {
+            return found;
+        }
+
+        if (sharedIcons != null)
+        {
+            return sharedIcons.GetIcon(iconName);
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -274,7 +287,7 @@ public class SkillTreeSO : ScriptableObject
         node.iconName = f.Count > 13 ? f[13].Trim() : "";
         if (!string.IsNullOrEmpty(node.iconName) && GetIcon(node.iconName) == null)
         {
-            Debug.LogError($"SkillTreeSO '{name}': line {lineNumber} names icon '{node.iconName}', which is not in this asset's icons list.");
+            Debug.LogError($"SkillTreeSO '{name}': line {lineNumber} names icon '{node.iconName}', which is not in this asset's icons list or shared icons.");
         }
 
         // Optional trailing 'root' column — a truthy value marks a start-unlocked entry node. Absent/blank

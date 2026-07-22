@@ -9,7 +9,7 @@ Enemies are roster-driven: a row in `Assets/Bladehold/Config/Enemies.csv` + a pr
 
 ## Ground truth first
 
-1. Read the header row of `Config/Enemies.csv` and the doc comments in `Assets/Bladehold/Bladehold Scripts/Enemies/EnemyRosterSO.cs` — column semantics live there, not in CLAUDE.md. Current columns:
+1. Read the header row of `Config/Enemies.csv` and the doc comments in `Assets/Bladehold/Bladehold Scripts/Enemies/EnemyRosterSO.cs` — column semantics live there, not in AGENTS.md. Current columns:
    `id,displayName,health,damage,minGold,maxGold,speed,scale,unlockWave,spawnChance,minSpawn,maxConcurrent,impulseResistance`
 2. Read your chosen attack exemplar (table below) end to end.
 3. Read `WaveSpawner.ApplyDefinition` in `Waves/WaveSpawner.cs` — it's the routing point every stat override flows through.

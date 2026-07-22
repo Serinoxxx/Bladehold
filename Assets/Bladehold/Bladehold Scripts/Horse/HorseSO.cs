@@ -78,11 +78,8 @@ public class HorseSO : ScriptableObject
 
     public DamageType damageType = DamageType.blunt;
 
-    [Tooltip("Impulse rating stamped on trample hits — at or above a victim's resistance it is ragdoll-flung (see ImpulseReceiver).")]
-    public float impulsePower = 10f;
-
-    [Tooltip("Launch speed in m/s for flung victims.")]
-    public float impulseForce = 14f;
+    [Tooltip("Knockback rating stamped on trample hits — at or above a victim's resistance it is ragdoll-flung (see KnockbackReceiver).")]
+    public float knockbackForce = 14f;
 
     [Tooltip("Seconds before the same target can be trampled again (matters for long player charges through a horde).")]
     public float hitCooldownSeconds = 1f;

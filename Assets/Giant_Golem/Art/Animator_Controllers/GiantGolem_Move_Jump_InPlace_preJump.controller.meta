@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: db208419b91c0644b960236913218d6e
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265460
+  packageName: Giant Golem
+  packageVersion: 1.0
+  assetPath: Assets/Giant_Golem/Art/Animator_Controllers/GiantGolem_Move_Jump_InPlace_preJump.controller
+  uploadId: 627630

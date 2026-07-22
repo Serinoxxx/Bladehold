@@ -223,6 +223,21 @@ public static class EnemyPrefabGenerator
             body.sharedMaterials = materials;
         }
 
+        if (!string.IsNullOrEmpty(spec.animatorOverridePath))
+        {
+            var controller = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(spec.animatorOverridePath);
+            if (controller == null)
+            {
+                throw new InvalidOperationException($"Manifest entry '{spec.id}' references animator override '{spec.animatorOverridePath}', which doesn't exist.");
+            }
+            var animator = root.GetComponentInChildren<Animator>();
+            if (animator == null)
+            {
+                throw new InvalidOperationException($"No Animator found under '{spec.prefabName}' to apply the override to.");
+            }
+            animator.runtimeAnimatorController = controller;
+        }
+
         if (spec.disableBaseAIAttack)
         {
             var baseAttack = root.GetComponent<AIAttack>();

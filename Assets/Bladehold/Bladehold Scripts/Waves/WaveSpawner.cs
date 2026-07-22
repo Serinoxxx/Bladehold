@@ -349,17 +349,44 @@ public class WaveSpawner : MonoBehaviour
         }
     }
 
+    private bool forceSkipCountdown;
+
     private IEnumerator Countdown()
     {
-        for (int remaining = config.timeBetweenWaves; remaining > 0 && !runOver; remaining--)
+        for (int remaining = config.timeBetweenWaves; remaining > 0 && !runOver && !forceSkipCountdown; remaining--)
         {
             CountdownTick?.Invoke(remaining);
             yield return new WaitForSeconds(1f);
         }
+        forceSkipCountdown = false;
+    }
+
+    /// <summary>
+    ///     Dev-console cheat helper: if a wave is not active (e.g. counting down or waiting in intermission),
+    ///     force-starts the wave immediately so enemies can be spawned without delay.
+    /// </summary>
+    public void EnsureWaveStarted()
+    {
+        if (anyError || runOver || waveInProgress)
+        {
+            return;
+        }
+
+        forceSkipCountdown = true;
+        if (pendingChoice == IntermissionChoice.Pending)
+        {
+            pendingChoice = IntermissionChoice.HoldTheLine;
+        }
+        BeginWave();
     }
 
     private void BeginWave()
     {
+        if (waveInProgress)
+        {
+            return;
+        }
+
         waveGoblinTotal = config.GoblinsForWave(CurrentWave);
         killedThisWave = 0;
         aliveCount = 0;
@@ -428,7 +455,8 @@ public class WaveSpawner : MonoBehaviour
 
     private bool IsEligible(SpawnType type)
     {
-        return CurrentWave >= type.def.unlockWave
+        return type.def.enabled
+            && CurrentWave >= type.def.unlockWave
             && (type.def.maxConcurrent <= 0 || type.alive < type.def.maxConcurrent);
     }
 
@@ -550,9 +578,9 @@ public class WaveSpawner : MonoBehaviour
         {
             enemy.GetComponent<AIMovement>()?.SetSpeed(def.speed.Value);
         }
-        if (def.impulseResistance.HasValue)
+        if (def.knockbackResistance.HasValue)
         {
-            enemy.GetComponent<ImpulseReceiver>()?.SetResistance(def.impulseResistance.Value);
+            enemy.GetComponent<KnockbackReceiver>()?.SetResistance(def.knockbackResistance.Value);
         }
         if (!Mathf.Approximately(def.scale, 1f) || enemy.transform.localScale.y != 1f)
         {
@@ -630,9 +658,14 @@ public class WaveSpawner : MonoBehaviour
     /// </summary>
     public void DebugSpawnEnemyType(string id)
     {
-        if (anyError || runOver || !waveInProgress || string.IsNullOrEmpty(id))
+        if (anyError || runOver || string.IsNullOrEmpty(id))
         {
             return;
+        }
+
+        if (!waveInProgress)
+        {
+            EnsureWaveStarted();
         }
 
         SpawnType type = null;
@@ -693,9 +726,14 @@ public class WaveSpawner : MonoBehaviour
     /// </summary>
     public void DebugSpawnBurst(int count)
     {
-        if (anyError || runOver || !waveInProgress || count <= 0)
+        if (anyError || runOver || count <= 0)
         {
             return;
+        }
+
+        if (!waveInProgress)
+        {
+            EnsureWaveStarted();
         }
 
         waveGoblinTotal += count;

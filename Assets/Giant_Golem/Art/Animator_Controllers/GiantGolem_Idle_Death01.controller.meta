@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 1ed83e79550bac146b1d273290c03176
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265460
+  packageName: Giant Golem
+  packageVersion: 1.0
+  assetPath: Assets/Giant_Golem/Art/Animator_Controllers/GiantGolem_Idle_Death01.controller
+  uploadId: 627630

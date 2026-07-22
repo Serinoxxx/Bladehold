@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: ba780e699771ad94e8488cb38278cf4f
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265460
+  packageName: Giant Golem
+  packageVersion: 1.0
+  assetPath: Assets/Giant_Golem/Art/Animator_Controllers/GiantGolem_Interact_Kneel.controller
+  uploadId: 627630

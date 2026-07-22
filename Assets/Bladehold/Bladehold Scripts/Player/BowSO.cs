@@ -84,9 +84,6 @@ public class BowSO : ScriptableObject
     [Tooltip("Radius of the impulse blast detonated by Exploding Heads headshots and Unstable Orbs orb hits.")]
     public float impulseBlastRadius = 4f;
 
-    [Tooltip("Impulse Power of the blast: against an enemy of resistance r, power >= r flings, power >= r-1 knocks down (see ImpulseReceiver).")]
-    public float impulseBlastPower = 2f;
-
-    [Tooltip("Launch speed in m/s seeded onto flung ragdolls by the blast (the ImpulseSO.baseImpulseForce convention).")]
-    public float impulseBlastForce = 10f;
+    [Tooltip("Knockback rating of the blast: against an enemy of resistance r, power >= r flings, power >= r-1 knocks down (see KnockbackReceiver).")]
+    public float knockbackBlastForce = 10f;
 }

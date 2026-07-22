@@ -150,8 +150,7 @@ public class WaveIntermissionUI : MonoBehaviour
         }
 
         // Free the cursor so the choice buttons are clickable (the camera pivot locks it for look).
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        CursorLockManager.SetUnlock("WaveIntermission", true);
 
         if (statsPanel != null)
         {
@@ -214,7 +213,6 @@ public class WaveIntermissionUI : MonoBehaviour
         // Unfreeze and re-lock the cursor for gameplay look. Both commit paths (Hold / Continue) route
         // through here, so time always resumes exactly once.
         Time.timeScale = GameSettingsService.TargetTimeScale;
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        CursorLockManager.SetUnlock("WaveIntermission", false);
     }
 }

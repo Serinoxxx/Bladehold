@@ -24,7 +24,7 @@ public class EnemyStatsTab
         (EnemyRow.ColMaxGold, "Max Gold", "Overrides EnemySO.maxCoinDrop. Blank = prefab default."),
         (EnemyRow.ColSpeed, "Speed", "Overrides AIMovementSO.speed (NavMeshAgent speed). Blank = prefab default."),
         (EnemyRow.ColScale, "Scale", "Multiplier on the prefab's authored transform scale (and NavMeshAgent size). Blank = 1."),
-        (EnemyRow.ColImpulseResistance, "Impulse Resistance", "Overrides the ImpulseReceiver's resistance. Blank = prefab default."),
+        (EnemyRow.ColKnockbackResistance, "Knockback Resistance", "Overrides the KnockbackReceiver's resistance. Blank = prefab default."),
     };
 
     private static readonly (int column, string label, string tooltip)[] SchedulingFields =

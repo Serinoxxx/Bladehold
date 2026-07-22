@@ -197,8 +197,7 @@ public class HorseChargeDamage : MonoBehaviour
                 value = damagePerHit * speedFactor,
                 type = horseData.damageType,
                 sourcePosition = transform.position,
-                impulsePower = horseData.impulsePower * speedFactor,
-                impulseForce = horseData.impulseForce * speedFactor,
+                knockbackForce = horseData.knockbackForce * speedFactor,
                 source = source,
                 unparryable = true,
             });

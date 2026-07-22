@@ -79,13 +79,13 @@ public class SkillTooltip : MonoBehaviour
         bool maxed = service.IsMaxed(node);
         int cost = service.GetCost(node);
 
-        if (nameText != null) nameText.text = BuildName(node);
+        if (nameText != null) nameText.text = BuildName(node) ?? "";
         var (beforeAfter, percentIncrease) = showLiveImprovement
             ? GetImprovementValues(node, level, maxed)
-            : (null, null);
-        if (descriptionText != null) descriptionText.text = DescriptionFor(node, level);
-        if (beforeAfterText != null) beforeAfterText.text = beforeAfter;
-        if (percentIncreaseText != null) percentIncreaseText.text = percentIncrease;
+            : ("", "");
+        if (descriptionText != null) descriptionText.text = DescriptionFor(node, level) ?? "";
+        if (beforeAfterText != null) beforeAfterText.text = beforeAfter ?? "";
+        if (percentIncreaseText != null) percentIncreaseText.text = percentIncrease ?? "";
         if (costText != null) costText.text = maxed ? Loc.Get("common.maxed") : FormatCost(cost);
 
         anchoredTo = null;
@@ -133,7 +133,7 @@ public class SkillTooltip : MonoBehaviour
         PlayerStats stats = Player.Instance != null ? Player.Instance.Stats : null;
         if (maxed || node.effects.Count != 1 || stats == null)
         {
-            return (null, null);
+            return ("", "");
         }
 
         SkillEffect e = node.effects[0];
@@ -142,7 +142,7 @@ public class SkillTooltip : MonoBehaviour
         float after = stats.PreviewValue(e.stat, e.kind, amount);
 
         string beforeAfter = $"{StatDisplay.Label(e.stat)} {StatDisplay.Value(e.stat, before)} -> {StatDisplay.Value(e.stat, after)}.";
-        string percentIncrease = null;
+        string percentIncrease = "";
         if (StatDisplay.ShowsPercentDelta(e.stat) && before > 0f && after > before)
         {
             int pct = Mathf.RoundToInt((after - before) / before * 100f);

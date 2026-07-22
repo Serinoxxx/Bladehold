@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Sorceress Override
+  m_Controller: {fileID: 9100000, guid: c8b8d86c69b762249a3b672b2f085f21, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 3094330708855449807, guid: 73713b800e1d1cf43aead17462efb050, type: 3}
+    m_OverrideClip: {fileID: 7400000, guid: 24621427995c7274985afb20035a5dee, type: 3}
+  - m_OriginalClip: {fileID: 2750179953444534912, guid: 403924f64e79cc94183ad60cfdf30bba, type: 3}
+    m_OverrideClip: {fileID: 7400000, guid: b98b7aa11e6be4046ac0b69e18d90edb, type: 3}
+  - m_OriginalClip: {fileID: 938839363503991785, guid: 157baff9e0503ef4e8137cb763b79479, type: 3}
+    m_OverrideClip: {fileID: 7400000, guid: d6aedafb511eec749b8c351a33a4540c, type: 3}
+  - m_OriginalClip: {fileID: 5201224315921631915, guid: ef441bb3bd4af124897071a0e42091b7, type: 3}
+    m_OverrideClip: {fileID: 7400000, guid: 40ec9eec9b6f5444497b1487ad82d465, type: 3}
+  - m_OriginalClip: {fileID: 3094330708855449807, guid: c2f07439e693fa44aafbe0e6acebb19c, type: 3}
+    m_OverrideClip: {fileID: 7400000, guid: c1857e4094b87fe40a724b81e470c20d, type: 3}

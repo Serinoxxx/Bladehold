@@ -40,7 +40,6 @@ public class MountedKnightRider : MonoBehaviour
     [SerializeField] private AIMovement aiMovement;
     [SerializeField] private AIAttack aiAttack;
     [SerializeField] private AIAnimation aiAnimation;
-    [SerializeField] private ImpulseReceiver impulseReceiver;
     [SerializeField] private KnockbackReceiver knockbackReceiver;
 
     [Header("Knight animator")]
@@ -81,10 +80,6 @@ public class MountedKnightRider : MonoBehaviour
         if (aiAnimation == null)
         {
             aiAnimation = GetComponent<AIAnimation>();
-        }
-        if (impulseReceiver == null)
-        {
-            impulseReceiver = GetComponent<ImpulseReceiver>();
         }
         if (knockbackReceiver == null)
         {
@@ -268,10 +263,6 @@ public class MountedKnightRider : MonoBehaviour
         aiMovement.enabled = true;
         aiAttack.enabled = true;
         aiAnimation.enabled = true;
-        if (impulseReceiver != null)
-        {
-            impulseReceiver.enabled = true;
-        }
         if (knockbackReceiver != null)
         {
             knockbackReceiver.enabled = true;

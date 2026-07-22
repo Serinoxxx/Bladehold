@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: aefccdd25f03abd42955408b63648da7
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265460
+  packageName: Giant Golem
+  packageVersion: 1.0
+  assetPath: Assets/Giant_Golem/Art/Animator_Controllers/GiantGolem_Move_Turn_180.controller
+  uploadId: 627630

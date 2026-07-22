@@ -117,8 +117,7 @@ public class PlayerCameraPivot : MonoBehaviour
 
         if (hideCursor)
         {
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
+            CursorLockManager.ApplyState();
         }
 
         yaw = followTarget.eulerAngles.y;
@@ -130,7 +129,7 @@ public class PlayerCameraPivot : MonoBehaviour
     // the CinemachineBrain (which runs after ordinary LateUpdates) reads the pivot.
     private void LateUpdate()
     {
-        if (anyError)
+        if (anyError || CursorLockManager.IsCursorUnlocked)
         {
             return;
         }

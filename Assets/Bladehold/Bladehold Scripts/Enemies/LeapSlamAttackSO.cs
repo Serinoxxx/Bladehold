@@ -27,11 +27,8 @@ public class LeapSlamAttackSO : ScriptableObject
     [Tooltip("Type of damage dealt. The slam is stamped unparryable regardless — a wide AoE has no single swing to read.")]
     public DamageType damageType = DamageType.blunt;
 
-    [Tooltip("Impulse fling rating stamped on every slam hit (vs. each victim's impulse resistance — the TrollSlamAttack shape).")]
-    public float impulsePower = 3f;
-
-    [Tooltip("Launch speed of a successful fling.")]
-    public float impulseForce = 12f;
+    [Tooltip("Knockback fling rating stamped on every slam hit (vs. each victim's knockback resistance).")]
+    public float knockbackForce = 12f;
 
     [Header("Timing")]
     [Tooltip("Minimum seconds between leaps.")]

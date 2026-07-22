@@ -9,11 +9,11 @@ You are adding nodes to `Assets/Bladehold/Config/SkillTree.csv` (gold tree) or `
 
 ## Ground truth first (do these before writing anything)
 
-1. Read the header row of the target CSV. Do NOT trust CLAUDE.md's column list — it has drifted before. The current format is 15 columns:
+1. Read the header row of the target CSV. Do NOT trust AGENTS.md's column list — it has drifted before. The current format is 15 columns:
    `id,displayName,description,upgradeText,cost,growth,maxLevel,stat,kind,amount,prereqs,x,y,icon,root`
    If the real header differs from this, the code wins — read the parser doc comment at the top of `Assets/Bladehold/Bladehold Scripts/Upgrades/SkillTreeSO.cs` for current semantics.
 2. Read your chosen exemplar file (table below) end to end before writing the new component.
-3. Grep `Assets/Bladehold/Bladehold Scripts/` before assuming a mechanic/helper doesn't exist — CLAUDE.md is a map, not an inventory.
+3. Grep `Assets/Bladehold/Bladehold Scripts/` before assuming a mechanic/helper doesn't exist — AGENTS.md is a map, not an inventory.
 
 ## Step 1 — Pick the shape (copy the exemplar, don't improvise)
 
@@ -62,4 +62,4 @@ You are adding nodes to `Assets/Bladehold/Config/SkillTree.csv` (gold tree) or `
 1. Run `/compile-check` (new files must be added to `Assembly-CSharp.csproj` first — that skill explains).
 2. If the node touches combat/economy stats, `/balance-sim` — prototype it with a `node.<id>=<level>` override to see the pacing effect, and re-run the baseline once the CSV lands.
 3. Write the wiring + manual-verification entry via `/editor-wiring-todo` (component additions to `Player.prefab`, SO assets, icons, balance pass); with the Editor open, `/editor-wire` executes the MCP-doable items.
-4. Commit directly to `main` and push (no branches/PRs — solo project rule in CLAUDE.md).
+4. Commit directly to `main` and push (no branches/PRs — solo project rule in AGENTS.md).

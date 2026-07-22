@@ -23,6 +23,8 @@ public class SlayerDashAttack : MonoBehaviour
     [SerializeField] private SlayerDashAttackSO attackData;
     [Tooltip("Flat quad stretched along the dash lane during the telegraph. Scaled to (lane width, y, lane length).")]
     [SerializeField] private GameObject telegraphPrefab;
+    [Tooltip("Optional debris/particle trail prefab spawned on the slayer during the dash lerp.")]
+    [SerializeField] private GameObject trailPrefab;
     [SerializeField] private MMF_Player windupFeedback;
     [SerializeField] private MMF_Player dashFeedback;
 
@@ -243,10 +245,53 @@ public class SlayerDashAttack : MonoBehaviour
         Vector3 start = transform.position;
         Vector3 end = start + direction * laneLength;
 
-        ApplyLaneDamage(start, end);
+        GameObject activeTrail = null;
+        if (trailPrefab != null)
+        {
+            activeTrail = Instantiate(trailPrefab, transform.position, transform.rotation, transform);
+        }
 
-        // Near-instant dash: re-seat at the lane's end (already NavMesh-clamped above).
-        agent.Warp(end);
+        if (agent != null && agent.enabled)
+        {
+            agent.enabled = false;
+        }
+
+        float elapsed = 0f;
+        float duration = Mathf.Max(0.05f, attackData.dashDuration);
+        while (elapsed < duration)
+        {
+            if (isDead) break;
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            transform.position = Vector3.Lerp(start, end, t);
+            transform.rotation = Quaternion.LookRotation(direction);
+            yield return null;
+        }
+
+        if (!isDead)
+        {
+            transform.position = end;
+            ApplyLaneDamage(start, end);
+        }
+
+        if (activeTrail != null)
+        {
+            var psList = activeTrail.GetComponentsInChildren<ParticleSystem>();
+            foreach (var ps in psList)
+            {
+                ps.Stop();
+            }
+            Destroy(activeTrail, 2f);
+        }
+
+        if (agent != null)
+        {
+            agent.enabled = true;
+            if (agent.isOnNavMesh)
+            {
+                agent.Warp(end);
+            }
+        }
         transform.rotation = Quaternion.LookRotation(direction);
 
         movement.SetMovementPaused(false);

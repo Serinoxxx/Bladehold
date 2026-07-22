@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 7db62642993728a428730ef62d020a16
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265460
+  packageName: Giant Golem
+  packageVersion: 1.0
+  assetPath: Assets/Giant_Golem/Art/Animator_Controllers/GiantGolem_Attack_Swing_Forward_PowerSmash.controller
+  uploadId: 627630

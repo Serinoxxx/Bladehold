@@ -57,3 +57,7 @@ MonoBehaviour:
     prefab: {fileID: 6126306671088186872, guid: 66056b45ab863574b86c1d9dfde93d95, type: 3}
   - id: troll
     prefab: {fileID: 3683623392950716979, guid: 60820cae7e950ba41ad3457bb835cf1a, type: 3}
+  - id: knight
+    prefab: {fileID: 8739268330556907856, guid: 981791ba46c75d9459f1855d5f288354, type: 3}
+  - id: elemental_golem
+    prefab: {fileID: 7209081902524217179, guid: f2d1ec27ec13ae44793139fdc05ddc86, type: 3}

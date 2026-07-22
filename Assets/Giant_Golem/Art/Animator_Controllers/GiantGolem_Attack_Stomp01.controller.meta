@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: bcbfb57dc2c87bf4f8297ecefd0f751d
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 265460
+  packageName: Giant Golem
+  packageVersion: 1.0
+  assetPath: Assets/Giant_Golem/Art/Animator_Controllers/GiantGolem_Attack_Stomp01.controller
+  uploadId: 627630

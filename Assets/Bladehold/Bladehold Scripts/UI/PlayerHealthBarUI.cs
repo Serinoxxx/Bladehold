@@ -14,6 +14,9 @@ public class PlayerHealthBarUI : MonoBehaviour
     [Tooltip("The MMProgressBar that visualises player health.")]
     [SerializeField] private MMProgressBar progressBar;
 
+    [Tooltip("Optional text field to display exact health (e.g. 10 / 10).")]
+    [SerializeField] private TMPro.TextMeshProUGUI healthText;
+
     private bool _anyError;
 
     private void Start()
@@ -60,5 +63,9 @@ public class PlayerHealthBarUI : MonoBehaviour
     private void Refresh()
     {
         progressBar.UpdateBar(health.CurrentHealth, 0f, health.MaxHealth);
+        if (healthText != null)
+        {
+            healthText.text = $"{Mathf.CeilToInt(health.CurrentHealth)} / {Mathf.CeilToInt(health.MaxHealth)}";
+        }
     }
 }
