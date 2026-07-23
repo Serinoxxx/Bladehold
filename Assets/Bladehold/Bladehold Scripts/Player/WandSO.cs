@@ -44,6 +44,9 @@ public class WandSO : ScriptableObject
     public float baseKnockback = 2f;
 
     [Header("Aim camera (consumed by BowAimCamera via IChargedAimWeapon)")]
+    [Tooltip("Ranged weapon type integer passed to the player Animator during aim (0 = Bow, 1 = Thrown Axe, 2 = Wand).")]
+    public int rangedWeaponType = 2;
+
     [Tooltip("Camera boom distance while aiming, in metres (the rig's authored distance is ~5; smaller = zoomed in).")]
     public float aimCameraDistance = 2.75f;
 

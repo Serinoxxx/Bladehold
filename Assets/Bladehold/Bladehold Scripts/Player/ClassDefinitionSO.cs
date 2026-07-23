@@ -30,6 +30,9 @@ public class ClassDefinitionSO : ScriptableObject
     [Tooltip("Character model prefab swapped onto the shared player rig at scene load — a Synty Sidekick sharing the rig's base skeleton (bone names match; outfit-only bones like cape danglers are grafted on automatically). Its SkinnedMeshRenderers are re-bound onto the existing bones by name, so the Animator, animation events, weapon bones, and camera all keep working untouched. Null = keep the model as authored (the Swordsman).")]
     public GameObject characterModelPrefab;
 
+    [Tooltip("Melee weapon type integer parameter sent to the player Animator on class load for state machine branching (0 = Sword, 1 = Greataxe, 2 = Staff).")]
+    public int meleeWeaponType = 0;
+
     [Tooltip("Seconds of holding the attack button per melee charge level for this class (heavier weapons charge slower).")]
     public float chargeTimePerLevel = 1f;
 

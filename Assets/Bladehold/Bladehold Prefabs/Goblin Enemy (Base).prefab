@@ -427,7 +427,6 @@ GameObject:
   - component: {fileID: 8820226531336169178}
   - component: {fileID: 6317806685617389453}
   - component: {fileID: 2774917170554717151}
-  - component: {fileID: 7287549992360804403}
   - component: {fileID: 6790884973619429240}
   - component: {fileID: 4433720349428158434}
   m_Layer: 7
@@ -849,8 +848,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::KnockbackReceiver
   health: {fileID: 2416392165065999887}
   agent: {fileID: 7080334578233263117}
-  impulseReceiver: {fileID: 7287549992360804403}
-  duration: 0.18
+  ragdoll: {fileID: 2774917170554717151}
+  animator: {fileID: 1991649265611916359}
+  rootCollider: {fileID: 4165309427327923282}
+  aiMovement: {fileID: 8448426296968807282}
+  aiAnimation: {fileID: 4497168724745371170}
+  aiAttack: {fileID: 8780529840763675578}
+  config: {fileID: 11400000, guid: 2aee244ee24a4bf4fbdb917cff62562a, type: 2}
+  knockdownTrigger: Knockdown
+  getUpStateName: GetUp
+  cheerTrigger: Cheer
+  landingVfxPrefab: {fileID: 0}
+  landingSfx: {fileID: 0}
 --- !u!114 &6572349470805921892
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -916,32 +925,6 @@ MonoBehaviour:
   animator: {fileID: 1991649265611916359}
   config: {fileID: 11400000, guid: 0dc3a05117208104ebded74f15a5fa59, type: 2}
   corpseDespawner: {fileID: 8820226531336169178}
---- !u!114 &7287549992360804403
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 494112403358464087}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 732ef096373504b4dbb6e411951ed442, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ImpulseReceiver
-  health: {fileID: 2416392165065999887}
-  agent: {fileID: 7080334578233263117}
-  ragdoll: {fileID: 2774917170554717151}
-  animator: {fileID: 1991649265611916359}
-  rootCollider: {fileID: 4165309427327923282}
-  aiMovement: {fileID: 8448426296968807282}
-  aiAnimation: {fileID: 4497168724745371170}
-  aiAttack: {fileID: 8780529840763675578}
-  config: {fileID: 11400000, guid: 41af96f60f0c11c4d932acceb49629db, type: 2}
-  knockdownTrigger: Knockdown
-  getUpStateName: GetUp
-  cheerTrigger: Cheer
-  landingVfxPrefab: {fileID: 0}
-  landingSfx: {fileID: 0}
 --- !u!114 &6790884973619429240
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -955,8 +938,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ImpulseGoblin
   health: {fileID: 2416392165065999887}
-  orbPrefab: {fileID: 8700381951109418322, guid: 037de146862d39643ad9ddec066f45a7, type: 3}
-  dropOffset: {x: 0, y: 0.5, z: 0}
   bodyRenderers:
   - {fileID: 6038025332297535481}
   impulseAuraMaterial: {fileID: 2100000, guid: 84f63d6fe8d820f4790708c17375eb97, type: 2}

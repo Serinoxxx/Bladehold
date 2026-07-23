@@ -223,6 +223,26 @@ public class PlayerClassController : MonoBehaviour
             {
                 playerAttack.SetChargeTimePerLevel(ActiveClass.chargeTimePerLevel);
             }
+            ApplyMeleeWeaponType();
+        }
+    }
+
+    private void ApplyMeleeWeaponType()
+    {
+        if (ActiveClass == null || animator == null)
+        {
+            return;
+        }
+
+        int meleeWeaponTypeHash = Animator.StringToHash("MeleeWeaponType");
+        int weaponTypeHash = Animator.StringToHash("WeaponType");
+
+        foreach (AnimatorControllerParameter parameter in animator.parameters)
+        {
+            if ((parameter.nameHash == meleeWeaponTypeHash || parameter.nameHash == weaponTypeHash) && parameter.type == AnimatorControllerParameterType.Int)
+            {
+                animator.SetInteger(parameter.nameHash, ActiveClass.meleeWeaponType);
+            }
         }
     }
 
@@ -374,6 +394,8 @@ public class PlayerClassController : MonoBehaviour
             Debug.LogError("PlayerClassController could not find PlayerAttack (set it or keep it on the player root).");
             anyError = true;
         }
+
+        ApplyMeleeWeaponType();
     }
 
     private ClassSlot FindSlot(string classId)

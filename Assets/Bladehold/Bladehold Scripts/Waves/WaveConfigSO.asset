@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a28fb26f71c63846bbae7a2ab685d06, type: 3}
   m_Name: WaveConfigSO
   m_EditorClassIdentifier: Assembly-CSharp::WaveConfigSO
-  baseGoblinCount: 1
-  goblinsAddedPerWave: 2
-  maxConcurrent: 10
+  baseGoblinCount: 8
+  goblinsAddedPerWave: 4
+  maxConcurrent: 12
   timeBetweenWaves: 5
-  spawnInterval: 0.5
+  spawnInterval: 0.2
+  spawnBatchInterval: 30
+  spawnBatchSize: 12

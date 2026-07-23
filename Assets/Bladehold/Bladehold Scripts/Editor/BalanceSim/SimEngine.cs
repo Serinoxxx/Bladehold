@@ -58,26 +58,33 @@ namespace Bladehold.BalanceSim
 
                 while (killed < total && t < cfg.maxWaveSeconds)
                 {
-                    // --- Spawning (mirrors WaveSpawner.SpawnLoop pacing: one per spawnInterval under the cap) ---
+                    // --- Spawning (mirrors WaveSpawner.SpawnLoop pacing: group periodic spawns) ---
                     if (remainingToSpawn > 0 && alive.Count < world.maxConcurrent && t >= nextSpawnAt)
                     {
-                        SpawnModel.TypeState type = spawner.Select(wave);
-                        type.spawnedThisWave++;
-                        type.alive++;
-                        remainingToSpawn--;
-                        float approach = world.spawnDistanceMeters / Math.Max(0.1f, type.def.speed);
-                        if (type.def.archetype != EnemyArchetype.Ranged)
+                        int effectiveBatchSize = world.spawnBatchSize > 0 ? world.spawnBatchSize : world.maxConcurrent;
+                        int batchTarget = Math.Min(effectiveBatchSize, world.maxConcurrent - alive.Count);
+                        batchTarget = Math.Min(batchTarget, remainingToSpawn);
+
+                        for (int i = 0; i < batchTarget; i++)
                         {
-                            approach *= profile.kiteFactor; // kiting stretches melee walk-in; ranged just needs line of sight
+                            SpawnModel.TypeState type = spawner.Select(wave);
+                            type.spawnedThisWave++;
+                            type.alive++;
+                            remainingToSpawn--;
+                            float approach = world.spawnDistanceMeters / Math.Max(0.1f, type.def.speed);
+                            if (type.def.archetype != EnemyArchetype.Ranged)
+                            {
+                                approach *= profile.kiteFactor; // kiting stretches melee walk-in; ranged just needs line of sight
+                            }
+                            alive.Add(new EnemyState
+                            {
+                                type = type,
+                                hp = type.def.health,
+                                engageAt = t + (i * world.spawnInterval) + approach,
+                                arrivalOrder = arrivalCounter++,
+                            });
                         }
-                        alive.Add(new EnemyState
-                        {
-                            type = type,
-                            hp = type.def.health,
-                            engageAt = t + approach,
-                            arrivalOrder = arrivalCounter++,
-                        });
-                        nextSpawnAt = t + world.spawnInterval;
+                        nextSpawnAt = t + (world.spawnBatchInterval > 0f ? world.spawnBatchInterval : world.spawnInterval);
                     }
 
                     // --- Engagement ---

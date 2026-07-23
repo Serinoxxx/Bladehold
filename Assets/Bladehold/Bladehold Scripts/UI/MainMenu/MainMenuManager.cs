@@ -22,7 +22,13 @@ namespace Bladehold.UI
 
         private void Start()
         {
+            CursorLockManager.SetUnlock("MainMenu_" + GetInstanceID(), true);
             ShowScreen(titleScreen);
+        }
+
+        private void OnDestroy()
+        {
+            CursorLockManager.SetUnlock("MainMenu_" + GetInstanceID(), false);
         }
 
         public void ShowScreen(GameObject screen)

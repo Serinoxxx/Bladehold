@@ -75,6 +75,8 @@ namespace Bladehold.BalanceSim
         public int maxConcurrent;
         public int timeBetweenWaves;
         public float spawnInterval;
+        public float spawnBatchInterval;
+        public int spawnBatchSize;
 
         // Sim-only abstractions
         public float spawnDistanceMeters = 20f;
@@ -119,6 +121,8 @@ namespace Bladehold.BalanceSim
             w.maxConcurrent = wave.maxConcurrent;
             w.timeBetweenWaves = wave.timeBetweenWaves;
             w.spawnInterval = wave.spawnInterval;
+            w.spawnBatchInterval = wave.spawnBatchInterval;
+            w.spawnBatchSize = wave.spawnBatchSize;
 
             w.healthPackDropChance = 0f;
             if (packDrop != null)

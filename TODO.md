@@ -1,5 +1,53 @@
 # TODO
 
+## Mage Runestones & Element Nodes Setup — Unity Editor wiring
+
+Created prefabs and wired scene instances for the Mage's elemental imbuement system:
+- **Materials**: Created `Mat_FireElement.mat`, `Mat_IceElement.mat`, `Mat_LightningElement.mat`, and `Mat_RunestoneBase.mat` under `Assets/Bladehold/Materials/`.
+- **Element Node Prefabs**: Created `FireElementNode.prefab`, `IceElementNode.prefab`, and `LightningElementNode.prefab` under `Assets/Bladehold/Bladehold Prefabs/` with trigger colliders, point lights, and elemental node components.
+- **Runestone Prefabs**: Created `RunestoneFire.prefab`, `RunestoneIce.prefab`, and `RunestoneLightning.prefab` under `Assets/Bladehold/Bladehold Prefabs/` with solid colliders (for wand missiles/staff sweeps to hit), pillar base, floating glowing crystal gem, point light, and 3D element label text.
+- **Scene Wiring**: Added `ElementNodeSpawner` object in `Bladehold Test Scene.unity` wired with `WaveSpawner` reference and all 3 node prefabs. Placed `Runestone_Fire` at `(-8, 0, 8)`, `Runestone_Ice` at `(0, 0, 11)`, and `Runestone_Lightning` at `(8, 0, 8)`.
+
+Wiring checklist:
+- [x] **Created Prefabs**: Built `FireElementNode`, `IceElementNode`, `LightningElementNode`, `RunestoneFire`, `RunestoneIce`, and `RunestoneLightning` prefabs via `RunestoneSetup.cs`. *(2026-07-23: done via MCP)*
+- [x] **Wired Scene**: Placed 3 Runestones around the arena and configured `ElementNodeSpawner` in `Bladehold Test Scene.unity`. *(2026-07-23: done via MCP)*
+
+## Manual verification (Mage Runestones & Imbuement)
+- [ ] **Mage Imbuement Swap**: Play as Mage. Attack/shoot the Fire Runestone at `(-8, 0, 8)`. Verify imbuement swaps to Fire with charges. Attack the Ice Runestone at `(0, 0, 11)` or Lightning Runestone at `(8, 0, 8)` to verify imbuement instant swap.
+- [ ] **Element Node Drops**: Start a wave as Mage. Verify elemental nodes spawn around the arena and grant element charges / refreshes upon walking over them or shooting past them with wand missiles.
+
+
+## Escalating Knockback Feedbacks — Unity Editor wiring
+
+The C# and Unity asset wiring are complete. We updated `KnockbackConfigSO.cs` (`Assets/Bladehold/Bladehold Scripts/DamageSystem/KnockbackConfigSO.cs`) with fields for escalating knockback reactions:
+- **Tier 1 (Pushback / Slide)**: None (no visual/audio feedback).
+- **Tier 2 (Knockdown)**: Medium VFX (`knockdownVfxPrefab`) & medium SFX (`knockdownSfx`).
+- **Tier 3 (Flying Ragdoll)**: Big VFX (`flyingVfxPrefab`), big SFX (`flyingSfx`), plus a bright flash light (`FlashLightDimmer.cs`) that fades quickly to 0 intensity over `flyingLightDuration` (0.2s).
+
+`KnockbackReceiver.cs` (`Assets/Bladehold/Bladehold Scripts/DamageSystem/KnockbackReceiver.cs`) triggers these escalating feedbacks in `HandleDamaged()` depending on whether the hit flings, knocks down, or slides the enemy. Placeholder Synty particle FX (`FX_Impact_Large_01`, `FX_Explosion_Body_01`) and Bladehold SFX (`punch_heavy_huge_distorted_01`, `punch_heavy_huge_distorted_04`) were wired directly into `Assets/Bladehold/Config/KnockbackConfig.asset`.
+
+Wiring checklist:
+- [x] **Config asset updated**: Configured `KnockbackConfig.asset` with `knockdownVfxPrefab` (`FX_Impact_Large_01`), `knockdownSfx` (`punch_heavy_huge_distorted_01`), `flyingVfxPrefab` (`FX_Explosion_Body_01`), `flyingSfx` (`punch_heavy_huge_distorted_04`), and `enableFlyingLightFlash = true` (intensity 20, duration 0.2s). *(2026-07-23: done via MCP)*
+
+## Manual verification (Escalating Knockback Feedbacks)
+- [ ] **Slide Pushback (Tier 1)**: Hit an enemy with low knockback force (`force < resistance - 1`). Verify enemy slides smoothly with no extra impact SFX or particle explosion.
+- [ ] **Knockdown (Tier 2)**: Hit an enemy with moderate force (`force >= resistance - 1` and `< resistance`). Verify medium impact SFX plays and medium impact VFX spawns on impact.
+- [ ] **Flying Ragdoll (Tier 3)**: Hit an enemy with high force (`force >= resistance`). Verify big explosion SFX plays, big particle VFX spawns, and a bright point light flashes at the impact position and rapidly dims over 0.2s while the enemy is launched into a ragdoll fling.
+
+
+## Knockback Config & Receiver Wiring Fix — Unity Editor wiring
+
+Fixed the issue where maxed-out knockback was not sending enemies flying. The `KnockbackConfigSO` asset instance was missing in the project, leaving `config` set to `null` on all 26 enemy prefabs. This caused `KnockbackReceiver.Start()` to flag `anyError = true` and silently early-return on all damage events, preventing slides, knockdowns, and ragdoll flings.
+
+Wiring checklist:
+- [x] **Created `KnockbackConfig.asset`**: Created `Assets/Bladehold/Config/KnockbackConfig.asset` with `defaultResistance = 5.0`, `launchAngleDegrees = 60`, `knockdownSeconds = 1.5`, `getUpSeconds = 1.5`. *(2026-07-23: done via MCP)*
+- [x] **Wired Enemy Prefabs**: Assigned `KnockbackConfig.asset` to the `config` field on all 26 enemy prefabs under `Assets/Bladehold/Bladehold Prefabs/`. *(2026-07-23: done via MCP)*
+
+## Manual verification (Knockback & Flinging)
+- [ ] **Ragdoll Fling**: Upgrade `Brute Force` or `Stronger Blows` in the skill tree (or activate Impulse buff). Hit a Goblin (`force >= 5`). Verify the Goblin is sent flying skyward into a ragdoll and recovers/stands up when landed.
+- [ ] **Knockdown**: Hit an enemy with `force` between `resistance - 1` and `resistance`. Verify the enemy plays the knockdown animation before standing back up.
+
+
 ## Troll and Elemental Golem Animations & Scale — Unity Editor wiring
 
 The C# and AnimatorOverrideController setup is done via `EnemyAnimationSetup.cs`.

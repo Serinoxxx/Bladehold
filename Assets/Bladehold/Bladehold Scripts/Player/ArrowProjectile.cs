@@ -179,7 +179,7 @@ public class ArrowProjectile : MonoBehaviour, IPlayerProjectile
             RaycastHit hit = castBuffer[i];
             IDamageable damageable = PlayerBow.ResolveDamageable(hit.collider);
 
-            if (damageable != null && (damageable == spec.owner || (spec.ignoredTarget != null && damageable == spec.ignoredTarget)))
+            if (damageable != null && (IsOwner(damageable) || (spec.ignoredTarget != null && damageable == spec.ignoredTarget)))
             {
                 continue;
             }
@@ -214,6 +214,10 @@ public class ArrowProjectile : MonoBehaviour, IPlayerProjectile
             // Trigger colliders with no damageable (coins, orbs, hitboxes) never stop an arrow.
             if (!hit.collider.isTrigger)
             {
+                if (hit.distance <= 0.0001f)
+                {
+                    continue;
+                }
                 Lodge(HitPointOf(hit, from, direction), direction);
                 return true;
             }
@@ -233,17 +237,35 @@ public class ArrowProjectile : MonoBehaviour, IPlayerProjectile
         Destroy(gameObject, lingerSeconds);
     }
 
+    private bool IsOwner(IDamageable damageable)
+    {
+        if (damageable == null) return false;
+        if (spec.owner != null && damageable == spec.owner) return true;
+        if (Player.Instance != null && (damageable == Player.Instance.Damageable || damageable == Player.Instance.Health)) return true;
+        if (bow != null && damageable is Component comp && (UnityEngine.Object)comp.transform.root == (UnityEngine.Object)bow.transform.root) return true;
+        return false;
+    }
+
     /// <summary>
     ///     A sphere cast that starts overlapping a collider reports distance 0 and a zero hit point —
-    ///     fall back to the collider's closest point so feedback/lodge positions stay sane (the
+    ///     fall back to the collider's closest point (safely handling non-convex mesh colliders) so feedback/lodge positions stay sane (the
     ///     AxeProjectile rule).
     /// </summary>
     private static Vector3 HitPointOf(RaycastHit hit, Vector3 origin, Vector3 direction)
     {
-        if (hit.distance > 0f)
+        if (hit.distance > 0f && hit.point != Vector3.zero)
         {
             return hit.point;
         }
-        return hit.collider.ClosestPoint(origin + direction * 0.1f);
+        Collider c = hit.collider;
+        if (c != null)
+        {
+            if (c is BoxCollider || c is SphereCollider || c is CapsuleCollider || (c is MeshCollider mc && mc.convex))
+            {
+                return c.ClosestPoint(origin + direction * 0.1f);
+            }
+            return c.bounds.ClosestPoint(origin + direction * 0.1f);
+        }
+        return origin;
     }
 }

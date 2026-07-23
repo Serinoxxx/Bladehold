@@ -12,6 +12,12 @@ public interface IChargedAimWeapon
     /// <summary>True while the aim button is held and the weapon is drawn/wound up.</summary>
     bool IsAiming { get; }
 
+    /// <summary>Ranged weapon type integer passed to the player Animator during aim (0 = Bow, 1 = Thrown Axe, 2 = Wand).</summary>
+    int RangedWeaponType { get; }
+
+    /// <summary>Alias for RangedWeaponType for backwards compatibility with generic weapon type queries.</summary>
+    int WeaponType => RangedWeaponType;
+
     /// <summary>Charge level of the draw in progress, 0..MaxChargeLevels.</summary>
     int ChargeLevel { get; }
 

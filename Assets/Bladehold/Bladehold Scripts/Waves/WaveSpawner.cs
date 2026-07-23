@@ -403,9 +403,10 @@ public class WaveSpawner : MonoBehaviour
     }
 
     /// <summary>
-    ///     Trickles enemies in over the wave: spawns one whenever there's room under the concurrent cap and
-    ///     enemies are still owed, waiting <see cref="WaveConfigSO.spawnInterval" /> between spawns. Because an
-    ///     enemy death frees a slot, this same loop spawns the replacements until the wave total is met.
+    ///     Spawns enemies in periodic groups: at wave start and every <see cref="WaveConfigSO.spawnBatchInterval" />
+    ///     seconds, a group of up to <see cref="WaveConfigSO.spawnBatchSize" /> enemies (capped by
+    ///     <see cref="WaveConfigSO.maxConcurrent" /> and <see cref="remainingToSpawn" />) is spawned,
+    ///     staggering individual spawns within the group by <see cref="WaveConfigSO.spawnInterval" />.
     /// </summary>
     private IEnumerator SpawnLoop()
     {
@@ -413,8 +414,51 @@ public class WaveSpawner : MonoBehaviour
         {
             if (!spawningPaused && aliveCount < config.maxConcurrent)
             {
-                SpawnEnemy();
-                yield return new WaitForSeconds(config.spawnInterval);
+                int effectiveBatchSize = config.spawnBatchSize > 0 ? config.spawnBatchSize : config.maxConcurrent;
+                int batchTarget = Mathf.Min(effectiveBatchSize, config.maxConcurrent - aliveCount);
+                batchTarget = Mathf.Min(batchTarget, remainingToSpawn);
+
+                if (batchTarget > 0)
+                {
+                    PlayGroupSpawnHorn();
+                }
+
+                for (int i = 0; i < batchTarget && remainingToSpawn > 0 && !runOver; i++)
+                {
+                    while (spawningPaused && !runOver)
+                    {
+                        yield return null;
+                    }
+                    if (runOver)
+                    {
+                        yield break;
+                    }
+
+                    SpawnEnemy();
+
+                    if (config.spawnInterval > 0f && i < batchTarget - 1)
+                    {
+                        yield return new WaitForSeconds(config.spawnInterval);
+                    }
+                }
+
+                if (remainingToSpawn <= 0 || runOver)
+                {
+                    yield break;
+                }
+
+                if (config.spawnBatchInterval > 0f)
+                {
+                    float timer = 0f;
+                    while (timer < config.spawnBatchInterval && remainingToSpawn > 0 && !runOver)
+                    {
+                        if (!spawningPaused)
+                        {
+                            timer += Time.deltaTime;
+                        }
+                        yield return null;
+                    }
+                }
             }
             else
             {
@@ -475,6 +519,23 @@ public class WaveSpawner : MonoBehaviour
         }
         int budget = type.def.minSpawn + Mathf.Max(0, CurrentWave - type.def.unlockWave);
         return type.def.maxConcurrent > 0 ? Mathf.Min(budget, type.def.maxConcurrent) : budget;
+    }
+
+    private void PlayGroupSpawnHorn()
+    {
+        if (config == null || config.groupSpawnHornSound == null)
+        {
+            return;
+        }
+        if (TryGetComponent(out AudioSource audioSource))
+        {
+            audioSource.PlayOneShot(config.groupSpawnHornSound, config.hornVolume);
+        }
+        else
+        {
+            Vector3 pos = Camera.main != null ? Camera.main.transform.position : transform.position;
+            AudioSource.PlayClipAtPoint(config.groupSpawnHornSound, pos, config.hornVolume);
+        }
     }
 
     /// <summary>Spawns one enemy, either picked normally (<see cref="SelectSpawnType" />) or, when

@@ -104,6 +104,7 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
     public bool IsCoolingDown => CooldownFraction < 1f;
 
     // Aim-camera framing surfaced for BowAimCamera (see IChargedAimWeapon).
+    public int RangedWeaponType => config != null ? config.rangedWeaponType : 1;
     public float AimCameraDistance => config != null ? config.aimCameraDistance : 2.75f;
     public float AimCameraHorizontalOffset => config != null ? config.aimCameraHorizontalOffset : 0.7f;
     public float AimFieldOfViewPercent => config != null ? config.aimFieldOfViewPercent : 1f;
@@ -119,7 +120,10 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
     private int isHoldingAttackHash;
     private int isAimingHash;
     private int fireHash;
+    private int rangedWeaponTypeHash;
+    private int weaponTypeHash;
     private bool hasAimAnimatorParams;
+    private bool hasWeaponTypeParam;
     private float chargeStartTime;
     private float lastThrowTime = Mathf.NegativeInfinity;
     private bool subscribed;
@@ -200,12 +204,15 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
         isHoldingAttackHash = Animator.StringToHash("IsHoldingAttack");
         isAimingHash = Animator.StringToHash("IsAiming");
         fireHash = Animator.StringToHash("BowFire");
+        rangedWeaponTypeHash = Animator.StringToHash("RangedWeaponType");
+        weaponTypeHash = Animator.StringToHash("WeaponType");
 
         // The aim animator states are optional wiring, shared with the bow (the berserker's
         // override controller re-skins them) — without the params the axe still works, the rig just
         // keeps its melee pose (checked once so missing params don't spam warnings every aim).
         bool hasIsAiming = false;
         bool hasFire = false;
+        hasWeaponTypeParam = false;
         foreach (AnimatorControllerParameter parameter in playerAnimator.parameters)
         {
             if (parameter.nameHash == isAimingHash && parameter.type == AnimatorControllerParameterType.Bool)
@@ -215,6 +222,10 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
             else if (parameter.nameHash == fireHash && parameter.type == AnimatorControllerParameterType.Trigger)
             {
                 hasFire = true;
+            }
+            else if ((parameter.nameHash == rangedWeaponTypeHash || parameter.nameHash == weaponTypeHash) && parameter.type == AnimatorControllerParameterType.Int)
+            {
+                hasWeaponTypeParam = true;
             }
         }
         hasAimAnimatorParams = hasIsAiming && hasFire;
@@ -306,8 +317,11 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
 
         // The vendored controller sets StartAttack/IsHoldingAttack on every attack press (input
         // callbacks run before Update; the animator consumes triggers after all Updates), so clearing
-        // them every aiming frame reliably suppresses the melee swing regardless of event order.
-        playerAnimator.ResetTrigger(startAttackHash);
+        // them every aiming frame reliably suppresses the melee swing when WeaponType is unused.
+        if (!hasWeaponTypeParam)
+        {
+            playerAnimator.ResetTrigger(startAttackHash);
+        }
         playerAnimator.SetBool(isHoldingAttackHash, false);
     }
 
@@ -332,6 +346,11 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
         if (hasAimAnimatorParams)
         {
             playerAnimator.SetBool(isAimingHash, true);
+        }
+        if (hasWeaponTypeParam && playerAnimator != null)
+        {
+            playerAnimator.SetInteger(rangedWeaponTypeHash, RangedWeaponType);
+            playerAnimator.SetInteger(weaponTypeHash, RangedWeaponType);
         }
 
         if (meleeWeaponModel != null)
@@ -362,6 +381,11 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
         {
             playerAnimator.SetBool(isAimingHash, false);
             playerAnimator.ResetTrigger(fireHash);
+        }
+        if (hasWeaponTypeParam && playerAnimator != null)
+        {
+            playerAnimator.SetInteger(rangedWeaponTypeHash, 0);
+            playerAnimator.SetInteger(weaponTypeHash, 0);
         }
 
         if (meleeWeaponModel != null)
@@ -401,7 +425,9 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
     /// </summary>
     private void Throw()
     {
-        Vector3 origin = throwOrigin.position;
+        Vector3 origin = (throwOrigin == null || throwOrigin == transform)
+            ? transform.position + Vector3.up * 1.2f
+            : throwOrigin.position;
         Vector3 direction = ResolveAimDirection(origin);
 
         if (throwFeedback != null)
@@ -411,6 +437,10 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
         if (hasAimAnimatorParams)
         {
             playerAnimator.SetTrigger(fireHash);
+        }
+        if (hasWeaponTypeParam)
+        {
+            playerAnimator.SetTrigger(startAttackHash);
         }
         OnThrown?.Invoke();
 
@@ -434,7 +464,7 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
             hitLayers = hitLayers,
             chargeLevel = ChargeLevel,
             painBonus = painBonus,
-            owner = ownerDamageable,
+            owner = ownerDamageable ?? GetComponentInParent<IDamageable>() ?? (Player.Instance != null ? Player.Instance.Damageable : null),
             boomerang = stats.GetValue(StatType.AxeBoomerangUnlocked) >= 1f,
             returnSpeedMultiplier = config.returnSpeedMultiplier,
             returnTarget = throwOrigin,

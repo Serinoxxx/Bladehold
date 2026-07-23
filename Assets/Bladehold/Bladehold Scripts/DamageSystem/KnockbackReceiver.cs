@@ -138,12 +138,14 @@ public class KnockbackReceiver : MonoBehaviour
 
         if (fling)
         {
+            PlayFlingHitFeedback();
             routine = StartCoroutine(FlingRoutine(damage));
         }
         else if (damage.knockbackForce >= resistance - 1f)
         {
             if (health.CurrentHealth > 0f)
             {
+                PlayKnockdownFeedback();
                 routine = StartCoroutine(KnockdownRoutine());
             }
         }
@@ -369,4 +371,59 @@ public class KnockbackReceiver : MonoBehaviour
         if (landingVfxPrefab != null) Instantiate(landingVfxPrefab, position, Quaternion.identity);
         if (landingSfx != null) AudioSource.PlayClipAtPoint(landingSfx, position);
     }
+
+    private void PlayKnockdownFeedback()
+    {
+        if (config == null) return;
+        Vector3 spawnPos = transform.position + Vector3.up * 1f;
+
+        if (config.knockdownVfxPrefab != null)
+        {
+            GameObject inst = Instantiate(config.knockdownVfxPrefab, spawnPos, Quaternion.identity);
+            Destroy(inst, 3f);
+        }
+
+        if (config.knockdownSfx != null)
+        {
+            AudioSource.PlayClipAtPoint(config.knockdownSfx, spawnPos);
+        }
+    }
+
+    private void PlayFlingHitFeedback()
+    {
+        if (config == null) return;
+        Vector3 spawnPos = transform.position + Vector3.up * 1f;
+
+        if (config.flyingVfxPrefab != null)
+        {
+            GameObject inst = Instantiate(config.flyingVfxPrefab, spawnPos, Quaternion.identity);
+            Destroy(inst, 3f);
+        }
+
+        if (config.flyingSfx != null)
+        {
+            AudioSource.PlayClipAtPoint(config.flyingSfx, spawnPos);
+        }
+
+        if (config.enableFlyingLightFlash)
+        {
+            SpawnFlashLight(spawnPos, config.flyingLightColor, config.flyingLightIntensity, config.flyingLightRange, config.flyingLightDuration);
+        }
+    }
+
+    private void SpawnFlashLight(Vector3 position, Color color, float peakIntensity, float range, float duration)
+    {
+        GameObject lightObj = new GameObject("KnockbackFlashLight");
+        lightObj.transform.position = position;
+
+        Light lightComp = lightObj.AddComponent<Light>();
+        lightComp.type = LightType.Point;
+        lightComp.color = color;
+        lightComp.intensity = peakIntensity;
+        lightComp.range = range;
+
+        FlashLightDimmer dimmer = lightObj.AddComponent<FlashLightDimmer>();
+        dimmer.Initialize(peakIntensity, duration);
+    }
 }
+

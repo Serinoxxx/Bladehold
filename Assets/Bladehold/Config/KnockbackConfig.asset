@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7dbe684be62787c47b6a22945fe9c726, type: 3}
+  m_Name: KnockbackConfig
+  m_EditorClassIdentifier: Assembly-CSharp::KnockbackConfigSO
+  defaultResistance: 10
+  slideDuration: 0.18
+  launchAngleDegrees: 30
+  spinTorque: 4
+  randomLimbKick: 3
+  minAirTime: 0.3
+  settleSpeed: 0.5
+  settleTime: 0.3
+  airborneTimeout: 6
+  recoverSampleDistance: 2
+  recoverRetryInterval: 0.5
+  recoverRetryWindow: 3
+  getUpSeconds: 1.5
+  knockdownSeconds: 1.5
+  knockdownVfxPrefab: {fileID: 1384676760634654, guid: 289ba3245c9c98c42aeb93d5f45a2248, type: 3}
+  knockdownSfx: {fileID: 8300000, guid: a549c84e3eee2b743ac03ef26ab4e5f8, type: 3}
+  flyingVfxPrefab: {fileID: 1180248314969840, guid: 101d62f0a3e4fef4eab61adb79c845df, type: 3}
+  flyingSfx: {fileID: 8300000, guid: 194e8b908a1197a4ea948a64a0d9982e, type: 3}
+  enableFlyingLightFlash: 1
+  flyingLightColor: {r: 1, g: 0.95, b: 0.8, a: 1}
+  flyingLightIntensity: 20
+  flyingLightRange: 8
+  flyingLightDuration: 0.2

@@ -13,6 +13,48 @@ using UnityEngine;
 /// </summary>
 public static class ModelSwapUtility
 {
+    private static readonly Dictionary<string, string> BoneAliases = new Dictionary<string, string>(System.StringComparer.OrdinalIgnoreCase)
+    {
+        { "Hips", "pelvis" },
+        { "Neck", "neck_01" },
+        { "Shoulder_L", "upperarm_l" },
+        { "Shoulder_R", "upperarm_r" },
+        { "Elbow_L", "lowerarm_l" },
+        { "Elbow_R", "lowerarm_r" },
+        { "UpperLeg_L", "thigh_l" },
+        { "UpperLeg_R", "thigh_r" },
+        { "LowerLeg_L", "calf_l" },
+        { "LowerLeg_R", "calf_r" },
+        { "Ankle_L", "foot_l" },
+        { "Ankle_R", "foot_r" },
+        { "Toes_L", "ball_l" },
+        { "Toes_R", "ball_r" },
+        { "Thumb_01", "thumb_01_l" },
+        { "Thumb_02", "thumb_02_l" },
+        { "Thumb_03", "thumb_03_l" },
+        { "IndexFinger_01", "index_01_l" },
+        { "IndexFinger_02", "index_02_l" },
+        { "IndexFinger_03", "index_03_l" },
+        { "IndexFinger_04", "index_03_l" },
+        { "Finger_01", "middle_01_l" },
+        { "Finger_02", "middle_02_l" },
+        { "Finger_03", "middle_03_l" },
+        { "Finger_04", "middle_03_l" },
+        { "Thumb_01 1", "thumb_01_r" },
+        { "Thumb_02 1", "thumb_02_r" },
+        { "Thumb_03 1", "thumb_03_r" },
+        { "IndexFinger_01 1", "index_01_r" },
+        { "IndexFinger_02 1", "index_02_r" },
+        { "IndexFinger_03 1", "index_03_r" },
+        { "IndexFinger_04 1", "index_03_r" },
+        { "Finger_01 1", "middle_01_r" },
+        { "Finger_02 1", "middle_02_r" },
+        { "Finger_03 1", "middle_03_r" },
+        { "Finger_04 1", "middle_03_r" },
+        { "Eyes", "head" },
+        { "Eyebrows", "head" },
+    };
+
     /// <summary>
     ///     Rebinds <paramref name="modelPrefab" />'s renderers onto <paramref name="animator" />'s rig.
     ///     Returns how many renderers were bound (0 = nothing changed). Undo-registered under
@@ -24,7 +66,7 @@ public static class ModelSwapUtility
     {
         Transform rigRoot = animator.transform;
 
-        var bonesByName = new Dictionary<string, Transform>();
+        var bonesByName = new Dictionary<string, Transform>(System.StringComparer.OrdinalIgnoreCase);
         foreach (Transform bone in rigRoot.GetComponentsInChildren<Transform>(true))
         {
             bonesByName[bone.name] = bone;
@@ -39,9 +81,15 @@ public static class ModelSwapUtility
 
         // Plain Instantiate (not PrefabUtility) so the clone has no prefab link and its children can be re-parented freely.
         GameObject instance = Object.Instantiate(modelPrefab);
+        instance.SetActive(true);
         int swapped = 0;
         foreach (SkinnedMeshRenderer renderer in instance.GetComponentsInChildren<SkinnedMeshRenderer>(true))
         {
+            if (!renderer.gameObject.activeSelf)
+            {
+                continue;
+            }
+
             Transform[] sourceBones = renderer.bones;
             Transform[] mappedBones = new Transform[sourceBones.Length];
             bool allBonesFound = true;
@@ -53,7 +101,10 @@ public static class ModelSwapUtility
                     allBonesFound = false;
                     break;
                 }
-                if (!bonesByName.TryGetValue(sourceBones[i].name, out mappedBones[i]))
+
+                string boneName = sourceBones[i].name;
+                if (!bonesByName.TryGetValue(boneName, out mappedBones[i]) &&
+                    !(BoneAliases.TryGetValue(boneName, out string aliasName) && bonesByName.TryGetValue(aliasName, out mappedBones[i])))
                 {
                     // Outfit-specific bones (cape/armour danglers like abac_dyn_*) don't exist on
                     // the base Sidekick rig — graft the missing subtree onto its same-named parent
@@ -73,9 +124,14 @@ public static class ModelSwapUtility
             }
 
             renderer.bones = mappedBones;
-            if (renderer.rootBone != null && bonesByName.TryGetValue(renderer.rootBone.name, out Transform mappedRoot))
+            if (renderer.rootBone != null)
             {
-                renderer.rootBone = mappedRoot;
+                string rName = renderer.rootBone.name;
+                if (bonesByName.TryGetValue(rName, out Transform mappedRoot) ||
+                    (BoneAliases.TryGetValue(rName, out string rAlias) && bonesByName.TryGetValue(rAlias, out mappedRoot)))
+                {
+                    renderer.rootBone = mappedRoot;
+                }
             }
 
             Transform rendererTransform = renderer.transform;

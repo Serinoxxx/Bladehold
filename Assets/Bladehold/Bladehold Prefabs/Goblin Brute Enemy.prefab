@@ -841,8 +841,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::KnockbackReceiver
   health: {fileID: 2416392165065999887}
   agent: {fileID: 7080334578233263117}
-  impulseReceiver: {fileID: 0}
-  duration: 0.18
+  ragdoll: {fileID: 0}
+  animator: {fileID: 1991649265611916359}
+  rootCollider: {fileID: 4165309427327923282}
+  aiMovement: {fileID: 8448426296968807282}
+  aiAnimation: {fileID: 4497168724745371170}
+  aiAttack: {fileID: 8780529840763675578}
+  config: {fileID: 11400000, guid: 2aee244ee24a4bf4fbdb917cff62562a, type: 2}
+  knockdownTrigger: Knockdown
+  getUpStateName: GetUp
+  cheerTrigger: Cheer
+  landingVfxPrefab: {fileID: 0}
+  landingSfx: {fileID: 0}
 --- !u!114 &6572349470805921892
 MonoBehaviour:
   m_ObjectHideFlags: 0

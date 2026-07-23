@@ -53,4 +53,34 @@ public class KnockbackConfigSO : ScriptableObject
 
     [Tooltip("Seconds a knockdown (the animation-only reaction below the fling threshold) lasts before the AI resumes.")]
     public float knockdownSeconds = 2.5f;
+
+    [Header("Escalating Knockback Feedbacks")]
+    [Tooltip("Medium visual effect played when an enemy is knocked down (force >= resistance - 1).")]
+    public GameObject knockdownVfxPrefab;
+
+    [Tooltip("Medium sound effect played when an enemy is knocked down.")]
+    public AudioClip knockdownSfx;
+
+    [Tooltip("Big visual effect played when an enemy is launched into a ragdoll fling (force >= resistance).")]
+    public GameObject flyingVfxPrefab;
+
+    [Tooltip("Big sound effect played when an enemy is launched into a ragdoll fling.")]
+    public AudioClip flyingSfx;
+
+    [Header("Flying Light Flash")]
+    [Tooltip("Whether to spawn a bright flash light when an enemy is flung into a ragdoll.")]
+    public bool enableFlyingLightFlash = true;
+
+    [Tooltip("Initial color of the bright light flash on flying ragdoll launch.")]
+    public Color flyingLightColor = new Color(1f, 0.95f, 0.8f, 1f);
+
+    [Tooltip("Peak intensity of the bright light flash.")]
+    public float flyingLightIntensity = 20f;
+
+    [Tooltip("Range (radius) of the bright point light flash.")]
+    public float flyingLightRange = 8f;
+
+    [Tooltip("Duration in seconds over which the light flash rapidly dims to zero intensity.")]
+    public float flyingLightDuration = 0.2f;
 }
+

@@ -220,13 +220,20 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
                 // (a homing arc has no honest collision line to respect).
                 if (!hit.collider.isTrigger && state == FlightState.Outbound)
                 {
+                    // Initial overlap with environment at the launch position (distance == 0)
+                    // occurs when the axe sweep touches the floor beneath the wielder; skip it.
+                    if (hit.distance <= 0.0001f)
+                    {
+                        continue;
+                    }
+
                     EndOutboundLeg(HitPointOf(hit, from, direction));
                     return true;
                 }
                 continue;
             }
 
-            if (damageable == spec.owner || !hitTargets.Add(damageable))
+            if (IsOwner(damageable) || !hitTargets.Add(damageable))
             {
                 continue;
             }
@@ -277,16 +284,34 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
         damaged = 0;
     }
 
+    private bool IsOwner(IDamageable damageable)
+    {
+        if (damageable == null) return false;
+        if (spec.owner != null && damageable == spec.owner) return true;
+        if (Player.Instance != null && (damageable == Player.Instance.Damageable || damageable == Player.Instance.Health)) return true;
+        if (thrower != null && damageable is Component comp && (UnityEngine.Object)comp.transform.root == (UnityEngine.Object)thrower.transform.root) return true;
+        return false;
+    }
+
     /// <summary>
     ///     A sphere cast that starts overlapping a collider reports distance 0 and a zero hit point —
-    ///     fall back to the collider's closest point so feedback/lodge positions stay sane.
+    ///     fall back to the collider's closest point (safely handling non-convex mesh colliders) so feedback/lodge positions stay sane.
     /// </summary>
     private static Vector3 HitPointOf(RaycastHit hit, Vector3 origin, Vector3 direction)
     {
-        if (hit.distance > 0f)
+        if (hit.distance > 0f && hit.point != Vector3.zero)
         {
             return hit.point;
         }
-        return hit.collider.ClosestPoint(origin + direction * 0.1f);
+        Collider c = hit.collider;
+        if (c != null)
+        {
+            if (c is BoxCollider || c is SphereCollider || c is CapsuleCollider || (c is MeshCollider mc && mc.convex))
+            {
+                return c.ClosestPoint(origin + direction * 0.1f);
+            }
+            return c.bounds.ClosestPoint(origin + direction * 0.1f);
+        }
+        return origin;
     }
 }

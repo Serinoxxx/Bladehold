@@ -143,7 +143,7 @@ public class DamageTrigger : MonoBehaviour
             stats.SetBase(StatType.SwordRange, 1f);
             stats.SetBase(StatType.CritChance, 0f);
             stats.SetBase(StatType.CritMultiplier, baseCritMultiplier);
-            stats.SetBase(StatType.KnockbackForce, 0f);
+            stats.SetBase(StatType.KnockbackForce, knockbackForce);
             stats.SetBase(StatType.ChargeKnockbackBonus, 0f);
             stats.SetBase(StatType.MaxHitsPerSwing, damageTriggerSO.maxHits);
             stats.SetBase(StatType.IceBreakerDamageBonus, 0f);

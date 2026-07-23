@@ -207,7 +207,10 @@ public class HorseChargeDamage : MonoBehaviour
                 hitFeedback.PlayFeedbacks();
             }
 
-            OnHit?.Invoke(damageable, collider.ClosestPoint(center));
+            Vector3 hitPoint = (collider is BoxCollider || collider is SphereCollider || collider is CapsuleCollider || (collider is MeshCollider mc && mc.convex))
+                ? collider.ClosestPoint(center)
+                : collider.bounds.ClosestPoint(center);
+            OnHit?.Invoke(damageable, hitPoint);
         }
     }
 }

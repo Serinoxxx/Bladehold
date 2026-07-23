@@ -103,6 +103,7 @@ public class PlayerWand : MonoBehaviour, IChargedAimWeapon
     public bool IsCoolingDown => CooldownFraction < 1f;
 
     // Aim-camera framing surfaced for BowAimCamera (see IChargedAimWeapon).
+    public int RangedWeaponType => config != null ? config.rangedWeaponType : 2;
     public float AimCameraDistance => config != null ? config.aimCameraDistance : 2.75f;
     public float AimCameraHorizontalOffset => config != null ? config.aimCameraHorizontalOffset : 0.7f;
     public float AimFieldOfViewPercent => config != null ? config.aimFieldOfViewPercent : 1f;
@@ -118,7 +119,10 @@ public class PlayerWand : MonoBehaviour, IChargedAimWeapon
     private int isHoldingAttackHash;
     private int isAimingHash;
     private int fireHash;
+    private int rangedWeaponTypeHash;
+    private int weaponTypeHash;
     private bool hasAimAnimatorParams;
+    private bool hasWeaponTypeParam;
     private float chargeStartTime;
     private float lastShotTime = Mathf.NegativeInfinity;
     private bool subscribed;
@@ -195,12 +199,15 @@ public class PlayerWand : MonoBehaviour, IChargedAimWeapon
         isHoldingAttackHash = Animator.StringToHash("IsHoldingAttack");
         isAimingHash = Animator.StringToHash("IsAiming");
         fireHash = Animator.StringToHash("BowFire");
+        rangedWeaponTypeHash = Animator.StringToHash("RangedWeaponType");
+        weaponTypeHash = Animator.StringToHash("WeaponType");
 
         // The aim animator states are optional wiring, shared with the bow/axe (the Mage's override
         // controller re-skins them) — without the params the wand still works, the rig just keeps
         // its melee pose (checked once so missing params don't spam warnings every aim).
         bool hasIsAiming = false;
         bool hasFire = false;
+        hasWeaponTypeParam = false;
         foreach (AnimatorControllerParameter parameter in playerAnimator.parameters)
         {
             if (parameter.nameHash == isAimingHash && parameter.type == AnimatorControllerParameterType.Bool)
@@ -210,6 +217,10 @@ public class PlayerWand : MonoBehaviour, IChargedAimWeapon
             else if (parameter.nameHash == fireHash && parameter.type == AnimatorControllerParameterType.Trigger)
             {
                 hasFire = true;
+            }
+            else if ((parameter.nameHash == rangedWeaponTypeHash || parameter.nameHash == weaponTypeHash) && parameter.type == AnimatorControllerParameterType.Int)
+            {
+                hasWeaponTypeParam = true;
             }
         }
         hasAimAnimatorParams = hasIsAiming && hasFire;
@@ -323,6 +334,11 @@ public class PlayerWand : MonoBehaviour, IChargedAimWeapon
         {
             playerAnimator.SetBool(isAimingHash, true);
         }
+        if (hasWeaponTypeParam && playerAnimator != null)
+        {
+            playerAnimator.SetInteger(rangedWeaponTypeHash, RangedWeaponType);
+            playerAnimator.SetInteger(weaponTypeHash, RangedWeaponType);
+        }
 
         if (meleeWeaponModel != null)
         {
@@ -352,6 +368,11 @@ public class PlayerWand : MonoBehaviour, IChargedAimWeapon
         {
             playerAnimator.SetBool(isAimingHash, false);
             playerAnimator.ResetTrigger(fireHash);
+        }
+        if (hasWeaponTypeParam && playerAnimator != null)
+        {
+            playerAnimator.SetInteger(rangedWeaponTypeHash, 0);
+            playerAnimator.SetInteger(weaponTypeHash, 0);
         }
 
         if (meleeWeaponModel != null)

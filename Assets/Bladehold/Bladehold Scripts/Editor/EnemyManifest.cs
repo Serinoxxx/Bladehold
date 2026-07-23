@@ -87,6 +87,13 @@ internal static class EnemyManifest
 
     internal static readonly EnemySpec[] Entries =
     {
+        // Basic Goblin: standard melee goblin variant.
+        new EnemySpec
+        {
+            id = "goblin",
+            prefabName = "Goblin Enemy Variant",
+        },
+
         // Dwarf: swarm unit — a pure stat variant of the goblin (extreme speed, low HP, small scale
         // all live in Enemies.csv). Structurally identical to the base, so this entry doubles as the
         // generator's smoke test.

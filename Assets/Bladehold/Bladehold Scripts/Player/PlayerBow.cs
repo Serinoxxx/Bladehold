@@ -172,6 +172,7 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
     public bool IsCoolingDown => CooldownFraction < 1f;
 
     // Aim-camera framing surfaced for BowAimCamera (see IChargedAimWeapon) — the values live on BowSO.
+    public int RangedWeaponType => config != null ? config.rangedWeaponType : 0;
     public float AimCameraDistance => config != null ? config.aimCameraDistance : 2.75f;
     public float AimCameraHorizontalOffset => config != null ? config.aimCameraHorizontalOffset : 0.7f;
     public float AimFieldOfViewPercent => config != null ? config.aimFieldOfViewPercent : 1f;
@@ -201,7 +202,10 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
     private int isHoldingAttackHash;
     private int isAimingHash;
     private int bowFireHash;
+    private int rangedWeaponTypeHash;
+    private int weaponTypeHash;
     private bool hasAimAnimatorParams;
+    private bool hasWeaponTypeParam;
     private float chargeStartTime;
     private float lastFireTime = Mathf.NegativeInfinity;
     private bool subscribed;
@@ -269,12 +273,15 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         isHoldingAttackHash = Animator.StringToHash("IsHoldingAttack");
         isAimingHash = Animator.StringToHash("IsAiming");
         bowFireHash = Animator.StringToHash("BowFire");
+        rangedWeaponTypeHash = Animator.StringToHash("RangedWeaponType");
+        weaponTypeHash = Animator.StringToHash("WeaponType");
 
         // The bow animator states are optional wiring — without the IsAiming/BowFire params the bow
         // still works, the rig just keeps its sword pose (checked once so missing params don't spam
         // per-set warnings every aim).
         bool hasIsAiming = false;
         bool hasBowFire = false;
+        hasWeaponTypeParam = false;
         foreach (AnimatorControllerParameter parameter in playerAnimator.parameters)
         {
             if (parameter.nameHash == isAimingHash && parameter.type == AnimatorControllerParameterType.Bool)
@@ -284,6 +291,10 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
             else if (parameter.nameHash == bowFireHash && parameter.type == AnimatorControllerParameterType.Trigger)
             {
                 hasBowFire = true;
+            }
+            else if ((parameter.nameHash == rangedWeaponTypeHash || parameter.nameHash == weaponTypeHash) && parameter.type == AnimatorControllerParameterType.Int)
+            {
+                hasWeaponTypeParam = true;
             }
         }
         hasAimAnimatorParams = hasIsAiming && hasBowFire;
@@ -433,6 +444,11 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         {
             playerAnimator.SetBool(isAimingHash, true);
         }
+        if (hasWeaponTypeParam && playerAnimator != null)
+        {
+            playerAnimator.SetInteger(rangedWeaponTypeHash, RangedWeaponType);
+            playerAnimator.SetInteger(weaponTypeHash, RangedWeaponType);
+        }
 
         if (swordModel != null)
         {
@@ -462,6 +478,11 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         {
             playerAnimator.SetBool(isAimingHash, false);
             playerAnimator.ResetTrigger(bowFireHash);
+        }
+        if (hasWeaponTypeParam && playerAnimator != null)
+        {
+            playerAnimator.SetInteger(rangedWeaponTypeHash, 0);
+            playerAnimator.SetInteger(weaponTypeHash, 0);
         }
 
         if (swordModel != null)

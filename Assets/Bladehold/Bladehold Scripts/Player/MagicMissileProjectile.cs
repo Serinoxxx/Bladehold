@@ -190,13 +190,17 @@ public class MagicMissileProjectile : MonoBehaviour, IPlayerProjectile
                 // missile; solid environment does.
                 if (!hit.collider.isTrigger)
                 {
+                    if (hit.distance <= 0.0001f)
+                    {
+                        continue;
+                    }
                     Impact(HitPointOf(hit, from));
                     return true;
                 }
                 continue;
             }
 
-            if (damageable == spec.owner)
+            if (IsOwner(damageable))
             {
                 continue;
             }
@@ -230,16 +234,34 @@ public class MagicMissileProjectile : MonoBehaviour, IPlayerProjectile
         Destroy(gameObject);
     }
 
+    private bool IsOwner(IDamageable damageable)
+    {
+        if (damageable == null) return false;
+        if (spec.owner != null && damageable == spec.owner) return true;
+        if (Player.Instance != null && (damageable == Player.Instance.Damageable || damageable == Player.Instance.Health)) return true;
+        if (caster != null && damageable is Component comp && (UnityEngine.Object)comp.transform.root == (UnityEngine.Object)caster.transform.root) return true;
+        return false;
+    }
+
     /// <summary>
     ///     A sphere cast that starts overlapping a collider reports distance 0 and a zero hit point —
-    ///     fall back to the collider's closest point so impact positions stay sane.
+    ///     fall back to the collider's closest point (safely handling non-convex mesh colliders) so impact positions stay sane.
     /// </summary>
     private Vector3 HitPointOf(RaycastHit hit, Vector3 origin)
     {
-        if (hit.distance > 0f)
+        if (hit.distance > 0f && hit.point != Vector3.zero)
         {
             return hit.point;
         }
-        return hit.collider.ClosestPoint(origin + spec.direction * 0.1f);
+        Collider c = hit.collider;
+        if (c != null)
+        {
+            if (c is BoxCollider || c is SphereCollider || c is CapsuleCollider || (c is MeshCollider mc && mc.convex))
+            {
+                return c.ClosestPoint(origin + spec.direction * 0.1f);
+            }
+            return c.bounds.ClosestPoint(origin + spec.direction * 0.1f);
+        }
+        return origin;
     }
 }

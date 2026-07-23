@@ -127,6 +127,8 @@ namespace Bladehold.BalanceSim
                 case "maxconcurrent": world.maxConcurrent = (int)F(value, key); break;
                 case "timebetweenwaves": world.timeBetweenWaves = (int)F(value, key); break;
                 case "spawninterval": world.spawnInterval = F(value, key); break;
+                case "spawnbatchinterval": world.spawnBatchInterval = F(value, key); break;
+                case "spawnbatchsize": world.spawnBatchSize = (int)F(value, key); break;
                 default: throw new InvalidOperationException($"Unknown override key '{key}'.");
             }
         }
