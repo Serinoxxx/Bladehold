@@ -1630,6 +1630,7 @@ MonoBehaviour:
   - definition: {fileID: 11400000, guid: b8bd097fe0432fd47b997c9bdffdf080, type: 2}
     weaponObjects:
     - {fileID: 1914903598473155407}
+    - {fileID: 4741742994959581751}
     meleeTrigger: {fileID: 3556331140146632137}
     hitFeedback: {fileID: 4938886051864039167}
     classComponents:
@@ -1639,6 +1640,7 @@ MonoBehaviour:
   - definition: {fileID: 11400000, guid: 3744ccb9d8259274593759d4464f9df8, type: 2}
     weaponObjects:
     - {fileID: 2397259762771066973}
+    - {fileID: 945902901522431256}
     meleeTrigger: {fileID: 760402401777354459}
     hitFeedback: {fileID: 9177684110434262509}
     classComponents:

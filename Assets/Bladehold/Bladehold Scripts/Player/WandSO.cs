@@ -48,7 +48,7 @@ public class WandSO : ScriptableObject
     public int rangedWeaponType = 2;
 
     [Tooltip("Camera boom distance while aiming, in metres (the rig's authored distance is ~5; smaller = zoomed in).")]
-    public float aimCameraDistance = 2.75f;
+    public float aimCameraDistance = 1f;
 
     [Tooltip("Horizontal camera offset while aiming, in metres — positive moves the camera over the right shoulder.")]
     public float aimCameraHorizontalOffset = 0.7f;

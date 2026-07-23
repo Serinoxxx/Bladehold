@@ -86,6 +86,16 @@ public class BowAimCamera : MonoBehaviour
             return;
         }
 
+        IChargedAimWeapon activeWeapon = AimWeaponResolver.Resolve(bow);
+        if (activeWeapon != null)
+        {
+            weapon = activeWeapon;
+        }
+        if (weapon == null)
+        {
+            return;
+        }
+
         float target = weapon.IsAiming ? 1f : 0f;
         float speed = weapon.AimBlendSeconds > 0f ? Time.deltaTime / weapon.AimBlendSeconds : 1f;
         float newBlend = Mathf.MoveTowards(blend, target, speed);

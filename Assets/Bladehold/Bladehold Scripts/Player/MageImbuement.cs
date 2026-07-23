@@ -112,6 +112,15 @@ public class MageImbuement : MonoBehaviour
     private readonly HashSet<IDamageable> explosionTargets = new HashSet<IDamageable>();
 
     private IDamageable ownerDamageable;
+    private IDamageable ignoredTarget;
+
+    /// <summary>
+    ///     A target elemental explosions skip in addition to the wielder — the horse under a mounted player. Null = none. Set/cleared by <see cref="PlayerMount" />.
+    /// </summary>
+    public void SetIgnoredTarget(IDamageable target)
+    {
+        ignoredTarget = target;
+    }
     private float nextFlameZoneTime;
     private bool anyError = false;
 
@@ -165,6 +174,10 @@ public class MageImbuement : MonoBehaviour
 
         // The imbuement's riders/zones never hit their caster (the DamageTrigger owner idiom).
         ownerDamageable = GetComponentInParent<IDamageable>();
+        if (ownerDamageable == null && Player.Instance != null)
+        {
+            ownerDamageable = Player.Instance.Damageable;
+        }
 
         // Register the authored SO values as stat bases; Mage skill nodes layer on top without ever
         // mutating the asset. Explosion/zone gates start at 0 = locked (the Combustion/Scorched
@@ -339,7 +352,7 @@ public class MageImbuement : MonoBehaviour
     /// </summary>
     private void HandleHit(IDamageable target, Damage damage, Vector3 hitPoint)
     {
-        if (!IsActive || target == null || damage == null || damage.value <= 0f)
+        if (!IsActive || target == null || (ignoredTarget != null && target == ignoredTarget) || damage == null || damage.value <= 0f)
         {
             return;
         }
@@ -408,8 +421,8 @@ public class MageImbuement : MonoBehaviour
                 {
                     damageable = collider.GetComponentInParent<IDamageable>();
                 }
-                // The direct target already took the rider — no double dip (and never the caster).
-                if (damageable == null || damageable == ownerDamageable || damageable == target || !explosionTargets.Add(damageable))
+                // The direct target already took the rider — no double dip (and never the caster or player).
+                if (damageable == null || IsOwnerOrPlayer(damageable) || (ignoredTarget != null && damageable == ignoredTarget) || damageable == target || !explosionTargets.Add(damageable))
                 {
                     continue;
                 }
@@ -451,5 +464,17 @@ public class MageImbuement : MonoBehaviour
                 ownerDamageable,
                 enemyLayers);
         }
+    }
+
+    private bool IsOwnerOrPlayer(IDamageable damageable)
+    {
+        if (damageable == null) return true;
+        if (ownerDamageable != null && damageable == ownerDamageable) return true;
+        if (Player.Instance != null)
+        {
+            if (damageable == Player.Instance.Damageable || damageable == Player.Instance.Health) return true;
+            if (damageable is Component comp && (UnityEngine.Object)comp.transform.root == (UnityEngine.Object)Player.Instance.transform.root) return true;
+        }
+        return false;
     }
 }

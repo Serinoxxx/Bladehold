@@ -59,7 +59,7 @@ namespace Bladehold.BalanceSim
                 while (killed < total && t < cfg.maxWaveSeconds)
                 {
                     // --- Spawning (mirrors WaveSpawner.SpawnLoop pacing: group periodic spawns) ---
-                    if (remainingToSpawn > 0 && alive.Count < world.maxConcurrent && t >= nextSpawnAt)
+                    if (remainingToSpawn > 0 && alive.Count < world.maxConcurrent && (alive.Count == 0 || t >= nextSpawnAt))
                     {
                         int effectiveBatchSize = world.spawnBatchSize > 0 ? world.spawnBatchSize : world.maxConcurrent;
                         int batchTarget = Math.Min(effectiveBatchSize, world.maxConcurrent - alive.Count);

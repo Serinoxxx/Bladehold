@@ -450,7 +450,7 @@ public class WaveSpawner : MonoBehaviour
                 if (config.spawnBatchInterval > 0f)
                 {
                     float timer = 0f;
-                    while (timer < config.spawnBatchInterval && remainingToSpawn > 0 && !runOver)
+                    while (timer < config.spawnBatchInterval && aliveCount > 0 && remainingToSpawn > 0 && !runOver)
                     {
                         if (!spawningPaused)
                         {

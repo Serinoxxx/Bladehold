@@ -45,6 +45,15 @@ public class PlayerMount : MonoBehaviour
     [Tooltip("Optional: the player's bow, so mounted arrows fly through the horse.")]
     [SerializeField] private PlayerBow bow;
 
+    [Tooltip("Optional: the player's thrown axe, so mounted axes fly through the horse.")]
+    [SerializeField] private PlayerThrownAxe thrownAxe;
+
+    [Tooltip("Optional: the player's wand, so mounted spells fly through the horse.")]
+    [SerializeField] private PlayerWand wand;
+
+    [Tooltip("Optional: the player's mage imbuement, so mounted spell explosions skip the horse.")]
+    [SerializeField] private MageImbuement mageImbuement;
+
     [Tooltip("Extra sword reach while mounted, as a fraction of blade length (0.6 = 60% longer sweep). No visual change.")]
     [SerializeField] private float mountedReachBonus = 0.6f;
 
@@ -137,6 +146,18 @@ public class PlayerMount : MonoBehaviour
         if (bow == null)
         {
             bow = GetComponent<PlayerBow>();
+        }
+        if (thrownAxe == null)
+        {
+            thrownAxe = GetComponent<PlayerThrownAxe>();
+        }
+        if (wand == null)
+        {
+            wand = GetComponent<PlayerWand>();
+        }
+        if (mageImbuement == null)
+        {
+            mageImbuement = GetComponent<MageImbuement>();
         }
     }
 
@@ -391,6 +412,18 @@ public class PlayerMount : MonoBehaviour
         {
             bow.SetIgnoredTarget(horseDamageable);
         }
+        if (thrownAxe != null)
+        {
+            thrownAxe.SetIgnoredTarget(horseDamageable);
+        }
+        if (wand != null)
+        {
+            wand.SetIgnoredTarget(horseDamageable);
+        }
+        if (mageImbuement != null)
+        {
+            mageImbuement.SetIgnoredTarget(horseDamageable);
+        }
 
         horse.TriggerRear();
         if (mountFeedback != null)
@@ -431,6 +464,18 @@ public class PlayerMount : MonoBehaviour
         if (bow != null)
         {
             bow.SetIgnoredTarget(null);
+        }
+        if (thrownAxe != null)
+        {
+            thrownAxe.SetIgnoredTarget(null);
+        }
+        if (wand != null)
+        {
+            wand.SetIgnoredTarget(null);
+        }
+        if (mageImbuement != null)
+        {
+            mageImbuement.SetIgnoredTarget(null);
         }
 
         transform.SetParent(originalParent, true);

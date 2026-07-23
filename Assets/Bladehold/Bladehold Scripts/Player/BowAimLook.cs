@@ -47,16 +47,6 @@ public class BowAimLook : MonoBehaviour
 
     private void Start()
     {
-        if (bow == null)
-        {
-            Debug.LogError("PlayerBow is not assigned or found on the GameObject.");
-            anyError = true;
-        }
-        if (config == null)
-        {
-            Debug.LogError("BowSO is not assigned in the inspector.");
-            anyError = true;
-        }
         if (animator == null || !animator.isHuman)
         {
             Debug.LogError("A Humanoid Animator is not assigned or found; the aim look needs spine bones to bend.");
@@ -120,8 +110,13 @@ public class BowAimLook : MonoBehaviour
             return;
         }
 
-        float target = bow.IsAiming ? 1f : 0f;
-        float speed = config.aimBlendSeconds > 0f ? Time.deltaTime / config.aimBlendSeconds : 1f;
+        IChargedAimWeapon weapon = AimWeaponResolver.Resolve(bow);
+        bool isAiming = weapon != null ? weapon.IsAiming : (bow != null && bow.IsAiming);
+        float blendSeconds = weapon != null ? weapon.AimBlendSeconds : (config != null ? config.aimBlendSeconds : 0.2f);
+        float maxPitch = config != null ? config.aimLookMaxPitchDegrees : 60f;
+
+        float target = isAiming ? 1f : 0f;
+        float speed = blendSeconds > 0f ? Time.deltaTime / blendSeconds : 1f;
         blend = Mathf.MoveTowards(blend, target, speed);
         if (blend <= 0f)
         {
@@ -132,7 +127,7 @@ public class BowAimLook : MonoBehaviour
         // the character in half.
         Vector3 forward = aimCamera.transform.forward;
         float pitchDown = -Mathf.Asin(Mathf.Clamp(forward.y, -1f, 1f)) * Mathf.Rad2Deg;
-        pitchDown = Mathf.Clamp(pitchDown, -config.aimLookMaxPitchDegrees, config.aimLookMaxPitchDegrees);
+        pitchDown = Mathf.Clamp(pitchDown, -maxPitch, maxPitch);
 
         // Ease like BowAimCamera so the bend arrives with the zoom. Rotating about the player's
         // right axis works because the strafing controller already faces the camera heading.

@@ -116,6 +116,16 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
     private readonly RaycastHit[] castBuffer = new RaycastHit[MaxCastHits];
 
     private IDamageable ownerDamageable;
+    private IDamageable ignoredTarget;
+
+    /// <summary>
+    ///     A target thrown axes fly through in addition to the wielder — the horse under a mounted
+    ///     player (the <see cref="PlayerBow.SetIgnoredTarget" /> convention). Null = none. Set/cleared by <see cref="PlayerMount" />.
+    /// </summary>
+    public void SetIgnoredTarget(IDamageable target)
+    {
+        ignoredTarget = target;
+    }
     private int startAttackHash;
     private int isHoldingAttackHash;
     private int isAimingHash;
@@ -317,11 +327,8 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
 
         // The vendored controller sets StartAttack/IsHoldingAttack on every attack press (input
         // callbacks run before Update; the animator consumes triggers after all Updates), so clearing
-        // them every aiming frame reliably suppresses the melee swing when WeaponType is unused.
-        if (!hasWeaponTypeParam)
-        {
-            playerAnimator.ResetTrigger(startAttackHash);
-        }
+        // them every aiming frame reliably suppresses the melee swing.
+        playerAnimator.ResetTrigger(startAttackHash);
         playerAnimator.SetBool(isHoldingAttackHash, false);
     }
 
@@ -333,8 +340,8 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
             return;
         }
 
-        // No mounted throwing (the bow's Horse Archer gate has no axe equivalent yet).
-        if (mount != null && mount.IsMounted)
+        // Aiming while mounted requires the Horse Archer skill node (the bow convention).
+        if (mount != null && mount.IsMounted && stats.GetValue(StatType.HorseArcheryUnlocked) < 1f)
         {
             return;
         }
@@ -438,10 +445,6 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
         {
             playerAnimator.SetTrigger(fireHash);
         }
-        if (hasWeaponTypeParam)
-        {
-            playerAnimator.SetTrigger(startAttackHash);
-        }
         OnThrown?.Invoke();
 
         // Pain into Power (Berserker): the pool banked from hits taken mid-wind-up fuels this whole
@@ -465,6 +468,7 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
             chargeLevel = ChargeLevel,
             painBonus = painBonus,
             owner = ownerDamageable ?? GetComponentInParent<IDamageable>() ?? (Player.Instance != null ? Player.Instance.Damageable : null),
+            ignoredTarget = ignoredTarget,
             boomerang = stats.GetValue(StatType.AxeBoomerangUnlocked) >= 1f,
             returnSpeedMultiplier = config.returnSpeedMultiplier,
             returnTarget = throwOrigin,

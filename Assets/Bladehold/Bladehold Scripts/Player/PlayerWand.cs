@@ -115,6 +115,16 @@ public class PlayerWand : MonoBehaviour, IChargedAimWeapon
     private readonly RaycastHit[] castBuffer = new RaycastHit[MaxCastHits];
 
     private IDamageable ownerDamageable;
+    private IDamageable ignoredTarget;
+
+    /// <summary>
+    ///     A target wand missiles fly through in addition to the wielder — the horse under a mounted
+    ///     player (the <see cref="PlayerBow.SetIgnoredTarget" /> convention). Null = none. Set/cleared by <see cref="PlayerMount" />.
+    /// </summary>
+    public void SetIgnoredTarget(IDamageable target)
+    {
+        ignoredTarget = target;
+    }
     private int startAttackHash;
     private int isHoldingAttackHash;
     private int isAimingHash;
@@ -231,6 +241,10 @@ public class PlayerWand : MonoBehaviour, IChargedAimWeapon
 
         // The wand never damages its wielder (the DamageTrigger owner idiom).
         ownerDamageable = GetComponentInParent<IDamageable>();
+        if (ownerDamageable == null && Player.Instance != null)
+        {
+            ownerDamageable = Player.Instance.Damageable;
+        }
 
         // Register the authored SO values as the stat bases; skill nodes layer on top without ever
         // mutating the asset (the PlayerBow convention). The wand itself is gated: base 0 = locked
@@ -320,8 +334,8 @@ public class PlayerWand : MonoBehaviour, IChargedAimWeapon
             return;
         }
 
-        // No mounted casting (the bow's Horse Archer gate has no wand equivalent).
-        if (mount != null && mount.IsMounted)
+        // Aiming while mounted requires the Horse Archer skill node (the bow convention).
+        if (mount != null && mount.IsMounted && stats.GetValue(StatType.HorseArcheryUnlocked) < 1f)
         {
             return;
         }
@@ -436,6 +450,7 @@ public class PlayerWand : MonoBehaviour, IChargedAimWeapon
             hitLayers = hitLayers,
             chargeLevel = ChargeLevel,
             owner = ownerDamageable,
+            ignoredTarget = ignoredTarget,
             imbuement = imbuement != null && imbuement.isActiveAndEnabled ? imbuement : null,
         });
         projectile.SetElement(imbuement != null && imbuement.isActiveAndEnabled ? imbuement.CurrentElement : null);
@@ -523,6 +538,12 @@ public class PlayerWand : MonoBehaviour, IChargedAimWeapon
             }
         }
 
+        IDamageable hitSource = ownerDamageable;
+        if (hitSource == null && Player.Instance != null)
+        {
+            hitSource = Player.Instance.Damageable;
+        }
+
         return new Damage
         {
             value = value,
@@ -531,7 +552,7 @@ public class PlayerWand : MonoBehaviour, IChargedAimWeapon
             sourcePosition = sourcePosition,
             knockbackForce = stats.GetValue(StatType.WandKnockback),
             // Player-owned hit: lets runestones tell a wand blast from enemy splash damage.
-            source = ownerDamageable,
+            source = hitSource,
             isProjectile = true,
         };
     }

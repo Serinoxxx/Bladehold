@@ -69,6 +69,8 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
         public float painBonus;
         /// <summary>The thrower's own IDamageable — never hit (the DamageTrigger owner idiom).</summary>
         public IDamageable owner;
+        /// <summary>An extra fly-through target — the horse under a mounted thrower. Null = none.</summary>
+        public IDamageable ignoredTarget;
         /// <summary>True once the "Boomerang" node is bought: return instead of lodging.</summary>
         public bool boomerang;
         /// <summary>Return speed as a multiple of the outbound speed.</summary>
@@ -288,8 +290,9 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
     {
         if (damageable == null) return false;
         if (spec.owner != null && damageable == spec.owner) return true;
+        if (spec.ignoredTarget != null && damageable == spec.ignoredTarget) return true;
         if (Player.Instance != null && (damageable == Player.Instance.Damageable || damageable == Player.Instance.Health)) return true;
-        if (thrower != null && damageable is Component comp && (UnityEngine.Object)comp.transform.root == (UnityEngine.Object)thrower.transform.root) return true;
+        if (thrower != null && damageable is Component comp && (object)comp.transform.root == (object)thrower.transform.root) return true;
         return false;
     }
 

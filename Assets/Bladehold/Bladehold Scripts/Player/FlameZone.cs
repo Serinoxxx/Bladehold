@@ -59,7 +59,7 @@ public class FlameZone : MonoBehaviour
             {
                 damageable = collider.GetComponentInParent<IDamageable>();
             }
-            if (damageable == null || damageable == owner)
+            if (damageable == null || damageable == owner || (Player.Instance != null && (damageable == Player.Instance.Damageable || damageable == Player.Instance.Health || (damageable is Component comp && (UnityEngine.Object)comp.transform.root == (UnityEngine.Object)Player.Instance.transform.root))))
             {
                 continue;
             }

@@ -16,6 +16,8 @@ public class MountedCombat : MonoBehaviour
     [SerializeField] private PlayerMount mount;
     [SerializeField] private InputReader inputReader;
     [SerializeField] private PlayerBow bow;
+    [SerializeField] private PlayerThrownAxe thrownAxe;
+    [SerializeField] private PlayerWand wand;
     [Tooltip("The player rig's Animator. Synty rigs keep it on a child.")]
     [SerializeField] private Animator animator;
 
@@ -37,6 +39,14 @@ public class MountedCombat : MonoBehaviour
         if (bow == null)
         {
             bow = GetComponent<PlayerBow>();
+        }
+        if (thrownAxe == null)
+        {
+            thrownAxe = GetComponent<PlayerThrownAxe>();
+        }
+        if (wand == null)
+        {
+            wand = GetComponent<PlayerWand>();
         }
         if (animator == null)
         {
@@ -117,7 +127,7 @@ public class MountedCombat : MonoBehaviour
     private void HandleAttackPressed()
     {
         if (anyError || !mount.IsMounted) return;
-        if (bow != null && bow.IsAiming) return;
+        if ((bow != null && bow.IsAiming) || (thrownAxe != null && thrownAxe.IsAiming) || (wand != null && wand.IsAiming)) return;
 
         animator.SetTrigger(startAttackHash);
         animator.SetBool(isHoldingAttackHash, true);

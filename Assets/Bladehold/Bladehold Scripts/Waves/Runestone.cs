@@ -43,14 +43,22 @@ public class Runestone : MonoBehaviour, IDamageable
 
         // Player-owned hits only: player weapons/zones stamp their owner's damageable as source.
         // Enemy melee stamps the attacker's own Health; enemy AoE stamps nothing. Both fail here.
-        if (Player.Instance == null || damage.source == null || damage.source != Player.Instance.Damageable)
+        if (Player.Instance == null || damage.source == null)
+        {
+            return;
+        }
+
+        bool isPlayerSource = ReferenceEquals(damage.source, Player.Instance.Damageable) ||
+                             ReferenceEquals(damage.source, Player.Instance.Health) ||
+                             (damage.source is Component comp && comp.transform.root == Player.Instance.transform.root);
+        if (!isPlayerSource)
         {
             return;
         }
 
         lastActivationTime = Time.time;
 
-        MageImbuement imbuement = Player.Instance.GetComponentInChildren<MageImbuement>();
+        MageImbuement imbuement = Player.Instance.transform.root.GetComponentInChildren<MageImbuement>();
         if (imbuement != null && imbuement.CollectRunestone(element))
         {
             if (activateFeedback != null)

@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6f087b1d105f22549bcb71d8fa73c4cc, type: 3}
-  m_Name: BerserkerThrownAxe
+  m_Name: BerserkerThrownAxeSO
   m_EditorClassIdentifier: Assembly-CSharp::ThrownAxeSO
   baseDamage: 25
   maxRange: 25
@@ -25,7 +25,7 @@ MonoBehaviour:
   baseWidth: 0.6
   baseKnockback: 6
   knockbackPerChargeLevel: 0.25
-  aimCameraDistance: 2.75
+  aimCameraDistance: 1
   aimCameraHorizontalOffset: 0.7
   aimFieldOfViewPercent: 1
   aimBlendSeconds: 0.2

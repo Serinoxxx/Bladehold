@@ -21,7 +21,7 @@ MonoBehaviour:
   baseMaxChargeLevels: 3
   baseChargeDamageBonus: 0.5
   baseKnockback: 2
-  aimCameraDistance: 2.75
+  aimCameraDistance: 1
   aimCameraHorizontalOffset: 0.7
   aimFieldOfViewPercent: 1
   aimBlendSeconds: 0.2

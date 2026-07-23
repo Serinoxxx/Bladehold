@@ -61,6 +61,8 @@ public class MagicMissileProjectile : MonoBehaviour, IPlayerProjectile
         public int chargeLevel;
         /// <summary>The caster's own IDamageable — never hit (the DamageTrigger owner idiom).</summary>
         public IDamageable owner;
+        /// <summary>An extra fly-through target — the horse under a mounted caster. Null = none.</summary>
+        public IDamageable ignoredTarget;
         /// <summary>The Mage's imbuement, for collecting ElementNodes flown past. Null-safe (pre-imbuement wiring, or another class somehow firing).</summary>
         public MageImbuement imbuement;
     }
@@ -238,8 +240,9 @@ public class MagicMissileProjectile : MonoBehaviour, IPlayerProjectile
     {
         if (damageable == null) return false;
         if (spec.owner != null && damageable == spec.owner) return true;
+        if (spec.ignoredTarget != null && damageable == spec.ignoredTarget) return true;
         if (Player.Instance != null && (damageable == Player.Instance.Damageable || damageable == Player.Instance.Health)) return true;
-        if (caster != null && damageable is Component comp && (UnityEngine.Object)comp.transform.root == (UnityEngine.Object)caster.transform.root) return true;
+        if (caster != null && damageable is Component comp && (object)comp.transform.root == (object)caster.transform.root) return true;
         return false;
     }
 
