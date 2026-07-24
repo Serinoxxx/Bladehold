@@ -1,6 +1,31 @@
 # TODO
 
-## Mage Runestones & Element Nodes Setup — Unity Editor wiring
+## Universal Runestone Imbuements & Active Buffs HUD — Unity Editor wiring
+
+Generalized Runestone Imbuements and unified active temporary power-ups into the HUD Buff Container:
+- **Universal Imbuement (`MageImbuement.cs`)**: Refactored `MageImbuement` to support all player classes (Swordsman, Berserker, Mage) and all weapon types (Sword, Bow, Wand, Thrown Axe).
+- **Skill Tree Unlocking**: Added `runestone_unlock` to `SkillTree.csv` and `SkillTreeBerserker.csv` (costs 120 gold, requires `ampknock`). Mage starts with Runestones unlocked by default (`MageRunestoneCharges` base 2).
+- **Active Buffs UI (`ActiveBuffsUI.cs` & `BuffIconUI.cs`)**:
+  - Enhanced `BuffIconUI` to support stack count text badges (`x1`–`100`).
+  - Unified **Impulse**, **Chain Lightning**, **Runestone Imbuements** (Fire, Ice, Lightning), and **Berserker Rage** (stacks 1-100) into `ActiveBuffsUI`.
+  - Replaced standalone `MageElementUI` and `RageBarUI` with `ActiveBuffsUI`.
+
+Wiring checklist:
+- [x] **C# Generalization**: Refactored `MageImbuement.cs` to listen to all player weapon hit sources dynamically. *(2026-07-24: completed)*
+- [x] **ActiveBuffsUI & BuffIconUI Stack Support**: Added stack display and unified Impulse, Lightning, Runestone Imbuement, and Rage tracking into `ActiveBuffsUI`. *(2026-07-24: completed)*
+- [x] **Skill Tree CSV Updates**: Configured `runestone_unlock` in `SkillTree.csv` and `SkillTreeBerserker.csv`. *(2026-07-24: completed)*
+
+Manual verification:
+- [ ] **Runestones for Swordsman / Berserker**:
+  - Play as Swordsman or Berserker. Verify hitting a Runestone without unlocking `Elemental Runestones` in the skill tree fizzles.
+  - Unlock `Elemental Runestones` in the skill tree (`runestone_unlock`).
+  - Hit a Runestone (Fire, Ice, or Lightning) with a Sword swing or Thrown Axe. Verify elemental imbuement activates with 2 charges!
+  - Attack enemies with your weapon. Verify elemental hit effects (Fire explosions, Ice slows, Lightning chain arcs) apply on hit.
+- [ ] **Unified Buff Container UI**:
+  - Pick up an Impulse Orb, hit a Runestone, or gain Berserker Rage.
+  - Verify active buff icons appear in the HUD Buff Container (`ActiveBuffsUI`) displaying the icon, stack count (`x3`, `85`, etc.), and radial time countdown.
+
+
 
 Created prefabs and wired scene instances for the Mage's elemental imbuement system:
 - **Materials**: Created `Mat_FireElement.mat`, `Mat_IceElement.mat`, `Mat_LightningElement.mat`, and `Mat_RunestoneBase.mat` under `Assets/Bladehold/Materials/`.

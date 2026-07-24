@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 /// <summary>
@@ -31,6 +32,9 @@ public class RageBuff : MonoBehaviour
     [SerializeField] private DamageTrigger meleeTrigger;
     [Tooltip("Optional: the thrown axe whose hits build rage. Defaults to the one on this GameObject.")]
     [SerializeField] private PlayerThrownAxe thrownAxe;
+
+    /// <summary>Raised whenever rage increases, decreases, or resets.</summary>
+    public event Action OnChanged;
 
     private float rage;
     private float lastGainTime = Mathf.NegativeInfinity;
@@ -142,6 +146,7 @@ public class RageBuff : MonoBehaviour
         // the move-speed modifier so nothing lingers on the shared stats.
         rage = 0f;
         ApplyMoveSpeedModifier();
+        OnChanged?.Invoke();
     }
 
     private void Update()
@@ -155,7 +160,12 @@ public class RageBuff : MonoBehaviour
         float retention = Mathf.Max(0.01f, stats.GetValue(StatType.RageRetentionMultiplier));
         if (rage > 0f && Time.time - lastGainTime >= config.decayDelaySeconds * retention)
         {
+            float prevRage = rage;
             rage = Mathf.Max(0f, rage - config.decayPerSecond / retention * Time.deltaTime);
+            if (!Mathf.Approximately(prevRage, rage))
+            {
+                OnChanged?.Invoke();
+            }
         }
 
         ApplyMoveSpeedModifier();
@@ -180,6 +190,7 @@ public class RageBuff : MonoBehaviour
 
         rage = Mathf.Min(config.maxRage, rage + amount * stats.GetValue(StatType.RageGainMultiplier));
         lastGainTime = Time.time;
+        OnChanged?.Invoke();
     }
 
     private float HandleScaleDamageTaken(Damage damage)

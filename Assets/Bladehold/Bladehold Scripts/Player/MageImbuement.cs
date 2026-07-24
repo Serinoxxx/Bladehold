@@ -136,6 +136,10 @@ public class MageImbuement : MonoBehaviour
         }
     }
 
+    private PlayerBow bow;
+    private PlayerThrownAxe thrownAxe;
+    private DamageTrigger activeMeleeTrigger;
+
     private void Start()
     {
         if (config == null)
@@ -150,16 +154,6 @@ public class MageImbuement : MonoBehaviour
         if (stats == null)
         {
             Debug.LogError("MageImbuement could not find PlayerStats (set it or ensure Player.Instance.Stats exists).");
-            anyError = true;
-        }
-        if (staffTrigger == null)
-        {
-            Debug.LogError("MageImbuement 'staffTrigger' (the staff's DamageTrigger) is not assigned in the inspector.");
-            anyError = true;
-        }
-        if (wand == null)
-        {
-            Debug.LogError("MageImbuement could not find the PlayerWand (set it or keep it on the same GameObject).");
             anyError = true;
         }
         if (chainLightning == null)
@@ -179,13 +173,15 @@ public class MageImbuement : MonoBehaviour
             ownerDamageable = Player.Instance.Damageable;
         }
 
-        // Register the authored SO values as stat bases; Mage skill nodes layer on top without ever
-        // mutating the asset. Explosion/zone gates start at 0 = locked (the Combustion/Scorched
-        // Earth nodes); everything else works out of the box (the bow-draw convention).
+        PlayerClassController classController = GetComponentInParent<PlayerClassController>();
+        bool isMage = classController != null && classController.ActiveClass != null &&
+                      classController.ActiveClass.id.Equals("mage", StringComparison.OrdinalIgnoreCase);
+
+        // Register authored SO values as stat bases. Non-Mage classes start with 0 runestone charges until unlocked in skill tree.
         stats.SetBase(StatType.MageImbuementDuration, config.imbuementDurationSeconds);
         stats.SetBase(StatType.MageImbuementMaxCharges, config.maxCharges);
         stats.SetBase(StatType.MageImbuementBonusPerCharge, config.bonusDamagePercentPerCharge);
-        stats.SetBase(StatType.MageRunestoneCharges, config.runestoneBaseCharges);
+        stats.SetBase(StatType.MageRunestoneCharges, isMage ? config.runestoneBaseCharges : 0f);
         stats.SetBase(StatType.MageFireDamagePercent, config.fireBonusDamagePercent);
         stats.SetBase(StatType.MageFireExplosionDamagePercent, 0f);
         stats.SetBase(StatType.MageFireExplosionRadius, config.explosionRadiusMetres);
@@ -193,27 +189,57 @@ public class MageImbuement : MonoBehaviour
         stats.SetBase(StatType.MageFlameZoneDamagePercent, config.flameZoneDamagePercent);
         stats.SetBase(StatType.MageIceSlowPercent, config.iceSlowFraction);
         stats.SetBase(StatType.MageIceSlowDurationSeconds, config.iceSlowDurationSeconds);
-        // Normally registered by PlayerBow, which is disabled for the Mage — the Mage's "Lasting
-        // Chill" nodes modify the same shared slow-duration stat (only one of the two ever runs
-        // Start, so the bases can't clobber each other).
         stats.SetBase(StatType.SlowDurationBonusSeconds, 0f);
 
         SetAllAuras(null);
 
-        staffTrigger.OnHit += HandleHit;
-        wand.OnHit += HandleHit;
+        SubscribeWeaponHits();
+    }
+
+    private void SubscribeWeaponHits()
+    {
+        if (staffTrigger != null)
+        {
+            staffTrigger.OnHit += HandleHit;
+        }
+
+        PlayerClassController classController = GetComponentInParent<PlayerClassController>();
+        if (classController != null && classController.ActiveMeleeTrigger != null && classController.ActiveMeleeTrigger != staffTrigger)
+        {
+            activeMeleeTrigger = classController.ActiveMeleeTrigger;
+            activeMeleeTrigger.OnHit += HandleHit;
+        }
+
+        if (wand != null)
+        {
+            wand.OnHit += HandleHit;
+        }
+
+        bow = GetComponentInParent<PlayerBow>();
+        if (bow != null)
+        {
+            bow.OnHit += HandleHit;
+        }
+
+        thrownAxe = GetComponentInParent<PlayerThrownAxe>();
+        if (thrownAxe != null)
+        {
+            thrownAxe.OnHit += HandleHit;
+        }
+    }
+
+    private void UnsubscribeWeaponHits()
+    {
+        if (staffTrigger != null) staffTrigger.OnHit -= HandleHit;
+        if (activeMeleeTrigger != null) activeMeleeTrigger.OnHit -= HandleHit;
+        if (wand != null) wand.OnHit -= HandleHit;
+        if (bow != null) bow.OnHit -= HandleHit;
+        if (thrownAxe != null) thrownAxe.OnHit -= HandleHit;
     }
 
     private void OnDestroy()
     {
-        if (staffTrigger != null)
-        {
-            staffTrigger.OnHit -= HandleHit;
-        }
-        if (wand != null)
-        {
-            wand.OnHit -= HandleHit;
-        }
+        UnsubscribeWeaponHits();
     }
 
     private void Update()
@@ -267,7 +293,13 @@ public class MageImbuement : MonoBehaviour
     /// </summary>
     public bool CollectRunestone(ElementType element)
     {
-        if (anyError || !isActiveAndEnabled)
+        if (anyError || !isActiveAndEnabled || stats == null)
+        {
+            return false;
+        }
+
+        int runestoneCharges = Mathf.RoundToInt(stats.GetValue(StatType.MageRunestoneCharges));
+        if (runestoneCharges <= 0)
         {
             return false;
         }
@@ -275,7 +307,7 @@ public class MageImbuement : MonoBehaviour
         if (!IsActive || CurrentElement != element)
         {
             int maxCharges = Mathf.Max(1, Mathf.RoundToInt(stats.GetValue(StatType.MageImbuementMaxCharges)));
-            int granted = Mathf.Clamp(Mathf.RoundToInt(stats.GetValue(StatType.MageRunestoneCharges)), 1, maxCharges);
+            int granted = Mathf.Clamp(runestoneCharges, 1, maxCharges);
             SwapElement(element, granted);
         }
 

@@ -12,6 +12,7 @@ public class BuffIconUI : MonoBehaviour
     [SerializeField] private Image radialFillImage;
     [SerializeField] private TextMeshProUGUI nameText;
     [SerializeField] private TextMeshProUGUI timerText;
+    [SerializeField] private TextMeshProUGUI stackText;
     
     [Header("Optional Styling")]
     [Tooltip("Color of the text when the timer is low (e.g., under 3 seconds).")]
@@ -25,15 +26,45 @@ public class BuffIconUI : MonoBehaviour
     [SerializeField] private MMF_Player expireFeedback;
 
     private int lastSecond = -1;
+    private string baseBuffName = "";
 
-    public void Setup(Sprite icon, string buffName)
+    public void Setup(Sprite icon, string buffName, int stackCount = 0)
     {
+        baseBuffName = buffName;
         if (iconImage != null) iconImage.sprite = icon;
-        if (nameText != null) nameText.text = buffName;
+        UpdateStacks(stackCount);
 
         if (appearFeedback != null)
         {
             appearFeedback.PlayFeedbacks();
+        }
+    }
+
+    public void UpdateStacks(int stackCount)
+    {
+        if (stackText != null)
+        {
+            if (stackCount > 0)
+            {
+                stackText.text = stackCount > 1 ? "x" + stackCount : stackCount.ToString();
+                stackText.gameObject.SetActive(true);
+            }
+            else
+            {
+                stackText.gameObject.SetActive(false);
+            }
+        }
+
+        if (nameText != null)
+        {
+            if (stackText == null && stackCount > 1)
+            {
+                nameText.text = baseBuffName + " x" + stackCount;
+            }
+            else
+            {
+                nameText.text = baseBuffName;
+            }
         }
     }
 

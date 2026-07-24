@@ -36,12 +36,42 @@ public class AnimationEvents : MonoBehaviour
         swordHitFeedback.PlayWoosh();
     }
 
+    [SerializeField] private Animator animator;
+    private Transform leftFoot;
+    private Transform rightFoot;
+
+    private void OnValidate()
+    {
+        if (animator == null)
+        {
+            animator = GetComponentInChildren<Animator>();
+        }
+    }
+
+    private void Start()
+    {
+        if (animator == null)
+        {
+            animator = GetComponentInChildren<Animator>();
+        }
+        if (animator != null && animator.isHuman)
+        {
+            leftFoot = animator.GetBoneTransform(HumanBodyBones.LeftFoot);
+            rightFoot = animator.GetBoneTransform(HumanBodyBones.RightFoot);
+        }
+    }
+
     /// <summary>Called from a footstep animation event on the locomotion clips (both feet call this).</summary>
     public void Footstep()
     {
         if (footstepFeedback != null)
         {
-            footstepFeedback.PlayFeedbacks();
+            Vector3 stepPos = transform.position;
+            if (leftFoot != null && rightFoot != null)
+            {
+                stepPos = (leftFoot.position.y < rightFoot.position.y) ? leftFoot.position : rightFoot.position;
+            }
+            footstepFeedback.PlayFeedbacks(stepPos);
         }
     }
 }
