@@ -222,7 +222,7 @@ MonoBehaviour:
         Owner: {fileID: 3337375669606895042}
         DebugActive: 0
         Source: 0
-        Sfx: {fileID: 0}
+        Sfx: {fileID: 8300000, guid: 5fcecd9fbaa5846b6a094ded7fabe67f, type: 3}
         AudioResourceToPlay: {fileID: 0}
         RandomSfx:
         - {fileID: 8300000, guid: 63b2fb57cfa12054698d3604b978dd65, type: 3}
@@ -533,10 +533,22 @@ PrefabInstance:
       propertyPath: m_Name
       value: Pig Butcher Enemy Variant
       objectReference: {fileID: 0}
+    - target: {fileID: 531501347744972787, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: managedReferences[7037627173625921841].Sfx
+      value: 
+      objectReference: {fileID: 8300000, guid: 87b3f69e56c48e542bcadbcae00fa2fd, type: 3}
+    - target: {fileID: 1294620434156887580, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: managedReferences[7037627173625921841].Sfx
+      value: 
+      objectReference: {fileID: 8300000, guid: 87b3f69e56c48e542bcadbcae00fa2fd, type: 3}
     - target: {fileID: 1294620434156887580, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: managedReferences[7037627173625921871].ParentTransform
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 2517548154434545823, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: managedReferences[7037627173625921841].Sfx
+      value: 
+      objectReference: {fileID: 8300000, guid: c4e83bbfe8bfa1d40b3cdf8af14e96b0, type: 3}
     - target: {fileID: 2774917170554717151, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 
@@ -585,6 +597,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6109275958922678516, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: managedReferences[6386679721512665260].Sfx
+      value: 
+      objectReference: {fileID: 8300000, guid: c4e83bbfe8bfa1d40b3cdf8af14e96b0, type: 3}
     - target: {fileID: 6572349470805921892, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: 'bodyRenderers.Array.data[0]'
       value: 
@@ -594,6 +610,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 7287549992360804403, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: animator
+      value: 
+      objectReference: {fileID: 2096769884836235035}
+    - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 
       objectReference: {fileID: 2096769884836235035}

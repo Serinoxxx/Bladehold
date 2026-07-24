@@ -222,7 +222,7 @@ MonoBehaviour:
         Owner: {fileID: 5304616060162833554}
         DebugActive: 0
         Source: 0
-        Sfx: {fileID: 0}
+        Sfx: {fileID: 8300000, guid: 024181c54bd1444cabee9fb713b92ec4, type: 3}
         AudioResourceToPlay: {fileID: 0}
         RandomSfx:
         - {fileID: 8300000, guid: 7418f4853db77134f83e1ecba7247878, type: 3}
@@ -412,10 +412,22 @@ PrefabInstance:
       propertyPath: m_Name
       value: Forest Guardian Enemy Variant
       objectReference: {fileID: 0}
+    - target: {fileID: 531501347744972787, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: managedReferences[7037627173625921841].Sfx
+      value: 
+      objectReference: {fileID: 8300000, guid: 254b631b2b5bea54e9f1afdcc38b877b, type: 3}
+    - target: {fileID: 1294620434156887580, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: managedReferences[7037627173625921841].Sfx
+      value: 
+      objectReference: {fileID: 8300000, guid: 254b631b2b5bea54e9f1afdcc38b877b, type: 3}
     - target: {fileID: 1294620434156887580, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: managedReferences[7037627173625921871].ParentTransform
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 2517548154434545823, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: managedReferences[7037627173625921841].Sfx
+      value: 
+      objectReference: {fileID: 8300000, guid: 254b631b2b5bea54e9f1afdcc38b877b, type: 3}
     - target: {fileID: 2774917170554717151, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 
@@ -468,11 +480,19 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6109275958922678516, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: managedReferences[6386679721512665260].Sfx
+      value: 
+      objectReference: {fileID: 8300000, guid: 254b631b2b5bea54e9f1afdcc38b877b, type: 3}
     - target: {fileID: 7080334578233263117, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: m_StoppingDistance
       value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 7287549992360804403, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: animator
+      value: 
+      objectReference: {fileID: 8374159409175381066}
+    - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 
       objectReference: {fileID: 8374159409175381066}

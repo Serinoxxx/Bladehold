@@ -753,10 +753,22 @@ PrefabInstance:
       propertyPath: m_Name
       value: Slayer Enemy Variant
       objectReference: {fileID: 0}
+    - target: {fileID: 531501347744972787, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: managedReferences[7037627173625921841].Sfx
+      value: 
+      objectReference: {fileID: 8300000, guid: 254b631b2b5bea54e9f1afdcc38b877b, type: 3}
+    - target: {fileID: 1294620434156887580, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: managedReferences[7037627173625921841].Sfx
+      value: 
+      objectReference: {fileID: 8300000, guid: 254b631b2b5bea54e9f1afdcc38b877b, type: 3}
     - target: {fileID: 1294620434156887580, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: managedReferences[7037627173625921871].ParentTransform
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 2517548154434545823, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: managedReferences[7037627173625921841].Sfx
+      value: 
+      objectReference: {fileID: 8300000, guid: 254b631b2b5bea54e9f1afdcc38b877b, type: 3}
     - target: {fileID: 2774917170554717151, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 
@@ -805,6 +817,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6109275958922678516, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: managedReferences[6386679721512665260].Sfx
+      value: 
+      objectReference: {fileID: 8300000, guid: 254b631b2b5bea54e9f1afdcc38b877b, type: 3}
     - target: {fileID: 6572349470805921892, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: 'bodyRenderers.Array.data[0]'
       value: 
@@ -814,6 +830,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 7287549992360804403, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: animator
+      value: 
+      objectReference: {fileID: 8414485562509463777}
+    - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 
       objectReference: {fileID: 8414485562509463777}

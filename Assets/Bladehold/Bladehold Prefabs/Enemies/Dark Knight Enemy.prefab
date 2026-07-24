@@ -8,6 +8,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 4336172353112468525}
     m_Modifications:
+    - target: {fileID: 434985180034381590, guid: 057db930a61e9c64189b4bd589b8770a, type: 3}
+      propertyPath: managedReferences[6386679721512665209].Sfx
+      value: 
+      objectReference: {fileID: 8300000, guid: 254b631b2b5bea54e9f1afdcc38b877b, type: 3}
     - target: {fileID: 1291797033695997917, guid: 057db930a61e9c64189b4bd589b8770a, type: 3}
       propertyPath: m_Name
       value: Horse
@@ -205,6 +209,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: Dark Knight Enemy
       objectReference: {fileID: 0}
+    - target: {fileID: 531501347744972787, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: managedReferences[7037627173625921841].Sfx
+      value: 
+      objectReference: {fileID: 8300000, guid: 254b631b2b5bea54e9f1afdcc38b877b, type: 3}
+    - target: {fileID: 1294620434156887580, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: managedReferences[7037627173625921841].Sfx
+      value: 
+      objectReference: {fileID: 8300000, guid: 254b631b2b5bea54e9f1afdcc38b877b, type: 3}
+    - target: {fileID: 2517548154434545823, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: managedReferences[7037627173625921841].Sfx
+      value: 
+      objectReference: {fileID: 8300000, guid: 254b631b2b5bea54e9f1afdcc38b877b, type: 3}
     - target: {fileID: 2774917170554717151, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 
@@ -257,6 +273,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6109275958922678516, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: managedReferences[6386679721512665260].Sfx
+      value: 
+      objectReference: {fileID: 8300000, guid: 254b631b2b5bea54e9f1afdcc38b877b, type: 3}
     - target: {fileID: 6572349470805921892, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: 'bodyRenderers.Array.data[0]'
       value: 
@@ -281,6 +301,10 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: animator
+      value: 
+      objectReference: {fileID: 4793071241866338416}
     - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: m_Enabled
       value: 0
@@ -348,17 +372,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4fbbc2048d5b01e48874c730dc14a696, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AIMovement
---- !u!114 &1923594192625391924 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7287549992360804403, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
-  m_PrefabInstance: {fileID: 9192812909122672903}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8739268330556907856}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 732ef096373504b4dbb6e411951ed442, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ImpulseReceiver
 --- !u!195 &2148507756047605002 stripped
 NavMeshAgent:
   m_CorrespondingSourceObject: {fileID: 7080334578233263117, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
@@ -443,7 +456,6 @@ MonoBehaviour:
   aiMovement: {fileID: 769473791041788533}
   aiAttack: {fileID: 453135116874447549}
   aiAnimation: {fileID: 4754193180739528485}
-  impulseReceiver: {fileID: 1923594192625391924}
   knockbackReceiver: {fileID: 487964296006711389}
   ridingBool: IsMounted
   dismountTrigger: Dismount

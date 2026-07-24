@@ -1,0 +1,29 @@
+fileFormatVersion: 2
+guid: 1fe42312aeeb64d458d5177c8d3f125c
+AudioImporter:
+  externalObjects: {}
+  serializedVersion: 6
+  defaultSettings:
+    loadType: 0
+    sampleRateSetting: 0
+    sampleRateOverride: 44100
+    compressionFormat: 1
+    quality: 1
+    conversionMode: 0
+  platformSettingOverrides: {}
+  forceToMono: 0
+  normalize: 1
+  preloadAudioData: 1
+  loadInBackground: 0
+  ambisonic: 0
+  3D: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 94186
+  packageName: Fantasy Game Sound Effects
+  packageVersion: 1.1
+  assetPath: Assets/Bladehold/Audio/Enemies/TrollGiant/Fantasy_Game_Creatures_Earth Giant_5_Monster_Huge_Deep_Nature.wav
+  uploadId: 475053

@@ -222,7 +222,7 @@ MonoBehaviour:
         Owner: {fileID: 531501347744972787}
         DebugActive: 0
         Source: 0
-        Sfx: {fileID: 0}
+        Sfx: {fileID: 8300000, guid: 004ab78116e21d541b3dafc7eff2480e, type: 3}
         AudioResourceToPlay: {fileID: 0}
         RandomSfx:
         - {fileID: 8300000, guid: 11c8e391353647c4b9566dcb6bc331ed, type: 3}
@@ -1179,7 +1179,7 @@ MonoBehaviour:
           ButtonText: Automatic Shaker Setup
         Owner: {fileID: 6109275958922678516}
         DebugActive: 0
-        Sfx: {fileID: 8300000, guid: 7afa7f9393d622a4599a631206cea009, type: 3}
+        Sfx: {fileID: 8300000, guid: 0420e49c1877bdc499bb79b494572aca, type: 3}
         RandomSfx: []
         TestPlayButton:
           ButtonText: Debug Play Sound
@@ -1452,7 +1452,7 @@ MonoBehaviour:
         Owner: {fileID: 2517548154434545823}
         DebugActive: 0
         Source: 0
-        Sfx: {fileID: 0}
+        Sfx: {fileID: 8300000, guid: 06b190e0bb10a8d46b63bfc1b3e76d7d, type: 3}
         AudioResourceToPlay: {fileID: 0}
         RandomSfx:
         - {fileID: 8300000, guid: b52ef964be58a724fb549d1a59c6cd54, type: 3}
@@ -2060,7 +2060,7 @@ MonoBehaviour:
         Owner: {fileID: 1294620434156887580}
         DebugActive: 0
         Source: 0
-        Sfx: {fileID: 0}
+        Sfx: {fileID: 8300000, guid: 004ab78116e21d541b3dafc7eff2480e, type: 3}
         AudioResourceToPlay: {fileID: 0}
         RandomSfx:
         - {fileID: 8300000, guid: ba3e7a97854324659b1de19f4d7a88b5, type: 3}

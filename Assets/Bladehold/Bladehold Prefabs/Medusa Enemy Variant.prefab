@@ -253,7 +253,7 @@ MonoBehaviour:
         Owner: {fileID: 3277626936789200030}
         DebugActive: 0
         Source: 0
-        Sfx: {fileID: 0}
+        Sfx: {fileID: 8300000, guid: 4cf0c7843aba040faaf0f70b47f9cada, type: 3}
         AudioResourceToPlay: {fileID: 0}
         RandomSfx:
         - {fileID: 8300000, guid: dd6ac9f9b417c0d4cbbe79a80222716d, type: 3}
@@ -747,10 +747,22 @@ PrefabInstance:
       propertyPath: m_Name
       value: Medusa Enemy Variant
       objectReference: {fileID: 0}
+    - target: {fileID: 531501347744972787, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: managedReferences[7037627173625921841].Sfx
+      value: 
+      objectReference: {fileID: 8300000, guid: 06b64f0fd19a53f48afd2dad9bb29ccd, type: 3}
+    - target: {fileID: 1294620434156887580, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: managedReferences[7037627173625921841].Sfx
+      value: 
+      objectReference: {fileID: 8300000, guid: 06b64f0fd19a53f48afd2dad9bb29ccd, type: 3}
     - target: {fileID: 1294620434156887580, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: managedReferences[7037627173625921871].ParentTransform
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 2517548154434545823, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: managedReferences[7037627173625921841].Sfx
+      value: 
+      objectReference: {fileID: 8300000, guid: 167092add2177f6498a5cff17d1acc1f, type: 3}
     - target: {fileID: 2774917170554717151, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 
@@ -799,7 +811,15 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6109275958922678516, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: managedReferences[6386679721512665260].Sfx
+      value: 
+      objectReference: {fileID: 8300000, guid: 00b75d283af6c3b46ae3ec87008a9dbc, type: 3}
     - target: {fileID: 7287549992360804403, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: animator
+      value: 
+      objectReference: {fileID: 8460896077519122016}
+    - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 
       objectReference: {fileID: 8460896077519122016}

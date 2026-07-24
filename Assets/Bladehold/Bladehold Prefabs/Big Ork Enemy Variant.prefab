@@ -163,6 +163,10 @@ PrefabInstance:
       value: Big Ork Enemy Variant
       objectReference: {fileID: 0}
     - target: {fileID: 531501347744972787, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: managedReferences[7037627173625921841].Sfx
+      value: 
+      objectReference: {fileID: 8300000, guid: 87b3f69e56c48e542bcadbcae00fa2fd, type: 3}
+    - target: {fileID: 531501347744972787, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: managedReferences[7037627173625921841].RandomSfx.Array.size
       value: 11
       objectReference: {fileID: 0}
@@ -229,7 +233,11 @@ PrefabInstance:
     - target: {fileID: 1294620434156887580, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: managedReferences[6386679640592220281].Sfx
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 8300000, guid: 87b3f69e56c48e542bcadbcae00fa2fd, type: 3}
+    - target: {fileID: 1294620434156887580, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: managedReferences[7037627173625921841].Sfx
+      value: 
+      objectReference: {fileID: 8300000, guid: 87b3f69e56c48e542bcadbcae00fa2fd, type: 3}
     - target: {fileID: 1294620434156887580, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: managedReferences[6386679640592220281].Loop
       value: 0
@@ -1335,6 +1343,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2517548154434545823, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: managedReferences[7037627173625921841].Sfx
+      value: 
+      objectReference: {fileID: 8300000, guid: c4e83bbfe8bfa1d40b3cdf8af14e96b0, type: 3}
+    - target: {fileID: 2517548154434545823, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: managedReferences[7037627173625921841].RandomSfx.Array.size
       value: 10
       objectReference: {fileID: 0}
@@ -1426,6 +1438,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6109275958922678516, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: managedReferences[6386679721512665260].Sfx
+      value: 
+      objectReference: {fileID: 8300000, guid: c4e83bbfe8bfa1d40b3cdf8af14e96b0, type: 3}
     - target: {fileID: 6572349470805921892, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: 'bodyRenderers.Array.data[0]'
       value: 
@@ -1442,6 +1458,10 @@ PrefabInstance:
       propertyPath: managedReferences[7037627162564231507].BoundRenderer
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: animator
+      value: 
+      objectReference: {fileID: 507985905332215530}
     - target: {fileID: 8780529840763675578, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 
