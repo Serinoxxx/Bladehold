@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "gws-docs": {
+      "source": "googleworkspace/cli",
+      "sourceType": "github",
+      "skillPath": "skills/gws-docs/SKILL.md",
+      "computedHash": "3d307f7d0c8aac69ef0f852a665df4312d981e9e56dbbc559327df91f8012b38"
+    },
+    "gws-drive": {
+      "source": "googleworkspace/cli",
+      "sourceType": "github",
+      "skillPath": "skills/gws-drive/SKILL.md",
+      "computedHash": "90f36f7b0910e785062eabb811be0d95dc125c3bb97a089a3c9e60083171211e"
+    }
+  }
+}
