@@ -1,6 +1,23 @@
 # TODO
 
-## Universal Runestone Imbuements & Active Buffs HUD — Unity Editor wiring
+## Audio Balance Overhaul: Woosh, Impact, and Footstep Loudness — Unity Editor wiring
+
+Fixed silent/quiet woosh, weapon impact, and footstep audio across C# feedback scripts, audio assets, scene objects, and weapon prefabs:
+- **C# Script Volume Overrides ([`SwordHitFeedback.cs`](file:///c:/Users/lance/source/repos/My%20project/Assets/Bladehold/Bladehold%20Scripts/DamageSystem/SwordHitFeedback.cs) & [`BowHitFeedback.cs`](file:///c:/Users/lance/source/repos/My%20project/Assets/Bladehold/Bladehold%20Scripts/DamageSystem/BowHitFeedback.cs))**: Added configurable volume scale inspector parameters (`wooshVolume`, `hitVolume`, `critHitVolume`, `vulnerableHitVolume`) passing custom `volumeScale` values into `AudioSource.PlayOneShot`.
+- **Audio Asset Normalization & Soft Clipping**: Re-processed low-volume audio clips (`Footstep_Gravel_01..04.wav`, `Footstep_Dirt_01..03.wav`, `SwordOnFlesh_100..110.wav`, and `whoosh_swish_high_big_01..05.wav`) to normalize peak amplitudes and boost low RMS average energy (e.g. Footstep Gravel from -52 dB RMS silent up to -19.7 dB RMS, Sword impacts from -24 dB RMS up to -18 dB RMS).
+- **2D Spatial Blend & Audio Mixer Wiring**: Changed `spatialBlend` on weapon `AudioSource` components (`1H_Sword`, `2H_Axe`, `2H_Staff`, `BowHitFeedback`) from `1.0` (100% 3D with camera-distance attenuation) to `0.1` (2D-leaning stereo presence). Assigned `Sfx` AudioMixerGroup to `FootstepMMF` and boosted its min/max volume parameters to `1.4`–`1.6`.
+
+Wiring checklist:
+- [x] **C# Feedback Volume Controls**: Added `wooshVolume`, `hitVolume`, `critHitVolume`, and `vulnerableHitVolume` fields to `SwordHitFeedback.cs` and `BowHitFeedback.cs`. *(2026-07-25: completed)*
+- [x] **Audio File Normalization**: Re-mastered and peak-normalized all footstep, blade impact, and woosh WAV files in `Assets/Bladehold/Bladehold Audio/`. *(2026-07-25: completed)*
+- [x] **Scene & Prefab AudioSource Updates**: Configured `spatialBlend = 0.1` and `Sfx` mixer group output on `Player.prefab`, `1H_Sword.prefab`, and active `Bladehold Test Scene.unity` instances. *(2026-07-25: completed)*
+
+Manual verification:
+- [ ] **Player Woosh & Swing**: Enter Play Mode and swing your weapon (sword, axe, staff, or bow). Verify the swing woosh is clearly audible, crisp, and centered in stereo.
+- [ ] **Weapon Hits**: Attack melee goblins or practice targets. Confirm weapon impact sounds play loud, punchy, and crunchy on hit, with crits sounding even punchier.
+- [ ] **Footsteps**: Walk and run around the arena. Confirm footsteps are consistently audible across all footstep clip variations (gravel and dirt surfaces).
+
+
 
 Generalized Runestone Imbuements and unified active temporary power-ups into the HUD Buff Container:
 - **Universal Imbuement (`MageImbuement.cs`)**: Refactored `MageImbuement` to support all player classes (Swordsman, Berserker, Mage) and all weapon types (Sword, Bow, Wand, Thrown Axe).
