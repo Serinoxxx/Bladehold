@@ -22,6 +22,11 @@ public class BowHitFeedback : MonoBehaviour
     [Tooltip("Used on a VulnerableSpot (headshot) hit, if any are assigned — outranks the crit pool when both apply.")]
     [SerializeField] private AudioClip[] vulnerableHitSounds;
 
+    [Header("Volume Overrides")]
+    [Range(0f, 3f)] [SerializeField] private float hitVolume = 1.4f;
+    [Range(0f, 3f)] [SerializeField] private float critHitVolume = 1.6f;
+    [Range(0f, 3f)] [SerializeField] private float vulnerableHitVolume = 1.8f;
+
     [Header("Blood particles")]
     [SerializeField] private ParticleSystem bloodParticlePrefab;
     [Tooltip("Used instead of Blood Particle Prefab on a critical hit, if assigned.")]
@@ -76,7 +81,7 @@ public class BowHitFeedback : MonoBehaviour
 
     private void HandleImpact(ArrowImpact impact)
     {
-        PlayRandomClip(PickSounds(impact));
+        PlayRandomClip(PickSounds(impact), PickVolume(impact));
         SpawnBlood(impact);
     }
 
@@ -93,6 +98,19 @@ public class BowHitFeedback : MonoBehaviour
         return hitSounds;
     }
 
+    private float PickVolume(ArrowImpact impact)
+    {
+        if (impact.hitVulnerableSpot && vulnerableHitSounds != null && vulnerableHitSounds.Length > 0)
+        {
+            return vulnerableHitVolume;
+        }
+        if (impact.damage.isCritical && critHitSounds != null && critHitSounds.Length > 0)
+        {
+            return critHitVolume;
+        }
+        return hitVolume;
+    }
+
     private ParticleSystem PickBloodPrefab(ArrowImpact impact)
     {
         if (impact.hitVulnerableSpot && vulnerableBloodParticlePrefab != null)
@@ -106,10 +124,10 @@ public class BowHitFeedback : MonoBehaviour
         return bloodParticlePrefab;
     }
 
-    private void PlayRandomClip(AudioClip[] clips)
+    private void PlayRandomClip(AudioClip[] clips, float volumeScale = 1.0f)
     {
         if (audioSource == null || clips == null || clips.Length == 0) return;
-        audioSource.PlayOneShot(clips[Random.Range(0, clips.Length)]);
+        audioSource.PlayOneShot(clips[Random.Range(0, clips.Length)], volumeScale);
     }
 
     private void SpawnBlood(ArrowImpact impact)

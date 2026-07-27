@@ -24,6 +24,11 @@ public class SwordHitFeedback : MonoBehaviour
     [Header("Swing sound")]
     [SerializeField] private AudioClip[] wooshSounds;
 
+    [Header("Volume Overrides")]
+    [Range(0f, 3f)] [SerializeField] private float wooshVolume = 1.2f;
+    [Range(0f, 3f)] [SerializeField] private float hitVolume = 1.4f;
+    [Range(0f, 3f)] [SerializeField] private float critHitVolume = 1.6f;
+
     [Header("Blood particles")]
     [SerializeField] private ParticleSystem bloodParticlePrefab;
     [Tooltip("Used instead of Blood Particle Prefab on a critical hit, if assigned.")]
@@ -84,12 +89,13 @@ public class SwordHitFeedback : MonoBehaviour
     /// <summary>Called from an animation event earlier in the swing, before the hitbox activates.</summary>
     public void PlayWoosh()
     {
-        PlayRandomClip(wooshSounds);
+        PlayRandomClip(wooshSounds, wooshVolume);
     }
 
     private void HandleHit(IDamageable target, Damage damage, Vector3 point)
     {
-        PlayRandomClip(damage.isCritical && critHitSounds.Length > 0 ? critHitSounds : hitSounds);
+        float volume = damage.isCritical && critHitSounds != null && critHitSounds.Length > 0 ? critHitVolume : hitVolume;
+        PlayRandomClip(damage.isCritical && critHitSounds != null && critHitSounds.Length > 0 ? critHitSounds : hitSounds, volume);
         SpawnHitParticles(target, point, damage.value, damage.isCritical);
     }
 
@@ -101,10 +107,10 @@ public class SwordHitFeedback : MonoBehaviour
         }
     }
 
-    private void PlayRandomClip(AudioClip[] clips)
+    private void PlayRandomClip(AudioClip[] clips, float volumeScale = 1.0f)
     {
         if (audioSource == null || clips == null || clips.Length == 0) return;
-        audioSource.PlayOneShot(clips[Random.Range(0, clips.Length)]);
+        audioSource.PlayOneShot(clips[Random.Range(0, clips.Length)], volumeScale);
     }
 
     private void SpawnHitParticles(IDamageable target, Vector3 point, float damageValue, bool isCritical)

@@ -2431,6 +2431,7 @@ MonoBehaviour:
   detectionMode: 1
   bladeBase: {fileID: 2083093966061345638}
   bladeTip: {fileID: 6519288246009007488}
+  bladeRadius: 0
   basePointCount: 5
   hitLayers:
     serializedVersion: 2
@@ -2439,6 +2440,8 @@ MonoBehaviour:
   baseCritMultiplier: 1.5
   playerAttack: {fileID: 0}
   impulseBuff: {fileID: 0}
+  rageBuff: {fileID: 0}
+  painIntoPower: {fileID: 0}
   knockbackForce: 0
 --- !u!114 &2879380361252328939
 MonoBehaviour:
@@ -2478,6 +2481,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 875b692c69c7d2d41b736a465f939e65, type: 3}
   bloodParticlePrefab: {fileID: 198104090543139058, guid: 4430919f14c50f84085d287cbcb2c30e, type: 3}
   critBloodParticlePrefab: {fileID: 198355779183106702, guid: 3b517eddec185dd4a830743a742ad00b, type: 3}
+  inanimateHitParticlePrefab: {fileID: 0}
   damageForMaxParticles: 20
   minParticles: 3
   maxParticles: 40
@@ -2541,7 +2545,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 1
+      value: 0.1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -2599,3 +2603,4 @@ MonoBehaviour:
   - {fileID: 4168190516833034364}
   - {fileID: 569282809085880247}
   - {fileID: 8816621988902244484}
+  chargeEffects: []
