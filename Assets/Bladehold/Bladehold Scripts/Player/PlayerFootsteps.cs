@@ -15,8 +15,12 @@ public class PlayerFootsteps : MonoBehaviour
     [SerializeField] private AnimationEvents animationEvents;
     [Tooltip("Animator layer the locomotion state plays on.")]
     [SerializeField] private int locomotionLayer = 0;
-    [Tooltip("Normalized-time fractions (0-1) within the current locomotion state's loop where a foot contacts the ground. Default guesses a simple two-beat cycle (left/right); tune by ear.")]
-    [SerializeField] private float[] footstepPhases = { 0f, 0.5f };
+    [Tooltip("Normalized-time fractions (0-1) for walk/crouch gait cycle contact (right foot ~0.39, left foot ~0.85).")]
+    [SerializeField] private float[] walkPhases = { 0.39f, 0.85f };
+    [Tooltip("Normalized-time fractions (0-1) for run gait cycle contact (left foot 0.00, right foot ~0.48).")]
+    [SerializeField] private float[] runPhases = { 0.00f, 0.48f };
+    [Tooltip("Speed threshold above which runPhases are used instead of walkPhases.")]
+    [SerializeField] private float runSpeedThreshold = 3.0f;
     [Tooltip("Animator float parameter read to decide whether the player is moving enough to step.")]
     [SerializeField] private string moveSpeedParam = "MoveSpeed";
     [SerializeField] private float minMoveSpeed = 0.1f;
@@ -81,9 +85,12 @@ public class PlayerFootsteps : MonoBehaviour
 
         float normalizedTime = animator.GetCurrentAnimatorStateInfo(locomotionLayer).normalizedTime % 1f;
 
+        float currentSpeed = animator.GetFloat(moveSpeedHash);
+        float[] activePhases = (currentSpeed >= runSpeedThreshold) ? runPhases : walkPhases;
+
         if (hasPrevious)
         {
-            foreach (float phase in footstepPhases)
+            foreach (float phase in activePhases)
             {
                 if (CrossedPhase(previousNormalizedTime, normalizedTime, phase))
                 {
