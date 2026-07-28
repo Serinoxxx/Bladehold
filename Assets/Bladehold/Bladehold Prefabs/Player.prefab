@@ -23336,7 +23336,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 100000, guid: ebd0dd4d6a7bf68438de9416d7c7393d, type: 3}
       propertyPath: m_Name
-      value: SM_Wep_Sword_01
+      value: SM_Wep_Staff_DoubleBlade_01
       objectReference: {fileID: 0}
     - target: {fileID: 100000, guid: ebd0dd4d6a7bf68438de9416d7c7393d, type: 3}
       propertyPath: m_IsActive
@@ -23386,6 +23386,10 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3300000, guid: ebd0dd4d6a7bf68438de9416d7c7393d, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 4300000, guid: cb7eb04367f0f09488a3204c47bf2230, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -24374,7 +24378,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 100000, guid: ebd0dd4d6a7bf68438de9416d7c7393d, type: 3}
       propertyPath: m_Name
-      value: SM_Wep_Sword_01
+      value: SM_Wep_Ornate_Axe_02
       objectReference: {fileID: 0}
     - target: {fileID: 100000, guid: ebd0dd4d6a7bf68438de9416d7c7393d, type: 3}
       propertyPath: m_IsActive
@@ -24424,6 +24428,10 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3300000, guid: ebd0dd4d6a7bf68438de9416d7c7393d, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 4300000, guid: cf1d9424dfe678142839c38349403b4d, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -28032,7 +28040,10 @@ MonoBehaviour:
   stats: {fileID: 5156588240620538864}
   activationFeedback: {fileID: 8124951604304759275}
   deactivationFeedback: {fileID: 5126446685622306048}
-  auraVisual: {fileID: 5600408761925220583}
+  auraVisuals:
+  - {fileID: 5600408761925220583}
+  - {fileID: 5579998056149516871}
+  - {fileID: 4529855188403404359}
 --- !u!114 &6103277860756355011
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -28111,6 +28122,8 @@ MonoBehaviour:
   config: {fileID: 11400000, guid: 7bbfff43c7d0ba340badf35b526d0f97, type: 2}
   animator: {fileID: 3663620996007313722}
   aimCamera: {fileID: 5162794026609004655}
+  inputReader: {fileID: 6872381413864324108}
+  attackLingerSeconds: 0.8
 --- !u!114 &956408261194615841
 MonoBehaviour:
   m_ObjectHideFlags: 0

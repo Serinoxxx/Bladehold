@@ -25,8 +25,8 @@ public class ChainLightningBuff : MonoBehaviour
     [SerializeField] private MMF_Player activationFeedback;
     [Tooltip("Played when the buff expires.")]
     [SerializeField] private MMF_Player deactivationFeedback;
-    [Tooltip("Looping aura child object, shown while the buff is active.")]
-    [SerializeField] private GameObject auraVisual;
+    [Tooltip("Looping aura child objects, shown while the buff is active (e.g. one for each class weapon).")]
+    [SerializeField] private GameObject[] auraVisuals;
 
     /// <summary>Raised whenever the buff's remaining time or stack count changes (pickup, expiry).</summary>
     public event Action OnChanged;
@@ -86,9 +86,12 @@ public class ChainLightningBuff : MonoBehaviour
         stats.SetBase(StatType.ConduitDamageReductionPercent, 0f);
         stats.SetBase(StatType.ConduitChainChance, 0f);
 
-        if (auraVisual != null)
+        if (auraVisuals != null)
         {
-            auraVisual.SetActive(false);
+            foreach (var aura in auraVisuals)
+            {
+                if (aura != null) aura.SetActive(false);
+            }
         }
     }
 
@@ -134,9 +137,12 @@ public class ChainLightningBuff : MonoBehaviour
             {
                 activationFeedback.PlayFeedbacks();
             }
-            if (auraVisual != null)
+            if (auraVisuals != null)
             {
-                auraVisual.SetActive(true);
+                foreach (var aura in auraVisuals)
+                {
+                    if (aura != null) aura.SetActive(true);
+                }
             }
         }
 
@@ -153,9 +159,12 @@ public class ChainLightningBuff : MonoBehaviour
         {
             deactivationFeedback.PlayFeedbacks();
         }
-        if (auraVisual != null)
+        if (auraVisuals != null)
         {
-            auraVisual.SetActive(false);
+            foreach (var aura in auraVisuals)
+            {
+                if (aura != null) aura.SetActive(false);
+            }
         }
 
         OnChanged?.Invoke();
