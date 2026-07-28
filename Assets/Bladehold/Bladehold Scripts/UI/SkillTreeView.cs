@@ -12,8 +12,7 @@ using UnityEngine.UI;
 ///     whenever the tree changes or the player's gold changes. Clicking an available node buys it; hovering
 ///     a node drives the optional cursor-following <see cref="SkillTooltip" />. Scroll-wheel zooms
 ///     <see cref="content" /> in/out around the cursor (<see cref="OnScroll" />); the pan/zoom is remembered
-///     per tree across reopenings (<see cref="RestoreView" />/<see cref="SaveView" />), and a fresh purchase
-///     pans to center the newly bought node (<see cref="CenterOnNode" />).
+///     per tree across reopenings (<see cref="RestoreView" />/<see cref="SaveView" />).
 ///
 ///     This is the "upgrade screen" content: drop it on the death-screen canvas so it appears with the
 ///     death screen on player death.
@@ -541,7 +540,6 @@ public class SkillTreeView : MonoBehaviour, IScrollHandler
         if (service.TryPurchase(id) && views.TryGetValue(id, out SkillNodeView view))
         {
             view.PlayPurchaseFeedback();
-            CenterOnNode(view.Node);
         }
     }
 
