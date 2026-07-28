@@ -50,10 +50,11 @@ public class ActiveBuffsUI : MonoBehaviour
     {
         if (boundToPlayer || Player.Instance == null) return;
 
-        impulseBuff = Player.Instance.GetComponentInChildren<ImpulseBuff>(true);
-        lightningBuff = Player.Instance.GetComponentInChildren<ChainLightningBuff>(true);
-        imbuement = Player.Instance.GetComponentInChildren<MageImbuement>(true);
-        rageBuff = Player.Instance.GetComponentInChildren<RageBuff>(true);
+        Transform root = Player.Instance.transform.root;
+        impulseBuff = root.GetComponentInChildren<ImpulseBuff>(true);
+        lightningBuff = root.GetComponentInChildren<ChainLightningBuff>(true);
+        imbuement = root.GetComponentInChildren<MageImbuement>(true);
+        rageBuff = root.GetComponentInChildren<RageBuff>(true);
         
         if (impulseBuff != null) impulseBuff.OnChanged += HandleImpulseChanged;
         if (lightningBuff != null) lightningBuff.OnChanged += HandleLightningChanged;
