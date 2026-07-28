@@ -34,6 +34,7 @@ public class BomberAttack : MonoBehaviour
     [SerializeField] private BomberAttackSO attackData;
     [Tooltip("Optional target-selection layer; without it the bomber only ever charges the player.")]
     [SerializeField] private AITargetSelector targetSelector;
+    [SerializeField] private EnemyRagdoll ragdoll;
 
     [Header("Visuals & feedback (optional)")]
     [Tooltip("Torch prop held while chasing; hidden the moment the fuse is lit.")]
@@ -107,6 +108,10 @@ public class BomberAttack : MonoBehaviour
         if (targetSelector == null)
         {
             targetSelector = GetComponent<AITargetSelector>();
+        }
+        if (ragdoll == null)
+        {
+            ragdoll = GetComponent<EnemyRagdoll>();
         }
     }
 
@@ -284,16 +289,23 @@ public class BomberAttack : MonoBehaviour
         hasExploded = true;
         SetFuseSparks(false);
 
+        Vector3 explosionPosition = transform.position;
+        if (ragdoll != null && ragdoll.IsRagdolled && ragdoll.Pelvis != null)
+        {
+            explosionPosition = ragdoll.Pelvis.position;
+        }
+
         if (explodeFeedback != null)
         {
+            explodeFeedback.transform.position = explosionPosition;
             explodeFeedback.PlayFeedbacks();
         }
         if (explosionVfxPrefab != null)
         {
-            Instantiate(explosionVfxPrefab, transform.position, Quaternion.identity);
+            Instantiate(explosionVfxPrefab, explosionPosition, Quaternion.identity);
         }
 
-        ApplyExplosionDamage();
+        ApplyExplosionDamage(explosionPosition);
 
         // The bomber never survives its own dynamite. Killed through the normal Health flow so
         // every death listener (wave accounting, coin drop, corpse pipeline) runs — the
@@ -302,7 +314,7 @@ public class BomberAttack : MonoBehaviour
         {
             value = 999999f,
             type = attackData.damageType,
-            sourcePosition = transform.position,
+            sourcePosition = explosionPosition,
         });
     }
 
@@ -311,9 +323,8 @@ public class BomberAttack : MonoBehaviour
     ///     the player, gates, and other enemies alike. Victims with an <see cref="ImpulseReceiver" />
     ///     get flung by the stamped impulse (the <see cref="TrollSlamAttack" /> shape).
     /// </summary>
-    private void ApplyExplosionDamage()
+    private void ApplyExplosionDamage(Vector3 center)
     {
-        Vector3 center = transform.position;
         hitTargets.Clear();
         int count = Physics.OverlapSphereNonAlloc(center, attackData.explosionRadius, overlapBuffer);
         for (int i = 0; i < count; i++)

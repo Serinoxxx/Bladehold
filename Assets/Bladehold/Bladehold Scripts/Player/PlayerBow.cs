@@ -457,6 +457,10 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         if (bowModel != null)
         {
             bowModel.SetActive(true);
+            foreach (Renderer r in bowModel.GetComponentsInChildren<Renderer>(true))
+            {
+                r.enabled = true;
+            }
         }
         if (drawFeedback != null)
         {
@@ -488,6 +492,10 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         if (swordModel != null)
         {
             swordModel.SetActive(true);
+            foreach (Renderer r in swordModel.GetComponentsInChildren<Renderer>(true))
+            {
+                r.enabled = true;
+            }
         }
         if (bowModel != null)
         {

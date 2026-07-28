@@ -361,6 +361,10 @@ public class PlayerWand : MonoBehaviour, IChargedAimWeapon
         if (wandModel != null)
         {
             wandModel.SetActive(true);
+            foreach (Renderer r in wandModel.GetComponentsInChildren<Renderer>(true))
+            {
+                r.enabled = true;
+            }
         }
         if (drawFeedback != null)
         {
@@ -392,6 +396,10 @@ public class PlayerWand : MonoBehaviour, IChargedAimWeapon
         if (meleeWeaponModel != null)
         {
             meleeWeaponModel.SetActive(true);
+            foreach (Renderer r in meleeWeaponModel.GetComponentsInChildren<Renderer>(true))
+            {
+                r.enabled = true;
+            }
         }
         if (wandModel != null)
         {

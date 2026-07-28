@@ -5,24 +5,33 @@ using UnityEngine;
 ///     Binds an <see cref="MMHealthBar" /> to a <see cref="Health" />: refreshes the bar whenever
 ///     health changes. It listens to <see cref="Health.OnHealthChanged" />; Health stays unaware of
 ///     the bar. Hiding at zero, lerping and bump-on-change are all handled by the MMHealthBar itself.
+///     If an <see cref="EnemyRagdoll" /> is present, it will follow the ragdoll's pelvis.
 /// </summary>
 public class HealthBarUI : MonoBehaviour
 {
     [SerializeField] private Health health;
     [SerializeField] private MMHealthBar healthBar;
+    [SerializeField] private EnemyRagdoll ragdoll;
 
     private bool anyError = false;
+    private Vector3 initialLocalPosition;
+    private Transform parentTransform;
 
     private void OnValidate()
     {
         if (health == null)
         {
-            health = GetComponent<Health>();
+            health = GetComponentInParent<Health>();
         }
 
         if (healthBar == null)
         {
             healthBar = GetComponent<MMHealthBar>();
+        }
+
+        if (ragdoll == null)
+        {
+            ragdoll = GetComponentInParent<EnemyRagdoll>();
         }
     }
 
@@ -45,6 +54,14 @@ public class HealthBarUI : MonoBehaviour
             return;
         }
 
+        initialLocalPosition = transform.localPosition;
+        parentTransform = transform.parent;
+        
+        if (ragdoll == null)
+        {
+            ragdoll = GetComponentInParent<EnemyRagdoll>();
+        }
+
         health.OnHealthChanged += Refresh;
 
         // Start-order safety: if Health.Start already ran, its initial OnHealthChanged fired before we
@@ -57,6 +74,22 @@ public class HealthBarUI : MonoBehaviour
         if (health != null)
         {
             health.OnHealthChanged -= Refresh;
+        }
+    }
+
+    private void LateUpdate()
+    {
+        if (ragdoll != null && ragdoll.IsRagdolled && ragdoll.Pelvis != null)
+        {
+            // The ragdoll pelvis has moved away from the root.
+            // Move this GameObject to track the Pelvis position + original offset.
+            Vector3 worldOffset = parentTransform != null ? parentTransform.TransformVector(initialLocalPosition) : initialLocalPosition;
+            transform.position = ragdoll.Pelvis.position + worldOffset;
+        }
+        else
+        {
+            // Restore local position when not ragdolled (or if pelvis is missing)
+            transform.localPosition = initialLocalPosition;
         }
     }
 

@@ -367,6 +367,10 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
         if (thrownAxeModel != null)
         {
             thrownAxeModel.SetActive(true);
+            foreach (Renderer r in thrownAxeModel.GetComponentsInChildren<Renderer>(true))
+            {
+                r.enabled = true;
+            }
         }
         if (drawFeedback != null)
         {
@@ -398,6 +402,10 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
         if (meleeWeaponModel != null)
         {
             meleeWeaponModel.SetActive(true);
+            foreach (Renderer r in meleeWeaponModel.GetComponentsInChildren<Renderer>(true))
+            {
+                r.enabled = true;
+            }
         }
         if (thrownAxeModel != null)
         {
