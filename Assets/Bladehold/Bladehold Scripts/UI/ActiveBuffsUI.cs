@@ -31,6 +31,7 @@ public class ActiveBuffsUI : MonoBehaviour
     private BuffIconUI imbuementIconInstance;
     private BuffIconUI rageIconInstance;
 
+    private bool boundToPlayer = false;
     private bool anyError = false;
 
     private void Start()
@@ -39,24 +40,32 @@ public class ActiveBuffsUI : MonoBehaviour
         {
             Debug.LogError("ActiveBuffsUI: Prefab or container is not assigned.");
             anyError = true;
+            return;
         }
 
-        if (Player.Instance != null)
-        {
-            impulseBuff = Player.Instance.GetComponentInChildren<ImpulseBuff>(true);
-            lightningBuff = Player.Instance.GetComponentInChildren<ChainLightningBuff>(true);
-            imbuement = Player.Instance.GetComponentInChildren<MageImbuement>(true);
-            rageBuff = Player.Instance.GetComponentInChildren<RageBuff>(true);
-            
-            if (impulseBuff != null) impulseBuff.OnChanged += HandleImpulseChanged;
-            if (lightningBuff != null) lightningBuff.OnChanged += HandleLightningChanged;
-            if (imbuement != null) imbuement.OnChanged += HandleImbuementChanged;
-            if (rageBuff != null) rageBuff.OnChanged += HandleRageChanged;
-        }
-        else
-        {
-            Debug.LogWarning("ActiveBuffsUI: Player.Instance is null at Start. Buffs will not be tracked.");
-        }
+        TryBindPlayer();
+    }
+
+    private void TryBindPlayer()
+    {
+        if (boundToPlayer || Player.Instance == null) return;
+
+        impulseBuff = Player.Instance.GetComponentInChildren<ImpulseBuff>(true);
+        lightningBuff = Player.Instance.GetComponentInChildren<ChainLightningBuff>(true);
+        imbuement = Player.Instance.GetComponentInChildren<MageImbuement>(true);
+        rageBuff = Player.Instance.GetComponentInChildren<RageBuff>(true);
+        
+        if (impulseBuff != null) impulseBuff.OnChanged += HandleImpulseChanged;
+        if (lightningBuff != null) lightningBuff.OnChanged += HandleLightningChanged;
+        if (imbuement != null) imbuement.OnChanged += HandleImbuementChanged;
+        if (rageBuff != null) rageBuff.OnChanged += HandleRageChanged;
+
+        boundToPlayer = true;
+
+        HandleImpulseChanged();
+        HandleLightningChanged();
+        HandleImbuementChanged();
+        HandleRageChanged();
     }
 
     private void OnDestroy()
@@ -182,30 +191,67 @@ public class ActiveBuffsUI : MonoBehaviour
     {
         if (anyError) return;
 
-        if (impulseIconInstance != null && impulseBuff != null && impulseBuff.IsActive)
+        if (!boundToPlayer)
         {
-            impulseIconInstance.UpdateTime(impulseBuff.RemainingSeconds, impulseBuff.MaxSeconds);
-            impulseIconInstance.UpdateStacks(impulseBuff.StackCount);
+            TryBindPlayer();
         }
 
-        if (lightningIconInstance != null && lightningBuff != null && lightningBuff.IsActive)
+        if (impulseBuff != null && impulseBuff.IsActive)
         {
-            lightningIconInstance.UpdateTime(lightningBuff.RemainingSeconds, lightningBuff.MaxSeconds);
+            if (impulseIconInstance == null) HandleImpulseChanged();
+            if (impulseIconInstance != null)
+            {
+                impulseIconInstance.UpdateTime(impulseBuff.RemainingSeconds, impulseBuff.MaxSeconds);
+                impulseIconInstance.UpdateStacks(impulseBuff.StackCount);
+            }
+        }
+        else if (impulseIconInstance != null)
+        {
+            HandleImpulseChanged();
         }
 
-        if (imbuementIconInstance != null && imbuement != null && imbuement.IsActive)
+        if (lightningBuff != null && lightningBuff.IsActive)
         {
-            float maxDuration = Player.Instance != null && Player.Instance.Stats != null
-                ? Player.Instance.Stats.GetValue(StatType.MageImbuementDuration)
-                : 10f;
-            imbuementIconInstance.UpdateTime(imbuement.RemainingSeconds, maxDuration);
-            imbuementIconInstance.UpdateStacks(imbuement.ChargeCount);
+            if (lightningIconInstance == null) HandleLightningChanged();
+            if (lightningIconInstance != null)
+            {
+                lightningIconInstance.UpdateTime(lightningBuff.RemainingSeconds, lightningBuff.MaxSeconds);
+            }
+        }
+        else if (lightningIconInstance != null)
+        {
+            HandleLightningChanged();
         }
 
-        if (rageIconInstance != null && rageBuff != null && rageBuff.IsActive)
+        if (imbuement != null && imbuement.IsActive)
         {
-            rageIconInstance.UpdateTime(rageBuff.CurrentRage, rageBuff.MaxRage);
-            rageIconInstance.UpdateStacks(Mathf.RoundToInt(rageBuff.CurrentRage));
+            if (imbuementIconInstance == null) HandleImbuementChanged();
+            if (imbuementIconInstance != null)
+            {
+                float maxDuration = Player.Instance != null && Player.Instance.Stats != null
+                    ? Player.Instance.Stats.GetValue(StatType.MageImbuementDuration)
+                    : 10f;
+                imbuementIconInstance.UpdateTime(imbuement.RemainingSeconds, maxDuration);
+                imbuementIconInstance.UpdateStacks(imbuement.ChargeCount);
+            }
+        }
+        else if (imbuementIconInstance != null)
+        {
+            HandleImbuementChanged();
+        }
+
+        if (rageBuff != null && rageBuff.IsActive)
+        {
+            if (rageIconInstance == null) HandleRageChanged();
+            if (rageIconInstance != null)
+            {
+                rageIconInstance.UpdateTime(rageBuff.CurrentRage, rageBuff.MaxRage);
+                rageIconInstance.UpdateStacks(Mathf.RoundToInt(rageBuff.CurrentRage));
+            }
+        }
+        else if (rageIconInstance != null)
+        {
+            HandleRageChanged();
         }
     }
 }
