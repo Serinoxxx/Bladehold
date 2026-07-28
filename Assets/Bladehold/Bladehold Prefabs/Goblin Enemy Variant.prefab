@@ -782,6 +782,7 @@ MonoBehaviour:
   targetSelector: {fileID: 6317806685617389453}
   startAttackFeedback: {fileID: 531501347744972787}
   attackHitFeedback: {fileID: 1294620434156887580}
+  knockbackReceiver: {fileID: 8743446565083701594}
   attackTrigger: Attack
 --- !u!114 &4122440191477999408
 MonoBehaviour:
@@ -823,7 +824,7 @@ MonoBehaviour:
   aiMovement: {fileID: 8448426296968807282}
   aiAnimation: {fileID: 4497168724745371170}
   aiAttack: {fileID: 8780529840763675578}
-  config: {fileID: 0}
+  config: {fileID: 11400000, guid: 2aee244ee24a4bf4fbdb917cff62562a, type: 2}
   knockdownTrigger: Knockdown
   getUpStateName: GetUp
   cheerTrigger: Cheer
@@ -2367,10 +2368,10 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1361705740078464, guid: c4e3b5d3572bced46ab0fdb482897812, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 0}
+      addedObject: {fileID: 8219311194781310175}
     - targetCorrespondingSourceObject: {fileID: 1361705740078464, guid: c4e3b5d3572bced46ab0fdb482897812, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 0}
+      addedObject: {fileID: 8255760490510771360}
   m_SourcePrefab: {fileID: 100100000, guid: c4e3b5d3572bced46ab0fdb482897812, type: 3}
 --- !u!137 &1586114936138099649 stripped
 SkinnedMeshRenderer:
@@ -2387,3 +2388,41 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4428279620996246, guid: c4e3b5d3572bced46ab0fdb482897812, type: 3}
   m_PrefabInstance: {fileID: 1723365606788574301}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1724396614450094557 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1361705740078464, guid: c4e3b5d3572bced46ab0fdb482897812, type: 3}
+  m_PrefabInstance: {fileID: 1723365606788574301}
+  m_PrefabAsset: {fileID: 0}
+--- !u!135 &8219311194781310175
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1724396614450094557}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.4
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &8255760490510771360
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1724396614450094557}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59cfd3ee7cc3f4f4e88929ac8e296897, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VulnerableSpot

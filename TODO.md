@@ -1,5 +1,19 @@
 # TODO
 
+## Bomber Enemy — Unity Editor wiring
+
+The C# and manifest wiring are done. We created the Bomber enemy prefab via the generator (`EnemyManifest.cs`). The `BomberAttack` component uses a new trigger `LightFuse` when in range, waits for the fuse, and then detonates. We wired the `igniteFeedback` and `explodeFeedback` to new `MMF_Player` components on the prefab, and added the sparks visual `FX_Sparks_01` into its hands. We also assigned `FX_Explosion_01` as the explosion VFX.
+
+Wiring checklist:
+- [ ] **Animator work** — add a `LightFuse` trigger to `Enemy AC (Goblin).controller` and a corresponding state that plays a short pause/ignite animation before the bomber starts sprinting again. If not added to the base controller, create an override controller.
+- [ ] **Cosmetics/Feedbacks** — The `igniteFeedback` and `explodeFeedback` (`MMF_Player`) exist on the `Bomber Enemy Variant.prefab` but need actual feedback layers added (e.g. `MMF_Sound` with a fuse lighting sound, and an explosion sound/camera shake for the explode).
+- [ ] **Torch prop** (optional) — Assign a torch model to the `torchVisual` field on `BomberAttack` if desired.
+
+## Manual verification (Bomber)
+- [ ] **Spawn & Chase**: Spawn a bomber via DevConsole (`DebugSpawnBurst bomber 1`). Verify it chases you.
+- [ ] **Ignite & Explode**: Let it get within range. Verify it stops, plays the `LightFuse` animation and sparks appear in its hands, then it sprints at you fast and explodes.
+- [ ] **Feedbacks**: Verify sound plays on ignite, and explosion VFX/SFX/screenshake play on detonation.
+
 ## Audio Balance Overhaul: Woosh, Impact, and Footstep Loudness — Unity Editor wiring
 
 Fixed silent/quiet woosh, weapon impact, and footstep audio across C# feedback scripts, audio assets, scene objects, and weapon prefabs:

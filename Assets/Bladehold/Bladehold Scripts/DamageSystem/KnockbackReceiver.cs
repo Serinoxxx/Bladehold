@@ -110,11 +110,21 @@ public class KnockbackReceiver : MonoBehaviour
     {
         if (anyError || damage.knockbackForce <= 0f) return;
 
+        float force = damage.knockbackForce;
+        if (config != null)
+        {
+            force *= config.knockbackMultiplier;
+            if (config.maxKnockbackForce > 0f)
+            {
+                force = Mathf.Min(force, config.maxKnockbackForce);
+            }
+        }
+
         if (State == KnockbackState.Airborne)
         {
             if (!health.IsDead)
             {
-                ragdoll.AddImpulse(LaunchDirection(damage) * damage.knockbackForce * 0.5f);
+                ragdoll.AddImpulse(LaunchDirection(damage) * force * 0.5f);
             }
             return;
         }
@@ -126,7 +136,7 @@ public class KnockbackReceiver : MonoBehaviour
 
         float resistance = Resistance;
         
-        bool fling = damage.knockbackForce >= resistance
+        bool fling = force >= resistance
             && EnemyRagdoll.HasCapacity
             && ragdoll.BuildIfNeeded();
 
@@ -141,7 +151,7 @@ public class KnockbackReceiver : MonoBehaviour
             PlayFlingHitFeedback();
             routine = StartCoroutine(FlingRoutine(damage));
         }
-        else if (damage.knockbackForce >= resistance - 1f)
+        else if (force >= resistance - 1f)
         {
             if (health.CurrentHealth > 0f)
             {
@@ -153,7 +163,7 @@ public class KnockbackReceiver : MonoBehaviour
         {
             if (health.CurrentHealth > 0f && agent != null && agent.enabled && agent.isOnNavMesh)
             {
-                routine = StartCoroutine(SlideRoutine(damage));
+                routine = StartCoroutine(SlideRoutine(damage, force));
             }
         }
     }
@@ -175,7 +185,7 @@ public class KnockbackReceiver : MonoBehaviour
         ragdoll.EnterRagdoll(Vector3.zero, Random.insideUnitSphere * config.spinTorque);
     }
     
-    private IEnumerator SlideRoutine(Damage damage)
+    private IEnumerator SlideRoutine(Damage damage, float force)
     {
         State = KnockbackState.Sliding;
         agent.isStopped = true;
@@ -194,7 +204,7 @@ public class KnockbackReceiver : MonoBehaviour
             }
 
             float decay = 1f - (elapsed / config.slideDuration);
-            agent.Move(direction * (damage.knockbackForce * decay * Time.deltaTime));
+            agent.Move(direction * (force * decay * Time.deltaTime));
 
             elapsed += Time.deltaTime;
             yield return null;
@@ -219,6 +229,7 @@ public class KnockbackReceiver : MonoBehaviour
             agent.ResetPath();
         }
         SetAiEnabled(false);
+        animator.ResetTrigger("Stagger");
         animator.SetTrigger(knockdownTriggerHash);
 
         for (float elapsed = 0f; elapsed < config.knockdownSeconds; elapsed += Time.deltaTime)
@@ -248,7 +259,11 @@ public class KnockbackReceiver : MonoBehaviour
         rootCollider.enabled = false;
         animator.enabled = false;
 
-        Vector3 launchVelocity = LaunchDirection(damage) * damage.knockbackForce;
+        Vector3 launchVelocity = LaunchDirection(damage) * (damage.knockbackForce * (config != null ? config.knockbackMultiplier : 1f));
+        if (config != null && config.maxKnockbackForce > 0f)
+        {
+            launchVelocity = LaunchDirection(damage) * Mathf.Min(damage.knockbackForce * config.knockbackMultiplier, config.maxKnockbackForce);
+        }
         Vector3 spin = Random.insideUnitSphere * config.spinTorque;
         ragdoll.EnterRagdoll(carried + launchVelocity, spin, config.randomLimbKick);
 
@@ -312,6 +327,7 @@ public class KnockbackReceiver : MonoBehaviour
         agent.isStopped = false;
 
         animator.enabled = true;
+        animator.ResetTrigger("Stagger");
         animator.Play(getUpStateHash, 0, 0f);
         animator.Update(0f);
 

@@ -43,10 +43,10 @@ public class ActiveBuffsUI : MonoBehaviour
 
         if (Player.Instance != null)
         {
-            impulseBuff = Player.Instance.GetComponentInChildren<ImpulseBuff>();
-            lightningBuff = Player.Instance.GetComponentInChildren<ChainLightningBuff>();
-            imbuement = Player.Instance.GetComponentInChildren<MageImbuement>();
-            rageBuff = Player.Instance.GetComponentInChildren<RageBuff>();
+            impulseBuff = Player.Instance.GetComponentInChildren<ImpulseBuff>(true);
+            lightningBuff = Player.Instance.GetComponentInChildren<ChainLightningBuff>(true);
+            imbuement = Player.Instance.GetComponentInChildren<MageImbuement>(true);
+            rageBuff = Player.Instance.GetComponentInChildren<RageBuff>(true);
             
             if (impulseBuff != null) impulseBuff.OnChanged += HandleImpulseChanged;
             if (lightningBuff != null) lightningBuff.OnChanged += HandleLightningChanged;
@@ -145,8 +145,9 @@ public class ActiveBuffsUI : MonoBehaviour
             int stacks = Mathf.RoundToInt(rageBuff.CurrentRage);
             if (rageIconInstance == null)
             {
+                Sprite icon = rageBuff.Icon != null ? rageBuff.Icon : rageIcon;
                 rageIconInstance = Instantiate(iconPrefab, iconContainer);
-                rageIconInstance.Setup(rageIcon, "RAGE", stacks);
+                rageIconInstance.Setup(icon, "RAGE", stacks);
             }
             else
             {

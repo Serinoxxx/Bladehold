@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ThrownAxeSO
   baseDamage: 25
   maxRange: 25
-  throwCooldownSeconds: 0.6
+  throwCooldownSeconds: 2
   projectileSpeed: 12
   returnSpeedMultiplier: 1.25
   chargeTimePerLevel: 0.8
@@ -25,6 +25,7 @@ MonoBehaviour:
   baseWidth: 0.6
   baseKnockback: 6
   knockbackPerChargeLevel: 0.25
+  rangedWeaponType: 1
   aimCameraDistance: 1
   aimCameraHorizontalOffset: 0.7
   aimFieldOfViewPercent: 1

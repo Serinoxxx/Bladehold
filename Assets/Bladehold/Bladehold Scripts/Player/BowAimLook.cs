@@ -1,3 +1,4 @@
+using Synty.AnimationBaseLocomotion.Samples.InputSystem;
 using UnityEngine;
 
 /// <summary>
@@ -19,6 +20,10 @@ public class BowAimLook : MonoBehaviour
     [SerializeField] private Animator animator;
     [Tooltip("Camera whose pitch the spine follows. Defaults to Camera.main.")]
     [SerializeField] private Camera aimCamera;
+    [SerializeField] private InputReader inputReader;
+
+    [Tooltip("Seconds after an attack press the pitch lingers, so a quick click still covers the swing.")]
+    [SerializeField] private float attackLingerSeconds = 0.8f;
 
     /// <summary>Fraction of the pitch each spine bone absorbs, root-most first (spine, chest, upper chest) — renormalized over the bones the rig actually has.</summary>
     private static readonly float[] BoneWeights = { 0.25f, 0.35f, 0.4f };
@@ -27,8 +32,10 @@ public class BowAimLook : MonoBehaviour
     private Transform[] spineBones;
     private float[] spineWeights;
 
-    /// <summary>0 = animator pose untouched, 1 = full aim bend.</summary>
     private float blend;
+    private bool attackHeld;
+    private float lastAttackPressTime = Mathf.NegativeInfinity;
+    private bool subscribed;
 
     private bool anyError = false;
 
@@ -42,6 +49,10 @@ public class BowAimLook : MonoBehaviour
         {
             // Synty rigs keep the Animator on a child model object.
             animator = GetComponentInChildren<Animator>();
+        }
+        if (inputReader == null)
+        {
+            inputReader = GetComponentInChildren<InputReader>();
         }
     }
 
@@ -101,6 +112,60 @@ public class BowAimLook : MonoBehaviour
             spineBones[i] = bones[i];
             spineWeights[i] = weights[i] / totalWeight;
         }
+
+        Subscribe();
+    }
+
+    private void OnEnable()
+    {
+        if (!anyError && spineBones != null)
+        {
+            Subscribe();
+        }
+    }
+
+    private void OnDisable()
+    {
+        Unsubscribe();
+        attackHeld = false;
+    }
+
+    private void OnDestroy()
+    {
+        Unsubscribe();
+    }
+
+    private void Subscribe()
+    {
+        if (subscribed || inputReader == null)
+        {
+            return;
+        }
+        inputReader.onAttackActivated += HandleAttackPressed;
+        inputReader.onAttackDeactivated += HandleAttackReleased;
+        subscribed = true;
+    }
+
+    private void Unsubscribe()
+    {
+        if (!subscribed || inputReader == null)
+        {
+            return;
+        }
+        inputReader.onAttackActivated -= HandleAttackPressed;
+        inputReader.onAttackDeactivated -= HandleAttackReleased;
+        subscribed = false;
+    }
+
+    private void HandleAttackPressed()
+    {
+        attackHeld = true;
+        lastAttackPressTime = Time.time;
+    }
+
+    private void HandleAttackReleased()
+    {
+        attackHeld = false;
     }
 
     private void LateUpdate()
@@ -112,10 +177,11 @@ public class BowAimLook : MonoBehaviour
 
         IChargedAimWeapon weapon = AimWeaponResolver.Resolve(bow);
         bool isAiming = weapon != null ? weapon.IsAiming : (bow != null && bow.IsAiming);
+        bool attacking = attackHeld || Time.time - lastAttackPressTime < attackLingerSeconds;
         float blendSeconds = weapon != null ? weapon.AimBlendSeconds : (config != null ? config.aimBlendSeconds : 0.2f);
         float maxPitch = config != null ? config.aimLookMaxPitchDegrees : 60f;
 
-        float target = isAiming ? 1f : 0f;
+        float target = (isAiming || attacking) ? 1f : 0f;
         float speed = blendSeconds > 0f ? Time.deltaTime / blendSeconds : 1f;
         blend = Mathf.MoveTowards(blend, target, speed);
         if (blend <= 0f)

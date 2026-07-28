@@ -118,6 +118,39 @@ internal static class EnemyManifest
             animatorOverridePath = "Assets/Bladehold/Bladehold Prefabs/Brute Override.overrideController",
         },
 
+        // Bomber: suicide charger.
+        new EnemySpec
+        {
+            id = "bomber",
+            soFolder = "Bomber",
+            prefabName = "Bomber Enemy Variant",
+            disableBaseAIAttack = true,
+            removeComponents = new[] { typeof(GoldenGoblin), typeof(ImpulseGoblin) },
+            children = new[] { 
+                new ChildSpec { name = "Sparks Left", localPosition = new Vector3(-0.2f, 1f, 0.4f) },
+                new ChildSpec { name = "Sparks Right", localPosition = new Vector3(0.2f, 1f, 0.4f) }
+            },
+            assets = new[]
+            {
+                new SoSpec { soType = typeof(BomberAttackSO), assetName = "BomberAttackSO" },
+            },
+            components = new[]
+            {
+                new ComponentSpec
+                {
+                    type = typeof(BomberAttack),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "attackData", ctx.LoadedAsset("BomberAttackSO"));
+                        EnemyPrefabGenerator.SetReference(so, "animator", ctx.ChildAnimator);
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                        EnemyPrefabGenerator.SetReference(so, "movement", ctx.Movement);
+                        EnemyPrefabGenerator.SetReference(so, "explosionVfxPrefab", LoadPrefab("Assets/Synty/PolygonParticleFX/Prefabs/FX_Explosion_01.prefab"));
+                    },
+                },
+            },
+        },
+
         // Forest Guardian: fast straight projectiles — zero new code, the Storm Witch's
         // LightningBallAttack with its own SO (high projectile speed, short cooldown). Re-tinted
         // projectile prefab is a manual art pass; until then it fires the shared LightningBall.

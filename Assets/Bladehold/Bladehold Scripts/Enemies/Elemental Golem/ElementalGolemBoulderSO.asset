@@ -15,8 +15,8 @@ MonoBehaviour:
   triggerRange: 15
   revSeconds: 0.5
   attackCooldown: 5
-  damage: 15
+  damage: 5
   damageType: 1
   arcHeight: 5
-  explosionRadius: 3.5
+  explosionRadius: 1.5
   gravity: 20

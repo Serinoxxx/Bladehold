@@ -141,6 +141,8 @@ public class AIAnimation : MonoBehaviour
     private void HandleDied()
     {
         isDead = true;
+        // Clear stagger so it doesn't interrupt death if both triggered same frame
+        animator.ResetTrigger("Stagger");
         // Stop driving locomotion and let the death state take over the animator.
         animator.SetTrigger(deathTriggerHash);
         // Corpses have nothing left to tick (cheering goblins keep theirs — see HandlePlayerDied).

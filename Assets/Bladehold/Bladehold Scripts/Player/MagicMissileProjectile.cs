@@ -188,14 +188,8 @@ public class MagicMissileProjectile : MonoBehaviour, IPlayerProjectile
                     }
                 }
 
-                // Other trigger colliders with no damageable (coins, orbs, hitboxes) never stop the
-                // missile; solid environment does.
                 if (!hit.collider.isTrigger)
                 {
-                    if (hit.distance <= 0.0001f)
-                    {
-                        continue;
-                    }
                     Impact(HitPointOf(hit, from));
                     return true;
                 }

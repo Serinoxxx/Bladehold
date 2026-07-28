@@ -14,6 +14,10 @@ public class RageSO : ScriptableObject
     [Tooltip("Rage points at a full meter.")]
     public float maxRage = 100f;
 
+    [Header("UI")]
+    [Tooltip("Icon shown on the buff bar.")]
+    public Sprite icon;
+
     [Tooltip("Rage gained per point of damage the Berserker deals (melee and thrown axe).")]
     public float ragePerDamageDealt = 1f;
 

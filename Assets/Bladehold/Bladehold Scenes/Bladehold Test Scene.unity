@@ -17355,7 +17355,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 270043671}
   m_HandleRect: {fileID: 270043670}
   m_Direction: 0
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -18980,7 +18980,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 98997481}
   m_HandleRect: {fileID: 98997480}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -30386,7 +30386,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 56.3
+  m_fontSize: 72
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -51409,9 +51409,17 @@ PrefabInstance:
       value: 1.4
       objectReference: {fileID: 0}
     - target: {fileID: 1496472400170717848, guid: be0f2663fd7cb6c46beae542739c68de, type: 3}
+      propertyPath: managedReferences[6386679947948982378].CreateObjectPool
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1496472400170717848, guid: be0f2663fd7cb6c46beae542739c68de, type: 3}
       propertyPath: managedReferences[6386679721512665273].SfxAudioMixerGroup
       value: 
       objectReference: {fileID: -3165942800488051908, guid: 7e984f512e89b60468e829489e8883e3, type: 2}
+    - target: {fileID: 1496472400170717848, guid: be0f2663fd7cb6c46beae542739c68de, type: 3}
+      propertyPath: managedReferences[6386679947948982378].GameObjectToInstantiate
+      value: 
+      objectReference: {fileID: 8150693851891825920, guid: 4a02cbbabf1e23847ba9ec4ece52cac6, type: 3}
     - target: {fileID: 2624297139756228329, guid: be0f2663fd7cb6c46beae542739c68de, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.36018088
@@ -53028,6 +53036,63 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7fa0511e44d053c4e98904972e55b7e1, type: 3}
+--- !u!1001 &8081600306695835080
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1042287695417739881, guid: 4a02cbbabf1e23847ba9ec4ece52cac6, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -7.6568403
+      objectReference: {fileID: 0}
+    - target: {fileID: 1042287695417739881, guid: 4a02cbbabf1e23847ba9ec4ece52cac6, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.000000041663135
+      objectReference: {fileID: 0}
+    - target: {fileID: 1042287695417739881, guid: 4a02cbbabf1e23847ba9ec4ece52cac6, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 18.225763
+      objectReference: {fileID: 0}
+    - target: {fileID: 1042287695417739881, guid: 4a02cbbabf1e23847ba9ec4ece52cac6, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1042287695417739881, guid: 4a02cbbabf1e23847ba9ec4ece52cac6, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1042287695417739881, guid: 4a02cbbabf1e23847ba9ec4ece52cac6, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1042287695417739881, guid: 4a02cbbabf1e23847ba9ec4ece52cac6, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1042287695417739881, guid: 4a02cbbabf1e23847ba9ec4ece52cac6, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1042287695417739881, guid: 4a02cbbabf1e23847ba9ec4ece52cac6, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1042287695417739881, guid: 4a02cbbabf1e23847ba9ec4ece52cac6, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8150693851891825920, guid: 4a02cbbabf1e23847ba9ec4ece52cac6, type: 3}
+      propertyPath: m_Name
+      value: FX_Impact_Footstep
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 4a02cbbabf1e23847ba9ec4ece52cac6, type: 3}
 --- !u!1001 &8652903829135006216
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -53132,3 +53197,4 @@ SceneRoots:
   - {fileID: 1263909451}
   - {fileID: 2096396821}
   - {fileID: 1166934396}
+  - {fileID: 8081600306695835080}

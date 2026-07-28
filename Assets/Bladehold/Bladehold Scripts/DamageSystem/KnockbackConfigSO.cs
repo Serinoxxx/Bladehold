@@ -12,6 +12,12 @@ public class KnockbackConfigSO : ScriptableObject
     [Tooltip("Knockback resistance used when the roster CSV leaves the column blank. Against resistance r: force >= r flings, force >= r-1 knocks down, else slides.")]
     public float defaultResistance = 0f;
 
+    [Tooltip("Hard cap on knockback force applied to enemies.")]
+    public float maxKnockbackForce = 15f;
+
+    [Tooltip("Global multiplier for knockback force applied to enemies.")]
+    public float knockbackMultiplier = 1f;
+
     [Tooltip("Seconds the knockback slide lasts (when force < r-1); the push decays linearly to zero over this time.")]
     public float slideDuration = 0.18f;
 

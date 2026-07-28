@@ -14,8 +14,12 @@ public class AIAttackSO : ScriptableObject
     public DamageType damageType = DamageType.sharp;
 
     [Header("Timing")]
+    [Tooltip("Seconds the goblin waits in range before starting the attack animation.")]
+    public float preAttackDelay = 0.3f;
     [Tooltip("Seconds from the start of the attack animation to its apex (the moment damage is applied). Tune to match the attack clip.")]
     public float windupToApex = 0.4f;
     [Tooltip("Minimum seconds between the start of one attack and the next.")]
     public float attackCooldown = 1.5f;
+    [Tooltip("Seconds the goblin must wait before attacking again after being staggered by a player hit.")]
+    public float staggerCooldown = 1.0f;
 }

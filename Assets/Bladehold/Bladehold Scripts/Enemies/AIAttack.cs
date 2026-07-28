@@ -18,12 +18,15 @@ public class AIAttack : MonoBehaviour
     [SerializeField] private AITargetSelector targetSelector;
     [SerializeField] private MMF_Player startAttackFeedback;
     [SerializeField] private MMF_Player attackHitFeedback;
+    [SerializeField] private KnockbackReceiver knockbackReceiver;
 
     // Animator trigger that starts the attack. Wire an attack state driven by this in the Animator.
     [SerializeField] private string attackTrigger = "Attack";
 
     private int attackTriggerHash;
+    private int staggerTriggerHash;
     private float? damageOverride;
+    private Coroutine attackRoutine;
     private Transform player;
     private IDamageable playerDamageable;
     private Health playerHealth;
@@ -57,6 +60,10 @@ public class AIAttack : MonoBehaviour
         {
             targetSelector = GetComponent<AITargetSelector>();
         }
+        if (knockbackReceiver == null)
+        {
+            knockbackReceiver = GetComponent<KnockbackReceiver>();
+        }
     }
 
     private void Start()
@@ -76,6 +83,10 @@ public class AIAttack : MonoBehaviour
             Debug.LogError("AIAttackSO is not assigned in the inspector.");
             anyError = true;
         }
+        if (knockbackReceiver == null)
+        {
+            knockbackReceiver = GetComponent<KnockbackReceiver>();
+        }
 
         if (anyError)
         {
@@ -83,6 +94,7 @@ public class AIAttack : MonoBehaviour
         }
 
         attackTriggerHash = Animator.StringToHash(attackTrigger);
+        staggerTriggerHash = Animator.StringToHash("Stagger");
 
         Player playerInstance = Player.Instance;
         if (playerInstance == null)
@@ -97,6 +109,7 @@ public class AIAttack : MonoBehaviour
 
         // Stop attacking once this goblin dies.
         health.OnDied += HandleDied;
+        health.OnDamaged += HandleDamaged;
 
         // Stop attacking once the player dies (combat's over — time to celebrate).
         if (playerInstance.Health != null)
@@ -111,6 +124,7 @@ public class AIAttack : MonoBehaviour
         if (health != null)
         {
             health.OnDied -= HandleDied;
+            health.OnDamaged -= HandleDamaged;
         }
         if (playerHealth != null)
         {
@@ -121,9 +135,35 @@ public class AIAttack : MonoBehaviour
     private void HandleDied()
     {
         isDead = true;
+        if (attackRoutine != null)
+        {
+            StopCoroutine(attackRoutine);
+            attackRoutine = null;
+        }
         // Corpses have nothing left to tick. (Coroutines survive a disable, and ApplyDamageAtApex
         // already bails on isDead.)
         enabled = false;
+    }
+
+    private void HandleDamaged(Damage damage)
+    {
+        if (isDead || health.CurrentHealth <= 0f) return;
+        if (knockbackReceiver != null && knockbackReceiver.IsIncapacitated) return;
+
+        // If the player hit us, stagger and interrupt the attack
+        if (damage.source != null && playerHealth != null && ReferenceEquals(damage.source, playerHealth))
+        {
+            if (attackRoutine != null)
+            {
+                StopCoroutine(attackRoutine);
+                attackRoutine = null;
+            }
+
+            animator.SetTrigger(staggerTriggerHash);
+
+            // Put attack on cooldown so they don't immediately attack again when the animation finishes
+            lastAttackTime = Time.time + attackData.staggerCooldown - attackData.attackCooldown;
+        }
     }
 
     private void HandlePlayerDied()
@@ -137,9 +177,9 @@ public class AIAttack : MonoBehaviour
 
         if (Time.time - lastAttackTime < attackData.attackCooldown) return;
 
-        if (IsTargetInRange())
+        if (attackRoutine == null && IsTargetInRange())
         {
-            StartAttack();
+            attackRoutine = StartCoroutine(PrepareAndAttack());
         }
     }
 
@@ -173,43 +213,49 @@ public class AIAttack : MonoBehaviour
         return toTarget.sqrMagnitude <= attackData.attackRange * attackData.attackRange;
     }
 
-    private void StartAttack()
+    private IEnumerator PrepareAndAttack()
     {
+        if (attackData.preAttackDelay > 0f)
+        {
+            yield return new WaitForSeconds(attackData.preAttackDelay);
+        }
+
+        if (isDead || playerDead || !IsTargetInRange())
+        {
+            attackRoutine = null;
+            yield break;
+        }
+
         if (startAttackFeedback != null)
         {
             startAttackFeedback.PlayFeedbacks();
         }
         lastAttackTime = Time.time;
         animator.SetTrigger(attackTriggerHash);
-        StartCoroutine(ApplyDamageAtApex());
-    }
 
-    private IEnumerator ApplyDamageAtApex()
-    {
         // The apex is approximated by a tunable wind-up so it stays in sync with the attack clip
-        // without needing an animation event. (An animation event could call an equivalent method
-        // for frame-perfect timing.)
+        // without needing an animation event.
         yield return new WaitForSeconds(attackData.windupToApex);
 
         // Only connect if this goblin is still alive, the run is still going, and the target it
         // wound up on (re-resolved — it may have switched between player and gate) is still in range.
         IDamageable target = CurrentTargetDamageable();
-        if (isDead || playerDead || target == null || !IsTargetInRange())
+        if (!isDead && !playerDead && target != null && IsTargetInRange())
         {
-            yield break;
-        }
+            target.ReceiveDamage(new Damage
+            {
+                value = damageOverride ?? attackData.damage,
+                type = attackData.damageType,
+                sourcePosition = transform.position,
+                source = health
+            });
 
-        target.ReceiveDamage(new Damage
-        {
-            value = damageOverride ?? attackData.damage,
-            type = attackData.damageType,
-            sourcePosition = transform.position,
-            source = health
-        });
-
-        if (attackHitFeedback != null)
-        {
-            attackHitFeedback.PlayFeedbacks();
+            if (attackHitFeedback != null)
+            {
+                attackHitFeedback.PlayFeedbacks();
+            }
         }
+        
+        attackRoutine = null;
     }
 }

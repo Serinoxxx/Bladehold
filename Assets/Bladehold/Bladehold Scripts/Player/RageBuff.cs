@@ -56,6 +56,8 @@ public class RageBuff : MonoBehaviour
     /// <summary>Damage multiplier for the Berserker's attacks: 1 at empty, 1 + damageBonusAtFullRage at full.</summary>
     public float DamageMultiplier => 1f + RageFraction * (config != null ? config.damageBonusAtFullRage : 0f);
 
+    public Sprite Icon => config != null ? config.icon : null;
+
     private void OnValidate()
     {
         if (health == null)
