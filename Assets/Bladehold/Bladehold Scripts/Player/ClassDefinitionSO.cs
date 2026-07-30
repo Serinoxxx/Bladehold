@@ -36,6 +36,9 @@ public class ClassDefinitionSO : ScriptableObject
     [Tooltip("Seconds of holding the attack button per melee charge level for this class (heavier weapons charge slower).")]
     public float chargeTimePerLevel = 1f;
 
+    [Tooltip("Minimum seconds between melee attacks for this class (prevents mid-swing click interruptions).")]
+    public float meleeAttackCooldown = 0.5f;
+
     [Tooltip("This class's gold skill tree. Null = SkillTreeService's serialized default (the Swordsman tree).")]
     public SkillTreeSO skillTree;
 

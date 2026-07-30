@@ -128,6 +128,23 @@ namespace Synty.AnimationBaseLocomotion.Samples
         [SerializeField]
         private float _cameraRotationOffset;
 
+        [Header("Attack Settings")]
+        [Tooltip("Minimum time in seconds between melee attacks to prevent mid-swing interruption.")]
+        [SerializeField]
+        private float _attackCooldown = 0.5f;
+
+        private float _lastAttackTime = -999f;
+
+        /// <summary>Minimum time in seconds between melee attacks.</summary>
+        public float AttackCooldown
+        {
+            get => _attackCooldown;
+            set => _attackCooldown = Mathf.Max(0f, value);
+        }
+
+        /// <summary>True if a melee attack was triggered recently and the cooldown has not elapsed yet.</summary>
+        public bool IsAttackOnCooldown => Time.time - _lastAttackTime < _attackCooldown;
+
         #endregion
 
         #region Shuffle Settings
@@ -392,9 +409,14 @@ namespace Synty.AnimationBaseLocomotion.Samples
 
         private void ActivateAttack()
         {
+            if (IsAttackOnCooldown)
+            {
+                return;
+            }
+
+            _lastAttackTime = Time.time;
             _animator.SetBool(_isHoldingAttackHash, true);
             _animator.SetTrigger(_startAttackHash);
-
         }
 
         /// <summary>

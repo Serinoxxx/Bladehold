@@ -19,6 +19,7 @@ MonoBehaviour:
   characterModelPrefab: {fileID: 2864743491686990451, guid: b0a4fad19a0d29f4c89116e69f55a0ac, type: 3}
   meleeWeaponType: 2
   chargeTimePerLevel: 1
+  meleeAttackCooldown: 0.5
   skillTree: {fileID: 11400000, guid: f16f738a94a66834187669ea7049b5fb, type: 2}
   keySkillIds:
   - wand_unlock

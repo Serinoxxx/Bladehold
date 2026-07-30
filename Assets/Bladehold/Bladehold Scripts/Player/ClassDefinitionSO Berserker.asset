@@ -20,6 +20,7 @@ MonoBehaviour:
   characterModelPrefab: {fileID: 6922260172336995217, guid: 040b280f3bc13a24fbd8ca70a251f7d9, type: 3}
   meleeWeaponType: 1
   chargeTimePerLevel: 1
+  meleeAttackCooldown: 0.6
   skillTree: {fileID: 11400000, guid: 3c51537abaa83734094df1460098cfae, type: 2}
   keySkillIds:
   - axe_unlock

@@ -1,3 +1,4 @@
+using Synty.AnimationBaseLocomotion.Samples;
 using Synty.AnimationBaseLocomotion.Samples.InputSystem;
 using UnityEngine;
 
@@ -27,6 +28,8 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private PlayerStats stats;
     [Tooltip("Optional: the class controller, polled for the active class's aim weapon. While that weapon is aiming, attack presses fire it instead of swinging, so the melee hold-to-charge is skipped.")]
     [SerializeField] private PlayerClassController classController;
+    [Tooltip("Optional: the player animation controller, checked for attack cooldown to prevent resetting charge timing mid-swing.")]
+    [SerializeField] private SamplePlayerAnimationController animController;
 
     [Tooltip("Seconds of holding the attack button to gain each charge level (level 1 at 1×, level 2 at 2×, ...).")]
     [SerializeField] private float chargeTimePerLevel = 1f;
@@ -73,6 +76,14 @@ public class PlayerAttack : MonoBehaviour
         if (classController == null)
         {
             classController = GetComponentInParent<PlayerClassController>();
+        }
+        if (animController == null)
+        {
+            animController = GetComponent<SamplePlayerAnimationController>();
+            if (animController == null)
+            {
+                animController = GetComponentInChildren<SamplePlayerAnimationController>();
+            }
         }
     }
 
@@ -163,6 +174,9 @@ public class PlayerAttack : MonoBehaviour
         // land. A missing class controller (e.g. SkillTreePreview) just means no suppression.
         IChargedAimWeapon aimWeapon = classController != null ? classController.ActiveAimWeapon : null;
         if (aimWeapon != null && aimWeapon.IsAiming) return;
+
+        // Ignore presses while melee attack is on cooldown (prevents interrupting a swing in progress).
+        if (animController != null && animController.IsAttackOnCooldown) return;
 
         ChargeLevel = 0;
         AttackDamageMultiplier = 1f;

@@ -223,6 +223,11 @@ public class PlayerClassController : MonoBehaviour
             {
                 playerAttack.SetChargeTimePerLevel(ActiveClass.chargeTimePerLevel);
             }
+            var animController = GetComponentInChildren<Synty.AnimationBaseLocomotion.Samples.SamplePlayerAnimationController>();
+            if (animController != null && ActiveClass.meleeAttackCooldown > 0f)
+            {
+                animController.AttackCooldown = ActiveClass.meleeAttackCooldown;
+            }
             ApplyMeleeWeaponType();
         }
     }
