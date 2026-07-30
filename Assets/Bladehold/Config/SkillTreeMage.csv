@@ -41,3 +41,7 @@ imbue_dur,Lingering Element,Imbuements last longer,Imbuements last even longer,7
 imbue_power,Elemental Mastery,More bonus damage per element charge,Even more per charge,90,1.5,5,MageImbuementBonusPerCharge,Flat,0.05,imbue_dur,29,8.5,Mageskill_33_nobg,
 imbue_max,Overflowing Vessel,Hold more element charges,Hold one more charge,105,1.5,3,MageImbuementMaxCharges,Flat,1,imbue_dur;rune_charges,30,9.5,Warlock_25_runestone,
 rune_charges,Runic Attunement,Runestones grant an extra element charge,One more charge still,90,1.5,2,MageRunestoneCharges,Flat,1,imbue_max,30,10.5,Paladinskill_41_runesword,
+ult_unlock,Rain of Fire,Rise into the air and rain massive explosive meteors down on your enemies. Press Q/Y to activate at 100% charge.,,300,1,1,UltimateUnlocked,Flat,1,wand_unlock,22.5,11,Skill_PillarOfFire,
+ult_dur,Enduring Rain,Increase ultimate duration,Increase ultimate duration further,150,1.5,5,UltimateDurationSeconds,Flat,1,ult_unlock,21.5,11,Aura_Speed_nb,
+ult_dmg,Massive Meteors,Increase meteor damage during ultimate,Increase meteor damage further,200,1.6,4,UltimateMageMeteorDamageMultiplier,Flat,0.5,ult_unlock,22.5,10,Aura_MegaExplosion_nb,
+ult_radius,Explosive Landing,Increase the explosion radius when landing,Increase the radius further,120,1.4,5,UltimateMageLandingExplosionRadius,Flat,1.5,ult_unlock,23.5,11,Mageskill_02_nobg,

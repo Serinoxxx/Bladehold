@@ -1,5 +1,37 @@
 # TODO
 
+## Ultimate Abilities — Unity Editor wiring
+
+The C# is done. We added an ultimate ability system, driven by `PlayerUltimateController` which listens to `Health.OnAnyHealthDamaged` (for outgoing damage to enemies) to build a 0-100 charge. When full, pressing `Q` or `Gamepad North` triggers the active class's `IUltimateHandler` component. We added 3 handlers:
+- `RangerUltimate`: Locks out the sword and forces the bow to rapid-fire (`UltimateRangerFireRate`, default 0.05s) with huge knockback.
+- `MageUltimate`: Disables `CharacterController`, elevates the player 10m to hover, scales wand missiles (`UltimateMageMeteorDamageMultiplier`), forces Fire imbuement, and slams down on finish with an explosion (`UltimateMageLandingExplosionRadius`).
+- `BerserkerUltimate`: Scales the player by 1.5x, adds flat `AllDamageMultiplier` (50%), handles damage reduction via `Health.ScaleDamageTaken`, and deals passive AoE collision damage/knockback every frame.
+
+All classes had their trees (`SkillTree.csv`, `SkillTreeMage.csv`, `SkillTreeBerserker.csv`) updated with 4 ultimate nodes (`ult_unlock`, `ult_dur`, `ult_rate`/`ult_dmg`/`ult_size`, `ult_charge`/`ult_radius`/`ult_dr`). `UltimateBarUI` was created to visualize the 0-100 charge and pulse when full, displaying the dynamic input glyph.
+
+Wiring checklist:
+- [x] **Player Prefab updates**:
+  - Open `Assets/Bladehold/Bladehold Prefabs/Player.prefab`.
+  - Add `PlayerUltimateController` to the root.
+  - Add `RangerUltimate`, `MageUltimate`, and `BerserkerUltimate` scripts to the root.
+  - Wire them into `PlayerClassController`: Add `RangerUltimate` to Swordsman/Ranger's `classComponents` (slot 0), `BerserkerUltimate` to Berserker's `classComponents` (slot 1), and `MageUltimate` to Mage's `classComponents` (slot 2).
+- [x] **UI Wiring**:
+  - In `Bladehold Test Scene.unity`, under `HUD Canvas`, add an `UltimateBarUI` structure (or prefab).
+  - Add a Background Image, a Fill Image (set Image Type to Filled), a Glow Image (additive/emission), and a TextMeshProUGUI for the input key.
+  - Wire `fillImage`, `glowImage`, and `inputKeyText` in the `UltimateBarUI` inspector.
+- [x] **Cosmetics/Animations**:
+  - **Mage Ultimate**: The user requested "use the sorceress animations while flying". Ensure the Mage's Animator Override Controller maps the Sorceress flying animation to the aiming/idle state while elevated, or wire up a new animator parameter (C# doesn't yet set an explicit hovering parameter, but you can set one manually or add it to `MageUltimate.cs` if needed).
+- [ ] **Skill Icons**:
+  - Open **Bladehold > Skill Tree Editor** and assign icons to the new `ult_unlock`, `ult_dur`, `ult_charge`, etc. nodes for all three classes.
+
+## Manual verification (Ultimate Abilities)
+- [ ] **Charge Buildup**: Deal damage to enemies. Verify the ultimate bar fills up correctly and pulses when it reaches 100%.
+- [ ] **Ranger Ultimate (Arrow Stream)**: Switch to Ranger. Charge ultimate and activate. Verify you cannot swing the sword, and the bow fires insanely fast with huge knockback for the duration.
+- [ ] **Mage Ultimate (Rain of Fire)**: Switch to Mage. Charge and activate. Verify the Mage floats 10m up, and firing the wand produces massive meteors that deal splash/fire damage. When it ends, verify the Mage slams down with an explosion.
+- [ ] **Berserker Ultimate (Inner Giant)**: Switch to Berserker. Charge and activate. Verify the player grows to 1.5x size, takes reduced damage, deals extra damage, and simply walking into enemies knocks them back and deals damage.
+- [ ] **Skill Trees**: Verify all three class skill trees show the ultimate unlock and upgrade nodes, and purchasing them correctly updates the stats.
+
+
 ## Bomber Enemy — Unity Editor wiring
 
 The C# and manifest wiring are done. We created the Bomber enemy prefab via the generator (`EnemyManifest.cs`). The `BomberAttack` component uses a new trigger `LightFuse` when in range, waits for the fuse, and then detonates. We wired the `igniteFeedback` and `explodeFeedback` to new `MMF_Player` components on the prefab, and added the sparks visual `FX_Sparks_01` into its hands. We also assigned `FX_Explosion_01` as the explosion VFX.

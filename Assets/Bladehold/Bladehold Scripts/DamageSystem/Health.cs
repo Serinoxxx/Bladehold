@@ -33,6 +33,12 @@ public class Health : MonoBehaviour, IDamageable
     /// </summary>
     public event Action OnHealthChanged;
 
+    /// <summary>
+    ///     Raised globally for any Health instance that takes damage. Useful for global systems (like
+    ///     Ultimate charge) that need to know when a specific source deals damage anywhere.
+    /// </summary>
+    public static event Action<Health, Damage> OnAnyHealthDamaged;
+
     /// <summary>True once health has reached zero. Latches; further damage is ignored.</summary>
     public bool IsDead { get; private set; }
 
@@ -147,6 +153,7 @@ public class Health : MonoBehaviour, IDamageable
         }
 
         OnDamaged?.Invoke(damage);
+        OnAnyHealthDamaged?.Invoke(this, damage);
 
         if (currentHealth <= 0f)
         {

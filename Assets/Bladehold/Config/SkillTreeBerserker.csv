@@ -42,3 +42,7 @@ axe_boomerang,Boomerang,"Your axe returns to you after striking terrain, spendin
 pain_1,Pain into Power,Damage taken while charging any attack is added to that attack's damage,Convert more damage taken into power,90,1.5,4,PainIntoPowerPercent,Flat,0.5|0.25|0.25|0.25,axe_knock,21.5,14,Skill_BloodMark,
 rage_fury,Boiling Blood,Build rage faster,Build rage even faster,75,1.4,5,RageGainMultiplier,Percent,0.15,axe_width,22.5,15.5,Skill_BloodBoiling_nb,
 rage_retain,Slow Burn,Rage lingers longer before draining,Rage lingers even longer,90,1.4,4,RageRetentionMultiplier,Percent,0.2,rage_fury,23.5,15.5,skill_462_rage,
+ult_unlock,Inner Giant,Grow in size and power. You gain increased damage and knockback, and trample enemies just by touching them. Press Q/Y to activate at 100% charge.,,300,1,1,UltimateUnlocked,Flat,1,axe_unlock,22.5,11,Skill_BloodMark,
+ult_dur,Enduring Giant,Increase ultimate duration,Increase ultimate duration further,150,1.5,5,UltimateDurationSeconds,Flat,1,ult_unlock,21.5,11,Aura_Speed_nb,
+ult_size,Colossal Growth,Grow even larger during ultimate,Grow larger still,200,1.6,4,UltimateBerserkerSizeMultiplier,Flat,0.25,ult_unlock,22.5,10,Warriorskill_28_axe,
+ult_dr,Thick Skin,Take reduced damage during ultimate,Take even less damage,120,1.4,5,UltimateBerserkerDamageReduction,Flat,0.1,ult_unlock,23.5,11,Warriorskill_18_block,

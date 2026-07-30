@@ -468,9 +468,15 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         }
     }
 
+    public bool IsUltimateLocked { get; set; }
+
+    public void ForceStartAim() { StartAim(); }
+    public void ForceEndAim() { EndAim(); }
+    public void ForceFire() { Fire(); }
+
     private void EndAim()
     {
-        if (!IsAiming)
+        if (!IsAiming || IsUltimateLocked)
         {
             return;
         }
@@ -850,6 +856,11 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         {
             value *= impulseBuff.DamageMultiplier;
             knockbackForce = config.knockbackBlastForce * impulseBuff.KnockbackMultiplier;
+        }
+
+        if (IsUltimateLocked)
+        {
+            knockbackForce = 50f; // huge knockback during Ranger Ultimate
         }
 
         return new Damage

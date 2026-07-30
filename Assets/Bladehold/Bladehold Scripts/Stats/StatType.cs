@@ -199,6 +199,23 @@ public enum StatType
     MageIceSlowPercent,
     /// <summary>Seconds an Ice-imbued hit's slow lasts (SlowDurationBonusSeconds adds on top). Base comes from MageImbuementSO.</summary>
     MageIceSlowDurationSeconds,
+
+    /// <summary>1 = Ultimate unlocked, 0 = locked.</summary>
+    UltimateUnlocked,
+    /// <summary>Base duration of the ultimate in seconds.</summary>
+    UltimateDurationSeconds,
+    /// <summary>Multiplier on how fast ultimate charges from damage (base 1.0).</summary>
+    UltimateChargeMultiplier,
+    /// <summary>Ranger Ultimate arrow cooldown in seconds.</summary>
+    UltimateRangerFireRate,
+    /// <summary>Mage Ultimate meteor damage multiplier relative to base wand damage.</summary>
+    UltimateMageMeteorDamageMultiplier,
+    /// <summary>Mage Ultimate landing explosion radius.</summary>
+    UltimateMageLandingExplosionRadius,
+    /// <summary>Berserker Ultimate size multiplier (base 1.5).</summary>
+    UltimateBerserkerSizeMultiplier,
+    /// <summary>Berserker Ultimate damage reduction fraction (0-1).</summary>
+    UltimateBerserkerDamageReduction,
 }
 
 /// <summary>

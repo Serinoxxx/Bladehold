@@ -4917,7 +4917,6 @@ GameObject:
   - component: {fileID: 1042287695417739881}
   - component: {fileID: 7386117514005394323}
   - component: {fileID: 6504080908035394499}
-  - component: {fileID: 2876609064803826943}
   m_Layer: 0
   m_Name: FX_Impact_Footstep
   m_TagString: Untagged
@@ -4951,7 +4950,7 @@ ParticleSystem:
   serializedVersion: 8
   lengthInSec: 1
   simulationSpeed: 2
-  stopAction: 0
+  stopAction: 1
   cullingMode: 1
   ringBufferMode: 0
   ringBufferLoopRange: {x: 0, y: 1}
@@ -9814,16 +9813,3 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
---- !u!114 &2876609064803826943
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8150693851891825920}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6375423aad2669c4c81376ed15752eed, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DisableAfterTime
-  lifetimeSeconds: 1

@@ -372,9 +372,13 @@ public class PlayerWand : MonoBehaviour, IChargedAimWeapon
         }
     }
 
+    public bool IsUltimateLocked { get; set; }
+    public void ForceStartAim() { StartAim(); }
+    public void ForceEndAim() { EndAim(); }
+
     private void EndAim()
     {
-        if (!IsAiming)
+        if (!IsAiming || IsUltimateLocked)
         {
             return;
         }
@@ -520,6 +524,12 @@ public class PlayerWand : MonoBehaviour, IChargedAimWeapon
 
         float value = stats.GetValue(StatType.WandDamage);
         value *= 1f + chargeLevel * stats.GetValue(StatType.WandChargeDamageBonus);
+
+        if (IsUltimateLocked)
+        {
+            float multi = stats.GetValue(StatType.UltimateMageMeteorDamageMultiplier);
+            if (multi > 0f) value *= multi;
+        }
 
         // Crits share the melee stats so Keen Eye/Critical Damage benefit both weapons (the bow convention).
         bool crit = UnityEngine.Random.value < stats.GetValue(StatType.CritChance);
