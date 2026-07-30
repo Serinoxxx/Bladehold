@@ -86,6 +86,12 @@ public class WaveSpawner : MonoBehaviour
     /// <summary>The wave currently in progress (or about to start), 1-based.</summary>
     public int CurrentWave { get; private set; }
 
+    /// <summary>Total number of enemies that must die to clear the current wave.</summary>
+    public int WaveGoblinTotal => waveGoblinTotal;
+    
+    /// <summary>Number of enemies killed so far this wave.</summary>
+    public int KilledThisWave => killedThisWave;
+
     private int waveGoblinTotal;   // enemies that must die to clear the current wave
     private int killedThisWave;    // enemies killed so far this wave
     private int remainingToSpawn;  // enemies not yet spawned this wave
