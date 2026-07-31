@@ -33,6 +33,12 @@ public class ClassDefinitionSO : ScriptableObject
     [Tooltip("Melee weapon type integer parameter sent to the player Animator on class load for state machine branching (0 = Sword, 1 = Greataxe, 2 = Staff).")]
     public int meleeWeaponType = 0;
 
+    [Tooltip("The icon shown on the HUD for this class's melee weapon.")]
+    public Sprite meleeIcon;
+
+    [Tooltip("The icon shown on the HUD for this class's ranged weapon.")]
+    public Sprite rangedIcon;
+
     [Tooltip("Seconds of holding the attack button per melee charge level for this class (heavier weapons charge slower).")]
     public float chargeTimePerLevel = 1f;
 

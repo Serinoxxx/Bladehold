@@ -1049,6 +1049,7 @@ GameObject:
   - component: {fileID: 6586212395257358458}
   - component: {fileID: 79563273748144893}
   - component: {fileID: 5768052234400353201}
+  - component: {fileID: 4110702199037309050}
   m_Layer: 5
   m_Name: Bladehold HUD
   m_TagString: Untagged
@@ -1139,6 +1140,26 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &4110702199037309050
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6499224822808837982}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3115a4d7e88f4494e9317d3a66b81c9b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponHUDController
+  meleeWeaponIcon: {fileID: 3842757977271884807}
+  rangedWeaponIcon: {fileID: 6110627258287883690}
+  meleeKeybindIcon: {fileID: 4964570598395234663}
+  rangedKeybindIcon: {fileID: 905908355467866843}
+  mouseLeftSprite: {fileID: 21300000, guid: 3fc063021eaa5eb4cb710e15a38ceb6c, type: 3}
+  mouseRightSprite: {fileID: 21300000, guid: 78d618b10af7f9b4db2600f77fdce06c, type: 3}
+  gamepadMeleeSprite: {fileID: 21300000, guid: b8ce06b86768d104eb2dedb6613b32bc, type: 3}
+  gamepadRangedSprite: {fileID: 21300000, guid: c1f07a24972f24642a1afa80ecc751b3, type: 3}
 --- !u!1 &6966264075793900974
 GameObject:
   m_ObjectHideFlags: 0
@@ -2642,6 +2663,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 677aa4a1657e39743a91088c72f4e3a4, type: 3}
+--- !u!114 &6110627258287883690 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4867973955029081550, guid: 677aa4a1657e39743a91088c72f4e3a4, type: 3}
+  m_PrefabInstance: {fileID: 1676407342428395620}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &6300009111403718730 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4624611262921994286, guid: 677aa4a1657e39743a91088c72f4e3a4, type: 3}
@@ -4181,6 +4213,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 677aa4a1657e39743a91088c72f4e3a4, type: 3}
+--- !u!114 &3842757977271884807 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4867973955029081550, guid: 677aa4a1657e39743a91088c72f4e3a4, type: 3}
+  m_PrefabInstance: {fileID: 8564364901425496521}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &3960731087796580839 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4624611262921994286, guid: 677aa4a1657e39743a91088c72f4e3a4, type: 3}

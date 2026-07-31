@@ -19,6 +19,8 @@ MonoBehaviour:
   animatorOverride: {fileID: 0}
   characterModelPrefab: {fileID: 5406396403290654752, guid: 5bc119c4c4c4a5944be2cc3354c0fed5, type: 3}
   meleeWeaponType: 0
+  meleeIcon: {fileID: 21300000, guid: a4e5d760ab37ea34095130fb7d51b828, type: 3}
+  rangedIcon: {fileID: 0}
   chargeTimePerLevel: 1
   meleeAttackCooldown: 0.5
   skillTree: {fileID: 0}
