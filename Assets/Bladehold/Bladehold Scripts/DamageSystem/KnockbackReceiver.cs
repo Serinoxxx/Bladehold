@@ -182,7 +182,17 @@ public class KnockbackReceiver : MonoBehaviour
         SetAiEnabled(false);
         rootCollider.enabled = false;
         animator.enabled = false;
-        ragdoll.EnterRagdoll(Vector3.zero, Random.insideUnitSphere * config.spinTorque);
+        Vector3 flatDir = -transform.forward;
+        if (playerHealth != null)
+        {
+            flatDir = transform.position - playerHealth.transform.position;
+            flatDir.y = 0f;
+            if (flatDir.sqrMagnitude < 0.0001f) flatDir = -transform.forward;
+        }
+        flatDir.Normalize();
+        Vector3 tumbleAxis = Vector3.Cross(Vector3.up, flatDir);
+        Vector3 spin = tumbleAxis * config.spinTorque + Random.insideUnitSphere * (config.spinTorque * 0.3f);
+        ragdoll.EnterRagdoll(Vector3.zero, spin);
     }
     
     private IEnumerator SlideRoutine(Damage damage, float force)
@@ -264,7 +274,11 @@ public class KnockbackReceiver : MonoBehaviour
         {
             launchVelocity = LaunchDirection(damage) * Mathf.Min(damage.knockbackForce * config.knockbackMultiplier, config.maxKnockbackForce);
         }
-        Vector3 spin = Random.insideUnitSphere * config.spinTorque;
+        Vector3 flatDir = transform.position - damage.sourcePosition;
+        flatDir.y = 0f;
+        flatDir = flatDir.sqrMagnitude > 0.0001f ? flatDir.normalized : -transform.forward;
+        Vector3 tumbleAxis = Vector3.Cross(Vector3.up, flatDir);
+        Vector3 spin = tumbleAxis * config.spinTorque + Random.insideUnitSphere * (config.spinTorque * 0.3f);
         ragdoll.EnterRagdoll(carried + launchVelocity, spin, config.randomLimbKick);
 
         float airborne = 0f;

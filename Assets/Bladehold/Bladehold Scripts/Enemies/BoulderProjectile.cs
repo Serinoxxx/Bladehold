@@ -13,6 +13,7 @@ public class BoulderProjectile : MonoBehaviour, IDamageable
     private IDamageable owner;
     private bool launched;
     private bool exploded = false;
+    private bool canSplit = true;
 
     private void OnValidate()
     {
@@ -93,6 +94,16 @@ public class BoulderProjectile : MonoBehaviour, IDamageable
 
         if (damage.isProjectile)
         {
+            if (canSplit)
+            {
+                IDamageable newOwner = damage.source;
+                if (newOwner == null && Player.Instance != null)
+                {
+                    newOwner = Player.Instance.Damageable;
+                }
+                SpawnMiniBoulders(newOwner);
+            }
+
             // Explode mid air if hit by a projectile
             Explode();
         }
@@ -116,7 +127,30 @@ public class BoulderProjectile : MonoBehaviour, IDamageable
         }
     }
 
+    private void SpawnMiniBoulders(IDamageable newOwner)
+    {
+        for (int i = 0; i < 5; i++)
+        {
+            GameObject miniObj = Instantiate(gameObject, transform.position, Quaternion.identity);
+            miniObj.transform.localScale = transform.localScale * 0.5f;
+            
+            BoulderProjectile mini = miniObj.GetComponent<BoulderProjectile>();
+            mini.exploded = false;
+            mini.canSplit = false;
+            
+            Vector3 randomDir = Random.onUnitSphere;
+            randomDir.y = Mathf.Abs(randomDir.y); // upward hemisphere
+            randomDir.y += 0.5f; // favor upward
+            randomDir.Normalize();
+            
+            Vector3 velocity = randomDir * Random.Range(10f, 15f);
+            
+            mini.Launch(velocity, damage * 0.4f, damageType, explosionRadius * 0.5f, newOwner, customGravity);
+        }
+    }
+
     private void Explode()
+
     {
         if (exploded) return;
         exploded = true;

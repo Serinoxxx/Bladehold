@@ -86,7 +86,7 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
     [Tooltip("Tumble speed in degrees per second.")]
     [SerializeField] private float spinDegreesPerSecond = 1080f;
     [Tooltip("Seconds the axe stays visible where it lodges before despawning (non-boomerang throws).")]
-    [SerializeField] private float lingerSeconds = 0.15f;
+    [SerializeField] private float lingerSeconds = 1.5f;
     [Tooltip("Metres from the return target at which a boomeranging axe counts as caught and despawns.")]
     [SerializeField] private float catchRadius = 0.75f;
     [Tooltip("Safety despawn for a boomeranging axe whose return target vanished mid-flight.")]
