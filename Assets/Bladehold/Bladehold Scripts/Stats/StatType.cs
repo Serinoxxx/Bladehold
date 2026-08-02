@@ -146,6 +146,15 @@ public enum StatType
     SummonMountDuration,
     /// <summary>Cooldown in seconds before the mount can be summoned again.</summary>
     SummonMountCooldown,
+    
+    /// <summary>1 = dodge unlocked, 0 = locked.</summary>
+    DodgeUnlocked,
+    /// <summary>Cooldown in seconds before dodging again.</summary>
+    DodgeCooldown,
+    /// <summary>Distance the dodge covers in metres.</summary>
+    DodgeDistance,
+    /// <summary>Multiplier on base sword damage dealt to enemies dashed through. 0 = no damage.</summary>
+    DodgeDamageMultiplier,
 
     /// <summary>1 = the Berserker's throwing axe is unlocked and can be wound up (hold aim); 0 = locked (aiming does nothing, melee stays out). Gated by the "Throwing Axe" node — the BowUnlocked convention.</summary>
     AxeThrowUnlocked,

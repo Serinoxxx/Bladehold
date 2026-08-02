@@ -1,6 +1,28 @@
 # Bladehold HUD Setup
 
-## End of Wave Stats UI — Unity Editor wiring
+## Dodge / Dash Mechanic — Unity Editor wiring
+
+### The C# is done
+Added a Dodge/Dash mechanic bound to Left Control (`PlayerDodge.cs`). The ability is locked by default and unlocked via `DodgeUnlocked` base stat (set to 1 out of the box per user request, but can be scaled). Includes cooldown tracking (`DodgeCooldown`), dash distance (`DodgeDistance`), and a damage multiplier (`DodgeDamageMultiplier`) that allows dashing through enemies to deal damage (the 'Charge/Blink' precedent). Added `PlayerDodgeUI.cs` to handle the radial cooldown UI and hotkey prompt on the HUD.
+
+### Wiring checklist
+- [ ] On `Assets/Bladehold/Bladehold Prefabs/Player.prefab`:
+  - Add `PlayerDodge` component to the root.
+  - The `characterController`, `player`, and `animator` fields should auto-wire via `OnValidate`.
+- [ ] On `Assets/Bladehold/Bladehold Prefabs/UI/Bladehold HUD.prefab`:
+  - Create a new UI button object in the bottom section near the weapon icons (or duplicate an existing one like SummonMountButton).
+  - Rename it to `PlayerDodgeButton`.
+  - Add `PlayerDodgeUI` component.
+  - Assign the visual components: `skillIcon` (the main sprite image), `radialFillImage` (set image type to Filled, Radial 360), `timerText` (TextMeshProUGUI), and `keybindIcon` (the small prompt image).
+  - Set `keyboardSprite` to a Synty 'Ctrl' key sprite, and `gamepadSprite` to an appropriate gamepad button sprite (e.g., LB/L1).
+  - Add two `MMF_Player` child objects for `cooldownFinishedFeedback` (e.g., `MMF_PunchScale`) and `activatedFeedback`, and assign them.
+
+### Manual verification (Dodge Mechanic)
+- [ ] Playtest: Ensure the Dodge icon appears in the HUD.
+- [ ] Playtest: Pressing Left Control performs a quick dash in the forward direction.
+- [ ] Playtest: The UI icon radial fill tracks the cooldown accurately (10 seconds by default).
+- [ ] Playtest: Ensure that the ability cannot be used while it is on cooldown.
+- [ ] Playtest: (With DodgeDamageMultiplier > 0 via a skill upgrade) Dash through an enemy and ensure it takes damage.## End of Wave Stats UI — Unity Editor wiring
 
 ### The C# is done
 Expanded the between-wave intermission screen to show detailed telemetry from `RunTelemetry` alongside the existing gold and kill counts, per the user's request. Added `Damage Dealt`, `Damage Taken`, and `Critical Hits` to `WaveStatsPanel.cs` and refactored `RunTelemetry.cs` to expose a `GetCurrentWaveStats` method. Modified `WaveIntermissionUI.cs` so that picking "Recover and Upgrade" (skill tree) now clears all consumables (coins, health drops, element nodes, etc.) from the arena, acting as a true forfeit of the wave's cash reward.

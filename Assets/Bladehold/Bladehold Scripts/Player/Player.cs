@@ -70,6 +70,12 @@ public class Player : MonoBehaviour
             // registers their heal fraction here (base 10% of max health; the "Field Medic" skill
             // family layers flat modifiers on top).
             Stats.SetBase(StatType.HealthPackHealPercent, 0.10f);
+
+            // Dodge bases
+            Stats.SetBase(StatType.DodgeUnlocked, 1f);
+            Stats.SetBase(StatType.DodgeCooldown, 10f);
+            Stats.SetBase(StatType.DodgeDistance, 2f);
+            Stats.SetBase(StatType.DodgeDamageMultiplier, 0f);
         }
     }
 }
