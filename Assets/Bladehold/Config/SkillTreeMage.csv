@@ -45,7 +45,7 @@ ult_unlock,Rain of Fire,Rise into the air and rain massive explosive meteors dow
 ult_dur,Enduring Rain,Increase ultimate duration,Increase ultimate duration further,150,1.5,5,UltimateDurationSeconds,Flat,1,ult_unlock,21.5,11,Aura_Speed_nb,
 ult_dmg,Massive Meteors,Increase meteor damage during ultimate,Increase meteor damage further,200,1.6,4,UltimateMageMeteorDamageMultiplier,Flat,0.5,ult_unlock,22.5,10,Aura_MegaExplosion_nb,
 ult_radius,Explosive Landing,Increase the explosion radius when landing,Increase the radius further,120,1.4,5,UltimateMageLandingExplosionRadius,Flat,1.5,ult_unlock,23.5,11,Mageskill_02_nobg,
-dodge,Blink,Unlock a short teleport forward. Press Ctrl to activate.,,60,1,1,DodgeUnlocked,Flat,1,,10,25,Warriorskill_23_nobg,1
+dodge,Blink,Unlock a short teleport forward. Press Ctrl to activate.,,60,1,1,DodgeUnlocked,Flat,1,,10,25,Skill_282_unholydodge,1
 dodge_cooldown,Quick Cast,Reduce Blink cooldown,Reduce Blink cooldown further,45,1.3,4,DodgeCooldown,Flat,-1,dodge,10,26,Aura_Speed_nb,
 dodge_damage,Arcane Displacement,Blinking through enemies deals damage,Increase damage dealt by blinking through enemies,60,1.4,4,DodgeDamageMultiplier,Flat,0.25,dodge,9,25,Warriorskill_44_nobg,
 dodge_chain,Consecutive Blinks,Killing an enemy with Blink reduces its cooldown by 1s,,90,1,1,DodgeChainCooldownReduction,Flat,1,dodge_damage,8,25,Skill_418_fastmove,
