@@ -155,6 +155,10 @@ public enum StatType
     DodgeDistance,
     /// <summary>Multiplier on base sword damage dealt to enemies dashed through. 0 = no damage.</summary>
     DodgeDamageMultiplier,
+    /// <summary>Force applied to enemies hit by the dodge dash. 0 = no knockback.</summary>
+    DodgeKnockbackForce,
+    /// <summary>Seconds of cooldown recovered per enemy killed by the dodge dash.</summary>
+    DodgeChainCooldownReduction,
 
     /// <summary>1 = the Berserker's throwing axe is unlocked and can be wound up (hold aim); 0 = locked (aiming does nothing, melee stays out). Gated by the "Throwing Axe" node — the BowUnlocked convention.</summary>
     AxeThrowUnlocked,

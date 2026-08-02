@@ -75,6 +75,8 @@ public class PlayerDodge : MonoBehaviour
         // Check input vector from Synty's InputReader if possible, but fallback to forward is fine for now
         
         float damageMultiplier = player.Stats.GetValue(StatType.DodgeDamageMultiplier);
+        float knockback = player.Stats.GetValue(StatType.DodgeKnockbackForce);
+        float chainReduction = player.Stats.GetValue(StatType.DodgeChainCooldownReduction);
         HashSet<Health> hitEnemies = new HashSet<Health>();
 
         float timePassed = 0f;
@@ -85,7 +87,7 @@ public class PlayerDodge : MonoBehaviour
             float moveStep = (distance / dashDuration) * Time.deltaTime;
             characterController.Move(dashDir * moveStep);
             
-            if (damageMultiplier > 0f)
+            if (damageMultiplier > 0f || knockback > 0f)
             {
                 Collider[] hits = Physics.OverlapSphere(transform.position, 1.5f);
                 foreach (var hit in hits)
@@ -98,10 +100,17 @@ public class PlayerDodge : MonoBehaviour
                         enemyHealth.ReceiveDamage(new Damage { 
                             value = finalDamage, 
                             isCritical = false, 
-                            knockbackForce = 5f,
+                            knockbackForce = knockback,
                             sourcePosition = transform.position,
                             source = player.Damageable
                         });
+
+                        if (enemyHealth.IsDead && chainReduction > 0f)
+                        {
+                            remainingCooldown -= chainReduction;
+                            if (remainingCooldown < 0f) remainingCooldown = 0f;
+                            OnCooldownUpdated?.Invoke(remainingCooldown, maxCooldown);
+                        }
                     }
                 }
             }

@@ -72,10 +72,15 @@ public class Player : MonoBehaviour
             Stats.SetBase(StatType.HealthPackHealPercent, 0.10f);
 
             // Dodge bases
-            Stats.SetBase(StatType.DodgeUnlocked, 1f);
+            if (Stats.GetValue(StatType.DodgeUnlocked) == 0f)
+            {
+                Stats.SetBase(StatType.DodgeUnlocked, 0f);
+            }
             Stats.SetBase(StatType.DodgeCooldown, 10f);
             Stats.SetBase(StatType.DodgeDistance, 2f);
             Stats.SetBase(StatType.DodgeDamageMultiplier, 0f);
+            Stats.SetBase(StatType.DodgeKnockbackForce, 0f);
+            Stats.SetBase(StatType.DodgeChainCooldownReduction, 0f);
         }
     }
 }

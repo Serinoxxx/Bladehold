@@ -57,3 +57,7 @@ ult_unlock,Arrow Stream,Unleash an insanely fast stream of high-knockback arrows
 ult_dur,Enduring Stream,Increase ultimate duration,Increase ultimate duration further,150,1.5,5,UltimateDurationSeconds,Flat,1,ult_unlock,19,11,Aura_Speed_nb,
 ult_rate,Rapid Stream,Increase ultimate arrow fire rate,Increase ultimate fire rate further,200,1.6,4,UltimateRangerFireRate,Flat,-0.005,ult_unlock,19,12,Archerskill_07_nobg,
 ult_charge,Quick Charge,Build ultimate charge faster,Build ultimate charge even faster,120,1.4,5,UltimateChargeMultiplier,Percent,0.2,ult_unlock,20,12,Lightning_nobg,
+dodge,Quick Step,Unlock a quick dash forward. Press Ctrl to activate.,,60,1,1,DodgeUnlocked,Flat,1,,10,25,Warriorskill_23_nobg,1
+dodge_cooldown,Nimble,Reduce Dodge cooldown,Reduce Dodge cooldown further,45,1.3,4,DodgeCooldown,Flat,-1,dodge,10,26,Aura_Speed_nb,
+dodge_damage,Phasing Strike,Dashing through enemies deals damage,Increase damage dealt by dodging through enemies,60,1.4,4,DodgeDamageMultiplier,Flat,0.25,dodge,9,25,Warriorskill_44_nobg,
+dodge_chain,Relentless Momentum,Killing an enemy with Dodge reduces its cooldown by 1s,,90,1,1,DodgeChainCooldownReduction,Flat,1,dodge_damage,8,25,Skill_418_fastmove,

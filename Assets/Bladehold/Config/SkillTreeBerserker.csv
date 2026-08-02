@@ -46,3 +46,8 @@ ult_unlock,Inner Giant,Grow in size and power. You gain increased damage and kno
 ult_dur,Enduring Giant,Increase ultimate duration,Increase ultimate duration further,150,1.5,5,UltimateDurationSeconds,Flat,1,ult_unlock,21.5,11,Aura_Speed_nb,
 ult_size,Colossal Growth,Grow even larger during ultimate,Grow larger still,200,1.6,4,UltimateBerserkerSizeMultiplier,Flat,0.25,ult_unlock,22.5,10,Warriorskill_28_axe,
 ult_dr,Thick Skin,Take reduced damage during ultimate,Take even less damage,120,1.4,5,UltimateBerserkerDamageReduction,Flat,0.1,ult_unlock,23.5,11,Warriorskill_18_block,
+dodge,Charge,Unlock a charging dash forward. Press Ctrl to activate.,,60,1,1,DodgeUnlocked,Flat,1,,10,25,Warriorskill_23_nobg,1
+dodge_cooldown,Adrenaline,Reduce Charge cooldown,Reduce Charge cooldown further,45,1.3,4,DodgeCooldown,Flat,-1,dodge,10,26,Aura_Speed_nb,
+dodge_damage,Trample,Charging through enemies deals damage,Increase damage dealt by charging through enemies,60,1.4,4,DodgeDamageMultiplier,Flat,0.25,dodge,9,25,Warriorskill_44_nobg,
+dodge_chain,Relentless Momentum,Killing an enemy with Charge reduces its cooldown by 1s,,90,1,1,DodgeChainCooldownReduction,Flat,1,dodge_damage,8,25,Skill_418_fastmove,
+dodge_knockback,Shoulder Barge,Charging into enemies knocks them back,Increase knockback force further,60,1.3,4,DodgeKnockbackForce,Flat,8,dodge,11,25,Push_nobg,

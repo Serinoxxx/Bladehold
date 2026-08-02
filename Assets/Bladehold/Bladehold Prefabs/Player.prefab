@@ -1580,6 +1580,7 @@ GameObject:
   - component: {fileID: 1666059115837360206}
   - component: {fileID: -9218812370878724873}
   - component: {fileID: 7097117237931593117}
+  - component: {fileID: 8834962162041347795}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -1767,6 +1768,22 @@ MonoBehaviour:
   spawnFeedback: {fileID: 0}
   despawnFeedback: {fileID: 0}
   errorFeedback: {fileID: 0}
+--- !u!114 &8834962162041347795
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 635090733411138093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0012096992bcf024f880b612b471f7c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerDodge
+  player: {fileID: 0}
+  characterController: {fileID: 0}
+  animator: {fileID: 3663620996007313722}
+  dashDuration: 0.2
 --- !u!1 &758177441954652393
 GameObject:
   m_ObjectHideFlags: 0
