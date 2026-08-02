@@ -132,6 +132,19 @@ public class HealthPack : MonoBehaviour
             pickupFeedback.PlayFeedbacks();
         }
 
+#if UNITY_EDITOR
+        AudioClip healClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Weapon Charge/magic_flame_of_light_01.wav");
+        if (healClip != null)
+        {
+            MoreMountains.Tools.MMSoundManagerPlayOptions options = MoreMountains.Tools.MMSoundManagerPlayOptions.Default;
+            options.MmSoundManagerTrack = MoreMountains.Tools.MMSoundManager.MMSoundManagerTracks.Sfx;
+            options.Location = transform.position;
+            options.Volume = 0.9f;
+            options.Pitch = Random.Range(1.05f, 1.25f);
+            MoreMountains.Tools.MMSoundManagerSoundPlayEvent.Trigger(healClip, options);
+        }
+#endif
+
         Destroy(gameObject);
         return true;
     }

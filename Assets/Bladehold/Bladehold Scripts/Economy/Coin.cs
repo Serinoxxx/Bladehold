@@ -90,6 +90,20 @@ public class Coin : MonoBehaviour
             coinPickupFeedback.PlayFeedbacks();
         }
 
+#if UNITY_EDITOR
+        AudioClip coinClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Fantasy_Game_Item_Organic_Coin_Collect_A.wav");
+        if (coinClip == null) coinClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Coins.wav");
+        if (coinClip != null)
+        {
+            MoreMountains.Tools.MMSoundManagerPlayOptions options = MoreMountains.Tools.MMSoundManagerPlayOptions.Default;
+            options.MmSoundManagerTrack = MoreMountains.Tools.MMSoundManager.MMSoundManagerTracks.UI;
+            options.Location = transform.position;
+            options.Volume = 0.75f;
+            options.Pitch = Random.Range(0.95f, 1.15f);
+            MoreMountains.Tools.MMSoundManagerSoundPlayEvent.Trigger(coinClip, options);
+        }
+#endif
+
         Destroy(gameObject);
         return true;
     }

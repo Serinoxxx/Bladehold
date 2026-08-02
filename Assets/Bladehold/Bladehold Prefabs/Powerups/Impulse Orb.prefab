@@ -349,7 +349,7 @@ MonoBehaviour:
         Owner: {fileID: 2255551093783732188}
         DebugActive: 0
         Source: 0
-        Sfx: {fileID: 0}
+        Sfx: {fileID: 8300000, guid: 774311a6c62694c269df1de5a61a42f7, type: 3}
         AudioResourceToPlay: {fileID: 0}
         RandomSfx:
         - {fileID: 8300000, guid: 025261edede688241bb10631b5c7e236, type: 3}
@@ -360,8 +360,8 @@ MonoBehaviour:
         SoundDataSO: {fileID: 0}
         MinVolume: 1
         MaxVolume: 1
-        MinPitch: 1
-        MaxPitch: 1
+        MinPitch: 0.9
+        MaxPitch: 1.1
         MmSoundManagerTrack: 0
         ID: 0
         AudioGroup: {fileID: 0}

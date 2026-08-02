@@ -157,6 +157,20 @@ public class PlayerSummonMount : MonoBehaviour
             spawnFeedback.PlayFeedbacks();
         }
 
+#if UNITY_EDITOR
+        AudioClip horseClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Horse/Horse_Neigh_01.wav");
+        if (horseClip == null) horseClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Malbers Animations/Horse AnimSet Pro/6 - Audio/Horse/horse-whinny_01.wav");
+        if (horseClip != null)
+        {
+            MoreMountains.Tools.MMSoundManagerPlayOptions options = MoreMountains.Tools.MMSoundManagerPlayOptions.Default;
+            options.MmSoundManagerTrack = MoreMountains.Tools.MMSoundManager.MMSoundManagerTracks.Sfx;
+            options.Location = transform.position;
+            options.Volume = 0.95f;
+            options.Pitch = UnityEngine.Random.Range(0.95f, 1.05f);
+            MoreMountains.Tools.MMSoundManagerSoundPlayEvent.Trigger(horseClip, options);
+        }
+#endif
+
         OnAbilityTriggered?.Invoke();
     }
 

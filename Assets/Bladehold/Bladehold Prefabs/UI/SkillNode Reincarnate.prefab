@@ -222,7 +222,7 @@ MonoBehaviour:
         Owner: {fileID: 5165903804217359151}
         DebugActive: 0
         Source: 0
-        Sfx: {fileID: 0}
+        Sfx: {fileID: 8300000, guid: 7c0d04dc6db69374e83216718d12c785, type: 3}
         AudioResourceToPlay: {fileID: 0}
         RandomSfx:
         - {fileID: 8300000, guid: b5530097ac7a0c24aac8845e00f52bf5, type: 3}
@@ -238,8 +238,8 @@ MonoBehaviour:
         SoundDataSO: {fileID: 0}
         MinVolume: 1
         MaxVolume: 1
-        MinPitch: 1
-        MaxPitch: 1
+        MinPitch: 0.9
+        MaxPitch: 1.1
         MmSoundManagerTrack: 0
         ID: 0
         AudioGroup: {fileID: 0}
@@ -1064,7 +1064,7 @@ MonoBehaviour:
         Owner: {fileID: 4882299542820698942}
         DebugActive: 0
         Source: 0
-        Sfx: {fileID: 0}
+        Sfx: {fileID: 8300000, guid: 25647aaae83ac214e82905c913162fce, type: 3}
         AudioResourceToPlay: {fileID: 0}
         RandomSfx:
         - {fileID: 8300000, guid: 25647aaae83ac214e82905c913162fce, type: 3}
@@ -1079,8 +1079,8 @@ MonoBehaviour:
         SoundDataSO: {fileID: 0}
         MinVolume: 1
         MaxVolume: 1
-        MinPitch: 1
-        MaxPitch: 1
+        MinPitch: 0.9
+        MaxPitch: 1.1
         MmSoundManagerTrack: 0
         ID: 0
         AudioGroup: {fileID: 0}
@@ -1435,7 +1435,7 @@ MonoBehaviour:
         Owner: {fileID: 9107339348503516595}
         DebugActive: 0
         Source: 0
-        Sfx: {fileID: 0}
+        Sfx: {fileID: 8300000, guid: b5530097ac7a0c24aac8845e00f52bf5, type: 3}
         AudioResourceToPlay: {fileID: 0}
         RandomSfx:
         - {fileID: 8300000, guid: 7c0d04dc6db69374e83216718d12c785, type: 3}
@@ -1453,8 +1453,8 @@ MonoBehaviour:
         SoundDataSO: {fileID: 0}
         MinVolume: 1
         MaxVolume: 1
-        MinPitch: 1
-        MaxPitch: 1
+        MinPitch: 0.9
+        MaxPitch: 1.1
         MmSoundManagerTrack: 0
         ID: 0
         AudioGroup: {fileID: 0}

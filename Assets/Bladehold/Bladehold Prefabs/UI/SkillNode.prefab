@@ -549,6 +549,8 @@ MonoBehaviour:
   icon: {fileID: 7237392827980097929}
   purchasedTick: {fileID: 8300000000000000201}
   teasedLock: {fileID: 8300000000000000301}
+  selectedHighlight: {fileID: 0}
+  selectedFallbackScale: 1.12
   spawnFeedback: {fileID: 5165733231303413647}
   hoverFeedback: {fileID: 4691405052783766522}
   purchaseFeedback: {fileID: 2064281113747093027}
@@ -837,7 +839,7 @@ MonoBehaviour:
         Owner: {fileID: 4691405052783766522}
         DebugActive: 0
         Source: 0
-        Sfx: {fileID: 0}
+        Sfx: {fileID: 8300000, guid: 25647aaae83ac214e82905c913162fce, type: 3}
         AudioResourceToPlay: {fileID: 0}
         RandomSfx:
         - {fileID: 8300000, guid: 25647aaae83ac214e82905c913162fce, type: 3}
@@ -852,8 +854,8 @@ MonoBehaviour:
         SoundDataSO: {fileID: 0}
         MinVolume: 1
         MaxVolume: 1
-        MinPitch: 1
-        MaxPitch: 1
+        MinPitch: 0.9
+        MaxPitch: 1.1
         MmSoundManagerTrack: 2
         ID: 0
         AudioGroup: {fileID: 0}
@@ -1300,7 +1302,7 @@ MonoBehaviour:
         Owner: {fileID: 5165733231303413647}
         DebugActive: 0
         Source: 0
-        Sfx: {fileID: 0}
+        Sfx: {fileID: 8300000, guid: b5530097ac7a0c24aac8845e00f52bf5, type: 3}
         AudioResourceToPlay: {fileID: 0}
         RandomSfx:
         - {fileID: 8300000, guid: 7c0d04dc6db69374e83216718d12c785, type: 3}
@@ -1318,8 +1320,8 @@ MonoBehaviour:
         SoundDataSO: {fileID: 0}
         MinVolume: 1
         MaxVolume: 1
-        MinPitch: 1
-        MaxPitch: 1
+        MinPitch: 0.9
+        MaxPitch: 1.1
         MmSoundManagerTrack: 2
         ID: 0
         AudioGroup: {fileID: 0}
@@ -1937,7 +1939,7 @@ MonoBehaviour:
         Owner: {fileID: 2064281113747093027}
         DebugActive: 0
         Source: 0
-        Sfx: {fileID: 0}
+        Sfx: {fileID: 8300000, guid: 7c0d04dc6db69374e83216718d12c785, type: 3}
         AudioResourceToPlay: {fileID: 0}
         RandomSfx:
         - {fileID: 8300000, guid: b5530097ac7a0c24aac8845e00f52bf5, type: 3}
@@ -1953,8 +1955,8 @@ MonoBehaviour:
         SoundDataSO: {fileID: 0}
         MinVolume: 1
         MaxVolume: 1
-        MinPitch: 1
-        MaxPitch: 1
+        MinPitch: 0.9
+        MaxPitch: 1.1
         MmSoundManagerTrack: 2
         ID: 0
         AudioGroup: {fileID: 0}

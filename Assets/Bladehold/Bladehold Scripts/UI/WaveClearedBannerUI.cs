@@ -3,6 +3,8 @@ using MoreMountains.Feedbacks;
 using TMPro;
 using UnityEngine;
 
+using MoreMountains.Tools;
+
 /// <summary>
 ///     Listens for wave clear events and pops in a banner displaying the gold earned and enemies killed
 ///     during that specific wave. Uses <see cref="MMF_Player"/> to animate the banner in and out.
@@ -18,9 +20,10 @@ public class WaveClearedBannerUI : MonoBehaviour
     [SerializeField] private TMP_Text goldEarnedText;
     [SerializeField] private TMP_Text enemiesKilledText;
 
-    [Header("Animation")]
+    [Header("Animation & Juiciness")]
     [Tooltip("Played when the banner appears. Should handle its own reset/outro or be paired with a separate outro if needed.")]
     [SerializeField] private MMF_Player bannerAnimationFeedback;
+    [SerializeField] private AudioClip[] waveClearedSounds;
     [Tooltip("How long the banner stays on screen before hiding itself.")]
     [SerializeField] private float displayDuration = 3f;
 
@@ -105,6 +108,27 @@ public class WaveClearedBannerUI : MonoBehaviour
         {
             bannerAnimationFeedback.Initialization();
             bannerAnimationFeedback.PlayFeedbacks();
+        }
+
+        AudioClip clipToPlay = null;
+        if (waveClearedSounds != null && waveClearedSounds.Length > 0)
+        {
+            clipToPlay = waveClearedSounds[Random.Range(0, waveClearedSounds.Length)];
+        }
+#if UNITY_EDITOR
+        if (clipToPlay == null)
+        {
+            clipToPlay = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Audio/Bells/chime_bell_10.wav");
+        }
+#endif
+        if (clipToPlay != null)
+        {
+            MMSoundManagerPlayOptions options = MMSoundManagerPlayOptions.Default;
+            options.MmSoundManagerTrack = MMSoundManager.MMSoundManagerTracks.UI;
+            options.Location = transform.position;
+            options.Volume = 0.9f;
+            options.Pitch = Random.Range(0.95f, 1.05f);
+            MMSoundManagerSoundPlayEvent.Trigger(clipToPlay, options);
         }
 
         if (hideRoutine != null)

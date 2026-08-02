@@ -222,7 +222,7 @@ MonoBehaviour:
         Owner: {fileID: 531501347744972787}
         DebugActive: 0
         Source: 0
-        Sfx: {fileID: 0}
+        Sfx: {fileID: 8300000, guid: 11c8e391353647c4b9566dcb6bc331ed, type: 3}
         AudioResourceToPlay: {fileID: 0}
         RandomSfx:
         - {fileID: 8300000, guid: 11c8e391353647c4b9566dcb6bc331ed, type: 3}
@@ -813,6 +813,7 @@ MonoBehaviour:
   targetSelector: {fileID: 6317806685617389453}
   startAttackFeedback: {fileID: 531501347744972787}
   attackHitFeedback: {fileID: 1294620434156887580}
+  knockbackReceiver: {fileID: 8743446565083701594}
   attackTrigger: Attack
 --- !u!114 &4122440191477999408
 MonoBehaviour:
@@ -1545,7 +1546,7 @@ MonoBehaviour:
         Owner: {fileID: 2517548154434545823}
         DebugActive: 0
         Source: 0
-        Sfx: {fileID: 0}
+        Sfx: {fileID: 8300000, guid: b52ef964be58a724fb549d1a59c6cd54, type: 3}
         AudioResourceToPlay: {fileID: 0}
         RandomSfx:
         - {fileID: 8300000, guid: b52ef964be58a724fb549d1a59c6cd54, type: 3}
@@ -1744,6 +1745,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HealthBarUI
   health: {fileID: 2416392165065999887}
   healthBar: {fileID: 8820619236359328086}
+  ragdoll: {fileID: 0}
 --- !u!114 &8820619236359328086
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2184,7 +2186,7 @@ MonoBehaviour:
         Owner: {fileID: 1294620434156887580}
         DebugActive: 0
         Source: 0
-        Sfx: {fileID: 0}
+        Sfx: {fileID: 8300000, guid: a60bde63269e641a598c11f7cb6ac7ac, type: 3}
         AudioResourceToPlay: {fileID: 0}
         RandomSfx:
         - {fileID: 8300000, guid: ba3e7a97854324659b1de19f4d7a88b5, type: 3}

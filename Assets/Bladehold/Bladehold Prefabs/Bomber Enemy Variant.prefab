@@ -815,6 +815,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7a610a77074b0b47936e37d35e5b4b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AITargetSelector
+--- !u!114 &4880829540140647577 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2774917170554717151, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+  m_PrefabInstance: {fileID: 7295353029549279046}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7198226037129445137}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5359f5d66e32c6b4eb37ee03ebab4315, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyRagdoll
 --- !u!114 &4951412238856552777 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2416392165065999887, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
@@ -848,6 +859,7 @@ MonoBehaviour:
   movement: {fileID: 1153090937186927668}
   attackData: {fileID: 11400000, guid: 44133f5751d683046aeacb3530d43728, type: 2}
   targetSelector: {fileID: 3644282192790894795}
+  ragdoll: {fileID: 4880829540140647577}
   torchVisual: {fileID: 0}
   fuseSparkVisuals:
   - {fileID: 2980844296373417619}

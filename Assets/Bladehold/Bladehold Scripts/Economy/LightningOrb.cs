@@ -77,6 +77,19 @@ public class LightningOrb : MonoBehaviour
             pickupFeedback.PlayFeedbacks();
         }
 
+#if UNITY_EDITOR
+        AudioClip zapClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Lightning/electric_lightning_blast_01.wav");
+        if (zapClip != null)
+        {
+            MoreMountains.Tools.MMSoundManagerPlayOptions options = MoreMountains.Tools.MMSoundManagerPlayOptions.Default;
+            options.MmSoundManagerTrack = MoreMountains.Tools.MMSoundManager.MMSoundManagerTracks.Sfx;
+            options.Location = transform.position;
+            options.Volume = 0.9f;
+            options.Pitch = Random.Range(0.95f, 1.15f);
+            MoreMountains.Tools.MMSoundManagerSoundPlayEvent.Trigger(zapClip, options);
+        }
+#endif
+
         Destroy(gameObject);
         return true;
     }

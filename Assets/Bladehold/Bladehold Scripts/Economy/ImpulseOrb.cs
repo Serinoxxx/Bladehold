@@ -78,6 +78,19 @@ public class ImpulseOrb : MonoBehaviour
             pickupFeedback.PlayFeedbacks();
         }
 
+#if UNITY_EDITOR
+        AudioClip orbClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Weapon Charge/magic_flame_of_light_03.wav");
+        if (orbClip != null)
+        {
+            MoreMountains.Tools.MMSoundManagerPlayOptions options = MoreMountains.Tools.MMSoundManagerPlayOptions.Default;
+            options.MmSoundManagerTrack = MoreMountains.Tools.MMSoundManager.MMSoundManagerTracks.Sfx;
+            options.Location = transform.position;
+            options.Volume = 0.9f;
+            options.Pitch = Random.Range(1.1f, 1.3f);
+            MoreMountains.Tools.MMSoundManagerSoundPlayEvent.Trigger(orbClip, options);
+        }
+#endif
+
         Destroy(gameObject);
         return true;
     }

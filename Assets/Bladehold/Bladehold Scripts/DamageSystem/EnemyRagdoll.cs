@@ -22,6 +22,8 @@ public class EnemyRagdoll : MonoBehaviour
     [SerializeField] private RagdollConfigSO config;
     [Tooltip("Optional; lets an early corpse-cap despawn freeze a still-simulating ragdoll before the sink starts.")]
     [SerializeField] private CorpseDespawner corpseDespawner;
+    [Header("Impact Sound Juiciness")]
+    [SerializeField] private AudioClip[] impactSounds;
 
     /// <summary>Ragdolls simulating right now, across all enemies. <see cref="ImpulseReceiver" /> caps this.</summary>
     public static int ActiveCount { get; private set; }
@@ -312,6 +314,11 @@ public class EnemyRagdoll : MonoBehaviour
 
         // Only the fast-moving core gets speculative CCD; per-limb CCD isn't worth the cost.
         Pelvis.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+
+        RagdollImpactAudio pelvisImpact = Pelvis.gameObject.AddComponent<RagdollImpactAudio>();
+        pelvisImpact.Init(this, impactSounds);
+        RagdollImpactAudio chestImpact = chestBody.gameObject.AddComponent<RagdollImpactAudio>();
+        chestImpact.Init(this, impactSounds);
 
         // Cached here (not Start) so un-flung enemies pay nothing; EnterRagdoll flips these to
         // per-frame bounds while the bones are away from the root.
