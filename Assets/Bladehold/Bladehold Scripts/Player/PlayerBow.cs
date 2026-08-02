@@ -548,11 +548,12 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         // Multi Shot: extra arrows fan out in a flat arc alternating left/right of the main arrow.
         int extraArrows = Mathf.RoundToInt(stats.GetValue(StatType.BowMultishotArrows));
         float extraDamageScale = stats.GetValue(StatType.BowMultishotDamagePercent);
+        Vector3 upAxis = aimCamera != null ? aimCamera.transform.up : Vector3.up;
         for (int i = 1; i <= extraArrows; i++)
         {
             int step = (i + 1) / 2;
             float sign = i % 2 == 1 ? -1f : 1f;
-            Vector3 direction = Quaternion.AngleAxis(sign * step * config.multishotSpreadDegrees, Vector3.up) * mainDirection;
+            Vector3 direction = Quaternion.AngleAxis(sign * step * config.multishotSpreadDegrees, upAxis) * mainDirection;
             FireArrow(origin, direction, extraDamageScale, isMainArrow: false);
         }
     }

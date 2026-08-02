@@ -217,7 +217,7 @@ public class PlayerMount : MonoBehaviour
         // Riding/mount stats: unlock stats at base 0 (locked), multiplier stats at base 1 (the
         // MoveSpeed convention). HorseArcheryUnlocked is registered by PlayerBow with the other bow
         // bases; skill nodes layer modifiers on all of these.
-        stats.SetBase(StatType.HorseRidingUnlocked, 0f);
+        stats.SetBase(StatType.HorseRidingUnlocked, 1f); // Riding unlocked by default now
         stats.SetBase(StatType.StartMounted, 0f);
         stats.SetBase(StatType.HorseMaxHealthMultiplier, 1f);
         stats.SetBase(StatType.HorseSpeedMultiplier, 1f);

@@ -139,6 +139,13 @@ public enum StatType
     HorseArcheryUnlocked,
     /// <summary>1 = each run starts already mounted on a spawned horse (the Reincarnate "Cavalier" node; grants riding by itself — see <see cref="HorseRidingUnlocked" />).</summary>
     StartMounted,
+    
+    /// <summary>1 = summon mount ability unlocked, 0 = locked.</summary>
+    SummonMountUnlocked,
+    /// <summary>Base duration of the summoned mount before it despawns.</summary>
+    SummonMountDuration,
+    /// <summary>Cooldown in seconds before the mount can be summoned again.</summary>
+    SummonMountCooldown,
 
     /// <summary>1 = the Berserker's throwing axe is unlocked and can be wound up (hold aim); 0 = locked (aiming does nothing, melee stays out). Gated by the "Throwing Axe" node — the BowUnlocked convention.</summary>
     AxeThrowUnlocked,

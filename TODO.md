@@ -1,5 +1,38 @@
 # Bladehold HUD Setup
 
+## Summon Mount — Unity Editor wiring
+
+### The C# is done
+Added `PlayerSummonMount` to handle summoning a mount on demand, and `SummonMountUI` for the HUD icon and cooldown display. Modified `PlayerMount` to unlock riding by default (`HorseRidingUnlocked` base is 1f). Replaced the "Saddle Up" node in `SkillTree.csv` (and Berserker/Mage variants) with "Summon Mount", which unlocks the ability via `SummonMountUnlocked`, and added stats for `SummonMountDuration` and `SummonMountCooldown` to `StatType.cs`. This uses the `add-skill-line` conventions, intercepting the `Dismount` action in `InputReader` to spawn the horse and auto-mount.
+
+### Wiring checklist
+- [ ] On `Assets/Bladehold/Bladehold Prefabs/Player.prefab`:
+  - Add `PlayerSummonMount` component.
+  - Set `horsePrefab` to `Assets/Bladehold/Bladehold Prefabs/Horse/Horse.prefab`.
+  - Create three child objects for `MMF_Player` feedbacks: `SpawnSmoke`, `DespawnSmoke`, `ErrorSound`. Assign them to the script.
+  - In `SpawnSmoke` and `DespawnSmoke`, add a particle effect (e.g. `FX_Smoke_White_Large_01.prefab` via `MMF_ParticlesInstantiation`) and a sound effect (`MMF_AudioSource`).
+  - In `ErrorSound`, add an `MMF_AudioSource` with an error/buzz sound.
+- [x] On `Assets/Bladehold/Bladehold Prefabs/UI/Bladehold HUD.prefab`:
+  - Create a new UI button object in the bottom section near the weapon icons (or duplicate an existing one).
+  - Add `SummonMountUI` component.
+  - Assign the visual components: `skillIcon` (the main sprite image), `radialFillImage` (set image type to Filled, Radial 360), `timerText` (TextMeshProUGUI), and `keybindIcon` (the small prompt image).
+  - Set `keyboardSprite` to the Synty 'X' key sprite, and `gamepadSprite` to the Synty 'B/Circle/East' sprite.
+  - Add two `MMF_Player` child objects for `cooldownFinishedFeedback` (e.g., `MMF_PunchScale`) and `activatedFeedback`, and assign them.
+  - Create the `SummonCastBar` in the middle of the screen using `MMProgressBar`.
+  - Attach `SummonCastBarUI` and wire the progress bar, label ("Summoning Mount"), and CanvasGroup. Add MMF_Players for cast start/finish/cancel juice.
+- [ ] **HUMAN:** In **Bladehold > Skill Tree Editor**, drag the horse/summon mount icon sprite to ensure it's registered in `SkillTreeSO`'s icons array under the name `Warriorskill_43_nobg` (or whichever sprite you choose).
+
+### Manual verification (Summon Mount)
+- [x] Playtest: Ensure the summon mount icon appears in the HUD only if you purchase the skill or give yourself `SummonMountUnlocked = 1`.
+- [x] Playtest: Pressing X while unmounted begins a 2s cast.
+- [x] Playtest: The Cast Bar appears, fills up, says "Summoning Mount", and the player plays the Cheer animation.
+- [x] Playtest: If you move during the cast, or take damage, the cast is cancelled (bar hides, error sound).
+- [x] Playtest: When cast finishes, it spawns a horse, plays smoke/sound, and automatically mounts the player.
+- [x] Playtest: The HUD icon shows the active duration (cyan color, decreasing timer).
+- [x] Playtest: When the duration expires, the player is automatically dismounted, the horse vanishes in smoke, and the ability goes on cooldown.
+- [x] Playtest: Pressing X early dismounts the player. The horse stays alive until its duration expires, then it despawns.
+- [x] Negative case: Cannot summon a new horse while one is already active or while on cooldown.
+
 ## C# Implementation complete
 - [x] `WaveSpawner.cs`: Added `WaveGoblinTotal` and `KilledThisWave` to allow tracking wave progress in real time.
 - [x] `WaveClearedBannerUI.cs`: Created to handle the `Quest Complete / Wave Cleared` UI elements (tracking and animating Gold/Kill counts with `MMF_Player`).

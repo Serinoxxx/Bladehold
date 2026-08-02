@@ -1579,6 +1579,7 @@ GameObject:
   - component: {fileID: -8624898676133849212}
   - component: {fileID: 1666059115837360206}
   - component: {fileID: -9218812370878724873}
+  - component: {fileID: 7097117237931593117}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -1747,6 +1748,25 @@ MonoBehaviour:
   slamRadius: 5
   slamDamage: 100
   slamKnockback: 30
+--- !u!114 &7097117237931593117
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 635090733411138093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5528c6ea44dbbf408a35b1ccbfd688f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerSummonMount
+  playerMount: {fileID: 0}
+  player: {fileID: 0}
+  inputReader: {fileID: 6872381413864324108}
+  horsePrefab: {fileID: 858813099922789300, guid: 057db930a61e9c64189b4bd589b8770a, type: 3}
+  spawnFeedback: {fileID: 0}
+  despawnFeedback: {fileID: 0}
+  errorFeedback: {fileID: 0}
 --- !u!1 &758177441954652393
 GameObject:
   m_ObjectHideFlags: 0
