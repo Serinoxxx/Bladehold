@@ -1,5 +1,26 @@
 # Bladehold HUD Setup
 
+## End of Wave Stats UI — Unity Editor wiring
+
+### The C# is done
+Expanded the between-wave intermission screen to show detailed telemetry from `RunTelemetry` alongside the existing gold and kill counts, per the user's request. Added `Damage Dealt`, `Damage Taken`, and `Critical Hits` to `WaveStatsPanel.cs` and refactored `RunTelemetry.cs` to expose a `GetCurrentWaveStats` method. Modified `WaveIntermissionUI.cs` so that picking "Recover and Upgrade" (skill tree) now clears all consumables (coins, health drops, element nodes, etc.) from the arena, acting as a true forfeit of the wave's cash reward.
+
+### Wiring checklist
+- [ ] On `Assets/Bladehold/Bladehold Prefabs/UI/Bladehold HUD.prefab`:
+  - Locate the `WaveStatsPanel` object (often nested inside the Intermission UI).
+  - Add three new TextMeshPro fields to display Damage Dealt, Damage Taken, and Critical Hits using the **Synty warrior hud assets** to make them pop (bold font at the top or arranged nicely with the Synty panels).
+  - Assign these new text fields to the `damageDealtText`, `damageTakenText`, and `critsText` slots on the `WaveStatsPanel` component.
+  - Optional: if using fill bars, assign the new bar Images to the `damageDealtBar`, `damageTakenBar`, and `critsBar` slots.
+  - For the MMF juice, create three new `MMF_Player` objects as children (or duplicate existing ones like `goblinsRevealFeedback`).
+  - Add `MMF_Scale` or `MMF_PunchScale` and `MMF_AudioSource` (tick sound) feedbacks, ensuring **Unscaled time mode** is checked since intermission time is frozen.
+  - Assign these to `damageDealtRevealFeedback`, `damageTakenRevealFeedback`, and `critsRevealFeedback` on the `WaveStatsPanel`.
+
+### Manual verification (End of Wave Stats)
+- [ ] Playtest: Clear a wave and wait for the Intermission stats to appear.
+- [ ] Playtest: Verify Damage Dealt, Damage Taken, and Critical Hits animate in properly, counting up with juice.
+- [ ] Playtest: Click "Recover and Upgrade" (Skill Tree) and ensure any uncollected coins or health drops on the ground instantly disappear.
+- [ ] Playtest: Click "Hold the Line" and ensure coins remain on the ground during the countdown.
+
 ## Summon Mount — Unity Editor wiring
 
 ### The C# is done

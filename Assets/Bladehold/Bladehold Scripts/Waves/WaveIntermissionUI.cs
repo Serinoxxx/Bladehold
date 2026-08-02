@@ -165,6 +165,13 @@ public class WaveIntermissionUI : MonoBehaviour
 
     private void ChooseRecover()
     {
+        // Clear all consumables/pickups from the level since the player forfeits them.
+        foreach (var coin in FindObjectsOfType<Coin>()) Destroy(coin.gameObject);
+        foreach (var hp in FindObjectsOfType<HealthPack>()) Destroy(hp.gameObject);
+        foreach (var impulse in FindObjectsOfType<ImpulseOrb>()) Destroy(impulse.gameObject);
+        foreach (var lightning in FindObjectsOfType<LightningOrb>()) Destroy(lightning.gameObject);
+        foreach (var node in FindObjectsOfType<ElementNode>()) Destroy(node.gameObject);
+
         // Open the skill tree; time stays frozen (untimed shopping) and the wave loop stays parked
         // until Continue (the spawner isn't released yet).
         if (choiceButtons != null)

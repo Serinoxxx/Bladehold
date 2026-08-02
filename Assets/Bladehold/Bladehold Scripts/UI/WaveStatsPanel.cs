@@ -22,6 +22,9 @@ public class WaveStatsPanel : MonoBehaviour
     [SerializeField] private TMP_Text waveLabel;
     [SerializeField] private TMP_Text goblinsSlainText;
     [SerializeField] private TMP_Text goldEarnedText;
+    [SerializeField] private TMP_Text damageDealtText;
+    [SerializeField] private TMP_Text damageTakenText;
+    [SerializeField] private TMP_Text critsText;
     [SerializeField] private TMP_Text totalGoldText;
     [Tooltip("Optional: shows the current Hold-the-Line gold multiplier (e.g. \"x1.15 Gold Bonus\"). Hidden when there's no streak.")]
     [SerializeField] private TMP_Text bonusMultiplierText;
@@ -29,6 +32,9 @@ public class WaveStatsPanel : MonoBehaviour
     [Header("Optional fill bars (wipe 0..1 as the line reveals)")]
     [SerializeField] private Image goblinsBar;
     [SerializeField] private Image goldBar;
+    [SerializeField] private Image damageDealtBar;
+    [SerializeField] private Image damageTakenBar;
+    [SerializeField] private Image critsBar;
 
     [Header("Reveal timing")]
     [Tooltip("Seconds each number spends counting up to its value.")]
@@ -41,6 +47,12 @@ public class WaveStatsPanel : MonoBehaviour
     [SerializeField] private MMF_Player goblinsRevealFeedback;
     [Tooltip("Played as the gold-earned line reveals.")]
     [SerializeField] private MMF_Player goldRevealFeedback;
+    [Tooltip("Played as the damage dealt line reveals.")]
+    [SerializeField] private MMF_Player damageDealtRevealFeedback;
+    [Tooltip("Played as the damage taken line reveals.")]
+    [SerializeField] private MMF_Player damageTakenRevealFeedback;
+    [Tooltip("Played as the crits line reveals.")]
+    [SerializeField] private MMF_Player critsRevealFeedback;
     [Tooltip("Played as the total-gold line reveals.")]
     [SerializeField] private MMF_Player totalRevealFeedback;
 
@@ -100,6 +112,19 @@ public class WaveStatsPanel : MonoBehaviour
         int killed = (GameStats.Instance != null ? GameStats.Instance.GoblinsKilled : 0) - killedAtWaveStart;
         int gold = (GameStats.Instance != null ? GameStats.Instance.GoldEarnedThisRun : 0) - goldAtWaveStart;
         int total = Player.Instance != null && Player.Instance.Wallet != null ? Player.Instance.Wallet.Coins : 0;
+        
+        float damageDealt = 0;
+        float damageTaken = 0;
+        int crits = 0;
+        
+        if (RunTelemetry.Instance != null)
+        {
+            var telemetryStats = RunTelemetry.Instance.GetCurrentWaveStats();
+            damageDealt = telemetryStats.damageDealt;
+            damageTaken = telemetryStats.damageTaken;
+            crits = telemetryStats.crits;
+        }
+        
         killed = Mathf.Max(0, killed);
         gold = Mathf.Max(0, gold);
 
@@ -122,6 +147,21 @@ public class WaveStatsPanel : MonoBehaviour
 
         yield return CountUp(goblinsSlainText, goblinsBar, Loc.Get("wavestats.goblins_slain"), killed, goblinsRevealFeedback);
         yield return new WaitForSecondsRealtime(lineStagger);
+        if (damageDealtText != null)
+        {
+            yield return CountUp(damageDealtText, damageDealtBar, Loc.Get("wavestats.damage_dealt") ?? "{0} Damage Dealt", Mathf.RoundToInt(damageDealt), damageDealtRevealFeedback);
+            yield return new WaitForSecondsRealtime(lineStagger);
+        }
+        if (damageTakenText != null)
+        {
+            yield return CountUp(damageTakenText, damageTakenBar, Loc.Get("wavestats.damage_taken") ?? "{0} Damage Taken", Mathf.RoundToInt(damageTaken), damageTakenRevealFeedback);
+            yield return new WaitForSecondsRealtime(lineStagger);
+        }
+        if (critsText != null)
+        {
+            yield return CountUp(critsText, critsBar, Loc.Get("wavestats.crits") ?? "{0} Critical Hits", crits, critsRevealFeedback);
+            yield return new WaitForSecondsRealtime(lineStagger);
+        }
         yield return CountUp(goldEarnedText, goldBar, Loc.Get("wavestats.gold_earned"), gold, goldRevealFeedback);
         yield return new WaitForSecondsRealtime(lineStagger);
         yield return CountUp(totalGoldText, null, Loc.Get("wavestats.total_gold"), total, totalRevealFeedback);

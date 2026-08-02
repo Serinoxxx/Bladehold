@@ -36,7 +36,20 @@ public class RunTelemetry : MonoBehaviour
 {
     private const string Header = "event,wave,run_seconds,wave_seconds,kills,gold_earned,damage_taken,hits_taken,damage_dealt,hits_dealt,crits,quick_attacks,charged_attacks,sprint_seconds,cost,detail";
 
+    public struct WaveStats
+    {
+        public float damageTaken;
+        public int hitsTaken;
+        public float damageDealt;
+        public int hitsDealt;
+        public int crits;
+        public int quickAttacks;
+        public int chargedAttacks;
+        public float sprintSeconds;
+    }
+
     private static RunTelemetry instance;
+    public static RunTelemetry Instance => instance;
 
     // Bound scene objects (re-bound every scene load; scene reload = new run).
     private WaveSpawner waveSpawner;
@@ -448,6 +461,21 @@ public class RunTelemetry : MonoBehaviour
     }
 
     private float RunSeconds() => Time.time - runStartTime;
+
+    public WaveStats GetCurrentWaveStats()
+    {
+        return new WaveStats
+        {
+            damageTaken = damageTaken,
+            hitsTaken = hitsTaken,
+            damageDealt = damageDealt,
+            hitsDealt = hitsDealt,
+            crits = crits,
+            quickAttacks = quickAttacks,
+            chargedAttacks = chargedAttacks,
+            sprintSeconds = sprintSeconds
+        };
+    }
 
     /// <summary>Builds a row with one named argument per header column, so columns can never drift.</summary>
     private void AppendRow(string eventName, string wave = "", string runSeconds = "", string waveSeconds = "",

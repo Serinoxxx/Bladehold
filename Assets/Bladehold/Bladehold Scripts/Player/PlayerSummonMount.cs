@@ -116,7 +116,7 @@ public class PlayerSummonMount : MonoBehaviour
     {
         isCasting = true;
         castTimer = 0f;
-        lastMoveInput = inputReader.MoveInput;
+        lastMoveInput = inputReader._moveComposite;
         
         Animator anim = player.GetComponentInChildren<Animator>();
         if (anim != null) anim.SetTrigger("Cheer"); // Placeholder for casting
@@ -189,7 +189,7 @@ public class PlayerSummonMount : MonoBehaviour
 
         if (isCasting)
         {
-            if (inputReader.MoveInput != lastMoveInput && inputReader.MoveInput.magnitude > 0.1f)
+            if (inputReader._moveComposite != lastMoveInput && inputReader._moveComposite.magnitude > 0.1f)
             {
                 CancelCast();
                 return;
