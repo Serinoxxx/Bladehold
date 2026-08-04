@@ -338,7 +338,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2256a8710a0f94e4f91632db79eb8db0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SkillTreeService
-  tree: {fileID: 11400000, guid: 1334cef6b6a0fd0469884e54ffafb253, type: 2}
+  tree: {fileID: 11400000, guid: 3c51537abaa83734094df1460098cfae, type: 2}
   stats: {fileID: 210745600}
   wallet: {fileID: 210745601}
 --- !u!114 &210745600

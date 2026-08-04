@@ -175,7 +175,7 @@ public class ScreenshotModeController : MonoBehaviour
 
         if (hudCanvasGroup == null)
         {
-            GameObject hudGO = GameObject.Find("HUD");
+            GameObject hudGO = GameObject.Find("Bladehold HUD") ?? GameObject.Find("HUD Canvas") ?? GameObject.Find("HUD");
             if (hudGO != null) hudCanvasGroup = hudGO.GetComponent<CanvasGroup>();
         }
 

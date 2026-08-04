@@ -21,6 +21,12 @@ public class WaveClearedBannerUI : MonoBehaviour
     [SerializeField] private TMP_Text enemiesKilledText;
 
     [Header("Animation & Juiciness")]
+    [Tooltip("Animator driving the text banner entrance and exit states.")]
+    [SerializeField] private Animator textAnimator;
+    [Tooltip("Animator boolean parameter name to set true on open and false on close.")]
+    [SerializeField] private string activeParamName = "Active";
+    [Tooltip("Time in seconds before closing to set the Active parameter to false to trigger the exit animation.")]
+    [SerializeField] private float activeOutLeadTime = 0.5f;
     [Tooltip("Played when the banner appears. Should handle its own reset/outro or be paired with a separate outro if needed.")]
     [SerializeField] private MMF_Player bannerAnimationFeedback;
     [SerializeField] private AudioClip[] waveClearedSounds;
@@ -37,6 +43,18 @@ public class WaveClearedBannerUI : MonoBehaviour
         if (spawner == null)
         {
             spawner = FindObjectOfType<WaveSpawner>();
+        }
+        if (textAnimator == null && waveClearedText != null)
+        {
+            textAnimator = waveClearedText.GetComponent<Animator>();
+        }
+        if (textAnimator == null && bannerRoot != null)
+        {
+            textAnimator = bannerRoot.GetComponentInChildren<Animator>();
+        }
+        if (textAnimator == null)
+        {
+            textAnimator = GetComponentInChildren<Animator>();
         }
     }
 
@@ -104,6 +122,11 @@ public class WaveClearedBannerUI : MonoBehaviour
             bannerRoot.SetActive(true);
         }
 
+        if (textAnimator != null)
+        {
+            textAnimator.SetBool(activeParamName, true);
+        }
+
         if (bannerAnimationFeedback != null)
         {
             bannerAnimationFeedback.Initialization();
@@ -140,10 +163,16 @@ public class WaveClearedBannerUI : MonoBehaviour
 
     private IEnumerator HideAfterDelay()
     {
-        yield return new WaitForSecondsRealtime(displayDuration);
-        
-        // If there is an outro animation, it would ideally be played here. 
-        // For now we simply hide the root object.
+        float mainWait = Mathf.Max(0f, displayDuration - activeOutLeadTime);
+        yield return new WaitForSecondsRealtime(mainWait);
+
+        if (textAnimator != null)
+        {
+            textAnimator.SetBool(activeParamName, false);
+        }
+
+        yield return new WaitForSecondsRealtime(activeOutLeadTime);
+
         if (bannerRoot != null)
         {
             bannerRoot.SetActive(false);

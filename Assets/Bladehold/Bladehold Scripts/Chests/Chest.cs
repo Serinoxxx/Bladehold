@@ -18,6 +18,8 @@ using UnityEngine;
 [RequireComponent(typeof(Health))]
 public class Chest : MonoBehaviour
 {
+    public static event System.Action OnAnyChestDestroyed;
+
     [SerializeField] private Health health;
     [SerializeField] private ChestLootTableSO lootTable;
     [Tooltip("Coin pickup prefab spawned for the guaranteed gold drop.")]
@@ -81,6 +83,8 @@ public class Chest : MonoBehaviour
         {
             Instantiate(breakVfxPrefab, transform.position + dropOffset, Quaternion.identity);
         }
+        
+        OnAnyChestDestroyed?.Invoke();
 
         // Guaranteed gold.
         int gold = lootTable.RollGold();

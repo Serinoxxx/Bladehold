@@ -42,6 +42,43 @@ public class WaveIntermissionUI : MonoBehaviour
     [Tooltip("Real seconds to let the slow-mo feedback play and restore before the choice screen hard-freezes time. Set at least the MMF Timescale Modifier's duration so the two don't fight over Time.timeScale.")]
     [SerializeField] private float slowMoRealSeconds = 0.7f;
 
+    [Header("HUD Hiding")]
+    [Tooltip("Optional HUD root/CanvasGroup to hide during skill tree intermission. If unassigned, auto-finds 'Bladehold HUD', 'HUD Canvas', or 'HUD'.")]
+    [SerializeField] private GameObject hudRoot;
+    private CanvasGroup hudCanvasGroup;
+
+    private void EnsureHUDFound()
+    {
+        if (hudRoot == null)
+        {
+            hudRoot = GameObject.Find("Bladehold HUD") ?? GameObject.Find("HUD Canvas") ?? GameObject.Find("HUD");
+            if (hudRoot == null)
+            {
+                var waveUI = FindObjectOfType<WaveUI>();
+                if (waveUI != null) hudRoot = waveUI.transform.root.gameObject;
+            }
+        }
+        if (hudCanvasGroup == null && hudRoot != null)
+        {
+            hudCanvasGroup = hudRoot.GetComponent<CanvasGroup>();
+        }
+    }
+
+    private void SetHUDVisible(bool visible)
+    {
+        EnsureHUDFound();
+        if (hudCanvasGroup != null)
+        {
+            hudCanvasGroup.alpha = visible ? 1f : 0f;
+            hudCanvasGroup.interactable = visible;
+            hudCanvasGroup.blocksRaycasts = visible;
+        }
+        else if (hudRoot != null)
+        {
+            hudRoot.SetActive(visible);
+        }
+    }
+
     private bool anyError = false;
 
     private void OnValidate()
@@ -86,6 +123,7 @@ public class WaveIntermissionUI : MonoBehaviour
         {
             skillTreePanel.SetActive(false);
         }
+        SetHUDVisible(true);
 
         recoverButton.onClick.AddListener(ChooseRecover);
         holdTheLineButton.onClick.AddListener(ChooseHoldTheLine);
@@ -182,6 +220,7 @@ public class WaveIntermissionUI : MonoBehaviour
         if (skillTreePanel != null)
         {
             skillTreePanel.SetActive(true);
+            SetHUDVisible(false);
         }
         else
         {
@@ -216,6 +255,7 @@ public class WaveIntermissionUI : MonoBehaviour
         {
             intermissionRoot.SetActive(false);
         }
+        SetHUDVisible(true);
 
         // Unfreeze and re-lock the cursor for gameplay look. Both commit paths (Hold / Continue) route
         // through here, so time always resumes exactly once.

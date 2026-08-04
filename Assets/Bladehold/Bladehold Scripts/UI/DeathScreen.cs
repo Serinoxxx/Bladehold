@@ -165,7 +165,7 @@ public class DeathScreen : MonoBehaviour
         }
         shown = true;
 
-        GameObject hudGO = GameObject.Find("HUD Canvas");
+        GameObject hudGO = GameObject.Find("Bladehold HUD") ?? GameObject.Find("HUD Canvas") ?? GameObject.Find("HUD");
         if (hudGO != null)
         {
             CanvasGroup hudCG = hudGO.GetComponent<CanvasGroup>();

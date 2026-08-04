@@ -51,6 +51,8 @@ public class RunTelemetry : MonoBehaviour
     private static RunTelemetry instance;
     public static RunTelemetry Instance => instance;
 
+    public event Action<RunTelemetryData> OnRunEnded;
+
     // Bound scene objects (re-bound every scene load; scene reload = new run).
     private WaveSpawner waveSpawner;
     private Health playerHealth;
@@ -64,11 +66,18 @@ public class RunTelemetry : MonoBehaviour
     private SkillTreeService goldTree;
     private ReincarnateService reincarnateTree;
     private FieldInfo isSprintingField;
+    
+    private PlayerDodge playerDodge;
+    private PlayerMount playerMount;
 
     private string filePath;
     private float runStartTime;
     private float waveStartTime;
     private bool playerDead;
+    private string fatalEnemy = "";
+    private string gateDestroyerEnemy = "";
+    private int gateDestroyedWave = 0;
+    private string lastDamagerName = "";
 
     // Per-wave accumulators, reset on WaveStarted.
     private int killsAtWaveStart;
@@ -86,11 +95,16 @@ public class RunTelemetry : MonoBehaviour
     private float totalDamageTaken;
     private int totalHitsTaken;
     private float totalDamageDealt;
+    private float totalMeleeDamageDealt;
+    private float totalRangedDamageDealt;
     private int totalHitsDealt;
     private int totalCrits;
     private int totalQuickAttacks;
     private int totalChargedAttacks;
     private float totalSprintSeconds;
+    private int totalDodges;
+    private float totalMountSeconds;
+    private int totalChestsDestroyed;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Bootstrap()
@@ -158,6 +172,10 @@ public class RunTelemetry : MonoBehaviour
             sprintSeconds += Time.deltaTime;
             totalSprintSeconds += Time.deltaTime;
         }
+        if (playerMount != null && playerMount.IsMounted)
+        {
+            totalMountSeconds += Time.deltaTime;
+        }
     }
 
     // ---- run lifecycle ----
@@ -181,6 +199,8 @@ public class RunTelemetry : MonoBehaviour
         playerAttack = player.GetComponentInChildren<PlayerAttack>(true);
         inputReader = player.GetComponentInChildren<InputReader>(true);
         controller = player.GetComponentInChildren<SamplePlayerAnimationController>(true);
+        playerDodge = player.GetComponentInChildren<PlayerDodge>(true);
+        playerMount = player.GetComponentInChildren<PlayerMount>(true);
 
         swordTrigger = null;
         // Exclude inactive children: with per-class weapons, the benched class's weapon still carries
@@ -240,15 +260,21 @@ public class RunTelemetry : MonoBehaviour
         {
             reincarnateTree.OnNodePurchased += HandleReincarnatePurchase;
         }
+        
+        if (playerDodge != null) playerDodge.OnDodgeStarted += HandleDodgeStarted;
+        Gate.OnAnyGateDestroyed += HandleGateDestroyed;
+        Chest.OnAnyChestDestroyed += HandleChestDestroyed;
 
         playerDead = false;
         runStartTime = Time.time;
         waveStartTime = Time.time;
         ResetWaveAccumulators();
         totalDamageTaken = 0f; totalHitsTaken = 0;
-        totalDamageDealt = 0f; totalHitsDealt = 0; totalCrits = 0;
+        totalDamageDealt = 0f; totalMeleeDamageDealt = 0f; totalRangedDamageDealt = 0f; totalHitsDealt = 0; totalCrits = 0;
         totalQuickAttacks = 0; totalChargedAttacks = 0;
         totalSprintSeconds = 0f;
+        totalDodges = 0; totalMountSeconds = 0f; totalChestsDestroyed = 0;
+        fatalEnemy = ""; gateDestroyerEnemy = ""; gateDestroyedWave = 0; lastDamagerName = "";
 
         OpenRunFile();
 
@@ -323,6 +349,10 @@ public class RunTelemetry : MonoBehaviour
         {
             reincarnateTree.OnNodePurchased -= HandleReincarnatePurchase;
         }
+        
+        if (playerDodge != null) playerDodge.OnDodgeStarted -= HandleDodgeStarted;
+        Gate.OnAnyGateDestroyed -= HandleGateDestroyed;
+        Chest.OnAnyChestDestroyed -= HandleChestDestroyed;
         waveSpawner = null;
         playerHealth = null;
         gameStats = null;
@@ -353,11 +383,19 @@ public class RunTelemetry : MonoBehaviour
         hitsTaken++;
         totalDamageTaken += damage.value;
         totalHitsTaken++;
+        
+        if (damage.source != null)
+        {
+            var component = damage.source as Component;
+            if (component != null) lastDamagerName = component.gameObject.name.Replace("(Clone)", "").Trim();
+        }
     }
 
     private void HandlePlayerDied()
     {
+        Debug.Log($"[RunTelemetry] HandlePlayerDied triggered! Fatal enemy: '{lastDamagerName}'. Invoking OnRunEnded...");
         playerDead = true;
+        fatalEnemy = lastDamagerName;
 
         int wave = waveSpawner != null ? waveSpawner.CurrentWave : 0;
         WriteWaveRow("death", wave, "died mid-wave");
@@ -378,6 +416,27 @@ public class RunTelemetry : MonoBehaviour
             charged: Invariant($"{totalChargedAttacks}"),
             sprint: Invariant($"{totalSprintSeconds:F1}"),
             detail: "run totals");
+
+        PlayerClassController classController = UnityEngine.Object.FindAnyObjectByType<PlayerClassController>();
+        string classId = classController != null && classController.ActiveClass != null ? classController.ActiveClass.id : SaveSystem.Load().playerClassId;
+
+        RunTelemetryData data = new RunTelemetryData
+        {
+            playtestVersion = Application.version,
+            classId = classId,
+            startingWave = RunState.StartingWave,
+            maxWaveReached = wave,
+            totalRunTimeSeconds = RunSeconds(),
+            fatalEnemy = fatalEnemy,
+            gateDestroyerEnemy = gateDestroyerEnemy,
+            gateDestroyedWave = gateDestroyedWave,
+            meleeDamageDealt = totalMeleeDamageDealt,
+            rangedDamageDealt = totalRangedDamageDealt,
+            timesDodged = totalDodges,
+            mountTimeSeconds = totalMountSeconds,
+            chestsDestroyed = totalChestsDestroyed
+        };
+        OnRunEnded?.Invoke(data);
     }
 
     private void HandleSwordHit(IDamageable target, Damage damage, Vector3 hitPoint)
@@ -386,6 +445,12 @@ public class RunTelemetry : MonoBehaviour
         hitsDealt++;
         totalDamageDealt += damage.value;
         totalHitsDealt++;
+        
+        if (damage.isProjectile) 
+            totalRangedDamageDealt += damage.value;
+        else 
+            totalMeleeDamageDealt += damage.value;
+
         if (damage.isCritical)
         {
             crits++;
@@ -415,6 +480,19 @@ public class RunTelemetry : MonoBehaviour
     private void HandleGoldPurchase(SkillNode node, int price) => WritePurchaseRow("gold", node, price);
 
     private void HandleReincarnatePurchase(SkillNode node, int price) => WritePurchaseRow("reinc", node, price);
+
+    private void HandleDodgeStarted() => totalDodges++;
+    private void HandleChestDestroyed() => totalChestsDestroyed++;
+    private void HandleGateDestroyed(Gate gate)
+    {
+        gateDestroyedWave = waveSpawner != null ? waveSpawner.CurrentWave : 0;
+        // The gate doesn't have an OnDamaged hook giving the last attacker out of the box, 
+        // but we can at least log the wave it died on.
+        gateDestroyerEnemy = "Enemy";
+        
+        // Also trigger the run end if this gate fell ends the run!
+        HandlePlayerDied(); // reuse the death logic for telemetry broadcast
+    }
 
     // ---- row writing ----
 

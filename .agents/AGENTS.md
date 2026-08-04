@@ -44,7 +44,7 @@ When making UI changes or modifying prefabs/scenes, **always use the unity-mcp b
 
 ## Project skills
 
-Recurring expansion work has step-by-step recipes in `.agents/skills/` — **invoke the matching skill before starting** rather than working from this doc alone (they encode the exemplars, pitfalls, and *current* CSV formats, which this doc lags): `add-skill-line` (skill-tree nodes / player mechanics), `add-player-class`, `add-enemy-type`, `generate-enemy-prefabs` (manifest-driven enemy prefab variants — no hand wiring), `compile-check` (headless C# verification via `dotnet build`), `editor-wiring-todo` (the TODO.md entry format), `find-and-import-assets` (searching and importing missing sounds/icons via Asset Inventory with user approval).
+Recurring expansion work has step-by-step recipes in `.agents/skills/` — **invoke the matching skill before starting** rather than working from this doc alone (they encode the exemplars, pitfalls, and *current* CSV formats, which this doc lags): `add-skill-line` (skill-tree nodes / player mechanics), `add-player-class`, `add-enemy-type`, `generate-enemy-prefabs` (manifest-driven enemy prefab variants — no hand wiring), `compile-check` (headless C# verification via `dotnet build`), `dismiss-unity-modals` (diagnose and dismiss blocking Unity Editor Win32 modal dialogs), `editor-wiring-todo` (the TODO.md entry format), `find-and-import-assets` (searching and importing missing sounds/icons via Asset Inventory with user approval).
 
 ## Code layout
 

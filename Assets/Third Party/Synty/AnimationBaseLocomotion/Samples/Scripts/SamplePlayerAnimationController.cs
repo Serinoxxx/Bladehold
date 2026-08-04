@@ -409,6 +409,11 @@ namespace Synty.AnimationBaseLocomotion.Samples
 
         private void ActivateAttack()
         {
+            if (_isAiming)
+            {
+                return;
+            }
+
             if (IsAttackOnCooldown)
             {
                 return;
