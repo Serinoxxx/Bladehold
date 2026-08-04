@@ -21,6 +21,8 @@ public static class SkillTreeSceneEditor
 {
     public const string ScenePath = "Assets/Bladehold/Bladehold Scenes/SkillTreePreview.unity";
     private const string GoldTreePath = "Assets/Bladehold/Bladehold Scripts/Upgrades/SkillTreeSO.asset";
+    private const string BerserkerTreePath = "Assets/Bladehold/Bladehold Scripts/Player/SkillTreeSOBerserker.asset";
+    private const string MageTreePath = "Assets/Bladehold/Bladehold Scripts/Player/SkillTreeSOMage.asset";
     private const string ReincarnateTreePath = "Assets/Bladehold/Bladehold Scripts/Upgrades/ReincarnateSkillTreeSO.asset";
 
     /// <summary>Grid snap step for dragging and coordinate fields (1 grid unit = 160 px at runtime).</summary>
@@ -49,8 +51,14 @@ public static class SkillTreeSceneEditor
 
     // ---------------------------------------------------------------- session lifecycle
 
-    [MenuItem("Bladehold/Skill Tree Scene Editor/Edit Gold Tree")]
+    [MenuItem("Bladehold/Skill Tree Scene Editor/Edit Gold Tree (Swordsman)")]
     private static void EditGoldTree() => StartSession(AssetDatabase.LoadAssetAtPath<SkillTreeSO>(GoldTreePath));
+
+    [MenuItem("Bladehold/Skill Tree Scene Editor/Edit Berserker Tree")]
+    private static void EditBerserkerTree() => StartSession(AssetDatabase.LoadAssetAtPath<SkillTreeSO>(BerserkerTreePath));
+
+    [MenuItem("Bladehold/Skill Tree Scene Editor/Edit Mage Tree")]
+    private static void EditMageTree() => StartSession(AssetDatabase.LoadAssetAtPath<SkillTreeSO>(MageTreePath));
 
     [MenuItem("Bladehold/Skill Tree Scene Editor/Edit Reincarnate Tree")]
     private static void EditReincarnateTree() => StartSession(AssetDatabase.LoadAssetAtPath<SkillTreeSO>(ReincarnateTreePath));
