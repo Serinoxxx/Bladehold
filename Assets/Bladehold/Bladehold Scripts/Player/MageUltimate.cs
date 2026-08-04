@@ -25,7 +25,7 @@ public class MageUltimate : MonoBehaviour, IUltimateHandler
 
     private void Awake()
     {
-        player = GetComponent<Player>();
+        player = GetComponentInChildren<Player>();
         wand = GetComponentInChildren<PlayerWand>();
         characterController = GetComponent<CharacterController>();
         imbuement = GetComponent<MageImbuement>();

@@ -22,7 +22,7 @@ public class BerserkerUltimate : MonoBehaviour, IUltimateHandler
 
     private void Awake()
     {
-        player = GetComponent<Player>();
+        player = GetComponentInChildren<Player>();
     }
 
     public void Activate(PlayerUltimateController controller)

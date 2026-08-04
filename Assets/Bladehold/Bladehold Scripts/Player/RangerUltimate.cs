@@ -13,7 +13,7 @@ public class RangerUltimate : MonoBehaviour, IUltimateHandler
 
     private void Awake()
     {
-        player = GetComponent<Player>();
+        player = GetComponentInChildren<Player>();
         bow = GetComponentInChildren<PlayerBow>();
     }
 
