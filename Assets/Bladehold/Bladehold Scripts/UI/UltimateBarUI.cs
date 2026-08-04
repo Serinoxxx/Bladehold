@@ -10,6 +10,7 @@ public class UltimateBarUI : MonoBehaviour
     [SerializeField] private MoreMountains.Tools.MMProgressBar progressBar;
     [SerializeField] private Image glowImage;
     [SerializeField] private TextMeshProUGUI inputKeyText;
+    [SerializeField] private TextMeshProUGUI chargeText;
     
     [Header("Colors & Animation")]
     [SerializeField] private Color fullColor = Color.yellow;
@@ -18,42 +19,81 @@ public class UltimateBarUI : MonoBehaviour
     [SerializeField] private float glowAlphaMax = 0.8f;
 
     private bool isFull;
+    private bool isSubscribed;
 
     private void Awake()
     {
-        if (ultimateController == null)
-        {
-            ultimateController = FindFirstObjectByType<PlayerUltimateController>();
-        }
+        TryBindController();
     }
 
     private void OnEnable()
     {
-        if (ultimateController != null)
-        {
-            ultimateController.OnChargeChanged += UpdateBar;
-            ultimateController.OnUltimateActivated += HandleActivated;
-            UpdateBar(ultimateController.CurrentCharge);
-        }
+        TryBindController();
+        UpdateInputText();
+    }
+
+    private void Start()
+    {
+        TryBindController();
         UpdateInputText();
     }
 
     private void OnDisable()
     {
+        UnbindController();
+    }
+
+    private void TryBindController()
+    {
+        if (isSubscribed) return;
+
+        if (ultimateController == null)
+        {
+            if (Player.Instance != null)
+            {
+                ultimateController = Player.Instance.GetComponent<PlayerUltimateController>();
+            }
+            if (ultimateController == null)
+            {
+                ultimateController = FindFirstObjectByType<PlayerUltimateController>();
+            }
+        }
+
         if (ultimateController != null)
         {
             ultimateController.OnChargeChanged -= UpdateBar;
+            ultimateController.OnChargeChanged += UpdateBar;
             ultimateController.OnUltimateActivated -= HandleActivated;
+            ultimateController.OnUltimateActivated += HandleActivated;
+            isSubscribed = true;
+            Debug.Log($"[UltimateBarUI] Successfully bound to PlayerUltimateController on '{ultimateController.gameObject.name}'. Initial charge={ultimateController.CurrentCharge}, progressBar={(progressBar != null ? progressBar.name : "NULL")}");
+            UpdateBar(ultimateController.CurrentCharge);
+        }
+    }
+
+    private void UnbindController()
+    {
+        if (ultimateController != null && isSubscribed)
+        {
+            ultimateController.OnChargeChanged -= UpdateBar;
+            ultimateController.OnUltimateActivated -= HandleActivated;
+            isSubscribed = false;
         }
     }
 
     private void UpdateBar(float charge)
     {
         float fraction = charge / PlayerUltimateController.MaxCharge;
+        Debug.Log($"[UltimateBarUI] UpdateBar(charge={charge:F1}) -> fraction={fraction:P0}, progressBar={(progressBar != null ? progressBar.name : "NULL")}");
         
         if (progressBar != null)
         {
             progressBar.UpdateBar(charge, 0f, PlayerUltimateController.MaxCharge);
+        }
+
+        if (chargeText != null)
+        {
+            chargeText.text = $"{Mathf.FloorToInt(fraction * 100f)}%";
         }
 
         bool wasFull = isFull;
@@ -79,6 +119,11 @@ public class UltimateBarUI : MonoBehaviour
 
     private void Update()
     {
+        if (!isSubscribed)
+        {
+            TryBindController();
+        }
+
         if (isFull && glowImage != null && glowImage.gameObject.activeSelf)
         {
             float alpha = Mathf.Lerp(glowAlphaMin, glowAlphaMax, (Mathf.Sin(Time.time * glowSpeed) + 1f) / 2f);

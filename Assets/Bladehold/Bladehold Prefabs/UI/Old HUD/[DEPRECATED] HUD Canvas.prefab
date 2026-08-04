@@ -4578,7 +4578,7 @@ GameObject:
   - component: {fileID: 6129950340426356613}
   - component: {fileID: 6631177871272229360}
   m_Layer: 5
-  m_Name: HUD Canvas
+  m_Name: '[DEPRECATED] HUD Canvas'
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

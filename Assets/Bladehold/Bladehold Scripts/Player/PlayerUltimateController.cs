@@ -16,20 +16,27 @@ public class PlayerUltimateController : MonoBehaviour
     private Player player;
     private InputAction ultimateAction;
 
+    private int lastProcessedFrame = -1;
+    private IDamageable lastProcessedTarget;
+    private float lastProcessedDamage;
+
     private void Awake()
     {
-        player = GetComponent<Player>();
+        player = GetComponentInChildren<Player>();
+        RegisterDefaultStats();
     }
 
     private void OnEnable()
     {
         Health.OnAnyHealthDamaged += HandleAnyHealthDamaged;
+        BindHitTriggers();
         BindInput();
     }
 
     private void OnDisable()
     {
         Health.OnAnyHealthDamaged -= HandleAnyHealthDamaged;
+        UnbindHitTriggers();
         if (ultimateAction != null)
         {
             ultimateAction.performed -= HandleUltimateInput;
@@ -39,9 +46,21 @@ public class PlayerUltimateController : MonoBehaviour
 
     private void Start()
     {
+        RegisterDefaultStats();
+        BindHitTriggers();
         if (ultimateAction == null)
         {
             BindInput();
+        }
+    }
+
+    private void RegisterDefaultStats()
+    {
+        if (player != null && player.Stats != null)
+        {
+            player.Stats.SetBase(StatType.UltimateChargeMultiplier, 1f);
+            player.Stats.SetBase(StatType.UltimateDurationSeconds, 6f);
+            player.Stats.SetBase(StatType.UltimateUnlocked, 0f);
         }
     }
 
@@ -63,17 +82,100 @@ public class PlayerUltimateController : MonoBehaviour
         }
     }
 
+    private void BindHitTriggers()
+    {
+        if (player == null) return;
+
+        foreach (var trigger in player.GetComponentsInChildren<DamageTrigger>(true))
+        {
+            trigger.OnHit -= HandleHitEvent;
+            trigger.OnHit += HandleHitEvent;
+        }
+
+        var bow = player.GetComponentInChildren<PlayerBow>(true);
+        if (bow != null)
+        {
+            bow.OnHit -= HandleHitEvent;
+            bow.OnHit += HandleHitEvent;
+        }
+
+        var wand = player.GetComponentInChildren<PlayerWand>(true);
+        if (wand != null)
+        {
+            wand.OnHit -= HandleHitEvent;
+            wand.OnHit += HandleHitEvent;
+        }
+
+        var thrownAxe = player.GetComponentInChildren<PlayerThrownAxe>(true);
+        if (thrownAxe != null)
+        {
+            thrownAxe.OnHit -= HandleHitEvent;
+            thrownAxe.OnHit += HandleHitEvent;
+        }
+    }
+
+    private void UnbindHitTriggers()
+    {
+        if (player == null) return;
+
+        foreach (var trigger in player.GetComponentsInChildren<DamageTrigger>(true))
+        {
+            trigger.OnHit -= HandleHitEvent;
+        }
+
+        var bow = player.GetComponentInChildren<PlayerBow>(true);
+        if (bow != null) bow.OnHit -= HandleHitEvent;
+
+        var wand = player.GetComponentInChildren<PlayerWand>(true);
+        if (wand != null) wand.OnHit -= HandleHitEvent;
+
+        var thrownAxe = player.GetComponentInChildren<PlayerThrownAxe>(true);
+        if (thrownAxe != null) thrownAxe.OnHit -= HandleHitEvent;
+    }
+
+    private void HandleHitEvent(IDamageable target, Damage damage, Vector3 hitPoint)
+    {
+        ProcessDamage(target, damage);
+    }
+
     private void HandleAnyHealthDamaged(Health target, Damage damage)
     {
-        if (IsUltimateActive || player == null || player.Stats == null) return;
-        if (player.Stats.GetValue(StatType.UltimateUnlocked) <= 0f) return;
+        ProcessDamage(target, damage);
+    }
 
-        if (damage.source == player.Damageable && target != player.Health)
+    private void ProcessDamage(IDamageable target, Damage damage)
+    {
+        if (IsUltimateActive || player == null || player.Stats == null) return;
+
+        // Deduplicate multiple callbacks for the exact same hit in the same frame
+        if (Time.frameCount == lastProcessedFrame && ReferenceEquals(target, lastProcessedTarget) && Mathf.Approximately(damage.value, lastProcessedDamage))
         {
-            // Base charge gained is scaled by damage dealt and charge multiplier.
-            float chargeGained = damage.value * 0.1f * player.Stats.GetValue(StatType.UltimateChargeMultiplier);
-            AddCharge(chargeGained);
+            return;
         }
+
+        lastProcessedFrame = Time.frameCount;
+        lastProcessedTarget = target;
+        lastProcessedDamage = damage.value;
+
+        // Ignore damage dealt to the player
+        if (player.Health != null && target == (IDamageable)player.Health) return;
+        if (player.Damageable != null && target == player.Damageable) return;
+
+        float unlocked = player.Stats.GetValue(StatType.UltimateUnlocked);
+        Debug.Log($"[PlayerUltimateController] ProcessDamage: target={target}, damage={damage.value}, UltUnlocked={unlocked}");
+
+        if (unlocked <= 0f)
+        {
+            Debug.LogWarning($"[PlayerUltimateController] Hit detected on {target}, but UltimateUnlocked stat is 0. (Purchase 'ult_unlock' in Skill Tree to enable Ultimate).");
+            return;
+        }
+
+        float mult = player.Stats.GetValue(StatType.UltimateChargeMultiplier);
+        if (mult <= 0f) mult = 1f;
+
+        float chargeGained = damage.value * 0.1f * mult;
+        Debug.Log($"[PlayerUltimateController] ADDING CHARGE: +{chargeGained:F1} (CurrentCharge={CurrentCharge:F1}/{MaxCharge})");
+        AddCharge(chargeGained);
     }
 
     public void AddCharge(float amount)
@@ -86,6 +188,7 @@ public class PlayerUltimateController : MonoBehaviour
         
         if (!Mathf.Approximately(oldCharge, CurrentCharge))
         {
+            Debug.Log($"[PlayerUltimateController] Charge updated: {oldCharge:F1} -> {CurrentCharge:F1} / {MaxCharge}");
             OnChargeChanged?.Invoke(CurrentCharge);
         }
     }

@@ -32,6 +32,11 @@ public class ObjectiveTrackerUI : MonoBehaviour
     {
         if (spawner == null)
         {
+            spawner = FindObjectOfType<WaveSpawner>();
+        }
+
+        if (spawner == null)
+        {
             Debug.LogError("ObjectiveTrackerUI has no WaveSpawner assigned.");
             anyError = true;
         }
@@ -40,6 +45,7 @@ public class ObjectiveTrackerUI : MonoBehaviour
 
         spawner.WaveStarted += HandleWaveStarted;
         spawner.WaveCleared += HandleWaveCleared;
+        spawner.CountdownTick += HandleCountdownTick;
 
         UpdateProgressText(0, 0);
     }
@@ -50,6 +56,7 @@ public class ObjectiveTrackerUI : MonoBehaviour
         {
             spawner.WaveStarted -= HandleWaveStarted;
             spawner.WaveCleared -= HandleWaveCleared;
+            spawner.CountdownTick -= HandleCountdownTick;
         }
     }
 
@@ -65,8 +72,28 @@ public class ObjectiveTrackerUI : MonoBehaviour
     private void HandleWaveCleared(int wave)
     {
         waveInProgress = false;
-        // Optionally show it as completed or hide the objective text during intermission
-        UpdateProgressText(spawner.WaveGoblinTotal, spawner.WaveGoblinTotal);
+        if (objectiveHeaderText != null)
+        {
+            objectiveHeaderText.text = $"HOLD THE GATE: WAVE {wave} CLEARED";
+        }
+        if (objectiveProgressText != null)
+        {
+            objectiveProgressText.text = "Prepare for next wave...";
+        }
+    }
+
+    private void HandleCountdownTick(int secondsRemaining)
+    {
+        if (waveInProgress) return;
+
+        if (objectiveHeaderText != null)
+        {
+            objectiveHeaderText.text = $"HOLD THE GATE: NEXT WAVE IN {secondsRemaining}s";
+        }
+        if (objectiveProgressText != null)
+        {
+            objectiveProgressText.text = $"Wave starting in {secondsRemaining}s...";
+        }
     }
 
     private void Update()

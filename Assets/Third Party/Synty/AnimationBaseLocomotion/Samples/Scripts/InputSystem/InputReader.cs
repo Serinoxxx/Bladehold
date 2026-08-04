@@ -199,5 +199,11 @@ namespace Synty.AnimationBaseLocomotion.Samples.InputSystem
 
             onDismountPerformed?.Invoke();
         }
+
+        public void OnUltimate(InputAction.CallbackContext context)
+        {
+            // Handled directly by PlayerUltimateController listening to the action.
+            // Implemented here only to satisfy the IPlayerActions interface generated from Controls.inputactions.
+        }
     }
 }

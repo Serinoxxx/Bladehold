@@ -181,6 +181,15 @@ public partial class @Controls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Ultimate"",
+                    ""type"": ""Button"",
+                    ""id"": ""b00eb9a4-83cb-4cf0-9867-a14e11d4c133"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -502,6 +511,28 @@ public partial class @Controls: IInputActionCollection2, IDisposable
                     ""action"": ""Dismount"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1bc83ae7-a296-4ca0-b305-4dc1287d2366"",
+                    ""path"": ""<Keyboard>/q"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard and Mouse"",
+                    ""action"": ""Ultimate"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""f33f306c-bf58-4858-a692-180ce13cff9a"",
+                    ""path"": ""<Gamepad>/buttonNorth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Gamepad"",
+                    ""action"": ""Ultimate"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -548,6 +579,7 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         m_Player_LockOn = m_Player.FindAction("LockOn", throwIfNotFound: true);
         m_Player_Attack = m_Player.FindAction("Attack", throwIfNotFound: true);
         m_Player_Dismount = m_Player.FindAction("Dismount", throwIfNotFound: true);
+        m_Player_Ultimate = m_Player.FindAction("Ultimate", throwIfNotFound: true);
     }
 
     ~@Controls()
@@ -638,6 +670,7 @@ public partial class @Controls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_LockOn;
     private readonly InputAction m_Player_Attack;
     private readonly InputAction m_Player_Dismount;
+    private readonly InputAction m_Player_Ultimate;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -689,6 +722,10 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/Dismount".
         /// </summary>
         public InputAction @Dismount => m_Wrapper.m_Player_Dismount;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/Ultimate".
+        /// </summary>
+        public InputAction @Ultimate => m_Wrapper.m_Player_Ultimate;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -745,6 +782,9 @@ public partial class @Controls: IInputActionCollection2, IDisposable
             @Dismount.started += instance.OnDismount;
             @Dismount.performed += instance.OnDismount;
             @Dismount.canceled += instance.OnDismount;
+            @Ultimate.started += instance.OnUltimate;
+            @Ultimate.performed += instance.OnUltimate;
+            @Ultimate.canceled += instance.OnUltimate;
         }
 
         /// <summary>
@@ -786,6 +826,9 @@ public partial class @Controls: IInputActionCollection2, IDisposable
             @Dismount.started -= instance.OnDismount;
             @Dismount.performed -= instance.OnDismount;
             @Dismount.canceled -= instance.OnDismount;
+            @Ultimate.started -= instance.OnUltimate;
+            @Ultimate.performed -= instance.OnUltimate;
+            @Ultimate.canceled -= instance.OnUltimate;
         }
 
         /// <summary>
@@ -922,5 +965,12 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnDismount(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Ultimate" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnUltimate(InputAction.CallbackContext context);
     }
 }
