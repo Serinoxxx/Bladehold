@@ -12,6 +12,10 @@ public class UltimateBarUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI inputKeyText;
     [SerializeField] private TextMeshProUGUI chargeText;
     
+    [Header("Feedbacks")]
+    [SerializeField] private MoreMountains.Feedbacks.MMF_Player fullFeedback;
+    [SerializeField] private MoreMountains.Feedbacks.MMF_Player activatedFeedback;
+    
     [Header("Colors & Animation")]
     [SerializeField] private Color fullColor = Color.yellow;
     [SerializeField] private float glowSpeed = 2f;
@@ -103,6 +107,7 @@ public class UltimateBarUI : MonoBehaviour
         {
             if (glowImage != null) glowImage.gameObject.SetActive(true);
             if (inputKeyText != null) inputKeyText.gameObject.SetActive(true);
+            if (fullFeedback != null) fullFeedback.PlayFeedbacks();
         }
         else if (!isFull && wasFull)
         {
@@ -115,6 +120,7 @@ public class UltimateBarUI : MonoBehaviour
     {
         // Flash or reset
         UpdateBar(0f);
+        if (activatedFeedback != null) activatedFeedback.PlayFeedbacks();
     }
 
     private void Update()
