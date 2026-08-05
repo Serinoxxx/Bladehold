@@ -15316,7 +15316,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
   healthData: {fileID: 11400000, guid: cf33d1a9660d75248966a786477ece98, type: 2}
-  currentHealth: 50
+  currentHealth: 1000
   damageFeedback: {fileID: 318054704}
   deathFeedback: {fileID: 1818795995}
 --- !u!65 &871699452
