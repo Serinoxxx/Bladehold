@@ -54,15 +54,21 @@ public class PlayerUltimateController : MonoBehaviour
         }
     }
 
+    private float nextTrickleTime;
+
     private void Update()
     {
         if (IsUltimateActive || player == null || player.Stats == null) return;
         if (player.Stats.GetValue(StatType.UltimateUnlocked) <= 0f) return;
 
-        float trickleRate = player.Stats.GetValue(StatType.UltimatePassiveChargeRate);
-        if (trickleRate > 0f)
+        if (Time.time >= nextTrickleTime)
         {
-            AddCharge(trickleRate * Time.deltaTime);
+            nextTrickleTime = Time.time + 1f;
+            float trickleRate = player.Stats.GetValue(StatType.UltimatePassiveChargeRate);
+            if (trickleRate > 0f)
+            {
+                AddCharge(trickleRate);
+            }
         }
     }
 
