@@ -19,3 +19,5 @@ MonoBehaviour:
   spawnInterval: 0.2
   spawnBatchInterval: 30
   spawnBatchSize: 12
+  groupSpawnHornSound: {fileID: 8300000, guid: 887c0b12c8239eb4f9b055a15fd811ae, type: 3}
+  hornVolume: 0.5

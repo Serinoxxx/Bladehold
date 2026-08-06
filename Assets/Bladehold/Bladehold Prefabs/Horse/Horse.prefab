@@ -1417,13 +1417,18 @@ MonoBehaviour:
         Owner: {fileID: 1603559879277532265}
         DebugActive: 0
         Source: 0
-        Sfx: {fileID: 8300000, guid: a60bde63269e641a598c11f7cb6ac7ac, type: 3}
+        Sfx: {fileID: 0}
         AudioResourceToPlay: {fileID: 0}
         RandomSfx:
-        - {fileID: 8300000, guid: a549c84e3eee2b743ac03ef26ab4e5f8, type: 3}
-        - {fileID: 8300000, guid: 1939c027bda6826418c1578c4c43746b, type: 3}
-        - {fileID: 8300000, guid: c989ac72f83f6d44ca87e0ca32cc8879, type: 3}
-        - {fileID: 8300000, guid: 194e8b908a1197a4ea948a64a0d9982e, type: 3}
+        - {fileID: 8300000, guid: 620a1203e97355d46974c284456ffc8f, type: 3}
+        - {fileID: 8300000, guid: 6e394d990e61de942be60a943cc64756, type: 3}
+        - {fileID: 8300000, guid: fac0034c2b2f4d94481686d5696fcc29, type: 3}
+        - {fileID: 8300000, guid: eda19082ce93828469aa83b183d4498d, type: 3}
+        - {fileID: 8300000, guid: e997b778c283bb14ebca85a5d37e4765, type: 3}
+        - {fileID: 8300000, guid: 9343743f56f163d4e8848fa18e923d07, type: 3}
+        - {fileID: 8300000, guid: f969e013dfe7987418b6156ac60f9f83, type: 3}
+        - {fileID: 8300000, guid: 785e315020ffda14094e42d2feac98ab, type: 3}
+        - {fileID: 8300000, guid: abe7912f70a949e4485ca92114bf2935, type: 3}
         SequentialOrder: 0
         SequentialOrderHoldLast: 0
         SequentialOrderHoldCooldownDuration: 2

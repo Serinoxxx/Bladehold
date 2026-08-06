@@ -64,14 +64,14 @@ public class KnockbackConfigSO : ScriptableObject
     [Tooltip("Medium visual effect played when an enemy is knocked down (force >= resistance - 1).")]
     public GameObject knockdownVfxPrefab;
 
-    [Tooltip("Medium sound effect played when an enemy is knocked down.")]
-    public AudioClip knockdownSfx;
+    [Tooltip("Medium sound effects played when an enemy is knocked down. One is picked at random.")]
+    public AudioClip[] knockdownSfx;
 
     [Tooltip("Big visual effect played when an enemy is launched into a ragdoll fling (force >= resistance).")]
     public GameObject flyingVfxPrefab;
 
-    [Tooltip("Big sound effect played when an enemy is launched into a ragdoll fling.")]
-    public AudioClip flyingSfx;
+    [Tooltip("Big sound effects played when an enemy is launched into a ragdoll fling. One is picked at random.")]
+    public AudioClip[] flyingSfx;
 
     [Header("Flying Light Flash")]
     [Tooltip("Whether to spawn a bright flash light when an enemy is flung into a ragdoll.")]

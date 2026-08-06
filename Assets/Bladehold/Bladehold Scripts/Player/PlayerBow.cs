@@ -1034,6 +1034,11 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
                 sourcePosition = center,
                 knockbackForce = config.knockbackBlastForce,
             });
+
+            if (config.headExplosionPrefab != null)
+            {
+               Instantiate(config.headExplosionPrefab, center, Quaternion.identity);
+            }
         }
     }
 

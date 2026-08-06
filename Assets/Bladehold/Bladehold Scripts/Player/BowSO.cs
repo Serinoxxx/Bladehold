@@ -89,4 +89,6 @@ public class BowSO : ScriptableObject
 
     [Tooltip("Knockback rating of the blast: against an enemy of resistance r, power >= r flings, power >= r-1 knocks down (see KnockbackReceiver).")]
     public float knockbackBlastForce = 10f;
+
+    public GameObject headExplosionPrefab;
 }

@@ -354,6 +354,11 @@ public class BomberAttack : MonoBehaviour
 
     private void SetFuseSparks(bool active)
     {
+        if (!active && igniteFeedback != null)
+        {
+            igniteFeedback.StopFeedbacks();
+        }
+
         if (fuseSparkVisuals == null)
         {
             return;

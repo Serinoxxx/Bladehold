@@ -44,11 +44,15 @@ public class SummonCastBarUI : MonoBehaviour
     private IEnumerator InitRoutine()
     {
         yield return null;
-        playerSummonMount.OnCastStarted += HandleCastStarted;
-        playerSummonMount.OnCastUpdated += HandleCastUpdated;
-        playerSummonMount.OnCastFinished += HandleCastFinished;
-        playerSummonMount.OnCastCancelled += HandleCastCancelled;
-    }
+
+                playerSummonMount.OnCastStarted += HandleCastStarted;
+                playerSummonMount.OnCastUpdated += HandleCastUpdated;
+                playerSummonMount.OnCastFinished += HandleCastFinished;
+                playerSummonMount.OnCastCancelled += HandleCastCancelled;
+                
+                playerSummonMount.OnDurationUpdated += HandleDurationUpdated;
+                playerSummonMount.OnCooldownUpdated += HandleCooldownUpdated;
+            }
 
     private void OnDestroy()
     {
@@ -58,12 +62,16 @@ public class SummonCastBarUI : MonoBehaviour
             playerSummonMount.OnCastUpdated -= HandleCastUpdated;
             playerSummonMount.OnCastFinished -= HandleCastFinished;
             playerSummonMount.OnCastCancelled -= HandleCastCancelled;
+            
+            playerSummonMount.OnDurationUpdated -= HandleDurationUpdated;
+            playerSummonMount.OnCooldownUpdated -= HandleCooldownUpdated;
         }
     }
 
     private void HandleCastStarted(float maxTime)
     {
         canvasGroup.alpha = 1f;
+        if (castLabel != null) castLabel.text = "Summoning Mount";
         progressBar.UpdateBar(0f, 0f, maxTime);
         
         if (castStartedFeedback != null) castStartedFeedback.PlayFeedbacks();
@@ -76,7 +84,8 @@ public class SummonCastBarUI : MonoBehaviour
 
     private void HandleCastFinished()
     {
-        canvasGroup.alpha = 0f;
+        // We stay visible and transition to the duration bar
+        if (castLabel != null) castLabel.text = "Mounted";
         if (castFinishedFeedback != null) castFinishedFeedback.PlayFeedbacks();
     }
 
@@ -84,5 +93,17 @@ public class SummonCastBarUI : MonoBehaviour
     {
         canvasGroup.alpha = 0f;
         if (castCancelledFeedback != null) castCancelledFeedback.PlayFeedbacks();
+    }
+    
+    private void HandleDurationUpdated(float current, float max)
+    {
+        canvasGroup.alpha = 1f;
+        if (castLabel != null) castLabel.text = "Mounted";
+        progressBar.UpdateBar(current, 0f, max);
+    }
+    
+    private void HandleCooldownUpdated(float current, float max)
+    {
+        canvasGroup.alpha = 0f;
     }
 }

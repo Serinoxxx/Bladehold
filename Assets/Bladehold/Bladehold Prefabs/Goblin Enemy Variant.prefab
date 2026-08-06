@@ -895,6 +895,7 @@ MonoBehaviour:
   animator: {fileID: 1638963520121624715}
   config: {fileID: 11400000, guid: 0dc3a05117208104ebded74f15a5fa59, type: 2}
   corpseDespawner: {fileID: 8820226531336169178}
+  impactSounds: []
 --- !u!114 &6790884973619429240
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1180,8 +1181,13 @@ MonoBehaviour:
           ButtonText: Automatic Shaker Setup
         Owner: {fileID: 6109275958922678516}
         DebugActive: 0
-        Sfx: {fileID: 8300000, guid: 0420e49c1877bdc499bb79b494572aca, type: 3}
-        RandomSfx: []
+        Sfx: {fileID: 0}
+        RandomSfx:
+        - {fileID: 8300000, guid: 11c8e391353647c4b9566dcb6bc331ed, type: 3}
+        - {fileID: 8300000, guid: f4b42d5c390a35f4e98d8f5d46e76e0e, type: 3}
+        - {fileID: 8300000, guid: 41a5b1e094ddbc94f91ffe285e7a9852, type: 3}
+        - {fileID: 8300000, guid: f28fa3df2de762a4e99d9da54b759d10, type: 3}
+        - {fileID: 8300000, guid: cda0b4bf39ee20241ba198b03450fa4a, type: 3}
         TestPlayButton:
           ButtonText: Debug Play Sound
         TestStopButton:
@@ -1652,6 +1658,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HealthBarUI
   health: {fileID: 2416392165065999887}
   healthBar: {fileID: 8820619236359328086}
+  ragdoll: {fileID: 2774917170554717151}
 --- !u!114 &8820619236359328086
 MonoBehaviour:
   m_ObjectHideFlags: 0

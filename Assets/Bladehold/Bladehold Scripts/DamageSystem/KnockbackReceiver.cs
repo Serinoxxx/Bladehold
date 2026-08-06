@@ -242,7 +242,9 @@ public class KnockbackReceiver : MonoBehaviour
         animator.ResetTrigger("Stagger");
         animator.SetTrigger(knockdownTriggerHash);
 
-        for (float elapsed = 0f; elapsed < config.knockdownSeconds; elapsed += Time.deltaTime)
+        var randomVariance = Random.Range(-.1f, .1f);
+
+        for (float elapsed = 0f; elapsed < config.knockdownSeconds + randomVariance; elapsed += Time.deltaTime)
         {
             if (State == KnockbackState.Corpse || health.IsDead) yield break;
             yield return null;
@@ -413,9 +415,10 @@ public class KnockbackReceiver : MonoBehaviour
             Destroy(inst, 3f);
         }
 
-        if (config.knockdownSfx != null)
+        if (config.knockdownSfx != null && config.knockdownSfx.Length > 0)
         {
-            AudioSource.PlayClipAtPoint(config.knockdownSfx, spawnPos);
+            AudioClip clip = config.knockdownSfx[Random.Range(0, config.knockdownSfx.Length)];
+            if (clip != null) AudioSource.PlayClipAtPoint(clip, spawnPos);
         }
     }
 
@@ -430,9 +433,10 @@ public class KnockbackReceiver : MonoBehaviour
             Destroy(inst, 3f);
         }
 
-        if (config.flyingSfx != null)
+        if (config.flyingSfx != null && config.flyingSfx.Length > 0)
         {
-            AudioSource.PlayClipAtPoint(config.flyingSfx, spawnPos);
+            AudioClip clip = config.flyingSfx[Random.Range(0, config.flyingSfx.Length)];
+            if (clip != null) AudioSource.PlayClipAtPoint(clip, spawnPos);
         }
 
         if (config.enableFlyingLightFlash)

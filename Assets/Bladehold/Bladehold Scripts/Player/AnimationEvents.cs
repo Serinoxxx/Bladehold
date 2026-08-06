@@ -39,6 +39,8 @@ public class AnimationEvents : MonoBehaviour
     [SerializeField] private Animator animator;
     private Transform leftFoot;
     private Transform rightFoot;
+    private float lastFootstepTime = -1f;
+    private static readonly int moveSpeedHash = Animator.StringToHash("MoveSpeed");
 
     private void OnValidate()
     {
@@ -64,14 +66,33 @@ public class AnimationEvents : MonoBehaviour
     /// <summary>Called from a footstep animation event on the locomotion clips (both feet call this).</summary>
     public void Footstep()
     {
-        if (footstepFeedback != null)
+        if (footstepFeedback == null)
         {
-            Vector3 stepPos = transform.position;
-            if (leftFoot != null && rightFoot != null)
-            {
-                stepPos = (leftFoot.position.y < rightFoot.position.y) ? leftFoot.position : rightFoot.position;
-            }
-            footstepFeedback.PlayFeedbacks(stepPos);
+            return;
         }
+
+        if (Player.Instance != null && Player.Instance.Health != null && Player.Instance.Health.IsDead)
+        {
+            return;
+        }
+
+        if (animator != null && animator.GetFloat(moveSpeedHash) < 0.1f)
+        {
+            return;
+        }
+
+        if (Time.time - lastFootstepTime < 0.1f)
+        {
+            return;
+        }
+
+        lastFootstepTime = Time.time;
+
+        Vector3 stepPos = transform.position;
+        if (leftFoot != null && rightFoot != null)
+        {
+            stepPos = (leftFoot.position.y < rightFoot.position.y) ? leftFoot.position : rightFoot.position;
+        }
+        footstepFeedback.PlayFeedbacks(stepPos);
     }
 }

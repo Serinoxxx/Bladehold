@@ -15,6 +15,9 @@ MonoBehaviour:
   baseDamage: 5
   maxRange: 60
   fireCooldownSeconds: 0.7
+  baseArrowSpeed: 30
+  arrowGravity: 9.81
+  arrowRadius: 0.05
   chargeTimePerLevel: 0.6
   baseMaxChargeLevels: 3
   baseChargeDamageBonus: 0.5
@@ -24,11 +27,12 @@ MonoBehaviour:
   pickupRadius: 1.5
   freezingDrawRadius: 8
   brainFreezeSeconds: 3
+  rangedWeaponType: 0
   aimCameraDistance: 1
   aimCameraHorizontalOffset: 0.7
   aimFieldOfViewPercent: 1
   aimBlendSeconds: 0.2
   aimLookMaxPitchDegrees: 60
   impulseBlastRadius: 4
-  impulseBlastPower: 2
-  impulseBlastForce: 10
+  knockbackBlastForce: 10
+  headExplosionPrefab: {fileID: 1277154925287174, guid: 3b517eddec185dd4a830743a742ad00b, type: 3}
