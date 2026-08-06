@@ -952,7 +952,7 @@ namespace Synty.AnimationBaseLocomotion.Samples
 
                     if (Mathf.Abs(_cameraRotationOffset) > 10)
                     {
-                        _isTurningInPlace = true;
+                        //_isTurningInPlace = true;
                     }
                 }
             }

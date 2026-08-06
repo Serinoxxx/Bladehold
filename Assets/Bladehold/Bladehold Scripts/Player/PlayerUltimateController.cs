@@ -54,6 +54,18 @@ public class PlayerUltimateController : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        if (IsUltimateActive || player == null || player.Stats == null) return;
+        if (player.Stats.GetValue(StatType.UltimateUnlocked) <= 0f) return;
+
+        float trickleRate = player.Stats.GetValue(StatType.UltimatePassiveChargeRate);
+        if (trickleRate > 0f)
+        {
+            AddCharge(trickleRate * Time.deltaTime);
+        }
+    }
+
     private void RegisterDefaultStats()
     {
         if (player != null && player.Stats != null)
@@ -61,6 +73,7 @@ public class PlayerUltimateController : MonoBehaviour
             player.Stats.SetBase(StatType.UltimateChargeMultiplier, 1f);
             player.Stats.SetBase(StatType.UltimateDurationSeconds, 6f);
             player.Stats.SetBase(StatType.UltimateUnlocked, 0f);
+            player.Stats.SetBase(StatType.UltimatePassiveChargeRate, 0.5f); // 0.5 charge per second = 200s to full without damage
         }
     }
 
@@ -162,19 +175,30 @@ public class PlayerUltimateController : MonoBehaviour
         if (player.Damageable != null && target == player.Damageable) return;
 
         float unlocked = player.Stats.GetValue(StatType.UltimateUnlocked);
-        Debug.Log($"[PlayerUltimateController] ProcessDamage: target={target}, damage={damage.value}, UltUnlocked={unlocked}");
+        if (unlocked <= 0f) return;
 
-        if (unlocked <= 0f)
+        float actualDamage = damage.value;
+        if (target is Health h)
         {
-            Debug.LogWarning($"[PlayerUltimateController] Hit detected on {target}, but UltimateUnlocked stat is 0. (Purchase 'ult_unlock' in Skill Tree to enable Ultimate).");
-            return;
+            if (h.IsDead) return; // Corpse hit
+
+            if (h.CurrentHealth > 0)
+            {
+                actualDamage = Mathf.Min(damage.value, h.CurrentHealth);
+            }
+            else
+            {
+                actualDamage = damage.value + h.CurrentHealth; // subtract overkill
+            }
         }
+        
+        actualDamage = Mathf.Max(0f, actualDamage);
+        if (actualDamage <= 0f) return;
 
         float mult = player.Stats.GetValue(StatType.UltimateChargeMultiplier);
         if (mult <= 0f) mult = 1f;
 
-        float chargeGained = damage.value * 0.1f * mult;
-        Debug.Log($"[PlayerUltimateController] ADDING CHARGE: +{chargeGained:F1} (CurrentCharge={CurrentCharge:F1}/{MaxCharge})");
+        float chargeGained = actualDamage * 0.1f * mult;
         AddCharge(chargeGained);
     }
 

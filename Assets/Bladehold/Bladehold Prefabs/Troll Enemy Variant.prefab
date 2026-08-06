@@ -1058,6 +1058,10 @@ PrefabInstance:
       propertyPath: managedReferences[7037627162564231507].BoundRenderer
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 8451620069487980483, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: ragdoll
+      value: 
+      objectReference: {fileID: 1389315540600091067}
     - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 
@@ -1092,6 +1096,17 @@ PrefabInstance:
       insertIndex: 15
       addedObject: {fileID: 6369489460830671324}
   m_SourcePrefab: {fileID: 100100000, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+--- !u!114 &1389315540600091067 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2774917170554717151, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+  m_PrefabInstance: {fileID: 3874691523600593508}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3683623392950716979}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5359f5d66e32c6b4eb37ee03ebab4315, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyRagdoll
 --- !u!114 &1462848227939578987 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2416392165065999887, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
@@ -1175,7 +1190,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4373196678005266, guid: 2250a4a4fc528684c85ba955eb992ec6, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 0.34
       objectReference: {fileID: 0}
     - target: {fileID: 4373196678005266, guid: 2250a4a4fc528684c85ba955eb992ec6, type: 3}
       propertyPath: m_LocalPosition.z

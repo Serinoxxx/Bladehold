@@ -236,6 +236,8 @@ public enum StatType
     UltimateBerserkerSizeMultiplier,
     /// <summary>Berserker Ultimate damage reduction fraction (0-1).</summary>
     UltimateBerserkerDamageReduction,
+    /// <summary>Amount of ultimate charge gained passively per second.</summary>
+    UltimatePassiveChargeRate,
 }
 
 /// <summary>

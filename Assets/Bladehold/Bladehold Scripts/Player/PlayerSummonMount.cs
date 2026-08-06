@@ -10,6 +10,7 @@ public class PlayerSummonMount : MonoBehaviour
     [SerializeField] private PlayerMount playerMount;
     [SerializeField] private Player player;
     [SerializeField] private InputReader inputReader;
+    [SerializeField] private Transform spawnPosition;
 
     [Header("Settings")]
     [SerializeField] private HorseMotor horsePrefab;
@@ -142,7 +143,7 @@ public class PlayerSummonMount : MonoBehaviour
     {
         if (horsePrefab == null) return;
 
-        spawnedHorse = Instantiate(horsePrefab, transform.position, transform.rotation);
+        spawnedHorse = Instantiate(horsePrefab, spawnPosition.position, spawnPosition.rotation);
 
         playerMount.TryMount(spawnedHorse);
 
