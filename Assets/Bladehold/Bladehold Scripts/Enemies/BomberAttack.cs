@@ -315,6 +315,7 @@ public class BomberAttack : MonoBehaviour
             value = 999999f,
             type = attackData.damageType,
             sourcePosition = explosionPosition,
+            source = ownerDamageable,
         });
     }
 

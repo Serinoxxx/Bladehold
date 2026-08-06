@@ -73,6 +73,11 @@ public class Enemy : MonoBehaviour
 
     private void HandleDied()
     {
+        if (health.LastDamageSource is Component sourceComp && sourceComp.GetComponentInParent<Enemy>() != null)
+        {
+            return;
+        }
+
         if (GameStats.Instance != null)
         {
             GameStats.Instance.RegisterGoblinKilled();

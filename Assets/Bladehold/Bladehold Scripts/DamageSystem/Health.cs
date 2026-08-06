@@ -42,6 +42,11 @@ public class Health : MonoBehaviour, IDamageable
     /// <summary>True once health has reached zero. Latches; further damage is ignored.</summary>
     public bool IsDead { get; private set; }
 
+    /// <summary>
+    ///     The source of the most recent damage applied to this health instance.
+    /// </summary>
+    public IDamageable LastDamageSource { get; private set; }
+
     /// <summary>The current health value, for listeners reacting to <see cref="OnHealthChanged" />.</summary>
     public float CurrentHealth => currentHealth;
 
@@ -142,6 +147,8 @@ public class Health : MonoBehaviour, IDamageable
         {
             return;
         }
+
+        LastDamageSource = damage.source;
 
         damage.value *= DamageTakenMultiplier(damage);
 

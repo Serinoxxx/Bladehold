@@ -16,7 +16,9 @@ public class SummonCastBarUI : MonoBehaviour
     public MMF_Player castCancelledFeedback;
     public MMF_Player castFinishedFeedback;
 
-    private PlayerSummonMount playerSummonMount;
+
+
+    [SerializeField]  private PlayerSummonMount playerSummonMount;
     private bool anyError;
 
     private void Start()
@@ -42,18 +44,10 @@ public class SummonCastBarUI : MonoBehaviour
     private IEnumerator InitRoutine()
     {
         yield return null;
-
-        if (Player.Instance != null)
-        {
-            playerSummonMount = Player.Instance.GetComponent<PlayerSummonMount>();
-            if (playerSummonMount != null)
-            {
-                playerSummonMount.OnCastStarted += HandleCastStarted;
-                playerSummonMount.OnCastUpdated += HandleCastUpdated;
-                playerSummonMount.OnCastFinished += HandleCastFinished;
-                playerSummonMount.OnCastCancelled += HandleCastCancelled;
-            }
-        }
+        playerSummonMount.OnCastStarted += HandleCastStarted;
+        playerSummonMount.OnCastUpdated += HandleCastUpdated;
+        playerSummonMount.OnCastFinished += HandleCastFinished;
+        playerSummonMount.OnCastCancelled += HandleCastCancelled;
     }
 
     private void OnDestroy()

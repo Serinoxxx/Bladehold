@@ -93,6 +93,11 @@ public class CoinDropper : MonoBehaviour
 
     private void HandleDied()
     {
+        if (health.LastDamageSource is Component sourceComp && sourceComp.GetComponentInParent<Enemy>() != null)
+        {
+            return;
+        }
+
         // GetValue returns 0 while the base is unregistered, so anything <= 0 means "no multiplier yet".
         float multiplier = stats != null ? stats.GetValue(StatType.GoldDropMultiplier) : 1f;
         if (multiplier <= 0f)
