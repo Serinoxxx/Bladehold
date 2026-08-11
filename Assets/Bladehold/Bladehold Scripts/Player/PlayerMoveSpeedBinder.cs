@@ -21,6 +21,8 @@ public class PlayerMoveSpeedBinder : MonoBehaviour
 
     [SerializeField] private SamplePlayerAnimationController controller;
     [SerializeField] private PlayerStats stats;
+    [SerializeField] private PlayerBow bow;
+    [SerializeField] private PlayerMount mount;
 
     private FieldInfo walkField;
     private FieldInfo runField;
@@ -30,6 +32,8 @@ public class PlayerMoveSpeedBinder : MonoBehaviour
     private float baseSprint;
 
     private bool anyError = false;
+    private bool wasAiming;
+    private bool wasMounted;
 
     private void OnValidate()
     {
@@ -44,6 +48,16 @@ public class PlayerMoveSpeedBinder : MonoBehaviour
         if (stats == null)
         {
             stats = GetComponent<PlayerStats>();
+        }
+        if (bow == null)
+        {
+            bow = GetComponent<PlayerBow>();
+            if (bow == null) bow = GetComponentInChildren<PlayerBow>();
+        }
+        if (mount == null)
+        {
+            mount = GetComponent<PlayerMount>();
+            if (mount == null) mount = GetComponentInChildren<PlayerMount>();
         }
     }
 
@@ -87,7 +101,34 @@ public class PlayerMoveSpeedBinder : MonoBehaviour
         stats.SetBase(StatType.SprintSpeed, 1f);
 
         stats.OnStatChanged += HandleStatChanged;
+
+        if (bow == null)
+        {
+            bow = GetComponent<PlayerBow>();
+            if (bow == null) bow = GetComponentInChildren<PlayerBow>();
+        }
+        if (mount == null)
+        {
+            mount = GetComponent<PlayerMount>();
+            if (mount == null) mount = GetComponentInChildren<PlayerMount>();
+        }
+
         Apply();
+    }
+
+    private void Update()
+    {
+        if (anyError || bow == null) return;
+
+        bool currentlyAiming = bow.IsAiming;
+        bool currentlyMounted = mount != null && mount.IsMounted;
+
+        if (currentlyAiming != wasAiming || currentlyMounted != wasMounted)
+        {
+            wasAiming = currentlyAiming;
+            wasMounted = currentlyMounted;
+            Apply();
+        }
     }
 
     private void OnDestroy()
@@ -112,6 +153,11 @@ public class PlayerMoveSpeedBinder : MonoBehaviour
 
         float move = stats.GetValue(StatType.MoveSpeed);
         float sprint = stats.GetValue(StatType.SprintSpeed);
+
+        if (wasAiming && !wasMounted)
+        {
+            move *= 0.5f;
+        }
 
         walkField.SetValue(controller, baseWalk * move);
         runField.SetValue(controller, baseRun * move);

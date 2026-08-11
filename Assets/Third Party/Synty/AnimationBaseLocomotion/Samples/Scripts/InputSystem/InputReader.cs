@@ -117,6 +117,8 @@ namespace Synty.AnimationBaseLocomotion.Samples.InputSystem
         /// <param name="context">The context of the callback.</param>
         public void OnSprint(InputAction.CallbackContext context)
         {
+            // Sprint disabled per user request, logic preserved in case it's added back
+            
             if (context.started)
             {
                 onSprintActivated?.Invoke();
@@ -125,6 +127,7 @@ namespace Synty.AnimationBaseLocomotion.Samples.InputSystem
             {
                 onSprintDeactivated?.Invoke();
             }
+            
         }
 
         /// <summary>

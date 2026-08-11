@@ -466,6 +466,8 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         {
             drawFeedback.PlayFeedbacks();
         }
+        
+        lastFireTime = Time.time;
     }
 
     public bool IsUltimateLocked { get; set; }
