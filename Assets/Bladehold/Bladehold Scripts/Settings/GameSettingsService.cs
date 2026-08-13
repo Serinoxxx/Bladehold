@@ -323,17 +323,17 @@ public class GameSettingsService : MonoBehaviour
                 vignette.intensity.overrideState = true;
                 vignette.intensity.value = saveData.postProcessingVignette;
             }
-            if (globalVolume.profile.TryGet(out UnityEngine.Rendering.Universal.ColorAdjustments colorAdjustments))
-            {
-                colorAdjustments.postExposure.overrideState = true;
-                colorAdjustments.postExposure.value = saveData.postProcessingExposure;
-            }
-            else
-            {
-                colorAdjustments = globalVolume.profile.Add<UnityEngine.Rendering.Universal.ColorAdjustments>(true);
-                colorAdjustments.postExposure.overrideState = true;
-                colorAdjustments.postExposure.value = saveData.postProcessingExposure;
-            }
+            //if (globalVolume.profile.TryGet(out UnityEngine.Rendering.Universal.ColorAdjustments colorAdjustments))
+            //{
+            //    colorAdjustments.postExposure.overrideState = true;
+            //    colorAdjustments.postExposure.value = saveData.postProcessingExposure;
+            //}
+            //else
+            //{
+            //    colorAdjustments = globalVolume.profile.Add<UnityEngine.Rendering.Universal.ColorAdjustments>(true);
+            //    colorAdjustments.postExposure.overrideState = true;
+            //    colorAdjustments.postExposure.value = saveData.postProcessingExposure;
+            //}
         }
     }
 }
