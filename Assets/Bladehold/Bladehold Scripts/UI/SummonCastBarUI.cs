@@ -72,14 +72,14 @@ public class SummonCastBarUI : MonoBehaviour
     {
         canvasGroup.alpha = 1f;
         if (castLabel != null) castLabel.text = "Summoning Mount";
-        progressBar.UpdateBar(0f, 0f, maxTime);
+        progressBar.SetBar(0f, 0f, maxTime);
         
         if (castStartedFeedback != null) castStartedFeedback.PlayFeedbacks();
     }
 
     private void HandleCastUpdated(float current, float max)
     {
-        progressBar.UpdateBar(current, 0f, max);
+        progressBar.SetBar(current, 0f, max);
     }
 
     private void HandleCastFinished()
@@ -99,7 +99,7 @@ public class SummonCastBarUI : MonoBehaviour
     {
         canvasGroup.alpha = 1f;
         if (castLabel != null) castLabel.text = "Mounted";
-        progressBar.UpdateBar(current, 0f, max);
+        progressBar.SetBar(current, 0f, max);
     }
     
     private void HandleCooldownUpdated(float current, float max)
