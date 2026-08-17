@@ -25,3 +25,22 @@ MonoBehaviour:
   swing2Limit: 30
   enableProjection: 1
   maxDepenetrationVelocity: 5
+  bloodParticlePrefab: {fileID: 198104090543139058, guid: 4430919f14c50f84085d287cbcb2c30e, type: 3}
+  bloodDecalMaterials:
+  - {fileID: 2100000, guid: 0835ad18a905479458207d25e24b455d, type: 2}
+  - {fileID: 2100000, guid: 402524746f2398e46977a6754ced79ad, type: 2}
+  - {fileID: 2100000, guid: b80f2f29f848efc41842379f5cdddf63, type: 2}
+  - {fileID: 2100000, guid: ceb0417a72457b249baf4369388de993, type: 2}
+  - {fileID: 2100000, guid: b906e1e73674d9445813eb221686ae70, type: 2}
+  minImpactSpeed: 1.8
+  maxImpactSpeed: 10
+  torsoBaseScale: 1.4
+  headBaseScale: 1.1
+  limbBaseScale: 0.6
+  minDecalSize: 0.4
+  maxDecalSize: 1.5
+  decalProjectionDepth: 0.6
+  decalLifetime: 15
+  decalFadeDuration: 3
+  maxGlobalDecals: 40
+  impactCooldown: 0.12

@@ -41,4 +41,52 @@ public class RagdollConfigSO : ScriptableObject
 
     [Tooltip("Caps how fast a body may be pushed out of an overlap — prevents physics explosions when a fling clips geometry.")]
     public float maxDepenetrationVelocity = 5f;
+
+    [Header("Ragdoll Blood Effects & Decals")]
+    [Tooltip("Particle system prefab spawned when a ragdoll body part impacts a surface.")]
+    public ParticleSystem bloodParticlePrefab;
+
+    [Tooltip("Materials used for blood decals projected onto hit surfaces.")]
+    public Material[] bloodDecalMaterials;
+
+    [Tooltip("Minimum impact speed (m/s) required to trigger a blood effect and decal.")]
+    public float minImpactSpeed = 1.8f;
+
+    [Tooltip("Impact speed (m/s) at which blood effect and decal size reach maximum scale.")]
+    public float maxImpactSpeed = 10f;
+
+    [Tooltip("Base scale multiplier for Torso (Hips/Chest) impacts.")]
+    public float torsoBaseScale = 1.4f;
+
+    [Tooltip("Base scale multiplier for Head impacts.")]
+    public float headBaseScale = 1.1f;
+
+    [Tooltip("Base scale multiplier for Limb (Arms/Legs) impacts.")]
+    public float limbBaseScale = 0.6f;
+
+    [Tooltip("Minimum decal width/height in meters.")]
+    public float minDecalSize = 0.4f;
+
+    [Tooltip("Maximum decal width/height in meters.")]
+    public float maxDecalSize = 1.5f;
+
+    [Tooltip("Depth of the DecalProjector box in meters.")]
+    public float decalProjectionDepth = 1.0f;
+
+    [Tooltip("Distance in meters above/outside the surface to place the DecalProjector origin along the surface normal.")]
+    public float decalOffsetFromSurface = 0.3f;
+
+
+    [Tooltip("Total lifetime of spawned blood decals in seconds before despawning.")]
+    public float decalLifetime = 15f;
+
+    [Tooltip("Fade out duration in seconds at the end of decal lifetime.")]
+    public float decalFadeDuration = 3f;
+
+    [Tooltip("Maximum active blood decals allowed in the scene simultaneously.")]
+    public int maxGlobalDecals = 40;
+
+    [Tooltip("Minimum delay in seconds between blood impacts on the exact same ragdoll bone.")]
+    public float impactCooldown = 0.12f;
 }
+

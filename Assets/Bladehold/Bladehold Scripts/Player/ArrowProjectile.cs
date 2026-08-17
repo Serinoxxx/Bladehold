@@ -206,8 +206,8 @@ public class ArrowProjectile : MonoBehaviour, IPlayerProjectile
                 }
 
                 Vector3 hitPoint = HitPointOf(hit, from, direction);
-                Lodge(hitPoint, direction);
                 bow.ApplyArrowHit(damageable, hitPoint, direction, hit.collider, hitVulnerableSpot, vulnerableSpot, spec.damageScale, spec.chargeLevel);
+                Destroy(gameObject);
                 return true;
             }
 

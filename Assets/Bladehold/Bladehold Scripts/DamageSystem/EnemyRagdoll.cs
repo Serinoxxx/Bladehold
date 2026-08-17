@@ -283,11 +283,11 @@ public class EnemyRagdoll : MonoBehaviour
 
         // Torsos: boxes spanning hips→chest and chest→head, as wide as the pelvis.
         float torsoWidth = Vector3.Distance(leftUpperLeg.position, rightUpperLeg.position) * 1.5f;
-        Pelvis = AddBody(hips, HipsMass, layer);
+        Pelvis = AddBody(hips, HipsMass, layer, RagdollBodyPartType.Torso);
         AddBox(hips, chest.position, torsoWidth);
-        Rigidbody chestBody = AddBody(chest, ChestMass, layer);
+        Rigidbody chestBody = AddBody(chest, ChestMass, layer, RagdollBodyPartType.Torso);
         AddBox(chest, head.position, torsoWidth * 0.9f);
-        Rigidbody headBody = AddBody(head, HeadMass, layer);
+        Rigidbody headBody = AddBody(head, HeadMass, layer, RagdollBodyPartType.Head);
         AddSphere(head);
 
         // Limbs: capsules along bone→child.
@@ -315,18 +315,13 @@ public class EnemyRagdoll : MonoBehaviour
         // Only the fast-moving core gets speculative CCD; per-limb CCD isn't worth the cost.
         Pelvis.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
 
-        RagdollImpactAudio pelvisImpact = Pelvis.gameObject.AddComponent<RagdollImpactAudio>();
-        pelvisImpact.Init(this, impactSounds);
-        RagdollImpactAudio chestImpact = chestBody.gameObject.AddComponent<RagdollImpactAudio>();
-        chestImpact.Init(this, impactSounds);
-
         // Cached here (not Start) so un-flung enemies pay nothing; EnterRagdoll flips these to
         // per-frame bounds while the bones are away from the root.
         meshRenderers = GetComponentsInChildren<SkinnedMeshRenderer>();
         return true;
     }
 
-    private Rigidbody AddBody(Transform bone, float massFraction, int layer)
+    private Rigidbody AddBody(Transform bone, float massFraction, int layer, RagdollBodyPartType bodyPartType)
     {
         bone.gameObject.layer = layer;
         Rigidbody body = bone.gameObject.AddComponent<Rigidbody>();
@@ -337,12 +332,18 @@ public class EnemyRagdoll : MonoBehaviour
         body.interpolation = RigidbodyInterpolation.None;
         body.isKinematic = true;
         bodies.Add(body);
+
+        RagdollBloodImpact impact = bone.gameObject.AddComponent<RagdollBloodImpact>();
+        impact.Init(this, config, bodyPartType, impactSounds);
+
         return body;
     }
 
     private Rigidbody AddLimb(Transform bone, Transform endBone, float massFraction, int layer)
     {
-        Rigidbody body = AddBody(bone, massFraction, layer);
+        Rigidbody body = AddBody(bone, massFraction, layer, RagdollBodyPartType.Limb);
+
+
 
         // Size in the bone's local space so the rig's scale (brute 1.25) is inherited for free.
         Vector3 toEnd = bone.InverseTransformPoint(endBone.position);

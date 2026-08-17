@@ -387,9 +387,23 @@ public class KnockbackReceiver : MonoBehaviour
         flat.y = 0f;
         flat = flat.sqrMagnitude > 0.0001f ? flat.normalized : -transform.forward;
 
+        // Favor the player's facing/forward direction so ragdoll flings carry forward in front of the player
+        if (Player.Instance != null)
+        {
+            Vector3 playerForward = Player.Instance.transform.forward;
+            playerForward.y = 0f;
+            if (playerForward.sqrMagnitude > 0.0001f)
+            {
+                playerForward.Normalize();
+                // Blend favoring player forward (65% player forward, 35% radial damage direction)
+                flat = Vector3.Slerp(flat, playerForward, 0.65f).normalized;
+            }
+        }
+
         float angle = config.launchAngleDegrees * Mathf.Deg2Rad;
         return flat * Mathf.Cos(angle) + Vector3.up * Mathf.Sin(angle);
     }
+
 
     private Quaternion UprightYaw()
     {

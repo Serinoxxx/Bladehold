@@ -1,5 +1,24 @@
 # Bladehold HUD Setup
 
+## Attack Charge Bar UI — Unity Editor wiring
+
+### The C# is done
+Added `AttackChargeBarUI.cs` to render a smooth progress bar (`MMProgressBar`) showing the player's attack charge level and timing, based on the structure of `SummonCastBarUI.cs`. Extended `PlayerAttack.cs` with public properties (`ChargeTimePerLevel`, `MaxChargeTime`, `CurrentChargeTime`, `ChargeProgress`). The bar remains visible and stays at 100% full when max charge is reached, until the attack button is released.
+
+### Wiring checklist
+- [x] On `Assets/Bladehold/Bladehold Prefabs/UI/Bladehold HUD.prefab`:
+  - Created `Attack Charge Bar` UI element under `Bottom` panel using `SummonCastBarUI` layout as template.
+  - Attached `AttackChargeBarUI` component and wired `progressBar`, `canvasGroup`, and `chargeLabel`.
+- [x] In `Assets/Bladehold/Bladehold Scenes/Bladehold Demo Scene.unity`:
+  - Configured `Attack Charge Bar` on the active HUD canvas.
+
+### Manual verification (Attack Charge Bar)
+- [x] C# Compilation verified with `dotnet build` (0 errors).
+- [x] Unity Editor AssetDatabase refreshed and compiled via Unity MCP.
+- [ ] Playtest: Unlock charge attack skill ("Heavy Strike"), hold attack button, and verify bar smoothly fills and stays at 100% until release.
+
+
+
 ## Dodge / Dash Mechanic — Unity Editor wiring
 
 ### The C# is done

@@ -481,7 +481,7 @@ public static class SettingsMenuGenerator
         (PhotoSetting setting, string label, bool defaultValue)[] toggles =
         {
             (PhotoSetting.ToggleLensFlare, "Lens Flare", true),
-            (PhotoSetting.ToggleHUD, "Hide HUD", true),
+            (PhotoSetting.ToggleHUD, "Bladehold HUD", true),
             (PhotoSetting.ToggleVignette, "Vignette", true),
             (PhotoSetting.ToggleDepthOfField, "Depth of Field", true),
         };

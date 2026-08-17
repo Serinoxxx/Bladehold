@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7dbe684be62787c47b6a22945fe9c726, type: 3}
   m_Name: KnockbackConfig
   m_EditorClassIdentifier: Assembly-CSharp::KnockbackConfigSO
-  defaultResistance: 50
-  maxKnockbackForce: 15
-  knockbackMultiplier: 0.1
+  defaultResistance: 2
+  maxKnockbackForce: 25
+  knockbackMultiplier: 0.2
   slideDuration: 0.18
   launchAngleDegrees: 30
-  spinTorque: 4
-  randomLimbKick: 3
+  spinTorque: 64
+  randomLimbKick: 6
   minAirTime: 0.3
   settleSpeed: 0.5
   settleTime: 0.3

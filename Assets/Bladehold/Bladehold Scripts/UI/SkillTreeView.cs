@@ -130,6 +130,14 @@ public class SkillTreeView : MonoBehaviour, IScrollHandler
         RefreshAll();
     }
 
+    private void OnEnable()
+    {
+        if (built)
+        {
+            CenterOnRootNode();
+        }
+    }
+
     private void OnDestroy()
     {
         if (service != null)
@@ -150,8 +158,7 @@ public class SkillTreeView : MonoBehaviour, IScrollHandler
             }
         }
 
-        // Persist whatever pan/zoom the player left the tree at, so reopening (another death, another
-        // session) restores it. Guarded on 'built' so an errored-out view never writes bogus zeros.
+        // Persist whatever zoom/position the player left the tree at. Guarded on 'built' so an errored-out view never writes bogus zeros.
         if (built)
         {
             SaveView();
@@ -262,25 +269,71 @@ public class SkillTreeView : MonoBehaviour, IScrollHandler
     }
 
     /// <summary>
-    ///     Applies the last pan/zoom this tree was left at (see <see cref="SaveView" />), or falls back to
-    ///     <see cref="ScrollToTopLeft" /> the first time this tree is ever opened.
+    ///     Applies the remembered zoom level for this tree (or defaults to 1.0) and centers the view on the root node.
     /// </summary>
     private void RestoreView()
     {
-        if (!PlayerPrefs.HasKey(prefsKeyPrefix + "zoom"))
+        if (PlayerPrefs.HasKey(prefsKeyPrefix + "zoom"))
         {
-            ScrollToTopLeft();
+            zoom = Mathf.Clamp(PlayerPrefs.GetFloat(prefsKeyPrefix + "zoom", 1f), minZoom, maxZoom);
             targetZoom = zoom;
+            content.localScale = new Vector3(zoom, zoom, 1f);
+        }
+
+        CenterOnRootNode();
+    }
+
+    /// <summary>
+    ///     Returns the primary root node for this tree — either the first node explicitly marked with
+    ///     <see cref="SkillNode.isRoot"/> in the CSV, or falls back to the first node in the tree.
+    /// </summary>
+    public SkillNode GetRootNode()
+    {
+        if (service == null || service.Tree == null || service.Tree.Nodes == null || service.Tree.Nodes.Count == 0)
+        {
+            return null;
+        }
+
+        IReadOnlyList<SkillNode> nodes = service.Tree.Nodes;
+        for (int i = 0; i < nodes.Count; i++)
+        {
+            if (nodes[i] != null && nodes[i].isRoot)
+            {
+                return nodes[i];
+            }
+        }
+        return nodes[0];
+    }
+
+    /// <summary>
+    ///     Centers <see cref="content"/> on the tree's root node immediately.
+    /// </summary>
+    public void CenterOnRootNode()
+    {
+        if (!built || anyError || content == null)
+        {
             return;
         }
 
-        zoom = Mathf.Clamp(PlayerPrefs.GetFloat(prefsKeyPrefix + "zoom", 1f), minZoom, maxZoom);
-        targetZoom = zoom;
-        content.localScale = new Vector3(zoom, zoom, 1f);
-        content.anchoredPosition = new Vector2(
-            PlayerPrefs.GetFloat(prefsKeyPrefix + "x", 0f),
-            PlayerPrefs.GetFloat(prefsKeyPrefix + "y", 0f));
-        ClampContentPosition();
+        Canvas.ForceUpdateCanvases();
+
+        SkillNode root = GetRootNode();
+        if (root != null)
+        {
+            if (panRoutine != null)
+            {
+                StopCoroutine(panRoutine);
+                panRoutine = null;
+            }
+
+            Vector2 target = CenterAnchoredPositionFor(GridToLocal(root));
+            content.anchoredPosition = target;
+            ClampContentPosition();
+        }
+        else
+        {
+            ScrollToTopLeft();
+        }
     }
 
     private void SaveView()

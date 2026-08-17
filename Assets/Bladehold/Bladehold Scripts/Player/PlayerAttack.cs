@@ -54,6 +54,18 @@ public class PlayerAttack : MonoBehaviour
     /// </summary>
     public float AttackDamageMultiplier { get; private set; } = 1f;
 
+    /// <summary>Time in seconds required per charge level.</summary>
+    public float ChargeTimePerLevel => chargeTimePerLevel;
+
+    /// <summary>Total time in seconds required to reach maximum charge levels.</summary>
+    public float MaxChargeTime => MaxChargeLevels * chargeTimePerLevel;
+
+    /// <summary>Elapsed time in seconds of the current attack charge, clamped to [0, MaxChargeTime].</summary>
+    public float CurrentChargeTime => charging ? Mathf.Min(Time.time - chargeStartTime, MaxChargeTime) : 0f;
+
+    /// <summary>Normalized charge progress [0..1] of the current hold.</summary>
+    public float ChargeProgress => MaxChargeTime > 0f ? Mathf.Clamp01(CurrentChargeTime / MaxChargeTime) : 0f;
+
     /// <summary>
     ///     Per-class charge pacing (heavier weapons charge slower). Called by
     ///     <see cref="PlayerClassController" /> in Awake; the serialized value is the Swordsman default.

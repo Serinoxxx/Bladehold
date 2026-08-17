@@ -40,3 +40,9 @@ When adapting third-party UI prefabs (like Synty) to work with `MMProgressBar`, 
 *   **MMHealthBar** is an adapter script that automatically reads a target's `Health` component and updates an associated `MMProgressBar`.
 *   If you are creating custom UI elements (like the Player Health Bar or Gate Health Bar), you generally want the UI script to manage the `MMProgressBar` directly (e.g. `PlayerHealthBarUI.cs`) rather than relying on `MMHealthBar`, so that you can hook into custom events or handle edge cases. 
 *   If using `MMHealthBar`, ensure both it and the `MMProgressBar` are correctly linked.
+
+## 5. Continuous Updates (UpdateBar vs. SetBar)
+*   **`UpdateBar(current, min, max)` (For Discrete Events):** `UpdateBar` triggers a lerp coroutine inside `MMProgressBar` to smoothly animate from the old value to the new value (e.g. taking damage or spending a chunk of resource).
+*   **CRITICAL PITFALL:** If `UpdateBar` is called **every single frame** (e.g. in an `Update()` loop tracking a cast timer, cooldown, or buff duration), it will continuously stop and restart the lerp coroutine every frame. This resets `_lastUpdateTimestamp` to `Time.time` every frame, causing `timeSpent` to stay at 0 and freezing the lerped fill value at the start of the lerp (producing `newFill ≈ 1.0` or stuck values).
+*   **`SetBar(current, min, max)` / `SetBar01(percent)` (For Per-Frame Continuous Updates):** When updating a progress bar every frame from an `Update()` loop or progress event, **ALWAYS call `SetBar(...)` or `SetBar01(...)` instead of `UpdateBar(...)`**. `SetBar` sets the bar fill directly without running or restarting lerp coroutines, ensuring smooth per-frame updates.
+
