@@ -470,7 +470,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 0.050980397, g: 0.050980397, b: 0.23137257, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -1062,7 +1062,7 @@ MonoBehaviour:
           ButtonText: 
         Owner: {fileID: 4691405052783766522}
         DebugActive: 0
-        AnimateScaleTarget: {fileID: 4094473688520026860}
+        AnimateScaleTarget: {fileID: 3731835561419271372}
         DeclaredDuration: 0
         DampingX: 0.4
         FrequencyX: 6
@@ -1528,7 +1528,7 @@ MonoBehaviour:
           ButtonText: 
         Owner: {fileID: 5165733231303413647}
         DebugActive: 0
-        AnimateScaleTarget: {fileID: 4094473688520026860}
+        AnimateScaleTarget: {fileID: 3731835561419271372}
         DeclaredDuration: 0
         DampingX: 0.4
         FrequencyX: 6
@@ -1600,7 +1600,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -1683,7 +1683,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -2163,7 +2163,7 @@ MonoBehaviour:
           ButtonText: 
         Owner: {fileID: 2064281113747093027}
         DebugActive: 0
-        AnimateScaleTarget: {fileID: 4094473688520026860}
+        AnimateScaleTarget: {fileID: 3731835561419271372}
         DeclaredDuration: 0
         DampingX: 0.4
         FrequencyX: 6

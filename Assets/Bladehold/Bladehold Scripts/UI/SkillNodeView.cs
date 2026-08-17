@@ -58,6 +58,9 @@ public class SkillNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     private ISkillTreeService service;
     private Action<string> onClicked;
     private int bindFrame = -1;
+    private float lastHoverTime = -1f;
+    private bool isPointerOver;
+    private const float HoverDebounceInterval = 0.15f;
 
     public SkillNode Node => node;
 
@@ -193,7 +196,16 @@ public class SkillNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (hoverFeedback != null)
+        if (isPointerOver && Time.unscaledTime - lastHoverTime < HoverDebounceInterval)
+        {
+            return;
+        }
+
+        bool playEffect = !isPointerOver && (Time.unscaledTime - lastHoverTime >= HoverDebounceInterval);
+        isPointerOver = true;
+        lastHoverTime = Time.unscaledTime;
+
+        if (playEffect && hoverFeedback != null)
         {
             hoverFeedback.PlayFeedbacks();
         }
@@ -202,6 +214,7 @@ public class SkillNodeView : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
     public void OnPointerExit(PointerEventData eventData)
     {
+        isPointerOver = false;
         HoverExited?.Invoke(this);
     }
 
