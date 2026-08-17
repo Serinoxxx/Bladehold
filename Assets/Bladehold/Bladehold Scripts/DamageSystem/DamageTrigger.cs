@@ -58,6 +58,10 @@ public class DamageTrigger : MonoBehaviour
     [Tooltip("Optional: the Berserker's Pain into Power. Damage banked from hits taken mid-charge is consumed on Activate and added flat to every target of that swing. Falls back to the Player's own PainIntoPower when left empty. Only used when 'Reads Player Stats' is on.")]
     [SerializeField] PainIntoPower painIntoPower;
 
+    [Header("Visual Effects")]
+    [Tooltip("Optional: TrailRenderer component that activates during swings. Auto-found on children if null.")]
+    [SerializeField] private TrailRenderer weaponTrail;
+
     [Tooltip("Knockback impulse applied by this hitbox when NOT reading player stats (e.g. an ability hitbox like the Death Nova). Ignored when 'Reads Player Stats' is on, where knockback comes from PlayerStats instead.")]
     [SerializeField] float knockbackForce = 0f;
 
@@ -173,6 +177,19 @@ public class DamageTrigger : MonoBehaviour
             // are still "all damage sources" — keep stats around just for the global multiplier.
             stats = Player.Instance.Stats;
         }
+
+        if (weaponTrail == null)
+        {
+            weaponTrail = GetComponentInChildren<TrailRenderer>(true);
+        }
+    }
+
+    void OnDisable()
+    {
+        if (weaponTrail != null)
+        {
+            weaponTrail.emitting = false;
+        }
     }
 
     void OnDestroy()
@@ -231,6 +248,13 @@ public class DamageTrigger : MonoBehaviour
         deactivateTime = Time.time + damageTriggerSO.duration;
         hitTargets.Clear();
 
+        if (weaponTrail != null)
+        {
+            weaponTrail.enabled = true;
+            weaponTrail.Clear();
+            weaponTrail.emitting = true;
+        }
+
         // Pain into Power (Berserker): the pool banked from hits taken mid-charge fuels this whole
         // activation — consumed once, so every target of the swing shares the same flat bonus.
         activationPainBonus = readsPlayerStats && painIntoPower != null ? painIntoPower.ConsumeBonus() : 0f;
@@ -252,6 +276,15 @@ public class DamageTrigger : MonoBehaviour
         }
     }
 
+    public void Deactivate()
+    {
+        isActive = false;
+        if (weaponTrail != null)
+        {
+            weaponTrail.emitting = false;
+        }
+    }
+
     void FixedUpdate()
     {
         if (anyError) return;
@@ -268,7 +301,7 @@ public class DamageTrigger : MonoBehaviour
 
         if (Time.time >= deactivateTime)
         {
-            isActive = false;
+            Deactivate();
         }
     }
 
@@ -343,7 +376,7 @@ public class DamageTrigger : MonoBehaviour
         if (hitTargets.Count >= cap)
         {
             OnBlocked?.Invoke();
-            isActive = false;
+            Deactivate();
             return false;
         }
 
