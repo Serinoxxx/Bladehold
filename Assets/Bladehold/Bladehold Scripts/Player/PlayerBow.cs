@@ -151,6 +151,21 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
     /// <summary>Levels the current draw can reach.</summary>
     public int MaxChargeLevels => anyError ? 0 : Mathf.RoundToInt(stats.GetValue(StatType.BowMaxChargeLevels));
 
+    /// <summary>True while aiming and charging up a shot.</summary>
+    public bool IsCharging => IsAiming && MaxChargeLevels > 0;
+
+    /// <summary>Elapsed seconds of the current bow draw, clamped to [0, MaxChargeTime].</summary>
+    public float CurrentChargeTime => IsAiming ? Mathf.Min(Time.time - chargeStartTime, MaxChargeTime) : 0f;
+
+    /// <summary>Total time in seconds required to reach maximum charge levels.</summary>
+    public float MaxChargeTime => MaxChargeLevels * ChargeTimePerLevel;
+
+    /// <summary>Normalized charge progress [0..1] of the current hold.</summary>
+    public float ChargeProgress => MaxChargeTime > 0f ? Mathf.Clamp01(CurrentChargeTime / MaxChargeTime) : 0f;
+
+    /// <summary>Time in seconds required per charge level.</summary>
+    public float ChargeTimePerLevel => config != null ? config.chargeTimePerLevel : 0.33f;
+
     /// <summary>
     ///     Fraction of the post-shot fire cooldown elapsed: 0 the instant a shot fires, 1 when the
     ///     bow can fire again (and before the first shot). Cosmetic listeners like
@@ -320,6 +335,7 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         stats.SetBase(StatType.BowArrowSpeed, config.baseArrowSpeed);
         stats.SetBase(StatType.BowMaxChargeLevels, config.baseMaxChargeLevels);
         stats.SetBase(StatType.BowChargeDamageBonus, config.baseChargeDamageBonus);
+        stats.SetBase(StatType.BowKnockback, config.baseKnockback);
         stats.SetBase(StatType.BowMultishotArrows, 0f);
         stats.SetBase(StatType.BowMultishotDamagePercent, config.baseMultishotDamagePercent);
         stats.SetBase(StatType.BowBounceChance, 0f);
@@ -404,6 +420,12 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
     {
         if (anyError || !IsAiming)
         {
+            return;
+        }
+
+        if (CursorLockManager.IsCursorUnlocked || (inputReader != null && !inputReader.IsAimPressed))
+        {
+            EndAim();
             return;
         }
 
@@ -532,6 +554,9 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
 
     private void Fire()
     {
+        float currentRatio = ChargeTimePerLevel > 0f ? CurrentChargeTime / ChargeTimePerLevel : MaxChargeLevels;
+        currentRatio = Mathf.Clamp(currentRatio, 0f, MaxChargeLevels);
+
         Vector3 origin = arrowOrigin.position;
         Vector3 mainDirection = ResolveAimDirection(origin);
 
@@ -548,15 +573,23 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         FireArrow(origin, mainDirection, 1f, isMainArrow: true);
 
         // Multi Shot: extra arrows fan out in a flat arc alternating left/right of the main arrow.
+        // Chance is increased by charging the bow further.
         int extraArrows = Mathf.RoundToInt(stats.GetValue(StatType.BowMultishotArrows));
-        float extraDamageScale = stats.GetValue(StatType.BowMultishotDamagePercent);
-        Vector3 upAxis = aimCamera != null ? aimCamera.transform.up : Vector3.up;
-        for (int i = 1; i <= extraArrows; i++)
+        if (extraArrows > 0)
         {
-            int step = (i + 1) / 2;
-            float sign = i % 2 == 1 ? -1f : 1f;
-            Vector3 direction = Quaternion.AngleAxis(sign * step * config.multishotSpreadDegrees, upAxis) * mainDirection;
-            FireArrow(origin, direction, extraDamageScale, isMainArrow: false);
+            float multishotChance = config.baseMultishotChance * currentRatio;
+            if (UnityEngine.Random.value < multishotChance)
+            {
+                float extraDamageScale = stats.GetValue(StatType.BowMultishotDamagePercent);
+                Vector3 upAxis = aimCamera != null ? aimCamera.transform.up : Vector3.up;
+                for (int i = 1; i <= extraArrows; i++)
+                {
+                    int step = (i + 1) / 2;
+                    float sign = i % 2 == 1 ? -1f : 1f;
+                    Vector3 direction = Quaternion.AngleAxis(sign * step * config.multishotSpreadDegrees, upAxis) * mainDirection;
+                    FireArrow(origin, direction, extraDamageScale, isMainArrow: false);
+                }
+            }
         }
     }
 
@@ -593,6 +626,9 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
     /// </summary>
     private void FireArrow(Vector3 origin, Vector3 direction, float damageScale, bool isMainArrow)
     {
+        float currentRatio = ChargeTimePerLevel > 0f ? CurrentChargeTime / ChargeTimePerLevel : MaxChargeLevels;
+        currentRatio = Mathf.Clamp(currentRatio, 0f, MaxChargeLevels);
+
         if (arrowPrefab != null)
         {
             ArrowProjectile arrow = Instantiate(arrowPrefab, origin, Quaternion.LookRotation(direction));
@@ -606,6 +642,7 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
                 radius = config.arrowRadius,
                 hitLayers = hitLayers,
                 chargeLevel = ChargeLevel,
+                chargeRatio = currentRatio,
                 damageScale = damageScale,
                 isMainArrow = isMainArrow,
                 owner = ownerDamageable,
@@ -640,7 +677,7 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
 
         if (target != null)
         {
-            ApplyArrowHit(target, endPoint, direction, hit.collider, hitVulnerableSpot, vulnerableSpot, damageScale, ChargeLevel);
+            ApplyArrowHit(target, endPoint, direction, hit.collider, hitVulnerableSpot, vulnerableSpot, damageScale, ChargeLevel, currentRatio);
         }
     }
 
@@ -652,7 +689,7 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
     ///     <paramref name="chargeLevel" /> is the draw level captured when the arrow left the bow
     ///     (the <see cref="AxeProjectile.LaunchSpec" /> convention — the draw restarts during flight).
     /// </summary>
-    public void ApplyArrowHit(IDamageable target, Vector3 hitPoint, Vector3 direction, Collider hitCollider, bool hitVulnerableSpot, VulnerableSpot vulnerableSpot, float damageScale, int chargeLevel)
+    public void ApplyArrowHit(IDamageable target, Vector3 hitPoint, Vector3 direction, Collider hitCollider, bool hitVulnerableSpot, VulnerableSpot vulnerableSpot, float damageScale, int chargeLevel, float chargeRatio = -1f)
     {
         if (anyError || target == null)
         {
@@ -671,7 +708,10 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
             bomberComponent.GetComponentInParent<BomberAttack>()?.Detonate();
         }
 
-        Damage damage = BuildArrowDamage(origin, damageScale, hitVulnerableSpot, chargeLevel);
+        Damage damage = BuildArrowDamage(origin, damageScale, hitVulnerableSpot, chargeLevel, chargeRatio);
+        damage.direction = direction;
+        damage.hitCollider = hitCollider;
+        damage.canPinToWall = true;
         target.ReceiveDamage(damage);
         OnHit?.Invoke(target, damage, endPoint);
         OnArrowImpact?.Invoke(new ArrowImpact
@@ -740,9 +780,16 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         }
 
         // Bounce Shot: chance to arc to one additional nearby enemy for the same damage.
-        if (UnityEngine.Random.value < stats.GetValue(StatType.BowBounceChance))
+        // Chance is scaled by charging the bow further.
+        float baseBounceChance = stats.GetValue(StatType.BowBounceChance);
+        if (baseBounceChance > 0f)
         {
-            TryBounce(target, damage, endPoint);
+            float actualRatio = chargeRatio >= 0f ? chargeRatio : chargeLevel;
+            float bounceChance = baseBounceChance * actualRatio;
+            if (UnityEngine.Random.value < bounceChance)
+            {
+                TryBounce(target, damage, endPoint);
+            }
         }
     }
 
@@ -777,11 +824,9 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
 
             if (damageable != null)
             {
-                blockingHit = hit;
-                target = damageable;
                 for (int j = i; j < count; j++)
                 {
-                    if (ResolveDamageable(rayBuffer[j].collider) != target)
+                    if (ResolveDamageable(rayBuffer[j].collider) != damageable)
                     {
                         continue;
                     }
@@ -793,6 +838,8 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
                         break;
                     }
                 }
+                blockingHit = hit;
+                target = damageable;
                 return true;
             }
 
@@ -823,10 +870,12 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         return damageable;
     }
 
-    private Damage BuildArrowDamage(Vector3 origin, float damageScale, bool hitVulnerableSpot, int chargeLevel)
+    private Damage BuildArrowDamage(Vector3 origin, float damageScale, bool hitVulnerableSpot, int chargeLevel, float chargeRatio = -1f)
     {
         float value = stats.GetValue(StatType.BowDamage);
-        value *= 1f + chargeLevel * stats.GetValue(StatType.BowChargeDamageBonus);
+        float actualRatio = chargeRatio >= 0f ? chargeRatio : chargeLevel;
+        float damagePerLevel = 1.9f + stats.GetValue(StatType.BowChargeDamageBonus);
+        value *= 0.1f + damagePerLevel * actualRatio;
 
         // Crits share the sword's stats so Keen Eye/Critical Damage benefit both weapons.
         bool crit = UnityEngine.Random.value < stats.GetValue(StatType.CritChance);
@@ -852,13 +901,14 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
 
         value *= damageScale;
 
-        // Impulse Arrow: the orb buff stamps its fling rating onto arrows exactly the way the sword's
-        // DamageTrigger stamps swings.
-        float knockbackForce = 0f;
+        // Charged draws naturally impart knockback force based on baseKnockback and chargeKnockbackMultiplier.
+        float baseKB = stats.GetValue(StatType.BowKnockback);
+        float knockbackMult = config != null ? config.chargeKnockbackMultiplier : 1.5f;
+        float knockbackForce = baseKB * (1f + actualRatio * knockbackMult);
         if (stats.GetValue(StatType.BowImpulseArrows) >= 1f && impulseBuff != null && impulseBuff.IsActive)
         {
             value *= impulseBuff.DamageMultiplier;
-            knockbackForce = config.knockbackBlastForce * impulseBuff.KnockbackMultiplier;
+            knockbackForce = Mathf.Max(knockbackForce, config.knockbackBlastForce * impulseBuff.KnockbackMultiplier);
         }
 
         if (IsUltimateLocked)

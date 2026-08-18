@@ -94,6 +94,43 @@ internal static class EnemyManifest
             prefabName = "Goblin Enemy Variant",
         },
 
+        // Golden Goblin: dedicated fleeing enemy type — fast, doesn't attack, runs around and away from player.
+        new EnemySpec
+        {
+            id = "golden_goblin",
+            soFolder = "Golden Goblin",
+            prefabName = "Golden Goblin Enemy Variant",
+            materialPath = "Assets/Bladehold/Bladehold Materials/Golden Goblin.mat",
+            disableBaseAIAttack = true,
+            removeComponents = new[] { typeof(GoldenGoblin), typeof(ImpulseGoblin) },
+            assets = new[]
+            {
+                new SoSpec
+                {
+                    soType = typeof(GoldenGoblinFleeSO),
+                    assetName = "GoldenGoblinFleeSO",
+                    initDefaults = so =>
+                    {
+                        GoldenGoblinFleeSO flee = (GoldenGoblinFleeSO)so;
+                        flee.fleeDistance = 15f;
+                        flee.fleeSampleRadius = 8f;
+                        flee.repathInterval = 0.2f;
+                    },
+                },
+            },
+            components = new[]
+            {
+                new ComponentSpec
+                {
+                    type = typeof(GoldenGoblinFlee),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "fleeData", ctx.LoadedAsset("GoldenGoblinFleeSO"));
+                    },
+                },
+            },
+        },
+
         // Dwarf: swarm unit — a pure stat variant of the goblin (extreme speed, low HP, small scale
         // all live in Enemies.csv). Structurally identical to the base, so this entry doubles as the
         // generator's smoke test.

@@ -37,6 +37,8 @@ namespace Synty.AnimationGoblinLocomotion.Samples.GBL_InputSystem
 
         public Action onWalkToggled;
 
+        public bool IsAimPressed => _controls != null && _controls.Player.Aim.IsPressed();
+
         /// <inheritdoc cref="OnEnable" />
         private void OnEnable()
         {

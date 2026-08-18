@@ -87,6 +87,21 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
     /// <summary>Levels the current wind-up can reach.</summary>
     public int MaxChargeLevels => anyError ? 0 : Mathf.RoundToInt(stats.GetValue(StatType.AxeThrowMaxChargeLevels));
 
+    /// <summary>True while aiming and charging up a throw.</summary>
+    public bool IsCharging => IsAiming && MaxChargeLevels > 0;
+
+    /// <summary>Elapsed seconds of the current axe wind-up, clamped to [0, MaxChargeTime].</summary>
+    public float CurrentChargeTime => IsAiming ? Mathf.Min(Time.time - chargeStartTime, MaxChargeTime) : 0f;
+
+    /// <summary>Total time in seconds required to reach maximum charge levels.</summary>
+    public float MaxChargeTime => MaxChargeLevels * ChargeTimePerLevel;
+
+    /// <summary>Normalized charge progress [0..1] of the current hold.</summary>
+    public float ChargeProgress => MaxChargeTime > 0f ? Mathf.Clamp01(CurrentChargeTime / MaxChargeTime) : 0f;
+
+    /// <summary>Time in seconds required per charge level.</summary>
+    public float ChargeTimePerLevel => config != null ? config.chargeTimePerLevel : 0.33f;
+
     /// <summary>Fraction of the post-throw cooldown elapsed: 0 the instant a throw fires, 1 when ready (the PlayerBow convention).</summary>
     public float CooldownFraction
     {
@@ -318,12 +333,18 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
             return;
         }
 
+        if (CursorLockManager.IsCursorUnlocked || (inputReader != null && !inputReader.IsAimPressed))
+        {
+            EndAim();
+            return;
+        }
+
         // Keep the charge level live as the wind-up grows (the PlayerAttack convention).
         int maxLevels = MaxChargeLevels;
-        int level = config.chargeTimePerLevel > 0f
-            ? Mathf.FloorToInt((Time.time - chargeStartTime) / config.chargeTimePerLevel)
-            : maxLevels;
-        ChargeLevel = Mathf.Clamp(level, 0, maxLevels);
+        float elapsed = Time.time - chargeStartTime;
+        float chargeRatio = ChargeTimePerLevel > 0f ? elapsed / ChargeTimePerLevel : maxLevels;
+        chargeRatio = Mathf.Clamp(chargeRatio, 0f, maxLevels);
+        ChargeLevel = Mathf.Clamp(Mathf.FloorToInt(chargeRatio), 0, maxLevels);
 
         // The vendored controller sets StartAttack/IsHoldingAttack on every attack press (input
         // callbacks run before Update; the animator consumes triggers after all Updates), so clearing
@@ -458,10 +479,12 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
         // Pain into Power (Berserker): the pool banked from hits taken mid-wind-up fuels this whole
         // throw — consumed once, so every enemy pierced shares the same flat bonus.
         float painBonus = painIntoPower != null ? painIntoPower.ConsumeBonus() : 0f;
-
         float width = Mathf.Max(0.05f, stats.GetValue(StatType.AxeThrowWidth));
         int pierceBudget = Mathf.Max(1, Mathf.RoundToInt(
             stats.GetValue(StatType.AxeThrowPierceCount) + ChargeLevel * config.piercePerChargeLevel));
+
+        float currentRatio = ChargeTimePerLevel > 0f ? (Time.time - chargeStartTime) / ChargeTimePerLevel : MaxChargeLevels;
+        currentRatio = Mathf.Clamp(currentRatio, 0f, MaxChargeLevels);
 
         AxeProjectile projectile = Instantiate(projectilePrefab, origin, Quaternion.LookRotation(direction));
         projectile.Launch(this, new AxeProjectile.LaunchSpec
@@ -474,6 +497,7 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
             pierceBudget = pierceBudget,
             hitLayers = hitLayers,
             chargeLevel = ChargeLevel,
+            chargeRatio = currentRatio,
             painBonus = painBonus,
             owner = ownerDamageable ?? GetComponentInParent<IDamageable>() ?? (Player.Instance != null ? Player.Instance.Damageable : null),
             ignoredTarget = ignoredTarget,
@@ -532,7 +556,7 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
     ///     <paramref name="sourcePosition" /> is the axe's position just before the hit, so knockback
     ///     shoves along the flight line.
     /// </summary>
-    public Damage CreateHitDamage(int chargeLevel, float painBonus, Vector3 sourcePosition)
+    public Damage CreateHitDamage(int chargeLevel, float painBonus, Vector3 sourcePosition, float chargeRatio = -1f)
     {
         if (anyError)
         {
@@ -540,7 +564,9 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
         }
 
         float value = stats.GetValue(StatType.AxeThrowDamage);
-        value *= 1f + chargeLevel * stats.GetValue(StatType.AxeThrowChargeDamageBonus);
+        float actualRatio = chargeRatio >= 0f ? chargeRatio : chargeLevel;
+        float damagePerLevel = 1.9f + stats.GetValue(StatType.AxeThrowChargeDamageBonus);
+        value *= 0.1f + damagePerLevel * actualRatio;
 
         // Crits share the melee stats so Keen Eye/Critical Damage benefit both weapons (the bow convention).
         bool crit = UnityEngine.Random.value < stats.GetValue(StatType.CritChance);

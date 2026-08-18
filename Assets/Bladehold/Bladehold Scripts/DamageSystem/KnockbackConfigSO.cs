@@ -88,5 +88,27 @@ public class KnockbackConfigSO : ScriptableObject
 
     [Tooltip("Duration in seconds over which the light flash rapidly dims to zero intensity.")]
     public float flyingLightDuration = 0.2f;
+
+    [Header("Arrow Wall Pinning")]
+    [Tooltip("Minimum knockback force for a lethal projectile to pin an enemy to a wall when hitting geometry.")]
+    public float arrowPinKnockbackThreshold = 4f;
+
+    [Tooltip("Layer mask for static environment surfaces (walls/obstacles) that arrows can pin enemies against.")]
+    public LayerMask wallPinLayers = ~0;
+
+    [Tooltip("StuckArrow prefab embedded into the wall and limb on a wall pin impact.")]
+    public StuckArrow arrowPinPrefab;
+
+    [Tooltip("Sound effect played when an enemy is pinned to a wall by an arrow.")]
+    public AudioClip wallPinSfx;
+
+    [Tooltip("Visual effect prefab spawned at wall pin impact site.")]
+    public GameObject wallPinVfxPrefab;
+
+    [Tooltip("Minimum duration in seconds a pinned enemy stays stuck to a wall before dropping.")]
+    public float minWallPinSeconds = 4.0f;
+
+    [Tooltip("Maximum duration in seconds a pinned enemy stays stuck to a wall before dropping.")]
+    public float maxWallPinSeconds = 5.0f;
 }
 

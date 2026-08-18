@@ -59,6 +59,8 @@ public class MagicMissileProjectile : MonoBehaviour, IPlayerProjectile
         public LayerMask hitLayers;
         /// <summary>Charge level held when fired — damage reads it at impact.</summary>
         public int chargeLevel;
+        /// <summary>Continuous charge ratio [0..maxChargeLevels] captured when fired.</summary>
+        public float chargeRatio;
         /// <summary>The caster's own IDamageable — never hit (the DamageTrigger owner idiom).</summary>
         public IDamageable owner;
         /// <summary>An extra fly-through target — the horse under a mounted caster. Null = none.</summary>
@@ -209,7 +211,7 @@ public class MagicMissileProjectile : MonoBehaviour, IPlayerProjectile
             }
 
             Vector3 hitPoint = HitPointOf(hit, from);
-            Damage damage = caster.CreateHitDamage(spec.chargeLevel, from, damageable);
+            Damage damage = caster.CreateHitDamage(spec.chargeLevel, from, damageable, spec.chargeRatio);
             damageable.ReceiveDamage(damage);
             caster.ReportHit(damageable, damage, hitPoint);
 

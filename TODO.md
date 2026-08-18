@@ -1,5 +1,32 @@
 # Bladehold HUD Setup
 
+## Arrow Wall Pinning — Unity Editor & Asset Wiring
+
+### The C# is done
+Implemented arrow wall pinning when lethal arrow hits deal sufficient knockback force:
+- **`Damageable.cs`**: Added `direction`, `hitCollider`, and `canPinToWall` fields to `Damage`.
+- **`PlayerBow.cs`**: Set `damage.direction`, `damage.hitCollider`, and `damage.canPinToWall = true` on arrow hit. Added charge-scaled knockback force (`chargeLevel * 2.5f`).
+- **`EnemyRagdoll.cs`**: Added `GetBoneRigidbody(hitCollider, hitPoint)` to map hit colliders to exact ragdoll bone rigidbodies and exposed `Config` property.
+- **`KnockbackConfigSO.cs`**: Added tunables for `arrowPinKnockbackThreshold` (default 4.0), `wallPinLayers`, `arrowPinPrefab`, `wallPinSfx`, `wallPinVfxPrefab`, `minWallPinSeconds` (default 4.0), and `maxWallPinSeconds` (default 5.0).
+- **`KnockbackReceiver.cs`**: Updated `FlingRoutine` and `PinLimbToWall` to fling along the arrow flight trajectory (`damage.direction`), perform continuous spherecasts for wall collisions, lock the struck bone to the wall surface (`isKinematic = true`), clean up initial body-attached arrow props, embed an unparented (`parent: null`) `StuckArrow` facing directly into the wall surface along `pinDir`, trigger wall blood decals, wait for 4–5 seconds, unpin the bone so the corpse drops to the floor under gravity leaving the arrow pinned in the wall, and let the ragdoll settle on the ground.
+
+### Wiring checklist
+- [ ] On `Assets/Bladehold/Config/KnockbackConfig.asset` (or in Inspector):
+  - [ ] Set `arrowPinKnockbackThreshold` (default 4.0).
+  - [ ] Set `wallPinLayers` to include static wall/environment layers (e.g. `Default`, `Ground`, `Environment`).
+  - [ ] Set `minWallPinSeconds` (default 4.0) and `maxWallPinSeconds` (default 5.0).
+  - [ ] (Optional) Assign `arrowPinPrefab` to `Assets/Bladehold/Bladehold Prefabs/StuckArrow.prefab` (automatically falls back to `Player.Instance`'s `StuckArrowSpawner.ArrowPrefab` if unassigned).
+  - [ ] (Optional) Assign `wallPinSfx` for custom wall thunk audio.
+  - [ ] (Optional) Assign `wallPinVfxPrefab` for wall impact particle effects.
+
+### Manual verification (Arrow Wall Pinning)
+- [x] C# compilation verified with `dotnet build Assembly-CSharp.csproj` (0 errors).
+- [x] Unity Editor AssetDatabase refreshed and script compilation verified via Unity MCP (`refresh_unity`).
+- [ ] Playtest: Charge a bow shot and fire at a melee goblin standing near a wall.
+- [ ] Playtest: Verify that if the hit is lethal and has enough knockback, the enemy flies back along the arrow trajectory and pins to the wall.
+- [ ] Playtest: Verify the wall pin arrow has no parent (unparented in hierarchy), points straight into the wall surface, and stays fixed in the wall when the goblin drops after 4-5 seconds.
+- [ ] Playtest: Verify non-lethal hits apply standard knockback/fling without pinning to the wall.
+
 ## Bladehold Survivors Mode — Unity Editor & Scene wiring
 
 ### The C# and Scene is done
@@ -150,3 +177,27 @@ Added `PlayerSummonMount` to handle summoning a mount on demand, and `SummonMoun
 - [ ] Complete Wave 1.
 - [ ] Verify the wave banner pops in correctly, displays accurate gold and kill counts, and animates out.
 - [ ] Check that the objectives progress updates with each kill.
+
+## Golden Goblin Enemy Type — Dedicated Fleeing Enemy
+
+### The C# is done
+Converted Golden Goblin from a spawn-time modifier into a dedicated, fleeing enemy type:
+- **`Enemies.csv`**: Added `golden_goblin` row (`health: 25`, `damage: 0`, `minGold: 50`, `maxGold: 100`, `speed: 6.5`, `maxConcurrent: 1`).
+- **`GoldenGoblinFleeSO.cs`**: ScriptableObject under `Scriptable Objects/Enemies/Golden Goblin/GoldenGoblinFleeSO` with tunables (`fleeDistance`, `fleeSampleRadius`, `repathInterval`, `deathVfxPrefab`, `deathSfx`).
+- **`GoldenGoblinFlee.cs`**: Fleeing AI component. Disables standard `AIMovement` chasing and drives `NavMeshAgent.SetDestination` to sample NavMesh positions in a cone away from the player (testing 0°, ±35°, ±70°, ±110°, ±150°, 180°). Does not attack (`disableBaseAIAttack = true`). Drops bonus coins on death if player has `GoldenGoblinGoldBonusPercent` stat active.
+- **`EnemyManifest.cs`**: Added `golden_goblin` entry with golden material swap (`Assets/Bladehold/Bladehold Materials/Golden Goblin.mat`), `GoldenGoblinFlee` component wiring, and marker component removals.
+- **`WaveSpawner.cs` / `SurvivorsSpawner.cs`**: Updated spawn logic so `StatType.GoldenGoblinChance` rolls select the `golden_goblin` enemy type instead of applying a modifier to regular goblins.
+
+### Wiring checklist
+- [x] Roster entry `golden_goblin` added to `Config/Enemies.csv`.
+- [x] ScriptableObject `GoldenGoblinFleeSO` created under `Enemies/Golden Goblin/GoldenGoblinFleeSO.asset`.
+- [x] Prefab `Golden Goblin Enemy Variant.prefab` generated and registered in `EnemyPrefabMap.asset` via `EnemyPrefabGenerator.GenerateAll`.
+- [x] Material `Golden Goblin.mat` applied to variant mesh.
+
+### Manual verification (Golden Goblin Enemy Type)
+- [x] C# compilation verified with `dotnet build` (0 errors).
+- [x] Unity Editor AssetDatabase refreshed and compiled via Unity MCP (`refresh_unity`).
+- [x] Enemy prefab `Golden Goblin Enemy Variant.prefab` generated and registered in `EnemyPrefabMap.asset`.
+- [ ] Playtest: Spawn `golden_goblin` in Play mode (or via DevConsole `DebugSpawnBurst` / `EnemyZoo`).
+- [ ] Playtest: Verify Golden Goblin runs frantically away from player, navigating around obstacles without attacking.
+- [ ] Playtest: Defeat Golden Goblin and verify coin drops and death feedback.

@@ -65,6 +65,8 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
         public LayerMask hitLayers;
         /// <summary>Charge level held when thrown — damage/knockback read it per hit.</summary>
         public int chargeLevel;
+        /// <summary>Continuous charge ratio [0..maxChargeLevels] captured when thrown.</summary>
+        public float chargeRatio;
         /// <summary>Pain into Power flat bonus consumed by this throw, shared by every target.</summary>
         public float painBonus;
         /// <summary>The thrower's own IDamageable — never hit (the DamageTrigger owner idiom).</summary>
@@ -252,7 +254,7 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
             }
 
             Vector3 hitPoint = HitPointOf(hit, from, direction);
-            Damage damage = thrower.CreateHitDamage(spec.chargeLevel, spec.painBonus, from);
+            Damage damage = thrower.CreateHitDamage(spec.chargeLevel, spec.painBonus, from, spec.chargeRatio);
             damageable.ReceiveDamage(damage);
             thrower.ReportHit(damageable, damage, hitPoint);
             damaged++;

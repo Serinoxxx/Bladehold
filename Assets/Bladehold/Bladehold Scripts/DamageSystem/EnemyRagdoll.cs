@@ -20,6 +20,8 @@ public class EnemyRagdoll : MonoBehaviour
 {
     [SerializeField] private Animator animator;
     [SerializeField] private RagdollConfigSO config;
+
+    public RagdollConfigSO Config => config;
     [Tooltip("Optional; lets an early corpse-cap despawn freeze a still-simulating ragdoll before the sink starts.")]
     [SerializeField] private CorpseDespawner corpseDespawner;
     [Header("Impact Sound Juiciness")]
@@ -212,6 +214,41 @@ public class EnemyRagdoll : MonoBehaviour
         // anchored bounds would be just as wrong as mid-flight — keep the per-frame bounds until the
         // corpse despawns (bounded cost: CorpseManager caps how many corpses linger).
         Deactivate(restoreAnchoredBounds: false);
+    }
+
+    /// <summary>
+    ///     Resolves the specific bone <see cref="Rigidbody" /> on this ragdoll corresponding to the
+    ///     struck collider or hit point. Falls back to <see cref="Pelvis" /> if unspecified or unbuilt.
+    /// </summary>
+    public Rigidbody GetBoneRigidbody(Collider hitCollider, Vector3 hitPoint)
+    {
+        if (!isBuilt || bodies == null || bodies.Count == 0)
+        {
+            return Pelvis;
+        }
+
+        if (hitCollider != null)
+        {
+            Rigidbody rb = hitCollider.GetComponentInParent<Rigidbody>();
+            if (rb != null && bodies.Contains(rb))
+            {
+                return rb;
+            }
+        }
+
+        Rigidbody closest = Pelvis != null ? Pelvis : bodies[0];
+        float closestSqDist = float.MaxValue;
+        foreach (Rigidbody body in bodies)
+        {
+            float sqDist = (body.position - hitPoint).sqrMagnitude;
+            if (sqDist < closestSqDist)
+            {
+                closestSqDist = sqDist;
+                closest = body;
+            }
+        }
+
+        return closest;
     }
 
     private void Deactivate(bool restoreAnchoredBounds)

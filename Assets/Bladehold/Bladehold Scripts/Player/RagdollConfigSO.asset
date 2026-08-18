@@ -32,7 +32,7 @@ MonoBehaviour:
   - {fileID: 2100000, guid: b80f2f29f848efc41842379f5cdddf63, type: 2}
   - {fileID: 2100000, guid: ceb0417a72457b249baf4369388de993, type: 2}
   - {fileID: 2100000, guid: b906e1e73674d9445813eb221686ae70, type: 2}
-  minImpactSpeed: 1.8
+  minImpactSpeed: 4
   maxImpactSpeed: 10
   torsoBaseScale: 1.4
   headBaseScale: 1.1
@@ -40,7 +40,8 @@ MonoBehaviour:
   minDecalSize: 0.4
   maxDecalSize: 1.5
   decalProjectionDepth: 0.6
+  decalOffsetFromSurface: 0.3
   decalLifetime: 15
   decalFadeDuration: 3
   maxGlobalDecals: 40
-  impactCooldown: 0.12
+  impactCooldown: 0.5

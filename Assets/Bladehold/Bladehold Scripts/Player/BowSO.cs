@@ -32,15 +32,25 @@ public class BowSO : ScriptableObject
 
     [Header("Charge (power builds while aiming, the sword-hold convention)")]
     [Tooltip("Seconds of aiming to gain each charge level (level 1 at 1x, level 2 at 2x, ...).")]
-    public float chargeTimePerLevel = 0.6f;
+    public float chargeTimePerLevel = 0.33f;
 
     [Tooltip("Charge levels the draw can reach before upgrades. Registered as the BowMaxChargeLevels stat base.")]
-    public float baseMaxChargeLevels = 3f;
+    public float baseMaxChargeLevels = 1f;
 
     [Tooltip("Extra arrow damage per charge level before upgrades (0.5 = +50% per level). Registered as the BowChargeDamageBonus stat base.")]
-    public float baseChargeDamageBonus = 0.5f;
+    public float baseChargeDamageBonus = 0f;
+
+    [Header("Knockback")]
+    [Tooltip("Base knockback impulse dealt by uncharged arrow hits. Registered as the BowKnockback stat base.")]
+    public float baseKnockback = 2f;
+
+    [Tooltip("Knockback multiplier per charge level/ratio (e.g. 1.5 = +150% knockback per full charge level).")]
+    public float chargeKnockbackMultiplier = 1.5f;
 
     [Header("Multi Shot")]
+    [Tooltip("Base activation chance of Multi Shot at full charge (scaled down when uncharged).")]
+    public float baseMultishotChance = 1f;
+
     [Tooltip("Horizontal degrees between neighbouring arrows when Multi Shot fans extra arrows around the main one.")]
     public float multishotSpreadDegrees = 6f;
 

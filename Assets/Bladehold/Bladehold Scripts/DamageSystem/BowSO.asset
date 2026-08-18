@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 00d6e93a6edb0bb4984e4e7fac8f3fdc, type: 3}
   m_Name: BowSO
   m_EditorClassIdentifier: Assembly-CSharp::BowSO
-  baseDamage: 5
+  baseDamage: 2
   maxRange: 60
   fireCooldownSeconds: 0.7
   baseArrowSpeed: 30
@@ -21,6 +21,9 @@ MonoBehaviour:
   chargeTimePerLevel: 0.6
   baseMaxChargeLevels: 3
   baseChargeDamageBonus: 0.5
+  baseKnockback: 2
+  chargeKnockbackMultiplier: 1.5
+  baseMultishotChance: 1
   multishotSpreadDegrees: 6
   baseMultishotDamagePercent: 0.25
   bounceRadius: 6

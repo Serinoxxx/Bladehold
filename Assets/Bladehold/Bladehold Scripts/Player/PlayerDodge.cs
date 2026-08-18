@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Synty.AnimationBaseLocomotion.Samples.InputSystem;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -9,6 +10,8 @@ public class PlayerDodge : MonoBehaviour
     [SerializeField] private Player player;
     [SerializeField] private CharacterController characterController;
     [SerializeField] private Animator animator;
+    [SerializeField] private InputReader inputReader;
+    [SerializeField] private Camera facingCamera;
     [SerializeField] private float dashDuration = 0.2f;
 
     public event Action<float, float> OnCooldownUpdated;
@@ -25,6 +28,7 @@ public class PlayerDodge : MonoBehaviour
         if (player == null) player = GetComponent<Player>();
         if (characterController == null) characterController = GetComponent<CharacterController>();
         if (animator == null) animator = GetComponentInChildren<Animator>();
+        if (inputReader == null) inputReader = GetComponentInChildren<InputReader>();
     }
 
     private void Start()
@@ -32,6 +36,8 @@ public class PlayerDodge : MonoBehaviour
         if (player == null) player = GetComponent<Player>();
         if (characterController == null) characterController = GetComponent<CharacterController>();
         if (animator == null) animator = GetComponentInChildren<Animator>();
+        if (inputReader == null) inputReader = GetComponentInChildren<InputReader>();
+        if (facingCamera == null) facingCamera = Camera.main;
     }
 
     private void Update()
@@ -70,9 +76,33 @@ public class PlayerDodge : MonoBehaviour
 
         float distance = player.Stats.GetValue(StatType.DodgeDistance);
         
-        // Find dash direction (use input direction if any, otherwise forward)
+        // Find dash direction (use camera-relative movement input if active, otherwise transform.forward)
         Vector3 dashDir = transform.forward;
-        // Check input vector from Synty's InputReader if possible, but fallback to forward is fine for now
+        if (inputReader == null) inputReader = GetComponentInChildren<InputReader>();
+        Camera cam = facingCamera != null ? facingCamera : Camera.main;
+
+        if (inputReader != null && inputReader._moveComposite.sqrMagnitude > 0.01f && cam != null)
+        {
+            Vector3 camForward = cam.transform.forward;
+            camForward.y = 0f;
+            camForward.Normalize();
+
+            Vector3 camRight = cam.transform.right;
+            camRight.y = 0f;
+            camRight.Normalize();
+
+            Vector2 moveInput = inputReader._moveComposite;
+            Vector3 calculatedDir = (camForward * moveInput.y + camRight * moveInput.x).normalized;
+            if (calculatedDir.sqrMagnitude > 0.001f)
+            {
+                dashDir = calculatedDir;
+            }
+        }
+
+        if (dashDir.sqrMagnitude > 0.001f)
+        {
+            transform.rotation = Quaternion.LookRotation(dashDir);
+        }
         
         float damageMultiplier = player.Stats.GetValue(StatType.DodgeDamageMultiplier);
         float knockback = player.Stats.GetValue(StatType.DodgeKnockbackForce);
@@ -122,3 +152,4 @@ public class PlayerDodge : MonoBehaviour
         isDodging = false;
     }
 }
+

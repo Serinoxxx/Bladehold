@@ -1780,6 +1780,8 @@ MonoBehaviour:
   player: {fileID: 0}
   characterController: {fileID: 0}
   animator: {fileID: 3663620996007313722}
+  inputReader: {fileID: 6872381413864324108}
+  facingCamera: {fileID: 0}
   dashDuration: 0.2
 --- !u!1 &758177441954652393
 GameObject:
@@ -30124,7 +30126,7 @@ MonoBehaviour:
   _frontRayPos: {fileID: 6181340068046805216}
   _groundLayerMask:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 1025
   _inclineAngle: 0
   _groundedOffset: -0.14
   _jumpForce: 10
@@ -31210,6 +31212,8 @@ MonoBehaviour:
   player: {fileID: 4146729303150882357}
   characterController: {fileID: 6129945842767665454}
   animator: {fileID: 3663620996007313722}
+  inputReader: {fileID: 6872381413864324108}
+  facingCamera: {fileID: 0}
   dashDuration: 0.2
 --- !u!4 &8319765117670202089 stripped
 Transform:

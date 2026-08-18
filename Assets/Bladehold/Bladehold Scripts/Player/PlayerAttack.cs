@@ -32,7 +32,7 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private SamplePlayerAnimationController animController;
 
     [Tooltip("Seconds of holding the attack button to gain each charge level (level 1 at 1×, level 2 at 2×, ...).")]
-    [SerializeField] private float chargeTimePerLevel = 1f;
+    [SerializeField] private float chargeTimePerLevel = 0.33f;
 
     private bool charging;
     private float chargeStartTime;
@@ -42,15 +42,14 @@ public class PlayerAttack : MonoBehaviour
     /// <summary>Charge level of the swing in progress (or the last one), 0..MaxChargeLevels. Useful for VFX/feedback.</summary>
     public int ChargeLevel { get; private set; }
 
-    /// <summary>Levels the current hold can reach; 0 means hold-to-charge is still locked.</summary>
+    /// <summary>Levels the current hold can reach; 1 by default, upgraded by Heavy Strike nodes.</summary>
     public int MaxChargeLevels => anyError ? 0 : Mathf.RoundToInt(stats.GetValue(StatType.MaxChargeLevels));
 
     /// <summary>True while the attack button is held and the swing is charging up.</summary>
     public bool IsCharging => charging;
 
     /// <summary>
-    ///     Damage multiplier for the current swing: <c>1 + ChargeLevel × ChargeDamageBonus</c>. The sword's
-    ///     <see cref="DamageTrigger" /> multiplies its damage by this when its hitbox activates.
+    ///     Damage multiplier for the current swing. Scales continuously from 0.1x (uncharged) to 2.0x (base level 1 charge).
     /// </summary>
     public float AttackDamageMultiplier { get; private set; } = 1f;
 
@@ -117,9 +116,9 @@ public class PlayerAttack : MonoBehaviour
             return;
         }
 
-        // Both start at 0 (= no hold-to-charge); the "Heavy Strike" upgrades raise them.
+        // Heavy Strike charge is active by default at base max charge level 1.
         stats.SetBase(StatType.ChargeDamageBonus, 0f);
-        stats.SetBase(StatType.MaxChargeLevels, 0f);
+        stats.SetBase(StatType.MaxChargeLevels, 1f);
 
         Subscribe();
     }
@@ -191,9 +190,8 @@ public class PlayerAttack : MonoBehaviour
         if (animController != null && animController.IsAttackOnCooldown) return;
 
         ChargeLevel = 0;
-        AttackDamageMultiplier = 1f;
+        AttackDamageMultiplier = 0.1f;
 
-        // Until a skill-tree node grants a charge level, a press is just an ordinary swing.
         if (MaxChargeLevels <= 0) return;
 
         charging = true;
@@ -212,10 +210,12 @@ public class PlayerAttack : MonoBehaviour
     private void RecomputeMultiplier()
     {
         int maxLevels = MaxChargeLevels;
-        int level = chargeTimePerLevel > 0f
-            ? Mathf.FloorToInt((Time.time - chargeStartTime) / chargeTimePerLevel)
-            : maxLevels;
-        ChargeLevel = Mathf.Clamp(level, 0, maxLevels);
-        AttackDamageMultiplier = 1f + ChargeLevel * stats.GetValue(StatType.ChargeDamageBonus);
+        float elapsed = Time.time - chargeStartTime;
+        float chargeRatio = chargeTimePerLevel > 0f ? elapsed / chargeTimePerLevel : maxLevels;
+        chargeRatio = Mathf.Clamp(chargeRatio, 0f, maxLevels);
+        ChargeLevel = Mathf.Clamp(Mathf.FloorToInt(chargeRatio), 0, maxLevels);
+
+        float damagePerLevel = 1.9f + stats.GetValue(StatType.ChargeDamageBonus);
+        AttackDamageMultiplier = 0.1f + damagePerLevel * chargeRatio;
     }
 }

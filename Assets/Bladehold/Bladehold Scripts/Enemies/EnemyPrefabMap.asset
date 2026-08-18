@@ -50,7 +50,7 @@ MonoBehaviour:
   - id: mechanical_golem
     prefab: {fileID: 8753354553516220514, guid: 14e2840987c73c24e85d8d49f3614751, type: 3}
   - id: goblin
-    prefab: {fileID: 161911979639925791, guid: 48e1cff990271174cb5fb1490ba93b67, type: 3}
+    prefab: {fileID: 494112403358464087, guid: 0603fd4a9e0e2ad46baa698c0b89d706, type: 3}
   - id: goblin_brute
     prefab: {fileID: 3683623392950716979, guid: 50e96ce329a9be4438fc8f479d635ce8, type: 3}
   - id: storm_witch
@@ -63,3 +63,5 @@ MonoBehaviour:
     prefab: {fileID: 7209081902524217179, guid: f2d1ec27ec13ae44793139fdc05ddc86, type: 3}
   - id: bomber
     prefab: {fileID: 7198226037129445137, guid: 0cdea0a995d8a7d48ba2b175c8820bc1, type: 3}
+  - id: golden_goblin
+    prefab: {fileID: 4916839389149412876, guid: 5bbb12304f1758b4e9b8e733143d1aac, type: 3}

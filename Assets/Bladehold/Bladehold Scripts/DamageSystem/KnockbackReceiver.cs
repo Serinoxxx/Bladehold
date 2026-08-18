@@ -275,11 +275,21 @@ public class KnockbackReceiver : MonoBehaviour
         rootCollider.enabled = false;
         animator.enabled = false;
 
-        Vector3 launchVelocity = LaunchDirection(damage) * (damage.knockbackForce * (config != null ? config.knockbackMultiplier : 1f));
+        bool isLethal = health.IsDead || health.CurrentHealth <= 0f;
+        float pinThreshold = config != null ? config.arrowPinKnockbackThreshold : Resistance;
+        bool isArrowPinCandidate = isLethal
+            && (damage.isProjectile || damage.canPinToWall)
+            && damage.direction != Vector3.zero
+            && damage.knockbackForce >= pinThreshold;
+
+        Vector3 launchDir = isArrowPinCandidate ? damage.direction.normalized : LaunchDirection(damage);
+        float forceMag = damage.knockbackForce * (config != null ? config.knockbackMultiplier : 1f);
         if (config != null && config.maxKnockbackForce > 0f)
         {
-            launchVelocity = LaunchDirection(damage) * Mathf.Min(damage.knockbackForce * config.knockbackMultiplier, config.maxKnockbackForce);
+            forceMag = Mathf.Min(forceMag, config.maxKnockbackForce);
         }
+
+        Vector3 launchVelocity = launchDir * forceMag;
         Vector3 flatDir = transform.position - damage.sourcePosition;
         flatDir.y = 0f;
         flatDir = flatDir.sqrMagnitude > 0.0001f ? flatDir.normalized : -transform.forward;
@@ -287,17 +297,77 @@ public class KnockbackReceiver : MonoBehaviour
         Vector3 spin = tumbleAxis * config.spinTorque + Random.insideUnitSphere * (config.spinTorque * 0.3f);
         ragdoll.EnterRagdoll(carried + launchVelocity, spin, config.randomLimbKick);
 
+        Rigidbody pinnedBone = isArrowPinCandidate ? ragdoll.GetBoneRigidbody(damage.hitCollider, transform.position) : null;
+        LayerMask pinMask = config != null ? config.wallPinLayers : ~0;
+        bool isPinned = false;
+
         float airborne = 0f;
         float settled = 0f;
         while (airborne < config.airborneTimeout)
         {
             airborne += Time.deltaTime;
+
+            if (isArrowPinCandidate && !isPinned && pinnedBone != null)
+            {
+                Vector3 bonePos = pinnedBone.position;
+                Vector3 trajDir = damage.direction.normalized;
+                float checkDistance = Mathf.Max(0.5f, pinnedBone.linearVelocity.magnitude * Time.deltaTime * 2.5f);
+
+                if (Physics.SphereCast(bonePos, 0.25f, trajDir, out RaycastHit wallHit, checkDistance, pinMask, QueryTriggerInteraction.Ignore))
+                {
+                    if (!wallHit.collider.isTrigger
+                        && !wallHit.collider.transform.IsChildOf(transform)
+                        && (Player.Instance == null || !wallHit.collider.transform.IsChildOf(Player.Instance.transform))
+                        && Vector3.Dot(wallHit.normal, -trajDir) > 0.15f)
+                    {
+                        isPinned = true;
+                        PinLimbToWall(pinnedBone, wallHit, trajDir);
+                        break;
+                    }
+                }
+            }
+
             if (airborne >= config.minAirTime)
             {
                 settled = ragdoll.PelvisSpeed < config.settleSpeed ? settled + Time.deltaTime : 0f;
                 if (settled >= config.settleTime) break;
             }
             yield return null;
+        }
+
+        if (isPinned)
+        {
+            float minSec = config != null ? config.minWallPinSeconds : 4.0f;
+            float maxSec = config != null ? config.maxWallPinSeconds : 5.0f;
+            float pinDuration = Random.Range(minSec, maxSec);
+
+            float pinElapsed = 0f;
+            while (pinElapsed < pinDuration)
+            {
+                if (State != KnockbackState.Corpse) yield break;
+                pinElapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            // Unpin limb so the corpse drops to the ground under gravity
+            if (pinnedBone != null)
+            {
+                pinnedBone.isKinematic = false;
+                pinnedBone.linearVelocity += Vector3.down * 0.5f;
+            }
+
+            float dropTimer = 0f;
+            float dropSettled = 0f;
+            while (dropTimer < (config != null ? config.airborneTimeout : 6f))
+            {
+                dropTimer += Time.deltaTime;
+                dropSettled = ragdoll.PelvisSpeed < (config != null ? config.settleSpeed : 0.5f) ? dropSettled + Time.deltaTime : 0f;
+                if (dropSettled >= (config != null ? config.settleTime : 0.3f)) break;
+                yield return null;
+            }
+
+            ragdoll.FreezeCorpse();
+            yield break;
         }
 
         Vector3 landingPoint = ragdoll.Pelvis != null ? ragdoll.Pelvis.position : transform.position;
@@ -420,6 +490,62 @@ public class KnockbackReceiver : MonoBehaviour
     {
         if (landingVfxPrefab != null) Instantiate(landingVfxPrefab, position, Quaternion.identity);
         if (landingSfx != null) AudioSource.PlayClipAtPoint(landingSfx, position);
+    }
+
+    private void PinLimbToWall(Rigidbody hitBone, RaycastHit wallHit, Vector3 trajDir)
+    {
+        State = KnockbackState.Corpse;
+        if (!health.IsDead)
+        {
+            health.ReceiveDamage(new Damage { value = 999999f, type = DamageType.sharp });
+        }
+
+        // Clean up any initial body-attached stuck arrows so there are no awkward bone-parented props
+        StuckArrow[] bodyArrows = GetComponentsInChildren<StuckArrow>();
+        foreach (StuckArrow ba in bodyArrows)
+        {
+            Destroy(ba.gameObject);
+        }
+
+        // Align pin vector directly into the wall surface along arrow flight trajectory
+        Vector3 pinDir = trajDir.sqrMagnitude > 0.0001f ? trajDir.normalized : -wallHit.normal;
+
+        Vector3 pinPos = wallHit.point - pinDir * 0.05f;
+        hitBone.position = pinPos;
+        hitBone.isKinematic = true;
+        hitBone.linearVelocity = Vector3.zero;
+        hitBone.angularVelocity = Vector3.zero;
+
+        StuckArrow prefabToSpawn = config != null ? config.arrowPinPrefab : null;
+        if (prefabToSpawn == null && Player.Instance != null)
+        {
+            StuckArrowSpawner spawner = Player.Instance.GetComponentInChildren<StuckArrowSpawner>();
+            if (spawner != null)
+            {
+                prefabToSpawn = spawner.ArrowPrefab;
+            }
+        }
+
+        if (prefabToSpawn != null)
+        {
+            StuckArrow arrowProp = Instantiate(prefabToSpawn);
+            // Unparented (parent: null) so the arrow stays fixed in world space as the pin in the wall
+            arrowProp.Embed(wallHit.point, pinDir, 0.25f, parent: null);
+        }
+
+        if (config != null && config.wallPinSfx != null)
+        {
+            AudioSource.PlayClipAtPoint(config.wallPinSfx, wallHit.point);
+        }
+        if (config != null && config.wallPinVfxPrefab != null)
+        {
+            Instantiate(config.wallPinVfxPrefab, wallHit.point, Quaternion.LookRotation(wallHit.normal));
+        }
+
+        if (ragdoll != null && ragdoll.Config != null)
+        {
+            BloodDecalManager.SpawnDecal(wallHit.point, wallHit.normal, 1.2f, ragdoll.Config);
+        }
     }
 
     private void PlayKnockdownFeedback()

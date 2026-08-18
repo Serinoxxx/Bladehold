@@ -159,15 +159,7 @@ public class SurvivorsSpawner : MonoBehaviour
     private void SpawnEnemy(float runTimeSeconds)
     {
         SpawnType selectedType = SelectSpawnTypeForTime(runTimeSeconds);
-        if (selectedType == null || selectedType.prefab == null) return;
 
-        Vector3 spawnPos = ResolveSpawnPosition();
-        GameObject enemy = Instantiate(selectedType.prefab, spawnPos, Quaternion.identity);
-
-        // Apply roster stat overrides
-        WaveSpawner.ApplyDefinition(enemy, selectedType.def);
-
-        // Apply stat rolls (Golden / Impulse Goblins)
         if (stats == null && Player.Instance != null)
         {
             stats = Player.Instance.Stats;
@@ -178,9 +170,24 @@ public class SurvivorsSpawner : MonoBehaviour
             float goldenChance = stats.GetValue(StatType.GoldenGoblinChance);
             if (goldenChance > 0f && UnityEngine.Random.value < goldenChance)
             {
-                enemy.GetComponent<GoldenGoblin>()?.MarkGolden();
+                SpawnType goldenType = spawnTypes.Find(t => t.def != null && t.def.id == "golden_goblin");
+                if (goldenType != null && goldenType.prefab != null)
+                {
+                    selectedType = goldenType;
+                }
             }
+        }
 
+        if (selectedType == null || selectedType.prefab == null) return;
+
+        Vector3 spawnPos = ResolveSpawnPosition();
+        GameObject enemy = Instantiate(selectedType.prefab, spawnPos, Quaternion.identity);
+
+        // Apply roster stat overrides
+        WaveSpawner.ApplyDefinition(enemy, selectedType.def);
+
+        if (stats != null)
+        {
             float impulseChance = stats.GetValue(StatType.ImpulseGoblinChance);
             if (impulseChance > 0f && UnityEngine.Random.value < impulseChance)
             {

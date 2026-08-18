@@ -45,6 +45,8 @@ namespace Synty.AnimationBaseLocomotion.Samples.InputSystem
         // OnDismount is never called (PlayerMount falls back to a direct X-key read).
         public Action onDismountPerformed;
 
+        public bool IsAimPressed => _controls != null && _controls.Player.Aim.IsPressed();
+
 
         /// <inheritdoc cref="OnEnable" />
         private void OnEnable()
@@ -152,10 +154,9 @@ namespace Synty.AnimationBaseLocomotion.Samples.InputSystem
         /// <param name="context">The context of the callback.</param>
         public void OnAim(InputAction.CallbackContext context)
         {
-            if (CursorLockManager.IsCursorUnlocked) return;
-
             if (context.started)
             {
+                if (CursorLockManager.IsCursorUnlocked) return;
                 onAimActivated?.Invoke();
             }
 
@@ -182,10 +183,9 @@ namespace Synty.AnimationBaseLocomotion.Samples.InputSystem
 
         public void OnAttack(InputAction.CallbackContext context)
         {
-            if (CursorLockManager.IsCursorUnlocked) return;
-
             if (context.started)
             {
+                if (CursorLockManager.IsCursorUnlocked) return;
                 onAttackActivated?.Invoke();
             }
 

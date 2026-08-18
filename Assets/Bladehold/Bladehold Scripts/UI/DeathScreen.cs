@@ -146,7 +146,14 @@ public class DeathScreen : MonoBehaviour
 
     private void HandlePlayerDied()
     {
-        ShowRunOver(Loc.Get(playerDiedTitleKey), Loc.Get(playerDiedReasonKey));
+        if (SurvivorsGameManager.Instance != null)
+        {
+            ShowRunOver("YOU DIDN'T HOLD THE DOOR", "You didn't hold the door...");
+        }
+        else
+        {
+            ShowRunOver(Loc.Get(playerDiedTitleKey), Loc.Get(playerDiedReasonKey));
+        }
     }
 
     private void HandleGateDestroyed(Gate gate)
@@ -203,24 +210,52 @@ public class DeathScreen : MonoBehaviour
             totalGoldText.text = Loc.Format("wavestats.total_gold", total);
         }
 
-        // Only offer "restart from current wave" if there's a wave in progress to return to.
-        if (restartCurrentWaveButton != null)
+        bool isSurvivorsMode = SurvivorsGameManager.Instance != null;
+
+        if (isSurvivorsMode)
         {
-            bool hasWave = WaveSpawner.Instance != null;
-            restartCurrentWaveButton.gameObject.SetActive(hasWave);
-            if (hasWave && restartCurrentWaveLabel != null)
+            if (goldTreePanel != null)
             {
-                restartCurrentWaveLabel.text = Loc.Format("death.restart_wave", WaveSpawner.Instance.CurrentWave);
+                goldTreePanel.SetActive(false);
+            }
+            if (reincarnateTreePanel != null)
+            {
+                reincarnateTreePanel.SetActive(false);
+            }
+            if (reincarnateButton != null)
+            {
+                reincarnateButton.gameObject.SetActive(false);
+            }
+            if (restartCurrentWaveButton != null)
+            {
+                restartCurrentWaveButton.gameObject.SetActive(false);
+            }
+            if (tryAgainButton != null)
+            {
+                tryAgainButton.gameObject.SetActive(true);
             }
         }
-
-        if (reincarnateButton != null)
+        else
         {
-            bool hasService = ReincarnateService.Instance != null;
-            reincarnateButton.gameObject.SetActive(hasService);
-            if (hasService && reincarnatePreviewLabel != null)
+            // Only offer "restart from current wave" if there's a wave in progress to return to.
+            if (restartCurrentWaveButton != null)
             {
-                reincarnatePreviewLabel.text = Loc.Format("death.reincarnate", ReincarnateService.Instance.PreviewPointsForReincarnate());
+                bool hasWave = WaveSpawner.Instance != null;
+                restartCurrentWaveButton.gameObject.SetActive(hasWave);
+                if (hasWave && restartCurrentWaveLabel != null)
+                {
+                    restartCurrentWaveLabel.text = Loc.Format("death.restart_wave", WaveSpawner.Instance.CurrentWave);
+                }
+            }
+
+            if (reincarnateButton != null)
+            {
+                bool hasService = ReincarnateService.Instance != null;
+                reincarnateButton.gameObject.SetActive(hasService);
+                if (hasService && reincarnatePreviewLabel != null)
+                {
+                    reincarnatePreviewLabel.text = Loc.Format("death.reincarnate", ReincarnateService.Instance.PreviewPointsForReincarnate());
+                }
             }
         }
 
@@ -262,6 +297,13 @@ public class DeathScreen : MonoBehaviour
 
     private void RestartFromLevelOne()
     {
+        if (SurvivorsGameManager.Instance != null)
+        {
+            SaveData data = SaveSystem.Load();
+            data.ResetProgress();
+            SaveSystem.Save(data);
+        }
+
         RunState.StartingWave = 1;
         Reload();
     }

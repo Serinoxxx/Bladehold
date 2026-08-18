@@ -5,7 +5,7 @@ butter,Like Butter,Staff strikes through more enemies,Strike through one more en
 move_1,Fleet Footed,Increase move speed,Increase move speed further,24,2,3,MoveSpeed,Percent,0.05,plunder;vamp,22.5,6,Aura_Speed_nb,
 crit_1,Keen Eye,Increase critical strike chance,,45,1,2,CritChance,Flat,0.05,critdmg;plunder;vamp,23.5,7,Critical_strike_nobg,
 critdmg,Critical Damage,Increase critical strike damage,Increase critical strike damage further,60,2,3,CritMultiplier,Flat,0.5|2|4,crit_1,24.5,7,Critical_strike3_nobg,
-charge_unlock,Heavy Strike,Increase staff damage for every second held,+1 max charge level,90,1.44,4,MaxChargeLevels;ChargeDamageBonus,Flat;Flat,1;0.5|0|0|0,ampknock;range_ext,27,9.5,Holy_power_nobg,
+charge_unlock,Heavy Strike,Increase attack charge power levels,+1 max charge level,90,1.44,4,MaxChargeLevels;ChargeDamageBonus,Flat;Flat,1;0.5|0|0|0,ampknock;range_ext,27,9.5,Holy_power_nobg,
 knock_1,Brute Force,Knockback enemies on hit,,60,1,1,KnockbackForce,Flat,8,impulse_unlock;knock_2;sword_dmg,21,9.5,Push_nobg,
 knock_2,Stronger Blows,Increase knockback force,Increase knockback force further,27,1.57,4,KnockbackForce,Flat,4|4|6|8,knock_1,21,10.5,Push_nobg,
 ampknock,Amplified Knockback,Charging your weapon also increases knockback,Increase charge knockback further,75,1.5,4,ChargeKnockbackBonus,Flat,0.25,charge_unlock;imbue_dur,28,9.5,SwordHiltStrike_nobg,

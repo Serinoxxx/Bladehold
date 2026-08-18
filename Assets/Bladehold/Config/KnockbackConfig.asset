@@ -51,7 +51,16 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 785e315020ffda14094e42d2feac98ab, type: 3}
   - {fileID: 8300000, guid: abe7912f70a949e4485ca92114bf2935, type: 3}
   enableFlyingLightFlash: 1
-  flyingLightColor: {r: 1, g: 0.95, b: 0.8, a: 1}
-  flyingLightIntensity: 20
-  flyingLightRange: 8
+  flyingLightColor: {r: 0.8, g: 0.96057284, b: 1, a: 1}
+  flyingLightIntensity: 2
+  flyingLightRange: 10
   flyingLightDuration: 0.2
+  arrowPinKnockbackThreshold: 4
+  wallPinLayers:
+    serializedVersion: 2
+    m_Bits: 1024
+  arrowPinPrefab: {fileID: 2502419655459928812, guid: 126f154c6743e4440b55977074ef92b9, type: 3}
+  wallPinSfx: {fileID: 8300000, guid: ef5ff571a5ca2134a96079b18d44d31c, type: 3}
+  wallPinVfxPrefab: {fileID: 1489431029902184, guid: 4430919f14c50f84085d287cbcb2c30e, type: 3}
+  minWallPinSeconds: 4
+  maxWallPinSeconds: 5

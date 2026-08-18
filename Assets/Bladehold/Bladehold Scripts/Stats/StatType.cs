@@ -79,6 +79,8 @@ public enum StatType
     BowMaxChargeLevels,
     /// <summary>Extra arrow damage per charge level held (e.g. 0.5 = +50% per level).</summary>
     BowChargeDamageBonus,
+    /// <summary>Base knockback force dealt by arrow hits before charge scaling. Base comes from BowSO.baseKnockback.</summary>
+    BowKnockback,
     /// <summary>How many extra arrows each shot fires in an arc alongside the main arrow. 0 = Multi Shot locked.</summary>
     BowMultishotArrows,
     /// <summary>Fraction of the main arrow's damage each extra Multi Shot arrow deals (base 0.25 from BowSO).</summary>

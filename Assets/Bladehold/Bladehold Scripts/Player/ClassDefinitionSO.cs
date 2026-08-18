@@ -40,7 +40,7 @@ public class ClassDefinitionSO : ScriptableObject
     public Sprite rangedIcon;
 
     [Tooltip("Seconds of holding the attack button per melee charge level for this class (heavier weapons charge slower).")]
-    public float chargeTimePerLevel = 1f;
+    public float chargeTimePerLevel = 0.33f;
 
     [Tooltip("Minimum seconds between melee attacks for this class (prevents mid-swing click interruptions).")]
     public float meleeAttackCooldown = 0.5f;

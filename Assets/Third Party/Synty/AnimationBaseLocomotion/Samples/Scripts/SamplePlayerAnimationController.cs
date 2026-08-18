@@ -664,6 +664,11 @@ namespace Synty.AnimationBaseLocomotion.Samples
         /// <inheritdoc cref="Update" />
         private void Update()
         {
+            if (_isAiming && (CursorLockManager.IsCursorUnlocked || (_inputReader != null && !_inputReader.IsAimPressed)))
+            {
+                DeactivateAim();
+            }
+
             switch (_currentState)
             {
                 case AnimationState.Locomotion:

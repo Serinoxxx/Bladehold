@@ -86,6 +86,21 @@ public class PlayerWand : MonoBehaviour, IChargedAimWeapon
     /// <summary>Levels the current wind-up can reach.</summary>
     public int MaxChargeLevels => anyError ? 0 : Mathf.RoundToInt(stats.GetValue(StatType.WandMaxChargeLevels));
 
+    /// <summary>True while aiming and charging up a shot.</summary>
+    public bool IsCharging => IsAiming && MaxChargeLevels > 0;
+
+    /// <summary>Elapsed seconds of the current wand charge, clamped to [0, MaxChargeTime].</summary>
+    public float CurrentChargeTime => IsAiming ? Mathf.Min(Time.time - chargeStartTime, MaxChargeTime) : 0f;
+
+    /// <summary>Total time in seconds required to reach maximum charge levels.</summary>
+    public float MaxChargeTime => MaxChargeLevels * ChargeTimePerLevel;
+
+    /// <summary>Normalized charge progress [0..1] of the current hold.</summary>
+    public float ChargeProgress => MaxChargeTime > 0f ? Mathf.Clamp01(CurrentChargeTime / MaxChargeTime) : 0f;
+
+    /// <summary>Time in seconds required per charge level.</summary>
+    public float ChargeTimePerLevel => config != null ? config.chargeTimePerLevel : 0.33f;
+
     /// <summary>Fraction of the post-shot cooldown elapsed: 0 the instant a shot fires, 1 when ready (the PlayerBow convention).</summary>
     public float CooldownFraction
     {
@@ -312,12 +327,18 @@ public class PlayerWand : MonoBehaviour, IChargedAimWeapon
             return;
         }
 
+        if (CursorLockManager.IsCursorUnlocked || (inputReader != null && !inputReader.IsAimPressed))
+        {
+            EndAim();
+            return;
+        }
+
         // Keep the charge level live as the wind-up grows (the PlayerAttack convention).
         int maxLevels = MaxChargeLevels;
-        int level = config.chargeTimePerLevel > 0f
-            ? Mathf.FloorToInt((Time.time - chargeStartTime) / config.chargeTimePerLevel)
-            : maxLevels;
-        ChargeLevel = Mathf.Clamp(level, 0, maxLevels);
+        float elapsed = Time.time - chargeStartTime;
+        float chargeRatio = ChargeTimePerLevel > 0f ? elapsed / ChargeTimePerLevel : maxLevels;
+        chargeRatio = Mathf.Clamp(chargeRatio, 0f, maxLevels);
+        ChargeLevel = Mathf.Clamp(Mathf.FloorToInt(chargeRatio), 0, maxLevels);
 
         // The vendored controller sets StartAttack/IsHoldingAttack on every attack press (input
         // callbacks run before Update; the animator consumes triggers after all Updates), so clearing
@@ -451,6 +472,9 @@ public class PlayerWand : MonoBehaviour, IChargedAimWeapon
         }
         OnFired?.Invoke();
 
+        float currentRatio = ChargeTimePerLevel > 0f ? CurrentChargeTime / ChargeTimePerLevel : MaxChargeLevels;
+        currentRatio = Mathf.Clamp(currentRatio, 0f, MaxChargeLevels);
+
         MagicMissileProjectile projectile = Instantiate(projectilePrefab, origin, Quaternion.LookRotation(direction));
         projectile.Launch(this, new MagicMissileProjectile.LaunchSpec
         {
@@ -461,6 +485,7 @@ public class PlayerWand : MonoBehaviour, IChargedAimWeapon
             radius = config.missileRadius,
             hitLayers = hitLayers,
             chargeLevel = ChargeLevel,
+            chargeRatio = currentRatio,
             owner = ownerDamageable,
             ignoredTarget = ignoredTarget,
             imbuement = imbuement != null && imbuement.isActiveAndEnabled ? imbuement : null,
@@ -517,13 +542,20 @@ public class PlayerWand : MonoBehaviour, IChargedAimWeapon
     /// </summary>
     public Damage CreateHitDamage(int chargeLevel, Vector3 sourcePosition, IDamageable target)
     {
+        return CreateHitDamage(chargeLevel, sourcePosition, target, -1f);
+    }
+
+    public Damage CreateHitDamage(int chargeLevel, Vector3 sourcePosition, IDamageable target, float chargeRatio)
+    {
         if (anyError)
         {
             return new Damage { value = 0f, type = DamageType.elemental, sourcePosition = sourcePosition };
         }
 
         float value = stats.GetValue(StatType.WandDamage);
-        value *= 1f + chargeLevel * stats.GetValue(StatType.WandChargeDamageBonus);
+        float actualRatio = chargeRatio >= 0f ? chargeRatio : chargeLevel;
+        float damagePerLevel = 1.9f + stats.GetValue(StatType.WandChargeDamageBonus);
+        value *= 0.1f + damagePerLevel * actualRatio;
 
         if (IsUltimateLocked)
         {

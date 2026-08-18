@@ -61,6 +61,8 @@ public class ArrowProjectile : MonoBehaviour, IPlayerProjectile
         public LayerMask hitLayers;
         /// <summary>Draw level held when fired — damage/impulse read it per hit.</summary>
         public int chargeLevel;
+        /// <summary>Continuous charge ratio [0..maxChargeLevels] captured when fired.</summary>
+        public float chargeRatio;
         /// <summary>Damage fraction of the main arrow (Multi Shot extras fly at less than 1).</summary>
         public float damageScale;
         /// <summary>True for the main arrow of a shot — only it detonates Unstable Orbs.</summary>
@@ -206,7 +208,7 @@ public class ArrowProjectile : MonoBehaviour, IPlayerProjectile
                 }
 
                 Vector3 hitPoint = HitPointOf(hit, from, direction);
-                bow.ApplyArrowHit(damageable, hitPoint, direction, hit.collider, hitVulnerableSpot, vulnerableSpot, spec.damageScale, spec.chargeLevel);
+                bow.ApplyArrowHit(damageable, hitPoint, direction, hit.collider, hitVulnerableSpot, vulnerableSpot, spec.damageScale, spec.chargeLevel, spec.chargeRatio);
                 Destroy(gameObject);
                 return true;
             }

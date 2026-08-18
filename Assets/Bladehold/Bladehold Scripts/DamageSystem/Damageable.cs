@@ -42,6 +42,21 @@ public class Damage
     ///     True if the damage was dealt by a projectile (e.g. arrows, thrown axes, wand missiles) rather than a direct melee hit.
     /// </summary>
     public bool isProjectile;
+
+    /// <summary>
+    ///     Travel / flight direction vector of the attack or projectile. Used for trajectory-aligned knockback flings.
+    /// </summary>
+    public Vector3 direction;
+
+    /// <summary>
+    ///     The specific target Collider struck by the attack, if known (used to resolve specific ragdoll bones).
+    /// </summary>
+    public Collider hitCollider;
+
+    /// <summary>
+    ///     True if this hit qualifies to pin a killed target's ragdoll to a wall if knockback and surface collision permit.
+    /// </summary>
+    public bool canPinToWall;
 }
 
 public enum DamageType

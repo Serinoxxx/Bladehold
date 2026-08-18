@@ -30,13 +30,13 @@ public class ThrownAxeSO : ScriptableObject
 
     [Header("Charge (power builds while aiming, the bow-draw convention)")]
     [Tooltip("Seconds of aiming to gain each charge level (level 1 at 1x, level 2 at 2x, ...).")]
-    public float chargeTimePerLevel = 0.8f;
+    public float chargeTimePerLevel = 0.33f;
 
     [Tooltip("Charge levels the wind-up can reach before upgrades. Registered as the AxeThrowMaxChargeLevels stat base.")]
-    public float baseMaxChargeLevels = 3f;
+    public float baseMaxChargeLevels = 1f;
 
     [Tooltip("Extra throw damage per charge level before upgrades (0.5 = +50% per level). Registered as the AxeThrowChargeDamageBonus stat base.")]
-    public float baseChargeDamageBonus = 0.5f;
+    public float baseChargeDamageBonus = 0f;
 
     [Header("Piercing line")]
     [Tooltip("Enemies one uncharged throw can pass through before upgrades. Registered as the AxeThrowPierceCount stat base.")]

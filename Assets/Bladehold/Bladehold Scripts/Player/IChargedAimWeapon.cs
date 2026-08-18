@@ -24,6 +24,21 @@ public interface IChargedAimWeapon
     /// <summary>Levels the current draw can reach.</summary>
     int MaxChargeLevels { get; }
 
+    /// <summary>True while aiming and charging up a shot.</summary>
+    bool IsCharging => IsAiming && MaxChargeLevels > 0;
+
+    /// <summary>Elapsed seconds of the current ranged charge, clamped to [0, MaxChargeTime].</summary>
+    float CurrentChargeTime => 0f;
+
+    /// <summary>Total time in seconds required to reach maximum charge levels.</summary>
+    float MaxChargeTime => 0f;
+
+    /// <summary>Normalized charge progress [0..1] of the current hold.</summary>
+    float ChargeProgress => MaxChargeTime > 0f ? UnityEngine.Mathf.Clamp01(CurrentChargeTime / MaxChargeTime) : 0f;
+
+    /// <summary>Time in seconds required per charge level.</summary>
+    float ChargeTimePerLevel => 0f;
+
     /// <summary>Fraction of the post-shot cooldown elapsed: 0 the instant a shot fires, 1 when ready.</summary>
     float CooldownFraction { get; }
 

@@ -484,7 +484,7 @@ public class WaveSpawner : MonoBehaviour
         for (int i = 1; i < spawnTypes.Count; i++)
         {
             SpawnType type = spawnTypes[i];
-            if (IsEligible(type) && type.spawnedThisWave < PerWaveBudget(type))
+            if (IsEligible(type) && type.def.minSpawn > 0 && type.spawnedThisWave < PerWaveBudget(type))
             {
                 return type;
             }
@@ -551,21 +551,26 @@ public class WaveSpawner : MonoBehaviour
         remainingToSpawn--;
         aliveCount++;
 
+        if (forcedType == null)
+        {
+            float goldenChance = stats != null ? stats.GetValue(StatType.GoldenGoblinChance) : 0f;
+            if (goldenChance > 0f && UnityEngine.Random.value < goldenChance)
+            {
+                SpawnType goldenType = spawnTypes.Find(t => t.def != null && t.def.id == "golden_goblin");
+                if (goldenType != null && IsEligible(goldenType))
+                {
+                    forcedType = goldenType;
+                }
+            }
+        }
+
         SpawnType type = forcedType ?? SelectSpawnType();
         type.spawnedThisWave++;
         Vector3 position = ResolveSpawnPosition();
         GameObject enemy = Instantiate(type.prefab, position, Quaternion.identity);
 
-        // CSV overrides go on before the instance's Start runs (the MarkGolden timing trick), so each
-        // component sees its override when it initializes.
+        // CSV overrides go on before the instance's Start runs, so each component sees its override.
         ApplyDefinition(enemy, type.def);
-
-        // Rolled before Start runs on the enemy, so GoldenGoblin.Start sees the flag and applies its visual.
-        float goldenChance = stats != null ? stats.GetValue(StatType.GoldenGoblinChance) : 0f;
-        if (goldenChance > 0f && UnityEngine.Random.value < goldenChance)
-        {
-            enemy.GetComponent<GoldenGoblin>()?.MarkGolden();
-        }
 
         // Independent of the golden roll — a goblin can be both golden and impulse (the impulse aura
         // wins the visual; see GoldenGoblin.ApplyGoldenVisual).

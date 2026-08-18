@@ -830,6 +830,7 @@ MonoBehaviour:
   cheerTrigger: Cheer
   landingVfxPrefab: {fileID: 0}
   landingSfx: {fileID: 0}
+  flyingScreamSfx: []
 --- !u!114 &6572349470805921892
 MonoBehaviour:
   m_ObjectHideFlags: 0

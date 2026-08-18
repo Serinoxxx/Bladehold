@@ -87,6 +87,25 @@ public class RagdollBloodImpact : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Triggers a direct blood impact/splash at the specified world position and normal.
+    /// </summary>
+    public void TriggerDirectImpact(Vector3 point, Vector3 normal, float impactSpeed)
+    {
+        if (config != null && config.bloodParticlePrefab != null)
+        {
+            Quaternion particleRotation = Quaternion.LookRotation(normal);
+            ParticleSystem fx = Instantiate(config.bloodParticlePrefab, point, particleRotation);
+            fx.transform.localScale = Vector3.one * 1.2f;
+            fx.Emit(20);
+            Destroy(fx.gameObject, 2.5f);
+        }
+        if (config != null)
+        {
+            BloodDecalManager.SpawnDecal(point, normal, 1.2f, config);
+        }
+    }
+
     private float GetBodyPartMultiplier(RagdollBodyPartType type)
     {
         switch (type)

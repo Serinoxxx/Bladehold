@@ -22,6 +22,8 @@ public class StuckArrowSpawner : MonoBehaviour
     [Tooltip("StuckArrow prefab — authored with the tip at the origin, pointing down +Z (see StuckArrow).")]
     [SerializeField] private StuckArrow arrowPrefab;
 
+    public StuckArrow ArrowPrefab => arrowPrefab;
+
     [Header("Penetration (metres the tip sinks past the surface)")]
     [SerializeField] private float minPenetration = 0.15f;
     [SerializeField] private float maxPenetration = 0.35f;

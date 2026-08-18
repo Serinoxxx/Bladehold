@@ -81,15 +81,14 @@ public class AttackChargeBarUI : MonoBehaviour
         if (playerAttack == null)
         {
             TryBindPlayerAttack();
-            if (playerAttack == null)
-            {
-                if (canvasGroup != null) canvasGroup.alpha = 0f;
-                return;
-            }
         }
 
-        // Hide bar if not charging or hold-to-charge is locked (MaxChargeLevels <= 0)
-        if (!playerAttack.IsCharging || playerAttack.MaxChargeLevels <= 0)
+        bool isMeleeCharging = playerAttack != null && playerAttack.IsCharging && playerAttack.MaxChargeLevels > 0;
+        IChargedAimWeapon activeRangedWeapon = AimWeaponResolver.Resolve(null);
+        bool isRangedCharging = activeRangedWeapon != null && activeRangedWeapon.IsCharging;
+
+        // Hide bar if neither melee nor ranged weapon is charging
+        if (!isMeleeCharging && !isRangedCharging)
         {
             if (canvasGroup != null)
             {
@@ -98,14 +97,25 @@ public class AttackChargeBarUI : MonoBehaviour
             return;
         }
 
+        float currentCharge = 0f;
+        float maxCharge = 0f;
+
+        if (isMeleeCharging)
+        {
+            currentCharge = playerAttack.CurrentChargeTime;
+            maxCharge = playerAttack.MaxChargeTime;
+        }
+        else if (isRangedCharging)
+        {
+            currentCharge = activeRangedWeapon.CurrentChargeTime;
+            maxCharge = activeRangedWeapon.MaxChargeTime;
+        }
+
         // Show bar while charging
         if (canvasGroup != null)
         {
             canvasGroup.alpha = 1f;
         }
-
-        float currentCharge = playerAttack.CurrentChargeTime;
-        float maxCharge = playerAttack.MaxChargeTime;
 
         if (progressBar != null)
         {
