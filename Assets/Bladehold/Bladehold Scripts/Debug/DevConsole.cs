@@ -242,14 +242,18 @@ public class DevConsole : MonoBehaviour
     /// </summary>
     private void DrawEnemySpawnControls()
     {
-        WaveSpawner spawner = WaveSpawner.Instance;
-        if (spawner == null)
+        IReadOnlyList<EnemyDefinition> types = null;
+
+        if (WaveSpawner.Instance != null)
         {
-            return;
+            types = WaveSpawner.Instance.DebugSpawnableTypes;
+        }
+        else if (SurvivorsSpawner.Instance != null)
+        {
+            types = SurvivorsSpawner.Instance.DebugSpawnableTypes;
         }
 
-        IReadOnlyList<EnemyDefinition> types = spawner.DebugSpawnableTypes;
-        if (types.Count == 0)
+        if (types == null || types.Count == 0)
         {
             return;
         }
@@ -272,7 +276,14 @@ public class DevConsole : MonoBehaviour
 
         if (GUILayout.Button($"Spawn {label}", GUILayout.Height(ButtonHeight)))
         {
-            spawner.DebugSpawnEnemyType(selected.id);
+            if (WaveSpawner.Instance != null)
+            {
+                WaveSpawner.Instance.DebugSpawnEnemyType(selected.id);
+            }
+            else if (SurvivorsSpawner.Instance != null)
+            {
+                SurvivorsSpawner.Instance.DebugSpawnEnemyType(selected.id);
+            }
         }
     }
 
@@ -431,6 +442,10 @@ public class DevConsole : MonoBehaviour
             if (WaveSpawner.Instance != null)
             {
                 WaveSpawner.Instance.DebugSpawnBurst(count);
+            }
+            else if (SurvivorsSpawner.Instance != null)
+            {
+                SurvivorsSpawner.Instance.DebugSpawnBurst(count);
             }
         }
     }

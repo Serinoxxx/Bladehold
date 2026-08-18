@@ -13,7 +13,9 @@ MonoBehaviour:
   m_Name: AIAttackSO
   m_EditorClassIdentifier: Assembly-CSharp::AIAttackSO
   attackRange: 2
-  damage: 1
+  damage: 2
   damageType: 0
+  preAttackDelay: 0
   windupToApex: 0.4
   attackCooldown: 2
+  staggerCooldown: 1

@@ -17,7 +17,6 @@ MonoBehaviour:
   forwardOffset: 2.5
   telegraphSeconds: 1.5
   attackCooldown: 6
-  damage: 40
+  damage: 20
   damageType: 1
-  impulsePower: 10
-  impulseForce: 12
+  knockbackForce: 12

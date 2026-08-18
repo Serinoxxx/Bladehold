@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::KnockbackConfigSO
   defaultResistance: 2
   maxKnockbackForce: 25
-  knockbackMultiplier: 0.2
+  knockbackMultiplier: 0.5
   slideDuration: 0.18
   launchAngleDegrees: 30
   spinTorque: 64

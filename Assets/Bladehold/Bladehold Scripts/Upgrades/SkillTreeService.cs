@@ -222,12 +222,43 @@ public class SkillTreeService : MonoBehaviour, ISkillTreeService
         return true;
     }
 
+    /// <summary>
+    ///     Grants the node's next level for free (e.g. via Survivors mode level up card selection).
+    /// </summary>
+    public bool ApplyFreePurchase(string id)
+    {
+        if (anyError) return false;
+
+        SkillNode node = tree != null ? tree.GetById(id) : null;
+        if (node == null || IsMaxed(node))
+        {
+            return false;
+        }
+
+        int level = GetLevel(node) + 1;
+        levels[id] = level;
+
+        if (saveData != null && saveData.purchasedNodeIds != null)
+        {
+            saveData.purchasedNodeIds.Add(id);
+            SaveSystem.Save(saveData);
+        }
+
+        ApplyLevel(node, level);
+        OnNodePurchased?.Invoke(node, 0);
+        OnTreeChanged?.Invoke();
+        return true;
+    }
+
     /// <summary>Applies the per-level increment each of the node's effects contributes at <paramref name="level" />.</summary>
     private void ApplyLevel(SkillNode node, int level)
     {
         foreach (SkillEffect effect in node.effects)
         {
-            stats.AddModifier(effect.stat, effect.kind, effect.AmountForLevel(level));
+            if (stats != null)
+            {
+                stats.AddModifier(effect.stat, effect.kind, effect.AmountForLevel(level));
+            }
         }
     }
 }

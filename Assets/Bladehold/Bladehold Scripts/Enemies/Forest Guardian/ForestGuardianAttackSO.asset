@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ForestGuardianAttackSO
   m_EditorClassIdentifier: Assembly-CSharp::LightningBallAttackSO
   attackRange: 14
-  damage: 3
+  damage: 15
   damageType: 2
   ballSpeed: 12
   ballLifetime: 4

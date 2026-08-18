@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: MysticAttackSO
   m_EditorClassIdentifier: Assembly-CSharp::HomingOrbAttackSO
   attackRange: 12
-  damage: 4
+  damage: 15
   damageType: 2
   orbSpeed: 4
   orbLifetime: 8

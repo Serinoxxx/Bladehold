@@ -505,7 +505,7 @@ MonoBehaviour:
   movementSO: {fileID: 11400000, guid: 12c4a1b98935e144fbb340671b8eef6b, type: 2}
   health: {fileID: 2416392165065999887}
   targetSelector: {fileID: 6317806685617389453}
-  aggroFeedback: {fileID: 6109275958922678516}
+  aggroFeedback: {fileID: 0}
 --- !u!195 &7080334578233263117
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -861,6 +861,7 @@ MonoBehaviour:
   cheerTrigger: Cheer
   landingVfxPrefab: {fileID: 0}
   landingSfx: {fileID: 0}
+  flyingScreamSfx: []
 --- !u!114 &6572349470805921892
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -926,6 +927,7 @@ MonoBehaviour:
   animator: {fileID: 1991649265611916359}
   config: {fileID: 11400000, guid: 0dc3a05117208104ebded74f15a5fa59, type: 2}
   corpseDespawner: {fileID: 8820226531336169178}
+  impactSounds: []
 --- !u!114 &6790884973619429240
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1202,7 +1204,7 @@ MonoBehaviour:
     - rid: 6386679721512665260
       type: {class: MMF_Sound, ns: MoreMountains.Feedbacks, asm: MoreMountains.Tools}
       data:
-        Active: 1
+        Active: 0
         UniqueID: 2070928624
         Label: AggroMMF
         OriginalLabel: Sound
@@ -1745,7 +1747,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HealthBarUI
   health: {fileID: 2416392165065999887}
   healthBar: {fileID: 8820619236359328086}
-  ragdoll: {fileID: 0}
+  ragdoll: {fileID: 2774917170554717151}
 --- !u!114 &8820619236359328086
 MonoBehaviour:
   m_ObjectHideFlags: 0

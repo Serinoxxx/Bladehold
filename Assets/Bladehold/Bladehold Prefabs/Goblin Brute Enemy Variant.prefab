@@ -337,10 +337,10 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1718263119846408, guid: 9877270705d01b540aeaa38895b9f95b, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 0}
+      addedObject: {fileID: 1310198765492083250}
     - targetCorrespondingSourceObject: {fileID: 1718263119846408, guid: 9877270705d01b540aeaa38895b9f95b, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 0}
+      addedObject: {fileID: 5544613302405308731}
   m_SourcePrefab: {fileID: 100100000, guid: 9877270705d01b540aeaa38895b9f95b, type: 3}
 --- !u!4 &1651717345956284763 stripped
 Transform:
@@ -352,6 +352,44 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4041436395057980, guid: 9877270705d01b540aeaa38895b9f95b, type: 3}
   m_PrefabInstance: {fileID: 1656477334497626909}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1655890468935046933 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1718263119846408, guid: 9877270705d01b540aeaa38895b9f95b, type: 3}
+  m_PrefabInstance: {fileID: 1656477334497626909}
+  m_PrefabAsset: {fileID: 0}
+--- !u!135 &1310198765492083250
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1655890468935046933}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.4
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &5544613302405308731
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1655890468935046933}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59cfd3ee7cc3f4f4e88929ac8e296897, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VulnerableSpot
 --- !u!95 &1706022243755852551 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 95137901721683994, guid: 9877270705d01b540aeaa38895b9f95b, type: 3}
@@ -476,7 +514,7 @@ PrefabInstance:
     - target: {fileID: 8448426296968807282, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: aggroFeedback
       value: 
-      objectReference: {fileID: 4571693135607549521}
+      objectReference: {fileID: 0}
     - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 

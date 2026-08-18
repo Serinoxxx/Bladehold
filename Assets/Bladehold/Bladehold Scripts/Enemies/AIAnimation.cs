@@ -155,6 +155,28 @@ public class AIAnimation : MonoBehaviour
         if (isDead) return;
 
         isCheering = true;
+
+        // Force locomotion parameters back to idle/stopped so the base locomotion layer
+        // stops playing the run animation when updates freeze.
+        LocomotionAnimator.LocomotionInput zeroInput = new LocomotionAnimator.LocomotionInput
+        {
+            Velocity = Vector3.zero,
+            MoveDirection = Vector3.zero,
+            Forward = transform.forward,
+            IsGrounded = true,
+            IsWalking = false,
+            IsCrouching = false,
+            IsStrafing = false,
+        };
+        locomotion.Tick(zeroInput, 0.1f);
+
+        // Ensure the Cheer layer has weight if present (e.g. Synty Enemy AC layer 4).
+        int cheerLayerIndex = animator.GetLayerIndex("Cheer");
+        if (cheerLayerIndex >= 0)
+        {
+            animator.SetLayerWeight(cheerLayerIndex, 1f);
+        }
+
         // Stop driving locomotion and let the cheer state take over the animator.
         animator.SetTrigger(cheerTriggerHash);
     }

@@ -152,6 +152,8 @@ namespace Synty.AnimationBaseLocomotion.Samples.InputSystem
         /// <param name="context">The context of the callback.</param>
         public void OnAim(InputAction.CallbackContext context)
         {
+            if (CursorLockManager.IsCursorUnlocked) return;
+
             if (context.started)
             {
                 onAimActivated?.Invoke();
@@ -180,6 +182,8 @@ namespace Synty.AnimationBaseLocomotion.Samples.InputSystem
 
         public void OnAttack(InputAction.CallbackContext context)
         {
+            if (CursorLockManager.IsCursorUnlocked) return;
+
             if (context.started)
             {
                 onAttackActivated?.Invoke();

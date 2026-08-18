@@ -142,7 +142,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6109275958922678516, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: managedReferences[3583622953578791028].Active
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6109275958922678516, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: managedReferences[3583622953578791028].Chance
@@ -2224,6 +2224,42 @@ PrefabInstance:
       propertyPath: animator
       value: 
       objectReference: {fileID: 7511104964761227596}
+    - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: flyingScreamSfx.Array.size
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: 'flyingScreamSfx.Array.data[0]'
+      value: 
+      objectReference: {fileID: 8300000, guid: b52ef964be58a724fb549d1a59c6cd54, type: 3}
+    - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: 'flyingScreamSfx.Array.data[1]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 4a1832b26e6bee849ad95b6bd59772d0, type: 3}
+    - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: 'flyingScreamSfx.Array.data[2]'
+      value: 
+      objectReference: {fileID: 8300000, guid: d416c7ea2b5067044961699b081a9531, type: 3}
+    - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: 'flyingScreamSfx.Array.data[3]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 405508d2359efe14286ef357fe9bd8f0, type: 3}
+    - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: 'flyingScreamSfx.Array.data[4]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 1efcf3565b66c554fbd0b76be0a276c5, type: 3}
+    - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: 'flyingScreamSfx.Array.data[5]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 536d1c268b192d34c9eafae1cd9a47b7, type: 3}
+    - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: 'flyingScreamSfx.Array.data[6]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 56a8a72993a86624c85de70bfafd6b52, type: 3}
+    - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: 'flyingScreamSfx.Array.data[7]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 43146a760f707d445ad93b94dcd9f320, type: 3}
     - target: {fileID: 8780529840763675578, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 

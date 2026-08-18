@@ -1,26 +1,25 @@
 id          ,displayName ,health,damage,minGold,maxGold,speed,scale,unlockWave,spawnChance,minSpawn,maxConcurrent,knockbackResistance,enabled
 goblin      ,Goblin      ,10,1,2,5,4,1,1,           ,        ,             ,2,TRUE
-dwarf       ,Dwarf       ,4,1,1,3,6.5,0.7,3,30,2,,2,FALSE
-goblin_brute,Goblin Brute,25,2.5,15,30,3,1.25,4,50,1,3,3,TRUE
+goblin_brute,Goblin Brute,25,2.5,15,30,3,1.25,2,50,1,3,3,TRUE
+big_ork     ,Big Ork     ,45,6,20,40,3.2,1.5,3,20,1,2,4,TRUE
 bomber      ,Bomber      ,15,25,8,15,5,1,4,20,1,3,2,TRUE
 ancient_warrior,Ancient Warrior,20,2,6,12,4,1,5,25,1,,2,FALSE
 storm_witch ,Storm Witch ,30,3,10,20,3,1,7,25,1,2,2,TRUE
-knight      ,Knight      ,60,4,30,60,3.5,,7,15,1,1,4,FALSE
-big_ork     ,Big Ork     ,45,6,20,40,3.2,1.35,7,20,1,2,4,FALSE
-troll       ,Troll       ,100,40,50,100,2.5,4.8,8,15,1,1,50,TRUE
+knight      ,Knight      ,60,4,30,60,3.5,1,7,15,1,1,4,FALSE
+troll       ,Troll       ,100,40,50,100,2.5,2,8,15,1,1,50,TRUE
 forest_guardian,Forest Guardian,80,3,10,20,3,1,10,20,1,2,2,TRUE
 forest_witch,Forest Witch,120,2,15,30,3,1,9,15,1,2,2,FALSE
-mutant_guy  ,Mutant Guy  ,30,3,12,25,3.5,1.1,9,18,1,3,2,FALSE
+mutant_guy  ,Mutant Guy  ,30,3,12,25,3.5,1,9,18,1,3,2,FALSE
 mystic      ,Mystic      ,160,4,12,24,2.8,1,13,15,1,2,2,TRUE
 spirit_demon,Spirit Demon,14,2.5,8,16,4.5,1,10,20,1,3,50,FALSE
-ancient_queen,Ancient Queen,200,3,40,80,3,1.2,16,12,1,1,6,TRUE
+ancient_queen,Ancient Queen,200,3,40,80,3,1,16,12,1,1,6,TRUE
 dark_elf    ,Dark Elf    ,150,3,15,30,4.2,1,19,15,1,3,2,TRUE
-medusa      ,Medusa      ,250,3,20,40,2.8,1.1,22,12,1,1,4,TRUE
-slayer      ,Slayer      ,200,8,30,60,3.5,1.1,25,10,1,1,5,TRUE
-pig_butcher ,Pig Butcher ,300,6,40,80,3,1.3,28,10,1,1,6,TRUE
-red_demon   ,Red Demon   ,400,15,60,120,3,1.4,15,8,1,1,50,FALSE
-evil_god    ,Evil God    ,800,5,80,160,2,1.5,31,8,1,1,50,TRUE
-barbarian_giant,Barbarian Giant,1200,10,70,140,3.2,1.5,34,8,1,1,50,TRUE
-fort_golem  ,Fort Golem  ,1600,4,80,160,1.2,1.6,37,8,1,1,50,TRUE
-mechanical_golem,Mechanical Golem,2000,12,50,100,2,1.4,40,8,1,1,50,TRUE
-elemental_golem,Elemental Golem,5000,8,60,120,2,1.5,43,8,1,1,50,TRUE
+medusa      ,Medusa      ,250,3,20,40,2.8,1,22,12,1,1,4,TRUE
+slayer      ,Slayer      ,200,8,30,60,3.5,1,25,10,1,1,5,TRUE
+pig_butcher ,Pig Butcher ,300,6,40,80,3,1,28,10,1,1,6,TRUE
+red_demon   ,Red Demon   ,400,15,60,120,3,1,15,8,1,1,50,FALSE
+evil_god    ,Evil God    ,800,5,80,160,2,1,31,8,1,1,50,TRUE
+barbarian_giant,Barbarian Giant,1200,10,70,140,3.2,1,34,8,1,1,50,TRUE
+fort_golem  ,Fort Golem  ,1600,4,80,160,1.2,1,37,8,1,1,50,TRUE
+mechanical_golem,Mechanical Golem,2000,12,50,100,2,1,40,8,1,1,50,TRUE
+elemental_golem,Elemental Golem,5000,8,60,120,2,1,43,8,1,1,50,TRUE

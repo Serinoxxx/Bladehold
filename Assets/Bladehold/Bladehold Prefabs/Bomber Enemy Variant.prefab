@@ -1013,6 +1013,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: FX_Sparks_01
       objectReference: {fileID: 0}
+    - target: {fileID: 1303429800363182, guid: 9a905dc8b3b361840bb50c14f05926a9, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4585846784071322, guid: 9a905dc8b3b361840bb50c14f05926a9, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.113
@@ -1051,6 +1055,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4585846784071322, guid: 9a905dc8b3b361840bb50c14f05926a9, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 198628060487912908, guid: 9a905dc8b3b361840bb50c14f05926a9, type: 3}
+      propertyPath: playOnAwake
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 199039939312086078, guid: 9a905dc8b3b361840bb50c14f05926a9, type: 3}
@@ -1470,6 +1478,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: FX_Sparks_01
       objectReference: {fileID: 0}
+    - target: {fileID: 1303429800363182, guid: 9a905dc8b3b361840bb50c14f05926a9, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4585846784071322, guid: 9a905dc8b3b361840bb50c14f05926a9, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.135
@@ -1508,6 +1520,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4585846784071322, guid: 9a905dc8b3b361840bb50c14f05926a9, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 198628060487912908, guid: 9a905dc8b3b361840bb50c14f05926a9, type: 3}
+      propertyPath: playOnAwake
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 199039939312086078, guid: 9a905dc8b3b361840bb50c14f05926a9, type: 3}

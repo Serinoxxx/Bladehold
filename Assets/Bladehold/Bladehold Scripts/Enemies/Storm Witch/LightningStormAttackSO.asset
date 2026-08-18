@@ -17,5 +17,5 @@ MonoBehaviour:
   stormRadius: 1.5
   stormDuration: 6
   strikeInterval: 3
-  strikeDamage: 2
+  strikeDamage: 10
   damageType: 2

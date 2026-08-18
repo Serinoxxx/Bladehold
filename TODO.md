@@ -1,5 +1,34 @@
 # Bladehold HUD Setup
 
+## Bladehold Survivors Mode — Unity Editor & Scene wiring
+
+### The C# and Scene is done
+Implemented a full **Survivors-like game mode** in `Assets/Bladehold/Bladehold Scenes/Bladehold Survivors Scene.unity`:
+- **`SurvivorsGameManager.cs`**: Tracks 30-minute run timer, handles victory at 30:00, manages death state, and controls pausing during level-up skill card draft.
+- **`SurvivorsLevelSystem.cs`**: Tracks gold as cumulative XP, dynamically scales target gold per level (`baseGoldTarget`, `goldCostMultiplier`, `flatCostIncrement`), and triggers level-up event.
+- **`SurvivorsCardSelector.cs`**: Queries active class skill tree (`SkillTreeSO`), filters candidates enforcing dependency chain rules (root nodes, unlocked prereqs, owned upgradeable skills), and picks 3 distinct cards. Added `ApplyFreePurchase` to `SkillTreeService.cs` so card rewards grant skills without spending coins.
+- **`SurvivorsSpawner.cs`**: Continuous off-screen enemy spawner replacing wave-based spawning with time-based difficulty scaling, configurable spawn interval, max concurrent cap, and enemy unlocks.
+- **`SurvivorsHUDUI.cs`**: HUD overlay displaying run timer (30:00) and Level / Gold XP bar.
+- **`SurvivorsCardSelectUI.cs`**: 3-Card level-up modal overlay window displaying skill title, description, level badge, icon, and select button.
+
+### Wiring checklist
+- [x] Scene `Bladehold Survivors Scene.unity` created and saved in `Assets/Bladehold/Bladehold Scenes/`.
+- [x] Spawner GameObject configured with `SurvivorsSpawner`, `EnemyRosterSO`, and `EnemyPrefabMapSO`.
+- [x] `SurvivorsGameManager`, `SurvivorsLevelSystem`, `SurvivorsCardSelector` created and attached to `SurvivorsGameManager` GameObject.
+- [x] HUD UI (`Survivors HUD`) created under `Bladehold HUD` Canvas with TimerText, LevelText, XPSlider, XPText, and `SurvivorsHUDUI` component.
+- [x] 3-Card Modal UI (`SurvivorsCardSelectModal`) created with 3 card containers, buttons, titles, descriptions, icons, level badges, and `SurvivorsCardSelectUI` component.
+
+### Manual verification (Survivors Mode)
+- [x] C# compilation verified with `dotnet build Assembly-CSharp.csproj` (0 errors).
+- [x] Unity Editor AssetDatabase refreshed and script compilation verified via Unity MCP (`refresh_unity`).
+- [ ] Playtest: Open `Bladehold Survivors Scene.unity` in Unity Editor and press Play.
+- [ ] Playtest: Verify continuous enemy spawning around player position.
+- [ ] Playtest: Collect gold from defeated goblins, verify Level XP bar fills up, and check that reaching target gold opens 3-Card Selection Modal.
+- [ ] Playtest: Pick a skill card and verify skill levels up and applies stats while obeying tree dependency rules.
+- [ ] Playtest: Verify HUD timer counts up to 30:00.
+
+
+
 ## Attack Charge Bar UI — Unity Editor wiring
 
 ### The C# is done

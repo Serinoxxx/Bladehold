@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PowerupDropSO
   entries:
   - prefab: {fileID: 5845664704562408726, guid: 92f143bba9ad8ab4994355f284767f9f, type: 3}
-    chance: 0.25
+    chance: 0.05

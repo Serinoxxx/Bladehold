@@ -974,33 +974,41 @@ PrefabInstance:
       propertyPath: animator
       value: 
       objectReference: {fileID: 8226603554372097498}
+    - target: {fileID: 4165309427327923282, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4165309427327923282, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_Center.y
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4497168724745371170, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 
       objectReference: {fileID: 8226603554372097498}
     - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: m_LocalScale.x
-      value: 1.5
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: m_LocalScale.y
-      value: 1.5
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: m_LocalScale.z
-      value: 1.5
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.0292327
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.00000016006126
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 6.311174
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1038,6 +1046,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5471986414881692052, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 2.163
+      objectReference: {fileID: 0}
     - target: {fileID: 6109275958922678516, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: managedReferences[6386679721512665260].Sfx
       value: 
@@ -1049,6 +1061,14 @@ PrefabInstance:
     - target: {fileID: 6790884973619429240, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: 'bodyRenderers.Array.data[0]'
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 7080334578233263117, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7080334578233263117, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_AgentTypeID
+      value: -1372625422
       objectReference: {fileID: 0}
     - target: {fileID: 7287549992360804403, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
@@ -1190,7 +1210,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4373196678005266, guid: 2250a4a4fc528684c85ba955eb992ec6, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.34
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4373196678005266, guid: 2250a4a4fc528684c85ba955eb992ec6, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1227,7 +1247,7 @@ PrefabInstance:
     - target: {fileID: 95998111322576624, guid: 2250a4a4fc528684c85ba955eb992ec6, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 22100000, guid: c853d3b1d958a664ead53133fdf4be4b, type: 2}
+      objectReference: {fileID: 22100000, guid: 2a18527a884921d43aae1e09d0c1310d, type: 2}
     - target: {fileID: 95998111322576624, guid: 2250a4a4fc528684c85ba955eb992ec6, type: 3}
       propertyPath: m_ApplyRootMotion
       value: 0
@@ -1285,8 +1305,8 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 0.4
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Radius: 0.3
+  m_Center: {x: -0.08, y: 0, z: 0}
 --- !u!114 &-4658445423556814977
 MonoBehaviour:
   m_ObjectHideFlags: 0

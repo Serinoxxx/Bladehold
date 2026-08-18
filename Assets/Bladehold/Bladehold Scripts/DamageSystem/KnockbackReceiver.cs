@@ -46,6 +46,10 @@ public class KnockbackReceiver : MonoBehaviour
     [SerializeField] private GameObject landingVfxPrefab;
     [SerializeField] private AudioClip landingSfx;
 
+    [Header("Per-Variant Audio")]
+    [Tooltip("Per-variant list of flying screams/yells played when launched into a ragdoll fling. If empty, falls back to global KnockbackConfigSO.flyingSfx.")]
+    [SerializeField] private AudioClip[] flyingScreamSfx;
+
     public KnockbackState State { get; private set; } = KnockbackState.Normal;
 
     public bool IsIncapacitated => State != KnockbackState.Normal;
@@ -447,9 +451,13 @@ public class KnockbackReceiver : MonoBehaviour
             Destroy(inst, 3f);
         }
 
-        if (config.flyingSfx != null && config.flyingSfx.Length > 0)
+        AudioClip[] screamClips = (flyingScreamSfx != null && flyingScreamSfx.Length > 0)
+            ? flyingScreamSfx
+            : config.flyingSfx;
+
+        if (screamClips != null && screamClips.Length > 0)
         {
-            AudioClip clip = config.flyingSfx[Random.Range(0, config.flyingSfx.Length)];
+            AudioClip clip = screamClips[Random.Range(0, screamClips.Length)];
             if (clip != null) AudioSource.PlayClipAtPoint(clip, spawnPos);
         }
 
