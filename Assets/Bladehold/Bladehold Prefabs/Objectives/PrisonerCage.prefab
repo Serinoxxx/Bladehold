@@ -1159,6 +1159,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7195009371522965670, guid: d91ec65b493ec304fad8b37ece4ea72d, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: fedbfb10769922d4786d5d6b8c53b5f6, type: 2}
     - target: {fileID: 7754531244509640127, guid: d91ec65b493ec304fad8b37ece4ea72d, type: 3}
       propertyPath: m_Name
       value: RescuedPrisoner
@@ -1522,11 +1526,11 @@ MonoBehaviour:
   FollowTargetMode: 2
   FollowRotation: 0
   FollowScale: 1
-  NestDrawnHealthBar: 0
+  NestDrawnHealthBar: 1
   Billboard: 1
   InstantiatedOnDeath: {fileID: 0}
   HealthBarOffset: {x: 0, y: 3, z: 0}
-  AlwaysVisible: 1
+  AlwaysVisible: 0
   DisplayDurationOnHit: 1
   HideBarAtZero: 1
   HideBarAtZeroDelay: 1

@@ -63,6 +63,7 @@ public class HealthBarUI : MonoBehaviour
         }
 
         health.OnHealthChanged += Refresh;
+        health.OnDied += HandleDied;
 
         // Start-order safety: if Health.Start already ran, its initial OnHealthChanged fired before we
         // subscribed — refresh now; if it hasn't run yet, its event will overwrite this shortly.
@@ -74,6 +75,7 @@ public class HealthBarUI : MonoBehaviour
         if (health != null)
         {
             health.OnHealthChanged -= Refresh;
+            health.OnDied -= HandleDied;
         }
     }
 
@@ -93,8 +95,25 @@ public class HealthBarUI : MonoBehaviour
         }
     }
 
+    private void HandleDied()
+    {
+        if (healthBar != null)
+        {
+            healthBar.ShowBar(false);
+        }
+    }
+
     private void Refresh()
     {
+        if (health != null && health.IsDead)
+        {
+            if (healthBar != null)
+            {
+                healthBar.ShowBar(false);
+            }
+            return;
+        }
+
         healthBar.UpdateBar(health.CurrentHealth, 0f, health.MaxHealth, show: true);
     }
 }

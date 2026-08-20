@@ -126,6 +126,12 @@ public class PrisonerCage : MonoBehaviour
             col.enabled = false;
         }
 
+        var healthBar = GetComponentInChildren<MoreMountains.Tools.MMHealthBar>();
+        if (healthBar != null)
+        {
+            healthBar.ShowBar(false);
+        }
+
         if (cageVisualRoots != null && cageVisualRoots.Length > 0)
         {
             foreach (GameObject visual in cageVisualRoots)
