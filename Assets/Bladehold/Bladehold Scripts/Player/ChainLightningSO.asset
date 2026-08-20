@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e872f5ab0cdf3464f980c6dff9f7faec, type: 3}
   m_Name: ChainLightningSO
   m_EditorClassIdentifier: Assembly-CSharp::ChainLightningSO
-  baseOrbDurationSeconds: 2
+  baseOrbDurationSeconds: 5
   baseBounces: 1
-  baseDamagePercent: 5
+  baseDamagePercent: 0.5
   baseCritChance: 1
   chainRadius: 6
   damagePerExtraStackPercent: 0.1

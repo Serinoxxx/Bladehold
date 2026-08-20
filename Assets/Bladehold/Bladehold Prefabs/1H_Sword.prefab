@@ -1968,7 +1968,7 @@ MonoBehaviour:
         Owner: {fileID: 5773437014520130298}
         DebugActive: 0
         Source: 0
-        Sfx: {fileID: 8300000, guid: 1c4930795ec17e84bbc36a8f863da650, type: 3}
+        Sfx: {fileID: 0}
         AudioResourceToPlay: {fileID: 0}
         RandomSfx: []
         SequentialOrder: 0
@@ -2442,6 +2442,7 @@ MonoBehaviour:
   impulseBuff: {fileID: 0}
   rageBuff: {fileID: 0}
   painIntoPower: {fileID: 0}
+  weaponTrail: {fileID: 0}
   knockbackForce: 0
 --- !u!114 &2879380361252328939
 MonoBehaviour:
@@ -2479,6 +2480,9 @@ MonoBehaviour:
   - {fileID: 8300000, guid: da56e29ccc7c4c0438bd4fe1a7a0de7e, type: 3}
   - {fileID: 8300000, guid: 3f3e9199b300ff042825ec70d4066bed, type: 3}
   - {fileID: 8300000, guid: 875b692c69c7d2d41b736a465f939e65, type: 3}
+  wooshVolume: 1.2
+  hitVolume: 1.4
+  critHitVolume: 1.6
   bloodParticlePrefab: {fileID: 198104090543139058, guid: 4430919f14c50f84085d287cbcb2c30e, type: 3}
   critBloodParticlePrefab: {fileID: 198355779183106702, guid: 3b517eddec185dd4a830743a742ad00b, type: 3}
   inanimateHitParticlePrefab: {fileID: 0}

@@ -27,6 +27,29 @@ Implemented arrow wall pinning when lethal arrow hits deal sufficient knockback 
 - [ ] Playtest: Verify the wall pin arrow has no parent (unparented in hierarchy), points straight into the wall surface, and stays fixed in the wall when the goblin drops after 4-5 seconds.
 - [ ] Playtest: Verify non-lethal hits apply standard knockback/fling without pinning to the wall.
 
+## Bladehold Survivors Mode — Level-Up HUD Prompt, Player Stats Sidebar & Run Telemetry
+
+### The C# is done
+- **`Controls.inputactions` & `InputReader.cs` / `Controls.cs`**: Added `DraftSkills` input action mapped to Keyboard `T` and Gamepad `D-pad Down`.
+- **`SurvivorsLevelSystem.cs`**: Added `PendingDrafts` stacking queue, `OnPendingDraftsChanged`, `ConsumeDraft()`, and removed instant auto-pausing on level-up.
+- **`SurvivorsLevelUpPromptUI.cs`**: HUD prompt component displayed directly below the crosshair showing `"New skills available"` with an `InputGlyph` button prompt (`T` / `D-pad Down`), triggering the card modal when pressed.
+- **`SurvivorsPlayerInfoSidebarUI.cs`**: Right-side reusable panel displaying player class, HP, core stats (Melee Dmg, Ranged Dmg, Crit Chance, Move Speed), and an acquired skills list with level badges and interactive `SkillTooltip` hover popups.
+- **`SurvivorsCardSelectUI.cs`**: Updated to show big player level header (`LEVEL {X}`), support stacked multi-level drafts consecutively, and host the live player info/skills sidebar.
+- **`DeathScreen.cs`**: Updated for Survivors mode to display full run telemetry (time survived, enemies killed, gold earned, damage dealt/taken, critical hits, level reached), link the `SurvivorsPlayerInfoSidebarUI`, and present a single `"Try Again"` button.
+
+### Wiring checklist
+- [x] On `Assets/Bladehold/Bladehold Scenes/Bladehold Survivors Scene.unity` (under HUD Canvas):
+  - [x] Add `Survivors Level Up Prompt` UI element below crosshair and attach `SurvivorsLevelUpPromptUI`.
+  - [x] In `SurvivorsCardSelectModal`, attach `SurvivorsPlayerInfoSidebarUI` to the right sidebar container and link it to `SurvivorsCardSelectUI.sidebar`.
+  - [x] In `DeathScreen`, link `timeSurvivedText`, `damageDealtText`, `damageTakenText`, `critsText`, `levelReachedText`, and `survivorsSidebar`.
+
+### Manual verification
+- [x] C# compilation verified with `dotnet build Assembly-CSharp.csproj` (0 errors).
+- [ ] Playtest: Gain gold in Survivors mode and confirm `"New skills available"` prompt appears below crosshair without auto-pausing.
+- [ ] Playtest: Press `T` (or `D-pad Down`) to open the draft modal; verify big level header text and right-side player stats & skills list.
+- [ ] Playtest: Hover over acquired skills in the sidebar to verify `SkillTooltip` displays correctly.
+- [ ] Playtest: Die in Survivors mode and verify the death screen displays `"YOU DIDN'T HOLD THE DOOR"`, full run telemetry, and the skills sidebar.
+
 ## Bladehold Survivors Mode — Unity Editor & Scene wiring
 
 ### The C# and Scene is done
@@ -201,3 +224,23 @@ Converted Golden Goblin from a spawn-time modifier into a dedicated, fleeing ene
 - [ ] Playtest: Spawn `golden_goblin` in Play mode (or via DevConsole `DebugSpawnBurst` / `EnemyZoo`).
 - [ ] Playtest: Verify Golden Goblin runs frantically away from player, navigating around obstacles without attacking.
 - [ ] Playtest: Defeat Golden Goblin and verify coin drops and death feedback.
+
+## Survivors Card UI — Hover Enter, Hover Exit & Selection Feedbacks (MMF_Player) & Final Selection Transition
+
+### The C# is done
+- **`SurvivorsCardUI.cs`**: Implemented `IPointerEnterHandler` and `IPointerExitHandler`. Added `hoverEnterFeedback`, `hoverExitFeedback`, and `selectFeedback` serialized `MMF_Player` fields with unscaled time forcing (`ForceTimescaleMode = TimescaleModes.Unscaled`) so hover/click animations play cleanly while gameplay is paused during level-up card selection. `PlaySelectFeedback()` is automatically triggered on card click.
+- **`SurvivorsCardSelectUI.cs`**: Added configurable `finalSelectionDelaySeconds` (default: 0.2s) and `finalFadeDurationSeconds` (default: 0.15s) real-time delay & quick alpha fade-out routine. When multiple level-up drafts are queued (`pendingDrafts > 0`), choosing a card instantly re-rolls to the next 3 cards. When the **FINAL** draft is chosen, buttons disable immediately, the 0.2s delay allows the selection feedback/sound/anim to play out, and the modal smoothly fades out before resuming gameplay.
+- **`Card.prefab`**: Auto-wired `hoverEnterFeedback` to the prefab's root `MMF_Player` component.
+
+### Wiring checklist
+- [x] Auto-wired `hoverEnterFeedback` on `Assets/Bladehold/Bladehold Prefabs/UI/Card.prefab`.
+- [ ] (Optional) On `Assets/Bladehold/Bladehold Prefabs/UI/Card.prefab`, create a `HoverExitFeedback` child object with an `MMF_Player` component and assign to `hoverExitFeedback`.
+- [ ] (Optional) On `Assets/Bladehold/Bladehold Prefabs/UI/Card.prefab`, create a `SelectFeedback` child object with an `MMF_Player` component (e.g. click audio, punch scale, flash) and assign to `selectFeedback`.
+
+### Manual verification
+- [x] C# compilation verified with `dotnet build Assembly-CSharp.csproj` (0 errors).
+- [x] Unity Editor AssetDatabase refreshed and verified via Unity MCP (`refresh_unity`).
+- [ ] Playtest: Select cards in Survivors mode level-up modal. If multiple drafts are queued, verify choices present next cards immediately. On the final card choice, verify the selection feedback plays out during the brief 0.2s delay before the modal smoothly fades out and gameplay resumes.
+
+
+

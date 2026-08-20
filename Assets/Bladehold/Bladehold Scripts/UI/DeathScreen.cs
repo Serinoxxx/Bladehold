@@ -35,6 +35,18 @@ public class DeathScreen : MonoBehaviour
     [SerializeField] private TMP_Text goblinsKilledText;
     [SerializeField] private TMP_Text goldEarnedText;
     [SerializeField] private TMP_Text totalGoldText;
+    [Tooltip("Optional: text displaying time survived in Survivors mode.")]
+    [SerializeField] private TMP_Text timeSurvivedText;
+    [Tooltip("Optional: text displaying total damage dealt in Survivors mode.")]
+    [SerializeField] private TMP_Text damageDealtText;
+    [Tooltip("Optional: text displaying total damage taken in Survivors mode.")]
+    [SerializeField] private TMP_Text damageTakenText;
+    [Tooltip("Optional: text displaying critical hits in Survivors mode.")]
+    [SerializeField] private TMP_Text critsText;
+    [Tooltip("Optional: text displaying final level reached in Survivors mode.")]
+    [SerializeField] private TMP_Text levelReachedText;
+    [Tooltip("Optional: right-side player info and skills sidebar for Survivors mode.")]
+    [SerializeField] private SurvivorsPlayerInfoSidebarUI survivorsSidebar;
     [Tooltip("Restarts the run from wave 1.")]
     [SerializeField] private Button tryAgainButton;
     [Tooltip("Optional: restarts from the wave the player died on. Leave unassigned to offer only a wave-1 restart.")]
@@ -233,6 +245,44 @@ public class DeathScreen : MonoBehaviour
             if (tryAgainButton != null)
             {
                 tryAgainButton.gameObject.SetActive(true);
+            }
+
+            // Survivors run telemetry & stats
+            float runSeconds = SurvivorsGameManager.Instance != null ? SurvivorsGameManager.Instance.RunTimer : 0f;
+            int minutes = Mathf.FloorToInt(runSeconds / 60f);
+            int seconds = Mathf.FloorToInt(runSeconds % 60f);
+            if (timeSurvivedText != null)
+            {
+                timeSurvivedText.text = $"Time Survived: {minutes:00}:{seconds:00}";
+            }
+
+            if (levelReachedText != null)
+            {
+                int lvl = SurvivorsLevelSystem.Instance != null ? SurvivorsLevelSystem.Instance.CurrentLevel : 1;
+                levelReachedText.text = $"Level Reached: {lvl}";
+            }
+
+            if (RunTelemetry.Instance != null)
+            {
+                var waveStats = RunTelemetry.Instance.GetCurrentWaveStats();
+                if (damageDealtText != null)
+                {
+                    damageDealtText.text = $"Damage Dealt: {Mathf.RoundToInt(waveStats.damageDealt)}";
+                }
+                if (damageTakenText != null)
+                {
+                    damageTakenText.text = $"Damage Taken: {Mathf.RoundToInt(waveStats.damageTaken)}";
+                }
+                if (critsText != null)
+                {
+                    critsText.text = $"Critical Hits: {waveStats.crits}";
+                }
+            }
+
+            if (survivorsSidebar != null)
+            {
+                survivorsSidebar.gameObject.SetActive(true);
+                survivorsSidebar.RefreshSidebar();
             }
         }
         else

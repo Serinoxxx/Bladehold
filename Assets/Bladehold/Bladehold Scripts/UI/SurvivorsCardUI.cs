@@ -1,14 +1,16 @@
 using System;
+using MoreMountains.Feedbacks;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
 ///     Attached to the UI Card prefab for Survivors mode level-up card selection.
-///     Encapsulates rendering skill info (icon, title, description, level badge)
-///     and handling card click events.
+///     Encapsulates rendering skill info (icon, title, description, level badge),
+///     handling card click events, and playing MMF_Player callouts on hover enter/exit.
 /// </summary>
-public class SurvivorsCardUI : MonoBehaviour
+public class SurvivorsCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [Header("Card UI References")]
     [Tooltip("Primary button component on the card.")]
@@ -26,6 +28,16 @@ public class SurvivorsCardUI : MonoBehaviour
     [Tooltip("Level badge text component.")]
     [SerializeField] private TextMeshProUGUI levelText;
 
+    [Header("Feedbacks (optional)")]
+    [Tooltip("MMF_Player played when pointer enters/hovers over the card.")]
+    [SerializeField] private MMF_Player hoverEnterFeedback;
+
+    [Tooltip("MMF_Player played when pointer exits/unhovers the card.")]
+    [SerializeField] private MMF_Player hoverExitFeedback;
+
+    [Tooltip("MMF_Player played when the card is selected/clicked.")]
+    [SerializeField] private MMF_Player selectFeedback;
+
     private Action onClickedCallback;
 
     private void Awake()
@@ -36,11 +48,22 @@ public class SurvivorsCardUI : MonoBehaviour
             selectButton.onClick.RemoveAllListeners();
             selectButton.onClick.AddListener(HandleClick);
         }
+        ForceUnscaledTime(hoverEnterFeedback);
+        ForceUnscaledTime(hoverExitFeedback);
+        ForceUnscaledTime(selectFeedback);
     }
 
     private void OnValidate()
     {
         AutoWireReferences();
+    }
+
+    private static void ForceUnscaledTime(MMF_Player player)
+    {
+        if (player == null) return;
+        player.ForceTimescaleMode = true;
+        player.ForcedTimescaleMode = TimescaleModes.Unscaled;
+        player.PlayerTimescaleMode = TimescaleModes.Unscaled;
     }
 
     /// <summary>
@@ -53,6 +76,22 @@ public class SurvivorsCardUI : MonoBehaviour
         if (levelText == null) levelText = transform.Find("LevelBadge")?.GetComponent<TextMeshProUGUI>();
         if (descText == null) descText = transform.Find("Description")?.GetComponent<TextMeshProUGUI>();
         if (iconImage == null) iconImage = transform.Find("Icon")?.GetComponent<Image>();
+        if (hoverEnterFeedback == null)
+        {
+            hoverEnterFeedback = GetComponent<MMF_Player>();
+            if (hoverEnterFeedback == null)
+            {
+                hoverEnterFeedback = transform.Find("HoverEnterFeedback")?.GetComponent<MMF_Player>();
+            }
+        }
+        if (hoverExitFeedback == null)
+        {
+            hoverExitFeedback = transform.Find("HoverExitFeedback")?.GetComponent<MMF_Player>();
+        }
+        if (selectFeedback == null)
+        {
+            selectFeedback = transform.Find("SelectFeedback")?.GetComponent<MMF_Player>();
+        }
     }
 
     /// <summary>
@@ -109,8 +148,37 @@ public class SurvivorsCardUI : MonoBehaviour
         }
     }
 
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (hoverEnterFeedback != null)
+        {
+            hoverEnterFeedback.PlayFeedbacks();
+        }
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (hoverExitFeedback != null)
+        {
+            hoverExitFeedback.PlayFeedbacks();
+        }
+    }
+
+    /// <summary>
+    /// Triggers the card selection MMF_Player feedback (click sound, punch scale, flash, etc.).
+    /// </summary>
+    public void PlaySelectFeedback()
+    {
+        if (selectFeedback != null)
+        {
+            selectFeedback.PlayFeedbacks();
+        }
+    }
+
     private void HandleClick()
     {
+        PlaySelectFeedback();
         onClickedCallback?.Invoke();
     }
 }
+

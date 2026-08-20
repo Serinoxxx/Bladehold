@@ -190,6 +190,15 @@ public partial class @Controls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""DraftSkills"",
+                    ""type"": ""Button"",
+                    ""id"": ""e8d7a12b-3456-4c78-90ab-cdef12345678"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -533,6 +542,28 @@ public partial class @Controls: IInputActionCollection2, IDisposable
                     ""action"": ""Ultimate"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""7b8c9d0e-1234-4567-89ab-cdef01234567"",
+                    ""path"": ""<Keyboard>/t"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard and Mouse"",
+                    ""action"": ""DraftSkills"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""8c9d0e1f-2345-4678-90bc-def012345678"",
+                    ""path"": ""<Gamepad>/dpad/down"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Gamepad"",
+                    ""action"": ""DraftSkills"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -580,6 +611,7 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         m_Player_Attack = m_Player.FindAction("Attack", throwIfNotFound: true);
         m_Player_Dismount = m_Player.FindAction("Dismount", throwIfNotFound: true);
         m_Player_Ultimate = m_Player.FindAction("Ultimate", throwIfNotFound: true);
+        m_Player_DraftSkills = m_Player.FindAction("DraftSkills", throwIfNotFound: true);
     }
 
     ~@Controls()
@@ -671,6 +703,7 @@ public partial class @Controls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Attack;
     private readonly InputAction m_Player_Dismount;
     private readonly InputAction m_Player_Ultimate;
+    private readonly InputAction m_Player_DraftSkills;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -726,6 +759,10 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/Ultimate".
         /// </summary>
         public InputAction @Ultimate => m_Wrapper.m_Player_Ultimate;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/DraftSkills".
+        /// </summary>
+        public InputAction @DraftSkills => m_Wrapper.m_Player_DraftSkills;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -785,6 +822,9 @@ public partial class @Controls: IInputActionCollection2, IDisposable
             @Ultimate.started += instance.OnUltimate;
             @Ultimate.performed += instance.OnUltimate;
             @Ultimate.canceled += instance.OnUltimate;
+            @DraftSkills.started += instance.OnDraftSkills;
+            @DraftSkills.performed += instance.OnDraftSkills;
+            @DraftSkills.canceled += instance.OnDraftSkills;
         }
 
         /// <summary>
@@ -829,6 +869,9 @@ public partial class @Controls: IInputActionCollection2, IDisposable
             @Ultimate.started -= instance.OnUltimate;
             @Ultimate.performed -= instance.OnUltimate;
             @Ultimate.canceled -= instance.OnUltimate;
+            @DraftSkills.started -= instance.OnDraftSkills;
+            @DraftSkills.performed -= instance.OnDraftSkills;
+            @DraftSkills.canceled -= instance.OnDraftSkills;
         }
 
         /// <summary>
@@ -972,5 +1015,12 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnUltimate(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "DraftSkills" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnDraftSkills(InputAction.CallbackContext context);
     }
 }

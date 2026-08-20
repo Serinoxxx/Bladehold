@@ -45,6 +45,9 @@ namespace Synty.AnimationBaseLocomotion.Samples.InputSystem
         // OnDismount is never called (PlayerMount falls back to a direct X-key read).
         public Action onDismountPerformed;
 
+        // Bladehold addition: draft-skills action (T / gamepad D-pad Down).
+        public Action onDraftSkillsPerformed;
+
         public bool IsAimPressed => _controls != null && _controls.Player.Aim.IsPressed();
 
 
@@ -211,6 +214,16 @@ namespace Synty.AnimationBaseLocomotion.Samples.InputSystem
         {
             // Handled directly by PlayerUltimateController listening to the action.
             // Implemented here only to satisfy the IPlayerActions interface generated from Controls.inputactions.
+        }
+
+        public void OnDraftSkills(InputAction.CallbackContext context)
+        {
+            if (!context.performed)
+            {
+                return;
+            }
+
+            onDraftSkillsPerformed?.Invoke();
         }
     }
 }

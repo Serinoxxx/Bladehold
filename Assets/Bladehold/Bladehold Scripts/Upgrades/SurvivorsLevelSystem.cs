@@ -29,14 +29,17 @@ public class SurvivorsLevelSystem : MonoBehaviour
     private int targetXPForNextLevel;
     private int totalRunGoldTracked = 0;
     private int lastKnownWalletCoins = 0;
+    private int pendingDrafts = 0;
     private bool anyError = false;
 
     public event Action<int, int, int> OnXPChanged; // (currentLevelXP, targetXPForNextLevel, currentLevel)
     public event Action<int> OnLevelUp; // (newLevel)
+    public event Action<int> OnPendingDraftsChanged; // (pendingDrafts)
 
     public int CurrentLevel => currentLevel;
     public int CurrentLevelXP => currentLevelXP;
     public int TargetXPForNextLevel => targetXPForNextLevel;
+    public int PendingDrafts => pendingDrafts;
 
     private void Awake()
     {
@@ -71,11 +74,13 @@ public class SurvivorsLevelSystem : MonoBehaviour
 
         currentLevel = 1;
         currentLevelXP = 0;
+        pendingDrafts = 0;
         targetXPForNextLevel = CalculateTargetXPForLevel(currentLevel);
         lastKnownWalletCoins = wallet.Coins;
 
         wallet.OnCoinsChanged += HandleCoinsChanged;
         OnXPChanged?.Invoke(currentLevelXP, targetXPForNextLevel, currentLevel);
+        OnPendingDraftsChanged?.Invoke(pendingDrafts);
     }
 
     private void OnDestroy()
@@ -120,7 +125,7 @@ public class SurvivorsLevelSystem : MonoBehaviour
     }
 
     /// <summary>
-    ///     Adds XP (gold) and handles single or multi level-ups if enough gold was acquired at once.
+    ///     Adds XP (gold) and increments pending skill drafts upon level up.
     /// </summary>
     public void AddXP(int amount)
     {
@@ -132,17 +137,40 @@ public class SurvivorsLevelSystem : MonoBehaviour
         {
             currentLevelXP -= targetXPForNextLevel;
             currentLevel++;
+            pendingDrafts++;
             targetXPForNextLevel = CalculateTargetXPForLevel(currentLevel);
 
-            Debug.Log($"[SurvivorsLevelSystem] LEVEL UP! Reached Level {currentLevel}! Next target: {targetXPForNextLevel} gold.");
+            Debug.Log($"[SurvivorsLevelSystem] LEVEL UP! Reached Level {currentLevel}! Pending drafts: {pendingDrafts}. Next target: {targetXPForNextLevel} gold.");
             OnLevelUp?.Invoke(currentLevel);
-
-            if (SurvivorsGameManager.Instance != null)
-            {
-                SurvivorsGameManager.Instance.PauseForCardSelection();
-            }
+            OnPendingDraftsChanged?.Invoke(pendingDrafts);
         }
 
         OnXPChanged?.Invoke(currentLevelXP, targetXPForNextLevel, currentLevel);
+    }
+
+    /// <summary>
+    ///     Consumes one pending skill draft after a card has been picked.
+    /// </summary>
+    public void ConsumeDraft()
+    {
+        if (pendingDrafts > 0)
+        {
+            pendingDrafts--;
+            OnPendingDraftsChanged?.Invoke(pendingDrafts);
+        }
+    }
+
+    /// <summary>
+    ///     Resets level and draft progress back to level 1 on run restart.
+    /// </summary>
+    public void ResetProgress()
+    {
+        currentLevel = 1;
+        currentLevelXP = 0;
+        pendingDrafts = 0;
+        totalRunGoldTracked = 0;
+        targetXPForNextLevel = CalculateTargetXPForLevel(currentLevel);
+        OnXPChanged?.Invoke(currentLevelXP, targetXPForNextLevel, currentLevel);
+        OnPendingDraftsChanged?.Invoke(pendingDrafts);
     }
 }
