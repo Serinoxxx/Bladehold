@@ -13182,6 +13182,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ObjectiveTrackerUI
   spawner: {fileID: 0}
+  objectiveManager: {fileID: 0}
   objectiveHeaderText: {fileID: 4365018782230912205}
   objectiveProgressText: {fileID: 4651276955022387107}
 --- !u!114 &4365018782230912205 stripped
@@ -13542,7 +13543,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WaveClearedBannerUI
   spawner: {fileID: 0}
+  objectiveManager: {fileID: 0}
   bannerRoot: {fileID: 6497254365825002125}
+  questNameText: {fileID: 0}
   waveClearedText: {fileID: 1615693951632385899}
   goldEarnedText: {fileID: 2367130393206798823}
   enemiesKilledText: {fileID: 1652419435818493780}

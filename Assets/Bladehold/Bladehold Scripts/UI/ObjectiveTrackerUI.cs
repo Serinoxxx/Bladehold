@@ -2,13 +2,14 @@ using TMPro;
 using UnityEngine;
 
 /// <summary>
-///     Dynamically updates the objective panel to reflect the current wave and how many
-///     enemies have been slain out of the total required for the wave.
-///     Listens to <see cref="WaveSpawner"/> events for wave state and checks progress in Update.
+///     Dynamically updates the objective panel to reflect either:
+///     1) Wave defense progress in classic mode (via <see cref="WaveSpawner"/>)
+///     2) Active objective progress in survival mode (via <see cref="SurvivorsObjectiveManager"/>).
 /// </summary>
 public class ObjectiveTrackerUI : MonoBehaviour
 {
     [SerializeField] private WaveSpawner spawner;
+    [SerializeField] private SurvivorsObjectiveManager objectiveManager;
 
     [Header("References")]
     [Tooltip("The text displaying the current main objective (e.g. HOLD THE GATE: WAVE X)")]
@@ -26,6 +27,10 @@ public class ObjectiveTrackerUI : MonoBehaviour
         {
             spawner = FindObjectOfType<WaveSpawner>();
         }
+        if (objectiveManager == null)
+        {
+            objectiveManager = FindObjectOfType<SurvivorsObjectiveManager>();
+        }
     }
 
     private void Start()
@@ -34,20 +39,37 @@ public class ObjectiveTrackerUI : MonoBehaviour
         {
             spawner = FindObjectOfType<WaveSpawner>();
         }
-
-        if (spawner == null)
+        if (objectiveManager == null)
         {
-            Debug.LogError("ObjectiveTrackerUI has no WaveSpawner assigned.");
-            anyError = true;
+            objectiveManager = SurvivorsObjectiveManager.Instance ?? FindObjectOfType<SurvivorsObjectiveManager>();
         }
 
-        if (anyError) return;
+        if (spawner == null && objectiveManager == null)
+        {
+            Debug.LogWarning("ObjectiveTrackerUI: Neither WaveSpawner nor SurvivorsObjectiveManager was found in the scene.");
+            anyError = true;
+            return;
+        }
 
-        spawner.WaveStarted += HandleWaveStarted;
-        spawner.WaveCleared += HandleWaveCleared;
-        spawner.CountdownTick += HandleCountdownTick;
+        if (spawner != null)
+        {
+            spawner.WaveStarted += HandleWaveStarted;
+            spawner.WaveCleared += HandleWaveCleared;
+            spawner.CountdownTick += HandleCountdownTick;
+            UpdateProgressText(0, 0);
+        }
 
-        UpdateProgressText(0, 0);
+        if (objectiveManager != null)
+        {
+            objectiveManager.OnObjectiveStarted += HandleSurvivorsObjectiveStarted;
+            objectiveManager.OnObjectiveProgressChanged += HandleSurvivorsObjectiveProgress;
+            objectiveManager.OnObjectiveCompleted += HandleSurvivorsObjectiveCompleted;
+
+            if (objectiveManager.CurrentObjective != null)
+            {
+                HandleSurvivorsObjectiveStarted(objectiveManager.CurrentObjective);
+            }
+        }
     }
 
     private void OnDestroy()
@@ -57,6 +79,45 @@ public class ObjectiveTrackerUI : MonoBehaviour
             spawner.WaveStarted -= HandleWaveStarted;
             spawner.WaveCleared -= HandleWaveCleared;
             spawner.CountdownTick -= HandleCountdownTick;
+        }
+
+        if (objectiveManager != null)
+        {
+            objectiveManager.OnObjectiveStarted -= HandleSurvivorsObjectiveStarted;
+            objectiveManager.OnObjectiveProgressChanged -= HandleSurvivorsObjectiveProgress;
+            objectiveManager.OnObjectiveCompleted -= HandleSurvivorsObjectiveCompleted;
+        }
+    }
+
+    private void HandleSurvivorsObjectiveStarted(ISurvivorsObjective obj)
+    {
+        if (objectiveHeaderText != null)
+        {
+            objectiveHeaderText.text = $"OBJECTIVE: {obj.Title.ToUpper()}";
+        }
+        if (objectiveProgressText != null)
+        {
+            objectiveProgressText.text = obj.ProgressText;
+        }
+    }
+
+    private void HandleSurvivorsObjectiveProgress(ISurvivorsObjective obj)
+    {
+        if (objectiveProgressText != null)
+        {
+            objectiveProgressText.text = obj.ProgressText;
+        }
+    }
+
+    private void HandleSurvivorsObjectiveCompleted(ISurvivorsObjective obj)
+    {
+        if (objectiveHeaderText != null)
+        {
+            objectiveHeaderText.text = $"{obj.Title.ToUpper()} CLEARED!";
+        }
+        if (objectiveProgressText != null)
+        {
+            objectiveProgressText.text = "Objective complete! Next objective incoming...";
         }
     }
 
@@ -98,7 +159,7 @@ public class ObjectiveTrackerUI : MonoBehaviour
 
     private void Update()
     {
-        if (anyError || !waveInProgress) return;
+        if (anyError || !waveInProgress || spawner == null) return;
 
         UpdateProgressText(spawner.KilledThisWave, spawner.WaveGoblinTotal);
     }

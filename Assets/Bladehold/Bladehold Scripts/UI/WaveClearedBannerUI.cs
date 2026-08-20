@@ -2,20 +2,22 @@ using System.Collections;
 using MoreMountains.Feedbacks;
 using TMPro;
 using UnityEngine;
-
 using MoreMountains.Tools;
 
 /// <summary>
-///     Listens for wave clear events and pops in a banner displaying the gold earned and enemies killed
-///     during that specific wave. Uses <see cref="MMF_Player"/> to animate the banner in and out.
+///     Listens for wave clear events (in classic mode via <see cref="WaveSpawner"/>) or
+///     objective completion events (in survival mode via <see cref="SurvivorsObjectiveManager"/>)
+///     and pops in a banner displaying rewards/stats. Uses <see cref="MMF_Player"/> to animate the banner in and out.
 /// </summary>
 public class WaveClearedBannerUI : MonoBehaviour
 {
     [SerializeField] private WaveSpawner spawner;
+    [SerializeField] private SurvivorsObjectiveManager objectiveManager;
 
     [Header("References")]
     [Tooltip("The parent GameObject containing the banner visual elements. Used to hide it completely when not active.")]
     [SerializeField] private GameObject bannerRoot;
+    [SerializeField] private TMP_Text questNameText;
     [SerializeField] private TMP_Text waveClearedText;
     [SerializeField] private TMP_Text goldEarnedText;
     [SerializeField] private TMP_Text enemiesKilledText;
@@ -44,6 +46,10 @@ public class WaveClearedBannerUI : MonoBehaviour
         {
             spawner = FindObjectOfType<WaveSpawner>();
         }
+        if (objectiveManager == null)
+        {
+            objectiveManager = FindObjectOfType<SurvivorsObjectiveManager>();
+        }
         if (textAnimator == null && waveClearedText != null)
         {
             textAnimator = waveClearedText.GetComponent<Animator>();
@@ -62,19 +68,35 @@ public class WaveClearedBannerUI : MonoBehaviour
     {
         if (spawner == null)
         {
-            Debug.LogError("WaveClearedBannerUI has no WaveSpawner assigned.");
-            anyError = true;
+            spawner = FindObjectOfType<WaveSpawner>();
+        }
+        if (objectiveManager == null)
+        {
+            objectiveManager = SurvivorsObjectiveManager.Instance ?? FindObjectOfType<SurvivorsObjectiveManager>();
         }
 
-        if (anyError) return;
+        if (spawner == null && objectiveManager == null)
+        {
+            Debug.LogWarning("WaveClearedBannerUI: Neither WaveSpawner nor SurvivorsObjectiveManager was found in the scene.");
+            anyError = true;
+            return;
+        }
 
         if (bannerRoot != null)
         {
             bannerRoot.SetActive(false);
         }
 
-        spawner.WaveStarted += HandleWaveStarted;
-        spawner.WaveCleared += HandleWaveCleared;
+        if (spawner != null)
+        {
+            spawner.WaveStarted += HandleWaveStarted;
+            spawner.WaveCleared += HandleWaveCleared;
+        }
+
+        if (objectiveManager != null)
+        {
+            objectiveManager.OnObjectiveCompleted += HandleSurvivorsObjectiveCleared;
+        }
     }
 
     private void OnDestroy()
@@ -84,11 +106,15 @@ public class WaveClearedBannerUI : MonoBehaviour
             spawner.WaveStarted -= HandleWaveStarted;
             spawner.WaveCleared -= HandleWaveCleared;
         }
+
+        if (objectiveManager != null)
+        {
+            objectiveManager.OnObjectiveCompleted -= HandleSurvivorsObjectiveCleared;
+        }
     }
 
     private void HandleWaveStarted(int wave)
     {
-        // Snapshot the stats at the beginning of the wave to calculate the delta when it clears.
         goldAtWaveStart = GameStats.Instance != null ? GameStats.Instance.GoldEarnedThisRun : 0;
         killsAtWaveStart = GameStats.Instance != null ? GameStats.Instance.GoblinsKilled : 0;
     }
@@ -98,23 +124,37 @@ public class WaveClearedBannerUI : MonoBehaviour
         int goldEarned = (GameStats.Instance != null ? GameStats.Instance.GoldEarnedThisRun : 0) - goldAtWaveStart;
         int kills = (GameStats.Instance != null ? GameStats.Instance.GoblinsKilled : 0) - killsAtWaveStart;
 
-        goldEarned = Mathf.Max(0, goldEarned);
-        kills = Mathf.Max(0, kills);
+        ShowBanner($"WAVE {wave} CLEARED", null, Mathf.Max(0, goldEarned), Mathf.Max(0, kills));
+    }
 
+    private void HandleSurvivorsObjectiveCleared(ISurvivorsObjective obj)
+    {
+        ShowBanner("OBJECTIVE COMPLETE", obj != null ? obj.Title : null, 0, 0);
+    }
+
+    private void ShowBanner(string mainHeader, string questSubTitle, int gold, int kills)
+    {
         if (waveClearedText != null)
         {
-            // For now, hardcode or string format if Loc missing, but let's assume Loc.Format is available since WaveUI uses it.
-            waveClearedText.text = $"WAVE {wave} CLEARED";
+            waveClearedText.text = mainHeader;
+        }
+
+        if (questNameText != null)
+        {
+            questNameText.text = questSubTitle ?? string.Empty;
+            questNameText.gameObject.SetActive(!string.IsNullOrEmpty(questSubTitle));
         }
 
         if (goldEarnedText != null)
         {
-            goldEarnedText.text = goldEarned.ToString();
+            goldEarnedText.text = gold.ToString();
+            goldEarnedText.transform.parent.gameObject.SetActive(gold > 0);
         }
 
         if (enemiesKilledText != null)
         {
             enemiesKilledText.text = kills.ToString();
+            enemiesKilledText.transform.parent.gameObject.SetActive(kills > 0);
         }
 
         if (bannerRoot != null)
