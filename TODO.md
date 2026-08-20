@@ -1,5 +1,25 @@
 # Bladehold HUD Setup
 
+## Damage Direction Indicator UI — Unity Editor & Scene Wiring
+
+### The C# and Scene Wiring is done
+Implemented `DamageDirectionUI.cs` on `FX_FantasyWarrior_Damage_Direction_02` in `Bladehold Test Scene.unity`:
+- **`DamageDirectionUI.cs`**: Subscribes to `Health.OnDamaged` on the player. When damage is received, calculates the direction vector from the player to the attacker, projects it relative to the camera's view (or player facing), computes the corresponding Z-axis rotation angle (`-Mathf.Atan2(rightDot, fwdDot) * Mathf.Rad2Deg`), updates the `RectTransform.localRotation`, and fires the `"Hit"` trigger on the component's `Animator`.
+
+### Wiring checklist
+- [x] Create `DamageDirectionUI.cs` script under `Assets/Bladehold/Bladehold Scripts/UI/`.
+- [x] Attach `DamageDirectionUI` component to `FX_FantasyWarrior_Damage_Direction_02` GameObject under `Bladehold HUD` in `Bladehold Test Scene.unity` via Unity MCP.
+- [x] Verify `hitTrigger` ("Hit"), `cameraRelative` (true), `animator`, and `rectTransform` auto-wiring.
+
+### Manual verification (Damage Direction Indicator)
+- [x] C# compilation verified with `dotnet build Assembly-CSharp.csproj` (0 errors).
+- [x] Unity Editor AssetDatabase refreshed and script compilation verified via Unity MCP (`refresh_unity`).
+- [ ] Playtest: Enter Play mode in `Bladehold Test Scene.unity`.
+- [ ] Playtest: Allow a goblin to attack the player from different angles (front, back, left, right).
+- [ ] Playtest: Verify that taking damage triggers the "Hit" UI animation and rotates the red damage indicator UI on the Z axis towards the attacker.
+
+
+
 ## Arrow Wall Pinning — Unity Editor & Asset Wiring
 
 ### The C# is done
