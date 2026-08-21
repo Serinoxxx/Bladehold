@@ -34,10 +34,43 @@ public class SurvivorsObjectiveManager : MonoBehaviour
 
     public ISurvivorsObjective CurrentObjective => currentObjective;
     public int CompletedObjectiveCount => completedObjectiveCount;
+    public IReadOnlyList<ISurvivorsObjective> ObjectivePool => objectivePool;
 
     public event Action<ISurvivorsObjective> OnObjectiveStarted;
     public event Action<ISurvivorsObjective> OnObjectiveProgressChanged;
     public event Action<ISurvivorsObjective> OnObjectiveCompleted;
+
+    /// <summary>Debug method: Stops any active intermission and immediately starts the next objective in rotation.</summary>
+    public void DebugNextObjective()
+    {
+        StopAllCoroutines();
+        ISurvivorsObjective next = PickNextRandomObjective();
+        if (next != null)
+        {
+            SetActiveObjective(next);
+        }
+    }
+
+    /// <summary>Debug method: Forces starting a specific objective from the pool by index.</summary>
+    public void DebugStartObjective(int index)
+    {
+        if (index >= 0 && index < objectivePool.Count)
+        {
+            StopAllCoroutines();
+            lastObjectiveIndex = index;
+            SetActiveObjective(objectivePool[index]);
+        }
+    }
+
+    /// <summary>Debug method: Instantly marks the current objective as complete.</summary>
+    public void DebugCompleteCurrentObjective()
+    {
+        if (currentObjective != null && !currentObjective.IsComplete)
+        {
+            StopAllCoroutines();
+            HandleObjectiveCompleted(currentObjective);
+        }
+    }
 
     private void Awake()
     {

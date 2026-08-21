@@ -263,4 +263,67 @@ Converted Golden Goblin from a spawn-time modifier into a dedicated, fleeing ene
 - [ ] Playtest: Select cards in Survivors mode level-up modal. If multiple drafts are queued, verify choices present next cards immediately. On the final card choice, verify the selection feedback plays out during the brief 0.2s delay before the modal smoothly fades out and gameplay resumes.
 
 
+## Supply Wagon Escort Destination Arrival — Gold Burst Effect & Gold Bag Drops
+
+### The C# is done
+Enhanced `SupplyWagonEscort.cs`:
+- **Burst Delay**: Added configurable `burstDelay` (default 0.5s) so the wagon pauses upon reaching destination before bursting.
+- **MMF_Player & SFX**: Plays `arrivalFeedback` (`MMF_Player`) and `arrivalSound` on arrival burst so designers can customize arrival camera shake, particles, sound, or visual scaling.
+- **Gold Bag Spawning**: Spawns 4–5 (`minGoldBags` = 4, `maxGoldBags` = 5) gold bags (`goldBagPrefab`, with fallback to `SM_Icon_CoinBag_01.prefab`), scattered within `dropScatterRadius` (2.0m) around `dropOffset`, each containing `goldPerBag` (25 gold).
+- **Cart Auto-Destruction**: Disables wagon colliders and visual mesh renderers on burst and calls `Destroy(gameObject, destroyDelay)` so the cart cleanly disappears leaving gold on the ground.
+
+### Wiring checklist
+- [ ] On `Assets/Bladehold/Bladehold Prefabs/Objectives/SupplyWagon.prefab`:
+  - Verify `burstDelay` (default 0.5s).
+  - (Optional) Assign custom `arrivalFeedback` `MMF_Player` for extra explosion/gold particle effects.
+  - Verify `goldBagPrefab` is set to `Assets/Bladehold/Bladehold Prefabs/SM_Icon_CoinBag_01/SM_Icon_CoinBag_01.prefab` (auto-falls back in code if null).
+  - Verify `minGoldBags` (4) and `maxGoldBags` (5).
+
+### Manual verification
+- [x] C# compilation verified with `dotnet build Assembly-CSharp.csproj` (0 errors).
+- [ ] Playtest: Trigger "Protect the supply wagon" objective or spawn supply wagon.
+- [ ] Playtest: Escort wagon to fortress gate destination.
+- [ ] Playtest: Verify wagon stops at gate, waits 0.5s, bursts with `MMF_Player` / audio / VFX, drops 4–5 gold bag pickups on the ground, and destroys itself.
+
+
+## Dev Console Objective Controls — Instant Objective Testing & Cycling
+
+### The C# is done
+- **`SurvivorsObjectiveManager.cs`**: Added `ObjectivePool` property and public debug methods:
+  - `DebugNextObjective()`: Stops any active intermission and immediately starts the next objective in rotation.
+  - `DebugStartObjective(int index)`: Forces starting a specific objective from the pool by index.
+  - `DebugCompleteCurrentObjective()`: Instantly completes the active objective (granting rewards and triggering completion handlers).
+- **`DevConsole.cs`**: Added `DrawObjectiveControls()` to the in-game debug overlay (`~` key):
+  - Displays currently active objective title.
+  - Adds **"Next Obj"** and **"Complete Obj"** buttons.
+  - Provides a `<` / `>` objective selector to pick any objective from the pool by title and press **"Start '[Objective Title]'"**.
+
+### Manual verification
+- [x] C# compilation verified with `dotnet build Assembly-CSharp.csproj` (0 errors).
+- [ ] Playtest: Press `~` in Play mode to open the Dev Console.
+- [ ] Playtest: Verify objective controls appear showing current objective title.
+- [ ] Playtest: Use `<` / `>` buttons to select "Protect the Supply Wagon" (or any other objective) and press "Start '[Objective Title]'". Verify objective starts instantly.
+- [ ] Playtest: Press "Complete Obj" to instantly complete the active objective.
+
+
+## Dev Console Skill Upgrades Column — Instant Skill Level Tuning & Unlocks
+
+### The C# is done
+- **`SkillTreeService.cs`**: Added `DebugSetLevel(string id, int targetLevel)` to support both increasing (`>`) and decreasing (`<`) skill node levels directly. Updates `PlayerStats` modifiers live and saves/persists progress to disk.
+- **`DevConsole.cs`**: Added a second full-height IMGUI panel column (`DrawSkillsColumn()`) next to the main debug panel:
+  - Displays **"Skill Upgrades ([Count])"** header with **"Max All"** and **"Reset All"** convenience buttons.
+  - Full screen height scroll view displaying every skill in the active class skill tree.
+  - `<` and `>` arrow buttons next to each skill title (`Skill Title [Level/Max]`) for instantly adjusting any skill's level up or down.
+
+### Manual verification
+- [x] C# compilation verified with `dotnet build Assembly-CSharp.csproj` (0 errors).
+- [ ] Playtest: Press `~` in Play mode to open the Dev Console.
+- [ ] Playtest: Verify the 2nd column appears on the right side of the main dev panel listing all class skill tree upgrades.
+- [ ] Playtest: Click `>` next to any skill to increase its level, or `<` to decrease it. Verify character stats and mechanics update live.
+- [ ] Playtest: Test "Max All" to unlock max level on all skills at once, or "Reset All" to reset to level 0.
+
+
+
+
+
 

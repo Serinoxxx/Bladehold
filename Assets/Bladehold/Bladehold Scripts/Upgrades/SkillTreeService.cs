@@ -250,6 +250,58 @@ public class SkillTreeService : MonoBehaviour, ISkillTreeService
         return true;
     }
 
+    /// <summary>
+    ///     Debug method: Sets a skill node's level directly (0 to maxLevel), updating PlayerStats and persistence.
+    /// </summary>
+    public void DebugSetLevel(string id, int targetLevel)
+    {
+        if (anyError || tree == null) return;
+        SkillNode node = tree.GetById(id);
+        if (node == null) return;
+
+        targetLevel = Mathf.Clamp(targetLevel, 0, node.maxLevel);
+        int currentLevel = GetLevel(node);
+        if (targetLevel == currentLevel) return;
+
+        if (targetLevel > currentLevel)
+        {
+            for (int lvl = currentLevel + 1; lvl <= targetLevel; lvl++)
+            {
+                levels[id] = lvl;
+                if (saveData != null && saveData.purchasedNodeIds != null)
+                {
+                    saveData.purchasedNodeIds.Add(id);
+                }
+                ApplyLevel(node, lvl);
+            }
+        }
+        else
+        {
+            for (int lvl = currentLevel; lvl > targetLevel; lvl--)
+            {
+                foreach (SkillEffect effect in node.effects)
+                {
+                    if (stats != null)
+                    {
+                        stats.AddModifier(effect.stat, effect.kind, -effect.AmountForLevel(lvl));
+                    }
+                }
+                if (saveData != null && saveData.purchasedNodeIds != null)
+                {
+                    saveData.purchasedNodeIds.Remove(id);
+                }
+            }
+            levels[id] = targetLevel;
+        }
+
+        if (saveData != null)
+        {
+            SaveSystem.Save(saveData);
+        }
+
+        OnTreeChanged?.Invoke();
+    }
+
     /// <summary>Applies the per-level increment each of the node's effects contributes at <paramref name="level" />.</summary>
     private void ApplyLevel(SkillNode node, int level)
     {

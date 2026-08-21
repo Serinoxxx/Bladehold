@@ -15,6 +15,7 @@ public class DevConsole : MonoBehaviour
     public static bool IsVisible => Instance != null && Instance.visible;
 
     private const float PanelWidth = 220f;
+    private const float SkillsPanelWidth = 320f;
     private const float Padding = 10f;
     private const float ButtonHeight = 32f;
     private const string NextWaveFieldName = "DevConsoleNextWave";
@@ -22,8 +23,10 @@ public class DevConsole : MonoBehaviour
     private bool visible;
     private string nextWaveText = "";
     private int spawnTypeIndex;
+    private int objectiveIndex;
     private int classIndex = -1;
     private bool isGodMode;
+    private Vector2 skillsScrollPos;
     private Health subscribedHealth;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -117,6 +120,75 @@ public class DevConsole : MonoBehaviour
         GUILayout.Label("Dev Console");
         DrawButtons();
         GUILayout.EndArea();
+
+        DrawSkillsColumn();
+    }
+
+    private void DrawSkillsColumn()
+    {
+        SkillTreeService service = SkillTreeService.Instance;
+        if (service == null || service.Tree == null || service.Tree.Nodes == null)
+        {
+            return;
+        }
+
+        var nodes = service.Tree.Nodes;
+        float x = Padding + PanelWidth + Padding;
+        float height = Screen.height - 2f * Padding;
+
+        GUILayout.BeginArea(new Rect(x, Padding, SkillsPanelWidth, height), GUI.skin.box);
+        GUILayout.Label($"Skill Upgrades ({nodes.Count})");
+
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Max All", GUILayout.Height(ButtonHeight)))
+        {
+            foreach (var node in nodes)
+            {
+                if (node != null) service.DebugSetLevel(node.id, node.maxLevel);
+            }
+        }
+        if (GUILayout.Button("Reset All", GUILayout.Height(ButtonHeight)))
+        {
+            foreach (var node in nodes)
+            {
+                if (node != null) service.DebugSetLevel(node.id, 0);
+            }
+        }
+        GUILayout.EndHorizontal();
+
+        skillsScrollPos = GUILayout.BeginScrollView(skillsScrollPos, false, true);
+
+        foreach (SkillNode node in nodes)
+        {
+            if (node == null) continue;
+
+            int curLevel = service.GetLevel(node);
+            string name = string.IsNullOrEmpty(node.displayName) ? node.id : node.displayName;
+            string label = $"{name} [{curLevel}/{node.maxLevel}]";
+
+            GUILayout.BeginHorizontal();
+
+            GUI.enabled = curLevel > 0;
+            if (GUILayout.Button("<", GUILayout.Width(28f), GUILayout.Height(24f)))
+            {
+                service.DebugSetLevel(node.id, curLevel - 1);
+            }
+
+            GUI.enabled = true;
+            GUILayout.Label(label, GUILayout.ExpandWidth(true));
+
+            GUI.enabled = curLevel < node.maxLevel;
+            if (GUILayout.Button(">", GUILayout.Width(28f), GUILayout.Height(24f)))
+            {
+                service.DebugSetLevel(node.id, curLevel + 1);
+            }
+            GUI.enabled = true;
+
+            GUILayout.EndHorizontal();
+        }
+
+        GUILayout.EndScrollView();
+        GUILayout.EndArea();
     }
 
     private void DrawButtons()
@@ -147,6 +219,7 @@ public class DevConsole : MonoBehaviour
         }
 
         DrawWaveControls();
+        DrawObjectiveControls();
         DrawEnemySpawnControls();
         DrawClassControls();
         DrawLanguageControls();
@@ -233,6 +306,61 @@ public class DevConsole : MonoBehaviour
         }
 
         GUILayout.EndHorizontal();
+    }
+
+    /// <summary>
+    ///     Objective cheats: display current objective, force next objective, complete objective,
+    ///     or pick a specific objective from the pool to force-start.
+    /// </summary>
+    private void DrawObjectiveControls()
+    {
+        SurvivorsObjectiveManager objManager = SurvivorsObjectiveManager.Instance;
+        if (objManager == null)
+        {
+            return;
+        }
+
+        string currentTitle = objManager.CurrentObjective != null ? objManager.CurrentObjective.Title : "None";
+        GUILayout.Label($"Objective: {currentTitle}");
+
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Next Obj", GUILayout.Height(ButtonHeight)))
+        {
+            objManager.DebugNextObjective();
+        }
+        if (GUILayout.Button("Complete Obj", GUILayout.Height(ButtonHeight)))
+        {
+            objManager.DebugCompleteCurrentObjective();
+        }
+        GUILayout.EndHorizontal();
+
+        var pool = objManager.ObjectivePool;
+        if (pool == null || pool.Count == 0)
+        {
+            return;
+        }
+
+        objectiveIndex = Mathf.Clamp(objectiveIndex, 0, pool.Count - 1);
+
+        GUILayout.Label("Select Objective");
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("<", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
+        {
+            objectiveIndex = (objectiveIndex - 1 + pool.Count) % pool.Count;
+        }
+        ISurvivorsObjective selected = pool[objectiveIndex];
+        string title = selected != null ? selected.Title : "<null>";
+        GUILayout.Label(title, GUILayout.ExpandWidth(true));
+        if (GUILayout.Button(">", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
+        {
+            objectiveIndex = (objectiveIndex + 1) % pool.Count;
+        }
+        GUILayout.EndHorizontal();
+
+        if (GUILayout.Button($"Start '{title}'", GUILayout.Height(ButtonHeight)))
+        {
+            objManager.DebugStartObjective(objectiveIndex);
+        }
     }
 
     /// <summary>

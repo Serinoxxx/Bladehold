@@ -416,8 +416,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47e17ed90b67c5643942949d6a9269f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SupplyWagonEscort
-  escortRadius: 7
-  moveSpeed: 2.5
+  escortRadius: 5
+  moveSpeed: 1.5
   arrivalThreshold: 3.5
   rangeCircleTransform: {fileID: 8557417608087906483}
   rangeCircleRenderer: {fileID: 5555834222183118313}
@@ -428,7 +428,7 @@ MonoBehaviour:
   - {fileID: 5962827323351449989}
   - {fileID: 5971583137626078121}
   - {fileID: 5962888879799345781}
-  wheelRotationSpeed: 180
+  wheelRotationSpeed: 120
   wheelDustParticles: {fileID: 3474427432898547227}
   arrivalFeedback: {fileID: 0}
   movementAudioSource: {fileID: 9005905103563062158}

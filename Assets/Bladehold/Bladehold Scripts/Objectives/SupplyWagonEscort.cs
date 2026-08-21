@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using MoreMountains.Feedbacks;
 using MoreMountains.Tools;
 using UnityEngine;
@@ -8,6 +9,7 @@ using UnityEngine.AI;
 ///     Supply wagon entity for the "Protect the supply wagon" objective.
 ///     Moves along NavMesh toward a destination gate only when the player is within its detection radius.
 ///     Dynamically sizes and animates its visual range circle indicator and plays movement feedbacks.
+///     On arrival, after a configurable delay, it bursts with feedback/VFX, spawns gold bags, and destroys itself.
 /// </summary>
 [RequireComponent(typeof(NavMeshAgent))]
 public class SupplyWagonEscort : MonoBehaviour
@@ -41,14 +43,42 @@ public class SupplyWagonEscort : MonoBehaviour
     [Tooltip("Particle system active while moving (e.g. road dust).")]
     [SerializeField] private ParticleSystem wheelDustParticles;
 
-    [Tooltip("MMF_Player played when wagon successfully reaches the destination.")]
-    [SerializeField] private MMF_Player arrivalFeedback;
-
     [Tooltip("Looping audio source for cart squeaking/rolling.")]
     [SerializeField] private AudioSource movementAudioSource;
 
+    [Header("Arrival & Burst Settings")]
+    [Tooltip("Delay in seconds after reaching the destination before playing the burst feedback and dropping gold.")]
+    [SerializeField] private float burstDelay = 0.5f;
+
+    [Tooltip("MMF_Player played when wagon reaches the destination and bursts.")]
+    [SerializeField] private MMF_Player arrivalFeedback;
+
     [Tooltip("Arrival fanfare / celebration SFX.")]
     [SerializeField] private AudioClip arrivalSound;
+
+    [Tooltip("Optional burst VFX prefab spawned at the wagon position when it bursts.")]
+    [SerializeField] private GameObject goldBurstVfxPrefab;
+
+    [Tooltip("Coin / Gold Bag pickup prefab dropped on arrival burst.")]
+    [SerializeField] private Coin goldBagPrefab;
+
+    [Tooltip("Minimum number of gold bags dropped on arrival burst.")]
+    [SerializeField] private int minGoldBags = 4;
+
+    [Tooltip("Maximum number of gold bags dropped on arrival burst.")]
+    [SerializeField] private int maxGoldBags = 5;
+
+    [Tooltip("Amount of gold contained in each dropped gold bag.")]
+    [SerializeField] private int goldPerBag = 25;
+
+    [Tooltip("Scatter radius in meters around the wagon for dropped gold bags.")]
+    [SerializeField] private float dropScatterRadius = 2.0f;
+
+    [Tooltip("Height / position offset for spawning gold bags and burst VFX.")]
+    [SerializeField] private Vector3 dropOffset = new Vector3(0f, 0.5f, 0f);
+
+    [Tooltip("Seconds to wait after the burst before destroying the wagon GameObject (lets feedbacks play out).")]
+    [SerializeField] private float destroyDelay = 0.5f;
 
     private NavMeshAgent agent;
     private Vector3 destinationPoint;
@@ -196,28 +226,97 @@ public class SupplyWagonEscort : MonoBehaviour
 
     private void CheckArrival()
     {
+        if (hasArrived) return;
+
         float distToDest = Vector3.Distance(transform.position, destinationPoint);
         if (distToDest <= arrivalThreshold)
         {
             hasArrived = true;
             agent.isStopped = true;
+            agent.velocity = Vector3.zero;
+            isPlayerInRadius = false;
             UpdateVisualState();
 
-            if (arrivalFeedback != null)
-            {
-                arrivalFeedback.PlayFeedbacks();
-            }
+            StartCoroutine(ArrivalBurstRoutine());
+        }
+    }
 
-            if (arrivalSound != null)
-            {
-                MMSoundManagerPlayOptions options = MMSoundManagerPlayOptions.Default;
-                options.MmSoundManagerTrack = MMSoundManager.MMSoundManagerTracks.Sfx;
-                options.Location = transform.position;
-                options.Volume = 1.0f;
-                MMSoundManagerSoundPlayEvent.Trigger(arrivalSound, options);
-            }
+    private IEnumerator ArrivalBurstRoutine()
+    {
+        if (burstDelay > 0f)
+        {
+            yield return new WaitForSeconds(burstDelay);
+        }
 
-            OnArrived?.Invoke(this);
+        if (arrivalFeedback != null)
+        {
+            arrivalFeedback.PlayFeedbacks();
+        }
+
+        if (arrivalSound != null)
+        {
+            MMSoundManagerPlayOptions options = MMSoundManagerPlayOptions.Default;
+            options.MmSoundManagerTrack = MMSoundManager.MMSoundManagerTracks.Sfx;
+            options.Location = transform.position;
+            options.Volume = 1.0f;
+            MMSoundManagerSoundPlayEvent.Trigger(arrivalSound, options);
+        }
+
+        if (goldBurstVfxPrefab != null)
+        {
+            Instantiate(goldBurstVfxPrefab, transform.position + dropOffset, Quaternion.identity);
+        }
+
+        SpawnGoldBags();
+
+        // Disable colliders immediately upon burst so movement/combat no longer interacts with cart
+        foreach (Collider col in GetComponentsInChildren<Collider>())
+        {
+            col.enabled = false;
+        }
+
+        if (rangeCircleTransform != null)
+        {
+            rangeCircleTransform.gameObject.SetActive(false);
+        }
+
+        // Hide mesh renderers so the cart vanishes with the burst effect
+        foreach (Renderer rend in GetComponentsInChildren<Renderer>())
+        {
+            rend.enabled = false;
+        }
+
+        OnArrived?.Invoke(this);
+
+        Destroy(gameObject, Mathf.Max(0.05f, destroyDelay));
+    }
+
+    private void SpawnGoldBags()
+    {
+        Coin prefab = goldBagPrefab;
+#if UNITY_EDITOR
+        if (prefab == null)
+        {
+            prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<Coin>("Assets/Bladehold/Bladehold Prefabs/SM_Icon_CoinBag_01/SM_Icon_CoinBag_01.prefab");
+        }
+#endif
+
+        if (prefab == null)
+        {
+            Debug.LogWarning("[SupplyWagonEscort] goldBagPrefab is not assigned and could not be loaded!");
+            return;
+        }
+
+        int count = UnityEngine.Random.Range(minGoldBags, maxGoldBags + 1);
+        for (int i = 0; i < count; i++)
+        {
+            Vector2 jitter = UnityEngine.Random.insideUnitCircle * dropScatterRadius;
+            Vector3 spawnPos = transform.position + dropOffset + new Vector3(jitter.x, 0f, jitter.y);
+            Coin bag = Instantiate(prefab, spawnPos, Quaternion.identity);
+            if (bag != null)
+            {
+                bag.SetAmount(goldPerBag);
+            }
         }
     }
 
