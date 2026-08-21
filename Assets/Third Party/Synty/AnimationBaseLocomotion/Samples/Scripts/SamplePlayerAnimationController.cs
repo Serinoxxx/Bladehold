@@ -349,12 +349,24 @@ namespace Synty.AnimationBaseLocomotion.Samples
         private float _initialTurnValue;
         private Vector3 _cameraForward;
         private Vector3 _targetVelocity;
+        private bool _hasInitialized;
 
         #endregion
 
         #region Animation Controller
 
         #region Start
+
+        private void OnEnable()
+        {
+            if (!_hasInitialized) return;
+            _velocity = Vector3.zero;
+            if (_animator != null)
+            {
+                _animator.SetBool(_isJumpingAnimHash, false);
+            }
+            SwitchState(AnimationState.Locomotion);
+        }
 
         /// <inheritdoc cref="Start" />
         private void Start()
@@ -374,10 +386,9 @@ namespace Synty.AnimationBaseLocomotion.Samples
 
             _isStrafing = _alwaysStrafe;
 
+            _hasInitialized = true;
             SwitchState(AnimationState.Locomotion);
         }
-
-        
 
         #endregion
 

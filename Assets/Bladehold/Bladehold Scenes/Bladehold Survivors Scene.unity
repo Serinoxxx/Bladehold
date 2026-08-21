@@ -39780,7 +39780,7 @@ MonoBehaviour:
   - {fileID: 926223865}
   - {fileID: 926223864}
   - {fileID: 926223863}
-  goldXpRewardPerObjective: 100
+  goldXpRewardPerObjective: 50
   intermissionDuration: 4
 --- !u!114 &926223863
 MonoBehaviour:

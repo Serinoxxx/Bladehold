@@ -430,9 +430,18 @@ MonoBehaviour:
   - {fileID: 5962888879799345781}
   wheelRotationSpeed: 120
   wheelDustParticles: {fileID: 3474427432898547227}
-  arrivalFeedback: {fileID: 0}
   movementAudioSource: {fileID: 9005905103563062158}
-  arrivalSound: {fileID: 8300000, guid: 04cdc413de0c6e848832731021080ca2, type: 3}
+  burstDelay: 0.5
+  arrivalFeedback: {fileID: 0}
+  arrivalSound: {fileID: 0}
+  goldBurstVfxPrefab: {fileID: 1919543859444104, guid: 0796b331004a84744a609063dc845137, type: 3}
+  goldBagPrefab: {fileID: 0}
+  minGoldBags: 4
+  maxGoldBags: 5
+  goldPerBag: 25
+  dropScatterRadius: 2
+  dropOffset: {x: 0, y: 0.5, z: 0}
+  destroyDelay: 0.5
 --- !u!4 &5971490466548257453 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4054956306475170, guid: 441e6888d5131344a95748f25c4588cb, type: 3}
