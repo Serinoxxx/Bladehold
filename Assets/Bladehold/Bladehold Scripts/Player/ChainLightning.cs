@@ -179,6 +179,8 @@ public class ChainLightning : MonoBehaviour
                 type = DamageType.elemental,
                 isCritical = crit,
                 sourcePosition = origin,
+                source = Player.Instance != null ? Player.Instance.Damageable : null,
+                isPlayerDamage = true,
             });
 
             if (bounceVfxPrefab != null)

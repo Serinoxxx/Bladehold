@@ -487,6 +487,7 @@ internal static class EnemyManifest
             id = "slayer",
             soFolder = "Slayer",
             prefabName = "Slayer Enemy Variant",
+            rootScale = 2f,
             animatorOverridePath = "Assets/Bladehold/Bladehold Prefabs/Ninja Override.overrideController",
             disableBaseAIAttack = true,
             assets = new[]
@@ -505,8 +506,43 @@ internal static class EnemyManifest
                         EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
                         EnemyPrefabGenerator.SetReference(so, "movement", ctx.Movement);
                         EnemyPrefabGenerator.SetReference(so, "agent", ctx.Root.GetComponent<UnityEngine.AI.NavMeshAgent>());
+                        EnemyPrefabGenerator.SetReference(so, "targetSelector", ctx.Root.GetComponent<AITargetSelector>());
                         EnemyPrefabGenerator.SetReference(so, "telegraphPrefab", LoadPrefab("Assets/Bladehold/Bladehold Prefabs/ChargeTelegraph.prefab"));
                         EnemyPrefabGenerator.SetReference(so, "trailPrefab", LoadPrefab("Assets/Synty/PolygonParticleFX/Prefabs/FX_Trail_Debris_01.prefab"));
+                    },
+                },
+                new ComponentSpec
+                {
+                    type = typeof(SpecialEnemyIntro),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                        EnemyPrefabGenerator.SetReference(so, "animator", ctx.ChildAnimator);
+                        Transform headBone = ctx.ChildAnimator != null && ctx.ChildAnimator.isHuman ? ctx.ChildAnimator.GetBoneTransform(HumanBodyBones.Head) : null;
+                        if (headBone == null)
+                        {
+                            foreach (Transform t in ctx.Root.GetComponentsInChildren<Transform>(true))
+                            {
+                                if (t.name.Equals("Head", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    headBone = t;
+                                    break;
+                                }
+                            }
+                        }
+                        if (headBone != null)
+                        {
+                            EnemyPrefabGenerator.SetReference(so, "cameraFocusTransform", headBone);
+                        }
+                    },
+                },
+                new ComponentSpec
+                {
+                    type = typeof(EnemyDamageRetaliation),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                        EnemyPrefabGenerator.SetReference(so, "targetSelector", ctx.Root.GetComponent<AITargetSelector>());
                     },
                 },
             },

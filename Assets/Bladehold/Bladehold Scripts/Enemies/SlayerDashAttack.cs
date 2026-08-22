@@ -21,6 +21,8 @@ public class SlayerDashAttack : MonoBehaviour
     [SerializeField] private AIMovement movement;
     [SerializeField] private NavMeshAgent agent;
     [SerializeField] private SlayerDashAttackSO attackData;
+    [Tooltip("Optional target-selection layer (gate defense): dash aims at current target — gate or player. Without it, only player is targeted.")]
+    [SerializeField] private AITargetSelector targetSelector;
     [Tooltip("Flat quad stretched along the dash lane during the telegraph. Scaled to (lane width, y, lane length).")]
     [SerializeField] private GameObject telegraphPrefab;
     [Tooltip("Optional debris/particle trail prefab spawned on the slayer during the dash lerp.")]
@@ -75,6 +77,10 @@ public class SlayerDashAttack : MonoBehaviour
         if (agent == null)
         {
             agent = GetComponent<NavMeshAgent>();
+        }
+        if (targetSelector == null)
+        {
+            targetSelector = GetComponent<AITargetSelector>();
         }
     }
 
@@ -169,25 +175,37 @@ public class SlayerDashAttack : MonoBehaviour
 
         if (Time.time - lastAttackTime < attackData.attackCooldown) return;
 
-        if (IsPlayerInRange())
+        if (IsTargetInRange())
         {
             StartDash();
         }
     }
 
-    private bool IsPlayerInRange()
+    private Vector3 GetTargetPosition()
     {
-        float sqrDistance = (player.position - transform.position).sqrMagnitude;
-        return sqrDistance <= attackData.triggerRange * attackData.triggerRange;
+        if (targetSelector != null)
+        {
+            return targetSelector.TargetPosition;
+        }
+        return player != null ? player.position : transform.position;
+    }
+
+    private bool IsTargetInRange()
+    {
+        Vector3 targetPos = GetTargetPosition();
+        Vector3 diff = targetPos - transform.position;
+        diff.y = 0f;
+        return diff.sqrMagnitude <= attackData.triggerRange * attackData.triggerRange;
     }
 
     private void StartDash()
     {
         lastAttackTime = Time.time;
 
-        // The lane is locked to the player's position when the wind-up starts — that's what makes
+        // The lane is locked to the target's position when the wind-up starts — that's what makes
         // the telegraph honest and the dash dodgeable.
-        Vector3 direction = player.position - transform.position;
+        Vector3 targetPos = GetTargetPosition();
+        Vector3 direction = targetPos - transform.position;
         direction.y = 0f;
         if (direction.sqrMagnitude < 0.0001f)
         {
@@ -200,7 +218,7 @@ public class SlayerDashAttack : MonoBehaviour
         float laneLength = attackData.maxDashDistance;
         if (NavMesh.Raycast(transform.position, transform.position + direction * attackData.maxDashDistance, out NavMeshHit navHit, NavMesh.AllAreas))
         {
-            laneLength = Mathf.Max(1f, navHit.distance);
+            laneLength = Mathf.Max(2f, navHit.distance);
         }
 
         movement.SetMovementPaused(true);
@@ -215,7 +233,7 @@ public class SlayerDashAttack : MonoBehaviour
         Vector3 laneCenter = transform.position + direction * (laneLength * 0.5f) + Vector3.up * 0.05f;
         activeTelegraph = Instantiate(telegraphPrefab, laneCenter, Quaternion.LookRotation(direction));
         Vector3 scale = activeTelegraph.transform.localScale;
-        activeTelegraph.transform.localScale = new Vector3(attackData.laneWidth, scale.y, laneLength);
+        activeTelegraph.transform.localScale = new Vector3(attackData.laneWidth * transform.localScale.x, scale.y, laneLength);
 
         StartCoroutine(DashAfterTelegraph(direction, laneLength));
     }
@@ -271,7 +289,7 @@ public class SlayerDashAttack : MonoBehaviour
         if (!isDead)
         {
             transform.position = end;
-            ApplyLaneDamage(start, end);
+            ApplyLaneDamage(start, end, direction);
         }
 
         if (activeTrail != null)
@@ -299,11 +317,13 @@ public class SlayerDashAttack : MonoBehaviour
     }
 
     /// <summary>Damages every unique <see cref="IDamageable" /> in the swept lane except the slayer itself.</summary>
-    private void ApplyLaneDamage(Vector3 start, Vector3 end)
+    private void ApplyLaneDamage(Vector3 start, Vector3 end, Vector3 direction)
     {
         hitTargets.Clear();
-        Vector3 up = Vector3.up * 1f;
-        int count = Physics.OverlapCapsuleNonAlloc(start + up, end + up, attackData.laneWidth * 0.5f, overlapBuffer);
+        Vector3 up = Vector3.up * 1.5f;
+        float radius = Mathf.Max(1.5f, attackData.laneWidth * 0.5f * transform.localScale.x);
+        Vector3 sweepEnd = end + direction * (radius * 1.5f);
+        int count = Physics.OverlapCapsuleNonAlloc(start + up, sweepEnd + up, radius, overlapBuffer);
         for (int i = 0; i < count; i++)
         {
             Collider collider = overlapBuffer[i];
@@ -324,6 +344,26 @@ public class SlayerDashAttack : MonoBehaviour
                 source = ownerDamageable,
                 unparryable = true,
             });
+        }
+
+        // Direct fallback for assigned/targeted gate or player in front of the slayer
+        IDamageable directTarget = targetSelector != null ? targetSelector.TargetDamageable : null;
+        if (directTarget != null && directTarget != ownerDamageable && !hitTargets.Contains(directTarget))
+        {
+            Vector3 targetPos = GetTargetPosition();
+            float distToTarget = Vector3.Distance(end, targetPos);
+            if (distToTarget <= Mathf.Max(6f, radius * 3f))
+            {
+                hitTargets.Add(directTarget);
+                directTarget.ReceiveDamage(new Damage
+                {
+                    value = damageOverride ?? attackData.damage,
+                    type = attackData.damageType,
+                    sourcePosition = start,
+                    source = ownerDamageable,
+                    unparryable = true,
+                });
+            }
         }
     }
 }

@@ -82,6 +82,8 @@ public class Counterstrike : MonoBehaviour
             value = stats.GetValue(StatType.SwordDamage) * allDamageMultiplier * percent,
             type = DamageType.sharp,
             sourcePosition = transform.position,
+            source = Player.Instance != null ? Player.Instance.Damageable : null,
+            isPlayerDamage = true,
         });
 
         if (counterFeedback != null)

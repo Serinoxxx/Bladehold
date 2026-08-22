@@ -132,7 +132,8 @@ public class PlayerDodge : MonoBehaviour
                             isCritical = false, 
                             knockbackForce = knockback,
                             sourcePosition = transform.position,
-                            source = player.Damageable
+                            source = player.Damageable,
+                            isPlayerDamage = true,
                         });
 
                         if (enemyHealth.IsDead && chainReduction > 0f)

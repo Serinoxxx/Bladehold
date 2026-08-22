@@ -130,7 +130,8 @@ public class MageUltimate : MonoBehaviour, IUltimateHandler
                 type = DamageType.elemental,
                 sourcePosition = center,
                 knockbackForce = slamKnockback,
-                source = player.Damageable
+                source = player.Damageable,
+                isPlayerDamage = true,
             };
 
             damageable.ReceiveDamage(damage);

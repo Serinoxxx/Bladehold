@@ -2585,6 +2585,28 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b7b1623129186884eb3f2419ca4ed3b5, type: 3}
+--- !u!114 &114310293 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1385512081522111789, guid: b7b1623129186884eb3f2419ca4ed3b5, type: 3}
+  m_PrefabInstance: {fileID: 114310292}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: afd9e424e9d91b24ea0c70ba7a823822, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BossHealthBarUI
+--- !u!114 &114310294 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4020046028304531453, guid: b7b1623129186884eb3f2419ca4ed3b5, type: 3}
+  m_PrefabInstance: {fileID: 114310292}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c10a2a12e76eb8b43aa56a31e6b98368, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyIntroUI
 --- !u!1 &114714583
 GameObject:
   m_ObjectHideFlags: 0
@@ -11608,6 +11630,57 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!1 &680260139
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 680260141}
+  - component: {fileID: 680260140}
+  m_Layer: 0
+  m_Name: EnemyIntroController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &680260140
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 680260139}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26dc977279a99844bb70d49aed03ea47, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyIntroController
+  introCamera: {fileID: 2059370627}
+  cinemachineBrain: {fileID: 0}
+  introPriority: 30
+  introUI: {fileID: 114310294}
+  bossHealthBar: {fileID: 114310293}
+  defaultIntroDuration: 3
+  extraComponentsToDisable: []
+--- !u!4 &680260141
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 680260139}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &680481847
 GameObject:
   m_ObjectHideFlags: 0
@@ -11669,6 +11742,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1496530197}
+  - {fileID: 2059370629}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &684842512
@@ -23642,6 +23716,12 @@ MonoBehaviour:
   goblinsKilledText: {fileID: 1646782716}
   goldEarnedText: {fileID: 802382228}
   totalGoldText: {fileID: 1711118965}
+  timeSurvivedText: {fileID: 0}
+  damageDealtText: {fileID: 0}
+  damageTakenText: {fileID: 0}
+  critsText: {fileID: 0}
+  levelReachedText: {fileID: 0}
+  survivorsSidebar: {fileID: 0}
   tryAgainButton: {fileID: 136744484}
   restartCurrentWaveButton: {fileID: 1585851937}
   restartCurrentWaveLabel: {fileID: 1585851936}
@@ -35007,6 +35087,115 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 2084999340}
   m_SourcePrefab: {fileID: 100100000, guid: 96c9f8bf25321f343be48c0ab4b655a4, type: 3}
+--- !u!1 &2059370626
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2059370629}
+  - component: {fileID: 2059370627}
+  - component: {fileID: 2059370631}
+  - component: {fileID: 2059370630}
+  m_Layer: 0
+  m_Name: Enemy Intro Camera
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!114 &2059370627
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2059370626}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9dfa5b682dcd46bda6128250e975f58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineCamera
+  Priority:
+    Enabled: 1
+    m_Value: 0
+  OutputChannel: 1
+  StandbyUpdate: 2
+  m_StreamingVersion: 0
+  m_LegacyPriority: 0
+  Target:
+    TrackingTarget: {fileID: 0}
+    LookAtTarget: {fileID: 0}
+    CustomLookAtTarget: 0
+  Lens:
+    FieldOfView: 40
+    OrthographicSize: 10
+    NearClipPlane: 0.1
+    FarClipPlane: 5000
+    Dutch: 0
+    ModeOverride: 0
+    PhysicalProperties:
+      GateFit: 2
+      SensorSize: {x: 21.946, y: 16.002}
+      LensShift: {x: 0, y: 0}
+      FocusDistance: 10
+      Iso: 200
+      ShutterSpeed: 0.005
+      Aperture: 16
+      BladeCount: 5
+      Curvature: {x: 2, y: 11}
+      BarrelClipping: 0.25
+      Anamorphism: 0
+  BlendHint: 0
+--- !u!4 &2059370629
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2059370626}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 682160195}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2059370630
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2059370626}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e8b78ac948f05a46a6d8339a503172b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineHardLookAt
+  LookAtOffset: {x: 0, y: 0, z: 0}
+--- !u!114 &2059370631
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2059370626}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b617507da6d07e749b7efdb34e1173e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineFollow
+  TrackerSettings:
+    BindingMode: 1
+    PositionDamping: {x: 0, y: 0, z: 0}
+    AngularDampingMode: 0
+    RotationDamping: {x: 0, y: 0, z: 0}
+    QuaternionDamping: 1
+  FollowOffset: {x: 0, y: 3.2, z: 3.8}
 --- !u!1 &2059412146 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4556459917223592359, guid: 28e3379ef43a69e44a2f5d344bdd4df1, type: 3}
@@ -36868,6 +37057,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 678326327523435413, guid: be0f2663fd7cb6c46beae542739c68de, type: 3}
+      propertyPath: IgnoreTimeScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 678326327523435413, guid: be0f2663fd7cb6c46beae542739c68de, type: 3}
+      propertyPath: DefaultBlend.Time
+      value: 0.5
+      objectReference: {fileID: 0}
     - target: {fileID: 760402401777354459, guid: be0f2663fd7cb6c46beae542739c68de, type: 3}
       propertyPath: knockbackForce
       value: 1
@@ -38460,6 +38657,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8368257702468494365, guid: be0f2663fd7cb6c46beae542739c68de, type: 3}
+      propertyPath: Priority.m_Value
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 8728884186380818493, guid: be0f2663fd7cb6c46beae542739c68de, type: 3}
       propertyPath: 'm_Cameras.Array.data[0]'
       value: 
@@ -38651,3 +38852,4 @@ SceneRoots:
   - {fileID: 4220317798105170367}
   - {fileID: 103671535}
   - {fileID: 2068511713}
+  - {fileID: 680260141}

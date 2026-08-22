@@ -403,6 +403,7 @@ public class MageImbuement : MonoBehaviour
                 type = DamageType.elemental,
                 sourcePosition = hitPoint,
                 source = ownerDamageable,
+                isPlayerDamage = true,
             });
         }
 
@@ -465,6 +466,7 @@ public class MageImbuement : MonoBehaviour
                     type = DamageType.elemental,
                     sourcePosition = hitPoint,
                     source = ownerDamageable,
+                    isPlayerDamage = true,
                 });
             }
 

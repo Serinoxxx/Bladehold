@@ -94,6 +94,10 @@ public class HorseMotor : MonoBehaviour
         {
             health = GetComponent<Health>();
         }
+        if (health != null)
+        {
+            health.ImmuneToPlayerDamage = true;
+        }
         if (chargeDamage == null)
         {
             chargeDamage = GetComponent<HorseChargeDamage>();
@@ -101,6 +105,18 @@ public class HorseMotor : MonoBehaviour
         if (horseAnimation == null)
         {
             horseAnimation = GetComponent<HorseAnimation>();
+        }
+    }
+
+    private void Awake()
+    {
+        if (health == null)
+        {
+            health = GetComponent<Health>();
+        }
+        if (health != null)
+        {
+            health.ImmuneToPlayerDamage = true;
         }
     }
 

@@ -83,12 +83,24 @@ public class Gate : MonoBehaviour
         {
             health = GetComponent<Health>();
         }
+        if (health != null)
+        {
+            health.ImmuneToPlayerDamage = true;
+        }
     }
 
     private void Awake()
     {
         // Register before any enemy's Start so target selection can see every gate from frame one.
         all.Add(this);
+        if (health == null)
+        {
+            health = GetComponent<Health>();
+        }
+        if (health != null)
+        {
+            health.ImmuneToPlayerDamage = true;
+        }
     }
 
     private void Start()

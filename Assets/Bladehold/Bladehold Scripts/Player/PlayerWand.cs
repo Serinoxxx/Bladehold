@@ -604,6 +604,7 @@ public class PlayerWand : MonoBehaviour, IChargedAimWeapon
             // Player-owned hit: lets runestones tell a wand blast from enemy splash damage.
             source = hitSource,
             isProjectile = true,
+            isPlayerDamage = true,
         };
     }
 

@@ -431,6 +431,8 @@ public class DamageTrigger : MonoBehaviour
 
     Damage BuildDamage()
     {
+        bool isPlayer = readsPlayerStats || (Player.Instance != null && (ownerDamageable == Player.Instance.Damageable || (owner != null && owner.transform.root == Player.Instance.transform.root)));
+
         if (!readsPlayerStats)
         {
             return new Damage
@@ -439,6 +441,8 @@ public class DamageTrigger : MonoBehaviour
                 isCritical = damageSO.isCritical,
                 knockbackForce = knockbackForce,
                 sourcePosition = transform.position,
+                source = ownerDamageable,
+                isPlayerDamage = isPlayer,
             };
         }
 
@@ -488,6 +492,7 @@ public class DamageTrigger : MonoBehaviour
             // for every other consumer — Counterstrike only reads source off hits the *player*
             // receives, and this trigger never damages its owner.
             source = ownerDamageable,
+            isPlayerDamage = isPlayer,
         };
     }
 }

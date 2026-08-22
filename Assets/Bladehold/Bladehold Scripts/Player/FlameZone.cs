@@ -70,6 +70,7 @@ public class FlameZone : MonoBehaviour
                 type = DamageType.elemental,
                 sourcePosition = transform.position,
                 source = owner,
+                isPlayerDamage = true,
             });
             burnedAnything = true;
         }

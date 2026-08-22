@@ -17,8 +17,26 @@ public class AITargetSelector : MonoBehaviour
 {
     [Tooltip("Distance within which the player becomes the target even when a gate is assigned; beyond it the enemy heads for its gate.")]
     [SerializeField] private float playerEngageRange = 8f;
+    [Tooltip("When true, this enemy will ignore the player and strictly head for its gate unless a temporary player target override is active.")]
+    [SerializeField] private bool ignorePlayer = false;
 
     private Gate assignedGate;
+    private float playerOverrideUntilTime = Mathf.NegativeInfinity;
+
+    /// <summary>When true, this enemy ignores player proximity and prioritizes the gate.</summary>
+    public bool IgnorePlayer
+    {
+        get => ignorePlayer;
+        set => ignorePlayer = value;
+    }
+
+    /// <summary>
+    ///     Temporarily forces this enemy to target the player for the specified duration (e.g. retaliation on damage).
+    /// </summary>
+    public void SetPlayerTargetOverride(float durationSeconds)
+    {
+        playerOverrideUntilTime = Time.time + durationSeconds;
+    }
 
     /// <summary>
     ///     Assigns the gate this enemy beelines for. Call right after Instantiate (the MarkGolden
@@ -73,11 +91,27 @@ public class AITargetSelector : MonoBehaviour
             return null;
         }
 
-        // A living player inside engage range always wins over the gate.
-        Player player = Player.Instance;
-        if (player != null && player.Health != null && !player.Health.IsDead)
+        // Temporary player override (e.g. boss retaliation on damage)
+        if (Time.time < playerOverrideUntilTime)
         {
-            float sqrDistance = (player.transform.position - transform.position).sqrMagnitude;
+            Player player = Player.Instance;
+            if (player != null && player.Health != null && !player.Health.IsDead)
+            {
+                return null;
+            }
+        }
+
+        // When ignoring the player, head straight for the gate without engage-range checks.
+        if (ignorePlayer)
+        {
+            return gate;
+        }
+
+        // A living player inside engage range always wins over the gate.
+        Player activePlayer = Player.Instance;
+        if (activePlayer != null && activePlayer.Health != null && !activePlayer.Health.IsDead)
+        {
+            float sqrDistance = (activePlayer.transform.position - transform.position).sqrMagnitude;
             if (sqrDistance <= playerEngageRange * playerEngageRange)
             {
                 return null;

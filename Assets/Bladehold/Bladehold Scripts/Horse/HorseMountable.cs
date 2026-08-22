@@ -25,9 +25,25 @@ public class HorseMountable : MonoBehaviour
         {
             health = GetComponentInParent<Health>();
         }
+        if (health != null)
+        {
+            health.ImmuneToPlayerDamage = true;
+        }
         if (horseMotor == null)
         {
             horseMotor = GetComponentInParent<HorseMotor>();
+        }
+    }
+
+    private void Awake()
+    {
+        if (health == null)
+        {
+            health = GetComponentInParent<Health>();
+        }
+        if (health != null)
+        {
+            health.ImmuneToPlayerDamage = true;
         }
     }
 

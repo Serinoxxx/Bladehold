@@ -10,7 +10,6 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a29027a36793bdc459043b3e7526725f, type: 3}
-  m_Name: HorseHealthSO
+  m_Name: SlayerHealthSO
   m_EditorClassIdentifier: Assembly-CSharp::HealthSO
-  maxHealth: 12
-  immuneToPlayerDamage: 1
+  maxHealth: 200

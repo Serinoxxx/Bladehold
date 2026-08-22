@@ -6,11 +6,24 @@ public class Health : MonoBehaviour, IDamageable
 {
     [SerializeField] HealthSO healthData;
 
+    [Tooltip("When true, this Health ignores all damage dealt by the player (weapons, spells, abilities, procs).")]
+    [SerializeField] bool immuneToPlayerDamage = false;
+
     [SerializeField] float currentHealth;
 
     [SerializeField] MMF_Player damageFeedback;
 
     [SerializeField] MMF_Player deathFeedback;
+
+    /// <summary>
+    ///     True if this Health ignores player-owned damage. Reads the serialized field or the shared
+    ///     <see cref="HealthSO" /> data.
+    /// </summary>
+    public bool ImmuneToPlayerDamage
+    {
+        get => immuneToPlayerDamage || (healthData != null && healthData.immuneToPlayerDamage);
+        set => immuneToPlayerDamage = value;
+    }
 
     /// <summary>
     ///     Raised once, when health first reaches zero. Listeners (animation, movement, …) react to
@@ -138,7 +151,12 @@ public class Health : MonoBehaviour, IDamageable
 
     public void ReceiveDamage(Damage damage)
     {
-        if (IsDead)
+        if (IsDead || damage == null)
+        {
+            return;
+        }
+
+        if (ImmuneToPlayerDamage && damage.IsPlayerOwned)
         {
             return;
         }

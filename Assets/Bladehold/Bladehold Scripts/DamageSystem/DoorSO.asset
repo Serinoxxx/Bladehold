@@ -12,4 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a29027a36793bdc459043b3e7526725f, type: 3}
   m_Name: DoorSO
   m_EditorClassIdentifier: Assembly-CSharp::HealthSO
-  maxHealth: 1000
+  maxHealth: 200
+  immuneToPlayerDamage: 1

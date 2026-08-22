@@ -737,6 +737,8 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
                 value = damage.value * fireDamagePercent,
                 type = DamageType.elemental,
                 sourcePosition = origin,
+                source = ownerDamageable,
+                isPlayerDamage = true,
             };
             target.ReceiveDamage(fireDamage);
             OnHit?.Invoke(target, fireDamage, endPoint);
@@ -923,7 +925,9 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
             isCritical = crit,
             sourcePosition = origin,
             knockbackForce = knockbackForce,
+            source = ownerDamageable,
             isProjectile = true,
+            isPlayerDamage = true,
         };
     }
 
@@ -966,6 +970,9 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
             isCritical = damage.isCritical,
             sourcePosition = hitPoint,
             knockbackForce = damage.knockbackForce,
+            source = ownerDamageable,
+            isProjectile = true,
+            isPlayerDamage = true,
         };
         best.ReceiveDamage(bounceDamage);
         OnHit?.Invoke(best, bounceDamage, bestPosition);
@@ -1085,6 +1092,8 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
                 type = DamageType.blunt,
                 sourcePosition = center,
                 knockbackForce = config.knockbackBlastForce,
+                source = ownerDamageable,
+                isPlayerDamage = true,
             });
 
             if (config.headExplosionPrefab != null)

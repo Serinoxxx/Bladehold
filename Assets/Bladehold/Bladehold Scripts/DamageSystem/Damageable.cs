@@ -57,6 +57,20 @@ public class Damage
     ///     True if this hit qualifies to pin a killed target's ragdoll to a wall if knockback and surface collision permit.
     /// </summary>
     public bool canPinToWall;
+
+    /// <summary>
+    ///     Explicitly marks whether this damage originated from the player (weapon, skill, projectile, proc, zone, ultimate).
+    /// </summary>
+    public bool isPlayerDamage;
+
+    /// <summary>
+    ///     True if this damage originated from the player, checking either the explicit <see cref="isPlayerDamage" />
+    ///     flag or the <see cref="source" /> matching <see cref="Player.Instance" />.
+    /// </summary>
+    public bool IsPlayerOwned => isPlayerDamage || (Player.Instance != null && source != null &&
+        (ReferenceEquals(source, Player.Instance.Damageable) ||
+         ReferenceEquals(source, Player.Instance.Health) ||
+         (source is Component comp && comp.transform.root == Player.Instance.transform.root)));
 }
 
 public enum DamageType

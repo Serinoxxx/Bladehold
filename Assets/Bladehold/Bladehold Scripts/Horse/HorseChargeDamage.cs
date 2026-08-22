@@ -192,6 +192,9 @@ public class HorseChargeDamage : MonoBehaviour
 
             nextAllowedHitTime[damageable] = Time.time + horseData.hitCooldownSeconds;
 
+            bool isPlayer = (rider != null && Player.Instance != null && (ReferenceEquals(rider, Player.Instance.Damageable) || ReferenceEquals(rider, Player.Instance.Health)))
+                || (source != null && Player.Instance != null && (ReferenceEquals(source, Player.Instance.Damageable) || ReferenceEquals(source, Player.Instance.Health)));
+
             damageable.ReceiveDamage(new Damage
             {
                 value = damagePerHit * speedFactor,
@@ -200,6 +203,7 @@ public class HorseChargeDamage : MonoBehaviour
                 knockbackForce = horseData.knockbackForce * speedFactor,
                 source = source,
                 unparryable = true,
+                isPlayerDamage = isPlayer,
             });
 
             if (hitFeedback != null)

@@ -598,7 +598,9 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
             sourcePosition = sourcePosition,
             knockbackForce = stats.GetValue(StatType.AxeThrowKnockback)
                 * (1f + chargeLevel * config.knockbackPerChargeLevel),
+            source = ownerDamageable != null ? ownerDamageable : (Player.Instance != null ? Player.Instance.Damageable : null),
             isProjectile = true,
+            isPlayerDamage = true,
         };
     }
 

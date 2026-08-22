@@ -881,6 +881,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AITargetSelector
   playerEngageRange: 8
+  ignorePlayer: 0
 --- !u!114 &2774917170554717151
 MonoBehaviour:
   m_ObjectHideFlags: 0

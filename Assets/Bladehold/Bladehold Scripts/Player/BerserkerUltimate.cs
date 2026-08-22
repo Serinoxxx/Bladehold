@@ -74,7 +74,8 @@ public class BerserkerUltimate : MonoBehaviour, IUltimateHandler
                     type = DamageType.blunt,
                     sourcePosition = player.transform.position,
                     knockbackForce = collisionKnockback,
-                    source = player.Damageable
+                    source = player.Damageable,
+                    isPlayerDamage = true,
                 });
             }
         }
