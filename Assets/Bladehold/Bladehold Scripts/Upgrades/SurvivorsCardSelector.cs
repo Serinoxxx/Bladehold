@@ -95,6 +95,8 @@ public class SurvivorsCardSelector : MonoBehaviour
         // Root nodes are always unlocked
         if (node.isRoot) return true;
 
+        if (SkillTreeService.Instance == null) return false;
+
         // Check if already owned (can upgrade to next level)
         if (SkillTreeService.Instance.GetLevel(node) >= 1) return true;
 
@@ -128,6 +130,11 @@ public class SurvivorsCardSelector : MonoBehaviour
         {
             success = SkillTreeService.Instance.ApplyFreePurchase(node.id);
             Debug.Log($"[SurvivorsCardSelector] Selected card: '{node.displayName}' (ID: {node.id}). Granted level {SkillTreeService.Instance.GetLevel(node)}.");
+        }
+
+        if (FortDefenseManager.Instance != null)
+        {
+            FortDefenseManager.Instance.HandleSkillNodePurchased(node.id);
         }
 
         if (SurvivorsGameManager.Instance != null)

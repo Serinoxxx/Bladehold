@@ -240,6 +240,27 @@ public enum StatType
     UltimateBerserkerDamageReduction,
     /// <summary>Amount of ultimate charge gained passively per second.</summary>
     UltimatePassiveChargeRate,
+
+    /// <summary>1 = Fort Arrow Slits unlocked, 0 = locked.</summary>
+    FortArrowSlitsUnlocked,
+    /// <summary>Fort Arrow Slits arrow damage.</summary>
+    FortArrowSlitsDamage,
+    /// <summary>Fort Arrow Slits fire interval multiplier.</summary>
+    FortArrowSlitsFireRate,
+
+    /// <summary>1 = Fort Boiling Oil unlocked, 0 = locked.</summary>
+    FortBurningOilUnlocked,
+    /// <summary>Fort Boiling Oil damage per second.</summary>
+    FortBurningOilDamage,
+    /// <summary>Fort Boiling Oil cooldown reduction.</summary>
+    FortBurningOilCooldown,
+
+    /// <summary>1 = Fort Spike Barricades unlocked, 0 = locked.</summary>
+    FortSpikesUnlocked,
+    /// <summary>Fort Spike Barricades base contact damage.</summary>
+    FortSpikesDamage,
+    /// <summary>Fort Spike Barricades damage multiplier against ragdolled enemies (base 5.0).</summary>
+    FortSpikesRagdollMultiplier,
 }
 
 /// <summary>
