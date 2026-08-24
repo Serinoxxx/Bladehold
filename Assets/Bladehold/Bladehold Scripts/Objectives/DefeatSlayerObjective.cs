@@ -53,10 +53,12 @@ public class DefeatSlayerObjective : MonoBehaviour, ISurvivorsObjective
     }
 
     public bool IsComplete => isComplete;
+    public bool IsFailed => false;
     public bool IsActive => isActive;
 
     public event Action<ISurvivorsObjective> OnProgressChanged;
     public event Action<ISurvivorsObjective> OnCompleted;
+    public event Action<ISurvivorsObjective> OnFailed;
 
     public void StartObjective()
     {

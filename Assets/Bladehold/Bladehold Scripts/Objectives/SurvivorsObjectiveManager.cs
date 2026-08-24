@@ -39,6 +39,7 @@ public class SurvivorsObjectiveManager : MonoBehaviour
     public event Action<ISurvivorsObjective> OnObjectiveStarted;
     public event Action<ISurvivorsObjective> OnObjectiveProgressChanged;
     public event Action<ISurvivorsObjective> OnObjectiveCompleted;
+    public event Action<ISurvivorsObjective> OnObjectiveFailed;
 
     /// <summary>Debug method: Stops any active intermission and immediately starts the next objective in rotation.</summary>
     public void DebugNextObjective()
@@ -69,6 +70,16 @@ public class SurvivorsObjectiveManager : MonoBehaviour
         {
             StopAllCoroutines();
             HandleObjectiveCompleted(currentObjective);
+        }
+    }
+
+    /// <summary>Debug method: Instantly marks the current objective as failed.</summary>
+    public void DebugFailCurrentObjective()
+    {
+        if (currentObjective != null && !currentObjective.IsComplete && !currentObjective.IsFailed)
+        {
+            StopAllCoroutines();
+            HandleObjectiveFailed(currentObjective);
         }
     }
 
@@ -142,6 +153,7 @@ public class SurvivorsObjectiveManager : MonoBehaviour
         {
             currentObjective.OnProgressChanged -= HandleObjectiveProgress;
             currentObjective.OnCompleted -= HandleObjectiveCompleted;
+            currentObjective.OnFailed -= HandleObjectiveFailed;
             currentObjective.CleanupObjective();
         }
     }
@@ -152,6 +164,7 @@ public class SurvivorsObjectiveManager : MonoBehaviour
         {
             currentObjective.OnProgressChanged -= HandleObjectiveProgress;
             currentObjective.OnCompleted -= HandleObjectiveCompleted;
+            currentObjective.OnFailed -= HandleObjectiveFailed;
             currentObjective.CleanupObjective();
         }
 
@@ -160,6 +173,7 @@ public class SurvivorsObjectiveManager : MonoBehaviour
         {
             currentObjective.OnProgressChanged += HandleObjectiveProgress;
             currentObjective.OnCompleted += HandleObjectiveCompleted;
+            currentObjective.OnFailed += HandleObjectiveFailed;
             currentObjective.StartObjective();
             OnObjectiveStarted?.Invoke(currentObjective);
         }
@@ -186,11 +200,42 @@ public class SurvivorsObjectiveManager : MonoBehaviour
         StartCoroutine(IntermissionAndNextRoutine());
     }
 
+    private void HandleObjectiveFailed(ISurvivorsObjective obj)
+    {
+        Debug.Log($"[SurvivorsObjectiveManager] Objective '{obj.Title}' Failed!");
+
+        OnObjectiveFailed?.Invoke(obj);
+
+        StartCoroutine(IntermissionAndNextRoutine());
+    }
+
+    /// <summary>Stops and cleans up all rotating sub-objectives (e.g. when Siegebreaker arrives).</summary>
+    public void StopAllObjectives()
+    {
+        StopAllCoroutines();
+        isRunning = false;
+        if (currentObjective != null)
+        {
+            currentObjective.OnProgressChanged -= HandleObjectiveProgress;
+            currentObjective.OnCompleted -= HandleObjectiveCompleted;
+            currentObjective.OnFailed -= HandleObjectiveFailed;
+            currentObjective.CleanupObjective();
+            currentObjective = null;
+        }
+    }
+
     private IEnumerator IntermissionAndNextRoutine()
     {
         yield return new WaitForSeconds(intermissionDuration);
 
         if (!isRunning) yield break;
+
+        if (SurvivorsGameManager.Instance != null && !SurvivorsGameManager.Instance.CanStartNewObjectives)
+        {
+            Debug.Log("[SurvivorsObjectiveManager] Objective cutoff reached (final countdown to Siegebreaker). No new sub-objectives will spawn.");
+            SetActiveObjective(null);
+            yield break;
+        }
 
         ISurvivorsObjective next = PickNextRandomObjective();
         if (next != null)

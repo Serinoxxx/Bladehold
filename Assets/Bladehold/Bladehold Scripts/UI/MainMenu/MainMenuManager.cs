@@ -8,6 +8,8 @@ namespace Bladehold.UI
 {
     public class MainMenuManager : MonoBehaviour
     {
+        public static bool OpenUpgradesOnLoad = false;
+
         [Header("Screens")]
         public GameObject titleScreen;
         public GameObject characterSelectScreen;
@@ -19,12 +21,20 @@ namespace Bladehold.UI
         [Header("Loading")]
         public Slider loadingBar;
         public TextMeshProUGUI loadingText;
-        public string gameplaySceneName = "Bladehold Test Scene";
+        public string gameplaySceneName = "Bladehold Survivors Scene";
 
         private void Start()
         {
             CursorLockManager.SetUnlock("MainMenu_" + GetInstanceID(), true);
-            ShowScreen(titleScreen);
+            if (OpenUpgradesOnLoad)
+            {
+                OpenUpgradesOnLoad = false;
+                ShowScreen(upgradesScreen);
+            }
+            else
+            {
+                ShowScreen(titleScreen);
+            }
         }
 
         private void OnDestroy()

@@ -49,6 +49,10 @@ public class DeathScreen : MonoBehaviour
     [SerializeField] private SurvivorsPlayerInfoSidebarUI survivorsSidebar;
     [Tooltip("Restarts the run from wave 1.")]
     [SerializeField] private Button tryAgainButton;
+    [Tooltip("Optional: button to proceed to the next stage level in Survivors mode.")]
+    [SerializeField] private Button nextStageButton;
+    [Tooltip("Optional: button to return to the Main Menu meta-progression upgrades screen.")]
+    [SerializeField] private Button returnToMetaButton;
     [Tooltip("Optional: restarts from the wave the player died on. Leave unassigned to offer only a wave-1 restart.")]
     [SerializeField] private Button restartCurrentWaveButton;
     [Tooltip("Optional label on the restart-current-wave button, set to e.g. \"Restart Wave 3\".")]
@@ -121,6 +125,14 @@ public class DeathScreen : MonoBehaviour
         }
 
         tryAgainButton.onClick.AddListener(RestartFromLevelOne);
+        if (nextStageButton != null)
+        {
+            nextStageButton.onClick.AddListener(ProceedToNextLevel);
+        }
+        if (returnToMetaButton != null)
+        {
+            returnToMetaButton.onClick.AddListener(ReturnToMetaProgression);
+        }
         if (restartCurrentWaveButton != null)
         {
             restartCurrentWaveButton.onClick.AddListener(RestartFromCurrentWave);
@@ -146,6 +158,14 @@ public class DeathScreen : MonoBehaviour
         {
             tryAgainButton.onClick.RemoveListener(RestartFromLevelOne);
         }
+        if (nextStageButton != null)
+        {
+            nextStageButton.onClick.RemoveListener(ProceedToNextLevel);
+        }
+        if (returnToMetaButton != null)
+        {
+            returnToMetaButton.onClick.RemoveListener(ReturnToMetaProgression);
+        }
         if (restartCurrentWaveButton != null)
         {
             restartCurrentWaveButton.onClick.RemoveListener(RestartFromCurrentWave);
@@ -158,7 +178,12 @@ public class DeathScreen : MonoBehaviour
 
     private void HandlePlayerDied()
     {
-        if (SurvivorsGameManager.Instance != null)
+        bool isSurvivorsMode = SurvivorsGameManager.Instance != null;
+        if (isSurvivorsMode && SurvivorsGameManager.Instance.HasSurvivedSiege)
+        {
+            ShowRunOver("SIEGE SURVIVED!", "You survived the 20-minute siege! The next stage is unlocked!");
+        }
+        else if (isSurvivorsMode)
         {
             ShowRunOver("YOU DIDN'T HOLD THE DOOR", "You didn't hold the door...");
         }
@@ -173,7 +198,15 @@ public class DeathScreen : MonoBehaviour
         // Unlike a player death, the player is still alive and controllable — freeze time so the
         // run visibly ends behind the screen. Reload() restores the timescale.
         Time.timeScale = 0f;
-        ShowRunOver(Loc.Get(gateFellTitleKey), Loc.Get(gateFellReasonKey));
+        bool isSurvivorsMode = SurvivorsGameManager.Instance != null;
+        if (isSurvivorsMode && SurvivorsGameManager.Instance.HasSurvivedSiege)
+        {
+            ShowRunOver("SIEGE SURVIVED!", "You survived the 20-minute siege! The next stage is unlocked!");
+        }
+        else
+        {
+            ShowRunOver(Loc.Get(gateFellTitleKey), Loc.Get(gateFellReasonKey));
+        }
     }
 
     private void ShowRunOver(string title, string failureReason)
@@ -226,6 +259,8 @@ public class DeathScreen : MonoBehaviour
 
         if (isSurvivorsMode)
         {
+            bool hasSurvived = SurvivorsGameManager.Instance != null && SurvivorsGameManager.Instance.HasSurvivedSiege;
+
             if (goldTreePanel != null)
             {
                 goldTreePanel.SetActive(false);
@@ -242,9 +277,26 @@ public class DeathScreen : MonoBehaviour
             {
                 restartCurrentWaveButton.gameObject.SetActive(false);
             }
+
             if (tryAgainButton != null)
             {
                 tryAgainButton.gameObject.SetActive(true);
+                TMP_Text lbl = tryAgainButton.GetComponentInChildren<TMP_Text>();
+                if (lbl != null) lbl.text = "Retry Level";
+            }
+
+            if (nextStageButton != null)
+            {
+                nextStageButton.gameObject.SetActive(hasSurvived);
+                TMP_Text lbl = nextStageButton.GetComponentInChildren<TMP_Text>();
+                if (lbl != null) lbl.text = "Next Stage";
+            }
+
+            if (returnToMetaButton != null)
+            {
+                returnToMetaButton.gameObject.SetActive(true);
+                TMP_Text lbl = returnToMetaButton.GetComponentInChildren<TMP_Text>();
+                if (lbl != null) lbl.text = "Upgrades";
             }
 
             // Survivors run telemetry & stats
@@ -347,15 +399,29 @@ public class DeathScreen : MonoBehaviour
 
     private void RestartFromLevelOne()
     {
-        if (SurvivorsGameManager.Instance != null)
-        {
-            SaveData data = SaveSystem.Load();
-            data.ResetProgress();
-            SaveSystem.Save(data);
-        }
-
         RunState.StartingWave = 1;
         Reload();
+    }
+
+    private void ProceedToNextLevel()
+    {
+        SaveData data = SaveSystem.Load();
+        if (data != null)
+        {
+            int currentStage = data.selectedStage;
+            data.selectedStage = Mathf.Min(currentStage + 1, data.highestUnlockedStage);
+            SaveSystem.Save(data);
+        }
+        RunState.StartingWave = 1;
+        Reload();
+    }
+
+    private void ReturnToMetaProgression()
+    {
+        Time.timeScale = GameSettingsService.TargetTimeScale;
+        CursorLockManager.SetUnlock("DeathScreen", false);
+        Bladehold.UI.MainMenuManager.OpenUpgradesOnLoad = true;
+        SceneManager.LoadScene("MainMenu");
     }
 
     private void RestartFromCurrentWave()

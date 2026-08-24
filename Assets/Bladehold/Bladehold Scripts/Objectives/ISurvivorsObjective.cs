@@ -24,6 +24,9 @@ public interface ISurvivorsObjective
     /// <summary>Whether this objective has met its completion condition.</summary>
     bool IsComplete { get; }
 
+    /// <summary>Whether this objective has failed (e.g. timeout or VIP perished).</summary>
+    bool IsFailed { get; }
+
     /// <summary>Whether this objective is currently active and updating.</summary>
     bool IsActive { get; }
 
@@ -32,6 +35,9 @@ public interface ISurvivorsObjective
 
     /// <summary>Fired when the objective successfully completes.</summary>
     event Action<ISurvivorsObjective> OnCompleted;
+
+    /// <summary>Fired when the objective fails (e.g. timeout expired).</summary>
+    event Action<ISurvivorsObjective> OnFailed;
 
     /// <summary>Initializes or activates the objective.</summary>
     void StartObjective();

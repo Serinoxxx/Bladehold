@@ -40,6 +40,12 @@ public class SaveData
     /// </summary>
     public string playerClassId = "swordsman";
 
+    /// <summary>The highest stage level unlocked in Survivors / Siege mode (default: 1).</summary>
+    public int highestUnlockedStage = 1;
+
+    /// <summary>The currently selected stage level in Level Select (default: 1).</summary>
+    public int selectedStage = 1;
+
     /// <summary>Linear 0-1 volumes applied by <see cref="GameSettingsService" />.</summary>
     public float masterVolume = 0.5f;
     public float musicVolume = 0.5f;
@@ -108,6 +114,8 @@ public class SaveData
         purchasedNodeIds.Clear();
         purchasedReincarnateNodeIds.Clear();
         playerClassId = defaults.playerClassId;
+        highestUnlockedStage = defaults.highestUnlockedStage;
+        selectedStage = defaults.selectedStage;
     }
 
     /// <summary>

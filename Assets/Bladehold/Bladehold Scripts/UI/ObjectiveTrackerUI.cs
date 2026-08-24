@@ -64,6 +64,7 @@ public class ObjectiveTrackerUI : MonoBehaviour
             objectiveManager.OnObjectiveStarted += HandleSurvivorsObjectiveStarted;
             objectiveManager.OnObjectiveProgressChanged += HandleSurvivorsObjectiveProgress;
             objectiveManager.OnObjectiveCompleted += HandleSurvivorsObjectiveCompleted;
+            objectiveManager.OnObjectiveFailed += HandleSurvivorsObjectiveFailed;
 
             if (objectiveManager.CurrentObjective != null)
             {
@@ -86,39 +87,28 @@ public class ObjectiveTrackerUI : MonoBehaviour
             objectiveManager.OnObjectiveStarted -= HandleSurvivorsObjectiveStarted;
             objectiveManager.OnObjectiveProgressChanged -= HandleSurvivorsObjectiveProgress;
             objectiveManager.OnObjectiveCompleted -= HandleSurvivorsObjectiveCompleted;
+            objectiveManager.OnObjectiveFailed -= HandleSurvivorsObjectiveFailed;
         }
     }
 
     private void HandleSurvivorsObjectiveStarted(ISurvivorsObjective obj)
     {
-        if (objectiveHeaderText != null)
-        {
-            objectiveHeaderText.text = $"OBJECTIVE: {obj.Title.ToUpper()}";
-        }
-        if (objectiveProgressText != null)
-        {
-            objectiveProgressText.text = obj.ProgressText;
-        }
+        UpdateSurvivorsUI();
     }
 
     private void HandleSurvivorsObjectiveProgress(ISurvivorsObjective obj)
     {
-        if (objectiveProgressText != null)
-        {
-            objectiveProgressText.text = obj.ProgressText;
-        }
+        UpdateSurvivorsUI();
     }
 
     private void HandleSurvivorsObjectiveCompleted(ISurvivorsObjective obj)
     {
-        if (objectiveHeaderText != null)
-        {
-            objectiveHeaderText.text = $"{obj.Title.ToUpper()} CLEARED!";
-        }
-        if (objectiveProgressText != null)
-        {
-            objectiveProgressText.text = "Objective complete! Next objective incoming...";
-        }
+        UpdateSurvivorsUI();
+    }
+
+    private void HandleSurvivorsObjectiveFailed(ISurvivorsObjective obj)
+    {
+        UpdateSurvivorsUI();
     }
 
     private void HandleWaveStarted(int wave)
@@ -159,9 +149,68 @@ public class ObjectiveTrackerUI : MonoBehaviour
 
     private void Update()
     {
-        if (anyError || !waveInProgress || spawner == null) return;
+        if (anyError) return;
 
-        UpdateProgressText(spawner.KilledThisWave, spawner.WaveGoblinTotal);
+        if (SurvivorsGameManager.Instance != null || objectiveManager != null || FindObjectOfType<SurvivorsGameManager>() != null)
+        {
+            UpdateSurvivorsUI();
+        }
+        else if (waveInProgress && spawner != null)
+        {
+            UpdateProgressText(spawner.KilledThisWave, spawner.WaveGoblinTotal);
+        }
+    }
+
+    private void UpdateSurvivorsUI()
+    {
+        var sgm = SurvivorsGameManager.Instance ?? FindObjectOfType<SurvivorsGameManager>();
+        if (sgm == null) return;
+        if (objectiveManager == null) objectiveManager = SurvivorsObjectiveManager.Instance ?? FindObjectOfType<SurvivorsObjectiveManager>();
+
+        // 1. Overall "Survive the Siege" Timer Header
+        if (objectiveHeaderText != null)
+        {
+            if (sgm.HasSurvivedSiege)
+            {
+                objectiveHeaderText.text = "SURVIVE THE SIEGE: THE SIEGEBREAKER ARRIVED!";
+            }
+            else if (sgm.IsInFinalCountdown)
+            {
+                int totalSec = Mathf.Max(0, Mathf.CeilToInt(sgm.SiegeTimeRemaining));
+                int mins = totalSec / 60;
+                int secs = totalSec % 60;
+                objectiveHeaderText.text = $"SURVIVE THE SIEGE: {mins:00}:{secs:00} (FINAL ASSAULT)";
+            }
+            else
+            {
+                int totalSec = Mathf.Max(0, Mathf.CeilToInt(sgm.SiegeTimeRemaining));
+                int mins = totalSec / 60;
+                int secs = totalSec % 60;
+                objectiveHeaderText.text = $"SURVIVE THE SIEGE: {mins:00}:{secs:00}";
+            }
+        }
+
+        // 2. Active rotating sub-objective / boss status
+        if (objectiveProgressText != null)
+        {
+            if (sgm.HasSurvivedSiege)
+            {
+                objectiveProgressText.text = "The Siegebreaker has arrived! Defend the fortress gate!";
+            }
+            else if (objectiveManager != null && objectiveManager.CurrentObjective != null && objectiveManager.CurrentObjective.IsActive)
+            {
+                var cur = objectiveManager.CurrentObjective;
+                objectiveProgressText.text = $"[{cur.Title}]\n{cur.ProgressText}";
+            }
+            else if (sgm.IsInFinalCountdown)
+            {
+                objectiveProgressText.text = "Prepare for the final assault! The Siegebreaker approaches...";
+            }
+            else
+            {
+                objectiveProgressText.text = "Prepare for incoming siege objective...";
+            }
+        }
     }
 
     private void UpdateProgressText(int killed, int total)

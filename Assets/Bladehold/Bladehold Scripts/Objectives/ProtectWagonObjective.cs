@@ -51,10 +51,12 @@ public class ProtectWagonObjective : MonoBehaviour, ISurvivorsObjective
 
     public float ProgressNormalized => currentWagon != null ? currentWagon.ProgressNormalized : 0f;
     public bool IsComplete => isComplete;
+    public bool IsFailed => false;
     public bool IsActive => isActive;
 
     public event Action<ISurvivorsObjective> OnProgressChanged;
     public event Action<ISurvivorsObjective> OnCompleted;
+    public event Action<ISurvivorsObjective> OnFailed;
 
     public void StartObjective()
     {

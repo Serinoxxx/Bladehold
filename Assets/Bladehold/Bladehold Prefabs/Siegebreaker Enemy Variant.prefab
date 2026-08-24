@@ -1,0 +1,195 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &9208876312293025594
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1703500330218015595, guid: 3dfc31070a5218b40a933a5ecba7a26a, type: 3}
+      propertyPath: m_Name
+      value: Siegebreaker Enemy Variant
+      objectReference: {fileID: 0}
+    - target: {fileID: 5103184963153661105, guid: 3dfc31070a5218b40a933a5ecba7a26a, type: 3}
+      propertyPath: ignorePlayer
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5963117199914616342, guid: 3dfc31070a5218b40a933a5ecba7a26a, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 5963117199914616342, guid: 3dfc31070a5218b40a933a5ecba7a26a, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 5963117199914616342, guid: 3dfc31070a5218b40a933a5ecba7a26a, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 5963117199914616342, guid: 3dfc31070a5218b40a933a5ecba7a26a, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 2.0292327
+      objectReference: {fileID: 0}
+    - target: {fileID: 5963117199914616342, guid: 3dfc31070a5218b40a933a5ecba7a26a, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.00000016006126
+      objectReference: {fileID: 0}
+    - target: {fileID: 5963117199914616342, guid: 3dfc31070a5218b40a933a5ecba7a26a, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 6.311174
+      objectReference: {fileID: 0}
+    - target: {fileID: 5963117199914616342, guid: 3dfc31070a5218b40a933a5ecba7a26a, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5963117199914616342, guid: 3dfc31070a5218b40a933a5ecba7a26a, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5963117199914616342, guid: 3dfc31070a5218b40a933a5ecba7a26a, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5963117199914616342, guid: 3dfc31070a5218b40a933a5ecba7a26a, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5963117199914616342, guid: 3dfc31070a5218b40a933a5ecba7a26a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5963117199914616342, guid: 3dfc31070a5218b40a933a5ecba7a26a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5963117199914616342, guid: 3dfc31070a5218b40a933a5ecba7a26a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1703500330218015595, guid: 3dfc31070a5218b40a933a5ecba7a26a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2673294517111621812}
+    - targetCorrespondingSourceObject: {fileID: 1703500330218015595, guid: 3dfc31070a5218b40a933a5ecba7a26a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7023174232290433071}
+    - targetCorrespondingSourceObject: {fileID: 1703500330218015595, guid: 3dfc31070a5218b40a933a5ecba7a26a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1240579092187378470}
+  m_SourcePrefab: {fileID: 100100000, guid: 3dfc31070a5218b40a933a5ecba7a26a, type: 3}
+--- !u!195 &932696904235618315 stripped
+NavMeshAgent:
+  m_CorrespondingSourceObject: {fileID: 8303822783942375217, guid: 3dfc31070a5218b40a933a5ecba7a26a, type: 3}
+  m_PrefabInstance: {fileID: 9208876312293025594}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1985290123234072436 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7224243217091883086, guid: 3dfc31070a5218b40a933a5ecba7a26a, type: 3}
+  m_PrefabInstance: {fileID: 9208876312293025594}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7523417870565108817}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fbbc2048d5b01e48874c730dc14a696, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AIMovement
+--- !u!114 &4115911383850134411 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5103184963153661105, guid: 3dfc31070a5218b40a933a5ecba7a26a, type: 3}
+  m_PrefabInstance: {fileID: 9208876312293025594}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7523417870565108817}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7a610a77074b0b47936e37d35e5b4b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AITargetSelector
+--- !u!4 &4208964724478162955 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5018627550979006257, guid: 3dfc31070a5218b40a933a5ecba7a26a, type: 3}
+  m_PrefabInstance: {fileID: 9208876312293025594}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &4264258306376097733 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 4963301458325960959, guid: 3dfc31070a5218b40a933a5ecba7a26a, type: 3}
+  m_PrefabInstance: {fileID: 9208876312293025594}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &5709231662275727881 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3528504086844912947, guid: 3dfc31070a5218b40a933a5ecba7a26a, type: 3}
+  m_PrefabInstance: {fileID: 9208876312293025594}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7523417870565108817}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db56e9d19beb0f64c87b16fb7d59a889, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Health
+--- !u!1 &7523417870565108817 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1703500330218015595, guid: 3dfc31070a5218b40a933a5ecba7a26a, type: 3}
+  m_PrefabInstance: {fileID: 9208876312293025594}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2673294517111621812
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7523417870565108817}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dab2c1a3d89f4744eaa5ea2bfa68d197, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpecialEnemyIntro
+  enemyDisplayName: THE SIEGEBREAKER
+  tauntTriggerName: Taunt
+  cameraFocusTransform: {fileID: 4208964724478162955}
+  autoTriggerOnStart: 0
+  health: {fileID: 5709231662275727881}
+  animator: {fileID: 4264258306376097733}
+--- !u!114 &7023174232290433071
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7523417870565108817}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 980381637a524bf4a819d897dadbb27d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyDamageRetaliation
+  health: {fileID: 5709231662275727881}
+  targetSelector: {fileID: 4115911383850134411}
+  damageFractionPerTrigger: 0.25
+  retaliationDuration: 10
+  retaliationFeedback: {fileID: 0}
+--- !u!114 &1240579092187378470
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7523417870565108817}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13d7206b67bd7ec4da14b2a175482749, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SlayerDashAttack
+  animator: {fileID: 4264258306376097733}
+  health: {fileID: 5709231662275727881}
+  movement: {fileID: 1985290123234072436}
+  agent: {fileID: 932696904235618315}
+  attackData: {fileID: 0}
+  targetSelector: {fileID: 4115911383850134411}
+  telegraphPrefab: {fileID: 0}
+  trailPrefab: {fileID: 0}
+  windupFeedback: {fileID: 0}
+  dashFeedback: {fileID: 0}
+  attackTrigger: Attack

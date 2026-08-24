@@ -96,6 +96,7 @@ public class WaveClearedBannerUI : MonoBehaviour
         if (objectiveManager != null)
         {
             objectiveManager.OnObjectiveCompleted += HandleSurvivorsObjectiveCleared;
+            objectiveManager.OnObjectiveFailed += HandleSurvivorsObjectiveFailed;
         }
     }
 
@@ -110,6 +111,7 @@ public class WaveClearedBannerUI : MonoBehaviour
         if (objectiveManager != null)
         {
             objectiveManager.OnObjectiveCompleted -= HandleSurvivorsObjectiveCleared;
+            objectiveManager.OnObjectiveFailed -= HandleSurvivorsObjectiveFailed;
         }
     }
 
@@ -130,6 +132,11 @@ public class WaveClearedBannerUI : MonoBehaviour
     private void HandleSurvivorsObjectiveCleared(ISurvivorsObjective obj)
     {
         ShowBanner("OBJECTIVE COMPLETE", obj != null ? obj.Title : null, 0, 0);
+    }
+
+    private void HandleSurvivorsObjectiveFailed(ISurvivorsObjective obj)
+    {
+        ShowBanner("OBJECTIVE FAILED", obj != null ? obj.Title : null, 0, 0);
     }
 
     private void ShowBanner(string mainHeader, string questSubTitle, int gold, int kills)

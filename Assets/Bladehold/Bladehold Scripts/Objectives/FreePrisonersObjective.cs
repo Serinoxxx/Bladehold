@@ -14,6 +14,10 @@ public class FreePrisonersObjective : MonoBehaviour, ISurvivorsObjective
     [SerializeField] private string description = "Break open the cages to free the prisoners";
     [SerializeField] private int requiredCount = 3;
 
+    [Header("Timer & Failure Configuration")]
+    [Tooltip("Time limit in seconds to free all prisoners before failing (e.g. 120s = 2 minutes). <= 0 means no time limit.")]
+    [SerializeField] private float timeLimit = 120f;
+
     [Header("Prefabs & Spawn Points")]
     [Tooltip("Prefab instantiated for each cage. Must contain PrisonerCage component.")]
     [SerializeField] private GameObject cagePrefab;
@@ -31,25 +35,58 @@ public class FreePrisonersObjective : MonoBehaviour, ISurvivorsObjective
 
     private readonly List<PrisonerCage> spawnedCages = new List<PrisonerCage>();
     private int freedCount;
+    private float timeRemaining;
+    private int lastReportedSeconds = -1;
     private bool isActive;
     private bool isComplete;
+    private bool isFailed;
 
     public string ObjectiveId => objectiveId;
     public string Title => title;
     public string Description => description;
-    public string ProgressText => $"Prisoners freed: {freedCount}/{requiredCount}";
-    public float ProgressNormalized => requiredCount > 0 ? Mathf.Clamp01((float)freedCount / requiredCount) : 1f;
+    public float TimeLimit => timeLimit;
+    public float TimeRemaining => timeRemaining;
     public bool IsComplete => isComplete;
+    public bool IsFailed => isFailed;
     public bool IsActive => isActive;
+
+    public string ProgressText
+    {
+        get
+        {
+            if (isFailed)
+            {
+                return "Failed! Time expired to rescue prisoners!";
+            }
+            if (isComplete)
+            {
+                return $"Prisoners freed: {freedCount}/{requiredCount}";
+            }
+            if (timeLimit > 0f)
+            {
+                int totalSec = Mathf.Max(0, Mathf.CeilToInt(timeRemaining));
+                int mins = totalSec / 60;
+                int secs = totalSec % 60;
+                return $"Prisoners freed: {freedCount}/{requiredCount} ({mins}:{secs:D2})";
+            }
+            return $"Prisoners freed: {freedCount}/{requiredCount}";
+        }
+    }
+
+    public float ProgressNormalized => requiredCount > 0 ? Mathf.Clamp01((float)freedCount / requiredCount) : 1f;
 
     public event Action<ISurvivorsObjective> OnProgressChanged;
     public event Action<ISurvivorsObjective> OnCompleted;
+    public event Action<ISurvivorsObjective> OnFailed;
 
     public void StartObjective()
     {
         isActive = true;
         isComplete = false;
+        isFailed = false;
         freedCount = 0;
+        timeRemaining = timeLimit;
+        lastReportedSeconds = Mathf.CeilToInt(timeRemaining);
         spawnedCages.Clear();
 
         SpawnCages();
@@ -95,7 +132,7 @@ public class FreePrisonersObjective : MonoBehaviour, ISurvivorsObjective
 
     private void HandleCageBroken(PrisonerCage cage)
     {
-        if (!isActive || isComplete) return;
+        if (!isActive || isComplete || isFailed) return;
 
         freedCount++;
         OnProgressChanged?.Invoke(this);
@@ -110,7 +147,37 @@ public class FreePrisonersObjective : MonoBehaviour, ISurvivorsObjective
 
     public void UpdateObjective(float deltaTime)
     {
-        // Event-driven progress via HandleCageBroken
+        if (!isActive || isComplete || isFailed) return;
+
+        if (timeLimit > 0f)
+        {
+            timeRemaining -= deltaTime;
+            int currentSeconds = Mathf.Max(0, Mathf.CeilToInt(timeRemaining));
+            if (currentSeconds != lastReportedSeconds)
+            {
+                lastReportedSeconds = currentSeconds;
+                OnProgressChanged?.Invoke(this);
+            }
+
+            if (timeRemaining <= 0f)
+            {
+                timeRemaining = 0f;
+                HandleTimeout();
+            }
+        }
+    }
+
+    private void HandleTimeout()
+    {
+        if (!isActive || isComplete || isFailed) return;
+
+        isFailed = true;
+        isActive = false;
+
+        Debug.Log("[FreePrisonersObjective] Timed out! Failed to rescue prisoners in time.");
+
+        OnProgressChanged?.Invoke(this);
+        OnFailed?.Invoke(this);
     }
 
     public void CleanupObjective()

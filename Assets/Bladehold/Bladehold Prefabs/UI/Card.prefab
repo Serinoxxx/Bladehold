@@ -2216,6 +2216,7 @@ MonoBehaviour:
   titleText: {fileID: 2416562902984314259}
   descText: {fileID: 6016725215525042215}
   levelText: {fileID: 3174618139187516711}
+  banishButton: {fileID: 0}
   hoverEnterFeedback: {fileID: 1665075988833431422}
   hoverExitFeedback: {fileID: 2627313490094200013}
   selectFeedback: {fileID: 8356899823379503214}
