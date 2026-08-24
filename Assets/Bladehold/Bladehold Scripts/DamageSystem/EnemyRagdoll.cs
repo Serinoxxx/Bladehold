@@ -73,8 +73,69 @@ public class EnemyRagdoll : MonoBehaviour
         }
     }
 
+    private void Awake()
+    {
+        if (animator == null)
+        {
+            animator = GetComponentInChildren<Animator>();
+        }
+        CacheExistingBodies();
+    }
+
+    private void CacheExistingBodies()
+    {
+        if (isBuilt) return;
+        if (animator == null)
+        {
+            animator = GetComponentInChildren<Animator>();
+        }
+        if (animator == null) return;
+
+        Transform hips = animator.GetBoneTransform(HumanBodyBones.Hips);
+        if (hips == null) return;
+
+        Rigidbody hipsRb = hips.GetComponent<Rigidbody>();
+        if (hipsRb != null)
+        {
+            Pelvis = hipsRb;
+            bodies.Clear();
+            boneColliders.Clear();
+
+            Rigidbody[] childBodies = hips.GetComponentsInChildren<Rigidbody>(true);
+            foreach (Rigidbody rb in childBodies)
+            {
+                bodies.Add(rb);
+                rb.isKinematic = true;
+            }
+
+            Collider[] childColliders = hips.GetComponentsInChildren<Collider>(true);
+            foreach (Collider c in childColliders)
+            {
+                boneColliders.Add(c);
+                c.enabled = false;
+            }
+
+            RagdollBloodImpact[] impacts = hips.GetComponentsInChildren<RagdollBloodImpact>(true);
+            foreach (RagdollBloodImpact impact in impacts)
+            {
+                if (config != null)
+                {
+                    impact.Init(this, config, impact.BodyPartType, impactSounds);
+                }
+            }
+
+            meshRenderers = GetComponentsInChildren<SkinnedMeshRenderer>();
+            isBuilt = true;
+        }
+    }
+
     private void Start()
     {
+        if (animator == null)
+        {
+            animator = GetComponentInChildren<Animator>();
+        }
+
         if (animator == null)
         {
             Debug.LogError("Animator component is not assigned or found on the GameObject.");
@@ -89,6 +150,11 @@ public class EnemyRagdoll : MonoBehaviour
         if (anyError)
         {
             return;
+        }
+
+        if (!isBuilt)
+        {
+            CacheExistingBodies();
         }
 
         if (corpseDespawner != null)
@@ -112,12 +178,17 @@ public class EnemyRagdoll : MonoBehaviour
     }
 
     /// <summary>
-    ///     Builds the ragdoll on first use. Returns false on any failure (missing bone, unknown layer)
+    ///     Builds the ragdoll on first use (or caches pre-baked bodies). Returns false on any failure (missing bone, unknown layer)
     ///     — the caller degrades to a knockdown and the game keeps running. Failures latch so a broken
     ///     rig logs once, not per hit.
     /// </summary>
     public bool BuildIfNeeded()
     {
+        if (isBuilt)
+        {
+            return true;
+        }
+        CacheExistingBodies();
         if (isBuilt)
         {
             return true;
@@ -130,6 +201,16 @@ public class EnemyRagdoll : MonoBehaviour
         buildFailed = !TryBuild();
         isBuilt = !buildFailed;
         return isBuilt;
+    }
+
+    /// <summary>
+    ///     Editor helper: builds and bakes ragdoll components directly into the prefab asset.
+    /// </summary>
+    public bool BakeRagdollInEditor()
+    {
+        if (animator == null) animator = GetComponentInChildren<Animator>();
+        if (animator == null || config == null) return false;
+        return TryBuild();
     }
 
     /// <summary>

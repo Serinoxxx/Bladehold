@@ -28,6 +28,10 @@ public class SurvivorsCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     [Tooltip("Level badge text component.")]
     [SerializeField] private TextMeshProUGUI levelText;
 
+    [Header("Banish UI Reference (optional)")]
+    [Tooltip("Banish button above or on the card.")]
+    [SerializeField] private Button banishButton;
+
     [Header("Feedbacks (optional)")]
     [Tooltip("MMF_Player played when pointer enters/hovers over the card.")]
     [SerializeField] private MMF_Player hoverEnterFeedback;
@@ -39,6 +43,7 @@ public class SurvivorsCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     [SerializeField] private MMF_Player selectFeedback;
 
     private Action onClickedCallback;
+    private Action onBanishCallback;
 
     private void Awake()
     {
@@ -47,6 +52,11 @@ public class SurvivorsCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         {
             selectButton.onClick.RemoveAllListeners();
             selectButton.onClick.AddListener(HandleClick);
+        }
+        if (banishButton != null)
+        {
+            banishButton.onClick.RemoveAllListeners();
+            banishButton.onClick.AddListener(HandleBanishClick);
         }
         ForceUnscaledTime(hoverEnterFeedback);
         ForceUnscaledTime(hoverExitFeedback);
@@ -76,6 +86,7 @@ public class SurvivorsCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         if (levelText == null) levelText = transform.Find("LevelBadge")?.GetComponent<TextMeshProUGUI>();
         if (descText == null) descText = transform.Find("Description")?.GetComponent<TextMeshProUGUI>();
         if (iconImage == null) iconImage = transform.Find("Icon")?.GetComponent<Image>();
+        if (banishButton == null) banishButton = transform.Find("Banish_Btn")?.GetComponent<Button>() ?? transform.Find("BanishButton")?.GetComponent<Button>();
         if (hoverEnterFeedback == null)
         {
             hoverEnterFeedback = GetComponent<MMF_Player>();
@@ -95,11 +106,12 @@ public class SurvivorsCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     }
 
     /// <summary>
-    /// Populates the card with skill node data, level badge info, icon, and click handler.
+    /// Populates the card with skill node data, level badge info, icon, click handler, and banish handler.
     /// </summary>
-    public void SetData(SkillNode node, int currentLevel, Sprite icon, Action onClicked)
+    public void SetData(SkillNode node, int currentLevel, Sprite icon, Action onClicked, Action onBanish = null, bool canBanish = false)
     {
         onClickedCallback = onClicked;
+        onBanishCallback = onBanish;
 
         int nextLevel = currentLevel + 1;
 
@@ -135,6 +147,12 @@ public class SurvivorsCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
                 iconImage.gameObject.SetActive(false);
             }
         }
+
+        if (banishButton != null)
+        {
+            banishButton.gameObject.SetActive(canBanish && onBanish != null);
+            banishButton.interactable = canBanish;
+        }
     }
 
     /// <summary>
@@ -146,6 +164,15 @@ public class SurvivorsCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         {
             selectButton.interactable = interactable;
         }
+        if (banishButton != null)
+        {
+            banishButton.interactable = interactable;
+        }
+    }
+
+    private void HandleBanishClick()
+    {
+        onBanishCallback?.Invoke();
     }
 
     public void OnPointerEnter(PointerEventData eventData)

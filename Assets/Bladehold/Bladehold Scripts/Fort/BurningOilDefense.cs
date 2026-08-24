@@ -35,11 +35,17 @@ public class BurningOilDefense : FortDefense
     private float cooldownTimer;
     private bool isPouring = false;
     private Quaternion originalBucketRotation;
-    private readonly Collider[] detectionBuffer = new Collider[16];
+    private readonly Collider[] detectionBuffer = new Collider[64];
 
     private void Awake()
     {
         defenseType = FortDefenseType.BurningOil;
+        if (enemyLayers == ~0 || enemyLayers == 0)
+        {
+            int mask = LayerMask.GetMask("Enemy");
+            enemyLayers = mask != 0 ? mask : (1 << 7);
+        }
+
         if (bucketTransform != null)
         {
             originalBucketRotation = bucketTransform.localRotation;

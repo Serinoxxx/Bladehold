@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using MoreMountains.Feedbacks;
 using UnityEngine;
@@ -9,10 +10,16 @@ using UnityEngine;
 /// </summary>
 public class SpikeDefense : FortDefense
 {
-    [Header("Spike Damage")]
+    [Header("Configuration")]
+    [SerializeField] private SpikeDefenseConfigSO config;
+
+    [Header("Fallback Specs (if config unassigned)")]
     [SerializeField] private float baseDamage = 16f;
+    [SerializeField] private float damagePerLevel = 14f;
     [SerializeField] private float ragdollMultiplier = 5f;
     [SerializeField] private float hitCooldownPerEnemy = 0.5f;
+    [SerializeField] private float embedDepth = 1.5f;
+    [SerializeField] private float impaleDuration = 6.0f;
 
     [Header("Impale & Audio Feedback")]
     [SerializeField] private AudioClip hitSound;
@@ -27,12 +34,37 @@ public class SpikeDefense : FortDefense
     private void Awake()
     {
         defenseType = FortDefenseType.Spikes;
+        if (config == null)
+        {
+            config = Resources.Load<SpikeDefenseConfigSO>("SpikeDefenseConfig");
+        }
     }
 
     private float GetEffectiveDamage()
     {
-        // Level 1: 16, Level 2: 26, Level 3: 40, Level 4: 60
-        return baseDamage + (currentLevel - 1) * 14f;
+        float baseDmg = config != null ? config.baseDamage : baseDamage;
+        float perLvl = config != null ? config.damagePerLevel : damagePerLevel;
+        return baseDmg + (currentLevel - 1) * perLvl;
+    }
+
+    private float GetRagdollMultiplier()
+    {
+        return config != null ? config.ragdollMultiplier : ragdollMultiplier;
+    }
+
+    private float GetHitCooldown()
+    {
+        return config != null ? config.hitCooldownPerEnemy : hitCooldownPerEnemy;
+    }
+
+    private float GetEmbedDepth()
+    {
+        return config != null ? config.embedDepth : embedDepth;
+    }
+
+    private float GetImpaleDuration()
+    {
+        return config != null ? config.impaleDuration : impaleDuration;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -77,12 +109,12 @@ public class SpikeDefense : FortDefense
         {
             return;
         }
-        nextHitTimes[health] = now + hitCooldownPerEnemy;
+        nextHitTimes[health] = now + GetHitCooldown();
 
         float dmg = GetEffectiveDamage();
         if (isRagdolled)
         {
-            dmg *= ragdollMultiplier; // 5x damage for ragdolled enemies!
+            dmg *= GetRagdollMultiplier(); // 5x damage for ragdolled enemies!
         }
 
         bool isLethal = (health.CurrentHealth - dmg) <= 0f;
@@ -123,7 +155,7 @@ public class SpikeDefense : FortDefense
 
     /// <summary>
     ///     Sticks and embeds a killed enemy's corpse directly into the spikes,
-    ///     freezing velocity and locking the struck bone in place.
+    ///     penetrating embedDepth meters into the barricade while letting limbs dangle naturally.
     /// </summary>
     private void ImpaleTarget(Health health, EnemyRagdoll ragdoll, KnockbackReceiver kb, Collider hitCollider, Vector3 hitPoint)
     {
@@ -149,23 +181,89 @@ public class SpikeDefense : FortDefense
             Instantiate(bloodSplatterPrefab, hitPoint, Quaternion.identity);
         }
 
-        // If ragdoll is present, lock the struck bone to the spike
+        // Calculate penetration/embedding vector into the spike structure
+        float penetration = GetEmbedDepth();
+        Vector3 toCenter = (transform.position - hitPoint);
+        toCenter.y = 0f;
+        Vector3 embedDir = toCenter.sqrMagnitude > 0.001f ? toCenter.normalized : transform.forward;
+        Vector3 embeddedPos = hitPoint + embedDir * penetration;
+
+        // If ragdoll is present, penetrate and lock the struck bone
         if (ragdoll != null)
         {
             ragdoll.BuildIfNeeded();
+
+            Animator anim = ragdoll.GetComponentInChildren<Animator>();
+            if (anim != null && anim.enabled)
+            {
+                anim.enabled = false;
+            }
+
+            if (!ragdoll.IsRagdolled)
+            {
+                ragdoll.EnterRagdoll(Vector3.zero, Vector3.zero);
+            }
+
             Rigidbody struckBone = ragdoll.GetBoneRigidbody(hitCollider, hitPoint);
+            if (struckBone == null)
+            {
+                struckBone = ragdoll.Pelvis;
+            }
+
             if (struckBone != null)
             {
-                // Snap bone position to hit point and make kinematic
-                struckBone.position = hitPoint;
+                // Embed bone deeply into the spike structure (setting both transform and Rigidbody)
+                Vector3 delta = embeddedPos - struckBone.position;
+                struckBone.transform.position = embeddedPos;
+                struckBone.position = embeddedPos;
                 struckBone.linearVelocity = Vector3.zero;
                 struckBone.angularVelocity = Vector3.zero;
                 struckBone.isKinematic = true;
+
+                // Also shift root/other bodies so the entire humanoid model penetrates into the barricade
+                foreach (var rb in struckBone.transform.root.GetComponentsInChildren<Rigidbody>())
+                {
+                    if (rb != struckBone)
+                    {
+                        rb.transform.position += delta;
+                        rb.position += delta;
+                        rb.linearVelocity = Vector3.zero;
+                    }
+                }
             }
 
-            ragdoll.FreezeCorpse();
+            bool allowDangle = config == null || config.allowLimbDangle;
+            if (allowDangle && Application.isPlaying)
+            {
+                StartCoroutine(ImpaleHoldRoutine(ragdoll, struckBone, GetImpaleDuration()));
+            }
+            else
+            {
+                ragdoll.FreezeCorpse();
+            }
+        }
+        else
+        {
+            // Non-ragdoll fallback: embed root transform
+            health.transform.position = embeddedPos;
         }
 
-        Debug.Log($"[SpikeDefense] Enemy '{health.name}' IMPALED and embedded into spike barricade!");
+        Debug.Log($"[SpikeDefense] Enemy '{health.name}' IMPALED and embedded {penetration:F1}m into spike barricade!");
+    }
+
+    private IEnumerator ImpaleHoldRoutine(EnemyRagdoll ragdoll, Rigidbody pinnedBone, float duration)
+    {
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            if (ragdoll == null) yield break;
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        if (ragdoll != null)
+        {
+            ragdoll.FreezeCorpse();
+        }
     }
 }

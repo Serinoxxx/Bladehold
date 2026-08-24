@@ -275,11 +275,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ArrowSlitDefense
   defenseType: 0
   currentLevel: 1
-  range: 25
-  maxTargetAngle: 120
+  range: 35
+  maxTargetAngle: 150
   enemyLayers:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 128
   firePoint: {fileID: 2132479765606309064}
   baseDamage: 18
   baseFireInterval: 1.6

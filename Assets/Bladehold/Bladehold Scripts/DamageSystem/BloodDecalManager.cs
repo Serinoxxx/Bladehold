@@ -9,6 +9,7 @@ using UnityEngine.Rendering.Universal;
 public static class BloodDecalManager
 {
     private static readonly List<BloodDecal> activeDecals = new List<BloodDecal>();
+    private static readonly Queue<BloodDecal> decalPool = new Queue<BloodDecal>();
     private static Transform poolParent;
 
     public static void SpawnDecal(Vector3 point, Vector3 normal, float size, RagdollConfigSO config)
@@ -25,6 +26,7 @@ public static class BloodDecalManager
             if (holder == null)
             {
                 holder = new GameObject("BloodDecalsHolder");
+                Object.DontDestroyOnLoad(holder);
             }
             poolParent = holder.transform;
         }
@@ -40,10 +42,28 @@ public static class BloodDecalManager
             }
         }
 
-        // Create decal GameObject
-        GameObject decalGO = new GameObject("RagdollBloodDecal");
-        decalGO.transform.SetParent(poolParent);
-        
+        BloodDecal bloodDecal = null;
+        while (decalPool.Count > 0 && bloodDecal == null)
+        {
+            bloodDecal = decalPool.Dequeue();
+        }
+
+        GameObject decalGO;
+        DecalProjector projector;
+        if (bloodDecal == null)
+        {
+            decalGO = new GameObject("RagdollBloodDecal");
+            decalGO.transform.SetParent(poolParent);
+            projector = decalGO.AddComponent<DecalProjector>();
+            bloodDecal = decalGO.AddComponent<BloodDecal>();
+        }
+        else
+        {
+            decalGO = bloodDecal.gameObject;
+            decalGO.SetActive(true);
+            projector = decalGO.GetComponent<DecalProjector>();
+        }
+
         // Position offset above/outside hit surface along normal so the DecalProjector originates above the ground/wall
         float offset = config != null ? Mathf.Max(0.05f, config.decalOffsetFromSurface) : 0.3f;
         decalGO.transform.position = point + normal * offset;
@@ -54,14 +74,11 @@ public static class BloodDecalManager
         decalGO.transform.rotation = lookRotation * Quaternion.Euler(0f, 0f, randomSpin);
 
         // Configure DecalProjector
-        DecalProjector projector = decalGO.AddComponent<DecalProjector>();
         Material mat = config.bloodDecalMaterials[Random.Range(0, config.bloodDecalMaterials.Length)];
         projector.material = mat;
         projector.size = new Vector3(size, size, config.decalProjectionDepth);
 
-
         // Add component for lifecycle & fade out
-        BloodDecal bloodDecal = decalGO.AddComponent<BloodDecal>();
         bloodDecal.Init(config.decalLifetime, config.decalFadeDuration);
 
         activeDecals.Add(bloodDecal);
@@ -72,6 +89,11 @@ public static class BloodDecalManager
         if (decal != null)
         {
             activeDecals.Remove(decal);
+            decal.gameObject.SetActive(false);
+            if (!decalPool.Contains(decal))
+            {
+                decalPool.Enqueue(decal);
+            }
         }
     }
 }

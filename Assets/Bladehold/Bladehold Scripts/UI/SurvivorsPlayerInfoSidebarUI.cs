@@ -162,9 +162,10 @@ public class SurvivorsPlayerInfoSidebarUI : MonoBehaviour
         SkillTreeSO tree = SkillTreeService.Instance.Tree;
         IReadOnlyList<SkillNode> allNodes = tree.Nodes;
 
+        // First pass: Active Weapons
         foreach (SkillNode node in allNodes)
         {
-            if (node == null) continue;
+            if (node == null || !node.isActiveWeapon) continue;
 
             int level = SkillTreeService.Instance.GetLevel(node);
             if (level <= 0) continue;
@@ -176,7 +177,32 @@ public class SurvivorsPlayerInfoSidebarUI : MonoBehaviour
             }
             else
             {
-                itemGO = CreateDefaultSkillItem(node, level, tree.GetIcon(node.iconName));
+                itemGO = CreateDefaultSkillItem(node, level, tree.GetIcon(node.iconName), isWeapon: true);
+            }
+
+            if (itemGO != null)
+            {
+                spawnedSkillItems.Add(itemGO);
+                SetupSkillItemData(itemGO, node, level, tree.GetIcon(node.iconName));
+            }
+        }
+
+        // Second pass: Passives & Upgrades
+        foreach (SkillNode node in allNodes)
+        {
+            if (node == null || node.isActiveWeapon) continue;
+
+            int level = SkillTreeService.Instance.GetLevel(node);
+            if (level <= 0) continue;
+
+            GameObject itemGO;
+            if (skillItemPrefab != null)
+            {
+                itemGO = Instantiate(skillItemPrefab, skillsListContainer);
+            }
+            else
+            {
+                itemGO = CreateDefaultSkillItem(node, level, tree.GetIcon(node.iconName), isWeapon: false);
             }
 
             if (itemGO != null)
@@ -240,13 +266,13 @@ public class SurvivorsPlayerInfoSidebarUI : MonoBehaviour
         trigger.triggers.Add(exitEntry);
     }
 
-    private GameObject CreateDefaultSkillItem(SkillNode node, int level, Sprite icon)
+    private GameObject CreateDefaultSkillItem(SkillNode node, int level, Sprite icon, bool isWeapon = false)
     {
         GameObject row = new GameObject(node.displayName, typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(Image));
         row.transform.SetParent(skillsListContainer, false);
 
         Image bg = row.GetComponent<Image>();
-        bg.color = new Color(0.1f, 0.12f, 0.15f, 0.75f);
+        bg.color = isWeapon ? new Color(0.2f, 0.15f, 0.08f, 0.85f) : new Color(0.1f, 0.12f, 0.15f, 0.75f);
 
         HorizontalLayoutGroup hlg = row.GetComponent<HorizontalLayoutGroup>();
         hlg.childControlWidth = true;

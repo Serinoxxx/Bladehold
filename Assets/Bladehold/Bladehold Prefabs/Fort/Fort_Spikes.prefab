@@ -444,9 +444,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpikeDefense
   defenseType: 2
   currentLevel: 1
+  config: {fileID: 11400000, guid: c77778520e88fca49a879d34aa9b1a5b, type: 2}
   baseDamage: 16
+  damagePerLevel: 14
   ragdollMultiplier: 5
   hitCooldownPerEnemy: 0.5
+  embedDepth: 1.5
+  impaleDuration: 6
   hitSound: {fileID: 0}
   impaleSound: {fileID: 0}
   bloodSplatterPrefab: {fileID: 0}

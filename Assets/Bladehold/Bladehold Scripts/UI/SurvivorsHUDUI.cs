@@ -82,7 +82,7 @@ public class SurvivorsHUDUI : MonoBehaviour
 
         if (xpText != null)
         {
-            xpText.text = $"{currentXP} / {targetXP} GOLD";
+            xpText.text = $"{currentXP} / {targetXP} XP";
         }
     }
 }

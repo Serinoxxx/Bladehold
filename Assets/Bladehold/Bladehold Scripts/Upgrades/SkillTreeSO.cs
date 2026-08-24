@@ -160,20 +160,32 @@ public class SkillTreeSO : ScriptableObject
         }
 
         string[] lines = csv.text.Split('\n');
-        for (int i = 0; i < lines.Length; i++)
-        {
-            if (i == 0 && hasHeaderRow)
-            {
-                continue;
-            }
+        Dictionary<string, int> headerMap = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        int startIndex = 0;
 
+        if (hasHeaderRow && lines.Length > 0)
+        {
+            List<string> headers = CsvUtil.SplitLine(lines[0].TrimEnd('\r'));
+            for (int h = 0; h < headers.Count; h++)
+            {
+                string headerName = headers[h].Trim();
+                if (!string.IsNullOrEmpty(headerName))
+                {
+                    headerMap[headerName] = h;
+                }
+            }
+            startIndex = 1;
+        }
+
+        for (int i = startIndex; i < lines.Length; i++)
+        {
             string line = lines[i].TrimEnd('\r');
             if (string.IsNullOrWhiteSpace(line))
             {
                 continue;
             }
 
-            SkillNode node = ParseRow(line, i + 1);
+            SkillNode node = ParseRow(line, i + 1, headerMap);
             if (node == null)
             {
                 continue;
@@ -203,7 +215,7 @@ public class SkillTreeSO : ScriptableObject
         }
     }
 
-    private SkillNode ParseRow(string line, int lineNumber)
+    private SkillNode ParseRow(string line, int lineNumber, Dictionary<string, int> headerMap)
     {
         List<string> f = CsvUtil.SplitLine(line);
         if (f.Count < 13)
@@ -212,37 +224,46 @@ public class SkillTreeSO : ScriptableObject
             return null;
         }
 
-        string id = f[0].Trim();
+        string GetField(string colName, int fallbackIndex)
+        {
+            if (headerMap != null && headerMap.TryGetValue(colName, out int idx))
+            {
+                return idx < f.Count ? f[idx] : "";
+            }
+            return fallbackIndex < f.Count ? f[fallbackIndex] : "";
+        }
+
+        string id = GetField("id", 0).Trim();
         if (string.IsNullOrEmpty(id))
         {
             Debug.LogError($"SkillTreeSO '{name}': line {lineNumber} has an empty id. Skipping.");
             return null;
         }
 
-        int maxLevel = Mathf.Max(1, ParseInt(f[6], 1, lineNumber, "maxLevel"));
+        int maxLevel = Mathf.Max(1, ParseInt(GetField("maxLevel", 6), 1, lineNumber, "maxLevel"));
 
         var node = new SkillNode
         {
             id = id,
             locKey = string.IsNullOrEmpty(locKeyPrefix) ? "" : locKeyPrefix + "." + id,
-            displayName = f[1].Trim(),
-            description = f[2].Trim(),
-            upgradeText = f[3].Trim(),
+            displayName = GetField("displayName", 1).Trim(),
+            description = GetField("description", 2).Trim(),
+            upgradeText = GetField("upgradeText", 3).Trim(),
             maxLevel = maxLevel,
             costPerLevel = BuildCostLadder(
-                ParseInt(f[4], 0, lineNumber, "cost"),
-                ParseFloat(f[5], 1f, lineNumber, "growth"),
+                ParseInt(GetField("cost", 4), 0, lineNumber, "cost"),
+                ParseFloat(GetField("growth", 5), 1f, lineNumber, "growth"),
                 maxLevel),
-            x = ParseFloat(f[11], 0f, lineNumber, "x"),
-            y = ParseFloat(f[12], 0f, lineNumber, "y"),
+            x = ParseFloat(GetField("x", 11), 0f, lineNumber, "x"),
+            y = ParseFloat(GetField("y", 12), 0f, lineNumber, "y"),
         };
 
-        string statRaw = f[7].Trim();
+        string statRaw = GetField("stat", 7).Trim();
         if (!string.IsNullOrEmpty(statRaw))
         {
             string[] statParts = statRaw.Split(';');
-            string[] kindParts = f[8].Split(';');
-            string[] amountParts = f[9].Split(';');
+            string[] kindParts = GetField("kind", 8).Split(';');
+            string[] amountParts = GetField("amount", 9).Split(';');
 
             if (kindParts.Length != statParts.Length || amountParts.Length != statParts.Length)
             {
@@ -270,7 +291,7 @@ public class SkillTreeSO : ScriptableObject
             }
         }
 
-        string prereqRaw = f[10].Trim();
+        string prereqRaw = GetField("prereqs", 10).Trim();
         if (!string.IsNullOrEmpty(prereqRaw))
         {
             foreach (string p in prereqRaw.Split(';'))
@@ -283,16 +304,25 @@ public class SkillTreeSO : ScriptableObject
             }
         }
 
-        // Optional trailing icon column — rows without it parse as icon-less.
-        node.iconName = f.Count > 13 ? f[13].Trim() : "";
+        // Optional icon column
+        node.iconName = GetField("icon", 13).Trim();
         if (!string.IsNullOrEmpty(node.iconName) && GetIcon(node.iconName) == null)
         {
             Debug.LogError($"SkillTreeSO '{name}': line {lineNumber} names icon '{node.iconName}', which is not in this asset's icons list or shared icons.");
         }
 
-        // Optional trailing 'root' column — a truthy value marks a start-unlocked entry node. Absent/blank
-        // (older files) parse as non-root, which is why the CSVs carry an explicit root per entry branch.
-        node.isRoot = f.Count > 14 && ParseBool(f[14]);
+        // Optional 'root' column
+        node.isRoot = ParseBool(GetField("root", 14));
+
+        // Meta progression vs In-Run Card Draft flags
+        string metaRaw = GetField("isMeta", 15);
+        node.isMeta = string.IsNullOrWhiteSpace(metaRaw) ? true : ParseBool(metaRaw);
+
+        string cardRaw = GetField("isCard", 16);
+        node.isCard = string.IsNullOrWhiteSpace(cardRaw) ? true : ParseBool(cardRaw);
+
+        string activeRaw = GetField("isActiveWeapon", 17);
+        node.isActiveWeapon = string.IsNullOrWhiteSpace(activeRaw) ? false : ParseBool(activeRaw);
 
         return node;
     }

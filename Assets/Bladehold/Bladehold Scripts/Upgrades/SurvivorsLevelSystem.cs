@@ -55,30 +55,12 @@ public class SurvivorsLevelSystem : MonoBehaviour
 
     private void Start()
     {
-        if (wallet == null && Player.Instance != null)
-        {
-            wallet = Player.Instance.Wallet;
-        }
-
-        if (wallet == null)
-        {
-            wallet = UnityEngine.Object.FindAnyObjectByType<Wallet>();
-        }
-
-        if (wallet == null)
-        {
-            Debug.LogError("[SurvivorsLevelSystem] Essential dependency Wallet not found!");
-            anyError = true;
-            return;
-        }
-
         currentLevel = 1;
         currentLevelXP = 0;
         pendingDrafts = 0;
+        totalRunGoldTracked = 0;
         targetXPForNextLevel = CalculateTargetXPForLevel(currentLevel);
-        lastKnownWalletCoins = wallet.Coins;
 
-        wallet.OnCoinsChanged += HandleCoinsChanged;
         OnXPChanged?.Invoke(currentLevelXP, targetXPForNextLevel, currentLevel);
         OnPendingDraftsChanged?.Invoke(pendingDrafts);
     }
@@ -89,15 +71,10 @@ public class SurvivorsLevelSystem : MonoBehaviour
         {
             Instance = null;
         }
-
-        if (wallet != null)
-        {
-            wallet.OnCoinsChanged -= HandleCoinsChanged;
-        }
     }
 
     /// <summary>
-    ///     Calculates the gold required to advance from level <paramref name="level"/> to level <paramref name="level"/> + 1.
+    ///     Calculates the XP required to advance from level <paramref name="level"/> to level <paramref name="level"/> + 1.
     /// </summary>
     public int CalculateTargetXPForLevel(int level)
     {
@@ -107,25 +84,8 @@ public class SurvivorsLevelSystem : MonoBehaviour
         return Mathf.Max(baseGoldTarget, Mathf.RoundToInt(exponentialPart + linearPart));
     }
 
-    private void HandleCoinsChanged(int newTotalCoins)
-    {
-        if (anyError) return;
-
-        // Calculate gold gained since last check
-        int gained = newTotalCoins - lastKnownWalletCoins;
-        lastKnownWalletCoins = newTotalCoins;
-
-        if (gained <= 0)
-        {
-            return;
-        }
-
-        totalRunGoldTracked += gained;
-        AddXP(gained);
-    }
-
     /// <summary>
-    ///     Adds XP (gold) and increments pending skill drafts upon level up.
+    ///     Adds XP and increments pending skill drafts upon level up.
     /// </summary>
     public void AddXP(int amount)
     {

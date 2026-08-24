@@ -29,38 +29,59 @@ public class SurvivorsCardSelector : MonoBehaviour
         }
     }
 
+    [Header("Slot Limits")]
+    [Tooltip("Maximum active weapons/abilities a player can hold in a run.")]
+    [SerializeField] private int maxActiveWeapons = 4;
+
+    private readonly HashSet<string> banishedNodeIds = new HashSet<string>();
+
+    private SkillTreeService TreeService => SkillTreeService.Instance != null ? SkillTreeService.Instance : UnityEngine.Object.FindAnyObjectByType<SkillTreeService>();
+
     /// <summary>
     ///     Evaluates available skill tree nodes and returns up to <paramref name="count"/> candidate skill cards.
-    ///     A node is eligible if it is unlocked/revealed by dependency rules and not maxed.
+    ///     A node is eligible if it is marked as a card (isCard), not banished, unlocked/revealed by dependency rules,
+    ///     not maxed, and does not violate the active weapon slot limit.
     /// </summary>
-    public List<SkillNode> GetRandomSkillCards(int count = 3)
+    public List<SkillNode> GetRandomSkillCards(int count = 3, List<SkillNode> excludeList = null)
     {
         List<SkillNode> candidates = new List<SkillNode>();
+        SkillTreeService service = TreeService;
 
-        if (SkillTreeService.Instance == null || SkillTreeService.Instance.Tree == null)
+        if (service == null || service.Tree == null)
         {
             Debug.LogWarning("[SurvivorsCardSelector] SkillTreeService or SkillTreeSO is missing!");
             return candidates;
         }
 
-        SkillTreeSO tree = SkillTreeService.Instance.Tree;
+        SkillTreeSO tree = service.Tree;
         IReadOnlyList<SkillNode> allNodes = tree.Nodes;
+
+        int ownedActiveWeapons = GetOwnedActiveWeaponsCount(allNodes);
 
         foreach (SkillNode node in allNodes)
         {
             if (node == null) continue;
 
-            // Rule 1: Exclude maxed nodes
-            if (SkillTreeService.Instance.IsMaxed(node))
+            // Rule 1: Must be designated as an in-run card
+            if (!node.isCard) continue;
+
+            // Rule 2: Cannot be banished
+            if (banishedNodeIds.Contains(node.id)) continue;
+
+            // Rule 3: Exclude if in excludeList
+            if (excludeList != null && excludeList.Contains(node)) continue;
+
+            // Rule 4: Exclude maxed nodes
+            if (service.IsMaxed(node)) continue;
+
+            // Rule 5: Active weapon slot cap (if at max active weapons, only offer upgrades to already-owned active weapons)
+            if (node.isActiveWeapon && ownedActiveWeapons >= maxActiveWeapons && service.GetLevel(node) <= 0)
             {
                 continue;
             }
 
-            // Rule 2: Dependency chain verification
-            // A node is valid if it is a root, OR if it's already revealed by SkillTreeService,
-            // OR if any of its prereqs have been purchased.
+            // Rule 6: Dependency chain verification
             bool isEligible = IsNodeDependencyMet(node);
-
             if (isEligible)
             {
                 candidates.Add(node);
@@ -86,6 +107,49 @@ public class SurvivorsCardSelector : MonoBehaviour
     }
 
     /// <summary>
+    ///     Fetches a single replacement card that is eligible and not currently displayed.
+    /// </summary>
+    public SkillNode GetSingleReplacementCard(List<SkillNode> currentOffered)
+    {
+        List<SkillNode> choices = GetRandomSkillCards(1, currentOffered);
+        return choices.Count > 0 ? choices[0] : null;
+    }
+
+    /// <summary>
+    ///     Permanently banishes a card from being offered again for the rest of the current run.
+    /// </summary>
+    public bool BanishCard(string id)
+    {
+        if (string.IsNullOrEmpty(id)) return false;
+        return banishedNodeIds.Add(id);
+    }
+
+    public bool IsBanished(string id) => !string.IsNullOrEmpty(id) && banishedNodeIds.Contains(id);
+
+    public void ResetBanished()
+    {
+        banishedNodeIds.Clear();
+    }
+
+    /// <summary>
+    ///     Counts how many active weapons/abilities the player currently owns (level >= 1).
+    /// </summary>
+    public int GetOwnedActiveWeaponsCount(IReadOnlyList<SkillNode> allNodes)
+    {
+        SkillTreeService service = TreeService;
+        if (service == null || allNodes == null) return 0;
+        int count = 0;
+        foreach (SkillNode node in allNodes)
+        {
+            if (node != null && node.isActiveWeapon && service.GetLevel(node) >= 1)
+            {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /// <summary>
     ///     Checks if a node's dependency chain is satisfied (is root, is revealed, or has a purchased prerequisite).
     /// </summary>
     public bool IsNodeDependencyMet(SkillNode node)
@@ -95,20 +159,21 @@ public class SurvivorsCardSelector : MonoBehaviour
         // Root nodes are always unlocked
         if (node.isRoot) return true;
 
-        if (SkillTreeService.Instance == null) return false;
+        SkillTreeService service = TreeService;
+        if (service == null) return false;
 
         // Check if already owned (can upgrade to next level)
-        if (SkillTreeService.Instance.GetLevel(node) >= 1) return true;
+        if (service.GetLevel(node) >= 1) return true;
 
         // Check SkillTreeService reveal state
-        if (SkillTreeService.Instance.IsRevealed(node)) return true;
+        if (service.IsRevealed(node)) return true;
 
         // Explicit prereq check: any prerequisite purchased?
         if (node.prereqs != null)
         {
             foreach (string prereqId in node.prereqs)
             {
-                if (SkillTreeService.Instance.IsPurchased(prereqId))
+                if (service.IsPurchased(prereqId))
                 {
                     return true;
                 }
@@ -126,10 +191,11 @@ public class SurvivorsCardSelector : MonoBehaviour
         if (node == null) return false;
 
         bool success = false;
-        if (SkillTreeService.Instance != null)
+        SkillTreeService service = TreeService;
+        if (service != null)
         {
-            success = SkillTreeService.Instance.ApplyFreePurchase(node.id);
-            Debug.Log($"[SurvivorsCardSelector] Selected card: '{node.displayName}' (ID: {node.id}). Granted level {SkillTreeService.Instance.GetLevel(node)}.");
+            success = service.ApplyFreePurchase(node.id);
+            Debug.Log($"[SurvivorsCardSelector] Selected card: '{node.displayName}' (ID: {node.id}). Granted level {service.GetLevel(node)}.");
         }
 
         if (FortDefenseManager.Instance != null)

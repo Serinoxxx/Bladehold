@@ -33,11 +33,21 @@ public class DisableCollidersOnDeath : MonoBehaviour
             return;
         }
 
-        // Cache colliders now; we want them even after they're disabled. Caching at Start also
-        // intentionally excludes the ragdoll bone colliders EnemyRagdoll builds later at runtime —
-        // a corpse flung by a lethal impulse hit must keep those to land with (EnemyRagdoll disables
-        // them itself once the corpse settles). Do not change this to re-query at death time.
-        colliders = GetComponentsInChildren<Collider>(includeInactive: true);
+        // Cache colliders now; we want them even after they're disabled.
+        // Exclude ragdoll bone colliders (which are on the Ragdoll layer and managed by EnemyRagdoll)
+        // so a corpse flung by a lethal impulse hit keeps them to tumble and land with.
+        int ragdollLayer = LayerMask.NameToLayer("Ragdoll");
+        var allColliders = GetComponentsInChildren<Collider>(includeInactive: true);
+        var nonRagdollColliders = new System.Collections.Generic.List<Collider>();
+        foreach (Collider c in allColliders)
+        {
+            if (ragdollLayer >= 0 && c.gameObject.layer == ragdollLayer)
+            {
+                continue;
+            }
+            nonRagdollColliders.Add(c);
+        }
+        colliders = nonRagdollColliders.ToArray();
 
         health.OnDied += HandleDied;
     }

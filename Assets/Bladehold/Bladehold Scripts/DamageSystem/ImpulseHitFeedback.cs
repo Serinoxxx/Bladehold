@@ -83,9 +83,12 @@ public class ImpulseHitFeedback : MonoBehaviour
         }
 
         int particleCount = Mathf.Clamp(Mathf.RoundToInt(Mathf.Lerp(minParticles, maxParticles, factor)), minParticles, maxParticles);
-        ParticleSystem instance = Instantiate(burstPrefab, point, Quaternion.identity);
-        instance.Emit(particleCount);
-        Destroy(instance.gameObject, particleCleanupDelay);
+        ParticleSystem instance = ParticlePool.Get(burstPrefab, point, Quaternion.identity);
+        if (instance != null)
+        {
+            instance.Emit(particleCount);
+            ParticlePool.Release(burstPrefab, instance, particleCleanupDelay);
+        }
     }
 
     private void SpawnPulse(Vector3 point, float factor)

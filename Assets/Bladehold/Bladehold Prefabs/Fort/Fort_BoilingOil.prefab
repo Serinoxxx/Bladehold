@@ -135,14 +135,14 @@ MonoBehaviour:
   detectionRadius: 4
   enemyLayers:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 128
   oilZonePrefab: {fileID: 1847000953338612391, guid: 25ba4fde3159049458eda7f07801b901, type: 3}
   bucketTransform: {fileID: 1212988328744253832}
   tiltAngle: 60
   tiltDuration: 0.4
   baseCooldown: 14
   basePuddleDuration: 6
-  baseDamagePerSecond: 20
+  baseDamagePerSecond: 2
   slowFraction: 0.5
   pourSound: {fileID: 0}
   splashSound: {fileID: 0}

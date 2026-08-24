@@ -13,6 +13,7 @@ namespace Bladehold.UI
         public GameObject characterSelectScreen;
         public GameObject levelSelectScreen;
         public GameObject settingsScreen;
+        public GameObject upgradesScreen;
         public GameObject loadingScreen;
 
         [Header("Loading")]
@@ -37,6 +38,7 @@ namespace Bladehold.UI
             if (characterSelectScreen) characterSelectScreen.SetActive(false);
             if (levelSelectScreen) levelSelectScreen.SetActive(false);
             if (settingsScreen) settingsScreen.SetActive(false);
+            if (upgradesScreen) upgradesScreen.SetActive(false);
             if (loadingScreen) loadingScreen.SetActive(false);
 
             if (screen) screen.SetActive(true);
@@ -60,6 +62,11 @@ namespace Bladehold.UI
         public void OnSettingsClicked()
         {
             ShowScreen(settingsScreen);
+        }
+
+        public void OnUpgradesClicked()
+        {
+            ShowScreen(upgradesScreen);
         }
         
         public void OnBackToTitle()

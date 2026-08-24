@@ -39,6 +39,9 @@ public class Player : MonoBehaviour
     /// </summary>
     public BowAimCamera AimCamera { get; private set; }
 
+    /// <summary>The player's periodic elemental imbuement controller.</summary>
+    public PeriodicImbuementController Imbuements { get; private set; }
+
     private void Awake()
     {
         if (Instance == null)
@@ -50,6 +53,11 @@ public class Player : MonoBehaviour
             Stats = GetComponent<PlayerStats>();
             InputSettings = GetComponent<InputSettingsBinder>();
             AimCamera = GetComponent<BowAimCamera>();
+            Imbuements = GetComponent<PeriodicImbuementController>();
+            if (Imbuements == null)
+            {
+                Imbuements = gameObject.AddComponent<PeriodicImbuementController>();
+            }
         }
         else
         {

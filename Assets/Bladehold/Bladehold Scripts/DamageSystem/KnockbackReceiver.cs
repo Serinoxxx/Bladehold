@@ -174,29 +174,85 @@ public class KnockbackReceiver : MonoBehaviour
 
     private void HandleDied()
     {
-        if (State != KnockbackState.Normal && State != KnockbackState.Sliding)
+        if (State == KnockbackState.Corpse) return;
+
+        if (State == KnockbackState.Airborne)
         {
+            // Already flying in ragdoll; let AirborneRoutine settle it into a corpse
             State = KnockbackState.Corpse;
             return;
         }
 
-        if (!EnemyRagdoll.HasCapacity || !ragdoll.BuildIfNeeded()) return;
+        if (routine != null)
+        {
+            StopCoroutine(routine);
+            routine = null;
+        }
 
         State = KnockbackState.Corpse;
         SetAiEnabled(false);
-        rootCollider.enabled = false;
-        animator.enabled = false;
-        Vector3 flatDir = -transform.forward;
-        if (playerHealth != null)
+        if (rootCollider != null) rootCollider.enabled = false;
+
+        // Try ragdoll on death
+        if (EnemyRagdoll.HasCapacity && ragdoll != null && ragdoll.BuildIfNeeded())
         {
-            flatDir = transform.position - playerHealth.transform.position;
-            flatDir.y = 0f;
-            if (flatDir.sqrMagnitude < 0.0001f) flatDir = -transform.forward;
+            if (animator != null) animator.enabled = false;
+
+            Vector3 flatDir = -transform.forward;
+            if (playerHealth != null)
+            {
+                flatDir = transform.position - playerHealth.transform.position;
+                flatDir.y = 0f;
+                if (flatDir.sqrMagnitude < 0.0001f) flatDir = -transform.forward;
+            }
+            flatDir.Normalize();
+
+            float torque = config != null ? config.spinTorque : 5f;
+            Vector3 tumbleAxis = Vector3.Cross(Vector3.up, flatDir);
+            Vector3 spin = tumbleAxis * torque + Random.insideUnitSphere * (torque * 0.3f);
+
+            // Pop/collapse velocity so death falls naturally instead of freezing
+            Vector3 deathLaunch = flatDir * 1.5f + Vector3.up * 0.8f;
+            ragdoll.EnterRagdoll(deathLaunch, spin, 1.2f);
+            routine = StartCoroutine(CorpseSettleRoutine());
         }
-        flatDir.Normalize();
-        Vector3 tumbleAxis = Vector3.Cross(Vector3.up, flatDir);
-        Vector3 spin = tumbleAxis * config.spinTorque + Random.insideUnitSphere * (config.spinTorque * 0.3f);
-        ragdoll.EnterRagdoll(Vector3.zero, spin);
+        else
+        {
+            // Fallback to animated death
+            if (animator != null)
+            {
+                animator.enabled = true;
+                animator.ResetTrigger("Stagger");
+                animator.ResetTrigger(knockdownTrigger);
+                animator.SetTrigger(Animator.StringToHash("Death"));
+            }
+        }
+    }
+
+    private IEnumerator CorpseSettleRoutine()
+    {
+        float timer = 0f;
+        float settled = 0f;
+        float timeout = config != null ? config.airborneTimeout : 6f;
+        float settleSpd = config != null ? config.settleSpeed : 0.5f;
+        float settleDur = config != null ? config.settleTime : 0.3f;
+
+        while (timer < timeout)
+        {
+            timer += Time.deltaTime;
+            if (ragdoll != null && ragdoll.Pelvis != null)
+            {
+                settled = ragdoll.PelvisSpeed < settleSpd ? settled + Time.deltaTime : 0f;
+                if (settled >= settleDur) break;
+            }
+            yield return null;
+        }
+
+        if (ragdoll != null)
+        {
+            ragdoll.FreezeCorpse();
+        }
+        routine = null;
     }
     
     private IEnumerator SlideRoutine(Damage damage, float force)

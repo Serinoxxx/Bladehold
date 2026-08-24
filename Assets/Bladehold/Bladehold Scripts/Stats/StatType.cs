@@ -261,6 +261,50 @@ public enum StatType
     FortSpikesDamage,
     /// <summary>Fort Spike Barricades damage multiplier against ragdolled enemies (base 5.0).</summary>
     FortSpikesRagdollMultiplier,
+
+    /// <summary>1 = Periodic Fire Imbuement unlocked, 0 = locked.</summary>
+    PeriodicFireUnlocked,
+    /// <summary>Cooldown in seconds between Fire imbuement activations.</summary>
+    PeriodicFireCooldown,
+    /// <summary>Active duration in seconds of Fire imbuement.</summary>
+    PeriodicFireDuration,
+    /// <summary>Bonus fire damage percentage on hit.</summary>
+    PeriodicFireDamagePercent,
+    /// <summary>AoE explosion radius in metres on fire hit.</summary>
+    PeriodicFireExplosionRadius,
+
+    /// <summary>1 = Periodic Ice Imbuement unlocked, 0 = locked.</summary>
+    PeriodicIceUnlocked,
+    /// <summary>Cooldown in seconds between Ice imbuement activations.</summary>
+    PeriodicIceCooldown,
+    /// <summary>Active duration in seconds of Ice imbuement.</summary>
+    PeriodicIceDuration,
+    /// <summary>Slow percentage applied to enemies hit.</summary>
+    PeriodicIceSlowPercent,
+    /// <summary>Chance (0-1) to freeze enemies solid on hit.</summary>
+    PeriodicIceFreezeChance,
+
+    /// <summary>1 = Periodic Lightning Imbuement unlocked, 0 = locked.</summary>
+    PeriodicLightningUnlocked,
+    /// <summary>Cooldown in seconds between Lightning imbuement activations.</summary>
+    PeriodicLightningCooldown,
+    /// <summary>Active duration in seconds of Lightning imbuement.</summary>
+    PeriodicLightningDuration,
+    /// <summary>Attack charge and swing speed multiplier while active.</summary>
+    PeriodicLightningChargeSpeed,
+    /// <summary>Chain lightning bounce count on hit.</summary>
+    PeriodicLightningBounces,
+    /// <summary>Chain lightning damage percentage per bounce.</summary>
+    PeriodicLightningDamagePercent,
+
+    /// <summary>1 = Periodic Impulse Imbuement unlocked, 0 = locked.</summary>
+    PeriodicImpulseUnlocked,
+    /// <summary>Cooldown in seconds between Impulse imbuement activations.</summary>
+    PeriodicImpulseCooldown,
+    /// <summary>Active duration in seconds of Impulse imbuement.</summary>
+    PeriodicImpulseDuration,
+    /// <summary>Massive knockback force applied to enemies hit while active.</summary>
+    PeriodicImpulseKnockbackForce,
 }
 
 /// <summary>

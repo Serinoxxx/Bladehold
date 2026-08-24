@@ -136,4 +136,13 @@ public class SkillNode
     /// <summary>Layout coordinates for the tree UI (column, row); multiplied by spacing by the view.</summary>
     public float x;
     public float y;
+
+    /// <summary>True if this skill is purchasable in the Main Menu Meta-Progression Grid with persistent Gold.</summary>
+    public bool isMeta = true;
+
+    /// <summary>True if this skill can be drafted mid-run upon level up.</summary>
+    public bool isCard = true;
+
+    /// <summary>True if this skill is an active weapon/ability that counts towards the in-run Active Weapon slot limit (max 4).</summary>
+    public bool isActiveWeapon = false;
 }

@@ -15,6 +15,12 @@ public class FortDefenseSocket : MonoBehaviour
     public FortDefense CurrentDefense { get; private set; }
     public bool IsOccupied => CurrentDefense != null;
 
+    private void Awake()
+    {
+        // Clean any leftover child clones
+        ClearAllChildren();
+    }
+
     private void OnEnable()
     {
         if (FortDefenseManager.Instance != null)
@@ -50,11 +56,7 @@ public class FortDefenseSocket : MonoBehaviour
             return null;
         }
 
-        if (CurrentDefense != null)
-        {
-            Destroy(CurrentDefense.gameObject);
-            CurrentDefense = null;
-        }
+        ClearDefense();
 
         GameObject instance = Instantiate(defensePrefab, transform.position, transform.rotation, transform);
         CurrentDefense = instance.GetComponent<FortDefense>();
@@ -67,14 +69,27 @@ public class FortDefenseSocket : MonoBehaviour
     }
 
     /// <summary>
-    ///     Clears and destroys the active occupant on this socket.
+    ///     Clears and destroys the active occupant and any child structures on this socket.
     /// </summary>
     public void ClearDefense()
     {
-        if (CurrentDefense != null)
+        CurrentDefense = null;
+        ClearAllChildren();
+    }
+
+    private void ClearAllChildren()
+    {
+        while (transform.childCount > 0)
         {
-            Destroy(CurrentDefense.gameObject);
-            CurrentDefense = null;
+            Transform child = transform.GetChild(0);
+            if (Application.isPlaying)
+            {
+                Destroy(child.gameObject);
+            }
+            else
+            {
+                DestroyImmediate(child.gameObject);
+            }
         }
     }
 

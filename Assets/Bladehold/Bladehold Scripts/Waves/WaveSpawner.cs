@@ -136,6 +136,7 @@ public class WaveSpawner : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
+            Shader.WarmupAllShaders();
         }
         else
         {

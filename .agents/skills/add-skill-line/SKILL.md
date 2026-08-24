@@ -9,11 +9,16 @@ You are adding nodes to `Assets/Bladehold/Config/SkillTree.csv` (gold tree) or `
 
 ## Ground truth first (do these before writing anything)
 
-1. Read the header row of the target CSV. Do NOT trust AGENTS.md's column list — it has drifted before. The current format is 15 columns:
-   `id,displayName,description,upgradeText,cost,growth,maxLevel,stat,kind,amount,prereqs,x,y,icon,root`
-   If the real header differs from this, the code wins — read the parser doc comment at the top of `Assets/Bladehold/Bladehold Scripts/Upgrades/SkillTreeSO.cs` for current semantics.
-2. Read your chosen exemplar file (table below) end to end before writing the new component.
-3. Grep `Assets/Bladehold/Bladehold Scripts/` before assuming a mechanic/helper doesn't exist — AGENTS.md is a map, not an inventory.
+1. Read the header row of the target CSV. Do NOT trust older docs — the current format is 18 columns:
+   `id,displayName,description,upgradeText,cost,growth,maxLevel,stat,kind,amount,prereqs,x,y,icon,root,isMeta,isCard,isActiveWeapon`
+   Read `SkillTreeSO.cs` for current column definitions.
+2. **MANDATORY HUMAN REQUIREMENT — Skill Placement**:
+   Before adding any new skill, verify with the user (or confirm design intent) how the skill must be configured across the 3 classification flags:
+   - `isMeta` (`1` or `0`): Does this skill appear in the Main Menu Meta-Progression Grid to be purchased permanently with persistent Gold? (Stat modifiers / persistent upgrades).
+   - `isCard` (`1` or `0`): Does this skill appear in the in-run 3-card level-up draft pool? (Resets every run, paid via run XP).
+   - `isActiveWeapon` (`1` or `0`): Is this an active weapon/ability that occupies one of the player's 4 active weapon slots? (e.g., Bow, Axe, Horse, Imbuements, Fort Defenses = `1`; Passives, stat modifiers, Parry, Counterstrike = `0`).
+3. Read your chosen exemplar file (table below) end to end before writing the new component.
+4. Grep `Assets/Bladehold/Bladehold Scripts/` before assuming a mechanic/helper doesn't exist — AGENTS.md is a map, not an inventory.
 
 ## Step 1 — Pick the shape (copy the exemplar, don't improvise)
 

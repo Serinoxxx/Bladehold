@@ -124,6 +124,26 @@ public static class StatDisplay
 
         { StatType.MageIceSlowPercent, new Info("Chill Slow", StatFormat.Percent) },
         { StatType.MageIceSlowDurationSeconds, new Info("Chill Duration", StatFormat.Seconds) },
+
+        { StatType.PeriodicFireCooldown, new Info("Fire Imbuement Cooldown", StatFormat.Seconds) },
+        { StatType.PeriodicFireDuration, new Info("Fire Imbuement Duration", StatFormat.Seconds) },
+        { StatType.PeriodicFireDamagePercent, new Info("Fire Bonus Damage", StatFormat.Percent) },
+        { StatType.PeriodicFireExplosionRadius, new Info("Explosion Radius", StatFormat.Number) },
+
+        { StatType.PeriodicIceCooldown, new Info("Ice Imbuement Cooldown", StatFormat.Seconds) },
+        { StatType.PeriodicIceDuration, new Info("Ice Imbuement Duration", StatFormat.Seconds) },
+        { StatType.PeriodicIceSlowPercent, new Info("Frost Slow", StatFormat.Percent) },
+        { StatType.PeriodicIceFreezeChance, new Info("Freeze Chance", StatFormat.Percent) },
+
+        { StatType.PeriodicLightningCooldown, new Info("Lightning Cooldown", StatFormat.Seconds) },
+        { StatType.PeriodicLightningDuration, new Info("Lightning Duration", StatFormat.Seconds) },
+        { StatType.PeriodicLightningChargeSpeed, new Info("Charge Speed", StatFormat.Multiplier) },
+        { StatType.PeriodicLightningBounces, new Info("Chain Bounces", StatFormat.Integer) },
+        { StatType.PeriodicLightningDamagePercent, new Info("Chain Damage", StatFormat.Percent) },
+
+        { StatType.PeriodicImpulseCooldown, new Info("Impulse Cooldown", StatFormat.Seconds) },
+        { StatType.PeriodicImpulseDuration, new Info("Impulse Duration", StatFormat.Seconds) },
+        { StatType.PeriodicImpulseKnockbackForce, new Info("Impulse Knockback", StatFormat.Number) },
     };
 
     /// <summary>

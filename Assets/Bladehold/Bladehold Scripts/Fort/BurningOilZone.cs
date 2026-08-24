@@ -20,7 +20,16 @@ public class BurningOilZone : MonoBehaviour
 
     private float lifetimeTimer;
     private float tickTimer;
-    private readonly Collider[] hitBuffer = new Collider[32];
+    private readonly Collider[] hitBuffer = new Collider[64];
+
+    private void Awake()
+    {
+        if (enemyLayers == ~0 || enemyLayers == 0)
+        {
+            int mask = LayerMask.GetMask("Enemy");
+            enemyLayers = mask != 0 ? mask : (1 << 7);
+        }
+    }
 
     public void Init(float rad, float dur, float dps, float slow)
     {

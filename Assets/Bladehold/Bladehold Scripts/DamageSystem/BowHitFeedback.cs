@@ -139,11 +139,14 @@ public class BowHitFeedback : MonoBehaviour
         int particleCount = Mathf.Clamp(Mathf.RoundToInt(Mathf.Lerp(minParticles, maxParticles, damageFactor)), minParticles, maxParticles);
 
         // Spray back the way the arrow came, so exit-wound-style bursts read as the shot's doing.
-        ParticleSystem instance = Instantiate(prefab, impact.point, Quaternion.LookRotation(-impact.direction));
-        ParticleSystem.MainModule main = instance.main;
-        main.startSpeedMultiplier = Mathf.Lerp(minSpeedMultiplier, maxSpeedMultiplier, damageFactor);
-        instance.Emit(particleCount);
+        ParticleSystem instance = ParticlePool.Get(prefab, impact.point, Quaternion.LookRotation(-impact.direction));
+        if (instance != null)
+        {
+            ParticleSystem.MainModule main = instance.main;
+            main.startSpeedMultiplier = Mathf.Lerp(minSpeedMultiplier, maxSpeedMultiplier, damageFactor);
+            instance.Emit(particleCount);
 
-        Destroy(instance.gameObject, particleCleanupDelay);
+            ParticlePool.Release(prefab, instance, particleCleanupDelay);
+        }
     }
 }

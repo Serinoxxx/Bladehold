@@ -11,9 +11,20 @@ Use this skill to run rapid, deterministic, in-editor integration tests for Blad
 
 ## Core Rules for In-Editor Testing
 
-1. **Deterministic Setup & Teardown**:
-   - Always clean up test objects immediately with `UnityEngine.Object.DestroyImmediate(obj)` in a `finally` block or at the end of the test.
-   - Never leave test dummies or temporary projectiles in saved scenes.
+1. **Mandatory Scene & Socket Teardown with `DestroyImmediate`**:
+   - **CRITICAL**: Plain `UnityEngine.Object.Destroy(obj)` is a no-op or deferred in Edit Mode! Tests running via `execute_code` **MUST ALWAYS use `UnityEngine.Object.DestroyImmediate(obj)`** to prevent orphan clones from getting saved into scene assets.
+   - For socket-based systems (like `FortDefenseSocket`), always iterate over all sockets in a `finally` block to clear children:
+     ```csharp
+     foreach(var socket in allSockets)
+     {
+         socket.ClearDefense();
+         while (socket.transform.childCount > 0)
+         {
+             UnityEngine.Object.DestroyImmediate(socket.transform.GetChild(0).gameObject);
+         }
+     }
+     ```
+   - Never save a scene (`SaveOpenScenes()`) until all test dummies, projectiles, and test defense instances have been wiped with `DestroyImmediate`.
 
 2. **The `Time.deltaTime` Trap**:
    - In Editor mode (outside of active Play Mode), `Time.deltaTime` evaluates to `0`.

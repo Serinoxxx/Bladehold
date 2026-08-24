@@ -43,6 +43,7 @@ public class SurvivorsCardSelectUI : MonoBehaviour
     private float modalOpenedUnscaledTime;
     private Coroutine enableButtonsCoroutine;
     private Coroutine closeRoutine;
+    private bool hasBanishedThisDraft = false;
 
     private void Awake()
     {
@@ -99,6 +100,8 @@ public class SurvivorsCardSelectUI : MonoBehaviour
         {
             SurvivorsGameManager.Instance.PauseForCardSelection();
         }
+
+        hasBanishedThisDraft = false;
 
         int currentLvl = SurvivorsLevelSystem.Instance != null ? SurvivorsLevelSystem.Instance.CurrentLevel : 1;
         int pending = SurvivorsLevelSystem.Instance != null ? SurvivorsLevelSystem.Instance.PendingDrafts : 1;
@@ -183,7 +186,13 @@ public class SurvivorsCardSelectUI : MonoBehaviour
                     : null;
 
                 int index = i; // Closure capture
-                cardUI.SetData(node, currentLevel, icon, () => OnCardClicked(index));
+                cardUI.SetData(
+                    node,
+                    currentLevel,
+                    icon,
+                    () => OnCardClicked(index),
+                    () => OnCardBanished(index),
+                    canBanish: !hasBanishedThisDraft);
             }
             else
             {
@@ -191,6 +200,32 @@ public class SurvivorsCardSelectUI : MonoBehaviour
                 cardUI.gameObject.SetActive(false);
             }
         }
+    }
+
+    private void OnCardBanished(int cardIndex)
+    {
+        if (hasBanishedThisDraft || cardIndex < 0 || cardIndex >= currentOfferedNodes.Count)
+        {
+            return;
+        }
+
+        SkillNode target = currentOfferedNodes[cardIndex];
+        if (target == null) return;
+
+        hasBanishedThisDraft = true;
+        if (SurvivorsCardSelector.Instance != null)
+        {
+            SurvivorsCardSelector.Instance.BanishCard(target.id);
+            Debug.Log($"[SurvivorsCardSelectUI] Banished skill '{target.displayName}' (ID: {target.id}) for this run.");
+
+            SkillNode replacement = SurvivorsCardSelector.Instance.GetSingleReplacementCard(currentOfferedNodes);
+            if (replacement != null)
+            {
+                currentOfferedNodes[cardIndex] = replacement;
+            }
+        }
+
+        PopulateCards(currentOfferedNodes);
     }
 
     private void OnCardClicked(int cardIndex)

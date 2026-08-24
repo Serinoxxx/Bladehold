@@ -75,6 +75,11 @@ public class Coin : MonoBehaviour
 
         wallet.Add(amount);
 
+        if (SurvivorsLevelSystem.Instance != null)
+        {
+            SurvivorsLevelSystem.Instance.AddXP(amount);
+        }
+
         if (GameStats.Instance != null)
         {
             GameStats.Instance.AddGold(amount);

@@ -17,6 +17,8 @@ public class BloodDecal : MonoBehaviour
 
     public void Init(float totalLifetime, float fadeTime)
     {
+        isEvicting = false;
+        StopAllCoroutines();
         projector = GetComponent<DecalProjector>();
         lifetime = totalLifetime;
         fadeDuration = Mathf.Min(fadeTime, totalLifetime);
@@ -83,7 +85,6 @@ public class BloodDecal : MonoBehaviour
     private void Despawn()
     {
         BloodDecalManager.Unregister(this);
-        Destroy(gameObject);
     }
 
     private void OnDestroy()

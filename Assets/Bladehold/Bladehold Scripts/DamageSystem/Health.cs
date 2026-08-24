@@ -190,7 +190,7 @@ public class Health : MonoBehaviour, IDamageable
 
             currentHealth = 0f;
             IsDead = true;
-            if (deathFeedback != null)
+            if (deathFeedback != null && Application.isPlaying)
             {
                 deathFeedback.PlayFeedbacks();
             }

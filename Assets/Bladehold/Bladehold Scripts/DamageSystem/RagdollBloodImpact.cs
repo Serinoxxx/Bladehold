@@ -10,9 +10,11 @@ public class RagdollBloodImpact : MonoBehaviour
 {
     private EnemyRagdoll ownerRagdoll;
     private RagdollConfigSO config;
-    private RagdollBodyPartType bodyPartType;
+    [SerializeField] private RagdollBodyPartType bodyPartType;
     private AudioClip[] impactSounds;
     private float nextImpactTime;
+
+    public RagdollBodyPartType BodyPartType => bodyPartType;
 
     public void Init(EnemyRagdoll ragdoll, RagdollConfigSO ragdollConfig, RagdollBodyPartType partType, AudioClip[] sounds)
     {
@@ -47,19 +49,21 @@ public class RagdollBloodImpact : MonoBehaviour
         if (config.bloodParticlePrefab != null)
         {
             Quaternion particleRotation = Quaternion.LookRotation(normal);
-            ParticleSystem fx = Instantiate(config.bloodParticlePrefab, point, particleRotation);
+            ParticleSystem fx = ParticlePool.Get(config.bloodParticlePrefab, point, particleRotation);
+            if (fx != null)
+            {
+                // Scale particle system transform & emission speed by body part & speed
+                float fxScale = bodyPartMultiplier * Mathf.Lerp(0.6f, 1.5f, speedFactor);
+                fx.transform.localScale = Vector3.one * fxScale;
 
-            // Scale particle system transform & emission speed by body part & speed
-            float fxScale = bodyPartMultiplier * Mathf.Lerp(0.6f, 1.5f, speedFactor);
-            fx.transform.localScale = Vector3.one * fxScale;
+                ParticleSystem.MainModule main = fx.main;
+                main.startSpeedMultiplier *= Mathf.Lerp(0.8f, 1.8f, speedFactor);
 
-            ParticleSystem.MainModule main = fx.main;
-            main.startSpeedMultiplier *= Mathf.Lerp(0.8f, 1.8f, speedFactor);
+                int particleCount = Mathf.RoundToInt(Mathf.Lerp(5, 30, speedFactor) * bodyPartMultiplier);
+                fx.Emit(particleCount);
 
-            int particleCount = Mathf.RoundToInt(Mathf.Lerp(5, 30, speedFactor) * bodyPartMultiplier);
-            fx.Emit(particleCount);
-
-            Destroy(fx.gameObject, 2.5f);
+                ParticlePool.Release(config.bloodParticlePrefab, fx, 2.5f);
+            }
         }
 
         // 2. Spawn Blood Decal
@@ -95,10 +99,13 @@ public class RagdollBloodImpact : MonoBehaviour
         if (config != null && config.bloodParticlePrefab != null)
         {
             Quaternion particleRotation = Quaternion.LookRotation(normal);
-            ParticleSystem fx = Instantiate(config.bloodParticlePrefab, point, particleRotation);
-            fx.transform.localScale = Vector3.one * 1.2f;
-            fx.Emit(20);
-            Destroy(fx.gameObject, 2.5f);
+            ParticleSystem fx = ParticlePool.Get(config.bloodParticlePrefab, point, particleRotation);
+            if (fx != null)
+            {
+                fx.transform.localScale = Vector3.one * 1.2f;
+                fx.Emit(20);
+                ParticlePool.Release(config.bloodParticlePrefab, fx, 2.5f);
+            }
         }
         if (config != null)
         {

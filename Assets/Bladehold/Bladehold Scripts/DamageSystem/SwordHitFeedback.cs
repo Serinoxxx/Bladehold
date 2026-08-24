@@ -124,11 +124,14 @@ public class SwordHitFeedback : MonoBehaviour
         float damageFactor = damageForMaxParticles > 0f ? Mathf.Clamp01(damageValue / damageForMaxParticles) : 1f;
         int particleCount = Mathf.Clamp(Mathf.RoundToInt(Mathf.Lerp(minParticles, maxParticles, damageFactor)), minParticles, maxParticles);
 
-        ParticleSystem instance = Instantiate(prefab, point, Quaternion.identity);
-        ParticleSystem.MainModule main = instance.main;
-        main.startSpeedMultiplier = Mathf.Lerp(minSpeedMultiplier, maxSpeedMultiplier, damageFactor);
-        instance.Emit(particleCount);
+        ParticleSystem instance = ParticlePool.Get(prefab, point, Quaternion.identity);
+        if (instance != null)
+        {
+            ParticleSystem.MainModule main = instance.main;
+            main.startSpeedMultiplier = Mathf.Lerp(minSpeedMultiplier, maxSpeedMultiplier, damageFactor);
+            instance.Emit(particleCount);
 
-        Destroy(instance.gameObject, particleCleanupDelay);
+            ParticlePool.Release(prefab, instance, particleCleanupDelay);
+        }
     }
 }

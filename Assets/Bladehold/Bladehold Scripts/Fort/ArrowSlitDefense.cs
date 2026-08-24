@@ -10,8 +10,8 @@ using UnityEngine;
 public class ArrowSlitDefense : FortDefense
 {
     [Header("Targeting & Range")]
-    [SerializeField] private float range = 25f;
-    [SerializeField] private float maxTargetAngle = 120f;
+    [SerializeField] private float range = 35f;
+    [SerializeField] private float maxTargetAngle = 150f;
     [SerializeField] private LayerMask enemyLayers = ~0;
 
     [Header("Firing Specs")]
@@ -27,7 +27,7 @@ public class ArrowSlitDefense : FortDefense
     [SerializeField] private MMF_Player shootFeedback;
 
     private float fireTimer;
-    private readonly Collider[] targetBuffer = new Collider[32];
+    private readonly Collider[] targetBuffer = new Collider[128];
 
     private void Awake()
     {
@@ -35,6 +35,12 @@ public class ArrowSlitDefense : FortDefense
         if (firePoint == null)
         {
             firePoint = transform;
+        }
+
+        if (enemyLayers == ~0 || enemyLayers == 0)
+        {
+            int mask = LayerMask.GetMask("Enemy");
+            enemyLayers = mask != 0 ? mask : (1 << 7);
         }
     }
 
@@ -76,11 +82,22 @@ public class ArrowSlitDefense : FortDefense
 
     private Health FindBestTarget()
     {
-        Vector3 origin = firePoint.position;
-        int hitCount = Physics.OverlapSphereNonAlloc(origin, range, targetBuffer, enemyLayers, QueryTriggerInteraction.Ignore);
+        Transform fp = (firePoint != null && firePoint) ? firePoint : transform;
+        Vector3 origin = fp.position;
+
+        int mask = enemyLayers.value;
+        if (mask == ~0 || mask == 0)
+        {
+            mask = LayerMask.GetMask("Enemy");
+            if (mask == 0) mask = 1 << 7;
+        }
+
+        int hitCount = Physics.OverlapSphereNonAlloc(origin, range, targetBuffer, mask, QueryTriggerInteraction.Collide);
 
         Health bestTarget = null;
         float closestDistSqr = float.MaxValue;
+
+        Vector3 forwardXZ = new Vector3(transform.forward.x, 0f, transform.forward.z).normalized;
 
         for (int i = 0; i < hitCount; i++)
         {
@@ -96,9 +113,12 @@ public class ArrowSlitDefense : FortDefense
             Vector3 toTarget = h.transform.position - origin;
             float distSqr = toTarget.sqrMagnitude;
 
-            // Angle check relative to slit forward
-            Vector3 dir = toTarget.normalized;
-            if (Vector3.Angle(transform.forward, dir) > maxTargetAngle * 0.5f) continue;
+            // Horizontal (yaw) angle check relative to wall slit forward facing
+            Vector3 toTargetXZ = new Vector3(toTarget.x, 0f, toTarget.z).normalized;
+            if (toTargetXZ != Vector3.zero && forwardXZ != Vector3.zero)
+            {
+                if (Vector3.Angle(forwardXZ, toTargetXZ) > maxTargetAngle * 0.5f) continue;
+            }
 
             if (distSqr < closestDistSqr)
             {
