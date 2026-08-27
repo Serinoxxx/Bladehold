@@ -9,6 +9,16 @@ public class SkillTreeIconsSO : ScriptableObject
 
     [System.NonSerialized] private Dictionary<string, Sprite> iconsByName;
 
+    private void OnEnable()
+    {
+        iconsByName = null;
+    }
+
+    public void Reload()
+    {
+        iconsByName = null;
+    }
+
     public Sprite GetIcon(string iconName)
     {
         if (string.IsNullOrEmpty(iconName))

@@ -140,6 +140,7 @@ public class SurvivorsCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             if (icon != null)
             {
                 iconImage.sprite = icon;
+                iconImage.color = new Color(0.24f, 0.17f, 0.11f, 1f);
                 iconImage.gameObject.SetActive(true);
             }
             else

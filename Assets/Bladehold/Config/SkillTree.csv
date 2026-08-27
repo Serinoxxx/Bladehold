@@ -1,54 +1,54 @@
 id,displayName,description,upgradeText,cost,growth,maxLevel,stat,kind,amount,prereqs,x,y,icon,root,isMeta,isCard,isActiveWeapon
-sword_dmg,Sharpened Edge,Increase sword damage,Sharpen the blade further,15,1.4,10,SwordDamage,Flat,1|2|3|4|5|6|7|8|9|10,bow_unlock;butter;hp_1;knock_1;plunder;dodge;ult_unlock;horse_unlock;fort_arrow_slit,22.5,9.5,AttackDoubleSword_1_nobg,1,1,1,0
-range_ext,Extended Blade,Increase sword range,Extend the blade further,21,1.45,4,SwordRange,Percent,0.05,butter;charge_unlock;solid,24.5,9,Warriorskill_41_nobg,,1,1,0
-butter,Like Butter,Sword cuts through more enemies,Cut through one more enemy,50,2,8,MaxHitsPerSwing,Flat,1,medpack;range_ext;sword_dmg,23.5,8,Warriorskill_21_nobg,,1,1,0
-move_1,Fleet Footed,Increase move speed,Increase move speed further,24,2,3,MoveSpeed,Percent,0.05,plunder;vamp,22.5,6,Aura_Speed_nb,,1,1,0
-crit_1,Keen Eye,Increase critical strike chance,,45,1,2,CritChance,Flat,0.05,critdmg;plunder;vamp,23.5,7,Critical_strike_nobg,,1,1,0
-critdmg,Critical Damage,Increase critical strike damage,Increase critical strike damage further,60,2,3,CritMultiplier,Percent,0.25,crit_1,24.5,7,Critical_strike3_nobg,,1,1,0
-charge_unlock,Heavy Strike,Increase attack charge power levels,+1 max charge level,90,1.44,4,MaxChargeLevels;ChargeDamageBonus,Flat;Flat,1;0.5|0|0|0,range_ext,25.5,9,Holy_power_nobg,,1,1,0
-knock_1,Brute Force,Knockback enemies on hit,,60,1,1,KnockbackForce,Flat,8,knock_2;sword_dmg,20.5,8,heavy_blow_nobg,,1,1,0
-knock_2,Stronger Blows,Increase knockback force,Increase knockback force further,27,1.57,4,KnockbackForce,Flat,4|4|6|8,knock_1,19.5,8,Push_nobg,,1,1,0
-vamp,Vampiric Blade,Heal a percentage of the damage you deal,Heal more of the damage you deal,45,1.55,5,LifeStealPercent,Flat,0.01,crit_1;move_1,23.5,6,vampire_nobg,,1,1,0
-plunder,Plunder,Increase gold gained from enemies,Increase gold gained further,36,1.85,5,GoldDropMultiplier,Percent,0.25,alldmg;crit_1;move_1;sword_dmg,22.5,8,GoldCoinTen,,1,1,0
-solid,Solid,Periodically block 1 damage source,Reduce the block cooldown by 1s,60,1.46,5,BlockCooldown,Flat,10|-1|-1|-1|-1,parry;range_ext,25.5,8,Skill_SwordBlock_nb,,1,1,0
-alldmg,Raw Power,Increase all damage,Increase all damage further,180,1.47,6,AllDamageMultiplier,Percent,0.1,plunder,21.5,7,IncreaseStrength_4_nobg,,1,1,0
-bow_unlock,Bow,Unlock the bow: hold aim to draw and fire arrows,,60,1,1,BowUnlocked,Flat,1,multishot;pickuparrow_1;sword_dmg,22.5,13,bow_shot1_nobg,1,0,1,1
-multishot,Multi Shot,Fire an additional arrow with reduced damage,Fire one more additional arrow,75,1.4,7,BowMultishotArrows,Flat,1,bow_unlock;precision;swiftarrow,23.5,13,Skill_MultiArrowShoot_nb,,1,1,0
-swiftarrow,Swift Arrows,Arrows fly faster and drop less over distance,Increase arrow speed further,75,1.4,5,BowArrowSpeed,Percent,0.2,multishot;flamearrow,24.5,13,Archerskill_01_nobg,,1,1,0
-multidmg,Heavy Arrows,Increase additional arrow damage proportional to main arrow,Increase additional arrow damage further,90,1.35,6,BowMultishotDamagePercent,Percent,0.05,freezedraw,21.5,15,Archerskill_12,,1,1,0
-bounce,Bounce Shot,Chance for arrows to bounce to additional enemies,Increase bounce chance,90,1.47,5,BowBounceChance,Flat,0.05,brainfreeze;icebreaker,22.5,16,Skill_321_magicarrows,,1,1,0
-precision,Precision Shot,Increase vulnerable hit damage,Increase vulnerable hit damage further,75,1.4,7,BowPrecisionDamageBonus,Percent,0.1,flamearrow;multishot;pickuparrow_1;explodeheads,23.5,14,Archerskill_50_goodaim,,1,1,0
-pickuparrow_1,Retriever,Arrows collect gold and power-ups they fly past,,135,1,1,BowPickupArrows,Flat,1,bow_unlock;freezedraw;precision,22.5,14,Skill_324_magicarrow,,1,1,0
-explodeheads,Exploding Heads,Headshots detonate an impulse blast,Increase headshot impulse blast damage,105,1.46,4,ExplodingHeadsDamagePercent,Flat,0.05,bow_dmg;precision,23.5,15,Death_nobg,,1,1,0
-midas,Arrows of Midas,Arrows have a chance to turn an enemy golden,Increase the chance to turn an enemy golden,90,1.47,5,MidasChance,Flat,0.05,freezedraw,20.5,15,Skill_Money,,1,1,0
-freezedraw,Freezing Draw,Nearby enemies are slowed while you draw your bow,Increase the slow while drawing,60,1.31,8,FreezingDrawSlowPercent,Flat,0.1,midas;multidmg;pickuparrow_1,21.5,14,Skill_DeepFrost_nb,,1,1,0
-brainfreeze,Brain Freeze,Headshots slow enemy movement and attacks,Increase the headshot slow,75,1.47,5,BrainFreezeSlowPercent,Flat,0.15,bounce;elongfreeze,23.5,16,Skill_ColdEmbrace_nb,,1,1,0
-elongfreeze,Elongated Freeze,Enemies slowed by Freezing Draw or Brain Freeze stay slowed longer,Slowed enemies stay slowed even longer,90,1.41,5,SlowDurationBonusSeconds,Flat,2|1|1|1|1,brainfreeze,23.5,17,Skill_DeepFreeze,,1,1,0
-icebreaker,Ice Breaker,Your sword deals more damage to chilled enemies,Deal even more damage to chilled enemies,105,1.53,4,IceBreakerDamageBonus,Flat,0.5,bounce,21.5,16,Skill_IcePunch_nb,,1,1,0
-parry,Parry,Chance to parry melee damage when facing your attacker,Increase parry chance,60,1.5,5,ParryChance,Flat,0.05,counter;solid,25.5,7,Paladinskill_43_dodge,,1,1,0
-counter,Counterstrike,Increase parry damage,Increase parry damage further,90,1.65,4,CounterstrikePercent,Flat,0.25|0.25|0.5|1,parry,25.5,6,Skill_Parry_nb,,1,1,0
-flamearrow,Flaming Arrows,Arrows deal fire damage and have a chance to instantly explode Bombers,Increase the chance to explode Bombers,90,1.47,5,FlamingArrowsDamagePercent;FlamingArrowsBomberDetonateChance,Flat;Flat,0.25|0|0|0|0;0.1,precision;bow_dmg,24.5,14,Big_fire_arrow_nobg,,1,1,0
-medpack,Field Medic,Increase Health Pack heal amount,Increase Health Pack heal amount further,60,1.46,6,HealthPackHealPercent,Flat,0.05,butter,24.5,8,skill_134_heal,,1,1,0
-horse_unlock,Summon Mount,Summon a mount on demand to ride into battle. Press X to summon.,,150,1,1,SummonMountUnlocked,Flat,1,horse_speed;horse_health;sword_dmg,24.5,10,Warriorskill_43_nobg,1,0,1,1
-horse_health,Barded Steed,Increase your horse's max health,Increase your horse's max health further,60,1.4,5,HorseMaxHealthMultiplier,Percent,0.2,horse_unlock;horse_heal,24.5,11,Creatures_10_warhorse,,1,1,0
-horse_speed,Thoroughbred,Increase your horse's speed,Increase your horse's speed further,60,1.4,5,HorseSpeedMultiplier,Percent,0.1,horse_unlock;horse_archery,25.5,10,Skill_HorseAcceleration_nb,,1,1,0
-horse_heal,Stable Diet,Health Packs your horse runs over also heal the horse,,90,1,1,HorseHealFromPacks,Flat,1,horse_health,24.5,12,Carrot,,1,1,0
-horse_archery,Horse Archer,Use your bow while mounted,,120,1,1,HorseArcheryUnlocked,Flat,1,horse_speed,25.5,11,Crossbowman_nb,,1,1,0
-hp_1,Vitality,Increase max health,Increase max health further,45,1.5,5,PlayerMaxHealthMultiplier,Percent,0.1,hp_2;sword_dmg,23.5,11,Skill_Heal,,1,1,0
-hp_2,Vigor,Greatly increase max health,Greatly increase max health further,75,1.6,3,PlayerMaxHealthMultiplier,Percent,0.25,hp_1,23.5,12,IncreaseStrength_2_nobg,,1,1,0
-bow_dmg,Stronger String,Increase bow damage,Increase bow damage further,45,1.5,5,BowDamage,Flat,1|2|3|4|5,flamearrow;explodeheads,24.5,15,Archerskill_44_nobg,,1,1,0
-ult_unlock,Arrow Stream,Unleash an insanely fast stream of high-knockback arrows while locking out your sword. Press Q/Y to activate at 100% charge.,,300,1,1,UltimateUnlocked,Flat,1,ult_dur;ult_rate;ult_charge;sword_dmg,20.5,12,Archerskill_02_nobg,1,0,1,1
-ult_dur,Enduring Stream,Increase ultimate duration,Increase ultimate duration further,150,1.5,5,UltimateDurationSeconds,Flat,1,ult_unlock,19.5,11,Skill_418_fastmove,,1,1,0
-ult_rate,Rapid Stream,Increase ultimate arrow fire rate,Increase ultimate fire rate further,200,1.6,4,UltimateRangerFireRate,Flat,-0.005,ult_unlock,18.5,12,Archerskill_07_nobg,,1,1,0
-ult_charge,Quick Charge,Build ultimate charge faster,Build ultimate charge even faster,120,1.4,5,UltimateChargeMultiplier,Percent,0.2,ult_unlock,19.5,13,Lightning_nobg,,1,1,0
-dodge,Quick Step,Unlock a quick dash forward. Press Ctrl to activate.,,60,1,1,DodgeUnlocked,Flat,1,dodge_damage;dodge_cooldown;sword_dmg,20.5,9.5,Warriorskill_23_nobg,1,0,1,1
-dodge_cooldown,Nimble,Reduce Dodge cooldown,Reduce Dodge cooldown further,45,1.3,4,DodgeCooldown,Flat,-1,dodge,20.5,10.5,skill_52_dodge,,1,1,0
-dodge_damage,Phasing Strike,Dashing through enemies deals damage,Increase damage dealt by dodging through enemies,60,1.4,4,DodgeDamageMultiplier,Flat,0.25,dodge;dodge_chain,19.5,9.5,Warriorskill_44_nobg,,1,1,0
-dodge_chain,Relentless Momentum,Killing an enemy with Dodge reduces its cooldown by 1s,,90,1,1,DodgeChainCooldownReduction,Flat,1,dodge_damage,18.5,9.5,Assassinskill_26_nobg,,1,1,0
-fort_arrow_slit,Arrow Slits,Fortress wall slits automatically fire arrows at approaching enemies,Faster firing & sharper arrows,40,1.4,4,FortArrowSlitsUnlocked;FortArrowSlitsDamage;FortArrowSlitsFireRate,Flat;Flat;Percent,1;8;0.15,fort_burning_oil;fort_spikes;sword_dmg,21.5,10.5,Archerskill_18,1,0,1,1
-fort_burning_oil,Boiling Oil,A cauldron of boiling pitch mounted above the gate dumps flaming oil on enemy swarms,Wider oil puddle & higher burn damage,60,1.5,3,FortBurningOilUnlocked;FortBurningOilDamage,Flat;Flat,1;15,fort_arrow_slit,21.5,11.5,Mageskill_31_oil,,0,1,1
-fort_spikes,Spike Barricades,Ground spike barricades impale enemies dealing 5x damage to ragdolled foes,Sharper spikes & wider coverage,50,1.4,4,FortSpikesUnlocked;FortSpikesDamage,Flat;Flat,1;10,fort_arrow_slit,20.5,10.5,Skill_PickaxeDig_nb,1,0,1,1
-imbue_fire,Flame Imbuement,Periodic Fire Imbuement: weapon ignites dealing AoE explosions,Ignite more often with larger explosions,80,1.5,5,PeriodicFireUnlocked;PeriodicFireDamagePercent;PeriodicFireExplosionRadius;PeriodicFireCooldown;PeriodicFireDuration,Flat;Flat;Flat;Flat;Flat,1;0.35|0.45|0.55|0.65|0.75;4|4.5|5|5.5|6;-2|-1|-1|-1|0;0|0|1|1|2,sword_dmg,26.5,10,Mageskill_14_firesword,,1,1,1
-imbue_ice,Frost Imbuement,Periodic Ice Imbuement: weapon freezes dealing slowing chill & freeze chance,Freeze more often with deeper chill,80,1.5,5,PeriodicIceUnlocked;PeriodicIceSlowPercent;PeriodicIceFreezeChance;PeriodicIceCooldown;PeriodicIceDuration,Flat;Flat;Flat;Flat;Flat,1;0.5|0.6|0.7|0.8|0.9;0.25|0.3|0.35|0.4|0.5;-2|-1|-1|-1|0;0|0|1|1|2,sword_dmg,26.5,8,Ice_block_nobg,,1,1,1
-imbue_lightning,Storm Imbuement,Periodic Lightning Imbuement: faster attacks & chain lightning on hit,Surge more often with more chain bounces,80,1.5,5,PeriodicLightningUnlocked;PeriodicLightningChargeSpeed;PeriodicLightningBounces;PeriodicLightningDamagePercent;PeriodicLightningCooldown,Flat;Flat;Flat;Flat;Flat,1;0.25|0.35|0.45|0.55|0.65;2|3|4|5|6;0.5|0.6|0.7|0.8|0.9;-2|-1|-1|-1|0,sword_dmg,28.5,9,Shamanskill_25_lightning,,1,1,1
-imbue_impulse,Impulse Imbuement,Periodic Impulse Imbuement: hits blast enemies with massive kinetic fling,Fling more often with higher kinetic force,80,1.5,5,PeriodicImpulseUnlocked;PeriodicImpulseKnockbackForce;PeriodicImpulseCooldown;PeriodicImpulseDuration,Flat;Flat;Flat;Flat,1;25|30|35|40|50;-2|-1|-1|-1|0;0|0|1|1|2,sword_dmg,20.5,7,Aura_MagicalExplosion_nb,,1,1,1
+sword_dmg,Sharpened Edge,Increase sword damage,Sharpen the blade further,15,1.4,10,SwordDamage,Flat,1|2|3|4|5|6|7|8|9|10,bow_unlock;butter;hp_1;knock_1;plunder;dodge;ult_unlock;horse_unlock;fort_arrow_slit,22.5,9.5,sword_dmg,1,1,1,0
+range_ext,Extended Blade,Increase sword range,Extend the blade further,21,1.45,4,SwordRange,Percent,0.05,butter;charge_unlock;solid,24.5,9,range_ext,,1,1,0
+butter,Like Butter,Sword cuts through more enemies,Cut through one more enemy,50,2,8,MaxHitsPerSwing,Flat,1,medpack;range_ext;sword_dmg,23.5,8,butter,,1,1,0
+move_1,Fleet Footed,Increase move speed,Increase move speed further,24,2,3,MoveSpeed,Percent,0.05,plunder;vamp,22.5,6,move_1,,1,1,0
+crit_1,Keen Eye,Increase critical strike chance,,45,1,2,CritChance,Flat,0.05,critdmg;plunder;vamp,23.5,7,crit_1,,1,1,0
+critdmg,Critical Damage,Increase critical strike damage,Increase critical strike damage further,60,2,3,CritMultiplier,Percent,0.25,crit_1,24.5,7,critdmg,,1,1,0
+charge_unlock,Heavy Strike,Increase attack charge power levels,+1 max charge level,90,1.44,4,MaxChargeLevels;ChargeDamageBonus,Flat;Flat,1;0.5|0|0|0,range_ext,25.5,9,charge_unlock,,1,1,0
+knock_1,Brute Force,Knockback enemies on hit,,60,1,1,KnockbackForce,Flat,8,knock_2;sword_dmg,20.5,8,knock_1,,1,1,0
+knock_2,Stronger Blows,Increase knockback force,Increase knockback force further,27,1.57,4,KnockbackForce,Flat,4|4|6|8,knock_1,19.5,8,knock_2,,1,1,0
+vamp,Vampiric Blade,Heal a percentage of the damage you deal,Heal more of the damage you deal,45,1.55,5,LifeStealPercent,Flat,0.01,crit_1;move_1,23.5,6,vamp,,1,1,0
+plunder,Plunder,Increase gold gained from enemies,Increase gold gained further,36,1.85,5,GoldDropMultiplier,Percent,0.25,alldmg;crit_1;move_1;sword_dmg,22.5,8,plunder,,1,1,0
+solid,Solid,Periodically block 1 damage source,Reduce the block cooldown by 1s,60,1.46,5,BlockCooldown,Flat,10|-1|-1|-1|-1,parry;range_ext,25.5,8,solid,,1,1,0
+alldmg,Raw Power,Increase all damage,Increase all damage further,180,1.47,6,AllDamageMultiplier,Percent,0.1,plunder,21.5,7,alldmg,,1,1,0
+bow_unlock,Bow,Unlock the bow: hold aim to draw and fire arrows,,60,1,1,BowUnlocked,Flat,1,multishot;pickuparrow_1;sword_dmg,22.5,13,bow_unlock,1,0,1,1
+multishot,Multi Shot,Fire an additional arrow with reduced damage,Fire one more additional arrow,75,1.4,7,BowMultishotArrows,Flat,1,bow_unlock;precision;swiftarrow,23.5,13,multishot,,1,1,0
+swiftarrow,Swift Arrows,Arrows fly faster and drop less over distance,Increase arrow speed further,75,1.4,5,BowArrowSpeed,Percent,0.2,multishot;flamearrow,24.5,13,swiftarrow,,1,1,0
+multidmg,Heavy Arrows,Increase additional arrow damage proportional to main arrow,Increase additional arrow damage further,90,1.35,6,BowMultishotDamagePercent,Percent,0.05,freezedraw,21.5,15,multidmg,,1,1,0
+bounce,Bounce Shot,Chance for arrows to bounce to additional enemies,Increase bounce chance,90,1.47,5,BowBounceChance,Flat,0.05,brainfreeze;icebreaker,22.5,16,bounce,,1,1,0
+precision,Precision Shot,Increase vulnerable hit damage,Increase vulnerable hit damage further,75,1.4,7,BowPrecisionDamageBonus,Percent,0.1,flamearrow;multishot;pickuparrow_1;explodeheads,23.5,14,precision,,1,1,0
+pickuparrow_1,Retriever,Arrows collect gold and power-ups they fly past,,135,1,1,BowPickupArrows,Flat,1,bow_unlock;freezedraw;precision,22.5,14,pickuparrow_1,,1,1,0
+explodeheads,Exploding Heads,Headshots detonate an impulse blast,Increase headshot impulse blast damage,105,1.46,4,ExplodingHeadsDamagePercent,Flat,0.05,bow_dmg;precision,23.5,15,explodeheads,,1,1,0
+midas,Arrows of Midas,Arrows have a chance to turn an enemy golden,Increase the chance to turn an enemy golden,90,1.47,5,MidasChance,Flat,0.05,freezedraw,20.5,15,midas,,1,1,0
+freezedraw,Freezing Draw,Nearby enemies are slowed while you draw your bow,Increase the slow while drawing,60,1.31,8,FreezingDrawSlowPercent,Flat,0.1,midas;multidmg;pickuparrow_1,21.5,14,freezedraw,,1,1,0
+brainfreeze,Brain Freeze,Headshots slow enemy movement and attacks,Increase the headshot slow,75,1.47,5,BrainFreezeSlowPercent,Flat,0.15,bounce;elongfreeze,23.5,16,brainfreeze,,1,1,0
+elongfreeze,Elongated Freeze,Enemies slowed by Freezing Draw or Brain Freeze stay slowed longer,Slowed enemies stay slowed even longer,90,1.41,5,SlowDurationBonusSeconds,Flat,2|1|1|1|1,brainfreeze,23.5,17,elongfreeze,,1,1,0
+icebreaker,Ice Breaker,Your sword deals more damage to chilled enemies,Deal even more damage to chilled enemies,105,1.53,4,IceBreakerDamageBonus,Flat,0.5,bounce,21.5,16,icebreaker,,1,1,0
+parry,Parry,Chance to parry melee damage when facing your attacker,Increase parry chance,60,1.5,5,ParryChance,Flat,0.05,counter;solid,25.5,7,parry,,1,1,0
+counter,Counterstrike,Increase parry damage,Increase parry damage further,90,1.65,4,CounterstrikePercent,Flat,0.25|0.25|0.5|1,parry,25.5,6,counter,,1,1,0
+flamearrow,Flaming Arrows,Arrows deal fire damage and have a chance to instantly explode Bombers,Increase the chance to explode Bombers,90,1.47,5,FlamingArrowsDamagePercent;FlamingArrowsBomberDetonateChance,Flat;Flat,0.25|0|0|0|0;0.1,precision;bow_dmg,24.5,14,flamearrow,,1,1,0
+medpack,Field Medic,Increase Health Pack heal amount,Increase Health Pack heal amount further,60,1.46,6,HealthPackHealPercent,Flat,0.05,butter,24.5,8,medpack,,1,1,0
+horse_unlock,Summon Mount,Summon a mount on demand to ride into battle. Press X to summon.,,150,1,1,SummonMountUnlocked,Flat,1,horse_speed;horse_health;sword_dmg,24.5,10,horse_unlock,1,0,1,1
+horse_health,Barded Steed,Increase your horse's max health,Increase your horse's max health further,60,1.4,5,HorseMaxHealthMultiplier,Percent,0.2,horse_unlock;horse_heal,24.5,11,horse_health,,1,1,0
+horse_speed,Thoroughbred,Increase your horse's speed,Increase your horse's speed further,60,1.4,5,HorseSpeedMultiplier,Percent,0.1,horse_unlock;horse_archery,25.5,10,horse_speed,,1,1,0
+horse_heal,Stable Diet,Health Packs your horse runs over also heal the horse,,90,1,1,HorseHealFromPacks,Flat,1,horse_health,24.5,12,horse_heal,,1,1,0
+horse_archery,Horse Archer,Use your bow while mounted,,120,1,1,HorseArcheryUnlocked,Flat,1,horse_speed,25.5,11,horse_archery,,1,1,0
+hp_1,Vitality,Increase max health,Increase max health further,45,1.5,5,PlayerMaxHealthMultiplier,Percent,0.1,hp_2;sword_dmg,23.5,11,hp_1,,1,1,0
+hp_2,Vigor,Greatly increase max health,Greatly increase max health further,75,1.6,3,PlayerMaxHealthMultiplier,Percent,0.25,hp_1,23.5,12,hp_2,,1,1,0
+bow_dmg,Stronger String,Increase bow damage,Increase bow damage further,45,1.5,5,BowDamage,Flat,1|2|3|4|5,flamearrow;explodeheads,24.5,15,bow_dmg,,1,1,0
+ult_unlock,Arrow Stream,Unleash an insanely fast stream of high-knockback arrows while locking out your sword. Press Q/Y to activate at 100% charge.,,300,1,1,UltimateUnlocked,Flat,1,ult_dur;ult_rate;ult_charge;sword_dmg,20.5,12,ult_unlock,1,0,1,1
+ult_dur,Enduring Stream,Increase ultimate duration,Increase ultimate duration further,150,1.5,5,UltimateDurationSeconds,Flat,1,ult_unlock,19.5,11,ult_dur,,1,1,0
+ult_rate,Rapid Stream,Increase ultimate arrow fire rate,Increase ultimate fire rate further,200,1.6,4,UltimateRangerFireRate,Flat,-0.005,ult_unlock,18.5,12,ult_rate,,1,1,0
+ult_charge,Quick Charge,Build ultimate charge faster,Build ultimate charge even faster,120,1.4,5,UltimateChargeMultiplier,Percent,0.2,ult_unlock,19.5,13,ult_charge,,1,1,0
+dodge,Quick Step,Unlock a quick dash forward. Press Ctrl to activate.,,60,1,1,DodgeUnlocked,Flat,1,dodge_damage;dodge_cooldown;sword_dmg,20.5,9.5,dodge,1,0,1,1
+dodge_cooldown,Nimble,Reduce Dodge cooldown,Reduce Dodge cooldown further,45,1.3,4,DodgeCooldown,Flat,-1,dodge,20.5,10.5,dodge_cooldown,,1,1,0
+dodge_damage,Phasing Strike,Dashing through enemies deals damage,Increase damage dealt by dodging through enemies,60,1.4,4,DodgeDamageMultiplier,Flat,0.25,dodge;dodge_chain,19.5,9.5,dodge_damage,,1,1,0
+dodge_chain,Relentless Momentum,Killing an enemy with Dodge reduces its cooldown by 1s,,90,1,1,DodgeChainCooldownReduction,Flat,1,dodge_damage,18.5,9.5,dodge_chain,,1,1,0
+fort_arrow_slit,Arrow Slits,Fortress wall slits automatically fire arrows at approaching enemies,Faster firing & sharper arrows,40,1.4,4,FortArrowSlitsUnlocked;FortArrowSlitsDamage;FortArrowSlitsFireRate,Flat;Flat;Percent,1;8;0.15,fort_burning_oil;fort_spikes;sword_dmg,21.5,10.5,fort_arrow_slit,1,0,1,1
+fort_burning_oil,Boiling Oil,A cauldron of boiling pitch mounted above the gate dumps flaming oil on enemy swarms,Wider oil puddle & higher burn damage,60,1.5,3,FortBurningOilUnlocked;FortBurningOilDamage,Flat;Flat,1;15,fort_arrow_slit,21.5,11.5,fort_burning_oil,,0,1,1
+fort_spikes,Spike Barricades,Ground spike barricades impale enemies dealing 5x damage to ragdolled foes,Sharper spikes & wider coverage,50,1.4,4,FortSpikesUnlocked;FortSpikesDamage,Flat;Flat,1;10,fort_arrow_slit,20.5,10.5,fort_spikes,1,0,1,1
+imbue_fire,Flame Imbuement,Periodic Fire Imbuement: weapon ignites dealing AoE explosions,Ignite more often with larger explosions,80,1.5,5,PeriodicFireUnlocked;PeriodicFireDamagePercent;PeriodicFireExplosionRadius;PeriodicFireCooldown;PeriodicFireDuration,Flat;Flat;Flat;Flat;Flat,1;0.35|0.45|0.55|0.65|0.75;4|4.5|5|5.5|6;-2|-1|-1|-1|0;0|0|1|1|2,sword_dmg,26.5,10,imbue_fire,,1,1,1
+imbue_ice,Frost Imbuement,Periodic Ice Imbuement: weapon freezes dealing slowing chill & freeze chance,Freeze more often with deeper chill,80,1.5,5,PeriodicIceUnlocked;PeriodicIceSlowPercent;PeriodicIceFreezeChance;PeriodicIceCooldown;PeriodicIceDuration,Flat;Flat;Flat;Flat;Flat,1;0.5|0.6|0.7|0.8|0.9;0.25|0.3|0.35|0.4|0.5;-2|-1|-1|-1|0;0|0|1|1|2,sword_dmg,26.5,8,imbue_ice,,1,1,1
+imbue_lightning,Storm Imbuement,Periodic Lightning Imbuement: faster attacks & chain lightning on hit,Surge more often with more chain bounces,80,1.5,5,PeriodicLightningUnlocked;PeriodicLightningChargeSpeed;PeriodicLightningBounces;PeriodicLightningDamagePercent;PeriodicLightningCooldown,Flat;Flat;Flat;Flat;Flat,1;0.25|0.35|0.45|0.55|0.65;2|3|4|5|6;0.5|0.6|0.7|0.8|0.9;-2|-1|-1|-1|0,sword_dmg,28.5,9,imbue_lightning,,1,1,1
+imbue_impulse,Impulse Imbuement,Periodic Impulse Imbuement: hits blast enemies with massive kinetic fling,Fling more often with higher kinetic force,80,1.5,5,PeriodicImpulseUnlocked;PeriodicImpulseKnockbackForce;PeriodicImpulseCooldown;PeriodicImpulseDuration,Flat;Flat;Flat;Flat,1;25|30|35|40|50;-2|-1|-1|-1|0;0|0|1|1|2,sword_dmg,20.5,7,imbue_impulse,,1,1,1

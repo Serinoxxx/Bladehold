@@ -275,14 +275,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ArrowSlitDefense
   defenseType: 0
   currentLevel: 1
-  range: 35
+  range: 15
   maxTargetAngle: 150
   enemyLayers:
     serializedVersion: 2
     m_Bits: 128
   firePoint: {fileID: 2132479765606309064}
-  baseDamage: 18
-  baseFireInterval: 1.6
+  baseDamage: 2
+  baseFireInterval: 2
   arrowSpeed: 35
   arrowPrefab: {fileID: 6470877643881086575, guid: 65caf45d2b719f246bbaed4f22290a2c, type: 3}
   shootSound: {fileID: 0}

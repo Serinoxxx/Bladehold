@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,8 +10,7 @@ namespace Bladehold.UI
     /// <summary>
     ///     Controls the Main Menu Meta-Progression Upgrades Screen.
     ///     Displays a grid of all permanent upgrades (marked with isMeta in the skill tree CSV),
-    ///     styled with the Synty Fantasy Warrior parchment theme, Texturina typography,
-    ///     and clear visual affordance/dimming for affordable vs unaffordable upgrades.
+    ///     ordered from cheapest to most expensive, instantiated via MetaSkillCardUI prefab.
     /// </summary>
     public class MetaProgressionGridUI : MonoBehaviour
     {
@@ -21,11 +21,12 @@ namespace Bladehold.UI
         [Header("UI References")]
         [SerializeField] private TMP_Text goldText;
         [SerializeField] private Transform gridContent;
-        [SerializeField] private GameObject metaSkillCardPrefab;
+        [SerializeField] private MetaSkillCardUI metaSkillCardPrefab;
         [SerializeField] private Button backButton;
         [SerializeField] private MainMenuManager mainMenuManager;
+        [SerializeField] private SkillTooltip skillTooltip;
 
-        [Header("Theme Assets (Loaded dynamically if null)")]
+        [Header("Theme Assets")]
         [SerializeField] private TMP_FontAsset texturinaFont;
         [SerializeField] private Sprite parchmentCardSprite;
         [SerializeField] private Sprite parchmentButtonSprite;
@@ -33,13 +34,6 @@ namespace Bladehold.UI
 
         private SaveData currentSave;
         private readonly List<GameObject> spawnedCards = new List<GameObject>();
-
-        private readonly Color parchmentNormal = new Color(0.773f, 0.745f, 0.659f, 1f); // #C5BEA8
-        private readonly Color parchmentDimmed = new Color(0.48f, 0.45f, 0.40f, 0.95f);
-        private readonly Color textDarkBrown = new Color(0.329f, 0.282f, 0.239f, 1f); // #54483D
-        private readonly Color textBodyBrown = new Color(0.388f, 0.337f, 0.294f, 1f); // #63564B
-        private readonly Color badgeLevelColor = new Color(0.55f, 0.28f, 0.15f, 1f); // #8C4726
-        private readonly Color goldPriceColor = new Color(1f, 0.820f, 0.439f, 1f); // #FFD170
 
         private void Awake()
         {
@@ -52,11 +46,43 @@ namespace Bladehold.UI
             {
                 mainMenuManager = GetComponentInParent<MainMenuManager>() ?? UnityEngine.Object.FindAnyObjectByType<MainMenuManager>();
             }
+            EnsureTooltipReference();
             LoadThemeAssets();
+        }
+
+        private void EnsureTooltipReference()
+        {
+            if (skillTooltip == null)
+            {
+                skillTooltip = GetComponentInChildren<SkillTooltip>(true) ?? UnityEngine.Object.FindAnyObjectByType<SkillTooltip>();
+            }
+#if UNITY_EDITOR
+            if (skillTooltip == null)
+            {
+                var tooltipPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/UI/Tooltip.prefab");
+                if (tooltipPrefab != null)
+                {
+                    Transform canvasTr = transform.root.GetComponentInChildren<Canvas>()?.transform ?? transform;
+                    Transform existing = canvasTr.Find("Tooltip");
+                    if (existing != null)
+                    {
+                        skillTooltip = existing.GetComponent<SkillTooltip>();
+                    }
+                    else
+                    {
+                        GameObject ttGO = (GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(tooltipPrefab, canvasTr);
+                        ttGO.name = "Tooltip";
+                        skillTooltip = ttGO.GetComponent<SkillTooltip>();
+                        ttGO.SetActive(false);
+                    }
+                }
+            }
+#endif
         }
 
         private void LoadThemeAssets()
         {
+            EnsureTooltipReference();
 #if UNITY_EDITOR
             if (texturinaFont == null)
             {
@@ -74,6 +100,10 @@ namespace Bladehold.UI
             {
                 dividerLineSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/HUD/SPR_HUD_FantasyWarrior_Line_01.png");
             }
+            if (metaSkillCardPrefab == null)
+            {
+                metaSkillCardPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<MetaSkillCardUI>("Assets/Bladehold/Bladehold Prefabs/UI/MetaSkillCard.prefab");
+            }
 #endif
         }
 
@@ -83,11 +113,23 @@ namespace Bladehold.UI
             RefreshUI();
         }
 
+        private void OnDisable()
+        {
+            if (skillTooltip != null)
+            {
+                skillTooltip.Hide();
+            }
+        }
+
         private void HandleBackClicked()
         {
+            if (skillTooltip != null)
+            {
+                skillTooltip.Hide();
+            }
             if (mainMenuManager != null)
             {
-                mainMenuManager.OnBackToTitle();
+                mainMenuManager.ShowScreen(mainMenuManager.titleScreen);
             }
             else
             {
@@ -95,11 +137,28 @@ namespace Bladehold.UI
             }
         }
 
+        private void HandleCardHoverEnter(SkillNode node, int level, int cost, bool isMaxed)
+        {
+            if (skillTooltip != null)
+            {
+                skillTooltip.ShowDirect(node, level, cost, isMaxed);
+            }
+        }
+
+        private void HandleCardHoverExit()
+        {
+            if (skillTooltip != null)
+            {
+                skillTooltip.Hide();
+            }
+        }
+
         /// <summary>
-        ///     Reloads save data from disk and rebuilds the meta-progression grid.
+        ///     Reloads save data from disk and rebuilds the meta-progression grid ordered from cheapest to most expensive.
         /// </summary>
         public void RefreshUI()
         {
+            LoadThemeAssets();
             currentSave = SaveSystem.Load();
 
             if (goldText != null)
@@ -158,115 +217,74 @@ namespace Bladehold.UI
                 }
             }
 
-            // Populate all meta skills
-            IReadOnlyList<SkillNode> allNodes = skillTree.Nodes;
-            foreach (SkillNode node in allNodes)
+            // Gather and sort all meta skills: cheapest to most expensive (with maxed nodes placed at the end)
+            var metaNodes = skillTree.Nodes.Where(n => n != null && n.isMeta).ToList();
+
+            var sortedNodes = metaNodes.OrderBy(n =>
             {
-                if (node == null || !node.isMeta) continue;
+                int lvl = metaLevels.TryGetValue(n.id, out int l) ? l : 0;
+                bool isMaxed = lvl >= n.maxLevel;
+                int cost = isMaxed ? int.MaxValue : n.CostForLevel(lvl + 1);
+                return (isMaxed ? 1 : 0, cost, n.displayName);
+            }).ToList();
 
+            // Instantiate card prefabs (using PrefabUtility.InstantiatePrefab in edit mode to preserve prefab link)
+            foreach (SkillNode node in sortedNodes)
+            {
                 int level = metaLevels.TryGetValue(node.id, out int lvl) ? lvl : 0;
-                GameObject cardGO = CreateDefaultMetaCard(node, level, skillTree.GetIcon(node.iconName));
+                Sprite icon = skillTree.GetIcon(node.iconName);
 
-                if (cardGO != null)
+                MetaSkillCardUI cardUI = null;
+#if UNITY_EDITOR
+                if (!Application.isPlaying && metaSkillCardPrefab != null)
                 {
-                    spawnedCards.Add(cardGO);
-                    SetupCardData(cardGO, node, level, skillTree.GetIcon(node.iconName));
+                    GameObject instanceGO = (GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(metaSkillCardPrefab.gameObject, gridContent);
+                    cardUI = instanceGO.GetComponent<MetaSkillCardUI>();
+                }
+                else
+#endif
+                {
+                    if (metaSkillCardPrefab != null)
+                    {
+                        cardUI = Instantiate(metaSkillCardPrefab, gridContent);
+                    }
+                    else
+                    {
+                        cardUI = CreateFallbackMetaCard(node, level, icon);
+                    }
+                }
+
+                if (cardUI != null)
+                {
+                    cardUI.name = $"Card_{node.id}";
+                    spawnedCards.Add(cardUI.gameObject);
+                    cardUI.OnCardHoverEnter += HandleCardHoverEnter;
+                    cardUI.OnCardHoverExit += HandleCardHoverExit;
+                    int nextCost = level >= node.maxLevel ? 0 : node.CostForLevel(level + 1);
+                    cardUI.SetData(node, level, icon, currentSave.totalGold, texturinaFont, () => OnBuyMetaSkill(node, nextCost));
                 }
             }
         }
 
-        private void SetupCardData(GameObject cardGO, SkillNode node, int level, Sprite icon)
+        [ContextMenu("Rebuild Grid (Prefab Instances)")]
+        public void RebuildGridInEditMode()
         {
-            CanvasGroup cg = cardGO.GetComponent<CanvasGroup>();
-            Image cardBg = cardGO.GetComponent<Image>();
+            RefreshUI();
+        }
 
-            TMP_Text titleTxt = cardGO.transform.Find("Inner/Header/TitleCol/Title")?.GetComponent<TMP_Text>();
-            TMP_Text descTxt = cardGO.transform.Find("Inner/Description")?.GetComponent<TMP_Text>();
-            TMP_Text levelTxt = cardGO.transform.Find("Inner/Header/TitleCol/LevelBadge")?.GetComponent<TMP_Text>();
-            Image iconImg = cardGO.transform.Find("Inner/Header/Icon")?.GetComponent<Image>();
-            Button buyBtn = cardGO.transform.Find("Inner/BuyButton")?.GetComponent<Button>() ?? cardGO.GetComponentInChildren<Button>();
-            Image buyBtnBg = buyBtn != null ? buyBtn.GetComponent<Image>() : null;
-            TMP_Text btnTxt = buyBtn != null ? buyBtn.GetComponentInChildren<TMP_Text>() : null;
-
-            if (titleTxt != null)
+        [ContextMenu("Clear Grid")]
+        public void ClearGrid()
+        {
+            if (gridContent == null) return;
+            for (int i = gridContent.childCount - 1; i >= 0; i--)
             {
-                titleTxt.text = node.LocalizedDisplayName;
-                titleTxt.color = new Color(0.24f, 0.17f, 0.11f, 1f); // #3D2B1C
-                if (texturinaFont != null) titleTxt.font = texturinaFont;
-            }
-
-            if (descTxt != null)
-            {
-                descTxt.text = level > 0 && !string.IsNullOrEmpty(node.LocalizedUpgradeText)
-                    ? node.LocalizedUpgradeText
-                    : node.LocalizedDescription;
-                descTxt.color = new Color(0.32f, 0.25f, 0.19f, 1f); // #524030
-                if (texturinaFont != null) descTxt.font = texturinaFont;
-            }
-
-            if (levelTxt != null)
-            {
-                levelTxt.text = node.maxLevel > 1 ? $"Lv. {level} / {node.maxLevel}" : (level >= 1 ? "UNLOCKED" : "LOCKED");
-                levelTxt.color = new Color(0.58f, 0.25f, 0.10f, 1f); // #94401A
-                if (texturinaFont != null) levelTxt.font = texturinaFont;
-            }
-
-            if (iconImg != null && icon != null)
-            {
-                iconImg.sprite = icon;
-                iconImg.gameObject.SetActive(true);
-            }
-
-            bool isMaxed = level >= node.maxLevel;
-            int nextCost = isMaxed ? 0 : node.CostForLevel(level + 1);
-            bool canAfford = !isMaxed && currentSave.totalGold >= nextCost;
-
-            // Visual Affordance Dimming
-            if (isMaxed)
-            {
-                if (cg != null) cg.alpha = 0.40f;
-                if (cardBg != null) cardBg.color = parchmentDimmed;
-                if (buyBtn != null) buyBtn.interactable = false;
-                if (buyBtnBg != null) buyBtnBg.color = new Color(0.42f, 0.38f, 0.35f, 0.9f);
-                if (btnTxt != null)
+                var child = gridContent.GetChild(i);
+                if (child != null)
                 {
-                    btnTxt.text = "MAXED";
-                    btnTxt.color = new Color(0.60f, 0.58f, 0.55f, 1f);
-                    if (texturinaFont != null) btnTxt.font = texturinaFont;
+                    DestroyImmediate(child.gameObject);
                 }
             }
-            else if (canAfford)
-            {
-                if (cg != null) cg.alpha = 1.0f;
-                if (cardBg != null) cardBg.color = parchmentNormal;
-                if (buyBtn != null)
-                {
-                    buyBtn.interactable = true;
-                    buyBtn.onClick.RemoveAllListeners();
-                    buyBtn.onClick.AddListener(() => OnBuyMetaSkill(node, nextCost));
-                }
-                if (buyBtnBg != null) buyBtnBg.color = new Color(0.92f, 0.74f, 0.40f, 1f); // Rich gold parchment
-                if (btnTxt != null)
-                {
-                    btnTxt.text = $"<b>{nextCost:N0} Gold</b>";
-                    btnTxt.color = new Color(0.22f, 0.15f, 0.08f, 1f); // Dark bold brown on gold button
-                    if (texturinaFont != null) btnTxt.font = texturinaFont;
-                }
-            }
-            else
-            {
-                // Unaffordable -> Dimmed/Darkened
-                if (cg != null) cg.alpha = 0.48f;
-                if (cardBg != null) cardBg.color = parchmentDimmed;
-                if (buyBtn != null) buyBtn.interactable = false;
-                if (buyBtnBg != null) buyBtnBg.color = new Color(0.38f, 0.33f, 0.30f, 0.95f);
-                if (btnTxt != null)
-                {
-                    btnTxt.text = $"Need {nextCost:N0} Gold";
-                    btnTxt.color = new Color(0.95f, 0.35f, 0.30f, 1f); // Red cost
-                    if (texturinaFont != null) btnTxt.font = texturinaFont;
-                }
-            }
+            spawnedCards.Clear();
         }
 
         private void OnBuyMetaSkill(SkillNode node, int cost)
@@ -284,11 +302,9 @@ namespace Bladehold.UI
             RefreshUI();
         }
 
-        private GameObject CreateDefaultMetaCard(SkillNode node, int level, Sprite icon)
+        private MetaSkillCardUI CreateFallbackMetaCard(SkillNode node, int level, Sprite icon)
         {
-            LoadThemeAssets();
-
-            GameObject card = new GameObject(node.id, typeof(RectTransform), typeof(CanvasGroup), typeof(Image));
+            GameObject card = new GameObject(node.id, typeof(RectTransform), typeof(CanvasGroup), typeof(Image), typeof(MetaSkillCardUI));
             card.transform.SetParent(gridContent, false);
 
             Image cardBg = card.GetComponent<Image>();
@@ -297,9 +313,7 @@ namespace Bladehold.UI
                 cardBg.sprite = parchmentCardSprite;
                 cardBg.type = Image.Type.Sliced;
             }
-            cardBg.color = parchmentNormal;
 
-            // Inner Content Vertical Layout
             GameObject inner = new GameObject("Inner", typeof(RectTransform), typeof(VerticalLayoutGroup));
             inner.transform.SetParent(card.transform, false);
             RectTransform innerRT = inner.GetComponent<RectTransform>();
@@ -315,7 +329,6 @@ namespace Bladehold.UI
             vlg.spacing = 6f;
             vlg.padding = new RectOffset(14, 14, 14, 14);
 
-            // Header (Icon + TitleCol)
             GameObject header = new GameObject("Header", typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(LayoutElement));
             header.transform.SetParent(inner.transform, false);
             HorizontalLayoutGroup hlg = header.GetComponent<HorizontalLayoutGroup>();
@@ -354,7 +367,6 @@ namespace Bladehold.UI
             titleTMP.fontSize = 14;
             titleTMP.fontStyle = FontStyles.Bold;
             titleTMP.alignment = TextAlignmentOptions.MidlineLeft;
-            titleTMP.color = textDarkBrown;
             if (texturinaFont != null) titleTMP.font = texturinaFont;
 
             GameObject lvlGO = new GameObject("LevelBadge", typeof(RectTransform), typeof(TextMeshProUGUI));
@@ -362,36 +374,30 @@ namespace Bladehold.UI
             TextMeshProUGUI lvlTMP = lvlGO.GetComponent<TextMeshProUGUI>();
             lvlTMP.text = $"Lv. {level} / {node.maxLevel}";
             lvlTMP.fontSize = 12;
-            lvlTMP.color = badgeLevelColor;
             lvlTMP.alignment = TextAlignmentOptions.MidlineLeft;
             if (texturinaFont != null) lvlTMP.font = texturinaFont;
 
-            // Divider Line
             if (dividerLineSprite != null)
             {
                 GameObject lineGO = new GameObject("Divider", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
                 lineGO.transform.SetParent(inner.transform, false);
                 Image lineImg = lineGO.GetComponent<Image>();
                 lineImg.sprite = dividerLineSprite;
-                lineImg.color = new Color(textDarkBrown.r, textDarkBrown.g, textDarkBrown.b, 0.45f);
                 LayoutElement lineLE = lineGO.GetComponent<LayoutElement>();
                 lineLE.preferredHeight = 4f;
                 lineLE.flexibleHeight = 0f;
             }
 
-            // Description
             GameObject descGO = new GameObject("Description", typeof(RectTransform), typeof(TextMeshProUGUI), typeof(LayoutElement));
             descGO.transform.SetParent(inner.transform, false);
             TextMeshProUGUI descTMP = descGO.GetComponent<TextMeshProUGUI>();
             descTMP.text = node.LocalizedDescription;
             descTMP.fontSize = 11.5f;
-            descTMP.color = textBodyBrown;
             if (texturinaFont != null) descTMP.font = texturinaFont;
             LayoutElement descLE = descGO.GetComponent<LayoutElement>();
             descLE.preferredHeight = 75f;
             descLE.flexibleHeight = 1f;
 
-            // Buy Button
             GameObject buyBtnGO = new GameObject("BuyButton", typeof(RectTransform), typeof(Button), typeof(Image), typeof(LayoutElement));
             buyBtnGO.transform.SetParent(inner.transform, false);
             Image btnBg = buyBtnGO.GetComponent<Image>();
@@ -400,7 +406,6 @@ namespace Bladehold.UI
                 btnBg.sprite = parchmentButtonSprite;
                 btnBg.type = Image.Type.Sliced;
             }
-            btnBg.color = new Color(0.92f, 0.76f, 0.45f, 1f);
             LayoutElement btnLE = buyBtnGO.GetComponent<LayoutElement>();
             btnLE.preferredHeight = 36f;
             btnLE.flexibleHeight = 0f;
@@ -408,18 +413,18 @@ namespace Bladehold.UI
             GameObject btnTxtGO = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI));
             btnTxtGO.transform.SetParent(buyBtnGO.transform, false);
             TextMeshProUGUI btnTMP = btnTxtGO.GetComponent<TextMeshProUGUI>();
-            btnTMP.text = "Upgrade";
             btnTMP.fontSize = 13;
             btnTMP.fontStyle = FontStyles.Bold;
             btnTMP.alignment = TextAlignmentOptions.Center;
-            btnTMP.color = textDarkBrown;
             if (texturinaFont != null) btnTMP.font = texturinaFont;
             RectTransform btnTxtRT = btnTxtGO.GetComponent<RectTransform>();
             btnTxtRT.anchorMin = Vector2.zero;
             btnTxtRT.anchorMax = Vector2.one;
             btnTxtRT.sizeDelta = Vector2.zero;
 
-            return card;
+            MetaSkillCardUI cardUI = card.GetComponent<MetaSkillCardUI>();
+            cardUI.AutoWireReferences();
+            return cardUI;
         }
     }
 }

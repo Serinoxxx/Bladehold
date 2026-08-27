@@ -139,6 +139,10 @@ public class SkillTreeSO : ScriptableObject
         byId = null;
         iconsByName = null;
         dependentsById = null;
+        if (sharedIcons != null)
+        {
+            sharedIcons.Reload();
+        }
         EnsureParsed();
     }
 

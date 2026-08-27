@@ -94,6 +94,39 @@ public class SkillTooltip : MonoBehaviour
     }
 
     /// <summary>
+    ///     Direct overload for showing tooltips without an ISkillTreeService instance (e.g. Meta progression grid).
+    /// </summary>
+    public void ShowDirect(SkillNode node, int level, int cost, bool isMaxed)
+    {
+        if (node == null) return;
+        if (nameText != null) nameText.text = node.LocalizedDisplayName ?? "";
+        if (descriptionText != null) descriptionText.text = DescriptionFor(node, level) ?? "";
+        if (beforeAfterText != null) beforeAfterText.text = "";
+        if (percentIncreaseText != null) percentIncreaseText.text = "";
+        if (costText != null) costText.text = isMaxed ? Loc.Get("common.maxed", "MAXED") : FormatCost(cost);
+
+        anchoredTo = null;
+        gameObject.SetActive(true);
+        FollowCursor();
+    }
+
+    /// <summary>
+    ///     Direct text-based overload for generic tooltips.
+    /// </summary>
+    public void ShowDirect(string title, string description, string costInfo = "")
+    {
+        if (nameText != null) nameText.text = title ?? "";
+        if (descriptionText != null) descriptionText.text = description ?? "";
+        if (beforeAfterText != null) beforeAfterText.text = "";
+        if (percentIncreaseText != null) percentIncreaseText.text = "";
+        if (costText != null) costText.text = costInfo ?? "";
+
+        anchoredTo = null;
+        gameObject.SetActive(true);
+        FollowCursor();
+    }
+
+    /// <summary>
     ///     Gamepad flavor of <see cref="Show" />: same content, but instead of following the cursor the
     ///     tooltip pins itself beside <paramref name="anchor" /> (the selected node's rect), re-anchoring
     ///     as the tree pans/zooms. Cleared by <see cref="Hide" /> or the next pointer-driven Show.
