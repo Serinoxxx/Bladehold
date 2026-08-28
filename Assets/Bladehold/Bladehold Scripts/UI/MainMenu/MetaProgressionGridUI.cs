@@ -179,16 +179,6 @@ namespace Bladehold.UI
                 return;
             }
 
-            // Ensure grid layout sizing
-            GridLayoutGroup glg = gridContent.GetComponent<GridLayoutGroup>();
-            if (glg != null)
-            {
-                glg.cellSize = new Vector2(270f, 245f);
-                glg.spacing = new Vector2(16f, 16f);
-                glg.padding = new RectOffset(20, 20, 20, 20);
-                glg.childAlignment = TextAnchor.UpperCenter;
-            }
-
             // Clean all existing child cards in content
             for (int i = gridContent.childCount - 1; i >= 0; i--)
             {

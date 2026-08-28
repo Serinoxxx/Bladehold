@@ -47,6 +47,8 @@ public class DeathScreen : MonoBehaviour
     [SerializeField] private TMP_Text levelReachedText;
     [Tooltip("Optional: right-side player info and skills sidebar for Survivors mode.")]
     [SerializeField] private SurvivorsPlayerInfoSidebarUI survivorsSidebar;
+    [Tooltip("Optional: animated stats panel for Survivors mode.")]
+    [SerializeField] private SurvivorsStatsPanelUI survivorsStatsPanel;
     [Tooltip("Restarts the run from wave 1.")]
     [SerializeField] private Button tryAgainButton;
     [Tooltip("Optional: button to proceed to the next stage level in Survivors mode.")]
@@ -242,20 +244,29 @@ public class DeathScreen : MonoBehaviour
         int earned = GameStats.Instance != null ? GameStats.Instance.GoldEarnedThisRun : 0;
         int total = Player.Instance != null && Player.Instance.Wallet != null ? Player.Instance.Wallet.Coins : 0;
 
-        if (goblinsKilledText != null)
+        bool isSurvivorsMode = SurvivorsGameManager.Instance != null;
+
+        if (!isSurvivorsMode)
         {
-            goblinsKilledText.text = Loc.Format("wavestats.goblins_slain", killed);
-        }
-        if (goldEarnedText != null)
-        {
-            goldEarnedText.text = Loc.Format("wavestats.gold_earned", earned);
+            if (goblinsKilledText != null)
+            {
+                goblinsKilledText.text = Loc.Format("wavestats.goblins_slain", killed);
+            }
+            if (goldEarnedText != null)
+            {
+                goldEarnedText.text = Loc.Format("wavestats.gold_earned", earned);
+            }
         }
         if (totalGoldText != null)
         {
             totalGoldText.text = Loc.Format("wavestats.total_gold", total);
         }
 
-        bool isSurvivorsMode = SurvivorsGameManager.Instance != null;
+        float runSeconds = 0f;
+        int lvl = 1;
+        int dmgDealt = 0;
+        int dmgTaken = 0;
+        int crits = 0;
 
         if (isSurvivorsMode)
         {
@@ -300,35 +311,37 @@ public class DeathScreen : MonoBehaviour
             }
 
             // Survivors run telemetry & stats
-            float runSeconds = SurvivorsGameManager.Instance != null ? SurvivorsGameManager.Instance.RunTimer : 0f;
-            int minutes = Mathf.FloorToInt(runSeconds / 60f);
-            int seconds = Mathf.FloorToInt(runSeconds % 60f);
-            if (timeSurvivedText != null)
-            {
-                timeSurvivedText.text = $"Time Survived: {minutes:00}:{seconds:00}";
-            }
-
-            if (levelReachedText != null)
-            {
-                int lvl = SurvivorsLevelSystem.Instance != null ? SurvivorsLevelSystem.Instance.CurrentLevel : 1;
-                levelReachedText.text = $"Level Reached: {lvl}";
-            }
+            runSeconds = SurvivorsGameManager.Instance != null ? SurvivorsGameManager.Instance.RunTimer : 0f;
+            lvl = SurvivorsLevelSystem.Instance != null ? SurvivorsLevelSystem.Instance.CurrentLevel : 1;
 
             if (RunTelemetry.Instance != null)
             {
                 var waveStats = RunTelemetry.Instance.GetCurrentWaveStats();
-                if (damageDealtText != null)
-                {
-                    damageDealtText.text = $"Damage Dealt: {Mathf.RoundToInt(waveStats.damageDealt)}";
-                }
-                if (damageTakenText != null)
-                {
-                    damageTakenText.text = $"Damage Taken: {Mathf.RoundToInt(waveStats.damageTaken)}";
-                }
-                if (critsText != null)
-                {
-                    critsText.text = $"Critical Hits: {waveStats.crits}";
-                }
+                dmgDealt = Mathf.RoundToInt(waveStats.damageDealt);
+                dmgTaken = Mathf.RoundToInt(waveStats.damageTaken);
+                crits = waveStats.crits;
+            }
+
+            if (survivorsStatsPanel == null)
+            {
+                survivorsStatsPanel = GetComponentInChildren<SurvivorsStatsPanelUI>(true);
+            }
+
+            if (survivorsStatsPanel != null)
+            {
+                survivorsStatsPanel.HideAllRows();
+            }
+            else
+            {
+                int minutes = Mathf.FloorToInt(runSeconds / 60f);
+                int seconds = Mathf.FloorToInt(runSeconds % 60f);
+                if (timeSurvivedText != null) timeSurvivedText.text = $"{minutes:00}:{seconds:00}";
+                if (levelReachedText != null) levelReachedText.text = lvl.ToString();
+                if (goblinsKilledText != null) goblinsKilledText.text = killed == 0 ? "0" : killed.ToString("#,##0");
+                if (goldEarnedText != null) goldEarnedText.text = earned == 0 ? "0" : earned.ToString("#,##0");
+                if (damageDealtText != null) damageDealtText.text = dmgDealt == 0 ? "0" : dmgDealt.ToString("#,##0");
+                if (damageTakenText != null) damageTakenText.text = dmgTaken == 0 ? "0" : dmgTaken.ToString("#,##0");
+                if (critsText != null) critsText.text = crits == 0 ? "0" : crits.ToString("#,##0");
             }
 
             if (survivorsSidebar != null)
@@ -361,10 +374,10 @@ public class DeathScreen : MonoBehaviour
             }
         }
 
-        StartCoroutine(RunOverSequence(failureReason));
+        StartCoroutine(RunOverSequence(failureReason, isSurvivorsMode, runSeconds, lvl, killed, earned, dmgDealt, dmgTaken, crits));
     }
 
-    private IEnumerator RunOverSequence(string failureReason)
+    private IEnumerator RunOverSequence(string failureReason, bool isSurvivorsMode = false, float runSeconds = 0f, int lvl = 1, int killed = 0, int earned = 0, int dmgDealt = 0, int dmgTaken = 0, int crits = 0)
     {
         // The failure-reason banner plays fully (fade in, hold, fade out) before the screen appears.
         if (failureBanner != null)
@@ -378,6 +391,11 @@ public class DeathScreen : MonoBehaviour
         CursorLockManager.SetUnlock("DeathScreen", true);
 
         yield return FadeIn();
+
+        if (isSurvivorsMode && survivorsStatsPanel != null)
+        {
+            yield return survivorsStatsPanel.PlaySequenceRoutine(runSeconds, lvl, killed, earned, dmgDealt, dmgTaken, crits);
+        }
     }
 
     private IEnumerator FadeIn()

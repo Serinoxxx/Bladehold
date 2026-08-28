@@ -7,7 +7,7 @@ namespace Bladehold.UI
     ///     Custom Inspector for MetaProgressionGridUI with one-click Edit Mode prefab grid generation.
     /// </summary>
     [CustomEditor(typeof(MetaProgressionGridUI))]
-    public class MetaProgressionGridUIEditor : Editor
+    public class MetaProgressionGridUIEditor : UnityEditor.Editor
     {
         public override void OnInspectorGUI()
         {

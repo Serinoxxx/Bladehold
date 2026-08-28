@@ -35,10 +35,10 @@ RectTransform:
   - {fileID: 1812723730483990429}
   m_Father: {fileID: 8932008882720987778}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 172.30005, y: -325.2848}
+  m_SizeDelta: {x: 288.1729, y: 54.274}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1311925605946122860
 CanvasRenderer:
@@ -68,7 +68,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 2c82a7cb011887d43bcf3a9f1f1be2e4, type: 3}
+  m_Sprite: {fileID: 21300000, guid: fc4bbb1265a4ce6459d98288dc673fdd, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -77,7 +77,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
+  m_PixelsPerUnitMultiplier: 2
 --- !u!114 &2118230877478542592
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -174,10 +174,10 @@ RectTransform:
   - {fileID: 3714811275949161799}
   m_Father: {fileID: 8932008882720987778}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 172.30005, y: -195.7555}
+  m_SizeDelta: {x: 362.7577, y: 204.7853}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1695372968241529560
 MonoBehaviour:
@@ -273,7 +273,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4280036157
   m_fontColor: {r: 0.24, g: 0.17, b: 0.11, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -286,7 +286,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -369,10 +369,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 8932008882720987778}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 200, y: 50}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 172.3, y: -32.1}
+  m_SizeDelta: {x: 362.7577, y: 53.8489}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1251876993804651712
 CanvasRenderer:
@@ -411,7 +411,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4280036157
   m_fontColor: {r: 0.24, g: 0.17, b: 0.11, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -424,13 +424,13 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 16
-  m_fontSizeBase: 16
+  m_fontSize: 28
+  m_fontSizeBase: 28
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -524,7 +524,7 @@ RectTransform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 8932008882720987778}
   m_Father: {fileID: 0}
@@ -624,7 +624,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8932008882720987778}
-  - component: {fileID: 9157131282278016026}
   m_Layer: 0
   m_Name: Inner
   m_TagString: Untagged
@@ -655,32 +654,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: -32, y: -28}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &9157131282278016026
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4030788367731013509}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.VerticalLayoutGroup
-  m_Padding:
-    m_Left: 14
-    m_Right: 14
-    m_Top: 14
-    m_Bottom: 14
-  m_ChildAlignment: 1
-  m_Spacing: 4
-  m_ChildForceExpandWidth: 1
-  m_ChildForceExpandHeight: 0
-  m_ChildControlWidth: 1
-  m_ChildControlHeight: 0
-  m_ChildScaleWidth: 0
-  m_ChildScaleHeight: 0
-  m_ReverseArrangement: 0
 --- !u!1 &6177066021068736552
 GameObject:
   m_ObjectHideFlags: 0
@@ -714,10 +687,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 8932008882720987778}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 200, y: 50}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 172.30005, y: -72.334}
+  m_SizeDelta: {x: 362.7577, y: 26.6186}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &14871852871986361
 CanvasRenderer:
@@ -756,7 +729,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4283198348
   m_fontColor: {r: 0.55, g: 0.42, b: 0.3, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -769,13 +742,13 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 12
-  m_fontSizeBase: 12
+  m_fontSize: 18
+  m_fontSizeBase: 18
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -874,7 +847,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 88, y: 88}
+  m_SizeDelta: {x: 198.5658, y: 198.5709}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6477818744643161424
 CanvasRenderer:
