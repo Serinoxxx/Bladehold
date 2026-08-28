@@ -1581,6 +1581,7 @@ GameObject:
   - component: {fileID: -9218812370878724873}
   - component: {fileID: 7097117237931593117}
   - component: {fileID: 8834962162041347795}
+  - component: {fileID: 924873914309187086}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -1783,6 +1784,31 @@ MonoBehaviour:
   inputReader: {fileID: 6872381413864324108}
   facingCamera: {fileID: 0}
   dashDuration: 0.2
+--- !u!114 &924873914309187086
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 635090733411138093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56cd5d5f36c12484e847e3a933f8f932, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PeriodicImbuementController
+  fireColor: {r: 1, g: 0.4, b: 0.1, a: 1}
+  iceColor: {r: 0.2, g: 0.7, b: 1, a: 1}
+  lightningColor: {r: 0.9, g: 0.9, b: 0.2, a: 1}
+  impulseColor: {r: 0.3, g: 0.5, b: 1, a: 1}
+  enemyLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  fireExplosionVfx: {fileID: 1809022330002312, guid: ed511b7776af6174e9b1255c7a81e59c, type: 3}
+  iceFreezeVfx: {fileID: 1828717585066262, guid: 15020532ea6e8b449a74e895e1097087, type: 3}
+  fireAuraVisual: {fileID: 2625906625423837273}
+  iceAuraVisual: {fileID: 9197713550416069428}
+  lightningAuraVisual: {fileID: 9020563077839332459}
+  impulseAuraVisual: {fileID: 0}
 --- !u!1 &758177441954652393
 GameObject:
   m_ObjectHideFlags: 0
@@ -9723,7 +9749,7 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
   deactivationFeedback: {fileID: 0}
   explosionVfxPrefab: {fileID: 1809022330002312, guid: ed511b7776af6174e9b1255c7a81e59c, type: 3}
-  flameZonePrefab: {fileID: 0}
+  flameZonePrefab: {fileID: 856157407670712464, guid: 79798afc92248ae49bf7b813fe2ab2b0, type: 3}
 --- !u!1 &6574221051620952973
 GameObject:
   m_ObjectHideFlags: 0
@@ -30294,6 +30320,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
   healthData: {fileID: 11400000, guid: e3e864e7835f939418033f13d93a54ce, type: 2}
+  immuneToPlayerDamage: 0
   currentHealth: 10
   damageFeedback: {fileID: 842080423486730170}
   deathFeedback: {fileID: 3270100518817161579}

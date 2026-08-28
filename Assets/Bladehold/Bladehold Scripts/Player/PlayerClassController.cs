@@ -209,6 +209,12 @@ public class PlayerClassController : MonoBehaviour
             playerMount.SetSwordTrigger(active.meleeTrigger);
         }
 
+        var periodicImbuements = GetComponent<PeriodicImbuementController>();
+        if (periodicImbuements != null && active.meleeTrigger != null)
+        {
+            periodicImbuements.SetMeleeTrigger(active.meleeTrigger);
+        }
+
         if (ActiveClass != null)
         {
             if (ActiveClass.animatorOverride != null && animator != null)

@@ -30,13 +30,20 @@ public class PeriodicImbuementController : MonoBehaviour
     [SerializeField] private GameObject fireExplosionVfx;
     [SerializeField] private GameObject iceFreezeVfx;
 
+    [Header("Aura Visuals (Optional)")]
+    [SerializeField] private GameObject fireAuraVisual;
+    [SerializeField] private GameObject iceAuraVisual;
+    [SerializeField] private GameObject lightningAuraVisual;
+    [SerializeField] private GameObject impulseAuraVisual;
+
     private PlayerStats stats;
     private PlayerClassController classController;
     private ChainLightning chainLightning;
-    private DamageTrigger activeMeleeTrigger;
+    private readonly List<DamageTrigger> subscribedMeleeTriggers = new List<DamageTrigger>();
     private PlayerBow bow;
     private PlayerThrownAxe thrownAxe;
     private PlayerWand wand;
+    private IDamageable ownerDamageable;
 
     // Element active & timer trackers
     public bool IsFireActive { get; private set; }
@@ -48,6 +55,11 @@ public class PeriodicImbuementController : MonoBehaviour
     private float iceTimer;
     private float lightningTimer;
     private float impulseTimer;
+
+    private bool wasFireUnlocked;
+    private bool wasIceUnlocked;
+    private bool wasLightningUnlocked;
+    private bool wasImpulseUnlocked;
 
     private const int MaxOverlapResults = 32;
     private readonly Collider[] overlapBuffer = new Collider[MaxOverlapResults];
@@ -70,14 +82,24 @@ public class PeriodicImbuementController : MonoBehaviour
 
     private void Start()
     {
-        if (stats == null) stats = Player.Instance != null ? Player.Instance.Stats : GetComponentInParent<PlayerStats>();
-        if (classController == null) classController = GetComponentInParent<PlayerClassController>();
-        if (chainLightning == null) chainLightning = Player.Instance != null ? Player.Instance.GetComponentInChildren<ChainLightning>() : null;
+        if (stats == null) stats = Player.Instance != null ? Player.Instance.Stats : GetComponentInChildren<PlayerStats>(true);
+        if (stats == null) stats = GetComponentInParent<PlayerStats>();
+        if (stats == null) stats = UnityEngine.Object.FindAnyObjectByType<PlayerStats>();
 
-        if (stats == null)
+        if (classController == null) classController = GetComponentInChildren<PlayerClassController>(true);
+        if (classController == null) classController = GetComponentInParent<PlayerClassController>();
+
+        if (chainLightning == null) chainLightning = Player.Instance != null ? Player.Instance.GetComponentInChildren<ChainLightning>() : GetComponentInChildren<ChainLightning>(true);
+
+        ownerDamageable = GetComponentInChildren<IDamageable>(true);
+        if (ownerDamageable == null) ownerDamageable = GetComponentInParent<IDamageable>();
+        if (ownerDamageable == null && Player.Instance != null)
         {
-            stats = UnityEngine.Object.FindAnyObjectByType<PlayerStats>();
+            ownerDamageable = Player.Instance.Damageable;
         }
+
+        // Auto-find aura visuals from MageImbuement or children if unassigned
+        AutoFindAuraVisuals();
 
         // Register default bases if not set
         if (stats != null)
@@ -107,7 +129,30 @@ public class PeriodicImbuementController : MonoBehaviour
             stats.SetBase(StatType.PeriodicImpulseKnockbackForce, 25f);
         }
 
+        UpdateAuraVisuals();
         SubscribeHitEvents();
+    }
+
+    private void AutoFindAuraVisuals()
+    {
+        if (fireAuraVisual == null || iceAuraVisual == null || lightningAuraVisual == null)
+        {
+            MageImbuement mageImbue = GetComponentInChildren<MageImbuement>(true);
+            if (mageImbue != null)
+            {
+                var styleProp = typeof(MageImbuement).GetField("elementStyles", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (styleProp?.GetValue(mageImbue) is MageImbuement.ElementStyle[] styles)
+                {
+                    foreach (var s in styles)
+                    {
+                        if (s == null || s.auraVisual == null) continue;
+                        if (s.element == ElementType.Fire && fireAuraVisual == null) fireAuraVisual = s.auraVisual;
+                        if (s.element == ElementType.Ice && iceAuraVisual == null) iceAuraVisual = s.auraVisual;
+                        if (s.element == ElementType.Lightning && lightningAuraVisual == null) lightningAuraVisual = s.auraVisual;
+                    }
+                }
+            }
+        }
     }
 
     private void OnDestroy()
@@ -116,27 +161,61 @@ public class PeriodicImbuementController : MonoBehaviour
         UnsubscribeHitEvents();
     }
 
+    public void SetMeleeTrigger(DamageTrigger trigger)
+    {
+        if (trigger == null) return;
+        if (!subscribedMeleeTriggers.Contains(trigger))
+        {
+            trigger.OnHit -= HandleHit;
+            trigger.OnHit += HandleHit;
+            subscribedMeleeTriggers.Add(trigger);
+        }
+    }
+
     private void SubscribeHitEvents()
     {
-        if (classController != null && classController.ActiveMeleeTrigger != null)
+        GameObject root = Player.Instance != null ? Player.Instance.gameObject : gameObject;
+
+        foreach (var trigger in root.GetComponentsInChildren<DamageTrigger>(true))
         {
-            activeMeleeTrigger = classController.ActiveMeleeTrigger;
-            activeMeleeTrigger.OnHit += HandleHit;
+            if (trigger != null && !subscribedMeleeTriggers.Contains(trigger))
+            {
+                trigger.OnHit -= HandleHit;
+                trigger.OnHit += HandleHit;
+                subscribedMeleeTriggers.Add(trigger);
+            }
         }
 
-        bow = GetComponentInParent<PlayerBow>();
-        if (bow != null) bow.OnHit += HandleHit;
+        bow = root.GetComponentInChildren<PlayerBow>(true);
+        if (bow != null)
+        {
+            bow.OnHit -= HandleHit;
+            bow.OnHit += HandleHit;
+        }
 
-        thrownAxe = GetComponentInParent<PlayerThrownAxe>();
-        if (thrownAxe != null) thrownAxe.OnHit += HandleHit;
+        thrownAxe = root.GetComponentInChildren<PlayerThrownAxe>(true);
+        if (thrownAxe != null)
+        {
+            thrownAxe.OnHit -= HandleHit;
+            thrownAxe.OnHit += HandleHit;
+        }
 
-        wand = GetComponentInParent<PlayerWand>();
-        if (wand != null) wand.OnHit += HandleHit;
+        wand = root.GetComponentInChildren<PlayerWand>(true);
+        if (wand != null)
+        {
+            wand.OnHit -= HandleHit;
+            wand.OnHit += HandleHit;
+        }
     }
 
     private void UnsubscribeHitEvents()
     {
-        if (activeMeleeTrigger != null) activeMeleeTrigger.OnHit -= HandleHit;
+        foreach (var trigger in subscribedMeleeTriggers)
+        {
+            if (trigger != null) trigger.OnHit -= HandleHit;
+        }
+        subscribedMeleeTriggers.Clear();
+
         if (bow != null) bow.OnHit -= HandleHit;
         if (thrownAxe != null) thrownAxe.OnHit -= HandleHit;
         if (wand != null) wand.OnHit -= HandleHit;
@@ -148,42 +227,64 @@ public class PeriodicImbuementController : MonoBehaviour
 
         UpdateElement(
             stats.GetValue(StatType.PeriodicFireUnlocked) > 0f,
+            ref wasFireUnlocked,
             stats.GetValue(StatType.PeriodicFireCooldown),
             stats.GetValue(StatType.PeriodicFireDuration),
             ref fireTimer,
             () => IsFireActive,
-            val => { IsFireActive = val; OnImbuementStateChanged?.Invoke(); });
+            val => { IsFireActive = val; OnImbuementStateChanged?.Invoke(); UpdateAuraVisuals(); });
 
         UpdateElement(
             stats.GetValue(StatType.PeriodicIceUnlocked) > 0f,
+            ref wasIceUnlocked,
             stats.GetValue(StatType.PeriodicIceCooldown),
             stats.GetValue(StatType.PeriodicIceDuration),
             ref iceTimer,
             () => IsIceActive,
-            val => { IsIceActive = val; OnImbuementStateChanged?.Invoke(); });
+            val => { IsIceActive = val; OnImbuementStateChanged?.Invoke(); UpdateAuraVisuals(); });
 
         UpdateElement(
             stats.GetValue(StatType.PeriodicLightningUnlocked) > 0f,
+            ref wasLightningUnlocked,
             stats.GetValue(StatType.PeriodicLightningCooldown),
             stats.GetValue(StatType.PeriodicLightningDuration),
             ref lightningTimer,
             () => IsLightningActive,
-            val => { IsLightningActive = val; OnImbuementStateChanged?.Invoke(); });
+            val => { IsLightningActive = val; OnImbuementStateChanged?.Invoke(); UpdateAuraVisuals(); });
 
         UpdateElement(
             stats.GetValue(StatType.PeriodicImpulseUnlocked) > 0f,
+            ref wasImpulseUnlocked,
             stats.GetValue(StatType.PeriodicImpulseCooldown),
             stats.GetValue(StatType.PeriodicImpulseDuration),
             ref impulseTimer,
             () => IsImpulseActive,
-            val => { IsImpulseActive = val; OnImbuementStateChanged?.Invoke(); });
+            val => { IsImpulseActive = val; OnImbuementStateChanged?.Invoke(); UpdateAuraVisuals(); });
     }
 
-    private void UpdateElement(bool isUnlocked, float cooldown, float duration, ref float timer, Func<bool> getActive, Action<bool> setActive)
+    private void UpdateAuraVisuals()
+    {
+        if (fireAuraVisual != null) fireAuraVisual.SetActive(IsFireActive);
+        if (iceAuraVisual != null) iceAuraVisual.SetActive(IsIceActive);
+        if (lightningAuraVisual != null) lightningAuraVisual.SetActive(IsLightningActive);
+        if (impulseAuraVisual != null) impulseAuraVisual.SetActive(IsImpulseActive);
+    }
+
+    private void UpdateElement(bool isUnlocked, ref bool wasUnlocked, float cooldown, float duration, ref float timer, Func<bool> getActive, Action<bool> setActive)
     {
         if (!isUnlocked)
         {
             if (getActive()) setActive(false);
+            timer = 0f;
+            wasUnlocked = false;
+            return;
+        }
+
+        // On first unlock, ignite immediately for instant feedback
+        if (!wasUnlocked)
+        {
+            wasUnlocked = true;
+            setActive(true);
             timer = 0f;
             return;
         }
@@ -210,9 +311,21 @@ public class PeriodicImbuementController : MonoBehaviour
         }
     }
 
+    private bool IsOwnerOrPlayer(IDamageable damageable)
+    {
+        if (damageable == null) return true;
+        if (ownerDamageable != null && damageable == ownerDamageable) return true;
+        if (Player.Instance != null)
+        {
+            if (damageable == Player.Instance.Damageable || damageable == Player.Instance.Health) return true;
+            if (damageable is Component comp && (UnityEngine.Object)comp.transform.root == (UnityEngine.Object)Player.Instance.transform.root) return true;
+        }
+        return false;
+    }
+
     private void HandleHit(IDamageable target, Damage damage, Vector3 hitPoint)
     {
-        if (target == null || damage == null || damage.value <= 0f) return;
+        if (target == null || IsOwnerOrPlayer(target) || damage == null || damage.value <= 0f) return;
 
         // 1. Fire Imbuement Hit
         if (IsFireActive && stats != null)
@@ -225,7 +338,7 @@ public class PeriodicImbuementController : MonoBehaviour
                     value = bonusFire,
                     type = DamageType.elemental,
                     sourcePosition = hitPoint,
-                    source = Player.Instance != null ? Player.Instance.Damageable : null,
+                    source = Player.Instance != null ? Player.Instance.Damageable : ownerDamageable,
                     isPlayerDamage = true,
                 });
             }
@@ -242,14 +355,14 @@ public class PeriodicImbuementController : MonoBehaviour
                     {
                         dmgReceiver = col.GetComponentInParent<IDamageable>();
                     }
-                    if (dmgReceiver == null || dmgReceiver == target || !hitTargets.Add(dmgReceiver)) continue;
+                    if (dmgReceiver == null || dmgReceiver == target || IsOwnerOrPlayer(dmgReceiver) || !hitTargets.Add(dmgReceiver)) continue;
 
                     dmgReceiver.ReceiveDamage(new Damage
                     {
                         value = bonusFire,
                         type = DamageType.elemental,
                         sourcePosition = hitPoint,
-                        source = Player.Instance != null ? Player.Instance.Damageable : null,
+                        source = Player.Instance != null ? Player.Instance.Damageable : ownerDamageable,
                         isPlayerDamage = true,
                     });
                 }
@@ -304,7 +417,7 @@ public class PeriodicImbuementController : MonoBehaviour
                     knockbackForce = impulseKnock,
                     type = DamageType.blunt,
                     sourcePosition = Player.Instance != null ? Player.Instance.transform.position : hitPoint,
-                    source = Player.Instance != null ? Player.Instance.Damageable : null,
+                    source = Player.Instance != null ? Player.Instance.Damageable : ownerDamageable,
                     isPlayerDamage = true,
                 });
             }
