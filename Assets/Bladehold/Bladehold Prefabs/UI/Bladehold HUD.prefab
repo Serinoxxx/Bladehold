@@ -15561,6 +15561,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &4279999656818972928 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8550404543151122683, guid: 72e56784e591139469dcaeec0b81f611, type: 3}
+  m_PrefabInstance: {fileID: 5606065246261588475}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &6497254365825002125 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1722165923144489846, guid: 72e56784e591139469dcaeec0b81f611, type: 3}
@@ -15581,10 +15592,13 @@ MonoBehaviour:
   spawner: {fileID: 0}
   objectiveManager: {fileID: 0}
   bannerRoot: {fileID: 6497254365825002125}
-  questNameText: {fileID: 0}
-  waveClearedText: {fileID: 1615693951632385899}
+  questNameText: {fileID: 1615693951632385899}
+  waveClearedText: {fileID: 4279999656818972928}
   goldEarnedText: {fileID: 2367130393206798823}
   enemiesKilledText: {fileID: 1652419435818493780}
+  newQuestHeader: NEW QUEST
+  questCompletedHeader: QUEST COMPLETE
+  questFailedHeader: OBJECTIVE FAILED
   textAnimator: {fileID: 470952280270334072}
   activeParamName: Active
   activeOutLeadTime: 0.5
@@ -15592,6 +15606,7 @@ MonoBehaviour:
   waveClearedSounds:
   - {fileID: 8300000, guid: 1b0a47b1c0ffb49c7b33f40bcae7fbe8, type: 3}
   - {fileID: 8300000, guid: 17071ce86c3d15245a96c44ee44495b5, type: 3}
+  newQuestSounds: []
   displayDuration: 5
 --- !u!114 &4990129253648166755
 MonoBehaviour:

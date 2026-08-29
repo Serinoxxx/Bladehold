@@ -27,5 +27,24 @@ public class AutoVersionIncrementer : IPreprocessBuildWithReport
         }
 
         Debug.Log($"[AutoVersionIncrementer] Incremented build version to: {PlayerSettings.bundleVersion}");
+
+        try
+        {
+            string rootChangelog = System.IO.Path.Combine(Application.dataPath, "../CHANGELOG.md");
+            string streamingDir = Application.streamingAssetsPath;
+            if (!System.IO.Directory.Exists(streamingDir))
+            {
+                System.IO.Directory.CreateDirectory(streamingDir);
+            }
+            if (System.IO.File.Exists(rootChangelog))
+            {
+                System.IO.File.Copy(rootChangelog, System.IO.Path.Combine(streamingDir, "CHANGELOG.md"), true);
+                AssetDatabase.Refresh();
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogWarning($"[AutoVersionIncrementer] Could not copy CHANGELOG.md to StreamingAssets: {ex.Message}");
+        }
     }
 }

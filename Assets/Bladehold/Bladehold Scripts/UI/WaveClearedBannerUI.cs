@@ -22,6 +22,14 @@ public class WaveClearedBannerUI : MonoBehaviour
     [SerializeField] private TMP_Text goldEarnedText;
     [SerializeField] private TMP_Text enemiesKilledText;
 
+    [Header("Headers")]
+    [Tooltip("Header text displayed when a new quest/challenge starts.")]
+    [SerializeField] private string newQuestHeader = "NEW QUEST";
+    [Tooltip("Header text displayed when an objective/quest is completed.")]
+    [SerializeField] private string questCompletedHeader = "QUEST COMPLETE";
+    [Tooltip("Header text displayed when an objective/quest fails.")]
+    [SerializeField] private string questFailedHeader = "OBJECTIVE FAILED";
+
     [Header("Animation & Juiciness")]
     [Tooltip("Animator driving the text banner entrance and exit states.")]
     [SerializeField] private Animator textAnimator;
@@ -32,6 +40,8 @@ public class WaveClearedBannerUI : MonoBehaviour
     [Tooltip("Played when the banner appears. Should handle its own reset/outro or be paired with a separate outro if needed.")]
     [SerializeField] private MMF_Player bannerAnimationFeedback;
     [SerializeField] private AudioClip[] waveClearedSounds;
+    [Tooltip("Sound played when announcing a new quest/challenge.")]
+    [SerializeField] private AudioClip[] newQuestSounds;
     [Tooltip("How long the banner stays on screen before hiding itself.")]
     [SerializeField] private float displayDuration = 3f;
 
@@ -50,6 +60,7 @@ public class WaveClearedBannerUI : MonoBehaviour
         {
             objectiveManager = FindObjectOfType<SurvivorsObjectiveManager>();
         }
+        EnsureTextReferences();
         if (textAnimator == null && waveClearedText != null)
         {
             textAnimator = waveClearedText.GetComponent<Animator>();
@@ -64,8 +75,35 @@ public class WaveClearedBannerUI : MonoBehaviour
         }
     }
 
+    private void EnsureTextReferences()
+    {
+        if (bannerRoot == null)
+        {
+            bannerRoot = gameObject;
+        }
+
+        if (waveClearedText == null || questNameText == null || waveClearedText == questNameText)
+        {
+            var allTexts = bannerRoot.GetComponentsInChildren<TMP_Text>(true);
+            var questCompleteLabel = System.Array.Find(allTexts, t => t.name == "Label_QuestComplete");
+            var questNameLabel = System.Array.Find(allTexts, t => t.name == "Label_QuestName");
+
+            if (questNameText == null && questNameLabel != null)
+            {
+                questNameText = questNameLabel;
+            }
+
+            if (questCompleteLabel != null && (waveClearedText == null || waveClearedText == questNameText))
+            {
+                waveClearedText = questCompleteLabel;
+            }
+        }
+    }
+
     private void Start()
     {
+        EnsureTextReferences();
+
         if (spawner == null)
         {
             spawner = FindObjectOfType<WaveSpawner>();
@@ -95,8 +133,15 @@ public class WaveClearedBannerUI : MonoBehaviour
 
         if (objectiveManager != null)
         {
+            objectiveManager.OnObjectiveStarted += HandleSurvivorsObjectiveStarted;
             objectiveManager.OnObjectiveCompleted += HandleSurvivorsObjectiveCleared;
             objectiveManager.OnObjectiveFailed += HandleSurvivorsObjectiveFailed;
+
+            // If an objective was already active before Start (e.g. introductory objective), announce it
+            if (objectiveManager.CurrentObjective != null && objectiveManager.CurrentObjective.IsActive)
+            {
+                HandleSurvivorsObjectiveStarted(objectiveManager.CurrentObjective);
+            }
         }
     }
 
@@ -110,6 +155,7 @@ public class WaveClearedBannerUI : MonoBehaviour
 
         if (objectiveManager != null)
         {
+            objectiveManager.OnObjectiveStarted -= HandleSurvivorsObjectiveStarted;
             objectiveManager.OnObjectiveCompleted -= HandleSurvivorsObjectiveCleared;
             objectiveManager.OnObjectiveFailed -= HandleSurvivorsObjectiveFailed;
         }
@@ -126,42 +172,85 @@ public class WaveClearedBannerUI : MonoBehaviour
         int goldEarned = (GameStats.Instance != null ? GameStats.Instance.GoldEarnedThisRun : 0) - goldAtWaveStart;
         int kills = (GameStats.Instance != null ? GameStats.Instance.GoblinsKilled : 0) - killsAtWaveStart;
 
-        ShowBanner($"WAVE {wave} CLEARED", null, Mathf.Max(0, goldEarned), Mathf.Max(0, kills));
+        ShowBanner($"WAVE {wave} CLEARED", null, Mathf.Max(0, goldEarned), Mathf.Max(0, kills), isNewQuest: false);
+    }
+
+    private void HandleSurvivorsObjectiveStarted(ISurvivorsObjective obj)
+    {
+        if (obj == null) return;
+        ShowBanner(newQuestHeader, obj.Title, 0, 0, isNewQuest: true);
     }
 
     private void HandleSurvivorsObjectiveCleared(ISurvivorsObjective obj)
     {
-        ShowBanner("OBJECTIVE COMPLETE", obj != null ? obj.Title : null, 0, 0);
+        ShowBanner(questCompletedHeader, obj != null ? obj.Title : null, 0, 0, isNewQuest: false);
     }
 
     private void HandleSurvivorsObjectiveFailed(ISurvivorsObjective obj)
     {
-        ShowBanner("OBJECTIVE FAILED", obj != null ? obj.Title : null, 0, 0);
+        ShowBanner(questFailedHeader, obj != null ? obj.Title : null, 0, 0, isNewQuest: false);
     }
 
-    private void ShowBanner(string mainHeader, string questSubTitle, int gold, int kills)
+    private void ShowBanner(string mainHeader, string questSubTitle, int gold, int kills, bool isNewQuest = false)
     {
-        if (waveClearedText != null)
+        if (!string.IsNullOrEmpty(questSubTitle))
         {
-            waveClearedText.text = mainHeader;
-        }
+            if (waveClearedText != null)
+            {
+                waveClearedText.text = mainHeader;
+                waveClearedText.gameObject.SetActive(true);
+            }
 
-        if (questNameText != null)
+            if (questNameText != null)
+            {
+                questNameText.text = questSubTitle;
+                questNameText.gameObject.SetActive(true);
+            }
+            else if (waveClearedText != null)
+            {
+                waveClearedText.text = $"{mainHeader}: {questSubTitle}";
+            }
+        }
+        else
         {
-            questNameText.text = questSubTitle ?? string.Empty;
-            questNameText.gameObject.SetActive(!string.IsNullOrEmpty(questSubTitle));
+            // Classic wave cleared (no subtitle)
+            if (questNameText != null && waveClearedText != null && waveClearedText.name == "Label_QuestComplete")
+            {
+                waveClearedText.text = "WAVE CLEARED";
+                waveClearedText.gameObject.SetActive(true);
+                questNameText.text = mainHeader;
+                questNameText.gameObject.SetActive(true);
+            }
+            else
+            {
+                if (waveClearedText != null)
+                {
+                    waveClearedText.text = mainHeader;
+                    waveClearedText.gameObject.SetActive(true);
+                }
+                if (questNameText != null)
+                {
+                    questNameText.gameObject.SetActive(false);
+                }
+            }
         }
 
         if (goldEarnedText != null)
         {
             goldEarnedText.text = gold.ToString();
-            goldEarnedText.transform.parent.gameObject.SetActive(gold > 0);
+            if (goldEarnedText.transform.parent != null)
+            {
+                goldEarnedText.transform.parent.gameObject.SetActive(gold > 0);
+            }
         }
 
         if (enemiesKilledText != null)
         {
             enemiesKilledText.text = kills.ToString();
-            enemiesKilledText.transform.parent.gameObject.SetActive(kills > 0);
+            if (enemiesKilledText.transform.parent != null)
+            {
+                enemiesKilledText.transform.parent.gameObject.SetActive(kills > 0);
+            }
         }
 
         if (bannerRoot != null)
@@ -181,16 +270,32 @@ public class WaveClearedBannerUI : MonoBehaviour
         }
 
         AudioClip clipToPlay = null;
-        if (waveClearedSounds != null && waveClearedSounds.Length > 0)
+        if (isNewQuest && newQuestSounds != null && newQuestSounds.Length > 0)
+        {
+            clipToPlay = newQuestSounds[Random.Range(0, newQuestSounds.Length)];
+        }
+        else if (!isNewQuest && waveClearedSounds != null && waveClearedSounds.Length > 0)
         {
             clipToPlay = waveClearedSounds[Random.Range(0, waveClearedSounds.Length)];
         }
 #if UNITY_EDITOR
         if (clipToPlay == null)
         {
-            clipToPlay = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Audio/Bells/chime_bell_10.wav");
+            if (isNewQuest)
+            {
+                clipToPlay = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Audio/battle_viking_horn_call_far_03.wav");
+            }
+            if (clipToPlay == null)
+            {
+                clipToPlay = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Audio/Bells/chime_bell_10.wav");
+            }
         }
 #endif
+        if (clipToPlay == null && waveClearedSounds != null && waveClearedSounds.Length > 0)
+        {
+            clipToPlay = waveClearedSounds[Random.Range(0, waveClearedSounds.Length)];
+        }
+
         if (clipToPlay != null)
         {
             MMSoundManagerPlayOptions options = MMSoundManagerPlayOptions.Default;

@@ -23,9 +23,22 @@ namespace Bladehold.UI
         public TextMeshProUGUI loadingText;
         public string gameplaySceneName = "Bladehold Survivors Scene";
 
+        [Header("Shader Prewarming")]
+        [Tooltip("ShaderVariantCollection asset to progressively prewarm before or during loading.")]
+        [SerializeField] private ShaderVariantCollection prewarmVariants;
+        [Tooltip("How many shader variants to compile per frame when warming up.")]
+        [SerializeField] private int variantsPerFrame = 25;
+        [Tooltip("If true, starts prewarming variants gently in the background as soon as the Main Menu loads.")]
+        [SerializeField] private bool prewarmInBackgroundOnStart = true;
+
         private void Start()
         {
             CursorLockManager.SetUnlock("MainMenu_" + GetInstanceID(), true);
+            if (prewarmInBackgroundOnStart && prewarmVariants != null && !prewarmVariants.isWarmedUp)
+            {
+                StartCoroutine(BackgroundPrewarmRoutine());
+            }
+
             if (OpenUpgradesOnLoad)
             {
                 OpenUpgradesOnLoad = false;
@@ -34,6 +47,17 @@ namespace Bladehold.UI
             else
             {
                 ShowScreen(titleScreen);
+            }
+        }
+
+        private IEnumerator BackgroundPrewarmRoutine()
+        {
+            if (prewarmVariants == null) yield break;
+            int total = prewarmVariants.variantCount;
+            while (!prewarmVariants.isWarmedUp && prewarmVariants.warmedUpVariantCount < total)
+            {
+                prewarmVariants.WarmUpProgressively(Mathf.Max(1, variantsPerFrame / 2));
+                yield return null;
             }
         }
 
@@ -64,9 +88,9 @@ namespace Bladehold.UI
             ShowScreen(levelSelectScreen);
         }
 
-        public void OnLevelSelected()
+        public void OnLevelSelected(string targetSceneName = null)
         {
-            StartCoroutine(LoadGameplayScene());
+            StartCoroutine(LoadGameplayScene(targetSceneName));
         }
 
         public void OnSettingsClicked()
@@ -92,31 +116,54 @@ namespace Bladehold.UI
 #endif
         }
 
-        private IEnumerator LoadGameplayScene()
+        private IEnumerator LoadGameplayScene(string targetSceneName = null)
         {
             ShowScreen(loadingScreen);
             
             // Wait a frame for UI to update
             yield return null;
 
-            AsyncOperation op = SceneManager.LoadSceneAsync(gameplaySceneName);
-            op.allowSceneActivation = false;
+            // 1. Progressive shader prewarm phase
+            if (prewarmVariants != null && !prewarmVariants.isWarmedUp && prewarmVariants.variantCount > 0)
+            {
+                int totalVariants = prewarmVariants.variantCount;
+                if (loadingText) loadingText.text = "Prewarming Shaders...";
+
+                while (!prewarmVariants.isWarmedUp && prewarmVariants.warmedUpVariantCount < totalVariants)
+                {
+                    prewarmVariants.WarmUpProgressively(variantsPerFrame);
+                    float shaderProgress = Mathf.Clamp01((float)prewarmVariants.warmedUpVariantCount / totalVariants);
+                    if (loadingBar) loadingBar.value = shaderProgress * 0.35f;
+                    if (loadingText) loadingText.text = $"Prewarming Shaders... {(shaderProgress * 100):F0}%";
+                    yield return null;
+                }
+            }
+
+            // 2. Scene loading phase
+            string sceneToLoad = !string.IsNullOrEmpty(targetSceneName) ? targetSceneName : gameplaySceneName;
+            if (string.IsNullOrEmpty(sceneToLoad))
+            {
+                sceneToLoad = "Bladehold Survivors Scene";
+            }
+
+            AsyncOperation op = SceneManager.LoadSceneAsync(sceneToLoad);
+            if (op == null)
+            {
+                Debug.LogError($"[MainMenuManager] Failed to load scene '{sceneToLoad}'! Check Build Settings.");
+                yield break;
+            }
+
+            op.allowSceneActivation = true;
 
             while (!op.isDone)
             {
-                if (loadingBar) loadingBar.value = op.progress;
-                if (loadingText) loadingText.text = $"Loading... {(op.progress * 100):F0}%";
+                float sceneProgress = Mathf.Clamp01(op.progress / 0.9f);
+                float overallProgress = (prewarmVariants != null && prewarmVariants.variantCount > 0)
+                    ? 0.35f + (sceneProgress * 0.65f)
+                    : sceneProgress;
 
-                if (op.progress >= 0.9f)
-                {
-                    if (loadingBar) loadingBar.value = 1f;
-                    if (loadingText) loadingText.text = "Press Any Key To Continue";
-                    
-                    if (Input.anyKeyDown)
-                    {
-                        op.allowSceneActivation = true;
-                    }
-                }
+                if (loadingBar) loadingBar.value = overallProgress;
+                if (loadingText) loadingText.text = $"Loading Scene... {(overallProgress * 100):F0}%";
                 yield return null;
             }
         }

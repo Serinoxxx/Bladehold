@@ -43,6 +43,7 @@ public static class HUDWiringHelper
             
             var texts = bannerTransform.GetComponentsInChildren<TMP_Text>(true);
             so.FindProperty("waveClearedText").objectReferenceValue = texts.FirstOrDefault(t => t.name == "Label_QuestComplete" || t.text.Contains("CLEARED") || t.text.Contains("WAVE"));
+            so.FindProperty("questNameText").objectReferenceValue = texts.FirstOrDefault(t => t.name == "Label_QuestName");
             so.FindProperty("goldEarnedText").objectReferenceValue = texts.FirstOrDefault(t => t.name == "Label_CurrencyNum" || t.transform.parent.name.Contains("Currency"));
             so.FindProperty("enemiesKilledText").objectReferenceValue = texts.FirstOrDefault(t => t.name == "Label_EnemiesKilled" || t.transform.parent.name.Contains("XP"));
             

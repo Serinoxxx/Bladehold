@@ -67,7 +67,6 @@ public class SurvivorsGameManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            Shader.WarmupAllShaders();
         }
         else
         {

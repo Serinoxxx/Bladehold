@@ -109,12 +109,24 @@ namespace Bladehold.UI
 
         private void OnEnable()
         {
+            var rotunda = UnityEngine.Object.FindAnyObjectByType<CharacterRotunda>();
+            if (rotunda != null && rotunda.rotundaCenter != null)
+            {
+                rotunda.rotundaCenter.gameObject.SetActive(false);
+            }
+
             LoadThemeAssets();
             RefreshUI();
         }
 
         private void OnDisable()
         {
+            var rotunda = UnityEngine.Object.FindAnyObjectByType<CharacterRotunda>();
+            if (rotunda != null && rotunda.rotundaCenter != null)
+            {
+                rotunda.rotundaCenter.gameObject.SetActive(true);
+            }
+
             if (skillTooltip != null)
             {
                 skillTooltip.Hide();

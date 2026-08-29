@@ -23,6 +23,7 @@ namespace Bladehold.UI
             [TextArea(2, 4)] public string stageDescription;
             public string duration = "20:00";
             public Sprite previewSprite;
+            public string sceneName = "Bladehold Survivors Scene";
         }
 
         [Header("Stage Definitions")]
@@ -34,7 +35,8 @@ namespace Bladehold.UI
                 stageName = "Bladehold Fortress",
                 stageSubtitle = "The Inner Gate",
                 stageDescription = "Defend the inner castle courtyard and fortress gate against 20 minutes of relentless goblin infantry, battering rams, and siege catapults.",
-                duration = "20:00"
+                duration = "20:00",
+                sceneName = "Bladehold Survivors Scene"
             },
             new StageInfo
             {
@@ -274,9 +276,20 @@ namespace Bladehold.UI
                 SaveSystem.Save(data);
             }
 
+            string targetScene = null;
+            if (currentSelectedStage >= 1 && currentSelectedStage <= stages.Count)
+            {
+                targetScene = stages[currentSelectedStage - 1].sceneName;
+            }
+
+            if (string.IsNullOrEmpty(targetScene))
+            {
+                targetScene = "Bladehold Survivors Scene";
+            }
+
             if (mainMenuManager != null)
             {
-                mainMenuManager.OnLevelSelected();
+                mainMenuManager.OnLevelSelected(targetScene);
             }
         }
 

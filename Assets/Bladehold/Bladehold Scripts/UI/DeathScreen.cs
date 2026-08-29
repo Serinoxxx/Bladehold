@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using MoreMountains.Feedbacks;
 
 /// <summary>
 ///     Fades in a death screen when the run ends — the player dying (the player's
@@ -372,6 +373,13 @@ public class DeathScreen : MonoBehaviour
                     reincarnatePreviewLabel.text = Loc.Format("death.reincarnate", ReincarnateService.Instance.PreviewPointsForReincarnate());
                 }
             }
+
+            if (returnToMetaButton != null)
+            {
+                returnToMetaButton.gameObject.SetActive(true);
+                TMP_Text lbl = returnToMetaButton.GetComponentInChildren<TMP_Text>();
+                if (lbl != null) lbl.text = "Upgrades";
+            }
         }
 
         StartCoroutine(RunOverSequence(failureReason, isSurvivorsMode, runSeconds, lvl, killed, earned, dmgDealt, dmgTaken, crits));
@@ -436,7 +444,8 @@ public class DeathScreen : MonoBehaviour
 
     private void ReturnToMetaProgression()
     {
-        Time.timeScale = GameSettingsService.TargetTimeScale;
+        Time.timeScale = 1f;
+        MMTimeScaleEvent.Reset();
         CursorLockManager.SetUnlock("DeathScreen", false);
         Bladehold.UI.MainMenuManager.OpenUpgradesOnLoad = true;
         SceneManager.LoadScene("MainMenu");
@@ -492,7 +501,8 @@ public class DeathScreen : MonoBehaviour
     {
         // Reload the active scene; scene-scoped singletons (GameStats, Wallet) reset naturally, while the
         // wave to resume from rides across the reload in the static RunState.
-        Time.timeScale = GameSettingsService.TargetTimeScale; // ensure normal speed resumes even if something paused time on death.
+        Time.timeScale = 1f;
+        MMTimeScaleEvent.Reset();
         CursorLockManager.SetUnlock("DeathScreen", false);
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }

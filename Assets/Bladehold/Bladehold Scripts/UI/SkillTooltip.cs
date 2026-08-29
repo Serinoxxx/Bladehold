@@ -86,7 +86,14 @@ public class SkillTooltip : MonoBehaviour
         if (descriptionText != null) descriptionText.text = DescriptionFor(node, level) ?? "";
         if (beforeAfterText != null) beforeAfterText.text = beforeAfter ?? "";
         if (percentIncreaseText != null) percentIncreaseText.text = percentIncrease ?? "";
-        if (costText != null) costText.text = maxed ? Loc.Get("common.maxed") : FormatCost(cost);
+        if (costText != null)
+        {
+            costText.text = maxed ? Loc.Get("common.maxed") : FormatCost(cost);
+            if (costText.transform.parent != null && costText.transform.parent != transform)
+            {
+                costText.transform.parent.gameObject.SetActive(true);
+            }
+        }
 
         anchoredTo = null;
         gameObject.SetActive(true);
@@ -103,7 +110,14 @@ public class SkillTooltip : MonoBehaviour
         if (descriptionText != null) descriptionText.text = DescriptionFor(node, level) ?? "";
         if (beforeAfterText != null) beforeAfterText.text = "";
         if (percentIncreaseText != null) percentIncreaseText.text = "";
-        if (costText != null) costText.text = isMaxed ? Loc.Get("common.maxed", "MAXED") : FormatCost(cost);
+        if (costText != null)
+        {
+            costText.text = isMaxed ? Loc.Get("common.maxed", "MAXED") : FormatCost(cost);
+            if (costText.transform.parent != null && costText.transform.parent != transform)
+            {
+                costText.transform.parent.gameObject.SetActive(true);
+            }
+        }
 
         anchoredTo = null;
         gameObject.SetActive(true);
@@ -119,7 +133,14 @@ public class SkillTooltip : MonoBehaviour
         if (descriptionText != null) descriptionText.text = description ?? "";
         if (beforeAfterText != null) beforeAfterText.text = "";
         if (percentIncreaseText != null) percentIncreaseText.text = "";
-        if (costText != null) costText.text = costInfo ?? "";
+        if (costText != null)
+        {
+            costText.text = costInfo ?? "";
+            if (costText.transform.parent != null && costText.transform.parent != transform)
+            {
+                costText.transform.parent.gameObject.SetActive(!string.IsNullOrEmpty(costInfo));
+            }
+        }
 
         anchoredTo = null;
         gameObject.SetActive(true);
