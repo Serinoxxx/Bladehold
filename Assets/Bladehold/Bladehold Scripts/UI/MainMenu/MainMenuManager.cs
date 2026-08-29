@@ -19,6 +19,7 @@ namespace Bladehold.UI
         public GameObject loadingScreen;
 
         [Header("Loading")]
+        public Image logoLoadingFill;
         public Slider loadingBar;
         public TextMeshProUGUI loadingText;
         public string gameplaySceneName = "Bladehold Survivors Scene";
@@ -30,6 +31,34 @@ namespace Bladehold.UI
         [SerializeField] private int variantsPerFrame = 25;
         [Tooltip("If true, starts prewarming variants gently in the background as soon as the Main Menu loads.")]
         [SerializeField] private bool prewarmInBackgroundOnStart = true;
+
+        private void Awake()
+        {
+            EnsureLoadingReferences();
+        }
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            EnsureLoadingReferences();
+        }
+#endif
+
+        private void EnsureLoadingReferences()
+        {
+            if (logoLoadingFill == null && loadingScreen != null)
+            {
+                var fills = loadingScreen.GetComponentsInChildren<Image>(true);
+                foreach (var fill in fills)
+                {
+                    if (fill != null && fill.gameObject.name == "LogoLoadingFill")
+                    {
+                        logoLoadingFill = fill;
+                        break;
+                    }
+                }
+            }
+        }
 
         private void Start()
         {
@@ -118,7 +147,10 @@ namespace Bladehold.UI
 
         private IEnumerator LoadGameplayScene(string targetSceneName = null)
         {
+            EnsureLoadingReferences();
             ShowScreen(loadingScreen);
+            if (logoLoadingFill) logoLoadingFill.fillAmount = 0f;
+            if (loadingBar) loadingBar.value = 0f;
             
             // Wait a frame for UI to update
             yield return null;
@@ -133,7 +165,9 @@ namespace Bladehold.UI
                 {
                     prewarmVariants.WarmUpProgressively(variantsPerFrame);
                     float shaderProgress = Mathf.Clamp01((float)prewarmVariants.warmedUpVariantCount / totalVariants);
-                    if (loadingBar) loadingBar.value = shaderProgress * 0.35f;
+                    float shaderFill = shaderProgress * 0.35f;
+                    if (logoLoadingFill) logoLoadingFill.fillAmount = shaderFill;
+                    if (loadingBar) loadingBar.value = shaderFill;
                     if (loadingText) loadingText.text = $"Prewarming Shaders... {(shaderProgress * 100):F0}%";
                     yield return null;
                 }
@@ -162,10 +196,14 @@ namespace Bladehold.UI
                     ? 0.35f + (sceneProgress * 0.65f)
                     : sceneProgress;
 
+                if (logoLoadingFill) logoLoadingFill.fillAmount = overallProgress;
                 if (loadingBar) loadingBar.value = overallProgress;
                 if (loadingText) loadingText.text = $"Loading Scene... {(overallProgress * 100):F0}%";
                 yield return null;
             }
+
+            if (logoLoadingFill) logoLoadingFill.fillAmount = 1f;
+            if (loadingBar) loadingBar.value = 1f;
         }
     }
 }

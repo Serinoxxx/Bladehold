@@ -25,8 +25,10 @@ public class SettingsPanelView : MonoBehaviour
     [SerializeField] private GameObject generalTabContent;
     [SerializeField] private GameObject controlsTabContent;
     [SerializeField] private GameObject postProcessingTabContent;
-    [SerializeField] private Color tabSelectedColor = new Color(0.3f, 0.45f, 0.55f);
-    [SerializeField] private Color tabUnselectedColor = new Color(0.2f, 0.2f, 0.24f);
+    [SerializeField] private Color tabSelectedColor = new Color(0.831f, 0.776f, 0.639f, 1f);
+    [SerializeField] private Color tabUnselectedColor = new Color(0.329f, 0.282f, 0.239f, 1f);
+    [SerializeField] private Color tabSelectedTextColor = new Color(0.220f, 0.180f, 0.140f, 1f);
+    [SerializeField] private Color tabUnselectedTextColor = new Color(0.774f, 0.745f, 0.660f, 1f);
 
     [Header("Audio")]
     [SerializeField] private Slider masterVolumeSlider;
@@ -76,7 +78,7 @@ public class SettingsPanelView : MonoBehaviour
         public int gamepadIndex = -1;
     }
 
-    private void Start()
+    private void Awake()
     {
         if (masterVolumeSlider == null || musicVolumeSlider == null || sfxVolumeSlider == null)
         {
@@ -207,6 +209,11 @@ public class SettingsPanelView : MonoBehaviour
         if (tabButton != null && tabButton.targetGraphic != null)
         {
             tabButton.targetGraphic.color = selected ? tabSelectedColor : tabUnselectedColor;
+            var txt = tabButton.GetComponentInChildren<TMP_Text>();
+            if (txt != null)
+            {
+                txt.color = selected ? tabSelectedTextColor : tabUnselectedTextColor;
+            }
         }
     }
 
@@ -279,7 +286,7 @@ public class SettingsPanelView : MonoBehaviour
 
         InputActionMap map = Player.Instance != null && Player.Instance.InputSettings != null
             ? Player.Instance.InputSettings.GetRebindableActionMap()
-            : null;
+            : new Controls().Player.Get();
 
         if (map == null)
         {

@@ -27,6 +27,7 @@
 - Adjusted enemy wave spawn pacing during defense objectives
 
 ### General Changes
+- Updated loading screen to fill the logo graphic with loading progress instead of using a loading bar
 - Added smooth scale pulsing and color lightening for selected character cards
 - Added hover and select feedbacks for character cards
 - Updated meta upgrades screen with dark parchment theme and unique icons
@@ -123,3 +124,4 @@
 ### General Changes
 - Added hit sparks, screen shake, and impact sounds to weapon hits
 - Added Berserker and Mage skill tree preview panels in editor
+

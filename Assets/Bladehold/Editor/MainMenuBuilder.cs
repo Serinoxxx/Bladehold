@@ -83,6 +83,8 @@ namespace Bladehold.Editor
             CreateButton(levelSelectScreen, "Back", new Vector2(0, -250), manager, "OnPlayClicked"); // go back to char select
             
             // Loading Screen
+            Transform logoFill = loadingScreen.transform.Find("Logo/LogoLoadingFill");
+            if (logoFill != null) manager.logoLoadingFill = logoFill.GetComponent<Image>();
             manager.loadingBar = CreateSlider(loadingScreen, "LoadingBar", new Vector2(0, -50));
             manager.loadingText = CreateText(loadingScreen, "LoadingText", new Vector2(0, 0));
             
