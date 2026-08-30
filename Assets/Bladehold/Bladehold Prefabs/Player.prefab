@@ -1784,8 +1784,8 @@ MonoBehaviour:
   inputReader: {fileID: 6872381413864324108}
   facingCamera: {fileID: 0}
   dashDuration: 0.2
-  dashVfxPrefab: {fileID: 0}
-  dodgeSfx: {fileID: 0}
+  dashVfxPrefab: {fileID: 1049843463841446, guid: 2966910701d40974c87f0338bb5694e3, type: 3}
+  dodgeSfx: {fileID: 8300000, guid: 63b2fb57cfa12054698d3604b978dd65, type: 3}
   dodgeFeedback: {fileID: 0}
 --- !u!114 &924873914309187086
 MonoBehaviour:
@@ -30725,6 +30725,14 @@ MonoBehaviour:
   classController: {fileID: 6087743525908991930}
   animController: {fileID: 6674464755654316294}
   chargeTimePerLevel: 1
+  earthSplitterTelegraphPrefab: {fileID: 1129913580746370203, guid: 7bd9ddf3ad0ab1c4c887618ffc469a3f, type: 3}
+  rockExplosionVfxPrefab: {fileID: 1610468776334564, guid: fdb430cc0b3926f4cb38424d890e7b3c, type: 3}
+  earthSplitterSfx: {fileID: 8300000, guid: 808c1dae3002f1c45816cabdd9fc29fc, type: 3}
+  earthSplitterFeedback: {fileID: 0}
+  earthSplitterLineLength: 8
+  earthSplitterLineWidth: 2.5
+  earthSplitterDamageMultiplier: 4
+  earthSplitterKnockback: 20
 --- !u!114 &5860810775408780932
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -31245,8 +31253,8 @@ MonoBehaviour:
   inputReader: {fileID: 6872381413864324108}
   facingCamera: {fileID: 0}
   dashDuration: 0.2
-  dashVfxPrefab: {fileID: 0}
-  dodgeSfx: {fileID: 0}
+  dashVfxPrefab: {fileID: 1049843463841446, guid: 2966910701d40974c87f0338bb5694e3, type: 3}
+  dodgeSfx: {fileID: 8300000, guid: 63b2fb57cfa12054698d3604b978dd65, type: 3}
   dodgeFeedback: {fileID: 0}
 --- !u!4 &8319765117670202089 stripped
 Transform:
