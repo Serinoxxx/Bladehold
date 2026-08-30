@@ -10,6 +10,8 @@
 ### Fixes
 - Fixed player getting stuck floating on enemies when dismounting near groups
 - Improved airborne movement control and gravity while falling
+- Fixed Troll sliding backwards during ground slam wind-up
+- Fixed Troll animation warping by mapping dedicated giant slam animations
 
 ### Balance Changes
 - Added Assassin to the wave roster starting from Wave 3, capped at a maximum of 2 alive concurrently

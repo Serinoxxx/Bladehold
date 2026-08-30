@@ -1083,6 +1083,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1389315540600091067}
     - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: aiAttack
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 
       objectReference: {fileID: 8226603554372097498}
@@ -1098,7 +1102,8 @@ PrefabInstance:
       propertyPath: animator
       value: 
       objectReference: {fileID: 8226603554372097498}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 8780529840763675578, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
     m_RemovedGameObjects:
     - {fileID: 5046351605578515591, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
     m_AddedGameObjects:
@@ -1113,7 +1118,7 @@ PrefabInstance:
       addedObject: {fileID: 2287202951124991909}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 494112403358464087, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
-      insertIndex: 15
+      insertIndex: 14
       addedObject: {fileID: 6369489460830671324}
   m_SourcePrefab: {fileID: 100100000, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
 --- !u!114 &1389315540600091067 stripped

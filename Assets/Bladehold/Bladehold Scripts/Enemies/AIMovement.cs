@@ -185,6 +185,11 @@ public class AIMovement : MonoBehaviour
         if (agent != null && agent.isOnNavMesh)
         {
             agent.isStopped = paused;
+            if (paused)
+            {
+                agent.velocity = Vector3.zero;
+                agent.ResetPath();
+            }
         }
     }
 

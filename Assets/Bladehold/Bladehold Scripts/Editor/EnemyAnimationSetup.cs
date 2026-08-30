@@ -59,7 +59,8 @@ public static class EnemyAnimationSetup
         // 2. Load Giant Golem clips from FBXs
         AnimationClip idleClip = LoadFirstClip("Assets/Giant_Golem/Art/Animations/GiantGolem_Idle.fbx");
         AnimationClip walkClip = LoadFirstClip("Assets/Giant_Golem/Art/Animations/GiantGolem_Move_Walk_Forward.fbx");
-        AnimationClip attackClip = LoadFirstClip("Assets/Giant_Golem/Art/Animations/GiantGolem_Interact_PickUp_ThrowToGround.fbx") ?? LoadFirstClip("Assets/Giant_Golem/Art/Animations/GiantGolem_Attack_PickUpBiteAndThrow.fbx");
+        AnimationClip slamClip = LoadFirstClip("Assets/Giant_Golem/Art/Animations/GiantGolem_Attack_Swing_SmashDown01.fbx") ?? LoadFirstClip("Assets/Giant_Golem/Art/Animations/GiantGolem_Attack_PowerStomp01.fbx");
+        AnimationClip attackClip = slamClip ?? LoadFirstClip("Assets/Giant_Golem/Art/Animations/GiantGolem_Interact_PickUp_ThrowToGround.fbx");
         AnimationClip deathClip = LoadFirstClip("Assets/Giant_Golem/Art/Animations/GiantGolem_Idle_Death01.fbx");
         AnimationClip roarClip = LoadFirstClip("Assets/Giant_Golem/Art/Animations/GiantGolem_Idle_Roar01.fbx");
 
@@ -70,7 +71,11 @@ public static class EnemyAnimationSetup
         for (int i = 0; i < overrides.Count; i++)
         {
             string origName = overrides[i].Key != null ? overrides[i].Key.name.ToLower() : "";
-            if (origName.Contains("attack"))
+            if (origName.Contains("slam"))
+            {
+                if (slamClip != null) overrides[i] = new KeyValuePair<AnimationClip, AnimationClip>(overrides[i].Key, slamClip);
+            }
+            else if (origName.Contains("attack"))
             {
                 if (attackClip != null) overrides[i] = new KeyValuePair<AnimationClip, AnimationClip>(overrides[i].Key, attackClip);
             }
