@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using Synty.AnimationBaseLocomotion.Samples.InputSystem;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -13,6 +14,14 @@ public class PlayerDodge : MonoBehaviour
     [SerializeField] private InputReader inputReader;
     [SerializeField] private Camera facingCamera;
     [SerializeField] private float dashDuration = 0.2f;
+
+    [Header("Juice & Effects")]
+    [Tooltip("Particle VFX prefab spawned during the dodge dash.")]
+    [SerializeField] private GameObject dashVfxPrefab;
+    [Tooltip("Sound effect played on dodge initiation.")]
+    [SerializeField] private AudioClip dodgeSfx;
+    [Tooltip("Optional MMF_Player feedback triggered on dodge.")]
+    [SerializeField] private MMF_Player dodgeFeedback;
 
     public event Action<float, float> OnCooldownUpdated;
     public event Action OnAbilityReady;
@@ -68,6 +77,22 @@ public class PlayerDodge : MonoBehaviour
     {
         isDodging = true;
         OnDodgeStarted?.Invoke();
+
+        if (dodgeFeedback != null)
+        {
+            dodgeFeedback.PlayFeedbacks(transform.position);
+        }
+        else if (dodgeSfx != null)
+        {
+            AudioSource.PlayClipAtPoint(dodgeSfx, transform.position, 1.0f);
+        }
+
+        GameObject activeVfx = null;
+        if (dashVfxPrefab != null)
+        {
+            activeVfx = Instantiate(dashVfxPrefab, transform.position, transform.rotation, transform);
+            Destroy(activeVfx, dashDuration + 1f);
+        }
 
         maxCooldown = player.Stats.GetValue(StatType.DodgeCooldown);
         remainingCooldown = maxCooldown;

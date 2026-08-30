@@ -10,6 +10,7 @@
 - Added telegraphed ground slam, massive impact VFX, screen shake, and heavy smash audio to Slayer
 - Enhanced cinematic enemy intro cutscenes by hiding the HUD canvas and expanding cinematic letterbox height to 220px
 - Reworked spike barricades into periodic ground thrust spike traps that thrust upward dealing box AoE damage
+- Added dust trail particle VFX and high-speed whoosh sound effects to player dodge abilities
 
 ### Fixes
 - Fixed player getting stuck floating on enemies when dismounting near groups
