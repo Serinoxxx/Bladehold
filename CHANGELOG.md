@@ -24,6 +24,9 @@
 - Added Assassin to the wave roster starting from Wave 3, capped at a maximum of 2 alive concurrently
 - Added Bubbler as the third enemy type in Survivors Mode (unlocking at wave 2)
 
+### General Changes
+- Disabled slide and crouch mechanics to streamline player locomotion and controls
+
 ---
 
 ## [0.1.12] - 2026-08-29

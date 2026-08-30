@@ -548,18 +548,13 @@ namespace Synty.AnimationBaseLocomotion.Samples
         #region Crouching State
 
         /// <summary>
-        ///     Activates crouching behaviour
+        ///     Activates crouching behaviour (Disabled).
         /// </summary>
         private void ActivateCrouch()
         {
-            _crouchKeyPressed = true;
-
-            if (_isGrounded)
-            {
-                CapsuleCrouchingSize(true);
-                DeactivateSprint();
-                _isCrouching = true;
-            }
+            // Crouch is disabled in Bladehold
+            _crouchKeyPressed = false;
+            _isCrouching = false;
         }
 
         /// <summary>
@@ -568,20 +563,17 @@ namespace Synty.AnimationBaseLocomotion.Samples
         private void DeactivateCrouch()
         {
             _crouchKeyPressed = false;
-
-            if (!_cannotStandUp && !_isSliding)
-            {
-                CapsuleCrouchingSize(false);
-                _isCrouching = false;
-            }
+            _isCrouching = false;
+            CapsuleCrouchingSize(false);
         }
 
         /// <summary>
-        ///     Activates sliding behaviour.
+        ///     Activates sliding behaviour (Disabled).
         /// </summary>
         public void ActivateSliding()
         {
-            _isSliding = true;
+            // Slide is disabled in Bladehold
+            _isSliding = false;
         }
 
         /// <summary>
@@ -839,10 +831,6 @@ namespace Synty.AnimationBaseLocomotion.Samples
             if (!_isGrounded)
             {
                 _targetMaxSpeed = _isSprinting ? _sprintSpeed : _runSpeed;
-            }
-            else if (_isCrouching)
-            {
-                _targetMaxSpeed = _walkSpeed;
             }
             else if (_isSprinting)
             {
