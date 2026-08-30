@@ -832,7 +832,7 @@ namespace Synty.AnimationBaseLocomotion.Samples
 
             if (!_isGrounded)
             {
-                _targetMaxSpeed = _currentMaxSpeed;
+                _targetMaxSpeed = _isSprinting ? _sprintSpeed : _runSpeed;
             }
             else if (_isCrouching)
             {
@@ -1419,6 +1419,7 @@ namespace Synty.AnimationBaseLocomotion.Samples
             CheckIfStarting();
             CheckIfStopped();
             FaceMoveDirection();
+            ApplyGravity();
             Move();
             UpdateAnimatorController();
         }
@@ -1519,7 +1520,7 @@ namespace Synty.AnimationBaseLocomotion.Samples
             Move();
             UpdateAnimatorController();
 
-            if (_controller.isGrounded)
+            if (_controller.isGrounded || _isGrounded)
             {
                 SwitchState(AnimationState.Locomotion);
             }

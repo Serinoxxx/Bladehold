@@ -529,32 +529,37 @@ public class PlayerMount : MonoBehaviour
             horse.transform.TransformPoint(offset),
             horse.transform.TransformPoint(new Vector3(-offset.x, offset.y, offset.z)),
             horse.transform.TransformPoint(new Vector3(0f, offset.y, -Mathf.Max(2f, Mathf.Abs(offset.x)))),
+            horse.transform.TransformPoint(new Vector3(offset.x * 1.5f, offset.y, offset.z)),
+            horse.transform.TransformPoint(new Vector3(-offset.x * 1.5f, offset.y, offset.z)),
+            horse.transform.TransformPoint(new Vector3(0f, offset.y, Mathf.Max(2f, Mathf.Abs(offset.x)))),
         };
 
-        // Obstacle layers to check against (walls/environment/enemies/default props). Excludes Player, Ragdoll, Ignore Raycast.
-        int obstacleMask = ~((1 << LayerMask.NameToLayer("Player")) | (1 << LayerMask.NameToLayer("Ragdoll")) | (1 << LayerMask.NameToLayer("Ignore Raycast")));
+        // Ground layers: Default and Environment (excluding Player, Enemy, Ragdoll, Ignore Raycast)
+        int groundMask = (1 << LayerMask.NameToLayer("Default")) | (1 << LayerMask.NameToLayer("Environment"));
+        int enemyOrObstacleMask = ~((1 << LayerMask.NameToLayer("Player")) | (1 << LayerMask.NameToLayer("Ragdoll")) | (1 << LayerMask.NameToLayer("Ignore Raycast")));
 
         float radius = characterController.radius;
         float height = Mathf.Max(characterController.height, radius * 2f);
+
         foreach (Vector3 candidatePos in candidates)
         {
             Vector3 candidate = candidatePos;
-            if (Physics.Raycast(candidate + Vector3.up * 1f, Vector3.down, out RaycastHit hit, 2.5f, obstacleMask, QueryTriggerInteraction.Ignore))
+            if (Physics.Raycast(candidate + Vector3.up * 2f, Vector3.down, out RaycastHit groundHit, 5f, groundMask, QueryTriggerInteraction.Ignore))
             {
-                candidate.y = hit.point.y;
+                candidate.y = groundHit.point.y;
             }
 
-            // Elevate bottom sphere slightly above ground level to test body volume against obstacles without hitting floor
+            // Check if this landing spot is clear of obstacles/enemies
             Vector3 bottom = candidate + Vector3.up * (radius + 0.1f);
             Vector3 top = candidate + Vector3.up * Mathf.Max(height - radius, radius + 0.2f);
-            if (!Physics.CheckCapsule(bottom, top, radius * 0.85f, obstacleMask, QueryTriggerInteraction.Ignore))
+            if (!Physics.CheckCapsule(bottom, top, radius * 0.85f, enemyOrObstacleMask, QueryTriggerInteraction.Ignore))
             {
                 return candidate;
             }
         }
 
         Vector3 fallback = candidates[0];
-        if (Physics.Raycast(fallback + Vector3.up * 1f, Vector3.down, out RaycastHit fallbackHit, 2.5f, obstacleMask, QueryTriggerInteraction.Ignore))
+        if (Physics.Raycast(fallback + Vector3.up * 2f, Vector3.down, out RaycastHit fallbackHit, 5f, groundMask, QueryTriggerInteraction.Ignore))
         {
             fallback.y = fallbackHit.point.y;
         }

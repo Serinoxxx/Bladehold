@@ -7,6 +7,10 @@
 - Added Bubbler support enemy that shields allies with a 2m protective bubble and links them with a channeling beam
 - Bubbles deflect and block player melee strikes and projectile arrows
 
+### Fixes
+- Fixed player getting stuck floating on enemies when dismounting near groups
+- Improved airborne movement control and gravity while falling
+
 ### Balance Changes
 - Added Assassin to the wave roster starting from Wave 3, capped at a maximum of 2 alive concurrently
 - Added Bubbler as the third enemy type in Survivors Mode (unlocking at wave 2)
