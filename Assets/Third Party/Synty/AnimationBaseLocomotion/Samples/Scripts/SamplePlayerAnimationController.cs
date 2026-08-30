@@ -413,6 +413,12 @@ namespace Synty.AnimationBaseLocomotion.Samples
             _isStrafing = !_isSprinting && (_alwaysStrafe || _isLockedOn);
         }
 
+        public void ResetAttackCooldown()
+        {
+            _lastAttackTime = -999f;
+            _animator.SetBool(_isHoldingAttackHash, false);
+        }
+
         private void DeactivateAttack()
         {
             _animator.SetBool(_isHoldingAttackHash, false);
@@ -1414,6 +1420,11 @@ namespace Synty.AnimationBaseLocomotion.Samples
             CheckEnableTurns();
             CheckEnableLean();
             CalculateRotationalAdditives(_enableLean, _enableHeadTurn, _enableBodyTurn);
+
+            if (_animator.GetBool(_isHoldingAttackHash) && _inputReader != null && !_inputReader.IsAttackPressed)
+            {
+                DeactivateAttack();
+            }
 
             CalculateMoveDirection();
             CheckIfStarting();

@@ -137,7 +137,7 @@ public class SurvivorsGameManager : MonoBehaviour
     {
         isPausedForLevelUp = false;
         MMTimeScaleEvent.Reset();
-        Time.timeScale = 1f;
+        Time.timeScale = GameSettingsService.TargetTimeScale;
         CursorLockManager.SetUnlock("SurvivorsLevelUp", false);
         OnPauseStateChanged?.Invoke(false);
     }

@@ -112,7 +112,17 @@ public class PauseMenuController : MonoBehaviour
         }
 
         IsPaused = paused;
-        Time.timeScale = paused ? 0f : GameSettingsService.TargetTimeScale;
+        if (paused)
+        {
+            Time.timeScale = 0f;
+            MoreMountains.Feedbacks.MMTimeScaleEvent.Trigger(MoreMountains.Feedbacks.MMTimeScaleMethods.For, 0f, 0f, false, 0f, true);
+        }
+        else
+        {
+            MoreMountains.Feedbacks.MMTimeScaleEvent.Reset();
+            Time.timeScale = GameSettingsService.TargetTimeScale;
+        }
+
         CursorLockManager.SetUnlock("PauseMenu", paused);
 
         foreach (MonoBehaviour component in componentsToDisable)

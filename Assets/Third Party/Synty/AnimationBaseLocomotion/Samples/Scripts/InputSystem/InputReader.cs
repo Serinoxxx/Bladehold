@@ -49,6 +49,7 @@ namespace Synty.AnimationBaseLocomotion.Samples.InputSystem
         public Action onDraftSkillsPerformed;
 
         public bool IsAimPressed => _controls != null && _controls.Player.Aim.IsPressed();
+        public bool IsAttackPressed => _controls != null && _controls.Player.Attack.IsPressed();
 
 
         /// <inheritdoc cref="OnEnable" />

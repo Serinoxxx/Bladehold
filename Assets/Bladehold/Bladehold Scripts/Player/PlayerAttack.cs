@@ -165,15 +165,29 @@ public class PlayerAttack : MonoBehaviour
         subscribed = false;
     }
 
+    public void ResetCharge()
+    {
+        charging = false;
+        ChargeLevel = 0;
+        AttackDamageMultiplier = 1f;
+    }
+
     private void Update()
     {
-        if (anyError || !charging)
-        {
-            return;
-        }
+        if (anyError) return;
 
-        // Keep the multiplier live as the hold grows, so the hitbox reads the right value at any frame.
-        RecomputeMultiplier();
+        if (charging)
+        {
+            // Auto-recover if the attack button was released during pause/UI or if input got consumed
+            if (inputReader != null && !inputReader.IsAttackPressed)
+            {
+                HandleReleased();
+                return;
+            }
+
+            // Keep the multiplier live as the hold grows
+            RecomputeMultiplier();
+        }
     }
 
     private void HandlePressed()
@@ -181,8 +195,6 @@ public class PlayerAttack : MonoBehaviour
         if (anyError) return;
 
         // While the active class's aim weapon (bow/axe/wand) is drawn, this press fires it instead
-        // (the aim weapon suppresses the swing) — don't start timing a melee charge that can never
-        // land. A missing class controller (e.g. SkillTreePreview) just means no suppression.
         IChargedAimWeapon aimWeapon = classController != null ? classController.ActiveAimWeapon : null;
         if (aimWeapon != null && aimWeapon.IsAiming) return;
 
@@ -210,7 +222,7 @@ public class PlayerAttack : MonoBehaviour
     private void RecomputeMultiplier()
     {
         int maxLevels = MaxChargeLevels;
-        float elapsed = Time.time - chargeStartTime;
+        float elapsed = Mathf.Max(0f, Time.time - chargeStartTime);
         float chargeRatio = chargeTimePerLevel > 0f ? elapsed / chargeTimePerLevel : maxLevels;
         chargeRatio = Mathf.Clamp(chargeRatio, 0f, maxLevels);
         ChargeLevel = Mathf.Clamp(Mathf.FloorToInt(chargeRatio), 0, maxLevels);
