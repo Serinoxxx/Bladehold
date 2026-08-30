@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 535e4cde90f242444a712f2b592b277f, type: 3}
   m_Name: SpikeDefenseConfig
   m_EditorClassIdentifier: Assembly-CSharp::SpikeDefenseConfigSO
-  embedDepth: 1.5
-  impaleDuration: 6
-  allowLimbDangle: 1
-  baseDamage: 16
-  damagePerLevel: 14
-  ragdollMultiplier: 5
-  hitCooldownPerEnemy: 0.5
+  thrustInterval: 2.5
+  activeThrustDuration: 0.5
+  boxSize: {x: 3, y: 2, z: 3}
+  boxCenterOffset: {x: 0, y: 1, z: 0}
+  baseDamage: 35
+  damagePerLevel: 25
+  upwardKnockback: 4

@@ -9,12 +9,14 @@
 - Added heavy stompy locomotion to Slayer boss with stomping crusher mechanic that tramples minor enemies underfoot
 - Added telegraphed ground slam, massive impact VFX, screen shake, and heavy smash audio to Slayer
 - Enhanced cinematic enemy intro cutscenes by hiding the HUD canvas and expanding cinematic letterbox height to 220px
+- Reworked spike barricades into periodic ground thrust spike traps that thrust upward dealing box AoE damage
 
 ### Fixes
 - Fixed player getting stuck floating on enemies when dismounting near groups
 - Improved airborne movement control and gravity while falling
 - Fixed Troll sliding backwards during ground slam wind-up
 - Fixed Troll animation warping by mapping dedicated giant slam animations
+- Removed buggy corpse impaling and sticky enemy physics from spike defenses
 
 ### Balance Changes
 - Added Assassin to the wave roster starting from Wave 3, capped at a maximum of 2 alive concurrently

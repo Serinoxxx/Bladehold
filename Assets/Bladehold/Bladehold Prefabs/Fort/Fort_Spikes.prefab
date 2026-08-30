@@ -453,6 +453,6 @@ MonoBehaviour:
   impaleDuration: 6
   hitSound: {fileID: 0}
   impaleSound: {fileID: 0}
-  bloodSplatterPrefab: {fileID: 0}
+  bloodSplatterPrefab: {fileID: 1489431029902184, guid: 4430919f14c50f84085d287cbcb2c30e, type: 3}
   contactFeedback: {fileID: 6239622001806131943}
   impaleFeedback: {fileID: 7116776673402512097}

@@ -4,9 +4,9 @@ using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
-///     Fort defense for ground spike barricades and caltrop fortifications.
-///     Deals physical contact damage to walking enemies, 5x damage to ragdolled / airborne enemies,
-///     and embeds / impales enemies into the spike structure if the hit is lethal.
+///     Fort defense for ground spike traps.
+///     Periodically thrusts lethal spikes upward from the ground, dealing AoE physical damage
+///     to all enemies within its box volume, then smoothly retracts until the next thrust.
 /// </summary>
 public class SpikeDefense : FortDefense
 {
@@ -14,22 +14,32 @@ public class SpikeDefense : FortDefense
     [SerializeField] private SpikeDefenseConfigSO config;
 
     [Header("Fallback Specs (if config unassigned)")]
-    [SerializeField] private float baseDamage = 16f;
-    [SerializeField] private float damagePerLevel = 14f;
-    [SerializeField] private float ragdollMultiplier = 5f;
-    [SerializeField] private float hitCooldownPerEnemy = 0.5f;
-    [SerializeField] private float embedDepth = 1.5f;
-    [SerializeField] private float impaleDuration = 6.0f;
+    [SerializeField] private float baseDamage = 35f;
+    [SerializeField] private float damagePerLevel = 25f;
+    [SerializeField] private float thrustInterval = 2.5f;
+    [SerializeField] private float activeThrustDuration = 0.5f;
+    [SerializeField] private Vector3 boxSize = new Vector3(3f, 2f, 3f);
+    [SerializeField] private Vector3 boxCenterOffset = new Vector3(0f, 1f, 0f);
+    [SerializeField] private float upwardKnockback = 4f;
 
-    [Header("Impale & Audio Feedback")]
+    [Header("Spike Mesh Movement")]
+    [Tooltip("Optional transform of the spike model that moves up and down during thrusts.")]
+    [SerializeField] private Transform spikeMeshTransform;
+    [SerializeField] private Vector3 retractedLocalOffset = new Vector3(0f, -0.4f, 0f);
+    [SerializeField] private Vector3 extendedLocalOffset = new Vector3(0f, 0.3f, 0f);
+
+    [Header("Feedbacks & Audio")]
+    [SerializeField] private AudioClip thrustSound;
     [SerializeField] private AudioClip hitSound;
-    [SerializeField] private AudioClip impaleSound;
     [SerializeField] private GameObject bloodSplatterPrefab;
-    [SerializeField] private MMF_Player contactFeedback;
-    [SerializeField] private MMF_Player impaleFeedback;
+    [SerializeField] private GameObject thrustVfxPrefab;
+    [SerializeField] private MMF_Player thrustFeedback;
 
-    private readonly Dictionary<Health, float> nextHitTimes = new Dictionary<Health, float>();
-    private readonly HashSet<Health> impaledTargets = new HashSet<Health>();
+    private readonly Collider[] overlapBuffer = new Collider[64];
+    private readonly HashSet<Health> hitEnemiesThisThrust = new HashSet<Health>();
+    private Vector3 initialMeshLocalPos;
+    private Coroutine trapCycleRoutine;
+    private bool isThrusting = false;
 
     private void Awake()
     {
@@ -37,6 +47,29 @@ public class SpikeDefense : FortDefense
         if (config == null)
         {
             config = Resources.Load<SpikeDefenseConfigSO>("SpikeDefenseConfig");
+        }
+
+        if (spikeMeshTransform != null)
+        {
+            initialMeshLocalPos = spikeMeshTransform.localPosition;
+            spikeMeshTransform.localPosition = initialMeshLocalPos + retractedLocalOffset;
+        }
+    }
+
+    private void OnEnable()
+    {
+        if (trapCycleRoutine == null)
+        {
+            trapCycleRoutine = StartCoroutine(TrapCycleRoutine());
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (trapCycleRoutine != null)
+        {
+            StopCoroutine(trapCycleRoutine);
+            trapCycleRoutine = null;
         }
     }
 
@@ -47,223 +80,166 @@ public class SpikeDefense : FortDefense
         return baseDmg + (currentLevel - 1) * perLvl;
     }
 
-    private float GetRagdollMultiplier()
+    private float GetThrustInterval()
     {
-        return config != null ? config.ragdollMultiplier : ragdollMultiplier;
+        return config != null ? config.thrustInterval : thrustInterval;
     }
 
-    private float GetHitCooldown()
+    private float GetActiveDuration()
     {
-        return config != null ? config.hitCooldownPerEnemy : hitCooldownPerEnemy;
+        return config != null ? config.activeThrustDuration : activeThrustDuration;
     }
 
-    private float GetEmbedDepth()
+    private Vector3 GetBoxSize()
     {
-        return config != null ? config.embedDepth : embedDepth;
+        return config != null ? config.boxSize : boxSize;
     }
 
-    private float GetImpaleDuration()
+    private Vector3 GetBoxCenterOffset()
     {
-        return config != null ? config.impaleDuration : impaleDuration;
+        return config != null ? config.boxCenterOffset : boxCenterOffset;
     }
 
-    private void OnTriggerEnter(Collider other)
+    private float GetUpwardKnockback()
     {
-        ProcessSpikeContact(other);
+        return config != null ? config.upwardKnockback : upwardKnockback;
     }
 
-    private void OnTriggerStay(Collider other)
+    private IEnumerator TrapCycleRoutine()
     {
-        ProcessSpikeContact(other);
-    }
+        // Initial random stagger so all traps don't pop at the exact same millisecond
+        yield return new WaitForSeconds(Random.Range(0.2f, 0.8f));
 
-    private void ProcessSpikeContact(Collider hitCollider)
-    {
-        if (hitCollider == null) return;
-
-        Health health = hitCollider.GetComponentInParent<Health>();
-        if (health == null) return;
-
-        // Skip player and allies
-        if (Player.Instance != null && health.transform.root == Player.Instance.transform.root) return;
-
-        EnemyRagdoll ragdoll = hitCollider.GetComponentInParent<EnemyRagdoll>();
-        KnockbackReceiver kb = hitCollider.GetComponentInParent<KnockbackReceiver>();
-
-        bool isRagdolled = (ragdoll != null && ragdoll.IsRagdolled) ||
-                           (kb != null && (kb.State == KnockbackReceiver.KnockbackState.Airborne || kb.State == KnockbackReceiver.KnockbackState.KnockedDown));
-
-        // If already dead and ragdolled into spikes, check if we should impale the flying corpse
-        if (health.IsDead)
+        while (true)
         {
-            if (isRagdolled && !impaledTargets.Contains(health))
-            {
-                ImpaleTarget(health, ragdoll, kb, hitCollider, hitCollider.ClosestPoint(transform.position));
-            }
-            return;
-        }
+            yield return new WaitForSeconds(GetThrustInterval());
 
-        // Check per-enemy tick cooldown
-        float now = Time.time;
-        if (nextHitTimes.TryGetValue(health, out float nextAllowedTime) && now < nextAllowedTime)
-        {
-            return;
-        }
-        nextHitTimes[health] = now + GetHitCooldown();
-
-        float dmg = GetEffectiveDamage();
-        if (isRagdolled)
-        {
-            dmg *= GetRagdollMultiplier(); // 5x damage for ragdolled enemies!
-        }
-
-        bool isLethal = (health.CurrentHealth - dmg) <= 0f;
-
-        Vector3 hitPoint = hitCollider.ClosestPoint(transform.position);
-        Vector3 hitDirection = (hitPoint - transform.position).normalized;
-
-        Damage damage = new Damage
-        {
-            value = dmg,
-            type = DamageType.sharp,
-            isCritical = isRagdolled,
-            sourcePosition = transform.position,
-            direction = hitDirection,
-            hitCollider = hitCollider,
-            isPlayerDamage = true
-        };
-
-        health.ReceiveDamage(damage);
-
-        if (isLethal || health.IsDead)
-        {
-            // Enemy killed by spikes -> Impale and embed into the spike structure!
-            ImpaleTarget(health, ragdoll, kb, hitCollider, hitPoint);
-        }
-        else
-        {
-            if (contactFeedback != null)
-            {
-                contactFeedback.PlayFeedbacks(hitPoint);
-            }
-            else if (hitSound != null)
-            {
-                AudioSource.PlayClipAtPoint(hitSound, hitPoint, 0.7f);
-            }
+            yield return StartCoroutine(PerformThrust());
         }
     }
 
-    /// <summary>
-    ///     Sticks and embeds a killed enemy's corpse directly into the spikes,
-    ///     penetrating embedDepth meters into the barricade while letting limbs dangle naturally.
-    /// </summary>
-    private void ImpaleTarget(Health health, EnemyRagdoll ragdoll, KnockbackReceiver kb, Collider hitCollider, Vector3 hitPoint)
+    private IEnumerator PerformThrust()
     {
-        if (health == null || impaledTargets.Contains(health)) return;
-        impaledTargets.Add(health);
+        isThrusting = true;
+        hitEnemiesThisThrust.Clear();
 
-        if (impaleFeedback != null)
+        // 1. Audio & Feedback
+        if (thrustSound != null)
         {
-            impaleFeedback.PlayFeedbacks(hitPoint);
+            AudioSource.PlayClipAtPoint(thrustSound, transform.position, 1.0f);
         }
-        else if (impaleSound != null)
+        if (thrustVfxPrefab != null)
         {
-            AudioSource.PlayClipAtPoint(impaleSound, hitPoint, 1.0f);
+            Instantiate(thrustVfxPrefab, transform.TransformPoint(GetBoxCenterOffset()), Quaternion.identity);
         }
-        else if (hitSound != null)
+        if (thrustFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(hitSound, hitPoint, 1.0f);
-        }
-
-        // Spawn blood splatter at impale point
-        if (bloodSplatterPrefab != null)
-        {
-            Instantiate(bloodSplatterPrefab, hitPoint, Quaternion.identity);
+            thrustFeedback.PlayFeedbacks(transform.position);
         }
 
-        // Calculate penetration/embedding vector into the spike structure
-        float penetration = GetEmbedDepth();
-        Vector3 toCenter = (transform.position - hitPoint);
-        toCenter.y = 0f;
-        Vector3 embedDir = toCenter.sqrMagnitude > 0.001f ? toCenter.normalized : transform.forward;
-        Vector3 embeddedPos = hitPoint + embedDir * penetration;
-
-        // If ragdoll is present, penetrate and lock the struck bone
-        if (ragdoll != null)
-        {
-            ragdoll.BuildIfNeeded();
-
-            Animator anim = ragdoll.GetComponentInChildren<Animator>();
-            if (anim != null && anim.enabled)
-            {
-                anim.enabled = false;
-            }
-
-            if (!ragdoll.IsRagdolled)
-            {
-                ragdoll.EnterRagdoll(Vector3.zero, Vector3.zero);
-            }
-
-            Rigidbody struckBone = ragdoll.GetBoneRigidbody(hitCollider, hitPoint);
-            if (struckBone == null)
-            {
-                struckBone = ragdoll.Pelvis;
-            }
-
-            if (struckBone != null)
-            {
-                // Embed bone deeply into the spike structure (setting both transform and Rigidbody)
-                Vector3 delta = embeddedPos - struckBone.position;
-                struckBone.transform.position = embeddedPos;
-                struckBone.position = embeddedPos;
-                struckBone.linearVelocity = Vector3.zero;
-                struckBone.angularVelocity = Vector3.zero;
-                struckBone.isKinematic = true;
-
-                // Also shift root/other bodies so the entire humanoid model penetrates into the barricade
-                foreach (var rb in struckBone.transform.root.GetComponentsInChildren<Rigidbody>())
-                {
-                    if (rb != struckBone)
-                    {
-                        rb.transform.position += delta;
-                        rb.position += delta;
-                        rb.linearVelocity = Vector3.zero;
-                    }
-                }
-            }
-
-            bool allowDangle = config == null || config.allowLimbDangle;
-            if (allowDangle && Application.isPlaying)
-            {
-                StartCoroutine(ImpaleHoldRoutine(ragdoll, struckBone, GetImpaleDuration()));
-            }
-            else
-            {
-                ragdoll.FreezeCorpse();
-            }
-        }
-        else
-        {
-            // Non-ragdoll fallback: embed root transform
-            health.transform.position = embeddedPos;
-        }
-
-        Debug.Log($"[SpikeDefense] Enemy '{health.name}' IMPALED and embedded {penetration:F1}m into spike barricade!");
-    }
-
-    private IEnumerator ImpaleHoldRoutine(EnemyRagdoll ragdoll, Rigidbody pinnedBone, float duration)
-    {
+        // 2. Animate spikes thrusting upwards rapidly (0.08s)
+        float thrustSpeed = 0.08f;
         float elapsed = 0f;
-        while (elapsed < duration)
+        while (elapsed < thrustSpeed)
         {
-            if (ragdoll == null) yield break;
             elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / thrustSpeed);
+            if (spikeMeshTransform != null)
+            {
+                spikeMeshTransform.localPosition = Vector3.Lerp(
+                    initialMeshLocalPos + retractedLocalOffset,
+                    initialMeshLocalPos + extendedLocalOffset,
+                    t
+                );
+            }
             yield return null;
         }
 
-        if (ragdoll != null)
+        // 3. Deal Box AoE Damage to all enemies inside
+        ApplyTrapDamage();
+
+        // 4. Hold extended for active duration
+        yield return new WaitForSeconds(GetActiveDuration());
+
+        // 5. Retract spikes smoothly back into ground (0.3s)
+        float retractSpeed = 0.3f;
+        elapsed = 0f;
+        while (elapsed < retractSpeed)
         {
-            ragdoll.FreezeCorpse();
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / retractSpeed);
+            if (spikeMeshTransform != null)
+            {
+                spikeMeshTransform.localPosition = Vector3.Lerp(
+                    initialMeshLocalPos + extendedLocalOffset,
+                    initialMeshLocalPos + retractedLocalOffset,
+                    t
+                );
+            }
+            yield return null;
         }
+
+        if (spikeMeshTransform != null)
+        {
+            spikeMeshTransform.localPosition = initialMeshLocalPos + retractedLocalOffset;
+        }
+
+        isThrusting = false;
+    }
+
+    private void ApplyTrapDamage()
+    {
+        Vector3 boxCenter = transform.TransformPoint(GetBoxCenterOffset());
+        Vector3 halfExtents = GetBoxSize() * 0.5f;
+
+        int hitCount = Physics.OverlapBoxNonAlloc(boxCenter, halfExtents, overlapBuffer, transform.rotation);
+        float damageValue = GetEffectiveDamage();
+        float knockback = GetUpwardKnockback();
+
+        for (int i = 0; i < hitCount; i++)
+        {
+            Collider col = overlapBuffer[i];
+            if (col == null) continue;
+
+            // Skip player
+            if (Player.Instance != null && col.transform.root == Player.Instance.transform.root) continue;
+
+            Health enemyHealth = col.GetComponentInParent<Health>();
+            if (enemyHealth == null || enemyHealth.IsDead) continue;
+
+            if (hitEnemiesThisThrust.Contains(enemyHealth)) continue;
+            hitEnemiesThisThrust.Add(enemyHealth);
+
+            Damage damage = new Damage
+            {
+                value = damageValue,
+                type = DamageType.sharp,
+                isCritical = false,
+                sourcePosition = transform.position,
+                direction = Vector3.up,
+                knockbackForce = knockback,
+                unparryable = true,
+                isPlayerDamage = true
+            };
+
+            enemyHealth.ReceiveDamage(damage);
+
+            if (bloodSplatterPrefab != null)
+            {
+                Instantiate(bloodSplatterPrefab, col.transform.position + Vector3.up * 0.5f, Quaternion.identity);
+            }
+
+            if (hitSound != null)
+            {
+                AudioSource.PlayClipAtPoint(hitSound, col.transform.position, 0.8f);
+            }
+        }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = isThrusting ? Color.red : new Color(1f, 0.5f, 0f, 0.75f);
+        Gizmos.matrix = Matrix4x4.TRS(transform.TransformPoint(GetBoxCenterOffset()), transform.rotation, Vector3.one);
+        Gizmos.DrawWireCube(Vector3.zero, GetBoxSize());
     }
 }

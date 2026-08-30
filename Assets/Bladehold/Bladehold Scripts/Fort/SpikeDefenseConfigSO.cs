@@ -1,34 +1,34 @@
 using UnityEngine;
 
 /// <summary>
-///     Configurable tunables for the Fort Spike Barricade defense, including contact damage,
-///     ragdoll multipliers, embed penetration depth, and corpse dangling physics.
+///     Configurable tunables for the Fort Ground Spike Trap defense, which periodically thrusts
+///     spikes upward to deal AoE damage in a box volume.
 /// </summary>
 [CreateAssetMenu(menuName = "Scriptable Objects/Fort/Spike Defense Config", fileName = "SpikeDefenseConfig")]
 public class SpikeDefenseConfigSO : ScriptableObject
 {
-    [Header("Impale & Embedding")]
-    [Tooltip("How deep (in meters) the corpse embeds into the spike barricade upon a lethal impale.")]
-    [Range(0.2f, 3.5f)]
-    public float embedDepth = 1.5f;
+    [Header("Trap Cycle")]
+    [Tooltip("Seconds between spike thrust attacks.")]
+    [Range(0.5f, 10f)]
+    public float thrustInterval = 2.5f;
 
-    [Tooltip("Duration in seconds that the impaled bone stays locked to the spike before settling.")]
-    [Range(1f, 15f)]
-    public float impaleDuration = 6.0f;
+    [Tooltip("Duration in seconds that spikes stay extended/active during a thrust.")]
+    [Range(0.1f, 2f)]
+    public float activeThrustDuration = 0.5f;
 
-    [Tooltip("If true, non-pinned ragdoll limbs remain dynamic physics bodies with gravity so the corpse dangles naturally.")]
-    public bool allowLimbDangle = true;
+    [Tooltip("Size of the damage box volume.")]
+    public Vector3 boxSize = new Vector3(3f, 2f, 3f);
 
-    [Header("Damage & Timing")]
-    [Tooltip("Base contact damage per tick at Level 1.")]
-    public float baseDamage = 16f;
+    [Tooltip("Center offset of the damage box volume relative to the trap origin.")]
+    public Vector3 boxCenterOffset = new Vector3(0f, 1f, 0f);
+
+    [Header("Damage")]
+    [Tooltip("Base damage dealt per thrust at Level 1.")]
+    public float baseDamage = 35f;
 
     [Tooltip("Per-level damage increment.")]
-    public float damagePerLevel = 14f;
+    public float damagePerLevel = 25f;
 
-    [Tooltip("Damage multiplier applied when struck while ragdolled/airborne.")]
-    public float ragdollMultiplier = 5f;
-
-    [Tooltip("Minimum time between damage ticks per individual enemy.")]
-    public float hitCooldownPerEnemy = 0.5f;
+    [Tooltip("Upward knockback impulse applied to struck enemies.")]
+    public float upwardKnockback = 4f;
 }
