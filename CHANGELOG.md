@@ -1,5 +1,16 @@
 # Bladehold - Changelog
 
+## [0.1.14] - 2026-08-30
+
+### New Features
+- Added Bubbler support enemy that shields allies with a 2m protective bubble and links them with a channeling beam
+- Bubbles deflect and block player melee strikes and projectile arrows
+
+### Balance Changes
+- Added Bubbler as the third enemy type in Survivors Mode (unlocking at wave 2)
+
+---
+
 ## [0.1.12] - 2026-08-29
 
 ### New Features

@@ -1,0 +1,174 @@
+using System;
+using UnityEngine;
+
+/// <summary>
+///     Attached to an enemy while shielded by a Bubbler.
+///     Intercepts incoming damage via Health.TryBlockDamage, plays deflection SFX,
+///     and manages a visual 2m-radius sphere around the shielded enemy.
+///     If an arrow projectile or melee sweep hits inside the bubble sphere, damage is negated.
+/// </summary>
+public class BubbleShield : MonoBehaviour
+{
+    [SerializeField] private Health health;
+    [SerializeField] private BubbleShieldSO data;
+
+    private GameObject bubbleVisualObj;
+    private Transform caster;
+    private Action onShieldBroken;
+    private bool isAttached;
+
+    public Health TargetHealth => health;
+    public Transform Caster => caster;
+
+    private void Awake()
+    {
+        if (health == null)
+        {
+            health = GetComponent<Health>();
+        }
+    }
+
+    /// <summary>
+    ///     Initializes and activates the bubble shield on this target.
+    /// </summary>
+    public void Initialize(BubbleShieldSO shieldData, Transform casterTransform, Action onBrokenCallback)
+    {
+        data = shieldData;
+        caster = casterTransform;
+        onShieldBroken = onBrokenCallback;
+
+        if (health == null)
+        {
+            health = GetComponent<Health>();
+        }
+
+        if (health != null && !isAttached)
+        {
+            health.TryBlockDamage += HandleTryBlockDamage;
+            health.OnDied += HandleTargetDied;
+            isAttached = true;
+        }
+
+        CreateBubbleVisual();
+    }
+
+    private void CreateBubbleVisual()
+    {
+        if (bubbleVisualObj != null) return;
+
+        float radius = data != null ? data.radius : 2.0f;
+
+        bubbleVisualObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        bubbleVisualObj.name = "BubbleShield_Sphere";
+        bubbleVisualObj.transform.SetParent(transform, false);
+        bubbleVisualObj.transform.localPosition = new Vector3(0f, 1.0f, 0f);
+        bubbleVisualObj.transform.localScale = Vector3.one * (radius * 2.0f);
+
+        // Configure collider: trigger so it does not interfere with NavMeshAgent physics
+        // We set it as a trigger so it can interact with projectile checks or raycasts if desired
+        Collider col = bubbleVisualObj.GetComponent<Collider>();
+        if (col != null)
+        {
+            col.isTrigger = true;
+        }
+
+        // Apply material
+        if (data != null && data.bubbleMaterial != null)
+        {
+            Renderer rend = bubbleVisualObj.GetComponent<Renderer>();
+            if (rend != null)
+            {
+                rend.sharedMaterial = data.bubbleMaterial;
+                rend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
+        }
+    }
+
+    private bool HandleTryBlockDamage(Damage damage)
+    {
+        // Block all player attacks (arrows, melee, elemental damage)
+        if (damage == null) return false;
+
+        // If hit came from player or player-owned source
+        if (damage.IsPlayerOwned)
+        {
+            // Play deflection sound
+            if (data != null && data.blockSfx != null)
+            {
+                AudioSource.PlayClipAtPoint(data.blockSfx, transform.position, data.blockSfxVolume);
+            }
+
+            // Punch scale animation on the bubble visual to give juicy impact feel
+            if (bubbleVisualObj != null)
+            {
+                LeanTween.cancel(bubbleVisualObj);
+                float baseScale = (data != null ? data.radius : 2.0f) * 2.0f;
+                bubbleVisualObj.transform.localScale = Vector3.one * (baseScale * 1.15f);
+                LeanTween.scale(bubbleVisualObj, Vector3.one * baseScale, 0.25f).setEaseOutQuad();
+            }
+
+            // Return true to completely negate damage in Health.ReceiveDamage
+            return true;
+        }
+
+        return false;
+    }
+
+    private void HandleTargetDied()
+    {
+        CollapseShield();
+    }
+
+    /// <summary>
+    ///     Collapses the bubble shield, unsubscribes hooks, and removes this component.
+    /// </summary>
+    public void CollapseShield()
+    {
+        if (isAttached && health != null)
+        {
+            health.TryBlockDamage -= HandleTryBlockDamage;
+            health.OnDied -= HandleTargetDied;
+            isAttached = false;
+        }
+
+        if (bubbleVisualObj != null)
+        {
+            if (Application.isPlaying)
+            {
+                Destroy(bubbleVisualObj);
+            }
+            else
+            {
+                DestroyImmediate(bubbleVisualObj);
+            }
+            bubbleVisualObj = null;
+        }
+
+        onShieldBroken?.Invoke();
+        onShieldBroken = null;
+
+        if (Application.isPlaying)
+        {
+            Destroy(this);
+        }
+        else
+        {
+            DestroyImmediate(this);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (isAttached && health != null)
+        {
+            health.TryBlockDamage -= HandleTryBlockDamage;
+            health.OnDied -= HandleTargetDied;
+            isAttached = false;
+        }
+
+        if (bubbleVisualObj != null)
+        {
+            Destroy(bubbleVisualObj);
+        }
+    }
+}

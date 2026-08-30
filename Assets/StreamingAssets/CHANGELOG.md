@@ -1,5 +1,16 @@
 # Bladehold - Changelog
 
+## [0.1.14] - 2026-08-30
+
+### New Features
+- Added Bubbler support enemy that shields allies with a 2m protective bubble and links them with a channeling beam
+- Bubbles deflect and block player melee strikes and projectile arrows
+
+### Balance Changes
+- Added Bubbler as the third enemy type in Survivors Mode (unlocking at wave 2)
+
+---
+
 ## [0.1.12] - 2026-08-29
 
 ### New Features
@@ -27,6 +38,7 @@
 - Adjusted enemy wave spawn pacing during defense objectives
 
 ### General Changes
+- Updated loading screen to fill the logo graphic with loading progress instead of using a loading bar
 - Added smooth scale pulsing and color lightening for selected character cards
 - Added hover and select feedbacks for character cards
 - Updated meta upgrades screen with dark parchment theme and unique icons
@@ -123,3 +135,4 @@
 ### General Changes
 - Added hit sparks, screen shake, and impact sounds to weapon hits
 - Added Berserker and Mage skill tree preview panels in editor
+

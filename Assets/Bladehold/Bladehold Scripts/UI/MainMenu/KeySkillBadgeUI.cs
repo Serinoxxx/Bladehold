@@ -13,6 +13,9 @@ namespace Bladehold.UI
         [Tooltip("The icon image component representing the skill.")]
         [SerializeField] private Image iconImage;
 
+        [Tooltip("Optional text label displaying the skill title under the icon.")]
+        [SerializeField] private TMPro.TMP_Text nameLabel;
+
         [Tooltip("The shared tooltip instance to show on hover.")]
         [SerializeField] private SkillTooltip tooltip;
 
@@ -20,6 +23,7 @@ namespace Bladehold.UI
         private string skillDescription;
 
         public Image IconImage => iconImage;
+        public TMPro.TMP_Text NameLabel => nameLabel;
         public string SkillTitle => skillTitle;
         public string SkillDescription => skillDescription;
 
@@ -38,6 +42,15 @@ namespace Bladehold.UI
                 }
             }
 
+            if (nameLabel == null)
+            {
+                var labelT = transform.Find("SkillName") ?? transform.Find("Text");
+                if (labelT != null)
+                {
+                    nameLabel = labelT.GetComponent<TMPro.TMP_Text>();
+                }
+            }
+
             if (tooltip == null)
             {
                 tooltip = FindObjectOfType<SkillTooltip>(true);
@@ -51,6 +64,11 @@ namespace Bladehold.UI
             if (tooltipRef != null)
             {
                 tooltip = tooltipRef;
+            }
+
+            if (nameLabel != null)
+            {
+                nameLabel.text = title;
             }
 
             if (iconImage != null && icon != null)

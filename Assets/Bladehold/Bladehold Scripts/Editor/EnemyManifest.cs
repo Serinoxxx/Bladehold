@@ -728,6 +728,67 @@ internal static class EnemyManifest
                 },
             },
         },
+
+        // Bubbler: support enemy that maintains distance and casts bubble shield on allies within 15m
+        new EnemySpec
+        {
+            id = "bubbler",
+            soFolder = "Bubbler",
+            prefabName = "Bubbler Enemy Variant",
+            animatorOverridePath = "Assets/Bladehold/Bladehold Prefabs/Sorceress Override.overrideController",
+            disableBaseAIAttack = true,
+            removeComponents = new[] { typeof(GoldenGoblin), typeof(ImpulseGoblin) },
+            assets = new[]
+            {
+                new SoSpec
+                {
+                    soType = typeof(BubblerCasterSO),
+                    assetName = "BubblerCasterSO",
+                    initDefaults = so =>
+                    {
+                        var bso = (BubblerCasterSO)so;
+                        bso.castRange = 15f;
+                        bso.breakRange = 18f;
+                        bso.keepDistance = 10f;
+                        bso.fleeSampleRadius = 6f;
+                        bso.allyFollowDistance = 8f;
+                        bso.tickInterval = 0.2f;
+                    }
+                },
+                new SoSpec
+                {
+                    soType = typeof(BubbleShieldSO),
+                    assetName = "BubbleShieldSO",
+                    initDefaults = so =>
+                    {
+                        var bso = (BubbleShieldSO)so;
+                        bso.radius = 2.0f;
+                        bso.bubbleMaterial = AssetDatabase.LoadAssetAtPath<Material>("Assets/Piloto Studio/Materials/Shields/Shield_TopLayer_Rainbow.mat");
+                        bso.blockSfx = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Impacts/Fantasy_Game_Weapons_Wood Shield_1_Block_Defend_Buckler_Deflect.wav");
+                        bso.blockSfxVolume = 0.8f;
+                    }
+                }
+            },
+            components = new[]
+            {
+                new ComponentSpec
+                {
+                    type = typeof(BubblerCaster),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "data", ctx.LoadedAsset("BubblerCasterSO"));
+                        EnemyPrefabGenerator.SetReference(so, "shieldData", ctx.LoadedAsset("BubbleShieldSO"));
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                        EnemyPrefabGenerator.SetReference(so, "movement", ctx.Movement);
+                        var chain = ctx.Root.GetComponentInChildren<LightningSystemChain>(true);
+                        if (chain != null)
+                        {
+                            EnemyPrefabGenerator.SetReference(so, "lightningEffect", chain);
+                        }
+                    }
+                }
+            }
+        },
     };
 
     /// <summary>Loads a projectile prefab's component for wiring, throwing when the prefab is

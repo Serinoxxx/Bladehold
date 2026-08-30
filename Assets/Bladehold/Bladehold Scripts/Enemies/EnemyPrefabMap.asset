@@ -65,3 +65,5 @@ MonoBehaviour:
     prefab: {fileID: 7198226037129445137, guid: 0cdea0a995d8a7d48ba2b175c8820bc1, type: 3}
   - id: golden_goblin
     prefab: {fileID: 4916839389149412876, guid: 5bbb12304f1758b4e9b8e733143d1aac, type: 3}
+  - id: bubbler
+    prefab: {fileID: 2336506927749830714, guid: 31e3feb49f108bd448f9b5744351feef, type: 3}

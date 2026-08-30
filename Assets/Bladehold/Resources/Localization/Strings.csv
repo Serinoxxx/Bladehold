@@ -1,4 +1,4 @@
-﻿key,context,en,fr,it,de,es,ru,zh,ja,ko
+key,context,en,fr,it,de,es,ru,zh,ja,ko
 common.confirm,Generic dialog confirm button,Confirm,Confirmer,Conferma,Bestätigen,Confirmar,Подтвердить,确认,確認,확인
 common.cancel,Generic dialog cancel button,Cancel,Annuler,Annulla,Abbrechen,Cancelar,Отмена,取消,キャンセル,취소
 common.maxed,Skill node at max level,Maxed,Maximum,Massimo,Maximiert,Al máximo,Максимум,已满级,最大,최대
@@ -62,6 +62,7 @@ enemy.bomber.name,(generated),Bomber,Bombardier,Bombardiere,Bomber,Bombardero,Б
 enemy.dark_elf.name,(generated),Dark Elf,Elfe noir,Elfo oscuro,Dunkelelf,Elfo oscuro,Тёмный эльф,黑暗精灵,ダークエルフ,다크 엘프
 enemy.dwarf.name,(generated),Dwarf,Nain,Nano,Zwerg,Enano,Гном,矮人,ドワーフ,드워프
 enemy.evil_god.name,(generated),Evil God,Dieu maléfique,Dio malvagio,Böser Gott,Dios maligno,Злой бог,邪神,邪神,사악한 신
+enemy.bubbler.name,(generated),Bubbler,Bulleur,Bollitore,Blubberer,Burbujeador,Пузырщик,气泡怪,バブラー,버블러
 enemy.forest_guardian.name,(generated),Forest Guardian,Gardien de la forêt,Guardiano della foresta,Waldwächter,Guardián del bosque,Страж леса,森林守护者,森の守護者,숲의 수호자
 enemy.forest_witch.name,(generated),Forest Witch,Sorcière de la forêt,Strega della foresta,Waldhexe,Bruja del bosque,Лесная ведьма,森林女巫,森の魔女,숲의 마녀
 enemy.fort_golem.name,(generated),Fort Golem,Golem forteresse,Golem fortezza,Festungsgolem,Gólem fortaleza,Голем-крепость,堡垒魔像,フォートゴーレム,요새 골렘

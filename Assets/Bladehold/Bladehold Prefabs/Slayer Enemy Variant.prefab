@@ -953,7 +953,7 @@ PrefabInstance:
       objectReference: {fileID: 8414485562509463777}
     - target: {fileID: 8780529840763675578, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: m_Enabled
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8780529840763675578, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: attackData

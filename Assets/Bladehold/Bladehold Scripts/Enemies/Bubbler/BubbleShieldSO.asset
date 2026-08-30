@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f6fa83683ddae41468e1bf66a3d56677, type: 3}
+  m_Name: BubbleShieldSO
+  m_EditorClassIdentifier: Assembly-CSharp::BubbleShieldSO
+  radius: 2
+  bubbleMaterial: {fileID: 2100000, guid: 60424239449454141b9d8dce09852205, type: 2}
+  blockSfx: {fileID: 8300000, guid: e2dc5754185094fdfb861f201131a862, type: 3}
+  blockSfxVolume: 0.8
