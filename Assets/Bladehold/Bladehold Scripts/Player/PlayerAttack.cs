@@ -1,25 +1,13 @@
+using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using Synty.AnimationBaseLocomotion.Samples;
 using Synty.AnimationBaseLocomotion.Samples.InputSystem;
 using UnityEngine;
 
 /// <summary>
 ///     Implements the charged-attack mechanic on top of the vendored
-///     <see cref="SamplePlayerAnimationController" />, which already owns attack input and animation: its
-///     <see cref="InputReader" /> raises <c>onAttackActivated</c> on press and <c>onAttackDeactivated</c> on
-///     release, and the controller drives the <c>StartAttack</c>/<c>IsHoldingAttack</c> animator params. This
-///     component does <b>not</b> read input directly or trigger any animation — it only times the hold and
-///     exposes the resulting damage multiplier.
-///
-///     Charging is in discrete <b>levels</b>: each level takes another <see cref="chargeTimePerLevel" />
-///     seconds of holding (level 1 at 1×, level 2 at 2×, …) up to <see cref="StatType.MaxChargeLevels" />.
-///     <see cref="AttackDamageMultiplier" /> is <c>1 + ChargeLevel × ChargeDamageBonus</c> and is updated
-///     live, so whenever the sword's <see cref="DamageTrigger" /> hitbox activates (via the attack clip's
-///     animation event) it reads the multiplier for the current hold — correct whether the strike lands on
-///     press or on release.
-///
-///     Both stats start at 0, so by default there is no hold-to-charge at all: the "Heavy Strike" skill-tree
-///     node unlocks level 1 (raising <see cref="StatType.MaxChargeLevels" /> and
-///     <see cref="StatType.ChargeDamageBonus" />), and further tiers add more levels.
+///     <see cref="SamplePlayerAnimationController" />, which already owns attack input and animation.
+///     Includes the "Earth Splitter" final charge mechanic that smashes the earth in a line of rock explosions.
 /// </summary>
 public class PlayerAttack : MonoBehaviour
 {
@@ -33,6 +21,23 @@ public class PlayerAttack : MonoBehaviour
 
     [Tooltip("Seconds of holding the attack button to gain each charge level (level 1 at 1×, level 2 at 2×, ...).")]
     [SerializeField] private float chargeTimePerLevel = 0.33f;
+
+    [Header("Earth Splitter")]
+    [Tooltip("Red box telegraph prefab shown in front of the player when Earth Splitter is at full charge.")]
+    [SerializeField] private GameObject earthSplitterTelegraphPrefab;
+    [Tooltip("Synty rock explosion particle effect spawned along the line on Earth Splitter release.")]
+    [SerializeField] private GameObject rockExplosionVfxPrefab;
+    [Tooltip("Smash sound effect played on Earth Splitter ground impact.")]
+    [SerializeField] private AudioClip earthSplitterSfx;
+    [Tooltip("Optional MMF_Player feedback (screenshake) on Earth Splitter release.")]
+    [SerializeField] private MMF_Player earthSplitterFeedback;
+    [SerializeField] private float earthSplitterLineLength = 8f;
+    [SerializeField] private float earthSplitterLineWidth = 2.5f;
+    [SerializeField] private float earthSplitterDamageMultiplier = 4.0f;
+    [SerializeField] private float earthSplitterKnockback = 20.0f;
+
+    private GameObject activeTelegraph;
+    private bool isEarthSplitterReady;
 
     private bool charging;
     private float chargeStartTime;
@@ -119,6 +124,7 @@ public class PlayerAttack : MonoBehaviour
         // Heavy Strike charge is active by default at base max charge level 1.
         stats.SetBase(StatType.ChargeDamageBonus, 0f);
         stats.SetBase(StatType.MaxChargeLevels, 1f);
+        stats.SetBase(StatType.EarthSplitterUnlocked, 0f);
 
         Subscribe();
     }
@@ -136,11 +142,16 @@ public class PlayerAttack : MonoBehaviour
     {
         Unsubscribe();
         charging = false;
+        HideTelegraph();
     }
 
     private void OnDestroy()
     {
         Unsubscribe();
+        if (activeTelegraph != null)
+        {
+            Destroy(activeTelegraph);
+        }
     }
 
     private void Subscribe()
@@ -170,6 +181,7 @@ public class PlayerAttack : MonoBehaviour
         charging = false;
         ChargeLevel = 0;
         AttackDamageMultiplier = 1f;
+        HideTelegraph();
     }
 
     private void Update()
@@ -187,6 +199,36 @@ public class PlayerAttack : MonoBehaviour
 
             // Keep the multiplier live as the hold grows
             RecomputeMultiplier();
+
+            // Earth Splitter telegraph handling
+            if (stats.GetValue(StatType.EarthSplitterUnlocked) > 0f)
+            {
+                bool fullyCharged = ChargeProgress >= 0.99f;
+                if (fullyCharged && !isEarthSplitterReady)
+                {
+                    isEarthSplitterReady = true;
+                    if (earthSplitterTelegraphPrefab != null && activeTelegraph == null)
+                    {
+                        activeTelegraph = Instantiate(earthSplitterTelegraphPrefab);
+                    }
+                }
+
+                if (activeTelegraph != null)
+                {
+                    activeTelegraph.SetActive(isEarthSplitterReady);
+                    if (isEarthSplitterReady)
+                    {
+                        Vector3 center = transform.position + transform.forward * (earthSplitterLineLength * 0.5f);
+                        activeTelegraph.transform.position = center + Vector3.up * 0.05f;
+                        activeTelegraph.transform.rotation = Quaternion.LookRotation(transform.forward, Vector3.up);
+                        activeTelegraph.transform.localScale = new Vector3(earthSplitterLineWidth, 1f, earthSplitterLineLength);
+                    }
+                }
+            }
+        }
+        else
+        {
+            HideTelegraph();
         }
     }
 
@@ -203,6 +245,7 @@ public class PlayerAttack : MonoBehaviour
 
         ChargeLevel = 0;
         AttackDamageMultiplier = 0.1f;
+        HideTelegraph();
 
         if (MaxChargeLevels <= 0) return;
 
@@ -217,6 +260,86 @@ public class PlayerAttack : MonoBehaviour
         // Latch the final value for the strike that plays on release.
         RecomputeMultiplier();
         charging = false;
+
+        if (isEarthSplitterReady && stats.GetValue(StatType.EarthSplitterUnlocked) > 0f)
+        {
+            ExecuteEarthSplitter();
+        }
+
+        HideTelegraph();
+    }
+
+    private void HideTelegraph()
+    {
+        isEarthSplitterReady = false;
+        if (activeTelegraph != null)
+        {
+            activeTelegraph.SetActive(false);
+        }
+    }
+
+    private void ExecuteEarthSplitter()
+    {
+        if (earthSplitterFeedback != null)
+        {
+            earthSplitterFeedback.PlayFeedbacks(transform.position);
+        }
+        else if (earthSplitterSfx != null)
+        {
+            AudioSource.PlayClipAtPoint(earthSplitterSfx, transform.position, 1.0f);
+        }
+
+        Vector3 forward = transform.forward;
+        Vector3 origin = transform.position;
+
+        // Spawn rock explosions sequentially along the line in front of the player
+        int explosionCount = 4;
+        float step = earthSplitterLineLength / explosionCount;
+        for (int i = 1; i <= explosionCount; i++)
+        {
+            Vector3 targetPos = origin + forward * (i * step);
+            if (Physics.Raycast(targetPos + Vector3.up * 2f, Vector3.down, out RaycastHit hit, 5f, LayerMask.GetMask("Default", "Environment")))
+            {
+                targetPos = hit.point;
+            }
+
+            if (rockExplosionVfxPrefab != null)
+            {
+                GameObject vfx = Instantiate(rockExplosionVfxPrefab, targetPos, Quaternion.identity);
+                Destroy(vfx, 3f);
+            }
+        }
+
+        // Deal devastating line AOE damage
+        Vector3 boxCenter = origin + forward * (earthSplitterLineLength * 0.5f) + Vector3.up * 0.75f;
+        Vector3 halfExtents = new Vector3(earthSplitterLineWidth * 0.5f, 1.5f, earthSplitterLineLength * 0.5f);
+        Collider[] hits = Physics.OverlapBox(boxCenter, halfExtents, transform.rotation);
+
+        float baseDmg = stats.GetValue(StatType.SwordDamage);
+        float allDmg = stats.GetValue(StatType.AllDamageMultiplier);
+        float finalDmg = baseDmg * earthSplitterDamageMultiplier * (allDmg > 0f ? allDmg : 1f);
+
+        HashSet<Health> damagedEnemies = new HashSet<Health>();
+        foreach (var col in hits)
+        {
+            Health h = col.GetComponentInParent<Health>();
+            if (h != null && !h.IsDead && h != GetComponent<Health>() && damagedEnemies.Add(h))
+            {
+                Vector3 knockDir = (h.transform.position - origin).normalized + Vector3.up * 0.5f;
+                Damage damage = new Damage
+                {
+                    value = finalDmg,
+                    type = DamageType.blunt,
+                    isCritical = true,
+                    sourcePosition = origin,
+                    direction = knockDir.normalized,
+                    knockbackForce = earthSplitterKnockback,
+                    unparryable = true,
+                    isPlayerDamage = true
+                };
+                h.ReceiveDamage(damage);
+            }
+        }
     }
 
     private void RecomputeMultiplier()

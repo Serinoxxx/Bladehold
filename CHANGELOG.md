@@ -11,6 +11,7 @@
 - Enhanced cinematic enemy intro cutscenes by hiding the HUD canvas and expanding cinematic letterbox height to 220px
 - Reworked spike barricades into periodic ground thrust spike traps that thrust upward dealing box AoE damage
 - Added dust trail particle VFX and high-speed whoosh sound effects to player dodge abilities
+- Added Earth Splitter skill node: unlocks a devastating final melee charge tier with rectangular telegraph, ground smash impact, and a line of rock explosions
 
 ### Fixes
 - Fixed player getting stuck floating on enemies when dismounting near groups

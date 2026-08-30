@@ -305,6 +305,8 @@ public enum StatType
     PeriodicImpulseDuration,
     /// <summary>Massive knockback force applied to enemies hit while active.</summary>
     PeriodicImpulseKnockbackForce,
+    /// <summary>1 = Earth Splitter final melee charge attack unlocked, 0 = locked.</summary>
+    EarthSplitterUnlocked,
 }
 
 /// <summary>

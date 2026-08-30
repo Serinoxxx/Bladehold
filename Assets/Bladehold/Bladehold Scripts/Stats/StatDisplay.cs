@@ -144,6 +144,7 @@ public static class StatDisplay
         { StatType.PeriodicImpulseCooldown, new Info("Impulse Cooldown", StatFormat.Seconds) },
         { StatType.PeriodicImpulseDuration, new Info("Impulse Duration", StatFormat.Seconds) },
         { StatType.PeriodicImpulseKnockbackForce, new Info("Impulse Knockback", StatFormat.Number) },
+        { StatType.EarthSplitterUnlocked, new Info("Earth Splitter", StatFormat.Integer) },
     };
 
     /// <summary>

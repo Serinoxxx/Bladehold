@@ -1784,6 +1784,9 @@ MonoBehaviour:
   inputReader: {fileID: 6872381413864324108}
   facingCamera: {fileID: 0}
   dashDuration: 0.2
+  dashVfxPrefab: {fileID: 0}
+  dodgeSfx: {fileID: 0}
+  dodgeFeedback: {fileID: 0}
 --- !u!114 &924873914309187086
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -31242,6 +31245,9 @@ MonoBehaviour:
   inputReader: {fileID: 6872381413864324108}
   facingCamera: {fileID: 0}
   dashDuration: 0.2
+  dashVfxPrefab: {fileID: 0}
+  dodgeSfx: {fileID: 0}
+  dodgeFeedback: {fileID: 0}
 --- !u!4 &8319765117670202089 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8013909246233647550, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
