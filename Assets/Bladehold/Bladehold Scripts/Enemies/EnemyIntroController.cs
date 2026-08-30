@@ -138,20 +138,32 @@ public class EnemyIntroController : MonoBehaviour
         // 1. Pause gameplay
         Time.timeScale = 0f;
 
-        // 2. Lock player controls & disable pause toggle
+        // 2. Hide HUD Canvas during intro cutscene
+        List<Canvas> hiddenCanvases = new List<Canvas>();
+        Canvas[] allCanvases = FindObjectsByType<Canvas>(FindObjectsSortMode.None);
+        foreach (Canvas c in allCanvases)
+        {
+            if (c != null && c.enabled && c.gameObject.name.Contains("HUD"))
+            {
+                c.enabled = false;
+                hiddenCanvases.Add(c);
+            }
+        }
+
+        // 3. Lock player controls & disable pause toggle
         if (PauseMenuController.Instance != null)
         {
             PauseMenuController.Instance.SetToggleEnabled(false);
         }
         LockPlayerControls();
 
-        // 3. Ensure CinemachineBrain ignores timescale
+        // 4. Ensure CinemachineBrain ignores timescale
         if (cinemachineBrain != null)
         {
             cinemachineBrain.IgnoreTimeScale = true;
         }
 
-        // 4. Set enemy animator to UnscaledTime and trigger taunt
+        // 5. Set enemy animator to UnscaledTime and trigger taunt
         Animator enemyAnimator = enemy.Animator;
         AnimatorUpdateMode previousUpdateMode = AnimatorUpdateMode.Normal;
         if (enemyAnimator != null)
@@ -164,7 +176,7 @@ public class EnemyIntroController : MonoBehaviour
             }
         }
 
-        // 5. Focus intro camera, reset tracking state, and raise priority
+        // 6. Focus intro camera, reset tracking state, and raise priority
         if (introCamera != null)
         {
             introCamera.gameObject.SetActive(true);
@@ -175,13 +187,13 @@ public class EnemyIntroController : MonoBehaviour
             introCamera.Priority.Value = introPriority;
         }
 
-        // 6. Trigger Letterbox & Enemy Name UI
+        // 7. Trigger Letterbox & Enemy Name UI
         if (introUI != null)
         {
             introUI.ShowIntro(enemy.EnemyDisplayName, defaultIntroDuration);
         }
 
-        // 7. Hold for duration in unscaled time
+        // 8. Hold for duration in unscaled time
         float elapsed = 0f;
         while (elapsed < defaultIntroDuration)
         {
@@ -189,7 +201,7 @@ public class EnemyIntroController : MonoBehaviour
             yield return null;
         }
 
-        // 8. Transition back & restore state
+        // 9. Transition back & restore state
         if (introCamera != null)
         {
             introCamera.Priority.Value = 0;
@@ -206,6 +218,15 @@ public class EnemyIntroController : MonoBehaviour
         }
 
         UnlockPlayerControls();
+
+        // Restore HUD Canvases
+        foreach (Canvas c in hiddenCanvases)
+        {
+            if (c != null)
+            {
+                c.enabled = true;
+            }
+        }
 
         if (PauseMenuController.Instance != null)
         {

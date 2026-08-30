@@ -39,7 +39,7 @@ public class EnemyIntroUI : MonoBehaviour
     [SerializeField] private float horizontalDriftPixels = 40f;
 
     [Tooltip("Target height of each letterbox bar in pixels.")]
-    [SerializeField] private float barHeight = 110f;
+    [SerializeField] private float barHeight = 220f;
 
     private Coroutine activeIntroRoutine;
 

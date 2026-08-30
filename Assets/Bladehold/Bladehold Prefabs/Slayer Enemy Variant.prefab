@@ -939,10 +939,22 @@ PrefabInstance:
       propertyPath: m_BaseOffset
       value: -0.16
       objectReference: {fileID: 0}
+    - target: {fileID: 7080334578233263117, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: avoidancePriority
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7080334578233263117, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: m_ObstacleAvoidanceType
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7287549992360804403, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 
       objectReference: {fileID: 8414485562509463777}
+    - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: aiAttack
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 
@@ -963,7 +975,8 @@ PrefabInstance:
       propertyPath: animator
       value: 
       objectReference: {fileID: 8414485562509463777}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 8780529840763675578, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
     m_RemovedGameObjects:
     - {fileID: 5046351605578515591, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
     m_AddedGameObjects:
@@ -986,6 +999,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 494112403358464087, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3255070511643730271}
+    - targetCorrespondingSourceObject: {fileID: 494112403358464087, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8674488392906415848}
+    - targetCorrespondingSourceObject: {fileID: 494112403358464087, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7744651452148778700}
   m_SourcePrefab: {fileID: 100100000, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
 --- !u!4 &778171807465802497 stripped
 Transform:
@@ -1044,8 +1063,11 @@ MonoBehaviour:
   targetSelector: {fileID: 2224646217604022694}
   telegraphPrefab: {fileID: 1129913580746370203, guid: 7bd9ddf3ad0ab1c4c887618ffc469a3f, type: 3}
   trailPrefab: {fileID: 1218474259193278, guid: 32880282445ce1e46b8159e9eb1d8a6a, type: 3}
+  impactVfxPrefab: {fileID: 1610468776334564, guid: fdb430cc0b3926f4cb38424d890e7b3c, type: 3}
+  smashSfx: {fileID: 0}
   windupFeedback: {fileID: 755052826063880149}
   dashFeedback: {fileID: 3646428335415140882}
+  smashFeedback: {fileID: 0}
   attackTrigger: Attack
 --- !u!114 &1977404429538864901
 MonoBehaviour:
@@ -1082,6 +1104,48 @@ MonoBehaviour:
   damageFractionPerTrigger: 0.25
   retaliationDuration: 10
   retaliationFeedback: {fileID: 0}
+--- !u!114 &8674488392906415848
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5740309257760278140}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e9f7e89470bbe147bcfc6b13a142f0f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SlayerStompCrusher
+  crushRadius: 1.6
+  forwardOffset: 0.6
+  minMoveSpeed: 0.2
+  crushVfxPrefab: {fileID: 1489431029902184, guid: 4430919f14c50f84085d287cbcb2c30e, type: 3}
+  crushSfx: {fileID: 0}
+  crushFeedback: {fileID: 0}
+  agent: {fileID: 3112192463884384806}
+  health: {fileID: 7564468031631423524}
+--- !u!114 &7744651452148778700
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5740309257760278140}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e26b19cbe4baeb14989522ec6079ca7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TrollSlamAttack
+  animator: {fileID: 8414485562509463777}
+  health: {fileID: 7564468031631423524}
+  movement: {fileID: 4344859505446534489}
+  attackData: {fileID: 11400000, guid: 867ff0d4acc36fb48a248f653f21ad15, type: 2}
+  targetSelector: {fileID: 2224646217604022694}
+  telegraphPrefab: {fileID: 5856850007466671987, guid: e5dd6852d515fe64487dfd3ccf2f43b4, type: 3}
+  impactVfxPrefab: {fileID: 1610468776334564, guid: fdb430cc0b3926f4cb38424d890e7b3c, type: 3}
+  windupFeedback: {fileID: 0}
+  slamFeedback: {fileID: 0}
+  slamTrigger: Slam
 --- !u!114 &7564468031631423524 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2416392165065999887, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
@@ -1192,7 +1256,7 @@ PrefabInstance:
     - target: {fileID: 95149039229069712, guid: b2739774a07ffdb459c1bd60e3ef4f10, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 22100000, guid: 141fcf065f8acd0469df78825ad433e2, type: 2}
+      objectReference: {fileID: 22100000, guid: 8513f06035631624398bcc760344756f, type: 2}
     - target: {fileID: 95149039229069712, guid: b2739774a07ffdb459c1bd60e3ef4f10, type: 3}
       propertyPath: m_ApplyRootMotion
       value: 0

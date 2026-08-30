@@ -480,22 +480,46 @@ internal static class EnemyManifest
             },
         },
 
-        // Slayer: telegraphed line dash (SlayerDashAttack — red lane, then near-instant sweep +
-        // Warp). The dash IS its melee: base AIAttack disabled (the Troll precedent).
+        // Slayer: heavy stompy locomotion, crushes non-boss minions underfoot,
+        // troll slam when focusing the player in melee, and line dash when gap-closing.
         new EnemySpec
         {
             id = "slayer",
             soFolder = "Slayer",
             prefabName = "Slayer Enemy Variant",
             rootScale = 2f,
-            animatorOverridePath = "Assets/Bladehold/Bladehold Prefabs/Ninja Override.overrideController",
+            animatorOverridePath = "Assets/Bladehold/Bladehold Prefabs/Slayer Override.overrideController",
             disableBaseAIAttack = true,
             assets = new[]
             {
                 new SoSpec { soType = typeof(SlayerDashAttackSO), assetName = "SlayerDashSO" },
+                new SoSpec { soType = typeof(TrollSlamAttackSO), assetName = "SlayerSlamSO" },
             },
             components = new[]
             {
+                new ComponentSpec
+                {
+                    type = typeof(SlayerStompCrusher),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "agent", ctx.Root.GetComponent<UnityEngine.AI.NavMeshAgent>());
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                        EnemyPrefabGenerator.SetReference(so, "crushVfxPrefab", LoadPrefab("Assets/Synty/PolygonParticleFX/Prefabs/FX_BloodSplat_01.prefab"));
+                    },
+                },
+                new ComponentSpec
+                {
+                    type = typeof(TrollSlamAttack),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "attackData", ctx.LoadedAsset("SlayerSlamSO"));
+                        EnemyPrefabGenerator.SetReference(so, "animator", ctx.ChildAnimator);
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                        EnemyPrefabGenerator.SetReference(so, "movement", ctx.Movement);
+                        EnemyPrefabGenerator.SetReference(so, "telegraphPrefab", LoadPrefab("Assets/Bladehold/Bladehold Prefabs/SlamTelegraph.prefab"));
+                        EnemyPrefabGenerator.SetReference(so, "impactVfxPrefab", LoadPrefab("Assets/Synty/PolygonParticleFX/Prefabs/FX_ShardRock_Explosion_01_NoLoop.prefab"));
+                    },
+                },
                 new ComponentSpec
                 {
                     type = typeof(SlayerDashAttack),
@@ -509,6 +533,7 @@ internal static class EnemyManifest
                         EnemyPrefabGenerator.SetReference(so, "targetSelector", ctx.Root.GetComponent<AITargetSelector>());
                         EnemyPrefabGenerator.SetReference(so, "telegraphPrefab", LoadPrefab("Assets/Bladehold/Bladehold Prefabs/ChargeTelegraph.prefab"));
                         EnemyPrefabGenerator.SetReference(so, "trailPrefab", LoadPrefab("Assets/Synty/PolygonParticleFX/Prefabs/FX_Trail_Debris_01.prefab"));
+                        EnemyPrefabGenerator.SetReference(so, "impactVfxPrefab", LoadPrefab("Assets/Synty/PolygonParticleFX/Prefabs/FX_ShardRock_Explosion_01_NoLoop.prefab"));
                     },
                 },
                 new ComponentSpec

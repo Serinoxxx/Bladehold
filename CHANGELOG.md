@@ -6,6 +6,9 @@
 - Added Assassin enemy that winds up with a red circular telegraph, executes a multi-hit whirlwind spin attack, and is temporarily dizzy afterwards
 - Added Bubbler support enemy that shields allies with a 2m protective bubble and links them with a channeling beam
 - Bubbles deflect and block player melee strikes and projectile arrows
+- Added heavy stompy locomotion to Slayer boss with stomping crusher mechanic that tramples minor enemies underfoot
+- Added telegraphed ground slam, massive impact VFX, screen shake, and heavy smash audio to Slayer
+- Enhanced cinematic enemy intro cutscenes by hiding the HUD canvas and expanding cinematic letterbox height to 220px
 
 ### Fixes
 - Fixed player getting stuck floating on enemies when dismounting near groups
