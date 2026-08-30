@@ -81,14 +81,44 @@ public class PlayerDodgeUI : MonoBehaviour
         }
     }
 
+    [Header("Slot Container")]
+    [Tooltip("The root GameObject of the entire dodge slot (including frame, keybind, icon).")]
+    [SerializeField] private GameObject rootContainer;
+
+    private void Awake()
+    {
+        if (rootContainer == null)
+        {
+            // Traverse up to find Item_00 or Dodge root
+            Transform curr = transform;
+            while (curr != null)
+            {
+                if (curr.name.Contains("Dodge") || curr.name.Contains("Item_00"))
+                {
+                    rootContainer = curr.gameObject;
+                    break;
+                }
+                curr = curr.parent;
+            }
+        }
+    }
+
     private void Update()
     {
-        if (anyError || playerDodge == null || Player.Instance == null) return;
+        if (anyError || Player.Instance == null) return;
 
         bool isUnlocked = Player.Instance.Stats.GetValue(StatType.DodgeUnlocked) > 0f;
-        if (skillIcon.gameObject.activeSelf != isUnlocked)
+        if (rootContainer != null)
+        {
+            if (rootContainer.activeSelf != isUnlocked)
+            {
+                rootContainer.SetActive(isUnlocked);
+            }
+        }
+        else if (skillIcon != null && skillIcon.gameObject.activeSelf != isUnlocked)
         {
             skillIcon.gameObject.SetActive(isUnlocked);
+            if (keybindIcon != null) keybindIcon.gameObject.SetActive(isUnlocked);
         }
     }
 

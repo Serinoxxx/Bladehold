@@ -12,6 +12,9 @@ public interface IChargedAimWeapon
     /// <summary>True while the aim button is held and the weapon is drawn/wound up.</summary>
     bool IsAiming { get; }
 
+    /// <summary>True if this aim weapon is unlocked and available to draw/aim.</summary>
+    bool IsUnlocked => true;
+
     /// <summary>Ranged weapon type integer passed to the player Animator during aim (0 = Bow, 1 = Thrown Axe, 2 = Wand).</summary>
     int RangedWeaponType { get; }
 

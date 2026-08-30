@@ -84,18 +84,47 @@ public class SummonMountUI : MonoBehaviour
         }
     }
 
+    [Header("Slot Container")]
+    [Tooltip("The root GameObject of the entire mount slot (including frame, keybind, icon).")]
+    [SerializeField] private GameObject rootContainer;
+
+    private void Awake()
+    {
+        if (rootContainer == null)
+        {
+            // Traverse up to find Item_01 or Mount root
+            Transform curr = transform;
+            while (curr != null)
+            {
+                if (curr.name.Contains("Mount") || curr.name.Contains("Item_01"))
+                {
+                    rootContainer = curr.gameObject;
+                    break;
+                }
+                curr = curr.parent;
+            }
+        }
+    }
+
     private void Update()
     {
-        if (anyError || playerSummonMount == null) return;
+        if (anyError) return;
 
-        // Ensure visibility is correct based on whether the ability is unlocked
-        bool isUnlocked = playerSummonMount.IsAbilityUnlocked;
-        if (skillIcon.gameObject.activeSelf != isUnlocked)
+        bool isUnlocked = playerSummonMount != null && playerSummonMount.IsAbilityUnlocked;
+        if (rootContainer != null)
+        {
+            if (rootContainer.activeSelf != isUnlocked)
+            {
+                rootContainer.SetActive(isUnlocked);
+            }
+        }
+        else if (skillIcon != null && skillIcon.gameObject.activeSelf != isUnlocked)
         {
             skillIcon.gameObject.SetActive(isUnlocked);
+            if (keybindIcon != null) keybindIcon.gameObject.SetActive(isUnlocked);
         }
 
-        if (isUnlocked && !playerSummonMount.IsHorseActive && !playerSummonMount.IsCooldownActive)
+        if (isUnlocked && playerSummonMount != null && !playerSummonMount.IsHorseActive && !playerSummonMount.IsCooldownActive)
         {
             radialFillImage.fillAmount = 0f;
             timerText.text = "";

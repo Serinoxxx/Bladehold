@@ -76,6 +76,9 @@ public class PlayerClassController : MonoBehaviour
     /// </summary>
     public IChargedAimWeapon ActiveAimWeapon { get; private set; }
 
+    /// <summary>True if the active class's aim weapon exists and has been unlocked in the skill tree / progression.</summary>
+    public bool IsAimWeaponUnlocked => ActiveAimWeapon != null && ActiveAimWeapon.IsUnlocked;
+
     /// <summary>All wired class slots, for the DevConsole class-switch cheat and the class-select UI.</summary>
     public IReadOnlyList<ClassSlot> Slots => slots ?? Array.Empty<ClassSlot>();
 

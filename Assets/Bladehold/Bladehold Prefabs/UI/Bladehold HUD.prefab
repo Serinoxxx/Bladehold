@@ -5127,6 +5127,7 @@ MonoBehaviour:
   readyColor: {r: 1, g: 1, b: 1, a: 1}
   cooldownFinishedFeedback: {fileID: 0}
   activatedFeedback: {fileID: 0}
+  rootContainer: {fileID: 0}
 --- !u!1 &4510904472361703529
 GameObject:
   m_ObjectHideFlags: 0
@@ -7281,6 +7282,7 @@ MonoBehaviour:
   mouseRightSprite: {fileID: 21300000, guid: 78d618b10af7f9b4db2600f77fdce06c, type: 3}
   gamepadMeleeSprite: {fileID: 21300000, guid: b8ce06b86768d104eb2dedb6613b32bc, type: 3}
   gamepadRangedSprite: {fileID: 21300000, guid: c1f07a24972f24642a1afa80ecc751b3, type: 3}
+  rangedRootContainer: {fileID: 0}
 --- !u!1 &6547894317082719242
 GameObject:
   m_ObjectHideFlags: 0
@@ -17178,6 +17180,7 @@ MonoBehaviour:
   readyColor: {r: 1, g: 1, b: 1, a: 1}
   cooldownFinishedFeedback: {fileID: 0}
   activatedFeedback: {fileID: 0}
+  rootContainer: {fileID: 0}
 --- !u!1001 &8564364901425496521
 PrefabInstance:
   m_ObjectHideFlags: 0

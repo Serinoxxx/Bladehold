@@ -21,8 +21,29 @@ public class WeaponHUDController : MonoBehaviour
     public Sprite gamepadMeleeSprite;
     public Sprite gamepadRangedSprite;
 
+    [Header("Slot Containers")]
+    [Tooltip("The root container for the ranged weapon HUD slot.")]
+    public GameObject rangedRootContainer;
+
     private PlayerInput playerInput;
     private bool anyError;
+
+    private void Awake()
+    {
+        if (rangedRootContainer == null && rangedWeaponIcon != null)
+        {
+            Transform curr = rangedWeaponIcon.transform;
+            while (curr != null)
+            {
+                if (curr.name.Contains("Ranged") || curr.name.Contains("Item_01"))
+                {
+                    rangedRootContainer = curr.gameObject;
+                    break;
+                }
+                curr = curr.parent;
+            }
+        }
+    }
 
     private void Start()
     {
@@ -36,6 +57,38 @@ public class WeaponHUDController : MonoBehaviour
 
         // Wait a frame to ensure PlayerClassController has initialized ActiveClass in its Awake
         StartCoroutine(InitIconsRoutine());
+    }
+
+    private void Update()
+    {
+        if (anyError || Player.Instance == null) return;
+
+        bool rangedUnlocked = false;
+        var classController = Player.Instance.GetComponent<PlayerClassController>();
+        if (classController != null)
+        {
+            rangedUnlocked = classController.IsAimWeaponUnlocked;
+        }
+        else
+        {
+            rangedUnlocked = Player.Instance.Stats.GetValue(StatType.BowUnlocked) > 0f;
+        }
+
+        if (rangedRootContainer != null)
+        {
+            if (rangedRootContainer.activeSelf != rangedUnlocked)
+            {
+                rangedRootContainer.SetActive(rangedUnlocked);
+            }
+        }
+        else if (rangedWeaponIcon != null)
+        {
+            if (rangedWeaponIcon.gameObject.activeSelf != rangedUnlocked)
+            {
+                rangedWeaponIcon.gameObject.SetActive(rangedUnlocked);
+                if (rangedKeybindIcon != null) rangedKeybindIcon.gameObject.SetActive(rangedUnlocked);
+            }
+        }
     }
 
     private IEnumerator InitIconsRoutine()

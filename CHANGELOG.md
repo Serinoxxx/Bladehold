@@ -20,6 +20,7 @@
 - Removed buggy corpse impaling and sticky enemy physics from spike defenses
 - Fixed melee charge attacks breaking or getting stuck during hit-stop, pause, and card draft selection
 - Synchronized MMTimeManager time events across pause menu and card draft resumes
+- Ensured HUD keybinding and skill icons for Bow, Summon Mount, and Dash remain hidden until their respective abilities are unlocked
 
 ### Balance Changes
 - Added Assassin to the wave roster starting from Wave 3, capped at a maximum of 2 alive concurrently
