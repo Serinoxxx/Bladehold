@@ -1,5 +1,40 @@
 # Bladehold Unity Editor Wiring
 
+## Assassin Enemy Type — Unity Editor Wiring
+
+### The C# is done
+Implemented the new **Assassin** enemy type with a 3-phase attack cycle:
+- **`AssassinAttackSO.cs` & `AssassinAttackSO.asset`**: ScriptableObject configuration defining `triggerRange=3.5`, `spinRadius=3.0`, `windupSeconds=1.0`, `spinDuration=2.0`, `spinHits=5`, `damagePerHit=5`, `stunDuration=4.0`, and `attackCooldown=3.0`.
+- **`AssassinAttack.cs`**: Attack component handling the wind-up telegraph display (`SlamTelegraph.prefab`), 5-tick whirlwind spin damage AoE with slash audio (`SwordOnFlesh_100.wav`) and Synty particle VFX (`FX_Swirl_Fast_01.prefab`), followed by a 4.0-second dizzy/stunned state with overhead star VFX (`FX_StarStunned_01.prefab`), before resuming movement pursuit.
+- **`WaveSpawner.cs`**: Added `AssassinAttack?.SetDamage(def.damage.Value)` routing in `ApplyDefinitionInternal`.
+- **`EnemyManifest.cs`**: Added declarative `EnemySpec` for `assassin` with automated prefab variant generation and asset wiring.
+- **`Enemies.csv`**: Registered row `assassin,Assassin,25,5,10,20,4.5,1,3,20,1,2,2,TRUE` (unlocks at Wave 3, max concurrency 2).
+
+### Wiring checklist
+- [x] **ScriptableObject Assets**:
+  - [x] `AssassinAttackSO.asset` generated at `Assets/Bladehold/Bladehold Scripts/Enemies/Assassin/AssassinAttackSO.asset`.
+- [x] **Prefab Generation & Wiring**:
+  - [x] `Assassin Enemy Variant.prefab` generated under `Assets/Bladehold/Bladehold Prefabs/`.
+  - [x] Wired `attackData` (`AssassinAttackSO.asset`), `telegraphPrefab` (`SlamTelegraph.prefab`), `whirlwindVfxPrefab` (`FX_Swirl_Fast_01.prefab`), `stunVfxPrefab` (`FX_StarStunned_01.prefab`), and `slashAudioClip` (`SwordOnFlesh_100.wav`).
+  - [x] Registered `assassin` -> `Assassin Enemy Variant.prefab` in `EnemyPrefabMap.asset`.
+- [x] **Wave Spawner & Roster**:
+  - [x] Added `assassin` row to `Assets/Bladehold/Config/Enemies.csv`.
+
+### Manual verification
+- [x] Headless C# compilation verified with `dotnet build Assembly-CSharp.csproj` (0 errors).
+- [x] Unity Editor AssetDatabase refreshed via `refresh_unity` (0 errors).
+- [x] In-Editor Mechanic Integration Test passed:
+  - [x] Prefab instantiation and dependency validation passed.
+  - [x] `WaveSpawner.ApplyDefinition` CSV override verification passed (25 HP, 5 DMG, 4.5 Speed).
+  - [x] Single pulse damage (5 dmg) and 5-pulse total damage (25 dmg) verified.
+- [ ] In-game Play mode testing:
+  - [ ] Start run and advance to Wave 3 -> verify Assassins begin spawning with a maximum of 2 alive at any time.
+  - [ ] Approach Assassin -> verify red circular telegraph appears during 1.0s wind-up while enemy pauses movement.
+  - [ ] Whirlwind spin phase -> verify 5 rapid damage ticks over 2.0s with slash audio and whirlwind VFX while stationary.
+  - [ ] Dizzy/stun phase -> verify Assassin remains stunned for 4.0s with spinning star VFX over head.
+  - [ ] Recovery -> verify Assassin resumes chasing the player after stun ends.
+  - [ ] Killing Assassin mid-windup or mid-spin -> verify all telegraphs and particle VFX clean up immediately and corpse despawns normally.
+
 ## Meta-Progression System, Periodic Elemental Imbuements, and In-Run Card Drafting Overhaul
 
 ### The C# is done

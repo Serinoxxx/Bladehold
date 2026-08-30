@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6482e457f452a7e47adff2bf99324f58, type: 3}
+  m_Name: AssassinAttackSO
+  m_EditorClassIdentifier: Assembly-CSharp::AssassinAttackSO
+  triggerRange: 3.5
+  spinRadius: 3
+  windupSeconds: 1
+  spinDuration: 2
+  spinHits: 5
+  damagePerHit: 5
+  damageType: 0
+  knockbackForce: 2
+  spinDegreesPerSecond: 720
+  stunDuration: 4
+  attackCooldown: 3
+  windupTrigger: Attack
+  stunTrigger: Stagger

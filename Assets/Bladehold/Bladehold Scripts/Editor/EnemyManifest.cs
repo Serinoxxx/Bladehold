@@ -789,6 +789,65 @@ internal static class EnemyManifest
                 }
             }
         },
+
+        // Assassin: fast chaser that winds up with a red telegraph circle, unleashes a stationary whirlwind spin (5 hits over 2s for 5 damage), then gets stunned for 4s.
+        new EnemySpec
+        {
+            id = "assassin",
+            soFolder = "Assassin",
+            prefabName = "Assassin Enemy Variant",
+            disableBaseAIAttack = true,
+            removeComponents = new[] { typeof(GoldenGoblin), typeof(ImpulseGoblin) },
+            assets = new[]
+            {
+                new SoSpec
+                {
+                    soType = typeof(AssassinAttackSO),
+                    assetName = "AssassinAttackSO",
+                    initDefaults = so =>
+                    {
+                        var data = (AssassinAttackSO)so;
+                        data.triggerRange = 3.5f;
+                        data.spinRadius = 3.0f;
+                        data.windupSeconds = 1.0f;
+                        data.spinDuration = 2.0f;
+                        data.spinHits = 5;
+                        data.damagePerHit = 5f;
+                        data.damageType = DamageType.sharp;
+                        data.knockbackForce = 2f;
+                        data.spinDegreesPerSecond = 720f;
+                        data.stunDuration = 4.0f;
+                        data.attackCooldown = 3.0f;
+                        data.windupTrigger = "Attack";
+                        data.stunTrigger = "Stagger";
+                    }
+                }
+            },
+            components = new[]
+            {
+                new ComponentSpec
+                {
+                    type = typeof(AssassinAttack),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "attackData", ctx.LoadedAsset("AssassinAttackSO"));
+                        EnemyPrefabGenerator.SetReference(so, "animator", ctx.ChildAnimator);
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                        EnemyPrefabGenerator.SetReference(so, "movement", ctx.Movement);
+                        EnemyPrefabGenerator.SetReference(so, "targetSelector", ctx.Root.GetComponent<AITargetSelector>());
+                        EnemyPrefabGenerator.SetReference(so, "telegraphPrefab", LoadPrefab("Assets/Bladehold/Bladehold Prefabs/SlamTelegraph.prefab"));
+                        EnemyPrefabGenerator.SetReference(so, "whirlwindVfxPrefab", LoadPrefab("Assets/Synty/PolygonParticleFX/Prefabs/FX_Swirl_Fast_01.prefab"));
+                        EnemyPrefabGenerator.SetReference(so, "stunVfxPrefab", LoadPrefab("Assets/Synty/PolygonParticleFX/Prefabs/FX_StarStunned_01.prefab"));
+
+                        var audioClip = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Blade Impacts/SwordOnFlesh_100.wav");
+                        if (audioClip != null)
+                        {
+                            EnemyPrefabGenerator.SetReference(so, "slashAudioClip", audioClip);
+                        }
+                    }
+                }
+            }
+        },
     };
 
     /// <summary>Loads a projectile prefab's component for wiring, throwing when the prefab is

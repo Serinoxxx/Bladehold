@@ -642,6 +642,7 @@ public class WaveSpawner : MonoBehaviour
             enemy.GetComponent<LeapSlamAttack>()?.SetDamage(def.damage.Value);
             enemy.GetComponent<PinballCharge>()?.SetDamage(def.damage.Value);
             enemy.GetComponent<BubblerCaster>()?.SetDamage(def.damage.Value);
+            enemy.GetComponent<AssassinAttack>()?.SetDamage(def.damage.Value);
         }
         if (def.minGold.HasValue)
         {
