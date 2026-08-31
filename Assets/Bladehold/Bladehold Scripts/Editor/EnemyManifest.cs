@@ -810,6 +810,11 @@ internal static class EnemyManifest
                         {
                             EnemyPrefabGenerator.SetReference(so, "lightningEffect", chain);
                         }
+                        var handR = ctx.Root.transform.Find("SM_Chr_ForestWitch_01/Root/Hips/Spine_01/Spine_02/Spine_03/Clavicle_R/Shoulder_R/Elbow_R/Hand_R");
+                        if (handR != null)
+                        {
+                            EnemyPrefabGenerator.SetReference(so, "lightningOriginPoint", handR);
+                        }
                     }
                 }
             }

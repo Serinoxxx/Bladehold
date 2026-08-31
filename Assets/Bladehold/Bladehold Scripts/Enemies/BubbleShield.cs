@@ -168,7 +168,14 @@ public class BubbleShield : MonoBehaviour
 
         if (bubbleVisualObj != null)
         {
-            Destroy(bubbleVisualObj);
+            if (Application.isPlaying)
+            {
+                Destroy(bubbleVisualObj);
+            }
+            else
+            {
+                DestroyImmediate(bubbleVisualObj);
+            }
         }
     }
 }

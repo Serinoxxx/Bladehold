@@ -61,6 +61,19 @@ public class BubblerCaster : MonoBehaviour
         {
             health.OnDied += HandleDied;
         }
+        if (lightningOriginPoint == null)
+        {
+            Transform handR = transform.Find("SM_Chr_ForestWitch_01/Root/Hips/Spine_01/Spine_02/Spine_03/Clavicle_R/Shoulder_R/Elbow_R/Hand_R");
+            if (handR != null)
+            {
+                lightningOriginPoint = handR;
+            }
+        }
+        if (lightningTargetTransform == null)
+        {
+            lightningTargetTransform = new GameObject("BubblerBeamAnchor").transform;
+            lightningTargetTransform.SetParent(transform, false);
+        }
     }
 
     private void Start()
@@ -104,11 +117,17 @@ public class BubblerCaster : MonoBehaviour
         }
 
         // Create beam target anchor object
-        lightningTargetTransform = new GameObject("BubblerBeamAnchor").transform;
+        if (lightningTargetTransform == null)
+        {
+            lightningTargetTransform = new GameObject("BubblerBeamAnchor").transform;
+            lightningTargetTransform.SetParent(transform, false);
+        }
 
         // Configure beam points
         if (lightningEffect != null)
         {
+            lightningEffect.autoScaleEnabled = false;
+            lightningEffect.masterScale = 1.0f;
             Transform origin = lightningOriginPoint != null ? lightningOriginPoint : transform;
             lightningEffect.chainPoints = new Transform[] { origin, lightningTargetTransform };
             lightningEffect.gameObject.SetActive(false);
@@ -132,7 +151,14 @@ public class BubblerCaster : MonoBehaviour
 
         if (lightningTargetTransform != null)
         {
-            Destroy(lightningTargetTransform.gameObject);
+            if (Application.isPlaying)
+            {
+                Destroy(lightningTargetTransform.gameObject);
+            }
+            else
+            {
+                DestroyImmediate(lightningTargetTransform.gameObject);
+            }
         }
     }
 
@@ -179,11 +205,6 @@ public class BubblerCaster : MonoBehaviour
             float distToTarget = Vector3.Distance(transform.position, currentTargetHealth.transform.position);
             if (distToTarget <= data.breakRange)
             {
-                // Update beam target position to follow ally
-                if (lightningTargetTransform != null)
-                {
-                    lightningTargetTransform.position = currentTargetHealth.transform.position + lightningTargetOffset;
-                }
                 return;
             }
         }
@@ -241,13 +262,17 @@ public class BubblerCaster : MonoBehaviour
         currentShield = allyHealth.gameObject.AddComponent<BubbleShield>();
         currentShield.Initialize(shieldData, transform, HandleShieldBroken);
 
-        if (lightningTargetTransform != null)
+        if (lightningTargetTransform == null)
         {
-            lightningTargetTransform.position = allyHealth.transform.position + lightningTargetOffset;
+            lightningTargetTransform = new GameObject("BubblerBeamAnchor").transform;
         }
+
+        lightningTargetTransform.SetParent(allyHealth.transform, false);
+        lightningTargetTransform.localPosition = lightningTargetOffset;
 
         if (lightningEffect != null)
         {
+            lightningEffect.autoScaleEnabled = false;
             Transform origin = lightningOriginPoint != null ? lightningOriginPoint : transform;
             lightningEffect.chainPoints = new Transform[] { origin, lightningTargetTransform };
             lightningEffect.gameObject.SetActive(true);
@@ -258,6 +283,11 @@ public class BubblerCaster : MonoBehaviour
     {
         currentShield = null;
         currentTargetHealth = null;
+        if (lightningTargetTransform != null)
+        {
+            lightningTargetTransform.SetParent(transform, false);
+            lightningTargetTransform.localPosition = Vector3.zero;
+        }
         if (lightningEffect != null)
         {
             lightningEffect.gameObject.SetActive(false);
@@ -272,6 +302,12 @@ public class BubblerCaster : MonoBehaviour
             currentShield = null;
         }
         currentTargetHealth = null;
+
+        if (lightningTargetTransform != null)
+        {
+            lightningTargetTransform.SetParent(transform, false);
+            lightningTargetTransform.localPosition = Vector3.zero;
+        }
 
         if (lightningEffect != null)
         {

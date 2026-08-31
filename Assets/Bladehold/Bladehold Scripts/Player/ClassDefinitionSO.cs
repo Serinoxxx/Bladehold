@@ -51,6 +51,46 @@ public class ClassDefinitionSO : ScriptableObject
     [Tooltip("Skill-tree node ids showcased as this class's \"Key Skills\" on the class-select screen (~3).")]
     public string[] keySkillIds;
 
+    [Header("Character Select UI Presentation")]
+    [Tooltip("Individual character/role name shown under the portrait (e.g. Galan, Bronin, Casteria).")]
+    public string characterName;
+
+    [Tooltip("Hero portrait sprite shown on the class select card.")]
+    public Sprite portrait;
+
+    [Tooltip("Health display string shown under the class title (e.g. 100/100, 250/250, 80/80).")]
+    public string healthDisplay;
+
+    [System.Serializable]
+    public class KeySkillEntry
+    {
+        [Tooltip("Skill tree node id (optional).")]
+        public string skillId;
+        [Tooltip("Display name of the skill shown in the tooltip.")]
+        public string skillTitle;
+        [TextArea(2, 4)]
+        [Tooltip("Detailed description of the skill shown in the tooltip.")]
+        public string skillDescription;
+        [Tooltip("Icon sprite for the preview badge.")]
+        public Sprite icon;
+
+        public KeySkillEntry() { }
+
+        public KeySkillEntry(string id, string title, string description, Sprite iconSprite)
+        {
+            skillId = id;
+            skillTitle = title;
+            skillDescription = description;
+            icon = iconSprite;
+        }
+    }
+
+    [Tooltip("Key skills showcased on the character select card (name, description, icon).")]
+    public System.Collections.Generic.List<KeySkillEntry> keySkills = new System.Collections.Generic.List<KeySkillEntry>();
+
+    /// <summary>The character name, falling back to displayName if unset.</summary>
+    public string CharacterName => !string.IsNullOrEmpty(characterName) ? characterName : displayName;
+
     /// <summary>This class's skill tree, falling back to <paramref name="defaultTree" /> when <see cref="skillTree" /> is unset (the Swordsman).</summary>
     public SkillTreeSO ResolveSkillTree(SkillTreeSO defaultTree) => skillTree != null ? skillTree : defaultTree;
 }

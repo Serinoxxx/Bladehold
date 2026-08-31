@@ -14,6 +14,16 @@ namespace Bladehold.UI
     /// </summary>
     public class CharacterSelectScreenUI : MonoBehaviour
     {
+        [Header("Data-Driven Configuration")]
+        [Tooltip("The card prefab instantiated for each class definition (based on the Berserker card).")]
+        [SerializeField] private CharacterSelectCardUI cardPrefab;
+
+        [Tooltip("Container holding the card instances.")]
+        [SerializeField] private Transform cardsContainer;
+
+        [Tooltip("List of ClassDefinitionSO assets driving the character select cards.")]
+        [SerializeField] private List<ClassDefinitionSO> classDefinitions = new List<ClassDefinitionSO>();
+
         [Header("Cards")]
         [SerializeField] private List<CharacterSelectCardUI> cards = new List<CharacterSelectCardUI>();
 
@@ -57,6 +67,15 @@ namespace Bladehold.UI
         {
             AutoWireReferences();
 
+            if (cardPrefab != null && classDefinitions != null && classDefinitions.Count > 0)
+            {
+                RebuildCards();
+            }
+            else
+            {
+                BindCardEvents();
+            }
+
             if (confirmButton != null)
             {
                 confirmButton.onClick.RemoveListener(HandleConfirmClicked);
@@ -67,14 +86,6 @@ namespace Bladehold.UI
             {
                 backButton.onClick.RemoveListener(HandleBackClicked);
                 backButton.onClick.AddListener(HandleBackClicked);
-            }
-
-            foreach (var card in cards)
-            {
-                if (card == null) continue;
-                card.OnCardClicked += HandleCardClicked;
-                card.OnCardHovered += HandleCardHovered;
-                card.OnCardHoverExited += HandleCardHoverExited;
             }
         }
 
@@ -90,6 +101,80 @@ namespace Bladehold.UI
                 backButton.onClick.RemoveListener(HandleBackClicked);
             }
 
+            UnbindCardEvents();
+        }
+
+        private void OnEnable()
+        {
+            SelectSavedClass();
+        }
+
+        [ContextMenu("Rebuild Cards From Definitions")]
+        public void RebuildCards()
+        {
+            UnbindCardEvents();
+
+            if (cardsContainer == null)
+            {
+                cardsContainer = transform.Find("CardsContainer");
+            }
+
+            if (cardsContainer != null)
+            {
+                var toDestroy = new List<GameObject>();
+                foreach (Transform child in cardsContainer)
+                {
+                    toDestroy.Add(child.gameObject);
+                }
+                foreach (var go in toDestroy)
+                {
+                    if (Application.isPlaying)
+                        Destroy(go);
+                    else
+                        DestroyImmediate(go);
+                }
+            }
+
+            cards.Clear();
+
+            if (cardPrefab == null || classDefinitions == null || cardsContainer == null)
+            {
+                return;
+            }
+
+            if (tooltip == null)
+            {
+                tooltip = FindObjectOfType<SkillTooltip>(true);
+            }
+
+            foreach (var def in classDefinitions)
+            {
+                if (def == null) continue;
+
+                CharacterSelectCardUI cardInstance = Instantiate(cardPrefab, cardsContainer);
+                cardInstance.name = $"Card_Class {def.displayName}";
+                cardInstance.PopulateFromDefinition(def, tooltip);
+                cards.Add(cardInstance);
+            }
+
+            BindCardEvents();
+            SelectSavedClass();
+        }
+
+        private void BindCardEvents()
+        {
+            UnbindCardEvents();
+            foreach (var card in cards)
+            {
+                if (card == null) continue;
+                card.OnCardClicked += HandleCardClicked;
+                card.OnCardHovered += HandleCardHovered;
+                card.OnCardHoverExited += HandleCardHoverExited;
+            }
+        }
+
+        private void UnbindCardEvents()
+        {
             foreach (var card in cards)
             {
                 if (card == null) continue;
@@ -99,7 +184,7 @@ namespace Bladehold.UI
             }
         }
 
-        private void OnEnable()
+        public void SelectSavedClass()
         {
             string savedClassId = "swordsman";
             SaveData data = SaveSystem.Load();
@@ -141,13 +226,14 @@ namespace Bladehold.UI
                 rotunda = FindObjectOfType<CharacterRotunda>();
             }
 
-            if (cards.Count == 0)
+            if (cardsContainer == null)
             {
-                var container = transform.Find("CardsContainer");
-                if (container != null)
-                {
-                    cards.AddRange(container.GetComponentsInChildren<CharacterSelectCardUI>(true));
-                }
+                cardsContainer = transform.Find("CardsContainer");
+            }
+
+            if (cards.Count == 0 && cardsContainer != null)
+            {
+                cards.AddRange(cardsContainer.GetComponentsInChildren<CharacterSelectCardUI>(true));
             }
 
             if (descriptionText == null)

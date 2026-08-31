@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ClassDefinitionSO
   id: swordsman
   displayName: Ranger
-  description: A woodland marksman. Balanced speed and steel up close, with a longbow
-    for picking off the horde at range.
+  description: Galan is an expert with both bow and blade, specializing in swift
+    movements, keeping his distance, and using precision shots to take out priority
+    targets.
   animatorOverride: {fileID: 0}
   characterModelPrefab: {fileID: 5406396403290654752, guid: 5bc119c4c4c4a5944be2cc3354c0fed5, type: 3}
   meleeWeaponType: 0
@@ -28,3 +29,20 @@ MonoBehaviour:
   - bow_unlock
   - multishot
   - flamearrow
+  characterName: Galan
+  portrait: {fileID: 21300000, guid: 3e6c38b3b6a57db43a330ccea0e4044b, type: 3}
+  healthDisplay: 100/100
+  keySkills:
+  - skillId: bow_unlock
+    skillTitle: Bow
+    skillDescription: 'Unlock the bow: hold aim to draw and fire arrows.'
+    icon: {fileID: 21300000, guid: cb959d614132ac44e81509cce84c2048, type: 3}
+  - skillId: multishot
+    skillTitle: Multi Shot
+    skillDescription: Fire an additional arrow with reduced damage.
+    icon: {fileID: 21300000, guid: 64f057f3d82ffc3458c1f84efbf1bced, type: 3}
+  - skillId: flamearrow
+    skillTitle: Flaming Arrows
+    skillDescription: Arrows deal fire damage and have a chance to instantly explode
+      Bombers.
+    icon: {fileID: 21300000, guid: 615ce9a0fa318b046aec6ea61be50664, type: 3}

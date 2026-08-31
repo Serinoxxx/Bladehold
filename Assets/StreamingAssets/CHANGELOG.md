@@ -3,11 +3,35 @@
 ## [0.1.14] - 2026-08-30
 
 ### New Features
+- Added Assassin enemy that winds up with a red circular telegraph, executes a multi-hit whirlwind spin attack, and is temporarily dizzy afterwards
 - Added Bubbler support enemy that shields allies with a 2m protective bubble and links them with a channeling beam
 - Bubbles deflect and block player melee strikes and projectile arrows
+- Added heavy stompy locomotion to Slayer boss with stomping crusher mechanic that tramples minor enemies underfoot
+- Added telegraphed ground slam, massive impact VFX, screen shake, and heavy smash audio to Slayer
+- Enhanced cinematic enemy intro cutscenes by hiding the HUD canvas and expanding cinematic letterbox height to 220px
+- Reworked spike barricades into periodic ground thrust spike traps that thrust upward dealing box AoE damage
+- Added dust trail particle VFX and high-speed whoosh sound effects to player dodge abilities
+- Added Earth Splitter skill node: unlocks a devastating final melee charge tier with rectangular telegraph, ground smash impact, and a line of rock explosions
+- Converted character selection cards to dynamically instantiate and populate from ClassDefinitionSO data assets
+
+### Fixes
+- Fixed Bubbler enemy failing to animate by configuring the Storm Witch / Sorceress locomotion controller and rig setup
+- Fixed missing connective beam on Bubbler by parenting the beam target to shielded allies and configuring lightning chain scaling
+- Fixed player getting stuck floating on enemies when dismounting near groups
+- Improved airborne movement control and gravity while falling
+- Fixed Troll sliding backwards during ground slam wind-up
+- Fixed Troll animation warping by mapping dedicated giant slam animations
+- Removed buggy corpse impaling and sticky enemy physics from spike defenses
+- Fixed melee charge attacks breaking or getting stuck during hit-stop, pause, and card draft selection
+- Synchronized MMTimeManager time events across pause menu and card draft resumes
+- Ensured HUD keybinding and skill icons for Bow, Summon Mount, and Dash remain hidden until their respective abilities are unlocked
 
 ### Balance Changes
+- Added Assassin to the wave roster starting from Wave 3, capped at a maximum of 2 alive concurrently
 - Added Bubbler as the third enemy type in Survivors Mode (unlocking at wave 2)
+
+### General Changes
+- Disabled slide and crouch mechanics to streamline player locomotion and controls
 
 ---
 

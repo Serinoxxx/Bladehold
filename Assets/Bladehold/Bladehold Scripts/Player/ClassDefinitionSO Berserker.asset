@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ClassDefinitionSO
   id: berserker
   displayName: Berserker
-  description: "Fury made flesh. Trades finesse for raw power \u2014 a heavy axe
-    to throw, and rage that turns pain into strength."
+  description: Bronin likes to solve all his problems with violence. Charging head
+    on into danger is always the answer. Pain only fuels his rage.
   animatorOverride: {fileID: 0}
   characterModelPrefab: {fileID: 6922260172336995217, guid: 040b280f3bc13a24fbd8ca70a251f7d9, type: 3}
   meleeWeaponType: 1
@@ -28,3 +28,19 @@ MonoBehaviour:
   - axe_unlock
   - axe_boomerang
   - pain_1
+  characterName: Bronin
+  portrait: {fileID: 21300000, guid: 9c463666969dfbd4ea113ff32760cf62, type: 3}
+  healthDisplay: 250/250
+  keySkills:
+  - skillId: ult_size
+    skillTitle: Colossal Growth
+    skillDescription: Grow even larger during ultimate.
+    icon: {fileID: 21300000, guid: 4b8372ccb7c1aa947b85731e3a06f40e, type: 3}
+  - skillId: axe_charge
+    skillTitle: Wound Up
+    skillDescription: More throw damage per second wound up.
+    icon: {fileID: 21300000, guid: 5de5c88778ffde74dbaf135b40a5ada7, type: 3}
+  - skillId: knock_1
+    skillTitle: Brute Force
+    skillDescription: Knockback enemies on hit.
+    icon: {fileID: 21300000, guid: 2c2c6e1c0ffb38d429adecfb3c646c7a, type: 3}

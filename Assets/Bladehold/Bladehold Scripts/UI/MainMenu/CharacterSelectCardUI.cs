@@ -147,6 +147,8 @@ namespace Bladehold.UI
         public string ClassId => classId;
         public string ClassName => className;
         public string CharacterName => characterName;
+        public string HealthValueString => healthValueString;
+        public Sprite PortraitSprite => portraitSprite;
         public IReadOnlyList<KeySkillInfo> KeySkills => keySkills;
         public Sprite[] KeySkillIcons => keySkillIcons;
         public bool IsSelected => isSelected;
@@ -340,7 +342,49 @@ namespace Bladehold.UI
             RefreshCardVisuals();
         }
 
-        public void RefreshCardVisuals()
+        /// <summary>
+        /// Populates this card's visual elements, text, portrait, and skills dynamically from a ClassDefinitionSO.
+        /// </summary>
+        public void PopulateFromDefinition(ClassDefinitionSO def, SkillTooltip tooltip = null)
+        {
+            if (def == null) return;
+
+            AutoWireReferences();
+
+            classDefinition = def;
+            classId = def.id;
+            className = !string.IsNullOrEmpty(def.displayName) ? def.displayName : def.id;
+            characterName = def.CharacterName;
+            roleSubtitle = characterName;
+            healthValueString = !string.IsNullOrEmpty(def.healthDisplay) ? def.healthDisplay : "100/100";
+            portraitSprite = def.portrait;
+            classDescription = !string.IsNullOrEmpty(def.description) ? def.description : def.LocalizedDescription;
+
+            keySkills.Clear();
+            if (def.keySkills != null && def.keySkills.Count > 0)
+            {
+                foreach (var entry in def.keySkills)
+                {
+                    keySkills.Add(new KeySkillInfo(entry.skillId, entry.skillTitle, entry.skillDescription, entry.icon));
+                }
+            }
+            else if (def.keySkillIds != null && def.skillTree != null)
+            {
+                foreach (string sId in def.keySkillIds)
+                {
+                    var node = def.skillTree.GetById(sId);
+                    if (node != null)
+                    {
+                        Sprite icon = def.skillTree.GetIcon(node.iconName);
+                        keySkills.Add(new KeySkillInfo(node.id, node.displayName, node.description, icon));
+                    }
+                }
+            }
+
+            RefreshCardVisuals(tooltip);
+        }
+
+        public void RefreshCardVisuals(SkillTooltip externalTooltip = null)
         {
             if (classTitleLabel != null)
             {
@@ -369,7 +413,7 @@ namespace Bladehold.UI
 
             if (cardSkillBadges != null && cardSkillBadges.Length > 0)
             {
-                var tooltip = FindObjectOfType<SkillTooltip>(true);
+                var tooltip = externalTooltip != null ? externalTooltip : FindObjectOfType<SkillTooltip>(true);
                 for (int i = 0; i < cardSkillBadges.Length; i++)
                 {
                     if (cardSkillBadges[i] == null) continue;

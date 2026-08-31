@@ -29,6 +29,11 @@ namespace Bladehold.UI
 
         private void Awake()
         {
+            EnsureReferences();
+        }
+
+        public void EnsureReferences()
+        {
             if (iconImage == null)
             {
                 var inner = transform.Find("Image");
@@ -59,6 +64,8 @@ namespace Bladehold.UI
 
         public void Setup(string title, string description, Sprite icon, SkillTooltip tooltipRef = null)
         {
+            EnsureReferences();
+
             skillTitle = title;
             skillDescription = description;
             if (tooltipRef != null)

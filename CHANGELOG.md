@@ -12,8 +12,11 @@
 - Reworked spike barricades into periodic ground thrust spike traps that thrust upward dealing box AoE damage
 - Added dust trail particle VFX and high-speed whoosh sound effects to player dodge abilities
 - Added Earth Splitter skill node: unlocks a devastating final melee charge tier with rectangular telegraph, ground smash impact, and a line of rock explosions
+- Converted character selection cards to dynamically instantiate and populate from ClassDefinitionSO data assets
 
 ### Fixes
+- Fixed Bubbler enemy failing to animate by configuring the Storm Witch / Sorceress locomotion controller and rig setup
+- Fixed missing connective beam on Bubbler by parenting the beam target to shielded allies and configuring lightning chain scaling
 - Fixed player getting stuck floating on enemies when dismounting near groups
 - Improved airborne movement control and gravity while falling
 - Fixed Troll sliding backwards during ground slam wind-up
