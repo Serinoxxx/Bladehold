@@ -250,7 +250,7 @@ public class PlayerSummonMount : MonoBehaviour
         }
     }
 
-    public bool IsAbilityUnlocked => player != null && player.Stats.GetValue(StatType.SummonMountUnlocked) > 0f;
+    public bool IsAbilityUnlocked => player != null && player.Stats != null && player.Stats.GetValue(StatType.SummonMountUnlocked) > 0f;
     public bool IsHorseActive => spawnedHorse != null;
     public bool IsCooldownActive => isCooldownActive;
 }

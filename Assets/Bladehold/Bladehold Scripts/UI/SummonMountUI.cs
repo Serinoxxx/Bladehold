@@ -51,7 +51,7 @@ public class SummonMountUI : MonoBehaviour
 
         if (Player.Instance != null)
         {
-            playerSummonMount = Player.Instance.GetComponent<PlayerSummonMount>();
+            playerSummonMount = Player.Instance.GetComponentInChildren<PlayerSummonMount>();
             if (playerSummonMount != null)
             {
                 playerSummonMount.OnDurationUpdated += HandleDurationUpdated;
@@ -60,7 +60,7 @@ public class SummonMountUI : MonoBehaviour
                 playerSummonMount.OnAbilityTriggered += HandleAbilityTriggered;
             }
 
-            playerInput = Player.Instance.GetComponent<PlayerInput>();
+            playerInput = Player.Instance.GetComponentInChildren<PlayerInput>();
             if (playerInput != null)
             {
                 playerInput.onControlsChanged += OnControlsChanged;
@@ -126,9 +126,9 @@ public class SummonMountUI : MonoBehaviour
 
         if (isUnlocked && playerSummonMount != null && !playerSummonMount.IsHorseActive && !playerSummonMount.IsCooldownActive)
         {
-            radialFillImage.fillAmount = 0f;
-            timerText.text = "";
-            skillIcon.color = readyColor;
+            if (radialFillImage != null) radialFillImage.fillAmount = 0f;
+            if (timerText != null) timerText.text = "";
+            if (skillIcon != null) skillIcon.color = readyColor;
         }
     }
 

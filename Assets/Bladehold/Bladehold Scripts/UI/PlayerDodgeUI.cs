@@ -50,7 +50,7 @@ public class PlayerDodgeUI : MonoBehaviour
 
         if (Player.Instance != null)
         {
-            playerDodge = Player.Instance.GetComponent<PlayerDodge>();
+            playerDodge = Player.Instance.GetComponentInChildren<PlayerDodge>();
             if (playerDodge != null)
             {
                 playerDodge.OnCooldownUpdated += HandleCooldownUpdated;
@@ -58,7 +58,7 @@ public class PlayerDodgeUI : MonoBehaviour
                 playerDodge.OnDodgeStarted += HandleAbilityTriggered;
             }
 
-            playerInput = Player.Instance.GetComponent<PlayerInput>();
+            playerInput = Player.Instance.GetComponentInChildren<PlayerInput>();
             if (playerInput != null)
             {
                 playerInput.onControlsChanged += OnControlsChanged;
@@ -105,7 +105,7 @@ public class PlayerDodgeUI : MonoBehaviour
 
     private void Update()
     {
-        if (anyError || Player.Instance == null) return;
+        if (anyError || Player.Instance == null || Player.Instance.Stats == null) return;
 
         bool isUnlocked = Player.Instance.Stats.GetValue(StatType.DodgeUnlocked) > 0f;
         if (rootContainer != null)

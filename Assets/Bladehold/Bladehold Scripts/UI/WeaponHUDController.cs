@@ -64,12 +64,12 @@ public class WeaponHUDController : MonoBehaviour
         if (anyError || Player.Instance == null) return;
 
         bool rangedUnlocked = false;
-        var classController = Player.Instance.GetComponent<PlayerClassController>();
-        if (classController != null)
+        var classController = Player.Instance.GetComponentInChildren<PlayerClassController>();
+        if (classController != null && classController.ActiveAimWeapon != null)
         {
             rangedUnlocked = classController.IsAimWeaponUnlocked;
         }
-        else
+        else if (Player.Instance.Stats != null)
         {
             rangedUnlocked = Player.Instance.Stats.GetValue(StatType.BowUnlocked) > 0f;
         }
