@@ -167,4 +167,38 @@ public static class EditorFixer
             }
         }
     }
+
+    [MenuItem("Tools/Fix Earth Splitter Telegraph")]
+    public static void FixEarthSplitterTelegraph()
+    {
+        string path = "Assets/Bladehold/Bladehold Prefabs/EarthSplitterTelegraph.prefab";
+        using (var editScope = new PrefabUtility.EditPrefabContentsScope(path))
+        {
+            var root = editScope.prefabContentsRoot;
+            root.transform.localRotation = Quaternion.identity;
+            root.transform.localPosition = Vector3.zero;
+            root.transform.localScale = Vector3.one;
+
+            var allPS = root.GetComponentsInChildren<ParticleSystem>(true);
+            foreach (var ps in allPS)
+            {
+                var main = ps.main;
+                main.simulationSpace = ParticleSystemSimulationSpace.Local;
+                main.scalingMode = ParticleSystemScalingMode.Hierarchy;
+
+                var renderer = ps.GetComponent<ParticleSystemRenderer>();
+                if (renderer != null)
+                {
+                    if (renderer.renderMode == ParticleSystemRenderMode.Billboard)
+                    {
+                        renderer.alignment = ParticleSystemRenderSpace.Local;
+                    }
+                }
+                Debug.Log($"Fixed ParticleSystem on {ps.gameObject.name}: SimSpace=Local, ScalingMode=Hierarchy, Alignment={(renderer != null ? renderer.alignment.ToString() : "N/A")}");
+            }
+        }
+        AssetDatabase.SaveAssets();
+        Debug.Log("EarthSplitterTelegraph prefab fixed and saved successfully!");
+    }
 }
+

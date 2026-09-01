@@ -210,6 +210,17 @@ public class PlayerAttack : MonoBehaviour
                     if (earthSplitterTelegraphPrefab != null && activeTelegraph == null)
                     {
                         activeTelegraph = Instantiate(earthSplitterTelegraphPrefab);
+                        foreach (var ps in activeTelegraph.GetComponentsInChildren<ParticleSystem>(true))
+                        {
+                            var main = ps.main;
+                            main.simulationSpace = ParticleSystemSimulationSpace.Local;
+                            main.scalingMode = ParticleSystemScalingMode.Hierarchy;
+                            var rend = ps.GetComponent<ParticleSystemRenderer>();
+                            if (rend != null && rend.renderMode == ParticleSystemRenderMode.Billboard)
+                            {
+                                rend.alignment = ParticleSystemRenderSpace.Local;
+                            }
+                        }
                     }
                 }
 

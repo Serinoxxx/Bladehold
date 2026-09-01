@@ -30725,7 +30725,7 @@ MonoBehaviour:
   classController: {fileID: 6087743525908991930}
   animController: {fileID: 6674464755654316294}
   chargeTimePerLevel: 1
-  earthSplitterTelegraphPrefab: {fileID: 1129913580746370203, guid: 7bd9ddf3ad0ab1c4c887618ffc469a3f, type: 3}
+  earthSplitterTelegraphPrefab: {fileID: 6821233308554425452, guid: 17b328836a9f70e45a8b6e69999b54ac, type: 3}
   rockExplosionVfxPrefab: {fileID: 1610468776334564, guid: fdb430cc0b3926f4cb38424d890e7b3c, type: 3}
   earthSplitterSfx: {fileID: 8300000, guid: 808c1dae3002f1c45816cabdd9fc29fc, type: 3}
   earthSplitterFeedback: {fileID: 0}

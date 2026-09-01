@@ -3,6 +3,7 @@
 ## [0.1.14] - 2026-08-30
 
 ### New Features
+- Added dynamic blood decals on the ground under enemies when they take damage, scaling with hit severity and critical strikes
 - Added Assassin enemy that winds up with a red circular telegraph, executes a multi-hit whirlwind spin attack, and is temporarily dizzy afterwards
 - Added Bubbler support enemy that shields allies with a 2m protective bubble and links them with a channeling beam
 - Bubbles deflect and block player melee strikes and projectile arrows

@@ -38,9 +38,6 @@ public class EnemyIntroUI : MonoBehaviour
     [Tooltip("Horizontal drift distance in pixels over the intro duration.")]
     [SerializeField] private float horizontalDriftPixels = 40f;
 
-    [Tooltip("Target height of each letterbox bar in pixels.")]
-    [SerializeField] private float barHeight = 220f;
-
     private Coroutine activeIntroRoutine;
 
     private void Awake()
@@ -119,26 +116,12 @@ public class EnemyIntroUI : MonoBehaviour
     private IEnumerator IntroSequenceRoutine(float totalDuration, System.Action onComplete)
     {
         SetVisible(true);
-
-        float topBarHiddenY = barHeight + 20f;
-        float bottomBarHiddenY = -(barHeight + 20f);
         float topBarVisibleY = 0f;
         float bottomBarVisibleY = 0f;
 
         Vector2 nameHiddenPos = new Vector2(0f, 60f);
         Vector2 nameVisiblePos = new Vector2(0f, 0f);
 
-        if (topBar != null)
-        {
-            topBar.sizeDelta = new Vector2(topBar.sizeDelta.x, barHeight);
-            topBar.anchoredPosition = new Vector2(0f, topBarHiddenY);
-        }
-
-        if (bottomBar != null)
-        {
-            bottomBar.sizeDelta = new Vector2(bottomBar.sizeDelta.x, barHeight);
-            bottomBar.anchoredPosition = new Vector2(0f, bottomBarHiddenY);
-        }
 
         if (nameContainer != null)
         {
@@ -158,14 +141,6 @@ public class EnemyIntroUI : MonoBehaviour
             float t = Mathf.Clamp01(elapsed / slideInDuration);
             float ease = 1f - Mathf.Pow(1f - t, 3f); // Ease-out cubic
 
-            if (topBar != null)
-            {
-                topBar.anchoredPosition = new Vector2(0f, Mathf.Lerp(topBarHiddenY, topBarVisibleY, ease));
-            }
-            if (bottomBar != null)
-            {
-                bottomBar.anchoredPosition = new Vector2(0f, Mathf.Lerp(bottomBarHiddenY, bottomBarVisibleY, ease));
-            }
             if (nameContainer != null)
             {
                 nameContainer.anchoredPosition = Vector2.Lerp(nameHiddenPos, nameVisiblePos, ease);
@@ -217,14 +192,6 @@ public class EnemyIntroUI : MonoBehaviour
             float t = Mathf.Clamp01(elapsed / slideOutDuration);
             float ease = t * t; // Ease-in quad
 
-            if (topBar != null)
-            {
-                topBar.anchoredPosition = new Vector2(topBar.anchoredPosition.x, Mathf.Lerp(topBarVisibleY, topBarHiddenY, ease));
-            }
-            if (bottomBar != null)
-            {
-                bottomBar.anchoredPosition = new Vector2(bottomBar.anchoredPosition.x, Mathf.Lerp(bottomBarVisibleY, bottomBarHiddenY, ease));
-            }
             if (nameContainer != null)
             {
                 nameContainer.anchoredPosition = Vector2.Lerp(nameVisiblePos, nameHiddenPos, ease);

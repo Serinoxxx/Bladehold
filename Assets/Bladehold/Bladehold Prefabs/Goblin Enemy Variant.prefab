@@ -398,6 +398,7 @@ GameObject:
   - component: {fileID: 2774917170554717151}
   - component: {fileID: 6790884973619429240}
   - component: {fileID: 4433720349428158434}
+  - component: {fileID: 1750997362636305128}
   m_Layer: 7
   m_Name: Goblin Enemy Variant
   m_TagString: Untagged
@@ -932,6 +933,32 @@ MonoBehaviour:
   health: {fileID: 2416392165065999887}
   dropTable: {fileID: 11400000, guid: a934a2f3cd5fd364e8e7791c07f025e2, type: 2}
   dropOffset: {x: 0, y: 0.5, z: 0}
+--- !u!114 &1750997362636305128
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 494112403358464087}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa63ebb05c7fedd4caaf9dfa62c7a3cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyBloodDecals
+  health: {fileID: 2416392165065999887}
+  config: {fileID: 11400000, guid: 0dc3a05117208104ebded74f15a5fa59, type: 2}
+  groundLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  minDamageForDecal: 0.1
+  minDecalSize: 0.4
+  maxDecalSize: 1.3
+  damageForMaxSize: 25
+  critSizeMultiplier: 1.25
+  spawnCooldown: 0.1
+  maxRaycastDistance: 3
+  raycastHeightOffset: 0.5
+  groundJitterRadius: 0.25
 --- !u!1 &4616585396617252247
 GameObject:
   m_ObjectHideFlags: 0

@@ -275,36 +275,47 @@ MonoBehaviour:
   rows:
   - setting: 0
     slider: {fileID: 1801358155}
+    toggle: {fileID: 0}
     resetButton: {fileID: 772563968}
   - setting: 1
     slider: {fileID: 1758611157}
+    toggle: {fileID: 0}
     resetButton: {fileID: 471744953}
   - setting: 2
     slider: {fileID: 1241595562}
+    toggle: {fileID: 0}
     resetButton: {fileID: 1770310759}
   - setting: 3
     slider: {fileID: 251318277}
+    toggle: {fileID: 0}
     resetButton: {fileID: 1968353804}
   - setting: 4
     slider: {fileID: 964069540}
+    toggle: {fileID: 0}
     resetButton: {fileID: 880585693}
   - setting: 5
     slider: {fileID: 638503982}
+    toggle: {fileID: 0}
     resetButton: {fileID: 1208999372}
   - setting: 6
     slider: {fileID: 2138652557}
+    toggle: {fileID: 0}
     resetButton: {fileID: 1378291075}
   - setting: 7
     slider: {fileID: 1756413388}
+    toggle: {fileID: 0}
     resetButton: {fileID: 864848287}
   - setting: 8
     slider: {fileID: 1794833373}
+    toggle: {fileID: 0}
     resetButton: {fileID: 690754315}
   - setting: 9
     slider: {fileID: 2125991491}
+    toggle: {fileID: 0}
     resetButton: {fileID: 1436570408}
   - setting: 10
     slider: {fileID: 789861255}
+    toggle: {fileID: 0}
     resetButton: {fileID: 1012540437}
   captureButton: {fileID: 1544554882}
   exitButton: {fileID: 1672508338}
@@ -1198,9 +1209,12 @@ MonoBehaviour:
   prefabMap: {fileID: 11400000, guid: ec2bcfc9825f30a45a7140a508f003f2, type: 2}
   applyRosterOverrides: 1
   galleryOrigin: {x: 0, y: 0, z: 0}
-  columnSpacing: 3
-  rowSpacing: 3
-  columns: 5
+  lineSpacing: 3.5
+  lineDirection: {x: 1, y: 0, z: 0}
+  facingDirection: {x: 0, y: 0, z: -1}
+  nameplateOffset: {x: 0, y: 0.15, z: -1.8}
+  nameplateFontSize: 3.5
+  nameplateTiltAngle: 40
   navSampleRadius: 4
   labelHeight: 2.2
   spawnPoint: {fileID: 1058585196}
@@ -5718,6 +5732,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Ancient Queen Enemy Variant
       objectReference: {fileID: 0}
+    - target: {fileID: 8608062666623121320, guid: 9eeeab239fdd25f42b9b82f1da339bf2, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -8518,7 +8536,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &709009358
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8547,8 +8565,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ImpulseGoblin
   health: {fileID: 709009373}
-  orbPrefab: {fileID: 8700381951109418322, guid: 037de146862d39643ad9ddec066f45a7, type: 3}
-  dropOffset: {x: 0, y: 0.5, z: 0}
   bodyRenderers:
   - {fileID: 0}
   impulseAuraMaterial: {fileID: 2100000, guid: 84f63d6fe8d820f4790708c17375eb97, type: 2}
@@ -8595,6 +8611,7 @@ MonoBehaviour:
   animator: {fileID: 94646015}
   config: {fileID: 11400000, guid: 0dc3a05117208104ebded74f15a5fa59, type: 2}
   corpseDespawner: {fileID: 709009364}
+  impactSounds: []
 --- !u!114 &709009362
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8608,6 +8625,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AITargetSelector
   playerEngageRange: 8
+  ignorePlayer: 0
 --- !u!114 &709009363
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8645,6 +8663,7 @@ MonoBehaviour:
   health: {fileID: 709009373}
   animator: {fileID: 94646015}
   config: {fileID: 11400000, guid: ec82f81ded53c164e8360ca39a9dbe3a, type: 2}
+  sinkFeedback: {fileID: 0}
 --- !u!114 &709009365
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8680,8 +8699,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::KnockbackReceiver
   health: {fileID: 709009373}
   agent: {fileID: 709009374}
-  impulseReceiver: {fileID: 709009360}
-  duration: 0.18
+  ragdoll: {fileID: 709009361}
+  animator: {fileID: 94646015}
+  rootCollider: {fileID: 709009371}
+  aiMovement: {fileID: 709009375}
+  aiAnimation: {fileID: 709009376}
+  aiAttack: {fileID: 709009368}
+  config: {fileID: 0}
+  knockdownTrigger: Knockdown
+  getUpStateName: GetUp
+  cheerTrigger: Cheer
+  landingVfxPrefab: {fileID: 0}
+  landingSfx: {fileID: 0}
+  flyingScreamSfx: []
 --- !u!114 &709009367
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8720,6 +8750,7 @@ MonoBehaviour:
   targetSelector: {fileID: 709009362}
   startAttackFeedback: {fileID: 738748466}
   attackHitFeedback: {fileID: 778136193}
+  knockbackReceiver: {fileID: 709009366}
   attackTrigger: Attack
 --- !u!114 &709009369
 MonoBehaviour:
@@ -8985,6 +9016,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
   healthData: {fileID: 11400000, guid: fe1d9c3654e35824f8b5d90c56ef6e45, type: 2}
+  immuneToPlayerDamage: 0
   currentHealth: 100
   damageFeedback: {fileID: 709009372}
   deathFeedback: {fileID: 2136695017}
@@ -9026,6 +9058,7 @@ MonoBehaviour:
   movementSO: {fileID: 11400000, guid: 12c4a1b98935e144fbb340671b8eef6b, type: 2}
   health: {fileID: 709009373}
   targetSelector: {fileID: 709009362}
+  aggroFeedback: {fileID: 0}
 --- !u!114 &709009376
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13176,20 +13209,31 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SettingsPanelView
   generalTabButton: {fileID: 1331380432}
   controlsTabButton: {fileID: 1500307367}
+  postProcessingTabButton: {fileID: 0}
   generalTabContent: {fileID: 447907391}
   controlsTabContent: {fileID: 1701749072}
+  postProcessingTabContent: {fileID: 0}
   tabSelectedColor: {r: 0.3, g: 0.45, b: 0.55, a: 1}
   tabUnselectedColor: {r: 0.2, g: 0.2, b: 0.24, a: 1}
+  tabSelectedTextColor: {r: 0.22, g: 0.18, b: 0.14, a: 1}
+  tabUnselectedTextColor: {r: 0.774, g: 0.745, b: 0.66, a: 1}
   masterVolumeSlider: {fileID: 56209719}
   musicVolumeSlider: {fileID: 1498680825}
   sfxVolumeSlider: {fileID: 1579447704}
   sensitivitySlider: {fileID: 1937386125}
+  gamepadSensitivitySlider: {fileID: 0}
   invertXToggle: {fileID: 84154790}
   invertYToggle: {fileID: 336164200}
+  languageDropdown: {fileID: 0}
   fieldOfViewSlider: {fileID: 721535164}
   maxRagdollsSlider: {fileID: 66711989}
+  gameSpeedSlider: {fileID: 0}
   rebindListParent: {fileID: 399187822}
   rebindRowPrefab: {fileID: 6962738559024141714, guid: f631ca72294b59b409352a83e1959245, type: 3}
+  postProcessingEnabledToggle: {fileID: 0}
+  postProcessingBloomSlider: {fileID: 0}
+  postProcessingVignetteSlider: {fileID: 0}
+  postProcessingExposureSlider: {fileID: 0}
   resetSettingsButton: {fileID: 833208389}
   deleteSaveButton: {fileID: 1693563493}
   confirmDialog: {fileID: 1708144341}
@@ -14184,6 +14228,7 @@ MonoBehaviour:
   globalVolume: {fileID: 0}
   hideOnCapture:
   - {fileID: 887747717}
+  hudCanvasGroup: {fileID: 0}
   screenshotFolderName: Screenshots
 --- !u!114 &1186705609
 MonoBehaviour:
@@ -14198,6 +14243,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameSettingsService
   mixer: {fileID: 24100000, guid: 7e984f512e89b60468e829489e8883e3, type: 2}
+  globalVolume: {fileID: 0}
 --- !u!114 &1186705610
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -26,7 +26,10 @@ public static class BloodDecalManager
             if (holder == null)
             {
                 holder = new GameObject("BloodDecalsHolder");
-                Object.DontDestroyOnLoad(holder);
+                if (Application.isPlaying)
+                {
+                    Object.DontDestroyOnLoad(holder);
+                }
             }
             poolParent = holder.transform;
         }
@@ -69,7 +72,9 @@ public static class BloodDecalManager
         decalGO.transform.position = point + normal * offset;
 
         // Orient projector pointing into the surface (-normal) with random spin around normal
-        Quaternion lookRotation = Quaternion.LookRotation(-normal, Vector3.up);
+        Vector3 forward = -normal;
+        Vector3 up = Mathf.Abs(Vector3.Dot(forward, Vector3.up)) > 0.95f ? Vector3.forward : Vector3.up;
+        Quaternion lookRotation = Quaternion.LookRotation(forward, up);
         float randomSpin = Random.Range(0f, 360f);
         decalGO.transform.rotation = lookRotation * Quaternion.Euler(0f, 0f, randomSpin);
 

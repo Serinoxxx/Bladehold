@@ -190,6 +190,9 @@ MonoBehaviour:
   targetSelector: {fileID: 4115911383850134411}
   telegraphPrefab: {fileID: 0}
   trailPrefab: {fileID: 0}
+  impactVfxPrefab: {fileID: 0}
+  smashSfx: {fileID: 0}
   windupFeedback: {fileID: 0}
   dashFeedback: {fileID: 0}
+  smashFeedback: {fileID: 0}
   attackTrigger: Attack

@@ -98,6 +98,6 @@ MonoBehaviour:
   cheerTriggerName: Cheer
   cheerFeedback: {fileID: 0}
   smokePoofPrefab: {fileID: 2015303338481677235, guid: 17d1039496044be419303fb3623e32ff, type: 3}
-  cheerSound: {fileID: 8300000, guid: 254b631b2b5bea54e9f1afdcc38b877b, type: 3}
+  cheerSound: {fileID: 8300000, guid: 04be39aaff5805e4ead04bfa52c9eac9, type: 3}
   poofSound: {fileID: 8300000, guid: 4a21b5d16c1fc430cad65456a4e6d2e1, type: 3}
   cheerDuration: 2.5

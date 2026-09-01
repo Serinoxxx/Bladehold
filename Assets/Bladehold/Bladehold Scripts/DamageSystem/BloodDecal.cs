@@ -18,7 +18,10 @@ public class BloodDecal : MonoBehaviour
     public void Init(float totalLifetime, float fadeTime)
     {
         isEvicting = false;
-        StopAllCoroutines();
+        if (Application.isPlaying)
+        {
+            StopAllCoroutines();
+        }
         projector = GetComponent<DecalProjector>();
         lifetime = totalLifetime;
         fadeDuration = Mathf.Min(fadeTime, totalLifetime);
@@ -27,7 +30,10 @@ public class BloodDecal : MonoBehaviour
         {
             projector.fadeFactor = 1f;
         }
-        StartCoroutine(DecalRoutine());
+        if (Application.isPlaying)
+        {
+            StartCoroutine(DecalRoutine());
+        }
     }
 
     /// <summary>
@@ -37,8 +43,15 @@ public class BloodDecal : MonoBehaviour
     {
         if (isEvicting) return;
         isEvicting = true;
-        StopAllCoroutines();
-        StartCoroutine(EvictRoutine());
+        if (Application.isPlaying)
+        {
+            StopAllCoroutines();
+            StartCoroutine(EvictRoutine());
+        }
+        else
+        {
+            Despawn();
+        }
     }
 
     private IEnumerator DecalRoutine()

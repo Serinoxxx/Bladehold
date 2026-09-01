@@ -52,6 +52,8 @@ public class EnemyIntroController : MonoBehaviour
     public event Action<SpecialEnemyIntro> OnIntroStarted;
     public event Action<SpecialEnemyIntro> OnIntroCompleted;
 
+    [SerializeField] GameObject[] objectsToHideDuringIntro;
+
     private void Awake()
     {
         if (Instance == null)
@@ -138,15 +140,36 @@ public class EnemyIntroController : MonoBehaviour
         // 1. Pause gameplay
         Time.timeScale = 0f;
 
-        // 2. Hide HUD Canvas during intro cutscene
-        List<Canvas> hiddenCanvases = new List<Canvas>();
-        Canvas[] allCanvases = FindObjectsByType<Canvas>(FindObjectsSortMode.None);
-        foreach (Canvas c in allCanvases)
+        if (introUI == null)
         {
-            if (c != null && c.enabled && c.gameObject.name.Contains("HUD"))
+            introUI = EnemyIntroUI.Instance ?? FindFirstObjectByType<EnemyIntroUI>(FindObjectsInactive.Include);
+        }
+
+        // 2. Hide HUD elements during intro cutscene while preserving EnemyIntroUI
+        //List<GameObject> hiddenObjects = new List<GameObject>();
+        //List<Canvas> hiddenCanvases = new List<Canvas>();
+        //Canvas[] allCanvases = FindObjectsByType<Canvas>(FindObjectsSortMode.None);
+        //foreach (Canvas c in allCanvases)
+        //{
+        //    if (c == null || !c.enabled) continue;
+
+        //    if (introUI != null && introUI.transform.IsChildOf(c.transform))
+        //    {
+        //        // This Canvas hosts our introUI. Hide sibling gameplay HUD branches so they disappear,
+        //        // while keeping the path to EnemyIntroUI active.
+        //        HideSiblingsAlongPath(c.transform, introUI.transform, hiddenObjects);
+        //    }
+        //    else if (c.gameObject.name.Contains("HUD"))
+        //    {
+        //        c.enabled = false;
+        //        hiddenCanvases.Add(c);
+        //    }
+        //}
+        foreach (GameObject go in objectsToHideDuringIntro)
+        {
+            if (go != null && go.activeSelf)
             {
-                c.enabled = false;
-                hiddenCanvases.Add(c);
+                go.SetActive(false);
             }
         }
 
@@ -219,14 +242,22 @@ public class EnemyIntroController : MonoBehaviour
 
         UnlockPlayerControls();
 
-        // Restore HUD Canvases
-        foreach (Canvas c in hiddenCanvases)
+        // Restore HUD Canvases & Objects
+        foreach (GameObject go in objectsToHideDuringIntro)
         {
-            if (c != null)
+            if (go != null)
             {
-                c.enabled = true;
+                go.SetActive(true);
             }
         }
+
+        //foreach (Canvas c in hiddenCanvases)
+        //{
+        //    if (c != null)
+        //    {
+        //        c.enabled = true;
+        //    }
+        //}
 
         if (PauseMenuController.Instance != null)
         {
@@ -247,6 +278,28 @@ public class EnemyIntroController : MonoBehaviour
 
         OnIntroCompleted?.Invoke(enemy);
         onComplete?.Invoke();
+    }
+
+    private void HideSiblingsAlongPath(Transform root, Transform target, List<GameObject> hiddenObjects)
+    {
+        Transform current = target;
+        while (current != null && current != root)
+        {
+            Transform parent = current.parent;
+            if (parent == null) break;
+
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                Transform sibling = parent.GetChild(i);
+                if (sibling != current && sibling.gameObject.activeSelf)
+                {
+                    sibling.gameObject.SetActive(false);
+                    hiddenObjects.Add(sibling.gameObject);
+                }
+            }
+
+            current = parent;
+        }
     }
 
     private void LockPlayerControls()

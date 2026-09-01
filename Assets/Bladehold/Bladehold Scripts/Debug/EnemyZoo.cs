@@ -1,13 +1,14 @@
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
 using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
 
 /// <summary>
 ///     Config/test-only harness (never part of the shipping game — guarded to Editor/dev builds and
 ///     lives in its own scene that isn't added to Build Profiles). Spawns one of every enemy type in
-///     the <see cref="EnemyRosterSO" /> in a labelled gallery grid so they can be inspected side by
+///     the <see cref="EnemyRosterSO" /> in a labelled gallery lineup so they can be inspected side by
 ///     side, toggled between a frozen "display" state and a live "battle" state (chase/attack the
 ///     player), and stress-tested by spawning batches of a picked type on demand.
 ///
@@ -30,14 +31,23 @@ public class EnemyZoo : MonoBehaviour
     [SerializeField] private bool applyRosterOverrides = true;
 
     [Header("Gallery layout")]
-    [Tooltip("World-space anchor for the first (bottom-left) gallery slot.")]
+    [Tooltip("World-space anchor for the first (leftmost) gallery slot.")]
     [SerializeField] private Vector3 galleryOrigin = Vector3.zero;
-    [SerializeField] private float columnSpacing = 3f;
-    [SerializeField] private float rowSpacing = 3f;
-    [SerializeField] private int columns = 5;
-    [Tooltip("Max distance a grid slot is snapped onto the baked NavMesh.")]
+    [Tooltip("Distance along the lineup between adjacent enemies.")]
+    [SerializeField] private float lineSpacing = 3.5f;
+    [Tooltip("Direction the lineup extends along in world space.")]
+    [SerializeField] private Vector3 lineDirection = Vector3.right;
+    [Tooltip("Direction the enemies face while in the lineup.")]
+    [SerializeField] private Vector3 facingDirection = Vector3.back;
+    [Tooltip("Offset in front of each enemy where the World Space TextMeshPro nameplate is placed.")]
+    [SerializeField] private Vector3 nameplateOffset = new Vector3(0f, 0.15f, -1.8f);
+    [Tooltip("Font size for the 3D TextMeshPro nameplate.")]
+    [SerializeField] private float nameplateFontSize = 3.5f;
+    [Tooltip("Tilt angle (degrees) for the nameplate so it angles up towards the camera/player.")]
+    [SerializeField] private float nameplateTiltAngle = 40f;
+    [Tooltip("Max distance a slot is snapped onto the baked NavMesh.")]
     [SerializeField] private float navSampleRadius = 4f;
-    [Tooltip("Height above each enemy at which its name/health label is drawn.")]
+    [Tooltip("Height above each enemy at which its IMGUI health label is drawn.")]
     [SerializeField] private float labelHeight = 2.2f;
 
     [Header("On-demand spawns")]
@@ -64,6 +74,8 @@ public class EnemyZoo : MonoBehaviour
         // Attack behaviours are frozen by disabling them (their Start defers until re-enabled, so a
         // frozen gallery enemy never even resolves Player.Instance).
         public Behaviour[] attacks;
+        public GameObject nameplate;
+        public TextMeshPro nameplateTmp;
     }
 
     // An on-demand spawn tagged with its roster id, so live stat re-applies can find it.
@@ -144,17 +156,20 @@ public class EnemyZoo : MonoBehaviour
 
     private void BuildGallery()
     {
+        Vector3 dir = lineDirection.sqrMagnitude > 0.001f ? lineDirection.normalized : Vector3.right;
+        Quaternion facing = facingDirection.sqrMagnitude > 0.001f ? Quaternion.LookRotation(facingDirection.normalized) : Quaternion.Euler(0f, 180f, 0f);
+
         for (int i = 0; i < spawnables.Count; i++)
         {
-            int col = i % Mathf.Max(1, columns);
-            int row = i / Mathf.Max(1, columns);
-            Vector3 slot = galleryOrigin + new Vector3(col * columnSpacing, 0f, row * rowSpacing);
+            Vector3 slot = galleryOrigin + dir * (i * lineSpacing);
 
-            GameObject instance = SpawnInstance(spawnables[i], slot, FaceTowardViewer(slot));
+            GameObject instance = SpawnInstance(spawnables[i], slot, facing);
             if (instance == null)
             {
                 continue;
             }
+
+            GameObject nameplateObj = CreateNameplate(spawnables[i].def, slot);
 
             var entry = new ZooEntry
             {
@@ -163,12 +178,31 @@ public class EnemyZoo : MonoBehaviour
                 health = instance.GetComponent<Health>(),
                 movement = instance.GetComponent<AIMovement>(),
                 attacks = CollectAttacks(instance),
+                nameplate = nameplateObj,
+                nameplateTmp = nameplateObj != null ? nameplateObj.GetComponent<TextMeshPro>() : null,
             };
             // Gallery enemies start frozen (AI disabled before its Start runs → no chase, no
             // Player.Instance dependency) until battle mode is switched on.
             SetEntryBattle(entry, battleMode);
             gallery.Add(entry);
         }
+    }
+
+    private GameObject CreateNameplate(EnemyDefinition def, Vector3 enemyPosition)
+    {
+        GameObject labelObj = new GameObject($"{def.id}_Nameplate");
+        labelObj.transform.position = enemyPosition + nameplateOffset;
+        labelObj.transform.rotation = Quaternion.Euler(nameplateTiltAngle, 0f, 0f);
+
+        TextMeshPro tmp = labelObj.AddComponent<TextMeshPro>();
+        tmp.text = string.IsNullOrEmpty(def.displayName) ? def.id : def.displayName;
+        tmp.fontSize = nameplateFontSize;
+        tmp.fontStyle = FontStyles.Bold;
+        tmp.alignment = TextAlignmentOptions.Center;
+        tmp.color = Color.white;
+        tmp.rectTransform.sizeDelta = new Vector2(8f, 2f);
+
+        return labelObj;
     }
 
     /// <summary>Instantiates a roster-faithful enemy, snapped onto the NavMesh.</summary>
@@ -221,14 +255,6 @@ public class EnemyZoo : MonoBehaviour
         return NavMesh.SamplePosition(p, out NavMeshHit hit, navSampleRadius, NavMesh.AllAreas) ? hit.position : p;
     }
 
-    private Quaternion FaceTowardViewer(Vector3 fromPosition)
-    {
-        Vector3 target = spawnPoint != null ? spawnPoint.position : transform.position;
-        Vector3 dir = target - fromPosition;
-        dir.y = 0f;
-        return dir.sqrMagnitude > 0.0001f ? Quaternion.LookRotation(dir) : Quaternion.identity;
-    }
-
     // ---- Controls --------------------------------------------------------
 
     private void ToggleBattle()
@@ -277,6 +303,10 @@ public class EnemyZoo : MonoBehaviour
             if (entry.instance != null)
             {
                 Destroy(entry.instance);
+            }
+            if (entry.nameplate != null)
+            {
+                Destroy(entry.nameplate);
             }
         }
         gallery.Clear();
@@ -364,6 +394,10 @@ public class EnemyZoo : MonoBehaviour
             {
                 entry.def = def;
                 WaveSpawner.ApplyDefinitionLive(entry.instance, def);
+                if (entry.nameplateTmp != null)
+                {
+                    entry.nameplateTmp.text = string.IsNullOrEmpty(def.displayName) ? def.id : def.displayName;
+                }
                 updated++;
             }
         }

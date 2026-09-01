@@ -250,12 +250,6 @@ public class AssassinAttack : MonoBehaviour
         // ----------------------------------------------------
         yield return new WaitForSeconds(attackData.windupSeconds);
 
-        if (activeTelegraph != null)
-        {
-            Destroy(activeTelegraph);
-            activeTelegraph = null;
-        }
-
         if (isDead || playerDead)
         {
             isAttacking = false;
@@ -304,6 +298,12 @@ public class AssassinAttack : MonoBehaviour
         {
             Destroy(activeWhirlwindVfx);
             activeWhirlwindVfx = null;
+        }
+
+        if (activeTelegraph != null)
+        {
+            Destroy(activeTelegraph);
+            activeTelegraph = null;
         }
 
         if (isDead || playerDead)

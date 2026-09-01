@@ -233,6 +233,12 @@ public class BubblerCaster : MonoBehaviour
                 continue;
             }
 
+            // Do not bubble other bubblers
+            if (h.GetComponent<BubblerCaster>() != null || h.GetComponentInParent<BubblerCaster>() != null)
+            {
+                continue;
+            }
+
             // Check if already bubbled
             if (h.GetComponent<BubbleShield>() != null)
             {
@@ -257,6 +263,7 @@ public class BubblerCaster : MonoBehaviour
     public void CastBubbleOn(Health allyHealth)
     {
         if (allyHealth == null || allyHealth.IsDead) return;
+        if (allyHealth.GetComponent<BubblerCaster>() != null || allyHealth.GetComponentInParent<BubblerCaster>() != null) return;
 
         currentTargetHealth = allyHealth;
         currentShield = allyHealth.gameObject.AddComponent<BubbleShield>();
