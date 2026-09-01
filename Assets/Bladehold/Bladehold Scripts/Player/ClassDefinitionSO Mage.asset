@@ -16,6 +16,7 @@ MonoBehaviour:
   displayName: Mage
   description: Casteria bends the arcane elements to her will. Mastering fire, ice,
     and lightning, she controls the flow of battle and obliterates enemies from afar.
+  isLocked: 1
   animatorOverride: {fileID: 0}
   characterModelPrefab: {fileID: 2864743491686990451, guid: b0a4fad19a0d29f4c89116e69f55a0ac, type: 3}
   meleeWeaponType: 2

@@ -18,6 +18,9 @@ public class ClassDefinitionSO : ScriptableObject
     [Tooltip("Short player-facing blurb for the class-select UI.")]
     [TextArea] public string description;
 
+    [Tooltip("Whether this class is locked and unavailable for selection.")]
+    public bool isLocked = false;
+
     /// <summary>The class name in the active language (Strings.csv key <c>class.&lt;id&gt;.name</c>), falling back to this asset's English.</summary>
     public string LocalizedDisplayName => Loc.Get("class." + id + ".name", displayName);
 

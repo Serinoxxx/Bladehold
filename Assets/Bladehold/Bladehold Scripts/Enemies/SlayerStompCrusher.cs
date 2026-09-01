@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 using MoreMountains.Feedbacks;
+using System;
 
 /// <summary>
 ///     Attached to the Slayer boss. As the Slayer stomps forward, he ignores minor enemy avoidance
@@ -31,11 +32,15 @@ public class SlayerStompCrusher : MonoBehaviour
     [SerializeField] private NavMeshAgent agent;
     [SerializeField] private Health health;
 
+    [SerializeField] AIAnimationEvents aiAnimationEvents;
+
     private readonly Collider[] hitColliders = new Collider[32];
     private IDamageable myDamageable;
     private bool anyError = false;
     private bool isDead = false;
     private float lastCrushSoundTime = -999f;
+
+   
 
     private void OnValidate()
     {
@@ -47,6 +52,12 @@ public class SlayerStompCrusher : MonoBehaviour
     {
         if (agent == null) agent = GetComponent<NavMeshAgent>();
         if (health == null) health = GetComponent<Health>();
+
+        if (aiAnimationEvents!=null)
+        {
+            aiAnimationEvents.OnLeftFootStomp += TryCrushAction;
+            aiAnimationEvents.OnRightFootStomp += TryCrushAction;
+        }
 
         if (agent == null)
         {
@@ -69,6 +80,11 @@ public class SlayerStompCrusher : MonoBehaviour
         agent.avoidancePriority = 0; // Highest priority
     }
 
+    private void TryCrushAction()
+    {
+        TryCrush();
+    }
+
     private void OnDestroy()
     {
         if (health != null)
@@ -83,7 +99,7 @@ public class SlayerStompCrusher : MonoBehaviour
         enabled = false;
     }
 
-    private void Update()
+    private void TryCrush()
     {
         if (anyError || isDead || agent == null || !agent.enabled) return;
 

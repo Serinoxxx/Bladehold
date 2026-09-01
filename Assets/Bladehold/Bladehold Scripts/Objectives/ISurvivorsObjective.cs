@@ -47,4 +47,46 @@ public interface ISurvivorsObjective
 
     /// <summary>Cleans up spawned entities and listeners when the objective ends.</summary>
     void CleanupObjective();
+
+    /// <summary>
+    ///     Gets the active target position for enemies to flock to during this objective, if any.
+    /// </summary>
+    UnityEngine.Vector3? GetObjectiveTargetPosition(UnityEngine.Vector3 searchFromPosition);
+
+    /// <summary>
+    ///     Gets the active target damageable for enemies during this objective, if any.
+    /// </summary>
+    IDamageable GetObjectiveDamageable(UnityEngine.Vector3 searchFromPosition);
+
+    /// <summary>
+    ///     Gets the active waypoint target transforms for this objective to overlay on the HUD.
+    /// </summary>
+    void GetActiveWaypointTargets(System.Collections.Generic.List<ObjectiveWaypointTarget> results);
 }
+
+/// <summary>
+///     Information describing a single world-space objective waypoint target for HUD overlays.
+/// </summary>
+public struct ObjectiveWaypointTarget
+{
+    public UnityEngine.Transform Transform;
+    public UnityEngine.Vector3 WorldOffset;
+    public UnityEngine.Sprite CustomIcon;
+    public UnityEngine.Color TintColor;
+    public string Label;
+
+    public ObjectiveWaypointTarget(
+        UnityEngine.Transform transform,
+        UnityEngine.Vector3 worldOffset = default,
+        UnityEngine.Sprite customIcon = null,
+        UnityEngine.Color tintColor = default,
+        string label = null)
+    {
+        Transform = transform;
+        WorldOffset = worldOffset;
+        CustomIcon = customIcon;
+        TintColor = tintColor == default ? UnityEngine.Color.white : tintColor;
+        Label = label;
+    }
+}
+

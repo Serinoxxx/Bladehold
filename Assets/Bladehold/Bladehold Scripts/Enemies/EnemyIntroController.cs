@@ -40,6 +40,17 @@ public class EnemyIntroController : MonoBehaviour
     [Tooltip("Total duration of the intro sequence in seconds (unscaled time).")]
     [SerializeField] private float defaultIntroDuration = 3.0f;
 
+    [Header("Intro Audio")]
+    [Tooltip("Optional fallback roar / intro sound effect played if the special enemy has no specific roar sound configured.")]
+    [SerializeField] private AudioClip defaultRoarSound;
+
+    [Tooltip("Volume scale for the fallback roar sound (0 to 1).")]
+    [Range(0f, 1f)]
+    [SerializeField] private float defaultRoarVolume = 1.0f;
+
+    [Tooltip("Delay in unscaled seconds before playing the fallback roar sound.")]
+    [SerializeField] private float defaultRoarDelay = 0f;
+
     [Tooltip("Optional extra components to disable on the player during intro.")]
     [SerializeField] private MonoBehaviour[] extraComponentsToDisable;
 
@@ -178,7 +189,7 @@ public class EnemyIntroController : MonoBehaviour
         {
             PauseMenuController.Instance.SetToggleEnabled(false);
         }
-        LockPlayerControls();
+        //LockPlayerControls();
 
         // 4. Ensure CinemachineBrain ignores timescale
         if (cinemachineBrain != null)
@@ -197,6 +208,16 @@ public class EnemyIntroController : MonoBehaviour
             {
                 enemyAnimator.SetTrigger(enemy.TauntTriggerName);
             }
+        }
+
+        // 5b. Play intro roar sound (from enemy or fallback)
+        if (enemy != null && enemy.RoarSound != null)
+        {
+            enemy.PlayRoarSound();
+        }
+        else if (defaultRoarSound != null && enemy != null)
+        {
+            StartCoroutine(PlayDefaultRoarRoutine(enemy.transform.position));
         }
 
         // 6. Focus intro camera, reset tracking state, and raise priority
@@ -354,5 +375,18 @@ public class EnemyIntroController : MonoBehaviour
             }
         }
         disabledPlayerComponents.Clear();
+    }
+
+    private IEnumerator PlayDefaultRoarRoutine(Vector3 position)
+    {
+        if (defaultRoarDelay > 0f)
+        {
+            yield return new WaitForSecondsRealtime(defaultRoarDelay);
+        }
+
+        if (defaultRoarSound != null)
+        {
+            AudioSource.PlayClipAtPoint(defaultRoarSound, position, defaultRoarVolume);
+        }
     }
 }

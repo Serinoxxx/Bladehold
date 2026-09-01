@@ -1,4 +1,5 @@
 using MoreMountains.Feedbacks;
+using System;
 using UnityEngine;
 
 public class AIAnimationEvents : MonoBehaviour
@@ -7,6 +8,8 @@ public class AIAnimationEvents : MonoBehaviour
     [SerializeField] MMF_Player leftFootStomp;
     [SerializeField] MMF_Player rightFootStomp;
 
+    public Action OnLeftFootStomp;
+    public Action OnRightFootStomp;
 
     public void LeftFootStomp()
     {
@@ -14,6 +17,7 @@ public class AIAnimationEvents : MonoBehaviour
         {
             leftFootStomp.PlayFeedbacks();
         }
+        OnLeftFootStomp?.Invoke();
     }
 
     public void RightFootStomp()
@@ -22,5 +26,6 @@ public class AIAnimationEvents : MonoBehaviour
         {
             rightFootStomp.PlayFeedbacks();
         }
+        OnRightFootStomp?.Invoke();
     }
 }

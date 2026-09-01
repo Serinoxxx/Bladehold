@@ -100,13 +100,22 @@ public class WaveClearedBannerUI : MonoBehaviour
         }
     }
 
+    private void Awake()
+    {
+        EnsureTextReferences();
+        if (bannerRoot != null)
+        {
+            bannerRoot.SetActive(false);
+        }
+    }
+
     private void Start()
     {
         EnsureTextReferences();
 
         if (spawner == null)
         {
-            spawner = FindObjectOfType<WaveSpawner>();
+            spawner = WaveSpawner.Instance ?? FindObjectOfType<WaveSpawner>();
         }
         if (objectiveManager == null)
         {
@@ -183,7 +192,8 @@ public class WaveClearedBannerUI : MonoBehaviour
 
     private void HandleSurvivorsObjectiveCleared(ISurvivorsObjective obj)
     {
-        ShowBanner(questCompletedHeader, obj != null ? obj.Title : null, 0, 0, isNewQuest: false);
+        int rewardGold = objectiveManager != null ? objectiveManager.GoldXpRewardPerObjective : 100;
+        ShowBanner(questCompletedHeader, obj != null ? obj.Title : null, rewardGold, 0, isNewQuest: false);
     }
 
     private void HandleSurvivorsObjectiveFailed(ISurvivorsObjective obj)
@@ -193,6 +203,7 @@ public class WaveClearedBannerUI : MonoBehaviour
 
     private void ShowBanner(string mainHeader, string questSubTitle, int gold, int kills, bool isNewQuest = false)
     {
+        Debug.Log($"[WaveClearedBannerUI] ShowBanner: Header='{mainHeader}', Sub='{questSubTitle}', gold={gold}, kills={kills}, isNewQuest={isNewQuest}");
         if (!string.IsNullOrEmpty(questSubTitle))
         {
             if (waveClearedText != null)

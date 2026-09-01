@@ -126,4 +126,54 @@ public class ProtectWagonObjective : MonoBehaviour, ISurvivorsObjective
             }
         }
     }
+
+    public Vector3? GetObjectiveTargetPosition(Vector3 searchFromPosition)
+    {
+        if (isActive && !isComplete && currentWagon != null && !currentWagon.HasArrived)
+        {
+            return currentWagon.transform.position;
+        }
+        return null;
+    }
+
+    public IDamageable GetObjectiveDamageable(Vector3 searchFromPosition)
+    {
+        // Enemies flock to intercept the wagon and wait for the player; they do not attack the wagon.
+        return null;
+    }
+
+    [Header("Waypoint Icon Configuration")]
+    [Tooltip("Optional custom waypoint icon for the supply wagon.")]
+    [SerializeField] private Sprite wagonWaypointIcon;
+
+    [Tooltip("Optional custom waypoint icon for the destination gate.")]
+    [SerializeField] private Sprite destinationWaypointIcon;
+
+    public void GetActiveWaypointTargets(System.Collections.Generic.List<ObjectiveWaypointTarget> results)
+    {
+        if (!isActive || isComplete || results == null) return;
+
+        if (currentWagon != null && !currentWagon.HasArrived)
+        {
+            results.Add(new ObjectiveWaypointTarget(
+                currentWagon.transform,
+                worldOffset: new Vector3(0f, 2.0f, 0f),
+                customIcon: wagonWaypointIcon,
+                tintColor: new Color(0.2f, 0.9f, 0.4f, 1f),
+                label: "Supply Cart"
+            ));
+        }
+
+        Transform dest = gateDestinationPoint;
+        if (dest != null)
+        {
+            results.Add(new ObjectiveWaypointTarget(
+                dest,
+                worldOffset: new Vector3(0f, 2.5f, 0f),
+                customIcon: destinationWaypointIcon,
+                tintColor: new Color(0.4f, 0.8f, 1f, 1f),
+                label: "Gate"
+            ));
+        }
+    }
 }

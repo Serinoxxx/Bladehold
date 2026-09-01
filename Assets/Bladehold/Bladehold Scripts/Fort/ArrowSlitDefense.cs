@@ -1,6 +1,7 @@
 using System.Collections;
 using MoreMountains.Feedbacks;
 using UnityEngine;
+using UnityEngine.AI;
 
 /// <summary>
 ///     Fort defense for wall arrow slits and battlements.
@@ -13,6 +14,12 @@ public class ArrowSlitDefense : FortDefense
     [SerializeField] private float range = 35f;
     [SerializeField] private float maxTargetAngle = 150f;
     [SerializeField] private LayerMask enemyLayers = ~0;
+
+    [Header("Prediction & Intercept")]
+    [Tooltip("Predicts enemy movement and shoots ahead to collide with moving targets.")]
+    [SerializeField] private bool leadTarget = true;
+    [Tooltip("Maximum future prediction time in seconds to avoid over-leading erratic targets.")]
+    [SerializeField] private float maxPredictionTime = 2.0f;
 
     [Header("Firing Specs")]
     [SerializeField] private Transform firePoint;
@@ -161,8 +168,30 @@ public class ArrowSlitDefense : FortDefense
 
         Transform fp = (firePoint != null && firePoint) ? firePoint : transform;
         Vector3 startPos = fp.position + fp.forward * 0.6f;
-        Vector3 targetPos = target.transform.position + Vector3.up * 1.0f; // Aim at chest height
-        Vector3 dir = (targetPos - startPos).normalized;
+
+        Vector3 targetCenter = GetTargetAimPosition(target);
+        Vector3 aimPoint = targetCenter;
+
+        if (leadTarget)
+        {
+            Vector3 targetVelocity = GetTargetVelocity(target);
+            if (TryCalculateIntercept(startPos, arrowSpeed, targetCenter, targetVelocity, maxPredictionTime, out Vector3 predictedPoint))
+            {
+                aimPoint = predictedPoint;
+            }
+        }
+
+        // Clamp predicted aim point so it never sinks below terrain/ground level
+        aimPoint.y = Mathf.Max(aimPoint.y, target.transform.position.y + 0.3f);
+
+        Vector3 dir = (aimPoint - startPos).normalized;
+        if (dir == Vector3.zero)
+        {
+            dir = transform.forward;
+        }
+
+        // Clamp horizontal firing direction to the wall slit aperture cone
+        dir = ClampDirectionToCone(dir, transform.forward, maxTargetAngle);
 
         if (shootFeedback != null)
         {
@@ -187,8 +216,195 @@ public class ArrowSlitDefense : FortDefense
         else
         {
             // Instant linecast hit with delay if no visual prefab assigned
-            StartCoroutine(DelayedHitRoutine(target, startPos, targetPos, dir));
+            StartCoroutine(DelayedHitRoutine(target, startPos, aimPoint, dir));
         }
+    }
+
+    /// <summary>
+    ///     Calculates the predicted intercept point for a projectile traveling at projectileSpeed
+    ///     toward a target moving at targetVelocity from targetPos.
+    ///     Returns true if a positive forward-in-time intercept was found; otherwise false.
+    /// </summary>
+    public static bool TryCalculateIntercept(
+        Vector3 shooterPos,
+        float projectileSpeed,
+        Vector3 targetPos,
+        Vector3 targetVelocity,
+        float maxPrediction,
+        out Vector3 interceptPoint)
+    {
+        interceptPoint = targetPos;
+
+        if (projectileSpeed <= 0.001f)
+        {
+            return false;
+        }
+
+        Vector3 toTarget = targetPos - shooterPos;
+        float targetSpeedSq = targetVelocity.sqrMagnitude;
+
+        // Stationary or negligible target velocity — direct aim is exact
+        if (targetSpeedSq < 0.01f)
+        {
+            return true;
+        }
+
+        float projSpeedSq = projectileSpeed * projectileSpeed;
+
+        // Quadratic intercept equation: a*t^2 + b*t + c = 0
+        float a = targetSpeedSq - projSpeedSq;
+        float b = 2f * Vector3.Dot(toTarget, targetVelocity);
+        float c = toTarget.sqrMagnitude;
+
+        float discriminant = b * b - 4f * a * c;
+
+        if (discriminant < 0f)
+        {
+            // Target is moving too fast away from shooter to intercept
+            return false;
+        }
+
+        float t = -1f;
+        float sqrtDisc = Mathf.Sqrt(discriminant);
+
+        if (Mathf.Abs(a) < 0.0001f)
+        {
+            // Linear case: b*t + c = 0
+            if (Mathf.Abs(b) > 0.0001f)
+            {
+                float tLin = -c / b;
+                if (tLin > 0f) t = tLin;
+            }
+        }
+        else
+        {
+            float t1 = (-b - sqrtDisc) / (2f * a);
+            float t2 = (-b + sqrtDisc) / (2f * a);
+
+            if (t1 > 0f && t2 > 0f)
+            {
+                t = Mathf.Min(t1, t2);
+            }
+            else if (t1 > 0f)
+            {
+                t = t1;
+            }
+            else if (t2 > 0f)
+            {
+                t = t2;
+            }
+        }
+
+        if (t <= 0f)
+        {
+            return false;
+        }
+
+        // Cap flight prediction time to reasonable bounds
+        t = Mathf.Min(t, maxPrediction);
+
+        interceptPoint = targetPos + targetVelocity * t;
+        return true;
+    }
+
+    /// <summary>
+    ///     Gets the current world velocity of the target, inspecting NavMeshAgent or Rigidbody.
+    /// </summary>
+    public static Vector3 GetTargetVelocity(Health target)
+    {
+        if (target == null) return Vector3.zero;
+
+        // 1. Check NavMeshAgent (primary movement for enemies in Bladehold)
+        NavMeshAgent agent = target.GetComponent<NavMeshAgent>();
+        if (agent == null)
+        {
+            agent = target.GetComponentInParent<NavMeshAgent>();
+        }
+
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
+        {
+            if (agent.isStopped)
+            {
+                return Vector3.zero;
+            }
+
+            if (agent.velocity.sqrMagnitude > 0.04f)
+            {
+                return agent.velocity;
+            }
+
+            if (agent.hasPath && agent.desiredVelocity.sqrMagnitude > 0.04f)
+            {
+                return agent.desiredVelocity;
+            }
+        }
+
+        // 2. Check Rigidbody (e.g. physics knockback or airborne state)
+        Rigidbody rb = target.GetComponent<Rigidbody>();
+        if (rb == null)
+        {
+            rb = target.GetComponentInParent<Rigidbody>();
+        }
+
+        if (rb != null && !rb.isKinematic)
+        {
+            if (rb.linearVelocity.sqrMagnitude > 0.04f)
+            {
+                return rb.linearVelocity;
+            }
+        }
+
+        return Vector3.zero;
+    }
+
+    /// <summary>
+    ///     Finds the best aim point on the target (capsule collider center or body height).
+    /// </summary>
+    public static Vector3 GetTargetAimPosition(Health target)
+    {
+        if (target == null) return Vector3.zero;
+
+        CapsuleCollider cap = target.GetComponent<CapsuleCollider>();
+        if (cap == null) cap = target.GetComponentInChildren<CapsuleCollider>();
+        if (cap != null && !cap.isTrigger)
+        {
+            return cap.bounds.center;
+        }
+
+        Collider col = target.GetComponent<Collider>();
+        if (col != null && !col.isTrigger)
+        {
+            return col.bounds.center;
+        }
+
+        return target.transform.position + Vector3.up * 1.0f;
+    }
+
+    /// <summary>
+    ///     Clamps a firing direction vector so its horizontal yaw stays within the wall slit cone.
+    /// </summary>
+    public static Vector3 ClampDirectionToCone(Vector3 dir, Vector3 forward, float maxAngle)
+    {
+        Vector3 forwardXZ = new Vector3(forward.x, 0f, forward.z).normalized;
+        Vector3 dirXZ = new Vector3(dir.x, 0f, dir.z).normalized;
+
+        if (forwardXZ == Vector3.zero || dirXZ == Vector3.zero)
+        {
+            return dir;
+        }
+
+        float halfAngle = maxAngle * 0.5f;
+        float angle = Vector3.Angle(forwardXZ, dirXZ);
+
+        if (angle > halfAngle)
+        {
+            Vector3 cross = Vector3.Cross(forwardXZ, dirXZ);
+            float sign = cross.y >= 0f ? 1f : -1f;
+            Vector3 clampedXZ = Quaternion.Euler(0f, sign * halfAngle, 0f) * forwardXZ;
+            return new Vector3(clampedXZ.x, dir.y, clampedXZ.z).normalized;
+        }
+
+        return dir;
     }
 
     private IEnumerator DelayedHitRoutine(Health target, Vector3 startPos, Vector3 targetPos, Vector3 dir)

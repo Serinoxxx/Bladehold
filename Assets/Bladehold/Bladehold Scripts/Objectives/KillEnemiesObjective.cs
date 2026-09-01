@@ -70,4 +70,19 @@ public class KillEnemiesObjective : MonoBehaviour, ISurvivorsObjective
     {
         isActive = false;
     }
+
+    public Vector3? GetObjectiveTargetPosition(Vector3 searchFromPosition)
+    {
+        return null;
+    }
+
+    public IDamageable GetObjectiveDamageable(Vector3 searchFromPosition)
+    {
+        return null;
+    }
+
+    public void GetActiveWaypointTargets(System.Collections.Generic.List<ObjectiveWaypointTarget> results)
+    {
+        // Enemies are spread throughout the arena; no specific fixed target waypoints needed.
+    }
 }

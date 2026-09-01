@@ -88,6 +88,10 @@ namespace Bladehold.UI
         [Header("Preview Sprites")]
         [SerializeField] private Sprite[] stagePreviewSprites;
 
+        [Header("Stage Lock Settings")]
+        [Tooltip("Maximum stage number currently available to be unlocked. Stages above this are strictly locked.")]
+        [SerializeField] private int maxAvailableStage = 1;
+
         private readonly List<LevelSelectCardUI> spawnedCards = new List<LevelSelectCardUI>();
         private int highestUnlockedStage = 1;
         private int currentSelectedStage = 1;
@@ -139,8 +143,8 @@ namespace Bladehold.UI
         private void LoadProgression()
         {
             SaveData data = SaveSystem.Load();
-            highestUnlockedStage = data != null ? Mathf.Max(1, data.highestUnlockedStage) : 1;
-            currentSelectedStage = data != null ? Mathf.Clamp(data.selectedStage, 1, stages.Count) : 1;
+            highestUnlockedStage = data != null ? Mathf.Clamp(data.highestUnlockedStage, 1, maxAvailableStage) : 1;
+            currentSelectedStage = data != null ? Mathf.Clamp(data.selectedStage, 1, maxAvailableStage) : 1;
         }
 
         private void BuildCards()
@@ -169,7 +173,7 @@ namespace Bladehold.UI
             {
                 var stage = stages[i];
                 int stageNum = i + 1;
-                bool isUnlocked = stageNum <= highestUnlockedStage;
+                bool isUnlocked = stageNum <= highestUnlockedStage && stageNum <= maxAvailableStage;
                 bool isSelected = stageNum == currentSelectedStage;
 
                 Sprite preview = stage.previewSprite;
@@ -203,6 +207,7 @@ namespace Bladehold.UI
 
         private void HandleCardClicked(LevelSelectCardUI card)
         {
+            if (card == null || !card.IsUnlocked) return;
             SelectStage(card.StageNumber);
         }
 
@@ -213,6 +218,11 @@ namespace Bladehold.UI
 
         public void SelectStage(int stageNumber)
         {
+            if (stageNumber > maxAvailableStage)
+            {
+                stageNumber = 1;
+            }
+
             currentSelectedStage = stageNumber;
 
             foreach (var card in spawnedCards)
@@ -225,7 +235,7 @@ namespace Bladehold.UI
 
             UpdateDescriptionPanel(stageNumber);
 
-            bool isUnlocked = stageNumber <= highestUnlockedStage;
+            bool isUnlocked = stageNumber <= highestUnlockedStage && stageNumber <= maxAvailableStage;
             if (playButton != null)
             {
                 playButton.interactable = isUnlocked;
@@ -240,7 +250,7 @@ namespace Bladehold.UI
         {
             if (stageNumber < 1 || stageNumber > stages.Count) return;
             var stage = stages[stageNumber - 1];
-            bool isUnlocked = stageNumber <= highestUnlockedStage;
+            bool isUnlocked = stageNumber <= highestUnlockedStage && stageNumber <= maxAvailableStage;
 
             if (selectedStageTitleText != null)
             {
@@ -267,7 +277,7 @@ namespace Bladehold.UI
 
         private void HandlePlayClicked()
         {
-            if (currentSelectedStage > highestUnlockedStage) return;
+            if (currentSelectedStage > maxAvailableStage || currentSelectedStage > highestUnlockedStage) return;
 
             SaveData data = SaveSystem.Load();
             if (data != null)

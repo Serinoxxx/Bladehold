@@ -66,6 +66,19 @@ namespace Bladehold.UI
         [SerializeField] private Canvas cardCanvas;
         [SerializeField] private Button cardButton;
 
+        [Header("Lock Configuration")]
+        [Tooltip("Whether this character card is locked and cannot be selected.")]
+        [SerializeField] private bool isLocked;
+
+        [Tooltip("Overlay GameObject displayed when the card is locked.")]
+        [SerializeField] private GameObject lockOverlay;
+
+        [Tooltip("Image displaying the lock icon on the lock overlay.")]
+        [SerializeField] private Image lockIconImage;
+
+        [Tooltip("Label displaying lock status or unlock requirement text.")]
+        [SerializeField] private TMPro.TMP_Text lockStatusLabel;
+
         [Header("Reference Style Layout Elements")]
         [Tooltip("Displays the class display name at the top of the card.")]
         [SerializeField] private TMPro.TMP_Text classTitleLabel;
@@ -152,6 +165,15 @@ namespace Bladehold.UI
         public IReadOnlyList<KeySkillInfo> KeySkills => keySkills;
         public Sprite[] KeySkillIcons => keySkillIcons;
         public bool IsSelected => isSelected;
+        public bool IsLocked
+        {
+            get => isLocked;
+            set
+            {
+                isLocked = value;
+                ApplyLockState();
+            }
+        }
 
         public string ClassDescription
         {
@@ -335,11 +357,50 @@ namespace Bladehold.UI
                     cardSkillBadges = skillsContainer.GetComponentsInChildren<KeySkillBadgeUI>(true);
                 }
             }
+
+            if (lockOverlay == null)
+            {
+                var t = transform.Find("LockOverlay");
+                if (t != null) lockOverlay = t.gameObject;
+            }
+
+            if (lockOverlay != null)
+            {
+                if (lockIconImage == null)
+                {
+                    var t = lockOverlay.transform.Find("LockIcon");
+                    if (t != null) lockIconImage = t.GetComponent<Image>();
+                }
+                if (lockStatusLabel == null)
+                {
+                    var t = lockOverlay.transform.Find("LockStatusText") ?? lockOverlay.transform.Find("LockText");
+                    if (t != null) lockStatusLabel = t.GetComponent<TMPro.TMP_Text>();
+                }
+            }
+        }
+
+        public void ApplyLockState()
+        {
+            if (lockOverlay != null)
+            {
+                lockOverlay.SetActive(isLocked);
+            }
+
+            if (lockStatusLabel != null && isLocked)
+            {
+                lockStatusLabel.text = "LOCKED";
+            }
+
+            if (cardButton != null)
+            {
+                cardButton.interactable = !isLocked;
+            }
         }
 
         private void Start()
         {
             RefreshCardVisuals();
+            ApplyLockState();
         }
 
         /// <summary>
@@ -353,12 +414,14 @@ namespace Bladehold.UI
 
             classDefinition = def;
             classId = def.id;
+            isLocked = def.isLocked || string.Equals(def.id, "mage", StringComparison.OrdinalIgnoreCase);
             className = !string.IsNullOrEmpty(def.displayName) ? def.displayName : def.id;
             characterName = def.CharacterName;
             roleSubtitle = characterName;
             healthValueString = !string.IsNullOrEmpty(def.healthDisplay) ? def.healthDisplay : "100/100";
             portraitSprite = def.portrait;
             classDescription = !string.IsNullOrEmpty(def.description) ? def.description : def.LocalizedDescription;
+            ApplyLockState();
 
             keySkills.Clear();
             if (def.keySkills != null && def.keySkills.Count > 0)
@@ -446,6 +509,11 @@ namespace Bladehold.UI
 
         public void SetSelected(bool selected, bool immediate = false)
         {
+            if (isLocked && selected)
+            {
+                selected = false;
+            }
+
             isSelected = selected;
             targetScale = selected ? Vector3.one * selectedScale : Vector3.one * normalScale;
             targetSizeDelta = selected ? selectedSizeDelta : normalSizeDelta;
@@ -504,28 +572,33 @@ namespace Bladehold.UI
 
         public void OnPointerEnter(PointerEventData eventData)
         {
+            if (isLocked) return;
             SafePlayFeedbacks(hoverEnterFeedback);
             OnCardHovered?.Invoke(this);
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
+            if (isLocked) return;
             SafePlayFeedbacks(hoverExitFeedback);
             OnCardHoverExited?.Invoke(this);
         }
 
         public void OnPointerClick(PointerEventData eventData)
         {
+            if (isLocked) return;
             TriggerSelect();
         }
 
         private void HandleButtonClicked()
         {
+            if (isLocked) return;
             TriggerSelect();
         }
 
         private void TriggerSelect()
         {
+            if (isLocked) return;
             SafePlayFeedbacks(selectFeedback);
             OnCardClicked?.Invoke(this);
         }

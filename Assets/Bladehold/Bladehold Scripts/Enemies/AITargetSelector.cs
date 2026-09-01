@@ -47,76 +47,126 @@ public class AITargetSelector : MonoBehaviour
         assignedGate = gate;
     }
 
-    /// <summary>True when the current target is the player rather than a gate.</summary>
-    public bool IsTargetingPlayer => ResolveGate() == null;
+    /// <summary>True when the current target is the player rather than a gate or objective point.</summary>
+    public bool IsTargetingPlayer
+    {
+        get
+        {
+            if (ShouldTargetPlayer()) return true;
+            if (TryGetObjectiveTarget(out _, out _)) return false;
+            return ResolveGate() == null;
+        }
+    }
 
     /// <summary>The point to path toward / measure attack range from.</summary>
     public Vector3 TargetPosition
     {
         get
         {
+            if (ShouldTargetPlayer())
+            {
+                Player player = Player.Instance;
+                return player != null ? player.transform.position : transform.position;
+            }
+
+            if (TryGetObjectiveTarget(out Vector3 objPos, out _))
+            {
+                return objPos;
+            }
+
             Gate gate = ResolveGate();
             if (gate != null)
             {
                 return gate.TargetPosition;
             }
-            Player player = Player.Instance;
-            return player != null ? player.transform.position : transform.position;
+            Player fallbackPlayer = Player.Instance;
+            return fallbackPlayer != null ? fallbackPlayer.transform.position : transform.position;
         }
     }
 
-    /// <summary>The current target's damage sink (the gate's Health, or the player's). Null if neither exists.</summary>
+    /// <summary>True when flocking to an objective point (not targeting player or gate).</summary>
+    public bool IsFlockingToObjective => !ShouldTargetPlayer() && TryGetObjectiveTarget(out _, out _);
+
+    /// <summary>The current target's damage sink (the gate's Health, or the player's). Null if none exists or flocking to an objective.</summary>
     public IDamageable TargetDamageable
     {
         get
         {
+            if (ShouldTargetPlayer())
+            {
+                Player player = Player.Instance;
+                return player != null ? player.Damageable : null;
+            }
+
+            if (TryGetObjectiveTarget(out _, out _))
+            {
+                // Flocking to an objective: enemies do NOT attack the objective, they only wait there.
+                return null;
+            }
+
             Gate gate = ResolveGate();
             if (gate != null)
             {
                 return gate.Damageable;
             }
-            Player player = Player.Instance;
-            return player != null ? player.Damageable : null;
+            Player fallbackPlayer = Player.Instance;
+            return fallbackPlayer != null ? fallbackPlayer.Damageable : null;
         }
     }
 
-    /// <summary>The gate to target right now, or null when the player is (engaged, dead gates, no gates).</summary>
-    private Gate ResolveGate()
+    private bool ShouldTargetPlayer()
     {
-        Gate gate = assignedGate != null && !assignedGate.IsDestroyed
-            ? assignedGate
-            : Gate.NearestAlive(transform.position);
-        if (gate == null)
-        {
-            return null;
-        }
-
-        // Temporary player override (e.g. boss retaliation on damage)
         if (Time.time < playerOverrideUntilTime)
         {
             Player player = Player.Instance;
             if (player != null && player.Health != null && !player.Health.IsDead)
             {
-                return null;
+                return true;
             }
         }
 
-        // When ignoring the player, head straight for the gate without engage-range checks.
-        if (ignorePlayer)
+        if (!ignorePlayer)
         {
-            return gate;
-        }
-
-        // A living player inside engage range always wins over the gate.
-        Player activePlayer = Player.Instance;
-        if (activePlayer != null && activePlayer.Health != null && !activePlayer.Health.IsDead)
-        {
-            float sqrDistance = (activePlayer.transform.position - transform.position).sqrMagnitude;
-            if (sqrDistance <= playerEngageRange * playerEngageRange)
+            Player activePlayer = Player.Instance;
+            if (activePlayer != null && activePlayer.Health != null && !activePlayer.Health.IsDead)
             {
-                return null;
+                float sqrDistance = (activePlayer.transform.position - transform.position).sqrMagnitude;
+                if (sqrDistance <= playerEngageRange * playerEngageRange)
+                {
+                    return true;
+                }
             }
         }
-        return gate;
+
+        return false;
+    }
+
+    private bool TryGetObjectiveTarget(out Vector3 objPos, out IDamageable objDmg)
+    {
+        objPos = Vector3.zero;
+        objDmg = null;
+        if (SurvivorsObjectiveManager.Instance != null && SurvivorsObjectiveManager.Instance.CurrentObjective != null)
+        {
+            var obj = SurvivorsObjectiveManager.Instance.CurrentObjective;
+            if (obj.IsActive)
+            {
+                Vector3? pos = obj.GetObjectiveTargetPosition(transform.position);
+                if (pos.HasValue)
+                {
+                    objPos = pos.Value;
+                    objDmg = obj.GetObjectiveDamageable(transform.position);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /// <summary>The gate to target right now, or null when no gate is alive.</summary>
+    private Gate ResolveGate()
+    {
+        return assignedGate != null && !assignedGate.IsDestroyed
+            ? assignedGate
+            : Gate.NearestAlive(transform.position);
     }
 }

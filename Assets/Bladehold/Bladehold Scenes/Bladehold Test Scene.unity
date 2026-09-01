@@ -12418,6 +12418,9 @@ MonoBehaviour:
   introUI: {fileID: 114310294}
   bossHealthBar: {fileID: 114310293}
   defaultIntroDuration: 3
+  defaultRoarSound: {fileID: 0}
+  defaultRoarVolume: 1
+  defaultRoarDelay: 0
   extraComponentsToDisable: []
   objectsToHideDuringIntro: []
 --- !u!4 &680260141
@@ -21585,7 +21588,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 62.3
+  m_fontSize: 52.05
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1

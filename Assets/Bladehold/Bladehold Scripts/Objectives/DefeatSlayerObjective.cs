@@ -183,4 +183,34 @@ public class DefeatSlayerObjective : MonoBehaviour, ISurvivorsObjective
             BossHealthBarUI.Instance.Hide();
         }
     }
+
+    public Vector3? GetObjectiveTargetPosition(Vector3 searchFromPosition)
+    {
+        return null;
+    }
+
+    public IDamageable GetObjectiveDamageable(Vector3 searchFromPosition)
+    {
+        return null;
+    }
+
+    [Header("Waypoint Icon Configuration")]
+    [Tooltip("Optional custom waypoint icon for the Slayer boss.")]
+    [SerializeField] private Sprite slayerWaypointIcon;
+
+    public void GetActiveWaypointTargets(System.Collections.Generic.List<ObjectiveWaypointTarget> results)
+    {
+        if (!isActive || isComplete || results == null) return;
+
+        if (spawnedSlayer != null && slayerHealth != null && !slayerHealth.IsDead)
+        {
+            results.Add(new ObjectiveWaypointTarget(
+                spawnedSlayer.transform,
+                worldOffset: new Vector3(0f, 2.5f, 0f),
+                customIcon: slayerWaypointIcon,
+                tintColor: new Color(1f, 0.25f, 0.25f, 1f),
+                label: "Slayer"
+            ));
+        }
+    }
 }

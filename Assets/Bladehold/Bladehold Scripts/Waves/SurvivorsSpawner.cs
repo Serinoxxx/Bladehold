@@ -38,11 +38,18 @@ public class SurvivorsSpawner : MonoBehaviour
     [Tooltip("Maximum alive enemies permitted on field simultaneously.")]
     [SerializeField] private int maxConcurrentEnemies = 100;
 
-    [Header("Spawn Positioning around Player")]
-    [Tooltip("Minimum distance from player for spawn positions.")]
+    [Header("Spawn Positioning Points")]
+    [Tooltip("Scene spawn points. Goblins spawn at a random spawnpoint. If empty, auto-discovers scene spawnpoints or falls back to ring around player.")]
+    [SerializeField] private Transform[] spawnPoints;
+
+    [Tooltip("Random scatter radius in meters around the chosen spawn point.")]
+    [SerializeField] private float spawnRadiusAroundPoint = 2f;
+
+    [Header("Spawn Positioning around Player (Fallback)")]
+    [Tooltip("Minimum distance from player for fallback spawn positions.")]
     [SerializeField] private float minPlayerDistance = 14f;
 
-    [Tooltip("Maximum distance from player for spawn positions.")]
+    [Tooltip("Maximum distance from player for fallback spawn positions.")]
     [SerializeField] private float maxPlayerDistance = 24f;
 
     [Tooltip("Distance threshold for snapping spawn points to NavMesh.")]
@@ -109,6 +116,24 @@ public class SurvivorsSpawner : MonoBehaviour
         if (Player.Instance != null)
         {
             stats = Player.Instance.Stats;
+        }
+
+        if (spawnPoints == null || spawnPoints.Length == 0)
+        {
+            GameObject parentObj = GameObject.Find("Spawnpoints");
+            if (parentObj != null)
+            {
+                Transform[] childTransforms = parentObj.GetComponentsInChildren<Transform>();
+                List<Transform> list = new List<Transform>();
+                foreach (Transform t in childTransforms)
+                {
+                    if (t != parentObj.transform) list.Add(t);
+                }
+                if (list.Count > 0)
+                {
+                    spawnPoints = list.ToArray();
+                }
+            }
         }
     }
 
@@ -269,6 +294,28 @@ public class SurvivorsSpawner : MonoBehaviour
 
     private Vector3 ResolveSpawnPosition()
     {
+        if (spawnPoints != null && spawnPoints.Length > 0)
+        {
+            for (int attempt = 0; attempt < 16; attempt++)
+            {
+                int randomIndex = UnityEngine.Random.Range(0, spawnPoints.Length);
+                Transform pt = spawnPoints[randomIndex];
+                if (pt == null) continue;
+
+                Vector3 candidate = pt.position;
+                if (spawnRadiusAroundPoint > 0f)
+                {
+                    Vector2 jitter = UnityEngine.Random.insideUnitCircle * spawnRadiusAroundPoint;
+                    candidate += new Vector3(jitter.x, 0f, jitter.y);
+                }
+
+                if (NavMesh.SamplePosition(candidate, out NavMeshHit navHit, navMeshSampleDistance, NavMesh.AllAreas))
+                {
+                    return navHit.position;
+                }
+            }
+        }
+
         Vector3 center = Player.Instance != null ? Player.Instance.transform.position : transform.position;
         NavMeshPath path = new NavMeshPath();
         Vector3 fallbackPos = center + new Vector3(minPlayerDistance, 0f, 0f);

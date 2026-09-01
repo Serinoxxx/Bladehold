@@ -144,6 +144,11 @@ namespace Bladehold.UI
 
         public void SetSelected(bool selected, bool immediate = false)
         {
+            if (!isUnlocked && selected)
+            {
+                selected = false;
+            }
+
             isSelected = selected;
             targetScale = selected ? Vector3.one * SelectedScale : Vector3.one * NormalScale;
 
@@ -166,6 +171,8 @@ namespace Bladehold.UI
 
         public void OnPointerEnter(PointerEventData eventData)
         {
+            if (!isUnlocked) return;
+
             if (hoverEnterFeedback != null)
             {
                 hoverEnterFeedback.PlayFeedbacks();
@@ -175,6 +182,8 @@ namespace Bladehold.UI
 
         public void OnPointerExit(PointerEventData eventData)
         {
+            if (!isUnlocked) return;
+
             if (hoverExitFeedback != null)
             {
                 hoverExitFeedback.PlayFeedbacks();
@@ -183,6 +192,8 @@ namespace Bladehold.UI
 
         public void OnPointerClick(PointerEventData eventData)
         {
+            if (!isUnlocked) return;
+
             if (selectFeedback != null)
             {
                 selectFeedback.PlayFeedbacks();

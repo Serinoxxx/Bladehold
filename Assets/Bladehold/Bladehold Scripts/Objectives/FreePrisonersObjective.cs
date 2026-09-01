@@ -193,4 +193,60 @@ public class FreePrisonersObjective : MonoBehaviour, ISurvivorsObjective
         }
         spawnedCages.Clear();
     }
+
+    public Vector3? GetObjectiveTargetPosition(Vector3 searchFromPosition)
+    {
+        PrisonerCage nearest = GetNearestCage(searchFromPosition);
+        return nearest != null ? nearest.transform.position : (Vector3?)null;
+    }
+
+    public IDamageable GetObjectiveDamageable(Vector3 searchFromPosition)
+    {
+        // Enemies flock to and guard prisoner cages; they do not attack them.
+        return null;
+    }
+
+    private PrisonerCage GetNearestCage(Vector3 searchFromPosition)
+    {
+        if (!isActive || isComplete || isFailed) return null;
+        PrisonerCage best = null;
+        float bestSqDist = float.MaxValue;
+        foreach (PrisonerCage cage in spawnedCages)
+        {
+            if (cage != null && !cage.IsBroken)
+            {
+                float sqDist = (cage.transform.position - searchFromPosition).sqrMagnitude;
+                if (sqDist < bestSqDist)
+                {
+                    bestSqDist = sqDist;
+                    best = cage;
+                }
+            }
+        }
+        return best;
+    }
+
+    [Header("Waypoint Icon Configuration")]
+    [Tooltip("Optional custom waypoint icon for unbroken cages.")]
+    [SerializeField] private Sprite cageWaypointIcon;
+
+    public void GetActiveWaypointTargets(List<ObjectiveWaypointTarget> results)
+    {
+        if (!isActive || isComplete || isFailed || results == null) return;
+
+        for (int i = 0; i < spawnedCages.Count; i++)
+        {
+            PrisonerCage cage = spawnedCages[i];
+            if (cage != null && !cage.IsBroken)
+            {
+                results.Add(new ObjectiveWaypointTarget(
+                    cage.transform,
+                    worldOffset: new Vector3(0f, 1.8f, 0f),
+                    customIcon: cageWaypointIcon,
+                    tintColor: new Color(1f, 0.8f, 0.2f, 1f),
+                    label: "Prisoner"
+                ));
+            }
+        }
+    }
 }

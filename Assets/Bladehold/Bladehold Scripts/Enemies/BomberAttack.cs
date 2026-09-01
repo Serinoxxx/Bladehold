@@ -201,6 +201,9 @@ public class BomberAttack : MonoBehaviour
     {
         if (anyError || isDead || playerDead || fuseLit) return;
 
+        // Do not detonate if there is no attackable target (e.g. flocking to an objective and waiting for player)
+        if (targetSelector != null && targetSelector.TargetDamageable == null) return;
+
         if (IsTargetInRange())
         {
             LightFuse();

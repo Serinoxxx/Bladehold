@@ -177,6 +177,9 @@ public class AIAttack : MonoBehaviour
 
         if (Time.time - lastAttackTime < attackData.attackCooldown) return;
 
+        // Do not attack if there is no damageable target (e.g. flocking to an objective and waiting for player)
+        if (CurrentTargetDamageable() == null) return;
+
         if (attackRoutine == null && IsTargetInRange())
         {
             attackRoutine = StartCoroutine(PrepareAndAttack());

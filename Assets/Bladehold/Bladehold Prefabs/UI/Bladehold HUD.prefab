@@ -4351,6 +4351,68 @@ RectTransform:
   m_AnchoredPosition: {x: 138, y: 0.0000035614}
   m_SizeDelta: {x: 120, y: 120}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &2444287111402885001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 891965467949716828}
+  - component: {fileID: 8848268570367837685}
+  m_Layer: 0
+  m_Name: Objective Waypoints Overlay
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &891965467949716828
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2444287111402885001}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7682136491679844615}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &8848268570367837685
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2444287111402885001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 647980d2f700db844b3af884173ec19d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjectiveWaypointTrackerUI
+  objectiveManager: {fileID: 0}
+  markersContainer: {fileID: 891965467949716828}
+  markerTemplate: {fileID: 0}
+  defaultObjectiveIcon: {fileID: 21300000, guid: d45648334e1db434387ba9cd9a6e282e, type: 3}
+  prisonerCageIcon: {fileID: 21300000, guid: 02c6e3d0b28e80440855b2e6fa36f696, type: 3}
+  supplyWagonIcon: {fileID: 21300000, guid: c0031481d3f0509498dadc036ff9b392, type: 3}
+  destinationGateIcon: {fileID: 21300000, guid: bf99f27e83c88bb45b08fc4daf9bda6e, type: 3}
+  slayerBossIcon: {fileID: 21300000, guid: 6b9d8482dcc5af3429992cd4e692e675, type: 3}
+  siegeEngineIcon: {fileID: 21300000, guid: c2c35eea2047bc64b880be3c543b5767, type: 3}
+  arrowIcon: {fileID: 21300000, guid: aa593943435f59245bad041b32c3b6c0, type: 3}
+  iconBackground: {fileID: 21300000, guid: 27cdc8f9729566b47be8cc581f5f8edc, type: 3}
+  screenEdgePadding: {x: 90, y: 90}
+  bobAmplitude: 5
+  bobSpeed: 3.5
 --- !u!1 &2489489096495231275
 GameObject:
   m_ObjectHideFlags: 0
@@ -19702,10 +19764,13 @@ PrefabInstance:
     - {fileID: 6416292850806001537, guid: 57ec00676314bc546bee4e774896cbd9, type: 3}
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 7937365742732396715, guid: 57ec00676314bc546bee4e774896cbd9, type: 3}
-      insertIndex: 1
-      addedObject: {fileID: 5977645745434412339}
+      insertIndex: 0
+      addedObject: {fileID: 891965467949716828}
     - targetCorrespondingSourceObject: {fileID: 7937365742732396715, guid: 57ec00676314bc546bee4e774896cbd9, type: 3}
       insertIndex: 2
+      addedObject: {fileID: 5977645745434412339}
+    - targetCorrespondingSourceObject: {fileID: 7937365742732396715, guid: 57ec00676314bc546bee4e774896cbd9, type: 3}
+      insertIndex: 3
       addedObject: {fileID: 2715151296399934825}
     - targetCorrespondingSourceObject: {fileID: 7606908076764021845, guid: 57ec00676314bc546bee4e774896cbd9, type: 3}
       insertIndex: -1
@@ -22807,7 +22872,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1722165923144489846, guid: 72e56784e591139469dcaeec0b81f611, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5388611535832780282, guid: 72e56784e591139469dcaeec0b81f611, type: 3}
       propertyPath: m_Sprite
@@ -23025,6 +23090,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -60
       objectReference: {fileID: 0}
+    - target: {fileID: 7838318998507027413, guid: 72e56784e591139469dcaeec0b81f611, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7860191124307740700, guid: 72e56784e591139469dcaeec0b81f611, type: 3}
       propertyPath: m_text
       value: 356
@@ -23139,9 +23208,10 @@ MonoBehaviour:
   activeOutLeadTime: 0.5
   bannerAnimationFeedback: {fileID: 4990129253648166755}
   waveClearedSounds:
-  - {fileID: 8300000, guid: 1b0a47b1c0ffb49c7b33f40bcae7fbe8, type: 3}
-  - {fileID: 8300000, guid: 17071ce86c3d15245a96c44ee44495b5, type: 3}
-  newQuestSounds: []
+  - {fileID: 8300000, guid: 04cdc413de0c6e848832731021080ca2, type: 3}
+  - {fileID: 8300000, guid: c3f6caedad26cff438548f1bc058ea42, type: 3}
+  newQuestSounds:
+  - {fileID: 8300000, guid: 887c0b12c8239eb4f9b055a15fd811ae, type: 3}
   displayDuration: 5
 --- !u!114 &4990129253648166755
 MonoBehaviour:

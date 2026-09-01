@@ -175,6 +175,9 @@ public class TrollSlamAttack : MonoBehaviour
 
         if (Time.time - lastAttackTime < attackData.attackCooldown) return;
 
+        // Do not slam if there is no attackable target (e.g. flocking to an objective and waiting for player)
+        if (targetSelector != null && targetSelector.TargetDamageable == null) return;
+
         if (IsTargetInRange())
         {
             StartSlam();

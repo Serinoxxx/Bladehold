@@ -240,4 +240,60 @@ public class DestroySiegeEnginesObjective : MonoBehaviour, ISurvivorsObjective
         }
         spawnedEngines.Clear();
     }
+
+    public Vector3? GetObjectiveTargetPosition(Vector3 searchFromPosition)
+    {
+        DestructibleSiegeEngine nearest = GetNearestEngine(searchFromPosition);
+        return nearest != null ? nearest.transform.position : (Vector3?)null;
+    }
+
+    public IDamageable GetObjectiveDamageable(Vector3 searchFromPosition)
+    {
+        // Enemies flock to and defend siege engines; they do not attack them.
+        return null;
+    }
+
+    private DestructibleSiegeEngine GetNearestEngine(Vector3 searchFromPosition)
+    {
+        if (!isActive || isComplete || isFailed) return null;
+        DestructibleSiegeEngine best = null;
+        float bestSqDist = float.MaxValue;
+        foreach (DestructibleSiegeEngine engine in spawnedEngines)
+        {
+            if (engine != null && !engine.IsDestroyed)
+            {
+                float sqDist = (engine.transform.position - searchFromPosition).sqrMagnitude;
+                if (sqDist < bestSqDist)
+                {
+                    bestSqDist = sqDist;
+                    best = engine;
+                }
+            }
+        }
+        return best;
+    }
+
+    [Header("Waypoint Icon Configuration")]
+    [Tooltip("Optional custom waypoint icon for the catapult siege engines.")]
+    [SerializeField] private Sprite siegeEngineWaypointIcon;
+
+    public void GetActiveWaypointTargets(System.Collections.Generic.List<ObjectiveWaypointTarget> results)
+    {
+        if (!isActive || isComplete || isFailed || results == null) return;
+
+        for (int i = 0; i < spawnedEngines.Count; i++)
+        {
+            DestructibleSiegeEngine engine = spawnedEngines[i];
+            if (engine != null && !engine.IsDestroyed)
+            {
+                results.Add(new ObjectiveWaypointTarget(
+                    engine.transform,
+                    worldOffset: new Vector3(0f, 2.5f, 0f),
+                    customIcon: siegeEngineWaypointIcon,
+                    tintColor: new Color(1f, 0.55f, 0.1f, 1f),
+                    label: "Catapult"
+                ));
+            }
+        }
+    }
 }

@@ -34,6 +34,7 @@ public class SurvivorsObjectiveManager : MonoBehaviour
 
     public ISurvivorsObjective CurrentObjective => currentObjective;
     public int CompletedObjectiveCount => completedObjectiveCount;
+    public int GoldXpRewardPerObjective => goldXpRewardPerObjective;
     public IReadOnlyList<ISurvivorsObjective> ObjectivePool => objectivePool;
 
     public event Action<ISurvivorsObjective> OnObjectiveStarted;

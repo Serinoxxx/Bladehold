@@ -196,16 +196,23 @@ namespace Bladehold.UI
             CharacterSelectCardUI targetCard = null;
             foreach (var card in cards)
             {
-                if (card != null && string.Equals(card.ClassId, savedClassId, System.StringComparison.OrdinalIgnoreCase))
+                if (card != null && !card.IsLocked && string.Equals(card.ClassId, savedClassId, System.StringComparison.OrdinalIgnoreCase))
                 {
                     targetCard = card;
                     break;
                 }
             }
 
-            if (targetCard == null && cards.Count > 0)
+            if (targetCard == null)
             {
-                targetCard = cards[0];
+                foreach (var card in cards)
+                {
+                    if (card != null && !card.IsLocked)
+                    {
+                        targetCard = card;
+                        break;
+                    }
+                }
             }
 
             if (targetCard != null)
@@ -294,7 +301,7 @@ namespace Bladehold.UI
 
         public void SelectCard(CharacterSelectCardUI card, bool immediate = false)
         {
-            if (card == null) return;
+            if (card == null || card.IsLocked) return;
 
             currentSelectedCard = card;
 
@@ -366,12 +373,13 @@ namespace Bladehold.UI
 
         private void HandleCardClicked(CharacterSelectCardUI card)
         {
+            if (card == null || card.IsLocked) return;
             SelectCard(card);
         }
 
         private void HandleCardHovered(CharacterSelectCardUI card)
         {
-            if (previewOnHover && card != null)
+            if (previewOnHover && card != null && !card.IsLocked)
             {
                 UpdateDescriptionPanel(card);
             }
@@ -379,7 +387,7 @@ namespace Bladehold.UI
 
         private void HandleCardHoverExited(CharacterSelectCardUI card)
         {
-            if (previewOnHover && currentSelectedCard != null)
+            if (previewOnHover && currentSelectedCard != null && !currentSelectedCard.IsLocked)
             {
                 UpdateDescriptionPanel(currentSelectedCard);
             }
@@ -387,14 +395,13 @@ namespace Bladehold.UI
 
         private void HandleConfirmClicked()
         {
-            if (currentSelectedCard != null)
+            if (currentSelectedCard != null && !currentSelectedCard.IsLocked)
             {
                 PlayerClassController.SetSavedClass(currentSelectedCard.ClassId);
-            }
-
-            if (mainMenuManager != null)
-            {
-                mainMenuManager.OnCharacterSelected();
+                if (mainMenuManager != null)
+                {
+                    mainMenuManager.OnCharacterSelected();
+                }
             }
         }
 

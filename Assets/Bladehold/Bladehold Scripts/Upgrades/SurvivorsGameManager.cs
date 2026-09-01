@@ -57,6 +57,7 @@ public class SurvivorsGameManager : MonoBehaviour
     public bool CanStartNewObjectives => (siegeDuration - runTimer) > objectiveStopLeadTime && !hasSurvivedSiege;
     public bool IsInFinalCountdown => (siegeDuration - runTimer) <= objectiveStopLeadTime && !hasSurvivedSiege;
     public bool BossSpawned => bossSpawned;
+    public GameObject SpawnedSiegebreaker => spawnedSiegebreaker;
     public bool IsGameActive => isGameActive && !isPausedForLevelUp;
     public bool IsPausedForLevelUp => isPausedForLevelUp;
     public bool IsVictory => isVictory;
