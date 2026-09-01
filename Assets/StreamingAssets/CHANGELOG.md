@@ -3,6 +3,8 @@
 ## [0.1.14] - 2026-08-30
 
 ### New Features
+- Added screen-space and off-screen HUD waypoint markers for all Survivors Mode sub-objectives (prisoner cages, supply wagon, destination gate, Slayer boss, and catapult siege engines) with distance counters, custom themed icons, and directional perimeter arrows
+- Added dynamic blood decals on the ground under enemies when they take damage, scaling with hit severity and critical strikes
 - Added Assassin enemy that winds up with a red circular telegraph, executes a multi-hit whirlwind spin attack, and is temporarily dizzy afterwards
 - Added Bubbler support enemy that shields allies with a 2m protective bubble and links them with a channeling beam
 - Bubbles deflect and block player melee strikes and projectile arrows
@@ -15,6 +17,8 @@
 - Converted character selection cards to dynamically instantiate and populate from ClassDefinitionSO data assets
 
 ### Fixes
+- Fixed objective announcement and quest complete fanfare banners failing to pop up due to a deactivated root UI GameObject in the HUD hierarchy
+- Wired dedicated audio fanfare effects for objective announcements (Viking battle horn) and quest completions (triumph chime bell)
 - Fixed Bubbler enemy failing to animate by configuring the Storm Witch / Sorceress locomotion controller and rig setup
 - Fixed missing connective beam on Bubbler by parenting the beam target to shielded allies and configuring lightning chain scaling
 - Fixed player getting stuck floating on enemies when dismounting near groups
@@ -31,7 +35,10 @@
 - Added Bubbler as the third enemy type in Survivors Mode (unlocking at wave 2)
 
 ### General Changes
+- Locked the Mage class card and Levels 2–5 cards on the main menu with lock icons and disabled click interactions
 - Disabled slide and crouch mechanics to streamline player locomotion and controls
+- Updated Survivor Mode enemy spawning to instantiate enemies at scene spawnpoints rather than around the player
+- Configured enemies during Survivor Mode objectives (siege engines, prisoner cages, supply wagon) to flock toward and guard the objective point, waiting there to attack the player when they come in range rather than attacking the objective or gate
 
 ---
 
