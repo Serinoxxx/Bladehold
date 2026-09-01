@@ -3,145 +3,143 @@
 ## [0.1.14] - 2026-08-30
 
 ### New Features
-- Added screen-space and off-screen HUD waypoint markers for all Survivors Mode sub-objectives (prisoner cages, supply wagon, destination gate, Slayer boss, and catapult siege engines) with distance counters, custom themed icons, and directional perimeter arrows
-- Added dynamic blood decals on the ground under enemies when they take damage, scaling with hit severity and critical strikes
-- Added Assassin enemy that winds up with a red circular telegraph, executes a multi-hit whirlwind spin attack, and is temporarily dizzy afterwards
-- Added Bubbler support enemy that shields allies with a 2m protective bubble and links them with a channeling beam
-- Bubbles deflect and block player melee strikes and projectile arrows
-- Added heavy stompy locomotion to Slayer boss with stomping crusher mechanic that tramples minor enemies underfoot
-- Added telegraphed ground slam, massive impact VFX, screen shake, and heavy smash audio to Slayer
-- Enhanced cinematic enemy intro cutscenes by hiding the HUD canvas and expanding cinematic letterbox height to 220px
-- Reworked spike barricades into periodic ground thrust spike traps that thrust upward dealing box AoE damage
-- Added dust trail particle VFX and high-speed whoosh sound effects to player dodge abilities
-- Added Earth Splitter skill node: unlocks a devastating final melee charge tier with rectangular telegraph, ground smash impact, and a line of rock explosions
-- Converted character selection cards to dynamically instantiate and populate from ClassDefinitionSO data assets
+- Added waypoints for objectives
+- Added enemy blood decals on hit
+- Added Assassin enemy with whirlwind attack
+- Added Bubbler support enemy that shields allies
+- Added stomping crusher attack to Siegebreaker boss
+- Added Siegebreaker boss ground slam attack
+- Enhanced cinematic enemy intros
+- Reworked spike barricades into thrusting traps
+- Added visual and sound effects to dodge
+- Added Earth Splitter charge attack
+- Updated character selection cards to load dynamically
 
 ### Fixes
-- Fixed objective announcement and quest complete fanfare banners failing to pop up due to a deactivated root UI GameObject in the HUD hierarchy
-- Wired dedicated audio fanfare effects for objective announcements (Viking battle horn) and quest completions (triumph chime bell)
-- Fixed Bubbler enemy failing to animate by configuring the Storm Witch / Sorceress locomotion controller and rig setup
-- Fixed missing connective beam on Bubbler by parenting the beam target to shielded allies and configuring lightning chain scaling
-- Fixed player getting stuck floating on enemies when dismounting near groups
-- Improved airborne movement control and gravity while falling
-- Fixed Troll sliding backwards during ground slam wind-up
-- Fixed Troll animation warping by mapping dedicated giant slam animations
-- Removed buggy corpse impaling and sticky enemy physics from spike defenses
-- Fixed melee charge attacks breaking or getting stuck during hit-stop, pause, and card draft selection
-- Synchronized MMTimeManager time events across pause menu and card draft resumes
-- Ensured HUD keybinding and skill icons for Bow, Summon Mount, and Dash remain hidden until their respective abilities are unlocked
+- Fixed objective and quest complete banners not appearing
+- Fixed missing audio for objective and quest announcements
+- Fixed Bubbler enemy animation issues
+- Fixed Bubbler shield beam not connecting
+- Fixed player floating on enemies when dismounting
+- Improved airborne movement control
+- Fixed Troll sliding backwards during ground slam
+- Fixed Troll slam animation warping
+- Fixed enemy physics issues on spike traps
+- Fixed charge attacks getting stuck during pause or card drafts
+- Fixed game time resuming incorrectly after pausing
+- Fixed locked ability icons showing in HUD
 
 ### Balance Changes
-- Added Assassin to the wave roster starting from Wave 3, capped at a maximum of 2 alive concurrently
-- Added Bubbler as the third enemy type in Survivors Mode (unlocking at wave 2)
+- Added Assassin to wave 3
+- Added Bubbler to Survivors Mode wave 2
 
 ### General Changes
-- Locked the Mage class card and Levels 2–5 cards on the main menu with lock icons and disabled click interactions
-- Disabled slide and crouch mechanics to streamline player locomotion and controls
-- Updated Survivor Mode enemy spawning to instantiate enemies at scene spawnpoints rather than around the player
-- Configured enemies during Survivor Mode objectives (siege engines, prisoner cages, supply wagon) to flock toward and guard the objective point, waiting there to attack the player when they come in range rather than attacking the objective or gate
+- Locked unreleased Mage class and extra levels in main menu
+- Disabled slide and crouch mechanics
+- Updated Survivor Mode enemy spawn locations
+- Enemies now guard objective points during Survivor Mode
 
 ---
 
 ## [0.1.12] - 2026-08-29
 
 ### New Features
-- Added character select screen with hero cards (Ranger, Berserker, Mage), dynamic descriptions, and 3D model preview
-- Added key skill preview badges with hover tooltips detailing hero abilities
-- Added scrollable changelog window in main menu displaying real-time patch notes
+- Added character select screen with 3D model previews
+- Added skill tooltips to character select
+- Added in-game changelog viewer in main menu
 - Added meta progression grid in main menu
-- Added 4 periodic elemental weapon imbuements (Fire, Ice, Lightning, Poison)
-- Added Slayer boss intro and boss health bar
-- Added fort defense sockets and objectives
-- Added banish mechanic to in-run card draft
-- Added treasure wagons that break into gold
+- Added elemental weapon imbuements (Fire, Ice, Lightning, Poison)
+- Added Siegebreaker boss intro and health bar
+- Added fort defense objectives
+- Added banish option to card drafts
+- Added gold treasure wagons
 
 ### Fixes
-- Fixed Fire Imbuement flame zones spawning below ground
-- Fixed elemental imbuement weapon hit bindings and VFX
-- Fixed Goblin Brute weapon collision box hitting outside swing arc
-- Fixed unaffordable upgrade cards not dimming in meta progression grid
-- Fixed card text and button overlap on high resolutions
+- Fixed Fire Imbuement zones spawning below ground
+- Fixed elemental weapon hit effects
+- Fixed Goblin Brute weapon hitboxes
+- Fixed unaffordable upgrade cards not dimming
+- Fixed card text overlapping on high resolutions
 
 ### Balance Changes
-- Capped active weapon/ability slots to 4
-- Adjusted Slayer boss attack timings and recovery
+- Capped active weapon slots to 4
+- Adjusted Siegebreaker boss attack timings
 - Rebalanced meta upgrade gold costs
-- Adjusted enemy wave spawn pacing during defense objectives
+- Adjusted wave spawn pacing during defense objectives
 
 ### General Changes
-- Updated loading screen to fill the logo graphic with loading progress instead of using a loading bar
-- Added smooth scale pulsing and color lightening for selected character cards
-- Added hover and select feedbacks for character cards
-- Updated meta upgrades screen with dark parchment theme and unique icons
+- Updated loading screen progress visual
+- Added selection feedback to character cards
+- Updated meta upgrades screen visuals and icons
 - Improved death screen animations and gold tally
-- Added directional damage numbers and hit reactions
-- Increased screen shake and hit-stop on melee strikes and explosions
+- Added directional damage numbers
+- Increased screen shake and hit-stop on heavy hits
 
 ---
 
 ## [0.1.11] - 2026-08-19
 
 ### New Features
-- Added Golden Goblin enemy that flees with gold when spotted
+- Added fleeing Golden Goblin enemy
 - Added charged attacks for Bow, Thrown Axes, and Wand
-- Added pinned arrows and thrown axes that stick into targets and terrain
-- Added blood decals when ragdoll enemies hit surfaces
+- Projectiles now stick into targets and terrain
+- Added impact blood decals for ragdolls
 
 ### Fixes
-- Fixed projectiles occasionally passing through obstacles
-- Fixed attack charge gauge remaining on screen after cancelling aim
-- Fixed stuck arrows remaining visible after corpse despawn
+- Fixed projectiles passing through obstacles
+- Fixed charge gauge remaining on screen after cancelling aim
+- Fixed stuck arrows persisting after corpse despawn
 
 ### Balance Changes
-- Adjusted enemy health, speed, and wave counts in early to mid waves
-- Tuned knockback force and recovery thresholds
-- Adjusted charge time and damage multipliers for ranged weapons
+- Adjusted early to mid wave enemy health and counts
+- Tuned knockback force and recovery
+- Adjusted charge times and damage for ranged weapons
 
 ### General Changes
 - Added attack charge HUD gauge
 - Updated post-battle summary screen layout
-- Improved arrow release sound and trail visuals
+- Improved arrow sound and trail effects
 
 ---
 
 ## [0.1.9] - 2026-08-18
 
 ### New Features
-- Added Survivors Mode with continuous enemy hordes
+- Added Survivors Mode
 - Added 3-card upgrade drafting on level up
-- Added dedicated Survivors Mode HUD (timer, level, XP bar, card inventory)
-- Added dedicated horde arena scene
+- Added Survivors Mode HUD
+- Added dedicated horde arena
 
 ### Fixes
-- Fixed Goblin Brute getting stuck in attack animation loop
-- Fixed enemy pathfinding hitches near arena edges
+- Fixed Goblin Brute getting stuck in attack animation
+- Fixed enemy pathfinding issues near arena edges
 - Fixed card tooltips clipping off-screen
 
 ### Balance Changes
-- Adjusted Troll ground slam radius and warning timing
-- Adjusted Berserker skill tree costs and damage bonuses
-- Tuned XP gem drop rates and leveling curve
+- Adjusted Troll ground slam radius and timing
+- Adjusted Berserker skill tree costs and damage
+- Tuned XP drop rates and leveling curve
 
 ### General Changes
-- Added visual telegraph decals for heavy and area attacks
-- Polished enemy movement and attack animation blending
+- Added attack telegraphs for heavy and area attacks
+- Polished enemy movement and attack animations
 
 ---
 
 ## [0.1.8] - 2026-08-17
 
 ### New Features
-- Added stat and cost hover tooltips to skill tree nodes
+- Added stat and cost tooltips to skill tree nodes
 
 ### Fixes
-- Fixed skill nodes rapidly growing and shrinking in a loop on hover
+- Fixed skill node hover animation loop
 - Fixed cursor hover jitter on skill tree buttons
 
 ### Balance Changes
 - Adjusted mid-tier skill node gold costs
 
 ### General Changes
-- Smoothed hover scale transitions on skill tree buttons
+- Smoothed hover transitions on skill tree buttons
 
 ---
 
@@ -149,21 +147,20 @@
 
 ### New Features
 - Added class ultimate abilities
-- Added ultimate charge meter with full-charge and activation visuals
+- Added ultimate charge meter and visual effects
 - Added Arid Desert biome
-- Added loot chest drop visual effects
+- Added loot chest visual effects
 
 ### Fixes
-- Fixed horse summon duration bar not draining properly
-- Fixed overkill damage counting toward ultimate charge
-- Fixed missing controller and keyboard bindings for ultimate ability
+- Fixed mount duration bar not draining
+- Fixed overkill damage granting ultimate charge
+- Fixed missing controls for ultimate abilities
 
 ### Balance Changes
-- Reduced player movement speed while aiming ranged weapons
+- Reduced movement speed while aiming ranged weapons
 - Replaced sprint upgrades with active dodge
-- Changed ultimate trickle charge to tick once per second instead of every frame
+- Adjusted passive ultimate charge rate
 
 ### General Changes
-- Added hit sparks, screen shake, and impact sounds to weapon hits
-- Added Berserker and Mage skill tree preview panels in editor
-
+- Added hit sparks, screen shake, and impact sounds
+- Added Berserker and Mage skill tree preview panels

@@ -277,27 +277,32 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
         CanvasGroup cg = templateGo.GetComponent<CanvasGroup>();
         cg.alpha = 0f;
 
-        // 1. Background image
+        // 1. Background image (sibling 0: behind icon)
         GameObject bgGo = new GameObject("Icon_Background", typeof(RectTransform), typeof(Image));
         bgGo.transform.SetParent(templateGo.transform, false);
+        bgGo.transform.SetSiblingIndex(0);
         RectTransform bgRt = bgGo.GetComponent<RectTransform>();
         bgRt.sizeDelta = new Vector2(64f, 64f);
         Image bgImg = bgGo.GetComponent<Image>();
         bgImg.sprite = iconBackground;
+        bgImg.color = new Color(0.12f, 0.12f, 0.14f, 0.85f); // Subtle dark badge frame
         bgImg.raycastTarget = false;
 
-        // 2. Icon image
+        // 2. Icon image (sibling 1: in front of background)
         GameObject iconGo = new GameObject("Icon", typeof(RectTransform), typeof(Image));
         iconGo.transform.SetParent(templateGo.transform, false);
+        iconGo.transform.SetSiblingIndex(1);
         RectTransform iconRt = iconGo.GetComponent<RectTransform>();
         iconRt.sizeDelta = new Vector2(40f, 40f);
         Image iconImg = iconGo.GetComponent<Image>();
         iconImg.sprite = defaultObjectiveIcon;
+        iconImg.color = Color.white;
         iconImg.raycastTarget = false;
 
-        // 3. Directional arrow
+        // 3. Directional arrow (sibling 2: for offscreen pointing)
         GameObject arrowGo = new GameObject("Arrow_Indicator", typeof(RectTransform), typeof(Image));
         arrowGo.transform.SetParent(templateGo.transform, false);
+        arrowGo.transform.SetSiblingIndex(2);
         RectTransform arrowRt = arrowGo.GetComponent<RectTransform>();
         arrowRt.sizeDelta = new Vector2(28f, 28f);
         Image arrowImg = arrowGo.GetComponent<Image>();
@@ -305,9 +310,10 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
         arrowImg.raycastTarget = false;
         arrowGo.SetActive(false);
 
-        // 4. Distance text
+        // 4. Distance text (sibling 3: below marker)
         GameObject textGo = new GameObject("Distance_Text", typeof(RectTransform), typeof(TextMeshProUGUI));
         textGo.transform.SetParent(templateGo.transform, false);
+        textGo.transform.SetSiblingIndex(3);
         RectTransform textRt = textGo.GetComponent<RectTransform>();
         textRt.sizeDelta = new Vector2(100f, 26f);
         textRt.anchoredPosition = new Vector2(0f, -42f);
@@ -318,19 +324,9 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
         tmp.color = Color.white;
         tmp.raycastTarget = false;
 
-        // Wire serialized fields on ObjectiveWaypointMarkerUI
+        // Wire references directly at runtime — works in both Editor and Standalone Builds
         markerTemplate = templateGo.GetComponent<ObjectiveWaypointMarkerUI>();
-
-#if UNITY_EDITOR
-        var so = new UnityEditor.SerializedObject(markerTemplate);
-        so.FindProperty("markerRect").objectReferenceValue = rootRt;
-        so.FindProperty("canvasGroup").objectReferenceValue = cg;
-        so.FindProperty("iconBackground").objectReferenceValue = bgImg;
-        so.FindProperty("iconImage").objectReferenceValue = iconImg;
-        so.FindProperty("offscreenArrow").objectReferenceValue = arrowImg;
-        so.FindProperty("distanceText").objectReferenceValue = tmp;
-        so.ApplyModifiedProperties();
-#endif
+        markerTemplate.SetupReferences(rootRt, cg, bgImg, iconImg, arrowImg, tmp);
 
         templateGo.SetActive(false);
     }

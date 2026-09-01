@@ -58,6 +58,20 @@ public class PlayerAttack : MonoBehaviour
     /// </summary>
     public float AttackDamageMultiplier { get; private set; } = 1f;
 
+    /// <summary>
+    ///     The damage multiplier for a fully charged attack at maximum charge levels,
+    ///     matching the value reached at the end of a full hold.
+    /// </summary>
+    public float FullyChargedDamageMultiplier
+    {
+        get
+        {
+            int maxLevels = MaxChargeLevels;
+            float damagePerLevel = 1.9f + (stats != null ? stats.GetValue(StatType.ChargeDamageBonus) : 0f);
+            return 0.1f + damagePerLevel * maxLevels;
+        }
+    }
+
     /// <summary>Time in seconds required per charge level.</summary>
     public float ChargeTimePerLevel => chargeTimePerLevel;
 
@@ -246,6 +260,9 @@ public class PlayerAttack : MonoBehaviour
     private void HandlePressed()
     {
         if (anyError) return;
+
+        // While whirlwind is active on the equipped melee weapon, melee hold-to-charge is skipped
+        if (classController != null && classController.ActiveMeleeTrigger != null && classController.ActiveMeleeTrigger.IsWhirlwindActive) return;
 
         // While the active class's aim weapon (bow/axe/wand) is drawn, this press fires it instead
         IChargedAimWeapon aimWeapon = classController != null ? classController.ActiveAimWeapon : null;

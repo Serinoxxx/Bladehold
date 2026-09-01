@@ -75,4 +75,34 @@ Implemented persistent meta-progression in the Main Menu, in-run card draft over
 ## Slayer Gate-Assault Objective, Generic Enemy Intro Cinematic, Boss Health Bar & Damage Retaliation — Unity Editor Wiring
 
 ### The C# is done
-Implem...
+Implemented Slayer Gate-Assault objective, cinematic triggers, boss health bar, and retaliatory mechanics.
+
+## Berserker Whirlwind Ultimate — Unity Editor Wiring
+
+### The C# is done
+Overhauled Berserker's Ultimate ability into a continuous whirlwind attack:
+- **`DamageTrigger.cs`**: Added continuous whirlwind activation mode (`StartWhirlwind`, `StopWhirlwind`), per-target hit cooldown tracking (`whirlwindHitInterval`, defaulting to 0.3s), and fully charged damage scaling (`FullyChargedDamageMultiplier`, charge knockback bonus) without triggering Earth Splitter. Bypasses single-swing hit cap (`MaxHitsPerSwing`).
+- **`PlayerAttack.cs`**: Added `FullyChargedDamageMultiplier` property and suppressed regular melee attack inputs while whirlwind is active.
+- **`BerserkerUltimate.cs`**: Implemented `IUltimateHandler` with `StartWhirlwind` activation on the equipped melee weapon (2H Axe), `StartWhirlwind` / `StopWhirlwind` Animator trigger triggers for the user's override layer, programmatic 360° spin rotation (`rotateCharacter = true`, `spinDegreesPerSecond = 1080f` on the rig's `root` bone for static animation poses), `FX_Swirl_Fast_01` whirlwind VFX spawning (matching Assassin enemy variant), and damage reduction scaling via `UltimateBerserkerDamageReduction`. Giant growth/scale-up mechanics have been completely disabled.
+- **`SkillTreeBerserker.csv` & `SkillTreeSOBerserker.asset`**: Renamed ultimate node to `Whirlwind` and duration to `Enduring Whirlwind`. Removed legacy `ult_size` (`Colossal Growth`) node completely.
+- **`Player.prefab`**: Auto-wired `whirlwindVfxPrefab` to `Assets/Synty/PolygonParticleFX/Prefabs/FX_Swirl_Fast_01.prefab`, with `startTrigger = "StartWhirlwind"`, `stopTrigger = "StopWhirlwind"`, `hitInterval = 0.3f`, `rotateCharacter = true`, `spinDegreesPerSecond = 1080`, and `spinTransform = root`.
+
+### Wiring checklist
+- [x] **Prefab Wiring (`Player.prefab`)**:
+  - [x] Wired `whirlwindVfxPrefab` to `Assets/Synty/PolygonParticleFX/Prefabs/FX_Swirl_Fast_01.prefab`.
+  - [x] Configured `startTrigger` = `"StartWhirlwind"` and `stopTrigger` = `"StopWhirlwind"`.
+  - [x] Configured `rotateCharacter = true`, `spinDegreesPerSecond = 1080`, and `spinTransform = root`.
+- [ ] **Animator Setup (User)**:
+  - [ ] Add an Override layer in the Berserker/Player Animator Controller with Weight = 1.
+  - [ ] Add the spinning animation clip to this layer.
+  - [ ] Create transitions driven by triggers `StartWhirlwind` to enter and `StopWhirlwind` to exit.
+
+### Manual verification
+- [x] Headless C# compilation verified with `dotnet build Assembly-CSharp.csproj` (0 errors).
+- [x] Unity Editor AssetDatabase refreshed via `refresh_unity` (0 errors).
+- [ ] In-game Play mode testing:
+  - [ ] Fill Berserker Ultimate charge (or activate via cheats/hotkey).
+  - [ ] Trigger Ultimate: verify `StartWhirlwind` fires on Animator, `FX_Swirl_Fast_01` spawns and loops at player feet/torso.
+  - [ ] Verify 2H Axe stays active with weapon trail and cuts through all enemies continuously.
+  - [ ] Verify hits deal fully charged weapon damage and knockback, and Earth Splitter line of explosions does not trigger.
+  - [ ] Verify Ultimate ends cleanly after duration: `StopWhirlwind` fires on Animator, weapon deactivates, and particle swirl despawns.

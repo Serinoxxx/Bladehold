@@ -82,6 +82,13 @@ public class DamageTrigger : MonoBehaviour
     PlayerStats stats;
 
     bool isActive;
+    bool isWhirlwindActive;
+    float whirlwindHitInterval = 0.3f;
+    readonly Dictionary<IDamageable, float> targetLastHitTime = new Dictionary<IDamageable, float>();
+
+    /// <summary>True while this trigger is held active continuously by a whirlwind attack.</summary>
+    public bool IsWhirlwindActive => isWhirlwindActive;
+
     float deactivateTime;
     int activePointCount;
     float reachBonus;
@@ -276,8 +283,51 @@ public class DamageTrigger : MonoBehaviour
         }
     }
 
+    public void StartWhirlwind(float hitInterval = 0.3f)
+    {
+        Init();
+        if (anyError) return;
+
+        isWhirlwindActive = true;
+        isActive = true;
+        whirlwindHitInterval = hitInterval;
+        targetLastHitTime.Clear();
+        hitTargets.Clear();
+
+        if (weaponTrail != null)
+        {
+            weaponTrail.enabled = true;
+            weaponTrail.Clear();
+            weaponTrail.emitting = true;
+        }
+
+        // Pain into Power (Berserker): consume bonus if banked
+        activationPainBonus = readsPlayerStats && painIntoPower != null ? painIntoPower.ConsumeBonus() : 0f;
+
+        if (detectionMode == DetectionMode.BladeSweep)
+        {
+            float rangeMultiplier = readsPlayerStats && stats != null ? stats.GetValue(StatType.SwordRange) : 1f;
+            rangeMultiplier *= 1f + reachBonus;
+            activePointCount = Mathf.Clamp(Mathf.RoundToInt(basePointCount * rangeMultiplier), 2, MaxBladePoints);
+
+            for (int i = 0; i < activePointCount; i++)
+            {
+                previousPointPositions[i] = BladePointPosition(i);
+            }
+        }
+    }
+
+    public void StopWhirlwind()
+    {
+        isWhirlwindActive = false;
+        targetLastHitTime.Clear();
+        Deactivate();
+    }
+
     public void Deactivate()
     {
+        if (isWhirlwindActive) return;
+
         isActive = false;
         if (weaponTrail != null)
         {
@@ -299,7 +349,7 @@ public class DamageTrigger : MonoBehaviour
             ApplyDamageInRadius();
         }
 
-        if (Time.time >= deactivateTime)
+        if (!isWhirlwindActive && Time.time >= deactivateTime)
         {
             Deactivate();
         }
@@ -371,16 +421,29 @@ public class DamageTrigger : MonoBehaviour
         // player's horse — see SetIgnoredTarget).
         if (damageable == ownerDamageable) return true;
         if (ignoredTarget != null && damageable == ignoredTarget) return true;
-        if (hitTargets.Contains(damageable)) return true;
 
-        if (hitTargets.Count >= cap)
+        if (isWhirlwindActive)
         {
-            OnBlocked?.Invoke();
-            Deactivate();
-            return false;
+            if (targetLastHitTime.TryGetValue(damageable, out float lastHit) && Time.time - lastHit < whirlwindHitInterval)
+            {
+                return true;
+            }
+            targetLastHitTime[damageable] = Time.time;
+        }
+        else
+        {
+            if (hitTargets.Contains(damageable)) return true;
+
+            if (hitTargets.Count >= cap)
+            {
+                OnBlocked?.Invoke();
+                Deactivate();
+                return false;
+            }
+
+            hitTargets.Add(damageable);
         }
 
-        hitTargets.Add(damageable);
         Damage damage = BuildDamage();
 
         // Ice Breaker: the player's melee hits slowed/chilled enemies harder. Per-target (unlike
@@ -460,8 +523,16 @@ public class DamageTrigger : MonoBehaviour
         // Charged-attack bonuses, latched by PlayerAttack at the moment this swing started.
         if (playerAttack != null)
         {
-            value *= playerAttack.AttackDamageMultiplier;
-            knockback *= 1f + playerAttack.ChargeLevel * stats.GetValue(StatType.ChargeKnockbackBonus);
+            if (isWhirlwindActive)
+            {
+                value *= playerAttack.FullyChargedDamageMultiplier;
+                knockback *= 1f + playerAttack.MaxChargeLevels * stats.GetValue(StatType.ChargeKnockbackBonus);
+            }
+            else
+            {
+                value *= playerAttack.AttackDamageMultiplier;
+                knockback *= 1f + playerAttack.ChargeLevel * stats.GetValue(StatType.ChargeKnockbackBonus);
+            }
         }
 
         // Impulse buff: extra damage per orb stack, plus the fling stamp. Charge amplifies the

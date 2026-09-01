@@ -219,16 +219,69 @@ namespace Bladehold.UI
                 }
             }
 
-            // Gather and sort all meta skills: cheapest to most expensive (with maxed nodes placed at the end)
+            // Gather and sort all meta skills: ordered by base (level 1) price so cards stay in place
             var metaNodes = skillTree.Nodes.Where(n => n != null && n.isMeta).ToList();
 
-            var sortedNodes = metaNodes.OrderBy(n =>
+            var sortedNodes = metaNodes
+                .OrderBy(n => n.CostForLevel(1))
+                .ThenBy(n => n.displayName)
+                .ToList();
+
+            // Reuse existing child cards if they match the sorted node count and order
+            bool canReuse = gridContent.childCount == sortedNodes.Count;
+            if (canReuse)
             {
-                int lvl = metaLevels.TryGetValue(n.id, out int l) ? l : 0;
-                bool isMaxed = lvl >= n.maxLevel;
-                int cost = isMaxed ? int.MaxValue : n.CostForLevel(lvl + 1);
-                return (isMaxed ? 1 : 0, cost, n.displayName);
-            }).ToList();
+                for (int i = 0; i < sortedNodes.Count; i++)
+                {
+                    var child = gridContent.GetChild(i);
+                    var card = child != null ? child.GetComponent<MetaSkillCardUI>() : null;
+                    if (card == null || child.name != $"Card_{sortedNodes[i].id}")
+                    {
+                        canReuse = false;
+                        break;
+                    }
+                }
+            }
+
+            if (canReuse)
+            {
+                spawnedCards.Clear();
+                for (int i = 0; i < sortedNodes.Count; i++)
+                {
+                    var child = gridContent.GetChild(i);
+                    spawnedCards.Add(child.gameObject);
+                    var cardUI = child.GetComponent<MetaSkillCardUI>();
+                    SkillNode node = sortedNodes[i];
+                    int level = metaLevels.TryGetValue(node.id, out int lvl) ? lvl : 0;
+                    Sprite icon = skillTree.GetIcon(node.iconName);
+                    int nextCost = level >= node.maxLevel ? 0 : node.CostForLevel(level + 1);
+
+                    cardUI.OnCardHoverEnter -= HandleCardHoverEnter;
+                    cardUI.OnCardHoverExit -= HandleCardHoverExit;
+                    cardUI.OnCardHoverEnter += HandleCardHoverEnter;
+                    cardUI.OnCardHoverExit += HandleCardHoverExit;
+                    cardUI.SetData(node, level, icon, currentSave.totalGold, texturinaFont, () => OnBuyMetaSkill(node, nextCost));
+                }
+                return;
+            }
+
+            // Clean all existing child cards in content
+            for (int i = gridContent.childCount - 1; i >= 0; i--)
+            {
+                var child = gridContent.GetChild(i);
+                if (child != null)
+                {
+#if UNITY_EDITOR
+                    if (!Application.isPlaying)
+                        DestroyImmediate(child.gameObject);
+                    else
+                        Destroy(child.gameObject);
+#else
+                    Destroy(child.gameObject);
+#endif
+                }
+            }
+            spawnedCards.Clear();
 
             // Instantiate card prefabs (using PrefabUtility.InstantiatePrefab in edit mode to preserve prefab link)
             foreach (SkillNode node in sortedNodes)
@@ -302,6 +355,18 @@ namespace Bladehold.UI
             SaveSystem.Save(currentSave);
 
             RefreshUI();
+
+            if (skillTooltip != null && skillTooltip.gameObject.activeSelf)
+            {
+                int newLevel = 0;
+                foreach (string id in currentSave.purchasedNodeIds)
+                {
+                    if (id == node.id) newLevel++;
+                }
+                bool isMaxed = newLevel >= node.maxLevel;
+                int nextCost = isMaxed ? 0 : node.CostForLevel(newLevel + 1);
+                skillTooltip.ShowDirect(node, newLevel, nextCost, isMaxed);
+            }
         }
 
         private MetaSkillCardUI CreateFallbackMetaCard(SkillNode node, int level, Sprite icon)

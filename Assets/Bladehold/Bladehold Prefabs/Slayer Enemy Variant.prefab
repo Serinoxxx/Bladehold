@@ -2760,6 +2760,10 @@ PrefabInstance:
       propertyPath: animator
       value: 
       objectReference: {fileID: 8414485562509463777}
+    - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: forceRagdollOnDeath
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8780529840763675578, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 
@@ -3182,7 +3186,7 @@ PrefabInstance:
     - target: {fileID: 95149039229069712, guid: b2739774a07ffdb459c1bd60e3ef4f10, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 22100000, guid: 2a18527a884921d43aae1e09d0c1310d, type: 2}
+      objectReference: {fileID: 22100000, guid: 8513f06035631624398bcc760344756f, type: 2}
     - target: {fileID: 95149039229069712, guid: b2739774a07ffdb459c1bd60e3ef4f10, type: 3}
       propertyPath: m_ApplyRootMotion
       value: 0

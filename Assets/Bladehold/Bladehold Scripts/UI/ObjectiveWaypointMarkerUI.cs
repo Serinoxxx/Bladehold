@@ -32,9 +32,46 @@ public class ObjectiveWaypointMarkerUI : MonoBehaviour
 
     private void Awake()
     {
+        EnsureReferences();
+    }
+
+    public void EnsureReferences()
+    {
         if (markerRect == null) markerRect = GetComponent<RectTransform>();
         if (canvasGroup == null) canvasGroup = GetComponent<CanvasGroup>();
-        if (canvasGroup != null) canvasGroup.alpha = 0f;
+        if (iconBackground == null)
+        {
+            Transform t = transform.Find("Icon_Background");
+            if (t != null) iconBackground = t.GetComponent<Image>();
+        }
+        if (iconImage == null)
+        {
+            Transform t = transform.Find("Icon");
+            if (t != null) iconImage = t.GetComponent<Image>();
+        }
+        if (offscreenArrow == null)
+        {
+            Transform t = transform.Find("Arrow_Indicator");
+            if (t != null) offscreenArrow = t.GetComponent<Image>();
+        }
+        if (distanceText == null)
+        {
+            distanceText = GetComponentInChildren<TMP_Text>(true);
+        }
+        if (canvasGroup != null && targetTransform == null)
+        {
+            canvasGroup.alpha = 0f;
+        }
+    }
+
+    public void SetupReferences(RectTransform rect, CanvasGroup cg, Image bg, Image icon, Image arrow, TMP_Text text)
+    {
+        markerRect = rect;
+        canvasGroup = cg;
+        iconBackground = bg;
+        iconImage = icon;
+        offscreenArrow = arrow;
+        distanceText = text;
     }
 
     public void Bind(Transform target, Vector3 offset, Sprite icon, Color tint, string label)
@@ -43,18 +80,31 @@ public class ObjectiveWaypointMarkerUI : MonoBehaviour
         worldOffset = offset;
         targetAlpha = 1f;
 
+        if (iconImage == null || iconBackground == null)
+        {
+            EnsureReferences();
+        }
+
         gameObject.SetActive(true);
 
-        if (iconImage != null && icon != null)
+        if (iconImage != null)
         {
-            iconImage.sprite = icon;
-            iconImage.color = tint;
-            iconImage.gameObject.SetActive(true);
+            if (icon != null)
+            {
+                iconImage.sprite = icon;
+                iconImage.color = tint;
+                iconImage.gameObject.SetActive(true);
+            }
+            else
+            {
+                iconImage.gameObject.SetActive(false);
+            }
         }
 
         if (iconBackground != null)
         {
-            iconBackground.color = new Color(tint.r * 0.25f, tint.g * 0.25f, tint.b * 0.25f, 0.85f);
+            // Dark tinted backing so the bright icon clearly stands out
+            iconBackground.color = new Color(tint.r * 0.2f, tint.g * 0.2f, tint.b * 0.2f, 0.85f);
         }
 
         if (offscreenArrow != null)

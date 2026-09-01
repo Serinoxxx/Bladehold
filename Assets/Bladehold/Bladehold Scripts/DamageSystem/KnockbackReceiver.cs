@@ -50,6 +50,16 @@ public class KnockbackReceiver : MonoBehaviour
     [Tooltip("Per-variant list of flying screams/yells played when launched into a ragdoll fling. If empty, falls back to global KnockbackConfigSO.flyingSfx.")]
     [SerializeField] private AudioClip[] flyingScreamSfx;
 
+    [Header("Ragdoll Options")]
+    [Tooltip("If true, this enemy always ragdolls on death regardless of the global ActiveCount capacity cap (e.g. for large/special enemies).")]
+    [SerializeField] private bool forceRagdollOnDeath;
+
+    public bool ForceRagdollOnDeath
+    {
+        get => forceRagdollOnDeath;
+        set => forceRagdollOnDeath = value;
+    }
+
     public KnockbackState State { get; private set; } = KnockbackState.Normal;
 
     public bool IsIncapacitated => State != KnockbackState.Normal;
@@ -85,8 +95,9 @@ public class KnockbackReceiver : MonoBehaviour
 
     private void Start()
     {
-        if (health == null || agent == null || ragdoll == null || animator == null || rootCollider == null || aiMovement == null || aiAnimation == null || aiAttack == null || config == null)
+        if (health == null || agent == null || ragdoll == null || animator == null || rootCollider == null || aiMovement == null || aiAnimation == null || config == null)
         {
+            Debug.LogError($"[KnockbackReceiver] Essential dependency missing on {gameObject.name} (health: {health != null}, agent: {agent != null}, ragdoll: {ragdoll != null}, animator: {animator != null}, rootCollider: {rootCollider != null}, aiMovement: {aiMovement != null}, aiAnimation: {aiAnimation != null}, config: {config != null}). Incapacitation and death reactions will not run.");
             anyError = true;
             return;
         }
@@ -194,7 +205,7 @@ public class KnockbackReceiver : MonoBehaviour
         if (rootCollider != null) rootCollider.enabled = false;
 
         // Try ragdoll on death
-        if (EnemyRagdoll.HasCapacity && ragdoll != null && ragdoll.BuildIfNeeded())
+        if ((EnemyRagdoll.HasCapacity || forceRagdollOnDeath) && ragdoll != null && ragdoll.BuildIfNeeded())
         {
             if (animator != null) animator.enabled = false;
 
@@ -506,9 +517,10 @@ public class KnockbackReceiver : MonoBehaviour
 
     private void SetAiEnabled(bool value)
     {
-        aiMovement.enabled = value;
-        aiAnimation.enabled = value;
-        aiAttack.enabled = value;
+        if (agent != null && agent.enabled && agent.isOnNavMesh) agent.isStopped = !value;
+        if (aiMovement != null) aiMovement.enabled = value;
+        if (aiAnimation != null) aiAnimation.enabled = value;
+        if (aiAttack != null) aiAttack.enabled = value;
     }
 
     private Vector3 LaunchDirection(Damage damage)

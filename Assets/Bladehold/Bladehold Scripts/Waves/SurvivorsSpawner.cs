@@ -16,6 +16,17 @@ public class SurvivorsSpawner : MonoBehaviour
         public EnemyDefinition def;
         public GameObject prefab;
         public int alive;
+        public bool isShielder;
+        public readonly HashSet<Health> aliveInstances = new HashSet<Health>();
+
+        public int AliveCount
+        {
+            get
+            {
+                aliveInstances.RemoveWhere(h => h == null || h.IsDead);
+                return aliveInstances.Count;
+            }
+        }
     }
 
     [Header("Enemy Roster & Assets")]
@@ -98,11 +109,14 @@ public class SurvivorsSpawner : MonoBehaviour
                 continue;
             }
 
+            bool isShielder = CheckIfShielder(def, prefab);
+
             spawnTypes.Add(new SpawnType
             {
                 def = def,
                 prefab = prefab,
-                alive = 0
+                alive = 0,
+                isShielder = isShielder
             });
         }
 
@@ -205,6 +219,20 @@ public class SurvivorsSpawner : MonoBehaviour
 
         if (selectedType == null || selectedType.prefab == null) return;
 
+        // Extra safeguard: if a shielder was somehow selected but is already at cap, swap to non-shielder
+        if (selectedType.isShielder && selectedType.AliveCount >= maxConcurrentShielders)
+        {
+            SpawnType fallback = spawnTypes.Find(t => !t.isShielder) ?? spawnTypes[0];
+            if (fallback != null && fallback.prefab != null && (!fallback.isShielder || fallback.AliveCount < maxConcurrentShielders))
+            {
+                selectedType = fallback;
+            }
+            else
+            {
+                return;
+            }
+        }
+
         Vector3 spawnPos = ResolveSpawnPosition();
         GameObject enemy = Instantiate(selectedType.prefab, spawnPos, Quaternion.identity);
 
@@ -225,6 +253,7 @@ public class SurvivorsSpawner : MonoBehaviour
         {
             aliveCount++;
             selectedType.alive++;
+            selectedType.aliveInstances.Add(health);
             aliveEnemies.Add(health);
 
             Action handler = null;
@@ -232,7 +261,8 @@ public class SurvivorsSpawner : MonoBehaviour
             {
                 health.OnDied -= handler;
                 aliveEnemies.Remove(health);
-                selectedType.alive--;
+                selectedType.aliveInstances.Remove(health);
+                selectedType.alive = Mathf.Max(0, selectedType.alive - 1);
                 aliveCount = Mathf.Max(0, aliveCount - 1);
             };
             health.OnDied += handler;
@@ -241,6 +271,38 @@ public class SurvivorsSpawner : MonoBehaviour
 
     [Tooltip("Whether to ignore per-row maxConcurrent limits in CSV to allow continuous horde spawning up to maxConcurrentEnemies.")]
     [SerializeField] private bool ignoreRowMaxConcurrent = true;
+
+    [Header("Special Enemy Caps")]
+    [Tooltip("Maximum concurrent shielders (bubblers) allowed simultaneously in Survivors Mode. Overrides ignoreRowMaxConcurrent.")]
+    [SerializeField] private int maxConcurrentShielders = 2;
+
+    public int MaxConcurrentShielders => maxConcurrentShielders;
+
+    private static bool CheckIfShielder(EnemyDefinition def, GameObject prefab)
+    {
+        if (def != null && !string.IsNullOrEmpty(def.id))
+        {
+            if (string.Equals(def.id, "bubbler", StringComparison.OrdinalIgnoreCase) ||
+                def.id.IndexOf("shield", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                def.id.IndexOf("bubbler", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return true;
+            }
+        }
+
+        if (prefab != null)
+        {
+            if (prefab.GetComponent<BubblerCaster>() != null ||
+                prefab.GetComponent<BubbleShield>() != null ||
+                prefab.name.IndexOf("bubbler", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                prefab.name.IndexOf("shield", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     private SpawnType SelectSpawnTypeForTime(float runTimeSeconds)
     {
@@ -253,16 +315,34 @@ public class SurvivorsSpawner : MonoBehaviour
         {
             if (type.def.enabled && effectiveWave >= type.def.unlockWave)
             {
-                if (ignoreRowMaxConcurrent || type.def.maxConcurrent <= 0 || type.alive < type.def.maxConcurrent)
+                int currentAlive = type.AliveCount;
+
+                // Shielders (bubblers) are strictly capped at maxConcurrentShielders (default 2)
+                if (type.isShielder)
                 {
-                    eligible.Add(type);
+                    int cap = maxConcurrentShielders;
+                    if (type.def.maxConcurrent > 0 && type.def.maxConcurrent < cap)
+                    {
+                        cap = type.def.maxConcurrent;
+                    }
+                    if (currentAlive >= cap)
+                    {
+                        continue;
+                    }
                 }
+                else if (!ignoreRowMaxConcurrent && type.def.maxConcurrent > 0 && currentAlive >= type.def.maxConcurrent)
+                {
+                    continue;
+                }
+
+                eligible.Add(type);
             }
         }
 
         if (eligible.Count == 0)
         {
-            return spawnTypes[0]; // Fallback to first row
+            SpawnType fallback = spawnTypes.Find(t => !t.isShielder) ?? spawnTypes[0];
+            return fallback;
         }
 
         // Weighted roll based on spawnChance
@@ -413,6 +493,7 @@ public class SurvivorsSpawner : MonoBehaviour
         {
             aliveCount++;
             type.alive++;
+            type.aliveInstances.Add(health);
             aliveEnemies.Add(health);
 
             Action handler = null;
@@ -420,7 +501,8 @@ public class SurvivorsSpawner : MonoBehaviour
             {
                 health.OnDied -= handler;
                 aliveEnemies.Remove(health);
-                type.alive--;
+                type.aliveInstances.Remove(health);
+                type.alive = Mathf.Max(0, type.alive - 1);
                 aliveCount = Mathf.Max(0, aliveCount - 1);
             };
             health.OnDied += handler;

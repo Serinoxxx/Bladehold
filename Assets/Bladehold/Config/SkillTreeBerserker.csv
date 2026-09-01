@@ -29,9 +29,8 @@ axe_boomerang,Boomerang,"Your axe returns to you after striking terrain, spendin
 pain_1,Pain into Power,Damage taken while charging any attack is added to that attack's damage,Convert more damage taken into power,90,1.5,4,PainIntoPowerPercent,Flat,0.5|0.25|0.25|0.25,axe_knock,21,23,pain_1,,1,1,0
 rage_fury,Boiling Blood,Build rage faster,Build rage even faster,75,1.4,5,RageGainMultiplier,Percent,0.15,axe_width,22,24.5,rage_fury,,1,1,0
 rage_retain,Slow Burn,Rage lingers longer before draining,Rage lingers even longer,90,1.4,4,RageRetentionMultiplier,Percent,0.2,rage_fury,23,24.5,rage_retain,,1,1,0
-ult_unlock,Inner Giant,"Grow in size and power. You gain increased damage and knockback, and trample enemies just by touching them. Press Q/Y to activate at 100% charge.",,300,1,1,UltimateUnlocked,Flat,1,sword_dmg;ult_dur;ult_size;ult_dr,21,18.5,ult_unlock,1,0,1,1
-ult_dur,Enduring Giant,Increase ultimate duration,Increase ultimate duration further,150,1.5,5,UltimateDurationSeconds,Flat,1,ult_unlock,21,19.5,ult_dur,,1,1,0
-ult_size,Colossal Growth,Grow even larger during ultimate,Grow larger still,200,1.6,4,UltimateBerserkerSizeMultiplier,Flat,1.25|1.5|1.75|2,ult_unlock,20,18.5,ult_size,,1,1,0
+ult_unlock,Whirlwind,"Unleash a spinning whirlwind of steel, slicing through all enemies with fully charged weapon strikes. Press Q/Y to activate at 100% charge.",,300,1,1,UltimateUnlocked,Flat,1,sword_dmg;ult_dur;ult_dr,21,18.5,ult_unlock,1,0,1,1
+ult_dur,Enduring Whirlwind,Increase ultimate duration,Increase ultimate duration further,150,1.5,5,UltimateDurationSeconds,Flat,1,ult_unlock,21,19.5,ult_dur,,1,1,0
 ult_dr,Thick Skin,Take reduced damage during ultimate,Take even less damage,120,1.4,5,UltimateBerserkerDamageReduction,Flat,0.1,ult_unlock,20,19.5,ult_dr,,1,1,0
 dodge,Charge,Unlock a charging dash forward. Press Ctrl to activate.,,60,1,1,DodgeUnlocked,Flat,1,sword_dmg;dodge_knockback;dodge_cooldown;dodge_damage,19.5,16.5,dodge,1,0,1,1
 dodge_cooldown,Adrenaline,Reduce Charge cooldown,Reduce Charge cooldown further,45,1.3,4,DodgeCooldown,Flat,-1,dodge,18.5,17.5,dodge_cooldown,,1,1,0

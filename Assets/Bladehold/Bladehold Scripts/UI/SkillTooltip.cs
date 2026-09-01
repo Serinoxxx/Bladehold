@@ -24,13 +24,32 @@ public class SkillTooltip : MonoBehaviour
     [Tooltip("Distance from the cursor to the tooltip's near corner, in screen pixels.")]
     [SerializeField] private Vector2 cursorOffset = new Vector2(18f, 18f);
 
+    [Header("Sorting")]
+    [Tooltip("Sorting order for the tooltip canvas to render on top of all UI layers.")]
+    [SerializeField] private int sortingOrder = 30000;
+
     private RectTransform rect;
     private Canvas canvas;
+    private Canvas tooltipCanvas;
 
     private void Awake()
     {
         rect = (RectTransform)transform;
-        canvas = GetComponentInParent<Canvas>(true);
+        canvas = transform.parent != null ? transform.parent.GetComponentInParent<Canvas>(true) : null;
+
+        tooltipCanvas = GetComponent<Canvas>();
+        if (tooltipCanvas == null)
+        {
+            tooltipCanvas = gameObject.AddComponent<Canvas>();
+        }
+        tooltipCanvas.overrideSorting = true;
+        tooltipCanvas.sortingOrder = sortingOrder;
+
+        if (canvas != null)
+        {
+            tooltipCanvas.additionalShaderChannels = canvas.additionalShaderChannels;
+            tooltipCanvas.sortingLayerID = canvas.sortingLayerID;
+        }
 
         CanvasGroup group = GetComponent<CanvasGroup>();
         if (group == null)
@@ -41,13 +60,27 @@ public class SkillTooltip : MonoBehaviour
         group.interactable = false;
     }
 
+    private void OnEnable()
+    {
+        transform.SetAsLastSibling();
+    }
+
     private void Start()
     {
         if (nameText == null || descriptionText == null || costText == null)
         {
             Debug.LogError("SkillTooltip is missing one of its TMP_Text references (name/description/cost).");
         }
-        if (canvas == null)
+        if (canvas == null && transform.parent != null)
+        {
+            canvas = transform.parent.GetComponentInParent<Canvas>(true);
+            if (canvas != null && tooltipCanvas != null)
+            {
+                tooltipCanvas.additionalShaderChannels = canvas.additionalShaderChannels;
+                tooltipCanvas.sortingLayerID = canvas.sortingLayerID;
+            }
+        }
+        if (canvas == null && tooltipCanvas == null)
         {
             Debug.LogError("SkillTooltip is not under a Canvas.");
         }
@@ -96,6 +129,7 @@ public class SkillTooltip : MonoBehaviour
         }
 
         anchoredTo = null;
+        transform.SetAsLastSibling();
         gameObject.SetActive(true);
         FollowCursor();
     }
@@ -120,6 +154,7 @@ public class SkillTooltip : MonoBehaviour
         }
 
         anchoredTo = null;
+        transform.SetAsLastSibling();
         gameObject.SetActive(true);
         FollowCursor();
     }
@@ -143,6 +178,7 @@ public class SkillTooltip : MonoBehaviour
         }
 
         anchoredTo = null;
+        transform.SetAsLastSibling();
         gameObject.SetActive(true);
         FollowCursor();
     }
@@ -237,29 +273,38 @@ public class SkillTooltip : MonoBehaviour
         }
     }
 
+    private Camera GetCanvasCamera()
+    {
+        Canvas c = canvas != null ? canvas.rootCanvas : tooltipCanvas?.rootCanvas;
+        if (c == null || c.renderMode == RenderMode.ScreenSpaceOverlay)
+        {
+            return null;
+        }
+        return c.worldCamera;
+    }
+
     /// <summary>Pins the tooltip beside the anchored node, using the same inward pivot flip as the cursor path.</summary>
     private void FollowAnchor()
     {
-        if (anchoredTo == null || canvas == null)
+        if (anchoredTo == null)
         {
             return;
         }
 
-        Camera cam = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+        Camera cam = GetCanvasCamera();
         Vector2 screenPos = RectTransformUtility.WorldToScreenPoint(cam, anchoredTo.position);
         PlaceAt(screenPos, cam);
     }
 
     private void FollowCursor()
     {
-        if (Mouse.current == null || canvas == null)
+        if (Mouse.current == null)
         {
             return;
         }
 
         Vector2 screenPos = Mouse.current.position.ReadValue();
-        Camera cam = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
-        PlaceAt(screenPos, cam);
+        PlaceAt(screenPos, GetCanvasCamera());
     }
 
     /// <summary>Positions the tooltip near a screen point, flipping which corner hugs it per screen half so it always opens inward.</summary>
@@ -276,7 +321,7 @@ public class SkillTooltip : MonoBehaviour
         if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 (RectTransform)rect.parent, screenPos + offset, cam, out Vector2 localPoint))
         {
-            rect.localPosition = localPoint;
+            rect.localPosition = new Vector3(localPoint.x, localPoint.y, 0f);
         }
     }
 }

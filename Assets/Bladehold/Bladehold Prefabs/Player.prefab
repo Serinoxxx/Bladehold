@@ -1729,8 +1729,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d4d4bbf39dc30c48bfe19566e5b7d8c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BerserkerUltimate
-  collisionDamage: 20
-  collisionKnockback: 15
+  startTrigger: StartWhirlwind
+  stopTrigger: StopWhirlwind
+  whirlwindVfxPrefab: {fileID: 1396618616648682, guid: e57dd934961ce0e4d9f17115bb382f19, type: 3}
+  vfxOffset: {x: 0, y: 0.2, z: 0}
+  hitInterval: 0.3
+  rotateCharacter: 1
+  spinDegreesPerSecond: 1080
+  spinTransform: {fileID: 6786904250562810068}
 --- !u!114 &-9218812370878724873
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -28989,6 +28995,14 @@ PrefabInstance:
       propertyPath: m_LocalRotation.z
       value: 0.066586964
       objectReference: {fileID: 0}
+    - target: {fileID: 4436805663696350335, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4436805663696350335, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4473849054309220002, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
       propertyPath: m_Layer
       value: 6
@@ -29994,6 +30008,11 @@ Transform:
 --- !u!4 &6701916065133584847 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4520667811460685156, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
+  m_PrefabInstance: {fileID: 7187004258203303083}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &6786904250562810068 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4436805663696350335, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
   m_PrefabInstance: {fileID: 7187004258203303083}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &6897922163797212190 stripped

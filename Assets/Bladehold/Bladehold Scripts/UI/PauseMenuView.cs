@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using MoreMountains.Feedbacks;
 
 /// <summary>
 ///     Top-level pause menu: Resume / Settings / Photo Mode / Quit. Shows/hides via
@@ -25,6 +27,8 @@ public class PauseMenuView : MonoBehaviour
     [SerializeField] private GameObject backdrop;
     [SerializeField] private ScreenshotModeController screenshotMode;
     [SerializeField] private GameObject photoModePanelRoot;
+    [Tooltip("The scene to load when quitting from the pause menu.")]
+    [SerializeField] private string mainMenuSceneName = "MainMenu";
 
     private bool anyError = false;
 
@@ -148,10 +152,21 @@ public class PauseMenuView : MonoBehaviour
 
     private void HandleQuit()
     {
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-#else
-        Application.Quit();
-#endif
+        if (PauseMenuController.Instance != null)
+        {
+            PauseMenuController.Instance.SetPaused(false);
+        }
+        else
+        {
+            CursorLockManager.SetUnlock("PauseMenu", false);
+        }
+
+        Time.timeScale = 1f;
+        MMTimeScaleEvent.Reset();
+        Bladehold.UI.MainMenuManager.OpenUpgradesOnLoad = false;
+        RunState.StartingWave = 1;
+
+        string sceneName = string.IsNullOrEmpty(mainMenuSceneName) ? "MainMenu" : mainMenuSceneName;
+        SceneManager.LoadScene(sceneName);
     }
 }

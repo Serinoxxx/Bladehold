@@ -11,7 +11,7 @@ namespace Bladehold.UI
     ///     Displays a bold centered icon, title, level badge, and buy button.
     ///     Shows detailed skill descriptions via hover tooltip.
     /// </summary>
-    public class MetaSkillCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+    public class MetaSkillCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
     {
         [Header("Components")]
         [SerializeField] private CanvasGroup canvasGroup;
@@ -40,6 +40,8 @@ namespace Bladehold.UI
         private int currentLevel;
         private int nextCost;
         private bool isMaxed;
+        private bool canAfford;
+        private Action onBuyAction;
 
         public event Action<SkillNode, int, int, bool> OnCardHoverEnter;
         public event Action OnCardHoverExit;
@@ -52,6 +54,8 @@ namespace Bladehold.UI
             currentLevel = level;
             isMaxed = level >= node.maxLevel;
             nextCost = isMaxed ? 0 : node.CostForLevel(level + 1);
+            canAfford = !isMaxed && currentGold >= nextCost;
+            onBuyAction = onBuyClicked;
 
             // Apply font if provided
             if (font != null)
@@ -79,7 +83,7 @@ namespace Bladehold.UI
 
             if (levelBadgeText != null)
             {
-                levelBadgeText.text = node.maxLevel > 1 ? $"Lv. {level} / {node.maxLevel}" : (level >= 1 ? "UNLOCKED" : "LOCKED");
+                levelBadgeText.text = $"Lv. {level} / {node.maxLevel}";
                 levelBadgeText.color = badgeLevelColor;
             }
 
@@ -96,8 +100,6 @@ namespace Bladehold.UI
                     iconImage.gameObject.SetActive(false);
                 }
             }
-
-            bool canAfford = !isMaxed && currentGold >= nextCost;
 
             if (buyButton != null)
             {
@@ -123,10 +125,7 @@ namespace Bladehold.UI
                 if (buyButton != null)
                 {
                     buyButton.interactable = true;
-                    if (onBuyClicked != null)
-                    {
-                        buyButton.onClick.AddListener(() => onBuyClicked());
-                    }
+                    buyButton.onClick.AddListener(TryBuy);
                 }
                 if (buyButtonBackground != null) buyButtonBackground.color = buttonGoldColor;
                 if (buyButtonText != null)
@@ -148,6 +147,18 @@ namespace Bladehold.UI
                     buyButtonText.color = textNeedGoldRed;
                 }
             }
+        }
+
+        private void TryBuy()
+        {
+            if (isMaxed || !canAfford) return;
+            onBuyAction?.Invoke();
+        }
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            if (eventData.button != PointerEventData.InputButton.Left) return;
+            TryBuy();
         }
 
         public void OnPointerEnter(PointerEventData eventData)
