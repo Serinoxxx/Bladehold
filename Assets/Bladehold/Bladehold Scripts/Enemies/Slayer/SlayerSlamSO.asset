@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SlayerSlamSO
   m_EditorClassIdentifier: Assembly-CSharp::TrollSlamAttackSO
   triggerRange: 5
-  slamRadius: 5
+  slamRadius: 3
   forwardOffset: 2.5
   telegraphSeconds: 1.5
   attackCooldown: 6

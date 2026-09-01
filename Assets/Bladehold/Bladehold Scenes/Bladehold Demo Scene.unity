@@ -1806,7 +1806,16 @@ MonoBehaviour:
   goblinsKilledText: {fileID: 112691869}
   goldEarnedText: {fileID: 95443147}
   totalGoldText: {fileID: 1953827991}
+  timeSurvivedText: {fileID: 0}
+  damageDealtText: {fileID: 0}
+  damageTakenText: {fileID: 0}
+  critsText: {fileID: 0}
+  levelReachedText: {fileID: 0}
+  survivorsSidebar: {fileID: 0}
+  survivorsStatsPanel: {fileID: 0}
   tryAgainButton: {fileID: 725036452}
+  nextStageButton: {fileID: 0}
+  returnToMetaButton: {fileID: 0}
   restartCurrentWaveButton: {fileID: 1251671449}
   restartCurrentWaveLabel: {fileID: 1251671447}
   reincarnateButton: {fileID: 1022973390}
@@ -10058,6 +10067,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
   healthData: {fileID: 11400000, guid: cf33d1a9660d75248966a786477ece98, type: 2}
+  immuneToPlayerDamage: 1
   currentHealth: 0
   damageFeedback: {fileID: 1312857850}
   deathFeedback: {fileID: 0}
@@ -10075,6 +10085,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Gate
   health: {fileID: 311423794}
   attackPoint: {fileID: 311423792}
+  explosionVfxPrefab: {fileID: 1809022330002312, guid: ed511b7776af6174e9b1255c7a81e59c, type: 3}
+  deathSound: {fileID: 8300000, guid: e53c50cdd14c0004f8f381d4a956ab7b, type: 3}
+  deathFeedback: {fileID: 0}
+  visualsToHide: []
 --- !u!1001 &313680836
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -24608,6 +24622,8 @@ MonoBehaviour:
   postProcessingTabContent: {fileID: 0}
   tabSelectedColor: {r: 0.3, g: 0.45, b: 0.55, a: 1}
   tabUnselectedColor: {r: 0.2, g: 0.2, b: 0.24, a: 1}
+  tabSelectedTextColor: {r: 0.22, g: 0.18, b: 0.14, a: 1}
+  tabUnselectedTextColor: {r: 0.774, g: 0.745, b: 0.66, a: 1}
   masterVolumeSlider: {fileID: 938071012}
   musicVolumeSlider: {fileID: 1002329795}
   sfxVolumeSlider: {fileID: 769490746}

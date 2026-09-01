@@ -110,7 +110,7 @@ public class SlayerStompCrusher : MonoBehaviour
             // Deal crushing lethal damage to minor enemy
             Damage damage = new Damage
             {
-                value = 9999f,
+                value = 5,
                 type = DamageType.blunt,
                 isCritical = true,
                 sourcePosition = crushCenter,

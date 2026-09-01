@@ -32,8 +32,8 @@ public class DestructibleSiegeEngine : MonoBehaviour
     [Tooltip("Optional SFX played when taking damage.")]
     [SerializeField] private AudioClip hitSound;
 
-    [Tooltip("Delay in seconds before the GameObject is destroyed after death.")]
-    [SerializeField] private float postDeathDespawnDelay = 1.5f;
+    [Tooltip("Delay in seconds before the GameObject is destroyed after death. Set to 0 to destroy immediately.")]
+    [SerializeField] private float postDeathDespawnDelay = 0f;
 
     private Health health;
     private bool isDestroyed;
@@ -101,7 +101,12 @@ public class DestructibleSiegeEngine : MonoBehaviour
 
         if (explosionVfxPrefab != null)
         {
-            Instantiate(explosionVfxPrefab, transform.position + Vector3.up * 1f, Quaternion.identity);
+            GameObject vfx = Instantiate(explosionVfxPrefab, transform.position + Vector3.up * 1f, Quaternion.identity);
+            foreach (ParticleSystem ps in vfx.GetComponentsInChildren<ParticleSystem>())
+            {
+                var main = ps.main;
+                main.useUnscaledTime = true;
+            }
         }
 
         if (deathSound != null)
@@ -113,14 +118,26 @@ public class DestructibleSiegeEngine : MonoBehaviour
             MMSoundManagerSoundPlayEvent.Trigger(deathSound, options);
         }
 
-        // Disable colliders so player and projectiles don't get blocked by wreck
+        // Disable colliders and renderers so the catapult immediately disappears
         foreach (Collider col in GetComponentsInChildren<Collider>())
         {
             col.enabled = false;
         }
+        foreach (Renderer rend in GetComponentsInChildren<Renderer>())
+        {
+            rend.enabled = false;
+        }
 
         OnDestroyed?.Invoke(this);
-        StartCoroutine(DespawnRoutine());
+
+        if (postDeathDespawnDelay <= 0f)
+        {
+            Destroy(gameObject);
+        }
+        else
+        {
+            StartCoroutine(DespawnRoutine());
+        }
     }
 
     private IEnumerator DespawnRoutine()

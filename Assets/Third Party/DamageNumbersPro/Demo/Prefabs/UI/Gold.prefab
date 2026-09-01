@@ -52,7 +52,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   permanent: 0
-  lifetime: 2
+  lifetime: 0.75
   unscaledTime: 0
   enable3DGame: 0
   faceCameraView: 1
@@ -460,6 +460,8 @@ MonoBehaviour:
   enablePooling: 0
   poolSize: 50
   disableOnSceneLoad: 1
+  limitActiveInstances: 0
+  maxActiveInstances: 50
   editorLastFont: 
   position: {x: 0, y: 0, z: 0}
 --- !u!210 &3403746259470396137
@@ -474,6 +476,7 @@ SortingGroup:
   m_SortingLayer: 0
   m_SortingOrder: 1000
   m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
 --- !u!1 &989336244111391790
 GameObject:
   m_ObjectHideFlags: 0
@@ -542,8 +545,7 @@ MonoBehaviour:
   m_text: 1<voffset=-0.05em><space=0.25em><size=-1.4>Gold</size><space=0.25em></voffset>
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: cf4f37abd4e7e724da3b2662b9787068, type: 2}
-  m_sharedMaterial: {fileID: 3373603598322536305, guid: cf4f37abd4e7e724da3b2662b9787068,
-    type: 2}
+  m_sharedMaterial: {fileID: 3373603598322536305, guid: cf4f37abd4e7e724da3b2662b9787068, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -578,6 +580,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -679,8 +682,7 @@ MonoBehaviour:
   m_text: 1<voffset=-0.05em><space=0.25em><size=-1.4>Gold</size><space=0.25em></voffset>
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: cf4f37abd4e7e724da3b2662b9787068, type: 2}
-  m_sharedMaterial: {fileID: 3373603598322536305, guid: cf4f37abd4e7e724da3b2662b9787068,
-    type: 2}
+  m_sharedMaterial: {fileID: 3373603598322536305, guid: cf4f37abd4e7e724da3b2662b9787068, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -715,6 +717,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0

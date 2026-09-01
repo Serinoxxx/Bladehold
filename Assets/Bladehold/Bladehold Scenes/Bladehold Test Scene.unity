@@ -12419,6 +12419,7 @@ MonoBehaviour:
   bossHealthBar: {fileID: 114310293}
   defaultIntroDuration: 3
   extraComponentsToDisable: []
+  objectsToHideDuringIntro: []
 --- !u!4 &680260141
 Transform:
   m_ObjectHideFlags: 0
@@ -16429,6 +16430,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Gate
   health: {fileID: 871699451}
   attackPoint: {fileID: 0}
+  explosionVfxPrefab: {fileID: 1809022330002312, guid: ed511b7776af6174e9b1255c7a81e59c, type: 3}
+  deathSound: {fileID: 8300000, guid: e53c50cdd14c0004f8f381d4a956ab7b, type: 3}
+  deathFeedback: {fileID: 0}
+  visualsToHide: []
 --- !u!1001 &875063087
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
+using MoreMountains.Tools;
 using UnityEngine;
 
 /// <summary>
@@ -28,6 +30,19 @@ public class Gate : MonoBehaviour
     [SerializeField] private Health health;
     [Tooltip("Where attackers path to and measure attack range from (e.g. the doors). Defaults to this transform.")]
     [SerializeField] private Transform attackPoint;
+
+    [Header("Destruction Effects & Feedbacks")]
+    [Tooltip("Prefab spawned at gate position when destroyed (e.g. large fire/debris explosion).")]
+    [SerializeField] private GameObject explosionVfxPrefab;
+
+    [Tooltip("Optional SFX played on destruction.")]
+    [SerializeField] private AudioClip deathSound;
+
+    [Tooltip("Optional MMF_Player feedback played on destruction (e.g. camera shake).")]
+    [SerializeField] private MMF_Player deathFeedback;
+
+    [Tooltip("Optional specific visual GameObjects to deactivate on destruction. If empty, all Renderers and Colliders in children are disabled.")]
+    [SerializeField] private GameObject[] visualsToHide;
 
     private bool anyError = false;
 
@@ -77,6 +92,24 @@ public class Gate : MonoBehaviour
         }
     }
 
+#if UNITY_EDITOR
+    private void Reset()
+    {
+        if (health == null)
+        {
+            health = GetComponent<Health>();
+        }
+        if (explosionVfxPrefab == null)
+        {
+            explosionVfxPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Synty/PolygonParticleFX/Prefabs/FX_Fire_Explosion_01.prefab");
+        }
+        if (deathSound == null)
+        {
+            deathSound = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Audio/Enemies/Bomber/explosion_large_01.wav");
+        }
+    }
+#endif
+
     private void OnValidate()
     {
         if (health == null)
@@ -87,6 +120,16 @@ public class Gate : MonoBehaviour
         {
             health.ImmuneToPlayerDamage = true;
         }
+#if UNITY_EDITOR
+        if (explosionVfxPrefab == null)
+        {
+            explosionVfxPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Synty/PolygonParticleFX/Prefabs/FX_Fire_Explosion_01.prefab");
+        }
+        if (deathSound == null)
+        {
+            deathSound = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Audio/Enemies/Bomber/explosion_large_01.wav");
+        }
+#endif
     }
 
     private void Awake()
@@ -130,6 +173,54 @@ public class Gate : MonoBehaviour
         {
             return;
         }
+
+        if (deathFeedback != null)
+        {
+            deathFeedback.PlayFeedbacks();
+        }
+
+        Vector3 spawnPos = attackPoint != null ? attackPoint.position : transform.position + Vector3.up * 1.5f;
+
+        if (explosionVfxPrefab != null)
+        {
+            GameObject vfx = Instantiate(explosionVfxPrefab, spawnPos, Quaternion.identity);
+            foreach (ParticleSystem ps in vfx.GetComponentsInChildren<ParticleSystem>())
+            {
+                var main = ps.main;
+                main.useUnscaledTime = true;
+            }
+        }
+
+        if (deathSound != null)
+        {
+            MMSoundManagerPlayOptions options = MMSoundManagerPlayOptions.Default;
+            options.MmSoundManagerTrack = MMSoundManager.MMSoundManagerTracks.Sfx;
+            options.Location = spawnPos;
+            options.Volume = 1.0f;
+            MMSoundManagerSoundPlayEvent.Trigger(deathSound, options);
+        }
+
+        // Disable all colliders and renderers on the gate immediately
+        foreach (Collider col in GetComponentsInChildren<Collider>())
+        {
+            col.enabled = false;
+        }
+        foreach (Renderer rend in GetComponentsInChildren<Renderer>())
+        {
+            rend.enabled = false;
+        }
+
+        if (visualsToHide != null)
+        {
+            foreach (GameObject go in visualsToHide)
+            {
+                if (go != null)
+                {
+                    go.SetActive(false);
+                }
+            }
+        }
+
         OnAnyGateDestroyed?.Invoke(this);
     }
 }

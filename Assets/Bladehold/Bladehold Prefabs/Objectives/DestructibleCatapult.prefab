@@ -1049,6 +1049,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
   healthData: {fileID: 0}
+  immuneToPlayerDamage: 0
   currentHealth: 0
   damageFeedback: {fileID: 0}
   deathFeedback: {fileID: 0}
@@ -1067,10 +1068,10 @@ MonoBehaviour:
   maxHealth: 50
   hitFeedback: {fileID: 4973845716848685917}
   deathFeedback: {fileID: 5570657321965972573}
-  explosionVfxPrefab: {fileID: 1890538172914326, guid: 2cc9496200237444e9e832a3a99ba60d, type: 3}
+  explosionVfxPrefab: {fileID: 1056904543853562, guid: 4cf45cdce36e66e4a93614abb5ae7821, type: 3}
   deathSound: {fileID: 8300000, guid: e53c50cdd14c0004f8f381d4a956ab7b, type: 3}
   hitSound: {fileID: 0}
-  postDeathDespawnDelay: 1.5
+  postDeathDespawnDelay: 0
 --- !u!4 &1984029486935724185 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4070465253498742, guid: a2ccd4fc468295e488ffde235c567605, type: 3}
