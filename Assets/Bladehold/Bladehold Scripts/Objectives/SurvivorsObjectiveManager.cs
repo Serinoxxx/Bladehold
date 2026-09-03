@@ -4,16 +4,27 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-///     Central manager for survival mode objectives. Sequences the introductory wave objective
-///     (kill 50 goblins), then randomly selects and rotates subsequent objectives.
-///     Integrates with the HUD, Quest Complete banner, and handles rewards.
+///     Lifecycle phase for survival mode objectives.
+/// </summary>
+public enum SurvivorsObjectivePhase
+{
+    Active,
+    Cleanup,
+    Intermission
+}
+
+/// <summary>
+///     Central manager for survival mode objectives. Sequences wave objectives (e.g. Hold the Gate,
+///     Free Prisoners, Destroy Siege Engines), drives the 30-second post-objective cleanup window
+///     (where enemies stop spawning and must be killed before disappearing), and manages the 30-second
+///     pre-wave intermission countdown.
 /// </summary>
 public class SurvivorsObjectiveManager : MonoBehaviour
 {
     public static SurvivorsObjectiveManager Instance { get; private set; }
 
     [Header("Objectives Configuration")]
-    [Tooltip("Initial objective played at start (e.g. KillEnemiesObjective for 50 goblins).")]
+    [Tooltip("Initial objective played at start (e.g. KillEnemiesObjective for Hold the Gate).")]
     [SerializeField] private KillEnemiesObjective introductoryObjective;
 
     [Tooltip("Pool of repeating objectives drawn randomly after the introductory wave.")]
@@ -23,15 +34,26 @@ public class SurvivorsObjectiveManager : MonoBehaviour
     [Tooltip("Bonus gold XP granted to level progression when an objective is cleared.")]
     [SerializeField] private int goldXpRewardPerObjective = 100;
 
-    [Tooltip("Intermission delay in seconds between completing an objective and starting the next.")]
-    [SerializeField] private float intermissionDuration = 4.0f;
+    [Tooltip("Grace duration in seconds to kill remaining enemies before they disappear.")]
+    [SerializeField] private float cleanupDuration = 30.0f;
+
+    [Tooltip("Intermission delay in seconds between completing cleanup and starting the next wave.")]
+    [SerializeField] private float intermissionDuration = 30.0f;
 
     private readonly List<ISurvivorsObjective> objectivePool = new List<ISurvivorsObjective>();
     private ISurvivorsObjective currentObjective;
+    private SurvivorsObjectivePhase currentPhase = SurvivorsObjectivePhase.Active;
+    private float phaseTimer = 0f;
+    private int currentWave = 1;
     private int lastObjectiveIndex = -1;
     private int completedObjectiveCount = 0;
     private bool isRunning;
 
+    public SurvivorsObjectivePhase Phase => currentPhase;
+    public float PhaseTimeRemaining => Mathf.Max(0f, phaseTimer);
+    public float CleanupDuration => cleanupDuration;
+    public float IntermissionDuration => intermissionDuration;
+    public int CurrentWave => currentWave;
     public ISurvivorsObjective CurrentObjective => currentObjective;
     public int CompletedObjectiveCount => completedObjectiveCount;
     public int GoldXpRewardPerObjective => goldXpRewardPerObjective;
@@ -41,15 +63,25 @@ public class SurvivorsObjectiveManager : MonoBehaviour
     public event Action<ISurvivorsObjective> OnObjectiveProgressChanged;
     public event Action<ISurvivorsObjective> OnObjectiveCompleted;
     public event Action<ISurvivorsObjective> OnObjectiveFailed;
+    public event Action<SurvivorsObjectivePhase> OnPhaseChanged;
+    public event Action<SurvivorsObjectivePhase, float> OnPhaseTimeTick;
+    public event Action<int> OnWaveStarted;
+    public event Action<int> OnWaveCleared;
 
-    /// <summary>Debug method: Stops any active intermission and immediately starts the next objective in rotation.</summary>
+    /// <summary>Debug method: Stops any active intermission/cleanup and immediately starts the next objective in rotation.</summary>
     public void DebugNextObjective()
     {
         StopAllCoroutines();
+        currentWave++;
+        currentPhase = SurvivorsObjectivePhase.Active;
+        OnPhaseChanged?.Invoke(currentPhase);
+
         ISurvivorsObjective next = PickNextRandomObjective();
         if (next != null)
         {
             SetActiveObjective(next);
+            SurvivorsSpawner.Instance?.StartWave(currentWave);
+            OnWaveStarted?.Invoke(currentWave);
         }
     }
 
@@ -59,8 +91,13 @@ public class SurvivorsObjectiveManager : MonoBehaviour
         if (index >= 0 && index < objectivePool.Count)
         {
             StopAllCoroutines();
+            currentPhase = SurvivorsObjectivePhase.Active;
+            OnPhaseChanged?.Invoke(currentPhase);
+
             lastObjectiveIndex = index;
             SetActiveObjective(objectivePool[index]);
+            SurvivorsSpawner.Instance?.StartWave(currentWave);
+            OnWaveStarted?.Invoke(currentWave);
         }
     }
 
@@ -122,6 +159,10 @@ public class SurvivorsObjectiveManager : MonoBehaviour
     private void StartInitialObjective()
     {
         isRunning = true;
+        currentWave = 1;
+        currentPhase = SurvivorsObjectivePhase.Active;
+        OnPhaseChanged?.Invoke(currentPhase);
+
         if (introductoryObjective != null)
         {
             SetActiveObjective(introductoryObjective);
@@ -134,13 +175,19 @@ public class SurvivorsObjectiveManager : MonoBehaviour
         {
             Debug.LogWarning("[SurvivorsObjectiveManager] No objectives configured in pool!");
         }
+
+        SurvivorsSpawner.Instance?.StartWave(currentWave);
+        OnWaveStarted?.Invoke(currentWave);
     }
 
     private void Update()
     {
-        if (!isRunning || currentObjective == null) return;
+        if (!isRunning) return;
 
-        currentObjective.UpdateObjective(Time.deltaTime);
+        if (currentPhase == SurvivorsObjectivePhase.Active && currentObjective != null)
+        {
+            currentObjective.UpdateObjective(Time.deltaTime);
+        }
     }
 
     private void OnDestroy()
@@ -197,8 +244,9 @@ public class SurvivorsObjectiveManager : MonoBehaviour
         }
 
         OnObjectiveCompleted?.Invoke(obj);
+        OnWaveCleared?.Invoke(currentWave);
 
-        StartCoroutine(IntermissionAndNextRoutine());
+        StartCoroutine(PostObjectiveCleanupAndIntermissionRoutine());
     }
 
     private void HandleObjectiveFailed(ISurvivorsObjective obj)
@@ -207,7 +255,7 @@ public class SurvivorsObjectiveManager : MonoBehaviour
 
         OnObjectiveFailed?.Invoke(obj);
 
-        StartCoroutine(IntermissionAndNextRoutine());
+        StartCoroutine(PostObjectiveCleanupAndIntermissionRoutine());
     }
 
     /// <summary>Stops and cleans up all rotating sub-objectives (e.g. when Siegebreaker arrives).</summary>
@@ -215,6 +263,8 @@ public class SurvivorsObjectiveManager : MonoBehaviour
     {
         StopAllCoroutines();
         isRunning = false;
+        SurvivorsSpawner.Instance?.StopSpawning();
+
         if (currentObjective != null)
         {
             currentObjective.OnProgressChanged -= HandleObjectiveProgress;
@@ -225,12 +275,63 @@ public class SurvivorsObjectiveManager : MonoBehaviour
         }
     }
 
-    private IEnumerator IntermissionAndNextRoutine()
+    private IEnumerator PostObjectiveCleanupAndIntermissionRoutine()
     {
-        yield return new WaitForSeconds(intermissionDuration);
+        // 1. Stop active enemy spawning immediately
+        if (SurvivorsSpawner.Instance != null)
+        {
+            SurvivorsSpawner.Instance.StopSpawning();
+        }
+
+        // 2. Cleanup Phase: 30 seconds to kill remaining enemies
+        currentPhase = SurvivorsObjectivePhase.Cleanup;
+        phaseTimer = cleanupDuration;
+        OnPhaseChanged?.Invoke(currentPhase);
+
+        while (phaseTimer > 0f && isRunning)
+        {
+            if (SurvivorsGameManager.Instance == null || SurvivorsGameManager.Instance.IsGameActive)
+            {
+                phaseTimer -= Time.deltaTime;
+                OnPhaseTimeTick?.Invoke(currentPhase, phaseTimer);
+            }
+
+            // If all remaining enemies are slain early, we can advance
+            if (SurvivorsSpawner.Instance != null && SurvivorsSpawner.Instance.AliveCount <= 0)
+            {
+                break;
+            }
+
+            yield return null;
+        }
 
         if (!isRunning) yield break;
 
+        // Despawn any remaining alive enemies so they disappear
+        if (SurvivorsSpawner.Instance != null)
+        {
+            SurvivorsSpawner.Instance.DespawnAllAliveEnemies();
+        }
+
+        // 3. Intermission Phase: 30 seconds before next wave spawns
+        currentPhase = SurvivorsObjectivePhase.Intermission;
+        phaseTimer = intermissionDuration;
+        OnPhaseChanged?.Invoke(currentPhase);
+
+        while (phaseTimer > 0f && isRunning)
+        {
+            if (SurvivorsGameManager.Instance == null || SurvivorsGameManager.Instance.IsGameActive)
+            {
+                phaseTimer -= Time.deltaTime;
+                OnPhaseTimeTick?.Invoke(currentPhase, phaseTimer);
+            }
+
+            yield return null;
+        }
+
+        if (!isRunning) yield break;
+
+        // Check if cutoff reached before boss arrives
         if (SurvivorsGameManager.Instance != null && !SurvivorsGameManager.Instance.CanStartNewObjectives)
         {
             Debug.Log("[SurvivorsObjectiveManager] Objective cutoff reached (final countdown to Siegebreaker). No new sub-objectives will spawn.");
@@ -238,10 +339,20 @@ public class SurvivorsObjectiveManager : MonoBehaviour
             yield break;
         }
 
+        // 4. Advance wave and start next objective
+        currentWave++;
         ISurvivorsObjective next = PickNextRandomObjective();
+        currentPhase = SurvivorsObjectivePhase.Active;
+        OnPhaseChanged?.Invoke(currentPhase);
+
         if (next != null)
         {
             SetActiveObjective(next);
+            if (SurvivorsSpawner.Instance != null)
+            {
+                SurvivorsSpawner.Instance.StartWave(currentWave);
+            }
+            OnWaveStarted?.Invoke(currentWave);
         }
     }
 

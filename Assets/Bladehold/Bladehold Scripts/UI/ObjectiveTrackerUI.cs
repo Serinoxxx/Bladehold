@@ -190,17 +190,40 @@ public class ObjectiveTrackerUI : MonoBehaviour
             }
         }
 
-        // 2. Active rotating sub-objective / boss status
+        // 2. Active rotating sub-objective / cleanup / intermission / boss status
         if (objectiveProgressText != null)
         {
             if (sgm.HasSurvivedSiege)
             {
                 objectiveProgressText.text = "The Siegebreaker has arrived! Defend the fortress gate!";
             }
-            else if (objectiveManager != null && objectiveManager.CurrentObjective != null && objectiveManager.CurrentObjective.IsActive)
+            else if (objectiveManager != null)
             {
-                var cur = objectiveManager.CurrentObjective;
-                objectiveProgressText.text = $"[{cur.Title}]\n{cur.ProgressText}";
+                if (objectiveManager.Phase == SurvivorsObjectivePhase.Cleanup)
+                {
+                    int remSec = Mathf.CeilToInt(objectiveManager.PhaseTimeRemaining);
+                    int alive = SurvivorsSpawner.Instance != null ? SurvivorsSpawner.Instance.AliveCount : 0;
+                    objectiveProgressText.text = $"[Objective Completed!]\nClean up remaining enemies: {remSec}s ({alive} left)";
+                }
+                else if (objectiveManager.Phase == SurvivorsObjectivePhase.Intermission)
+                {
+                    int remSec = Mathf.CeilToInt(objectiveManager.PhaseTimeRemaining);
+                    int nextWave = objectiveManager.CurrentWave + 1;
+                    objectiveProgressText.text = $"[Prepare for Wave {nextWave}]\nNext wave starts in: {remSec}s";
+                }
+                else if (objectiveManager.CurrentObjective != null && objectiveManager.CurrentObjective.IsActive)
+                {
+                    var cur = objectiveManager.CurrentObjective;
+                    objectiveProgressText.text = $"[{cur.Title}]\n{cur.ProgressText}";
+                }
+                else if (sgm.IsInFinalCountdown)
+                {
+                    objectiveProgressText.text = "Prepare for the final assault! The Siegebreaker approaches...";
+                }
+                else
+                {
+                    objectiveProgressText.text = "Prepare for incoming siege objective...";
+                }
             }
             else if (sgm.IsInFinalCountdown)
             {

@@ -43078,7 +43078,8 @@ MonoBehaviour:
   - {fileID: 926223863}
   - {fileID: 926223868}
   goldXpRewardPerObjective: 50
-  intermissionDuration: 4
+  cleanupDuration: 30
+  intermissionDuration: 30
 --- !u!114 &926223863
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -43169,8 +43170,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KillEnemiesObjective
   objectiveId: kill_enemies
-  title: Defeat the First Wave
-  description: Kill goblins
+  title: Hold the Gate
+  description: Hold the gate against the horde
   requiredKills: 10
 --- !u!4 &926223867
 Transform:
@@ -46643,9 +46644,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SurvivorsSpawner
   roster: {fileID: 11400000, guid: eac1e853de017fa438e6312de81cfa7f, type: 2}
   prefabMap: {fileID: 11400000, guid: ec2bcfc9825f30a45a7140a508f003f2, type: 2}
-  baseSpawnInterval: 1.5
-  minSpawnInterval: 0.5
-  spawnIntervalDecreasePerMinute: 0
+  spawnBatchSize: 10
+  spawnBatchInterval: 8
+  spawnInterval: 0.2
   maxConcurrentEnemies: 50
   spawnPoints:
   - {fileID: 220720133}

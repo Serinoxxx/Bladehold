@@ -2,14 +2,14 @@ using System;
 using UnityEngine;
 
 /// <summary>
-///     Survivors objective: Defeat the first wave / kill a specified count of enemies (e.g. 50 goblins).
+///     Survivors objective: Hold the Gate / kill a specified count of enemies (e.g. 50 goblins).
 /// </summary>
 public class KillEnemiesObjective : MonoBehaviour, ISurvivorsObjective
 {
     [Header("Objective Configuration")]
     [SerializeField] private string objectiveId = "kill_enemies";
-    [SerializeField] private string title = "Defeat the First Wave";
-    [SerializeField] private string description = "Kill goblins";
+    [SerializeField] private string title = "Hold the Gate";
+    [SerializeField] private string description = "Hold the gate against the horde";
     [SerializeField] private int requiredKills = 50;
 
     private int initialKills;
@@ -20,7 +20,7 @@ public class KillEnemiesObjective : MonoBehaviour, ISurvivorsObjective
     public string ObjectiveId => objectiveId;
     public string Title => title;
     public string Description => description;
-    public string ProgressText => $"Slay enemies: {currentKills}/{requiredKills}";
+    public string ProgressText => $"Hold the gate: {currentKills}/{requiredKills}";
     public float ProgressNormalized => requiredKills > 0 ? Mathf.Clamp01((float)currentKills / requiredKills) : 1f;
     public bool IsComplete => isComplete;
     public bool IsFailed => false;
