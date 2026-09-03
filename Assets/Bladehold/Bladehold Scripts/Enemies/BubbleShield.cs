@@ -28,6 +28,8 @@ public class BubbleShield : MonoBehaviour
         }
     }
 
+    private float currentShieldHp;
+
     /// <summary>
     ///     Initializes and activates the bubble shield on this target.
     /// </summary>
@@ -36,6 +38,7 @@ public class BubbleShield : MonoBehaviour
         data = shieldData;
         caster = casterTransform;
         onShieldBroken = onBrokenCallback;
+        currentShieldHp = data != null ? data.shieldHealth : 40f;
 
         if (health == null)
         {
@@ -65,7 +68,6 @@ public class BubbleShield : MonoBehaviour
         bubbleVisualObj.transform.localScale = Vector3.one * (radius * 2.0f);
 
         // Configure collider: trigger so it does not interfere with NavMeshAgent physics
-        // We set it as a trigger so it can interact with projectile checks or raycasts if desired
         Collider col = bubbleVisualObj.GetComponent<Collider>();
         if (col != null)
         {
@@ -86,12 +88,35 @@ public class BubbleShield : MonoBehaviour
 
     private bool HandleTryBlockDamage(Damage damage)
     {
-        // Block all player attacks (arrows, melee, elemental damage)
+        // Block player attacks while absorbing damage into the bubble shield's health
         if (damage == null) return false;
 
-        // If hit came from player or player-owned source
         if (damage.IsPlayerOwned)
         {
+            currentShieldHp -= damage.value;
+
+            // Deflection sound or break sound
+            if (currentShieldHp <= 0f)
+            {
+                if (data != null && data.shieldBreakSfx != null)
+                {
+                    AudioSource.PlayClipAtPoint(data.shieldBreakSfx, transform.position, data.blockSfxVolume);
+                }
+                else if (data != null && data.blockSfx != null)
+                {
+                    AudioSource.PlayClipAtPoint(data.blockSfx, transform.position, data.blockSfxVolume);
+                }
+
+                if (data != null && data.shieldBreakVfxPrefab != null)
+                {
+                    Instantiate(data.shieldBreakVfxPrefab, transform.position + Vector3.up * 1f, Quaternion.identity);
+                }
+
+                // Shield broken! Destroy shield and notify caster
+                CollapseShield();
+                return true;
+            }
+
             // Play deflection sound
             if (data != null && data.blockSfx != null)
             {
@@ -107,7 +132,7 @@ public class BubbleShield : MonoBehaviour
                 LeanTween.scale(bubbleVisualObj, Vector3.one * baseScale, 0.25f).setEaseOutQuad();
             }
 
-            // Return true to completely negate damage in Health.ReceiveDamage
+            // Return true so the shielded enemy's health is protected
             return true;
         }
 

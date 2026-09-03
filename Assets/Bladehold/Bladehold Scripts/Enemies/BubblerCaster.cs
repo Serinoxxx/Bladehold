@@ -35,6 +35,7 @@ public class BubblerCaster : MonoBehaviour
     private bool isDead;
     private bool playerDead;
     private bool anyError;
+    private readonly System.Collections.Generic.Dictionary<Health, float> recentlyBrokenAllies = new System.Collections.Generic.Dictionary<Health, float>();
 
     private static readonly float[] FleeAngles = new float[] { 0f, 40f, -40f, 80f, -80f, 120f, -120f, 160f, -160f, 180f };
 
@@ -245,6 +246,16 @@ public class BubblerCaster : MonoBehaviour
                 continue;
             }
 
+            // Check 10s lockout after shield was broken
+            if (recentlyBrokenAllies.TryGetValue(h, out float brokenTime))
+            {
+                float cooldown = shieldData != null ? shieldData.reShieldCooldown : 10.0f;
+                if (Time.time - brokenTime < cooldown)
+                {
+                    continue;
+                }
+            }
+
             // Check distance
             float dSqr = (h.transform.position - transform.position).sqrMagnitude;
             if (dSqr < bestDistSqr)
@@ -288,6 +299,11 @@ public class BubblerCaster : MonoBehaviour
 
     private void HandleShieldBroken()
     {
+        if (currentTargetHealth != null)
+        {
+            recentlyBrokenAllies[currentTargetHealth] = Time.time;
+        }
+
         currentShield = null;
         currentTargetHealth = null;
         if (lightningTargetTransform != null)

@@ -106,3 +106,45 @@ Overhauled Berserker's Ultimate ability into a continuous whirlwind attack:
   - [ ] Verify 2H Axe stays active with weapon trail and cuts through all enemies continuously.
   - [ ] Verify hits deal fully charged weapon damage and knockback, and Earth Splitter line of explosions does not trigger.
   - [ ] Verify Ultimate ends cleanly after duration: `StopWhirlwind` fires on Animator, weapon deactivates, and particle swirl despawns.
+
+## Main Game Loop, Economy & Rest/Meta Progression Overhaul — Unity Editor Wiring
+
+### The C# is done
+Overhauled the core game loop, multi-tier economy, weapon loadouts, rest area, meta progression area, and destructible bubble shields:
+- **`RoundPacingConfigSO.cs` & `SurvivorsRoundPacingConfig.asset`**: 4 rounds of 3 waves (12 waves total), 20 max concurrent active enemies, 3.0s ground telegraph indicators before enemy spawns, drop rewards (Troll Heart, Orcish Metal, Goblin Blood, Gold, Instant Drafts), and 30s intermissions.
+- **`GameLoopManager.cs`**: Battle loop controller orchestrating dual clear conditions (kill quota + random wave objectives), continuous spawning during wagon escorts, opening the Castle Gate (`[E] Enter Rest Area`) on waves 3, 6, 9, spawning the Round 4 boss, and routing defeat/victory scene transitions.
+- **`Bladehold Rest Area Scene.unity`**: Dedicated scene between rounds featuring The Well (`WellStation.cs`, +20 HP single use), Merchant Shop (`ShopStation.cs`, `ShopUI.cs`, 4 items bought with in-run gold), Draft Station (`DraftStation.cs`), and Return Gate (`RestAreaGate.cs`).
+- **`Bladehold Meta Area Scene.unity`**: Dedicated progression scene upon defeat featuring Spirit NPC (`SpiritNPC.cs`, `MetaUpgradesUI.cs` with 3-tier perks and Goblin Blood/Orcish Metal purchasing), 4 diegetic weapon pedestals (`WeaponPedestal.cs` for Sword, Axe, Bow, Throwing Axe with floating spinning models), and Battle Portal (`BattlePortal.cs`).
+- **`PlayerWeaponManager.cs` & `WeaponDefinitionSO.cs`**: Loadout manager allowing equipping 1 Melee and 1 Ranged weapon, switching weapon models, animation triggers, charge timings, and feedback triggers dynamically.
+- **`BubbleShield.cs`, `BubbleShieldSO.cs`, `BubblerCaster.cs`**: 40 HP destructible bubble shield pool with sound/VFX on break, and 10s lockout before a Bubbler can re-shield the same ally.
+- **`SaveData.cs` & `RunSession.cs`**: Persistence layer separating permanent Goblin Blood and Orcish Metal from temporary in-run Gold.
+
+### Wiring checklist
+- [x] **ScriptableObject Assets (`Assets/Bladehold/Bladehold Config/`)**:
+  - [x] `SurvivorsRoundPacingConfig.asset` generated and assigned to `SurvivorsSpawner` and `GameLoopManager`.
+  - [x] 6 Weapon Definition assets (`sword`, `axe`, `bow`, `throwing_axe`, `staff`, `wand`).
+  - [x] 9 Meta Perk Definition assets across 3 tiers.
+  - [x] 4 Rest Area Shop Item assets (`Maggoty Bread`, `Troll Heart`, `Crystal Water`, `Special Herbs`).
+- [x] **Scene Setup & Build Settings**:
+  - [x] `Bladehold Survivors Scene.unity`, `Bladehold Rest Area Scene.unity`, and `Bladehold Meta Area Scene.unity` created, wired, and registered in `EditorBuildSettings.asset`.
+  - [x] Player prefab and scene instance wired with `PlayerWeaponManager` and `PlayerInteraction`.
+  - [x] Castle Wall Gate wired with `Interactable` and connected to `GameLoopManager.castleGateInteractable`.
+- [ ] **Visual & Audio Asset Polish (Optional / Art Pass)**:
+  - [ ] Replace basic station plinths with custom 3D environmental props (fountain well, merchant stall/wagon, glowing rune circle).
+  - [ ] Add custom particle VFX to The Well splash and Battle Portal swirl.
+  - [ ] Assign custom character/vendor mesh to Spirit NPC and Merchant.
+
+### Manual verification
+- [x] Headless C# compilation verified with `dotnet build Assembly-CSharp.csproj` (0 errors).
+- [x] In-Editor Automated Game Loop Integration Test (`SetupGameLoopAssets.RunFullGameLoopIntegrationTest()`):
+  - [x] Phase 1: Waves 1-3 pacing, kill quotas, and rest gate unlock verified.
+  - [x] Phase 2: Rest area scene transition, Well healing (+20 HP) & depletion, Shop purchase with in-run gold, and exit gate verified.
+  - [x] Phase 3: Round 2 resumption (Wave 4) and Big Ork roster unlock verified.
+  - [x] Phase 4: Death sequence and in-run gold wipe verified.
+  - [x] Phase 5: Meta area scene transition, Spirit NPC UI perk purchase with Goblin Blood, Tier 2 unlock with Orcish Metal, Battleaxe unlock and equip on 3D pedestal, and Battle Portal re-entry verified.
+- [ ] In-game Play mode testing:
+  - [ ] Play through Wave 1 in `Bladehold Survivors Scene.unity` and test physical weapon combat with equipped loadout.
+  - [ ] Complete Wave 3 and press `[E]` at the Castle Gate to travel to the Rest Area.
+  - [ ] Drink from the Well and buy an item from the Merchant.
+  - [ ] Return to battle and verify Big Orks begin spawning in Round 2.
+  - [ ] Allow player to be defeated and verify loading into Meta Area to upgrade perks at Spirit NPC.

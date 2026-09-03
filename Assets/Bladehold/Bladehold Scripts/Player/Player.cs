@@ -9,22 +9,17 @@ public class Player : MonoBehaviour
     ///     (to damage it, or to react to <see cref="global::Health.OnDied" />) through the singleton
     ///     rather than scene lookups. Null if the player has no Health.
     /// </summary>
-    public Health Health { get; private set; }
+    private Health health;
+    public Health Health => health != null ? health : (health = GetComponent<Health>());
 
-    /// <summary>
-    ///     The player's damage sink (its <see cref="global::Health" />), so enemies can damage the
-    ///     player through the singleton. Null if the player has no <see cref="IDamageable" />.
-    /// </summary>
-    public IDamageable Damageable { get; private set; }
+    private IDamageable damageable;
+    public IDamageable Damageable => damageable != null ? damageable : (damageable = GetComponent<IDamageable>());
 
-    /// <summary>The player's coin purse, so pickups and UI can reach it through the singleton.</summary>
-    public Wallet Wallet { get; private set; }
+    private Wallet wallet;
+    public Wallet Wallet => wallet != null ? wallet : (wallet = GetComponent<Wallet>());
 
-    /// <summary>
-    ///     The player's stat aggregation layer, so weapons, movement and the upgrade tree can read and
-    ///     modify effective stats through the singleton. Null if the player has no <see cref="PlayerStats" />.
-    /// </summary>
-    public PlayerStats Stats { get; private set; }
+    private PlayerStats stats;
+    public PlayerStats Stats => stats != null ? stats : (stats = GetComponent<PlayerStats>());
 
     /// <summary>
     ///     Reaches the camera pivot/vendored input reader for sensitivity, invert, and button-remap
@@ -47,10 +42,10 @@ public class Player : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            Health = GetComponent<Health>();
-            Damageable = GetComponent<IDamageable>();
-            Wallet = GetComponent<Wallet>();
-            Stats = GetComponent<PlayerStats>();
+            health = GetComponent<Health>();
+            damageable = GetComponent<IDamageable>();
+            wallet = GetComponent<Wallet>();
+            stats = GetComponent<PlayerStats>();
             InputSettings = GetComponent<InputSettingsBinder>();
             AimCamera = GetComponent<BowAimCamera>();
             Imbuements = GetComponent<PeriodicImbuementController>();
@@ -59,9 +54,17 @@ public class Player : MonoBehaviour
                 Imbuements = gameObject.AddComponent<PeriodicImbuementController>();
             }
         }
-        else
+        else if (Instance != this)
         {
             Destroy(gameObject);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
         }
     }
 
@@ -79,16 +82,16 @@ public class Player : MonoBehaviour
             // family layers flat modifiers on top).
             Stats.SetBase(StatType.HealthPackHealPercent, 0.10f);
 
-            // Dodge bases
-            if (Stats.GetValue(StatType.DodgeUnlocked) == 0f)
-            {
-                Stats.SetBase(StatType.DodgeUnlocked, 0f);
-            }
+            // Dodge bases: unlocked by default
+            Stats.SetBase(StatType.DodgeUnlocked, 1f);
             Stats.SetBase(StatType.DodgeCooldown, 10f);
             Stats.SetBase(StatType.DodgeDistance, 2f);
             Stats.SetBase(StatType.DodgeDamageMultiplier, 0f);
             Stats.SetBase(StatType.DodgeKnockbackForce, 0f);
             Stats.SetBase(StatType.DodgeChainCooldownReduction, 0f);
+
+            // Restore in-run upgrades across scene transitions
+            RunSession.RestoreInRunUpgrades(this);
         }
     }
 }

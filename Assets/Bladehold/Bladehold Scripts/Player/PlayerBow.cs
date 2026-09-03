@@ -328,9 +328,8 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
 
         // Register the authored SO values as the stat bases; skill nodes layer on top without ever
         // mutating the asset. Everything at 0 is a locked skill line.
-        // The bow itself is gated: base 0 = locked until the "Bow" skill node is bought (unlike the
-        // sword, which is free out of the box).
-        stats.SetBase(StatType.BowUnlocked, 0f);
+        // The bow is unlocked by default out of the box (like the sword).
+        stats.SetBase(StatType.BowUnlocked, 1f);
         stats.SetBase(StatType.BowDamage, config.baseDamage);
         stats.SetBase(StatType.BowArrowSpeed, config.baseArrowSpeed);
         stats.SetBase(StatType.BowMaxChargeLevels, config.baseMaxChargeLevels);

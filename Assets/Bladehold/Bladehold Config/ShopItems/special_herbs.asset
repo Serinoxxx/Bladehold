@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c47697d1235bcf946b2de45026a8cf17, type: 3}
+  m_Name: special_herbs
+  m_EditorClassIdentifier: Assembly-CSharp::ShopItemSO
+  itemId: special_herbs
+  displayName: Special Herbs
+  description: Restores +5 HP at the end of each wave for 5 waves.
+  goldCost: 40
+  icon: {fileID: 0}
+  effectType: 3
+  effectValue: 5
+  durationWaves: 5

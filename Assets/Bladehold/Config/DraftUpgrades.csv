@@ -1,0 +1,45 @@
+id,displayName,category,weapon,element,isUltimate,maxLevel,description,upgradeText,stat,kind,amount,icon
+sword_lunge_mastery,Lunge Mastery,Weapon,sword,,0,1,Lunge deals +200% damage and gains +40% critical strike chance.,,SwordLungeDamageBonus;SwordLungeCritBonus,Percent;Flat,2.0;0.40,sword_dmg
+sword_nimble_strike,Nimble Strike,Weapon,sword,,0,1,Dashing performs an automatic attack along the movement path.,,SwordNimbleStrike,Flat,1,dodge_damage
+sword_shieldbreaker,ShieldBreaker,Weapon,sword,,0,1,Sword attacks deal +200% damage to shielded targets.,,SwordShieldBreakerBonus,Percent,2.0,sword_dmg
+sword_vampire_blade,Vampire Blade,Weapon,sword,,0,1,Heals 2 HP per hit but player takes 50% extra elemental damage.,,SwordVampireBladeHeal;SwordVampireExtraElementalDamage,Flat;Percent,2;0.50,vamp
+sword_mount_ult,Warhorse Mount,Weapon,sword,,1,1,Unleash the Warhorse! Mount up with trample damage and horse armor. Press Q at 100% charge.,,UltimateUnlocked;UltimateSwordMountUnlocked,Flat;Flat,1;1,horse_unlock
+bow_auto_shot,Auto-Shot,Weapon,bow,,0,1,Dashing automatically fires a fully charged shot at the nearest enemy.,,BowAutoShotOnDash,Flat,1,bow_unlock
+bow_desperate_volley,Desperate Volley,Weapon,bow,,0,4,Fires radial arrows when dropping below 50% HP.,Fires more arrows when dropping below 50% HP,BowDesperateVolleyArrows,Flat,8|12|16|20,multishot
+bow_piercer,Piercer,Weapon,bow,,0,4,Arrows pierce through additional enemies.,Arrows pierce through even more enemies,BowPierceCount,Flat,1|2|3|4,swiftarrow
+bow_bouncer,Bouncer,Weapon,bow,,0,4,Arrows ricochet to nearby targets.,Arrows ricochet to more targets,BowBounceCount;BowBounceChance,Flat;Flat,1|2|3|4;1|1|1|1,bounce
+bow_stream_ult,Arrow Stream,Weapon,bow,,1,1,Unleash an insanely fast stream of high-knockback arrows. Press Q at 100% charge.,,UltimateUnlocked,Flat,1,ult_unlock
+axe_fear_axe,Fear the Axe,Weapon,axe,,0,4,Kills freeze nearby enemies in fear.,Increases fear freeze duration,AxeFearDuration,Flat,0.2|0.3|0.4|0.5,sword_dmg
+axe_like_butter,Like Butter,Weapon,axe,,0,4,Cleaves through additional targets per swing.,Cleaves through even more targets,MaxHitsPerSwing,Flat,2|3|4|5,butter
+axe_celebratory_spin,Celebratory Spin,Weapon,axe,,0,4,Kills trigger an automatic mini-whirlwind.,Increases mini-whirlwind duration,AxeCelebratorySpinDuration,Flat,0.5|1|1.5|2,butter
+axe_power_dash,Power Dash,Weapon,axe,,0,4,Attacks charge faster immediately following a dash.,Attacks charge even faster after dashing,AxePowerDashChargeSpeed,Percent,1.0|2.0|3.0|4.0,charge_unlock
+axe_heavy_stance,Heavy Stance,Weapon,axe,,0,4,Fully charged attacks grant a temporary shield for 2s.,Increases shield strength on charged attacks,AxeHeavyStanceShield,Flat,2|4|6|8,solid
+axe_bladestorm_ult,Bladestorm,Weapon,axe,,1,1,Unleash a spinning whirlwind with damage reduction. Press Q at 100% charge.,,UltimateUnlocked,Flat,1,butter
+taxe_boomerang,Boomerang,Weapon,throwing_axe,,0,1,Returning axes deal full damage on their return flight path.,,AxeBoomerangUnlocked,Flat,1,bounce
+taxe_bloodsplosion,Bloodsplosion,Weapon,throwing_axe,,0,4,Kills trigger an explosion dealing AoE damage.,Increases explosion damage,AxeBloodsplosionDamage,Flat,10|20|30|40,explodeheads
+taxe_first_strike,First Strike,Weapon,throwing_axe,,0,4,Deals bonus damage to full-health targets.,Increases first strike bonus damage,AxeFirstStrikeBonus,Percent,0.5|0.6|0.7|0.8,crit_1
+taxe_spin_top,Spin Top,Weapon,throwing_axe,,0,4,Axe becomes a slow-moving vortex dealing AoE DPS.,Increases vortex DPS,AxeSpinTopDPS,Flat,4|8|12|16,range_ext
+taxe_vortex_ult,Axe Vortex,Weapon,throwing_axe,,1,1,Summons orbiting throwing axes and rapid-fire fan throws. Press Q at 100% charge.,,UltimateUnlocked;UltimateThrowingAxeVortexUnlocked,Flat;Flat,1;1,bounce
+fort_reinforced_slits,Reinforced Slits,Fortress,,,0,3,Adds automated arrow slits to the fortress.,Adds more automated arrow slits,FortArrowSlitsUnlocked;FortArrowSlitsCount,Flat;Flat,1;2|3|4,fort_arrow_slit
+fort_sniper_nest,Sniper Nest,Fortress,,,0,1,Fires heavy long-range arrows for 200% damage when no foes are near.,,FortSniperNestUnlocked,Flat,1,fort_arrow_slit
+fort_focus_fire,Focus Fire,Fortress,,,0,4,Targets hit by player ranged attacks take bonus damage from arrow slits.,Increases arrow slit focus damage,FortFocusFireBonus,Percent,0.5|0.7|0.9|1.1,precision
+fort_fiery_pitch,Fiery Pitch,Fortress,,,0,1,Boiling oil ignites all enemies caught in its pool.,,FortBurningOilUnlocked;FortFieryPitchUnlocked,Flat;Flat,1;1,fort_burning_oil
+fort_scalding_heat,Scalding Heat,Fortress,,,0,4,Enemies within boiling oil take increased damage from all sources.,Increases oil damage vulnerability,FortScaldingHeatBonus,Percent,0.5|0.7|0.9|1.1,fort_burning_oil
+fort_expanded_vats,Expanded Vats,Fortress,,,0,4,Increases boiling oil pool radius.,Further expands oil pool radius,FortExpandedVatsPercent,Percent,0.8|1.2|1.6|2.0,fort_burning_oil
+fort_concussive_spikes,Concussive Spikes,Fortress,,,0,4,Barricade impacts stun enemies.,Increases stun duration,FortSpikesUnlocked;FortConcussiveSpikesDuration,Flat;Flat,1;0.5|1.0|1.5|2.0,fort_spikes
+fort_shove,Shove,Fortress,,,0,4,Knocks enemies back 2m toward their spawn point periodically.,Decreases shove interval,FortShoveInterval,Flat,7|6|5|4,fort_spikes
+fort_vulnerability_field,Vulnerability Field,Fortress,,,0,4,Enemies within the barricade zone take increased damage from all sources.,Increases barricade zone damage vulnerability,FortVulnerabilityFieldBonus,Percent,0.5|1.0|1.5|2.0,fort_spikes
+elem_fire_blazing_trail,Blazing Trail,Elemental,,Fire,0,4,Dashing leaves a fire trail dealing DPS.,Increases fire trail DPS,FireBlazingTrailDPS,Flat,4|6|8|10,flamearrow
+elem_fire_combustion,Combustion,Elemental,,Fire,0,4,Attacks ignite enemies for continuous burn DPS.,Increases ignition burn DPS,FireCombustionDPS,Flat,4|6|8|10,imbue_fire
+elem_fire_kindling,Kindling,Elemental,,Fire,0,4,Ignited targets take bonus damage from all sources.,Increases damage bonus against ignited foes,FireKindlingDamageBonus,Percent,0.5|0.7|0.9|1.1,imbue_fire
+elem_fire_inferno_burst,Inferno Burst,Elemental,,Fire,0,1,Ultimate ability immediately ignites all nearby enemies.,,FireInfernoBurstUnlocked,Flat,1,imbue_fire
+elem_fire_fortress_pyre,Fortress Pyre,Elemental,,Fire,0,4,Fortress attacks deal bonus damage to ignited foes.,Increases fortress damage to ignited foes,FireFortressPyreBonus,Percent,0.5|0.8|1.1|1.4,fort_burning_oil
+elem_light_static_edge,Static Edge,Elemental,,Lightning,0,4,First hit of a melee chain deals bonus lightning damage.,Increases static edge lightning damage,LightningStaticEdgeDamage,Flat,30|50|70|90,imbue_lightning
+elem_light_chain_dash,Chain Dash,Elemental,,Lightning,0,4,Dashing imbues next melee swing with Chain Lightning.,Increases chain lightning targets,LightningChainDashTargets,Flat,4|6|8|10,imbue_lightning
+elem_light_eye_storm,Eye of the Storm,Elemental,,Lightning,0,4,Lightning strikes a random target periodically during ultimate.,Increases lightning strike damage,LightningEyeOfTheStormDamage,Flat,50|100|150|200,imbue_lightning
+elem_light_tesla_spire,Tesla Spire,Elemental,,Lightning,0,4,Fortress discharges a lightning bolt every 5s.,Increases Tesla Spire damage,LightningTeslaSpireDamage,Flat,50|100|150|200,imbue_lightning
+elem_ice_frost_step,Frost Step,Elemental,,Ice,0,4,Dashing chills nearby enemies for 3s.,Increases slow and attack speed reduction,IceFrostStepSlowPercent,Percent,0.2|0.3|0.4|0.5,imbue_ice
+elem_ice_deep_freeze,Deep Freeze,Elemental,,Ice,0,1,Applying chill to an already chilled enemy freezes them solid.,,IceDeepFreezeUnlocked,Flat,1,freezedraw
+elem_ice_shatter,Shatter,Elemental,,Ice,0,4,Frozen enemies take massive bonus damage from all hits.,Increases bonus damage to frozen foes,IceShatterBonus,Percent,2.0|3.0|4.0|5.0,icebreaker
+elem_ice_permafrost,Permafrost,Elemental,,Ice,0,1,Fortress walls passively emit an aura that chills adjacent foes.,,IcePermafrostUnlocked,Flat,1,imbue_ice
+elem_ice_ice_shards,Ice Shards,Elemental,,Ice,0,4,Ranged kills shatter enemies into an 8-way projectile burst.,Increases ice shard burst damage,IceShardsBurstDamage,Flat,50|60|70|80,brainfreeze

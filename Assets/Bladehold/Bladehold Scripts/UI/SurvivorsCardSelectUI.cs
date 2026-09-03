@@ -79,16 +79,27 @@ public class SurvivorsCardSelectUI : MonoBehaviour
         }
     }
 
+    private Action onDraftCompletedCallback;
+    private DraftCategory? activeCategory;
+
     /// <summary>
     ///     Opens the card selection modal, pauses gameplay, and populates 3 card choices.
+    ///     Can be targeted to a specific DraftCategory (Weapon, Elemental, Fortress).
     /// </summary>
-    public void OpenDraft()
+    public void OpenDraft(DraftCategory? category = null, Action onComplete = null)
     {
         if (SurvivorsCardSelector.Instance == null)
         {
-            Debug.LogError("[SurvivorsCardSelectUI] SurvivorsCardSelector instance missing!");
-            return;
+            SurvivorsCardSelector found = FindAnyObjectByType<SurvivorsCardSelector>();
+            if (found == null)
+            {
+                GameObject scObj = new GameObject("SurvivorsCardSelector");
+                scObj.AddComponent<SurvivorsCardSelector>();
+            }
         }
+
+        activeCategory = category;
+        onDraftCompletedCallback = onComplete;
 
         if (closeRoutine != null)
         {
@@ -103,22 +114,35 @@ public class SurvivorsCardSelectUI : MonoBehaviour
 
         hasBanishedThisDraft = false;
 
-        int currentLvl = SurvivorsLevelSystem.Instance != null ? SurvivorsLevelSystem.Instance.CurrentLevel : 1;
-        int pending = SurvivorsLevelSystem.Instance != null ? SurvivorsLevelSystem.Instance.PendingDrafts : 1;
-
         if (headerText != null)
         {
-            if (pending > 1)
+            if (category.HasValue)
             {
-                headerText.text = $"LEVEL {currentLvl}\n<size=20><color=#FFD700>{pending} skill drafts remaining</color></size>";
+                string catName = category.Value switch
+                {
+                    DraftCategory.Weapon => "WEAPON UPGRADE",
+                    DraftCategory.Elemental => "ELEMENTAL UPGRADE",
+                    DraftCategory.Fortress => "FORTRESS UPGRADE",
+                    _ => "UPGRADE DRAFT"
+                };
+                headerText.text = $"<color=#FFD700>{catName}</color>\n<size=20>Choose 1 of 3 upgrades</size>";
             }
             else
             {
-                headerText.text = $"LEVEL {currentLvl}";
+                int currentLvl = SurvivorsLevelSystem.Instance != null ? SurvivorsLevelSystem.Instance.CurrentLevel : 1;
+                int pending = SurvivorsLevelSystem.Instance != null ? SurvivorsLevelSystem.Instance.PendingDrafts : 1;
+                if (pending > 1)
+                {
+                    headerText.text = $"LEVEL {currentLvl}\n<size=20><color=#FFD700>{pending} skill drafts remaining</color></size>";
+                }
+                else
+                {
+                    headerText.text = $"LEVEL {currentLvl}";
+                }
             }
         }
 
-        List<SkillNode> offered = SurvivorsCardSelector.Instance.GetRandomSkillCards(3);
+        List<SkillNode> offered = SurvivorsCardSelector.Instance.GetRandomSkillCards(3, category: activeCategory);
         currentOfferedNodes.Clear();
         currentOfferedNodes.AddRange(offered);
 
@@ -180,7 +204,12 @@ public class SurvivorsCardSelectUI : MonoBehaviour
                 SkillNode node = offeredNodes[i];
                 cardUI.gameObject.SetActive(true);
 
-                int currentLevel = SkillTreeService.Instance != null ? SkillTreeService.Instance.GetLevel(node) : 0;
+                int currentLevel = RunSession.GetUpgradeLevel(node.id);
+                if (currentLevel == 0 && SkillTreeService.Instance != null)
+                {
+                    currentLevel = SkillTreeService.Instance.GetLevel(node);
+                }
+
                 Sprite icon = SkillTreeService.Instance != null && SkillTreeService.Instance.Tree != null
                     ? SkillTreeService.Instance.Tree.GetIcon(node.iconName)
                     : null;
@@ -218,7 +247,7 @@ public class SurvivorsCardSelectUI : MonoBehaviour
             SurvivorsCardSelector.Instance.BanishCard(target.id);
             Debug.Log($"[SurvivorsCardSelectUI] Banished skill '{target.displayName}' (ID: {target.id}) for this run.");
 
-            SkillNode replacement = SurvivorsCardSelector.Instance.GetSingleReplacementCard(currentOfferedNodes);
+            SkillNode replacement = SurvivorsCardSelector.Instance.GetSingleReplacementCard(currentOfferedNodes, activeCategory);
             if (replacement != null)
             {
                 currentOfferedNodes[cardIndex] = replacement;
@@ -242,11 +271,22 @@ public class SurvivorsCardSelectUI : MonoBehaviour
 
         SkillNode chosenNode = currentOfferedNodes[cardIndex];
 
-        // Apply chosen card upgrade
-        if (SkillTreeService.Instance != null)
+        // Apply chosen card upgrade through DraftUpgradeService or fallback
+        DraftUpgradeService draftService = DraftUpgradeService.GetOrCreateInstance();
+        DraftUpgradeDefinition draftDef = draftService != null ? draftService.GetById(chosenNode.id) : null;
+        if (draftDef != null)
+        {
+            draftService.ApplyUpgrade(draftDef);
+        }
+        else if (SkillTreeService.Instance != null)
         {
             SkillTreeService.Instance.ApplyFreePurchase(chosenNode.id);
             Debug.Log($"[SurvivorsCardSelectUI] Selected skill: '{chosenNode.displayName}' (ID: {chosenNode.id}). Granted level {SkillTreeService.Instance.GetLevel(chosenNode)}.");
+        }
+
+        if (FortDefenseManager.Instance != null)
+        {
+            FortDefenseManager.Instance.HandleSkillNodePurchased(chosenNode.id);
         }
 
         // Consume one draft
@@ -260,8 +300,8 @@ public class SurvivorsCardSelectUI : MonoBehaviour
             sidebar.RefreshSidebar();
         }
 
-        // Check if more drafts are queued
-        int remaining = SurvivorsLevelSystem.Instance != null ? SurvivorsLevelSystem.Instance.PendingDrafts : 0;
+        // Check if more drafts are queued (only for legacy multi-drafts, not category powerup drafts)
+        int remaining = (!activeCategory.HasValue && SurvivorsLevelSystem.Instance != null) ? SurvivorsLevelSystem.Instance.PendingDrafts : 0;
         if (remaining > 0)
         {
             // Re-roll and present the next 3 cards instantly
@@ -323,6 +363,11 @@ public class SurvivorsCardSelectUI : MonoBehaviour
         {
             SurvivorsGameManager.Instance.ResumeFromCardSelection();
         }
+
+        Action callback = onDraftCompletedCallback;
+        onDraftCompletedCallback = null;
+        activeCategory = null;
+        callback?.Invoke();
 
         closeRoutine = null;
     }

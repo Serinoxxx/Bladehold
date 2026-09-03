@@ -40,6 +40,27 @@ public class SaveData
     /// </summary>
     public string playerClassId = "swordsman";
 
+    /// <summary>Permanent currency obtained from waves and drops, used to purchase permanent perks.</summary>
+    public int goblinBlood;
+
+    /// <summary>Permanent currency obtained from special enemies and drops, used to unlock weapons & tiers.</summary>
+    public int orcishMetal;
+
+    /// <summary>Permanently unlocked weapons. Sword and Bow are unlocked by default.</summary>
+    public List<string> unlockedWeapons = new List<string> { "sword", "bow" };
+
+    /// <summary>Currently equipped melee weapon id (e.g. 'sword', 'axe').</summary>
+    public string equippedMeleeWeapon = "sword";
+
+    /// <summary>Currently equipped ranged weapon id (e.g. 'bow', 'throwing_axe').</summary>
+    public string equippedRangedWeapon = "bow";
+
+    /// <summary>Highest unlocked meta-progression tier (1 = default, 2 = costs 5 Orcish Metal, 3 = costs 10 Orcish Metal).</summary>
+    public int unlockedMetaTier = 1;
+
+    /// <summary>Purchased permanent meta perks (e.g. 'backstab', 'agility', 'regeneration').</summary>
+    public List<string> purchasedMetaPerks = new List<string>();
+
     /// <summary>The highest stage level unlocked in Survivors / Siege mode (default: 1).</summary>
     public int highestUnlockedStage = 1;
 
@@ -116,6 +137,13 @@ public class SaveData
         playerClassId = defaults.playerClassId;
         highestUnlockedStage = defaults.highestUnlockedStage;
         selectedStage = defaults.selectedStage;
+        goblinBlood = defaults.goblinBlood;
+        orcishMetal = defaults.orcishMetal;
+        unlockedWeapons = new List<string>(defaults.unlockedWeapons);
+        equippedMeleeWeapon = defaults.equippedMeleeWeapon;
+        equippedRangedWeapon = defaults.equippedRangedWeapon;
+        unlockedMetaTier = defaults.unlockedMetaTier;
+        purchasedMetaPerks.Clear();
     }
 
     /// <summary>

@@ -23,9 +23,9 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#505050"
      inkscape:document-units="mm"
-     inkscape:zoom="0.36756309"
-     inkscape:cx="2044.5469"
-     inkscape:cy="550.92582"
+     inkscape:zoom="0.73512619"
+     inkscape:cx="3072.2617"
+     inkscape:cy="-304.02944"
      inkscape:window-width="2560"
      inkscape:window-height="1369"
      inkscape:window-x="1912"
@@ -34,6 +34,36 @@
      inkscape:current-layer="layer1" />
   <defs
      id="defs1">
+    <rect
+       x="1291.9551"
+       y="147.93379"
+       width="369.66443"
+       height="110.52524"
+       id="rect260" />
+    <rect
+       x="1299.4368"
+       y="143.51278"
+       width="349.93992"
+       height="58.153282"
+       id="rect259" />
+    <rect
+       x="1313.72"
+       y="128.88944"
+       width="327.15472"
+       height="34.687922"
+       id="rect258" />
+    <rect
+       x="1302.4975"
+       y="134.33068"
+       width="325.45433"
+       height="30.266913"
+       id="rect257" />
+    <rect
+       x="1308.2788"
+       y="138.75169"
+       width="325.11425"
+       height="22.785204"
+       id="rect256" />
     <rect
        x="3717.7291"
        y="-681.51565"
@@ -297,36 +327,14 @@
     <text
        xml:space="preserve"
        style="font-size:3.175px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;stroke-width:26.4583"
-       x="372.45883"
-       y="40.338043"
-       id="text25"><tspan
-         sodipodi:role="line"
-         id="tspan25"
-         style="stroke-width:26.4583"
-         x="372.45883"
-         y="40.338043">Jump?</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-size:3.175px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;stroke-width:26.4583"
-       x="372.3316"
-       y="49.627247"
+       x="371.16187"
+       y="40.719337"
        id="text26"><tspan
          sodipodi:role="line"
          id="tspan26"
          style="stroke-width:26.4583"
-         x="372.3316"
-         y="49.627247">Special/Ultimate?</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-size:3.175px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;stroke-width:26.4583"
-       x="372.71335"
-       y="59.043701"
-       id="text27"><tspan
-         sodipodi:role="line"
-         id="tspan27"
-         style="stroke-width:26.4583"
-         x="372.71335"
-         y="59.043701">Cast</tspan></text>
+         x="371.16187"
+         y="40.719337">Ultimate</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:3.175px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;stroke-width:26.4583"
@@ -359,40 +367,18 @@
          id="tspan30"
          style="stroke-width:26.4583"
          x="405.41647"
-         y="31.048843">Ctrl/Space?</tspan></text>
+         y="31.048843">Ctrl/Space</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:3.175px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;stroke-width:26.4583"
-       x="406.0527"
-       y="40.210796"
-       id="text31"><tspan
-         sodipodi:role="line"
-         id="tspan31"
-         style="stroke-width:26.4583"
-         x="406.0527"
-         y="40.210796">Space?</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-size:3.175px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;stroke-width:26.4583"
-       x="407.07068"
-       y="49.5"
+       x="405.90094"
+       y="40.592091"
        id="text32"><tspan
          sodipodi:role="line"
          id="tspan32"
          style="stroke-width:26.4583"
-         x="407.07068"
-         y="49.5">Q</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-size:3.175px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;stroke-width:26.4583"
-       x="407.45245"
-       y="60.952442"
-       id="text33"><tspan
-         sodipodi:role="line"
-         id="tspan33"
-         style="stroke-width:26.4583"
-         x="407.45245"
-         y="60.952442">F?</tspan></text>
+         x="405.90094"
+         y="40.592091">Q</tspan></text>
     <rect
        style="fill:#000000;fill-opacity:1;stroke-width:3.71181"
        id="rect35"
@@ -1136,37 +1122,37 @@
          id="tspan88-7">Obtained by: random 3-card draft for current weapon(s)  at well (after 3 waves)</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:4.23333px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke-width:27.4579;stroke-dasharray:none"
+       style="font-size:4.23333px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ff0000;fill-opacity:1;stroke-width:27.4579;stroke-dasharray:none"
        x="769.28564"
        y="-60.989716"
        id="text131"><tspan
          sodipodi:role="line"
          id="tspan131"
-         style="font-size:4.23333px;fill:#ffffff;fill-opacity:1;stroke-width:27.458"
+         style="font-size:4.23333px;fill:#ff0000;fill-opacity:1;stroke-width:27.458"
          x="769.28564"
          y="-60.989716">Fire</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:4.23333px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke-width:27.4579;stroke-dasharray:none"
+       style="font-size:4.23333px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffda00;fill-opacity:1;stroke-width:27.4579;stroke-dasharray:none"
        x="924.84833"
        y="-59.043705"
        id="text132"><tspan
          sodipodi:role="line"
          id="tspan132"
-         style="font-size:4.23333px;stroke-width:27.458"
+         style="font-size:4.23333px;stroke-width:27.458;fill:#ffda00;fill-opacity:1"
          x="924.84833"
          y="-59.043705">Lightning</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:4.23333px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke-width:27.4579;stroke-dasharray:none"
-       x="1080.8561"
-       y="-57.007713"
+       style="font-size:4.23333px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#00d2ff;fill-opacity:1;stroke-width:27.4579;stroke-dasharray:none"
+       x="1064.8226"
+       y="-52.681236"
        id="text133"><tspan
          sodipodi:role="line"
          id="tspan133"
-         style="font-size:4.23333px;stroke-width:27.458"
-         x="1080.8561"
-         y="-57.007713">Ice</tspan></text>
+         style="font-size:4.23333px;fill:#00d2ff;fill-opacity:1;stroke-width:27.458"
+         x="1064.8226"
+         y="-52.681236">Ice</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:3.175px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke-width:27.4579;stroke-dasharray:none"
@@ -1319,70 +1305,70 @@
     <text
        xml:space="preserve"
        style="font-size:3.175px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke-width:27.4579;stroke-dasharray:none"
-       x="1059.7712"
-       y="-51.287964"
+       x="1043.7378"
+       y="-46.961487"
        id="text157"><tspan
          sodipodi:role="line"
          id="tspan157"
          style="stroke-width:27.458"
-         x="1059.7712"
-         y="-51.287964">Dash add <tspan
+         x="1043.7378"
+         y="-46.961487">Dash add <tspan
    style="fill:#00d2ff;fill-opacity:1"
    id="tspan158">chilled </tspan>to nearby enemies for 3s, slowing movement and attacks by 20/30/40/50% </tspan></text>
     <text
        xml:space="preserve"
        style="font-size:3.175px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke-width:27.4579;stroke-dasharray:none"
-       x="1079.9266"
-       y="-44.089653"
+       x="1063.8932"
+       y="-39.763176"
        id="text160"><tspan
          sodipodi:role="line"
          id="tspan160"
          style="stroke-width:27.458"
-         x="1079.9266"
-         y="-44.089653"><tspan
+         x="1063.8932"
+         y="-39.763176"><tspan
    style="fill:#00d2ff;fill-opacity:1"
    id="tspan161">chilled </tspan>enemies are frozen if chilled again</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:3.175px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#00d2ff;fill-opacity:1;stroke-width:27.4579;stroke-dasharray:none"
-       x="1081.0063"
-       y="-39.410751"
+       x="1064.9729"
+       y="-35.084274"
        id="text162"><tspan
          sodipodi:role="line"
          id="tspan162"
          style="stroke-width:27.458"
-         x="1081.0063"
-         y="-39.410751">frozen <tspan
+         x="1064.9729"
+         y="-35.084274">frozen <tspan
    style="fill:#ffffff;fill-opacity:1"
    id="tspan163">enemies take 200/300/400/500% more damage</tspan></tspan></text>
     <text
        xml:space="preserve"
        style="font-size:3.175px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke-width:27.4579;stroke-dasharray:none"
-       x="1060.851"
-       y="-30.052946"
+       x="1044.8175"
+       y="-25.726467"
        id="text164"><tspan
          sodipodi:role="line"
          id="tspan164"
          style="stroke-width:27.458"
-         x="1060.851"
-         y="-30.052946">Frozen wall - enemies near the fortress will be <tspan
+         x="1044.8175"
+         y="-25.726467">Frozen wall - enemies near the fortress will be <tspan
    style="fill:#00d0ff;fill-opacity:1"
    id="tspan166">chilled</tspan></tspan></text>
     <text
        xml:space="preserve"
        style="font-size:3.175px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke-width:27.4579;stroke-dasharray:none"
-       x="1061.031"
-       y="-20.695143"
+       x="1044.9976"
+       y="-16.368664"
        id="text167"><tspan
          sodipodi:role="line"
          id="tspan167"
          style="fill:#ffffff;fill-opacity:1;stroke-width:27.458"
-         x="1061.031"
-         y="-20.695143">Ranged weapon kills explode enemies into ice shared, </tspan><tspan
+         x="1044.9976"
+         y="-16.368664">Ranged weapon kills explode enemies into ice shared, </tspan><tspan
          sodipodi:role="line"
          style="fill:#ffffff;fill-opacity:1;stroke-width:27.458"
-         x="1061.031"
-         y="-16.726393"
+         x="1044.9976"
+         y="-12.399915"
          id="tspan168">sending projectiles in 8 directions dealing 50/60/70/80 damage</tspan></text>
     <rect
        style="fill:#000000;fill-opacity:1;stroke-width:35.8813;stroke-dasharray:none"
@@ -1544,7 +1530,12 @@
          id="tspan182"
          style="fill:#ffd500;fill-opacity:1;stroke-width:27.458"
          x="884.30939"
-         y="-173.62601">Currency:  Goblin Blood</tspan></text>
+         y="-173.62601">Currency:  Gold</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ffd500;fill-opacity:1;stroke-width:27.458"
+         x="884.30939"
+         y="-169.65726"
+         id="tspan261" /></text>
     <text
        xml:space="preserve"
        style="font-size:4.23333px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke-width:27.4579;stroke-dasharray:none"
@@ -2000,5 +1991,46 @@
          style="stroke-width:27.458"
          x="333.2818"
          y="326.98328">One of the upgrade prompts</tspan></text>
+    <path
+       style="fill:none;fill-opacity:1;stroke-width:0.5;stroke-dasharray:none;stroke:#ff0000;stroke-opacity:1"
+       d="m 777.74807,-32.066838 h -18.06943 v -4.453726"
+       id="path253" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#ff0000;stroke-width:0.499999;stroke-dasharray:none;stroke-opacity:1"
+       d="m 777.6208,-27.104112 h -17.94216 v -4.32648"
+       id="path254" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#00d2ff;stroke-width:0.499999;stroke-dasharray:none;stroke-opacity:1"
+       d="m 1062.2776,-40.465294 h -10.9434 v -4.580978"
+       id="path255" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#00d2ff;stroke-width:0.499999;stroke-dasharray:none;stroke-opacity:1"
+       d="m 1062.6594,-36.011568 h -11.0707 v -3.181234"
+       id="path256" />
+    <text
+       xml:space="preserve"
+       transform="scale(0.26458333)"
+       id="text256"
+       style="fill:#00d2ff;text-orientation:auto;stroke-width:1.88976378;text-align:start;writing-mode:lr-tb;direction:ltr;stroke-dasharray:none;font-size:12px;fill-opacity:1;stroke:#00d2ff;stroke-opacity:1;white-space:pre;shape-inside:url(#rect256)" />
+    <text
+       xml:space="preserve"
+       transform="scale(0.26458333)"
+       id="text257"
+       style="fill:#00d2ff;text-orientation:auto;stroke-width:1.88976378;text-align:start;writing-mode:lr-tb;direction:ltr;stroke-dasharray:none;font-size:12px;fill-opacity:1;stroke:#00d2ff;stroke-opacity:1;white-space:pre;shape-inside:url(#rect257)" />
+    <text
+       xml:space="preserve"
+       transform="scale(0.26458333)"
+       id="text258"
+       style="fill:#00d2ff;text-orientation:auto;stroke-width:1.88976378;text-align:start;writing-mode:lr-tb;direction:ltr;stroke-dasharray:none;font-size:12px;fill-opacity:1;stroke:#00d2ff;stroke-opacity:1;white-space:pre;shape-inside:url(#rect258)" />
+    <text
+       xml:space="preserve"
+       transform="scale(0.26458333)"
+       id="text259"
+       style="fill:#00d2ff;text-orientation:auto;stroke-width:1.88976378;text-align:start;writing-mode:lr-tb;direction:ltr;stroke-dasharray:none;font-size:12px;fill-opacity:1;stroke:#00d2ff;stroke-opacity:1;white-space:pre;shape-inside:url(#rect259)" />
+    <text
+       xml:space="preserve"
+       transform="scale(0.26458333)"
+       id="text260"
+       style="fill:#00d2ff;text-orientation:auto;stroke-width:1.88976378;text-align:start;writing-mode:lr-tb;direction:ltr;stroke-dasharray:none;font-size:12px;fill-opacity:1;stroke:#00d2ff;stroke-opacity:1;white-space:pre;shape-inside:url(#rect260)" />
   </g>
 </svg>

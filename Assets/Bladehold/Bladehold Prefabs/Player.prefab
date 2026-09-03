@@ -1582,6 +1582,8 @@ GameObject:
   - component: {fileID: 7097117237931593117}
   - component: {fileID: 8834962162041347795}
   - component: {fileID: 924873914309187086}
+  - component: {fileID: 5480821993270956645}
+  - component: {fileID: 4218521274988385536}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -1818,6 +1820,50 @@ MonoBehaviour:
   iceAuraVisual: {fileID: 9197713550416069428}
   lightningAuraVisual: {fileID: 9020563077839332459}
   impulseAuraVisual: {fileID: 0}
+--- !u!114 &5480821993270956645
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 635090733411138093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0763600b1c0b7f94989be07d5b0cafd7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerWeaponManager
+  swordObject: {fileID: 0}
+  swordTrigger: {fileID: 0}
+  swordHitFeedback: {fileID: 0}
+  axeObject: {fileID: 0}
+  axeTrigger: {fileID: 0}
+  axeHitFeedback: {fileID: 0}
+  playerBow: {fileID: 0}
+  playerThrownAxe: {fileID: 0}
+  animationEvents: {fileID: 0}
+  playerAttack: {fileID: 0}
+  animator: {fileID: 0}
+  vampiricBlade: {fileID: 0}
+  chainLightning: {fileID: 0}
+  impulseHitFeedback: {fileID: 0}
+--- !u!114 &4218521274988385536
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 635090733411138093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f757a03c5aa14747bfa00f4bc61c658, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerInteraction
+  inputReader: {fileID: 0}
+  player: {fileID: 0}
+  maxInteractionDistance: 4
+  promptLabel: {fileID: 0}
+  promptContainer: {fileID: 0}
+  promptPrefab: {fileID: 7198720221044566266, guid: 529047ff5f95deb4ca650cb3e1fbeebd, type: 3}
 --- !u!1 &758177441954652393
 GameObject:
   m_ObjectHideFlags: 0

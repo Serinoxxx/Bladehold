@@ -67,7 +67,15 @@ public class PlayerDodge : MonoBehaviour
 
         if (player.Stats.GetValue(StatType.DodgeUnlocked) <= 0f) return;
 
-        if (!isDodging && !isCooldownActive && Keyboard.current != null && Keyboard.current.leftCtrlKey.wasPressedThisFrame)
+        bool dashPressed = false;
+        if (Keyboard.current != null)
+        {
+            dashPressed = Keyboard.current.leftCtrlKey.wasPressedThisFrame ||
+                          Keyboard.current.rightCtrlKey.wasPressedThisFrame ||
+                          Keyboard.current.spaceKey.wasPressedThisFrame;
+        }
+
+        if (!isDodging && !isCooldownActive && dashPressed)
         {
             StartCoroutine(PerformDodge());
         }

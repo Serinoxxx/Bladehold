@@ -450,6 +450,47 @@ public class DamageTrigger : MonoBehaviour
         // BuildDamage's rolls) because it depends on the target's SlowStatus, not the swing.
         if (readsPlayerStats && damageable is Component targetComponent)
         {
+            // Backstab permanent meta perk (+20% bonus damage when striking enemies from behind)
+            if (RunSession.HasMetaPerk("backstab"))
+            {
+                Vector3 playerFwd = (owner != null ? owner.transform.forward : transform.forward);
+                Vector3 targetFwd = targetComponent.transform.forward;
+                playerFwd.y = 0f;
+                targetFwd.y = 0f;
+                if (Vector3.Dot(playerFwd.normalized, targetFwd.normalized) > 0.4f)
+                {
+                    damage.value *= 1.20f;
+                }
+            }
+
+            // Executioner permanent meta perk (+50% bonus damage to targets below 50% HP)
+            if (RunSession.HasMetaPerk("executioner"))
+            {
+                Health targetHealth = targetComponent.GetComponentInParent<Health>();
+                if (targetHealth != null && targetHealth.MaxHealth > 0f && targetHealth.CurrentHealth <= targetHealth.MaxHealth * 0.5f)
+                {
+                    damage.value *= 1.50f;
+                }
+            }
+
+            // ShieldBreaker (+200% damage to shielded targets)
+            float shieldBreakerBonus = stats.GetValue(StatType.SwordShieldBreakerBonus);
+            if (shieldBreakerBonus > 0f)
+            {
+                BubbleShield bubbleShield = targetComponent.GetComponentInParent<BubbleShield>();
+                if (bubbleShield != null)
+                {
+                    damage.value *= 1f + shieldBreakerBonus;
+                }
+            }
+
+            // Vampire Blade (heals 2 HP per hit)
+            float vampHeal = stats.GetValue(StatType.SwordVampireBladeHeal);
+            if (vampHeal > 0f && Player.Instance != null && Player.Instance.Health != null)
+            {
+                Player.Instance.Health.Heal(vampHeal);
+            }
+
             float iceBreakerBonus = stats.GetValue(StatType.IceBreakerDamageBonus);
             if (iceBreakerBonus > 0f)
             {

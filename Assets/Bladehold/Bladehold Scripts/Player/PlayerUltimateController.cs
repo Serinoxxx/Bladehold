@@ -239,14 +239,15 @@ public class PlayerUltimateController : MonoBehaviour
 
         OnUltimateActivated?.Invoke();
 
-        var handlers = GetComponents<IUltimateHandler>();
+        var handlers = GetComponentsInChildren<IUltimateHandler>(true);
         bool handlerActivated = false;
         foreach (var handler in handlers)
         {
-            if (((MonoBehaviour)handler).enabled)
+            if (handler is MonoBehaviour mb && mb.enabled)
             {
                 handler.Activate(this);
                 handlerActivated = true;
+                break; // Only one ultimate activates per run
             }
         }
 

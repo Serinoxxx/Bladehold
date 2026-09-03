@@ -307,6 +307,61 @@ public enum StatType
     PeriodicImpulseKnockbackForce,
     /// <summary>1 = Earth Splitter final melee charge attack unlocked, 0 = locked.</summary>
     EarthSplitterUnlocked,
+
+    // --- Weapon Draft Upgrades ---
+    SwordLungeDamageBonus,
+    SwordLungeCritBonus,
+    SwordNimbleStrike,
+    SwordShieldBreakerBonus,
+    SwordVampireBladeHeal,
+    SwordVampireExtraElementalDamage,
+
+    BowAutoShotOnDash,
+    BowDesperateVolleyArrows,
+    BowPierceCount,
+    BowBounceCount,
+
+    AxeFearDuration,
+    AxeCelebratorySpinDuration,
+    AxePowerDashChargeSpeed,
+    AxeHeavyStanceShield,
+
+    AxeBloodsplosionDamage,
+    AxeFirstStrikeBonus,
+    AxeSpinTopDPS,
+
+    // --- Fortress Draft Upgrades ---
+    FortArrowSlitsCount,
+    FortSniperNestUnlocked,
+    FortFocusFireBonus,
+    FortFieryPitchUnlocked,
+    FortScaldingHeatBonus,
+    FortExpandedVatsPercent,
+    FortConcussiveSpikesDuration,
+    FortShoveInterval,
+    FortVulnerabilityFieldBonus,
+
+    // --- Elemental Draft Upgrades ---
+    FireBlazingTrailDPS,
+    FireCombustionDPS,
+    FireKindlingDamageBonus,
+    FireInfernoBurstUnlocked,
+    FireFortressPyreBonus,
+
+    LightningStaticEdgeDamage,
+    LightningChainDashTargets,
+    LightningEyeOfTheStormDamage,
+    LightningTeslaSpireDamage,
+
+    IceFrostStepSlowPercent,
+    IceDeepFreezeUnlocked,
+    IceShatterBonus,
+    IcePermafrostUnlocked,
+    IceShardsBurstDamage,
+
+    // --- Ultimates ---
+    UltimateSwordMountUnlocked,
+    UltimateThrowingAxeVortexUnlocked,
 }
 
 /// <summary>

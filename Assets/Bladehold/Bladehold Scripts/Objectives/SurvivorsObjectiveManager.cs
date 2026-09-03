@@ -80,7 +80,6 @@ public class SurvivorsObjectiveManager : MonoBehaviour
         if (next != null)
         {
             SetActiveObjective(next);
-            SurvivorsSpawner.Instance?.StartWave(currentWave);
             OnWaveStarted?.Invoke(currentWave);
         }
     }
@@ -96,7 +95,6 @@ public class SurvivorsObjectiveManager : MonoBehaviour
 
             lastObjectiveIndex = index;
             SetActiveObjective(objectivePool[index]);
-            SurvivorsSpawner.Instance?.StartWave(currentWave);
             OnWaveStarted?.Invoke(currentWave);
         }
     }
@@ -127,57 +125,130 @@ public class SurvivorsObjectiveManager : MonoBehaviour
         {
             Instance = this;
         }
-        else
+        else if (Instance != this)
         {
-            Destroy(gameObject);
+            if (Application.isPlaying) Destroy(gameObject);
+            else DestroyImmediate(gameObject);
         }
     }
 
     private void Start()
     {
-        // Populate objective pool
+        InitializePool();
+    }
+
+    /// <summary>
+    /// Populates the internal objective pool from configured components or auto-discovery.
+    /// </summary>
+    public void InitializePool()
+    {
+        if (objectivePool.Count > 0) return;
+
+        // Auto-discover if repeatingObjectiveComponents is empty
+        if (repeatingObjectiveComponents == null || repeatingObjectiveComponents.Count == 0)
+        {
+            MonoBehaviour[] allScripts = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
+            foreach (MonoBehaviour mb in allScripts)
+            {
+                if (mb is ISurvivorsObjective && mb != introductoryObjective && mb != (MonoBehaviour)(object)this)
+                {
+                    if (repeatingObjectiveComponents == null) repeatingObjectiveComponents = new List<MonoBehaviour>();
+                    repeatingObjectiveComponents.Add(mb);
+                }
+            }
+        }
+
         if (repeatingObjectiveComponents != null)
         {
             foreach (MonoBehaviour mb in repeatingObjectiveComponents)
             {
-                if (mb is ISurvivorsObjective obj)
+                if (mb is ISurvivorsObjective obj && !objectivePool.Contains(obj))
                 {
                     objectivePool.Add(obj);
                 }
             }
         }
 
-        // If introductory objective is set, add to pool if missing or start directly
         if (introductoryObjective != null && !objectivePool.Contains(introductoryObjective))
         {
             objectivePool.Insert(0, introductoryObjective);
         }
-
-        StartInitialObjective();
     }
 
-    private void StartInitialObjective()
+    /// <summary>
+    /// Starts the objective for the specified wave. Wave 1 uses introductoryObjective if present,
+    /// otherwise an objective is picked randomly from the pool without consecutive repeats.
+    /// </summary>
+    public void StartWaveObjective(int waveNumber)
     {
+        InitializePool();
         isRunning = true;
-        currentWave = 1;
+        currentWave = waveNumber;
         currentPhase = SurvivorsObjectivePhase.Active;
         OnPhaseChanged?.Invoke(currentPhase);
 
-        if (introductoryObjective != null)
+        ISurvivorsObjective next = null;
+        if (waveNumber == 1 && introductoryObjective != null)
         {
-            SetActiveObjective(introductoryObjective);
-        }
-        else if (objectivePool.Count > 0)
-        {
-            SetActiveObjective(objectivePool[0]);
+            next = introductoryObjective;
+            lastObjectiveIndex = objectivePool.IndexOf(introductoryObjective);
         }
         else
         {
-            Debug.LogWarning("[SurvivorsObjectiveManager] No objectives configured in pool!");
+            next = PickNextRandomObjective();
         }
 
-        SurvivorsSpawner.Instance?.StartWave(currentWave);
-        OnWaveStarted?.Invoke(currentWave);
+        if (next != null)
+        {
+            SetActiveObjective(next);
+            OnWaveStarted?.Invoke(currentWave);
+        }
+        else
+        {
+            Debug.LogWarning("[SurvivorsObjectiveManager] No objective available in pool to start!");
+        }
+    }
+
+    /// <summary>
+    /// Randomly starts an objective from the pool without consecutive repeats.
+    /// </summary>
+    public void StartRandomObjective()
+    {
+        InitializePool();
+        isRunning = true;
+        currentPhase = SurvivorsObjectivePhase.Active;
+        OnPhaseChanged?.Invoke(currentPhase);
+
+        ISurvivorsObjective next = PickNextRandomObjective();
+        if (next != null)
+        {
+            SetActiveObjective(next);
+        }
+    }
+
+    /// <summary>
+    /// Updates the current objective phase and time remaining (e.g. for UI countdowns).
+    /// </summary>
+    public void SetPhase(SurvivorsObjectivePhase phase, float duration = 0f)
+    {
+        currentPhase = phase;
+        phaseTimer = duration;
+        OnPhaseChanged?.Invoke(currentPhase);
+    }
+
+    /// <summary>
+    /// Stops and cleans up the active objective.
+    /// </summary>
+    public void StopActiveObjective()
+    {
+        if (currentObjective != null)
+        {
+            currentObjective.OnProgressChanged -= HandleObjectiveProgress;
+            currentObjective.OnCompleted -= HandleObjectiveCompleted;
+            currentObjective.OnFailed -= HandleObjectiveFailed;
+            currentObjective.CleanupObjective();
+            currentObjective = null;
+        }
     }
 
     private void Update()
@@ -245,115 +316,20 @@ public class SurvivorsObjectiveManager : MonoBehaviour
 
         OnObjectiveCompleted?.Invoke(obj);
         OnWaveCleared?.Invoke(currentWave);
-
-        StartCoroutine(PostObjectiveCleanupAndIntermissionRoutine());
     }
 
     private void HandleObjectiveFailed(ISurvivorsObjective obj)
     {
         Debug.Log($"[SurvivorsObjectiveManager] Objective '{obj.Title}' Failed!");
-
         OnObjectiveFailed?.Invoke(obj);
-
-        StartCoroutine(PostObjectiveCleanupAndIntermissionRoutine());
     }
 
-    /// <summary>Stops and cleans up all rotating sub-objectives (e.g. when Siegebreaker arrives).</summary>
+    /// <summary>Stops and cleans up all rotating sub-objectives (e.g. when Siegebreaker arrives or game ends).</summary>
     public void StopAllObjectives()
     {
         StopAllCoroutines();
         isRunning = false;
-        SurvivorsSpawner.Instance?.StopSpawning();
-
-        if (currentObjective != null)
-        {
-            currentObjective.OnProgressChanged -= HandleObjectiveProgress;
-            currentObjective.OnCompleted -= HandleObjectiveCompleted;
-            currentObjective.OnFailed -= HandleObjectiveFailed;
-            currentObjective.CleanupObjective();
-            currentObjective = null;
-        }
-    }
-
-    private IEnumerator PostObjectiveCleanupAndIntermissionRoutine()
-    {
-        // 1. Stop active enemy spawning immediately
-        if (SurvivorsSpawner.Instance != null)
-        {
-            SurvivorsSpawner.Instance.StopSpawning();
-        }
-
-        // 2. Cleanup Phase: 30 seconds to kill remaining enemies
-        currentPhase = SurvivorsObjectivePhase.Cleanup;
-        phaseTimer = cleanupDuration;
-        OnPhaseChanged?.Invoke(currentPhase);
-
-        while (phaseTimer > 0f && isRunning)
-        {
-            if (SurvivorsGameManager.Instance == null || SurvivorsGameManager.Instance.IsGameActive)
-            {
-                phaseTimer -= Time.deltaTime;
-                OnPhaseTimeTick?.Invoke(currentPhase, phaseTimer);
-            }
-
-            // If all remaining enemies are slain early, we can advance
-            if (SurvivorsSpawner.Instance != null && SurvivorsSpawner.Instance.AliveCount <= 0)
-            {
-                break;
-            }
-
-            yield return null;
-        }
-
-        if (!isRunning) yield break;
-
-        // Despawn any remaining alive enemies so they disappear
-        if (SurvivorsSpawner.Instance != null)
-        {
-            SurvivorsSpawner.Instance.DespawnAllAliveEnemies();
-        }
-
-        // 3. Intermission Phase: 30 seconds before next wave spawns
-        currentPhase = SurvivorsObjectivePhase.Intermission;
-        phaseTimer = intermissionDuration;
-        OnPhaseChanged?.Invoke(currentPhase);
-
-        while (phaseTimer > 0f && isRunning)
-        {
-            if (SurvivorsGameManager.Instance == null || SurvivorsGameManager.Instance.IsGameActive)
-            {
-                phaseTimer -= Time.deltaTime;
-                OnPhaseTimeTick?.Invoke(currentPhase, phaseTimer);
-            }
-
-            yield return null;
-        }
-
-        if (!isRunning) yield break;
-
-        // Check if cutoff reached before boss arrives
-        if (SurvivorsGameManager.Instance != null && !SurvivorsGameManager.Instance.CanStartNewObjectives)
-        {
-            Debug.Log("[SurvivorsObjectiveManager] Objective cutoff reached (final countdown to Siegebreaker). No new sub-objectives will spawn.");
-            SetActiveObjective(null);
-            yield break;
-        }
-
-        // 4. Advance wave and start next objective
-        currentWave++;
-        ISurvivorsObjective next = PickNextRandomObjective();
-        currentPhase = SurvivorsObjectivePhase.Active;
-        OnPhaseChanged?.Invoke(currentPhase);
-
-        if (next != null)
-        {
-            SetActiveObjective(next);
-            if (SurvivorsSpawner.Instance != null)
-            {
-                SurvivorsSpawner.Instance.StartWave(currentWave);
-            }
-            OnWaveStarted?.Invoke(currentWave);
-        }
+        StopActiveObjective();
     }
 
     private ISurvivorsObjective PickNextRandomObjective()

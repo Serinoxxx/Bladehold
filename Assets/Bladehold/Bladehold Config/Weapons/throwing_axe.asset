@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd759c9d5c8d8484bb625376252eb764, type: 3}
+  m_Name: throwing_axe
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponDefinitionSO
+  id: throwing_axe
+  displayName: Throwing Axe
+  category: 1
+  isUnlockedByDefault: 0
+  orcishMetalUnlockCost: 10
+  isLockedForDemo: 0
+  description: Heavy throwing axe with lethal velocity.
+  chargeDescription: RMB Aim + LMB to hurl spinning axe.
+  icon: {fileID: 0}
+  modelPrefab: {fileID: 100000, guid: 39f02ad978519fc45b717fabe7e64836, type: 3}
+  chargeTimePerLevel: 0.35
+  attackCooldown: 0.5
+  animatorWeaponType: 0

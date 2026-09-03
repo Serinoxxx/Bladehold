@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33a9c0280e53ea943ad592b8acae510f, type: 3}
+  m_Name: SurvivorsRoundPacingConfig
+  m_EditorClassIdentifier: Assembly-CSharp::RoundPacingConfigSO
+  rounds:
+  - roundNumber: 1
+    allowedEnemyIds:
+    - goblin
+    - goblin_brute
+    requiredKillsPerWave: 15
+  - roundNumber: 2
+    allowedEnemyIds:
+    - goblin
+    - goblin_brute
+    - big_ork
+    requiredKillsPerWave: 20
+  - roundNumber: 3
+    allowedEnemyIds:
+    - goblin
+    - goblin_brute
+    - big_ork
+    - bubbler
+    requiredKillsPerWave: 25
+  - roundNumber: 4
+    allowedEnemyIds:
+    - goblin
+    - goblin_brute
+    - big_ork
+    - bubbler
+    - bomber
+    requiredKillsPerWave: 30
+  maxConcurrentEnemies: 20
+  spawnTelegraphDuration: 3
+  spawnStaggerInterval: 0.35
+  intermissionDuration: 30
+  wavesPerRound: 3
+  totalRounds: 4
+  bossEnemyId: slayer
+  bossSpawnWave: 10
+  indicatorPrefab: {fileID: 8882073100815552345, guid: d9eaf0d0868984c45b4645b78509446f, type: 3}
+  indicatorRadius: 0.2
+  weightTrollHeart: 15
+  weightOrcishMetal: 25
+  weightGoblinBlood: 30
+  weightGold: 20
+  weightInstantDraft: 10

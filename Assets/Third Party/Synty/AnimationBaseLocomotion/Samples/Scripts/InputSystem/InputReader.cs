@@ -48,6 +48,9 @@ namespace Synty.AnimationBaseLocomotion.Samples.InputSystem
         // Bladehold addition: draft-skills action (T / gamepad D-pad Down).
         public Action onDraftSkillsPerformed;
 
+        // Bladehold addition: interact action (E / gamepad West).
+        public Action onInteractPerformed;
+
         public bool IsAimPressed => _controls != null && _controls.Player.Aim.IsPressed();
         public bool IsAttackPressed => _controls != null && _controls.Player.Attack.IsPressed();
 
@@ -225,6 +228,16 @@ namespace Synty.AnimationBaseLocomotion.Samples.InputSystem
             }
 
             onDraftSkillsPerformed?.Invoke();
+        }
+
+        public void OnInteract(InputAction.CallbackContext context)
+        {
+            if (!context.performed)
+            {
+                return;
+            }
+
+            onInteractPerformed?.Invoke();
         }
     }
 }

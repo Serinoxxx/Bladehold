@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd759c9d5c8d8484bb625376252eb764, type: 3}
+  m_Name: sword
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponDefinitionSO
+  id: sword
+  displayName: Iron Longsword
+  category: 0
+  isUnlockedByDefault: 1
+  orcishMetalUnlockCost: 0
+  isLockedForDemo: 0
+  description: Balanced melee blade delivering rapid sweeps.
+  chargeDescription: Hold attack to charge a sweeping 3-stage slash.
+  icon: {fileID: 0}
+  modelPrefab: {fileID: 8785666567801047131, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
+  chargeTimePerLevel: 0.33
+  attackCooldown: 0.5
+  animatorWeaponType: 0

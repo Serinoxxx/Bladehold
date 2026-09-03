@@ -78,6 +78,9 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
     /// <summary>True once the "Throwing Axe" skill node has been bought; while false, aiming does nothing and melee works normally.</summary>
     public bool IsUnlocked => !anyError && stats.GetValue(StatType.AxeThrowUnlocked) >= 1f;
 
+    /// <summary>Set during the Axe Vortex ultimate to enable instant charge and multi-fan throws.</summary>
+    public bool IsVortexUltimateActive { get; set; } = false;
+
     /// <summary>True while the aim button is held and the throw is winding up.</summary>
     public bool IsAiming { get; private set; }
 
@@ -100,7 +103,7 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
     public float ChargeProgress => MaxChargeTime > 0f ? Mathf.Clamp01(CurrentChargeTime / MaxChargeTime) : 0f;
 
     /// <summary>Time in seconds required per charge level.</summary>
-    public float ChargeTimePerLevel => config != null ? config.chargeTimePerLevel : 0.33f;
+    public float ChargeTimePerLevel => IsVortexUltimateActive ? 0.05f : (config != null ? config.chargeTimePerLevel : 0.33f);
 
     /// <summary>Fraction of the post-throw cooldown elapsed: 0 the instant a throw fires, 1 when ready (the PlayerBow convention).</summary>
     public float CooldownFraction
@@ -440,7 +443,8 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
         {
             return;
         }
-        if (Time.time - lastThrowTime < config.throwCooldownSeconds)
+        float cd = IsVortexUltimateActive ? 0.12f : (config != null ? config.throwCooldownSeconds : 0.35f);
+        if (Time.time - lastThrowTime < cd)
         {
             return;
         }
@@ -486,8 +490,7 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
         float currentRatio = ChargeTimePerLevel > 0f ? (Time.time - chargeStartTime) / ChargeTimePerLevel : MaxChargeLevels;
         currentRatio = Mathf.Clamp(currentRatio, 0f, MaxChargeLevels);
 
-        AxeProjectile projectile = Instantiate(projectilePrefab, origin, Quaternion.LookRotation(direction));
-        projectile.Launch(this, new AxeProjectile.LaunchSpec
+        AxeProjectile.LaunchSpec launchSpec = new AxeProjectile.LaunchSpec
         {
             origin = origin,
             direction = direction,
@@ -507,7 +510,26 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
             // Wide Arc widens the damage sweep — scale the prop with it so the upgrade reads
             // visually (the SwordRange localScale convention).
             visualScale = width / Mathf.Max(0.05f, config.baseWidth),
-        });
+        };
+
+        AxeProjectile projectile = Instantiate(projectilePrefab, origin, Quaternion.LookRotation(direction));
+        projectile.Launch(this, launchSpec);
+
+        if (IsVortexUltimateActive)
+        {
+            // 3-way fan throw during ultimate!
+            Vector3 leftDir = Quaternion.Euler(0f, -15f, 0f) * direction;
+            AxeProjectile projL = Instantiate(projectilePrefab, origin, Quaternion.LookRotation(leftDir));
+            AxeProjectile.LaunchSpec specL = launchSpec;
+            specL.direction = leftDir;
+            projL.Launch(this, specL);
+
+            Vector3 rightDir = Quaternion.Euler(0f, 15f, 0f) * direction;
+            AxeProjectile projR = Instantiate(projectilePrefab, origin, Quaternion.LookRotation(rightDir));
+            AxeProjectile.LaunchSpec specR = launchSpec;
+            specR.direction = rightDir;
+            projR.Launch(this, specR);
+        }
     }
 
     /// <summary>

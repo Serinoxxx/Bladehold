@@ -11,7 +11,7 @@ Unity 6 game project, codenamed **Bladehold**. A 3D action game built on Unity's
 There is no command-line build script. Day-to-day work happens in the Unity Editor:
 
 - **Open the project**: open the project folder in Unity Hub with the matching Editor version.
-- **Play / run**: enter Play mode in the Editor. The actual gameplay scene is `Assets/Bladehold/Bladehold Scenes/Bladehold Test Scene.unity` (renamed/moved 2026-07-08 from the vendored Synty `Demo_01_Sidekick.unity` sample — same scene GUID, contains `WaveSpawner`, the Player prefab instance, HUD canvas, and baked NavMesh). `ProjectSettings/EditorBuildSettings.asset` still points at the old, now-deleted `Assets/Scenes/SampleScene.unity` and needs re-pointing at the new scene in File > Build Profiles.
+- **Play / run**: enter Play mode in the Editor. The main battle scene is `Assets/Bladehold/Bladehold Scenes/Bladehold Survivors Scene.unity` (which transitions to `Bladehold Rest Area Scene.unity` every 3 waves and `Bladehold Meta Area Scene.unity` on death). All three scenes are registered in `ProjectSettings/EditorBuildSettings.asset`.
 - **Build a player**: File > Build Profiles / Build Settings. URP renderers are pre-configured for two targets — `Assets/Settings/PC_Renderer.asset` and `Assets/Settings/Mobile_Renderer.asset`.
 - **Tests**: `com.unity.test-framework` is installed. Run via the Editor's **Test Runner** window (Window > General > Test Runner). There are no test assemblies in `Assets/` yet — a new one needs its own `.asmdef` to be picked up.
 
@@ -55,10 +55,15 @@ Gameplay centers on the player fighting waves of melee goblins. The design leans
 
 ### Subsystem index (what exists & where — grep the code for specifics)
 Big first-party systems, with an entry-point file each. Not exhaustive; the folder sections below cover most of these in depth (and some they don't).
-- **Player classes** (data-driven, reload-based switching): `Player/PlayerClassController.cs`, `Player/ClassDefinitionSO.cs`, `UI/ClassSelectPanel.cs`. Shipped classes: **Swordsman**, **Berserker**.
-- **Melee (sword)**: `Player/PlayerAttack.cs` + the `DamageSystem/` core (below).
-- **Ranged — bow** (Swordsman, hitscan + many skill lines): `Player/PlayerBow.cs`, `BowSO.cs`; shared aim skeleton `Player/AimWeaponResolver.cs` / `IChargedAimWeapon.cs`.
-- **Ranged — throwing axe** (Berserker, real projectile, pierce/boomerang): `Player/PlayerThrownAxe.cs`, `AxeProjectile.cs`, `ThrownAxeSO.cs`.
+- **Player loadout & weapons**: `Player/PlayerWeaponManager.cs`, `Player/WeaponDefinitionSO.cs`. Player equips 1 Melee (`sword` or `axe`) and 1 Ranged (`bow` or `throwing_axe`).
+- **Core game loop & pacing**: `Waves/GameLoopManager.cs`, `Waves/RoundPacingConfigSO.cs`, `Waves/SpawnIndicator.cs`. 4 rounds of 3 waves (12 waves), 20 max concurrent active enemies, 3s red ground telegraphs, dual clear condition (kill quota + random objective), and continuous spawn during wagon escort.
+- **Rest Area & Meta Area**: `Bladehold Rest Area Scene.unity` (The Well, The Shop, Draft Station, Return Gate) and `Bladehold Meta Area Scene.unity` (Spirit NPC, 3-tier perks, 3D weapon pedestals, Battle Portal).
+- **Universal interaction**: `Player/Interactable.cs`, `Player/PlayerInteraction.cs` (`[E]` key or gamepad west button).
+- **Economy**: In-run Gold (`RunSession.InRunGold`), Goblin Blood (`SaveData.goblinBlood`), Orcish Metal (`SaveData.orcishMetal`).
+- **Melee weapons**: `Player/PlayerAttack.cs` + the `DamageSystem/` core (below).
+- **Ranged — bow**: `Player/PlayerBow.cs`, `BowSO.cs`; shared aim skeleton `Player/AimWeaponResolver.cs` / `IChargedAimWeapon.cs`.
+- **Ranged — throwing axe**: `Player/PlayerThrownAxe.cs`, `AxeProjectile.cs`, `ThrownAxeSO.cs`.
+- **Destructible bubble shields**: `Enemies/BubbleShield.cs`, `BubbleShieldSO.cs`, `BubblerCaster.cs` (40 HP shield pool, 10s lockout).
 - **Mounts / horses** (player riding + mounted combat): `Player/PlayerMount.cs`, `Player/MountedCombat.cs`, `Horse/HorseMotor.cs`, `Horse/HorseMountable.cs`; mounted-knight enemy `Enemies/MountedKnightRider.cs`.
 - **Berserker mechanics**: `Player/RageBuff.cs`, `Player/PainIntoPower.cs`.
 - **Storm Witch** (an **enemy**, not a player caster): `Enemies/Storm Witch/…`, `Enemies/LightningStormAttack.cs`, `LightningBallAttack.cs`.

@@ -120,7 +120,8 @@ public class SupplyWagonEscort : MonoBehaviour
     public void InitializeDestination(Vector3 destination)
     {
         destinationPoint = destination;
-        if (agent.isOnNavMesh)
+        if (agent == null) agent = GetComponent<NavMeshAgent>();
+        if (agent != null && agent.isOnNavMesh)
         {
             agent.SetDestination(destinationPoint);
         }

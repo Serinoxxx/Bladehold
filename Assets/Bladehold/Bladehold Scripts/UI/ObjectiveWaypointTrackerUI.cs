@@ -117,6 +117,30 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
             objectiveManager.CurrentObjective.GetActiveWaypointTargets(targetBuffer);
         }
 
+        // Check for gate waypoint when round is finished and gate opens
+        if (GameLoopManager.Instance != null && GameLoopManager.Instance.IsRestGateOpen && GameLoopManager.Instance.CastleGateTransform != null)
+        {
+            targetBuffer.Add(new ObjectiveWaypointTarget(
+                GameLoopManager.Instance.CastleGateTransform,
+                worldOffset: new Vector3(0f, 2.5f, 0f),
+                customIcon: destinationGateIcon,
+                tintColor: new Color(0.2f, 0.85f, 1f, 1f),
+                label: "Return to Fortress"
+            ));
+        }
+
+        // Also check for between-wave active upgrade powerup in arena
+        if (GameLoopManager.Instance != null && GameLoopManager.Instance.ActivePowerup != null)
+        {
+            targetBuffer.Add(new ObjectiveWaypointTarget(
+                GameLoopManager.Instance.ActivePowerup.transform,
+                worldOffset: new Vector3(0f, 1.5f, 0f),
+                customIcon: defaultObjectiveIcon,
+                tintColor: new Color(1f, 0.85f, 0.2f, 1f),
+                label: $"{GameLoopManager.Instance.ActivePowerup.Category} Upgrade"
+            ));
+        }
+
         // Also check for endgame Siegebreaker boss
         var sgm = SurvivorsGameManager.Instance;
         if (sgm != null && sgm.HasSurvivedSiege && sgm.SpawnedSiegebreaker != null)

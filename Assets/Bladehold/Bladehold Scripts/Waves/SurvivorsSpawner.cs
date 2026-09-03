@@ -39,6 +39,12 @@ public class SurvivorsSpawner : MonoBehaviour
     [SerializeField] private EnemyPrefabMapSO prefabMap;
 
     [Header("Wave Spawner Settings")]
+    [Tooltip("Round pacing config asset containing round rosters, 20 max concurrent limit, 3s indicators, and drop weights.")]
+    [SerializeField] private RoundPacingConfigSO pacingConfig;
+
+    [Tooltip("Prefab spawned as the ground telegraph indicator.")]
+    [SerializeField] private GameObject spawnIndicatorPrefab;
+
     [Tooltip("Optional shared WaveConfigSO asset. If assigned, overrides inspector batch settings.")]
     [SerializeField] private WaveConfigSO config;
 
@@ -52,7 +58,7 @@ public class SurvivorsSpawner : MonoBehaviour
     [SerializeField] private float spawnInterval = 0.2f;
 
     [Tooltip("Maximum alive enemies permitted on field simultaneously.")]
-    [SerializeField] private int maxConcurrentEnemies = 50;
+    [SerializeField] private int maxConcurrentEnemies = 20;
 
     [Header("Audio")]
     [Tooltip("Battle horn sound played when a periodic group wave batch spawns.")]
@@ -90,14 +96,20 @@ public class SurvivorsSpawner : MonoBehaviour
     private PlayerStats stats;
     private int aliveCount;
     private int currentWave = 1;
+    private int totalToSpawnThisWave;
+    private int remainingToSpawn;
     private bool isSpawningActive = false;
     private Coroutine spawnLoopCoroutine;
     private bool isInitialized = false;
     private bool anyError = false;
 
+    public event Action OnWaveWiped;
+
     public int AliveCount => aliveCount;
     public int CurrentWave => currentWave;
-    public int MaxConcurrentEnemies => config != null && config.maxConcurrent > 0 ? config.maxConcurrent : (maxConcurrentEnemies > 0 ? maxConcurrentEnemies : 50);
+    public int RemainingToSpawn => remainingToSpawn;
+    public int TotalToSpawnThisWave => totalToSpawnThisWave;
+    public int MaxConcurrentEnemies => pacingConfig != null && pacingConfig.maxConcurrentEnemies > 0 ? pacingConfig.maxConcurrentEnemies : (config != null && config.maxConcurrent > 0 ? config.maxConcurrent : (maxConcurrentEnemies > 0 ? maxConcurrentEnemies : 20));
     public bool IsSpawningActive => isSpawningActive;
     public int MaxConcurrentShielders => maxConcurrentShielders;
 
@@ -188,8 +200,8 @@ public class SurvivorsSpawner : MonoBehaviour
     {
         InitializeIfNeeded();
 
-        // If not already active (e.g. if no SurvivorsObjectiveManager exists), start wave 1
-        if (!isSpawningActive)
+        // If not already active (e.g. if no GameLoopManager exists to drive waves), start wave 1
+        if (!isSpawningActive && GameLoopManager.Instance == null)
         {
             StartWave(1);
         }
@@ -204,14 +216,31 @@ public class SurvivorsSpawner : MonoBehaviour
     }
 
     /// <summary>
-    ///     Begins wave spawning for the given wave number.
+    ///     Begins wave spawning for the given wave number with an optional enemy quota.
     /// </summary>
-    public void StartWave(int waveNumber)
+    public void StartWave(int waveNumber, int enemyCount = 0)
     {
         InitializeIfNeeded();
         if (anyError) return;
 
         currentWave = Mathf.Max(1, waveNumber);
+
+        if (enemyCount > 0)
+        {
+            totalToSpawnThisWave = enemyCount;
+        }
+        else if (pacingConfig != null)
+        {
+            int round = RunSession.CurrentRound > 0 ? RunSession.CurrentRound : 1;
+            RoundPacingConfigSO.RoundDefinition roundDef = pacingConfig.GetRound(round);
+            totalToSpawnThisWave = roundDef != null ? roundDef.requiredKillsPerWave : (15 + (round - 1) * 5);
+        }
+        else
+        {
+            totalToSpawnThisWave = 15 + (currentWave - 1) * 5;
+        }
+
+        remainingToSpawn = totalToSpawnThisWave;
         isSpawningActive = true;
 
         if (spawnLoopCoroutine != null)
@@ -219,7 +248,7 @@ public class SurvivorsSpawner : MonoBehaviour
             StopCoroutine(spawnLoopCoroutine);
         }
         spawnLoopCoroutine = StartCoroutine(SpawnLoop());
-        Debug.Log($"[SurvivorsSpawner] StartWave {currentWave} started. (spawnBatchSize={spawnBatchSize}, maxConcurrent={MaxConcurrentEnemies})");
+        Debug.Log($"[SurvivorsSpawner] StartWave {currentWave} started. (quota={totalToSpawnThisWave}, spawnBatchSize={spawnBatchSize}, maxConcurrent={MaxConcurrentEnemies})");
     }
 
     /// <summary>
@@ -261,7 +290,7 @@ public class SurvivorsSpawner : MonoBehaviour
 
     private IEnumerator SpawnLoop()
     {
-        while (isSpawningActive)
+        while (isSpawningActive && remainingToSpawn > 0)
         {
             if (SurvivorsGameManager.Instance != null && !SurvivorsGameManager.Instance.IsGameActive)
             {
@@ -274,23 +303,25 @@ public class SurvivorsSpawner : MonoBehaviour
             float effectiveSpawnInterval = config != null && config.spawnInterval > 0f ? config.spawnInterval : (spawnInterval > 0f ? spawnInterval : 0.2f);
             int effectiveMaxConcurrent = config != null && config.maxConcurrent > 0 ? config.maxConcurrent : (maxConcurrentEnemies > 0 ? maxConcurrentEnemies : 50);
 
-            if (aliveCount < effectiveMaxConcurrent)
+            if (aliveCount < effectiveMaxConcurrent && remainingToSpawn > 0)
             {
                 int batchTarget = Mathf.Min(effectiveBatchSize, effectiveMaxConcurrent - aliveCount);
+                batchTarget = Mathf.Min(batchTarget, remainingToSpawn);
 
                 if (batchTarget > 0)
                 {
                     PlayGroupSpawnHorn();
 
-                    for (int i = 0; i < batchTarget && isSpawningActive; i++)
+                    for (int i = 0; i < batchTarget && isSpawningActive && remainingToSpawn > 0; i++)
                     {
                         while (SurvivorsGameManager.Instance != null && !SurvivorsGameManager.Instance.IsGameActive)
                         {
                             yield return null;
                         }
 
-                        if (!isSpawningActive) break;
+                        if (!isSpawningActive || remainingToSpawn <= 0) break;
 
+                        remainingToSpawn--;
                         SpawnEnemyForWave(currentWave);
 
                         if (effectiveSpawnInterval > 0f && i < batchTarget - 1)
@@ -300,11 +331,11 @@ public class SurvivorsSpawner : MonoBehaviour
                     }
                 }
 
-                if (!isSpawningActive) yield break;
+                if (!isSpawningActive || remainingToSpawn <= 0) yield break;
 
                 // Wait for batch interval
                 float timer = 0f;
-                while (timer < effectiveBatchInterval && isSpawningActive)
+                while (timer < effectiveBatchInterval && isSpawningActive && remainingToSpawn > 0)
                 {
                     if (SurvivorsGameManager.Instance == null || SurvivorsGameManager.Instance.IsGameActive)
                     {
@@ -383,39 +414,68 @@ public class SurvivorsSpawner : MonoBehaviour
         }
 
         Vector3 spawnPos = ResolveSpawnPosition();
-        GameObject enemy = Instantiate(selectedType.prefab, spawnPos, Quaternion.identity);
+        float indicatorDuration = pacingConfig != null ? pacingConfig.spawnTelegraphDuration : 3.0f;
+        GameObject indPrefab = (pacingConfig != null && pacingConfig.indicatorPrefab != null) ? pacingConfig.indicatorPrefab : spawnIndicatorPrefab;
 
-        // Apply roster stat overrides
-        WaveSpawner.ApplyDefinition(enemy, selectedType.def);
-
-        if (stats != null)
+        aliveCount++; // Reserve slot during telegraph
+        SpawnIndicator.Create(spawnPos, indicatorDuration, indPrefab, () =>
         {
-            float impulseChance = stats.GetValue(StatType.ImpulseGoblinChance);
-            if (impulseChance > 0f && UnityEngine.Random.value < impulseChance)
+            if (!isSpawningActive || this == null)
             {
-                enemy.GetComponent<ImpulseGoblin>()?.MarkImpulse();
-            }
-        }
-
-        Health health = enemy.GetComponent<Health>();
-        if (health != null)
-        {
-            aliveCount++;
-            selectedType.alive++;
-            selectedType.aliveInstances.Add(health);
-            aliveEnemies.Add(health);
-
-            Action handler = null;
-            handler = () =>
-            {
-                health.OnDied -= handler;
-                aliveEnemies.Remove(health);
-                selectedType.aliveInstances.Remove(health);
-                selectedType.alive = Mathf.Max(0, selectedType.alive - 1);
                 aliveCount = Mathf.Max(0, aliveCount - 1);
-            };
-            health.OnDied += handler;
-        }
+                return;
+            }
+
+            GameObject enemy = Instantiate(selectedType.prefab, spawnPos, Quaternion.identity);
+
+            // Apply roster stat overrides
+            WaveSpawner.ApplyDefinition(enemy, selectedType.def);
+
+            if (stats != null)
+            {
+                float impulseChance = stats.GetValue(StatType.ImpulseGoblinChance);
+                if (impulseChance > 0f && UnityEngine.Random.value < impulseChance)
+                {
+                    enemy.GetComponent<ImpulseGoblin>()?.MarkImpulse();
+                }
+            }
+
+            Health health = enemy.GetComponent<Health>();
+            if (health != null)
+            {
+                selectedType.alive++;
+                selectedType.aliveInstances.Add(health);
+                aliveEnemies.Add(health);
+
+                Action handler = null;
+                handler = () =>
+                {
+                    health.OnDied -= handler;
+                    aliveEnemies.Remove(health);
+                    selectedType.aliveInstances.Remove(health);
+                    selectedType.alive = Mathf.Max(0, selectedType.alive - 1);
+                    aliveCount = Mathf.Max(0, aliveCount - 1);
+
+                    GameLoopManager.Instance?.OnEnemyKilled(health);
+
+                    if (remainingToSpawn <= 0 && aliveCount <= 0 && isSpawningActive)
+                    {
+                        StopSpawning();
+                        OnWaveWiped?.Invoke();
+                    }
+                };
+                health.OnDied += handler;
+            }
+            else
+            {
+                aliveCount = Mathf.Max(0, aliveCount - 1);
+                if (remainingToSpawn <= 0 && aliveCount <= 0 && isSpawningActive)
+                {
+                    StopSpawning();
+                    OnWaveWiped?.Invoke();
+                }
+            }
+        });
     }
 
     private static bool CheckIfShielder(EnemyDefinition def, GameObject prefab)
@@ -448,10 +508,19 @@ public class SurvivorsSpawner : MonoBehaviour
     {
         List<SpawnType> eligible = new List<SpawnType>();
 
+        int currentRound = RunSession.CurrentRound;
+        RoundPacingConfigSO.RoundDefinition roundDef = pacingConfig != null ? pacingConfig.GetRound(currentRound) : null;
+        string[] allowed = roundDef != null ? roundDef.allowedEnemyIds : null;
+
         foreach (SpawnType type in spawnTypes)
         {
             if (type.def.enabled && waveNumber >= type.def.unlockWave)
             {
+                if (allowed != null && allowed.Length > 0 && Array.IndexOf(allowed, type.def.id) < 0)
+                {
+                    continue;
+                }
+
                 int currentAlive = type.AliveCount;
 
                 // Shielders (bubblers) are strictly capped at maxConcurrentShielders

@@ -66,45 +66,13 @@ public class SurvivorsLevelUpPromptUI : MonoBehaviour
     {
         yield return null;
 
-        if (Player.Instance != null)
-        {
-            if (inputReader == null)
-            {
-                inputReader = Player.Instance.GetComponentInChildren<InputReader>();
-            }
-
-            playerInput = Player.Instance.GetComponent<PlayerInput>();
-            if (playerInput != null)
-            {
-                playerInput.onControlsChanged += OnControlsChanged;
-                UpdateKeybindIcons(playerInput.currentControlScheme);
-            }
-        }
-
-        if (inputReader != null)
-        {
-            inputReader.onDraftSkillsPerformed -= HandleDraftInput;
-            inputReader.onDraftSkillsPerformed += HandleDraftInput;
-        }
-
-        if (SurvivorsLevelSystem.Instance != null)
-        {
-            SurvivorsLevelSystem.Instance.OnPendingDraftsChanged -= HandlePendingDraftsChanged;
-            SurvivorsLevelSystem.Instance.OnPendingDraftsChanged += HandlePendingDraftsChanged;
-            HandlePendingDraftsChanged(SurvivorsLevelSystem.Instance.PendingDrafts);
-        }
-        else
-        {
-            SetPromptVisible(false);
-        }
+        // Legacy Level-Up Draft System: Disabled in favor of between-wave arena upgrade powerups.
+        SetPromptVisible(false);
     }
 
     private void OnEnable()
     {
-        if (SurvivorsLevelSystem.Instance != null)
-        {
-            HandlePendingDraftsChanged(SurvivorsLevelSystem.Instance.PendingDrafts);
-        }
+        SetPromptVisible(false);
     }
 
     private void OnDestroy()
@@ -132,41 +100,8 @@ public class SurvivorsLevelUpPromptUI : MonoBehaviour
 
     private void Update()
     {
-        if (SurvivorsLevelSystem.Instance == null) return;
-
-        int pending = SurvivorsLevelSystem.Instance.PendingDrafts;
-        bool shouldBeVisible = pending > 0;
-
-        // Ensure visibility state stays synced
-        if (canvasGroup != null)
-        {
-            bool isVis = canvasGroup.alpha > 0.01f;
-            if (isVis != shouldBeVisible)
-            {
-                SetPromptVisible(shouldBeVisible);
-                if (shouldBeVisible && promptLabel != null)
-                {
-                    promptLabel.text = pending > 1 ? $"New skills available (x{pending})" : "New skills available";
-                }
-            }
-        }
-        else if (contentContainer != null && contentContainer.activeSelf != shouldBeVisible)
-        {
-            SetPromptVisible(shouldBeVisible);
-        }
-
-        // Direct input polling fallback
-        if (shouldBeVisible && !CursorLockManager.IsCursorUnlocked)
-        {
-            if (Keyboard.current != null && Keyboard.current.tKey.wasPressedThisFrame)
-            {
-                HandleDraftInput();
-            }
-            else if (Gamepad.current != null && Gamepad.current.dpad.down.wasPressedThisFrame)
-            {
-                HandleDraftInput();
-            }
-        }
+        // Legacy Level-Up Draft System: Disabled in favor of between-wave arena upgrade powerups.
+        return;
     }
 
     private void OnControlsChanged(PlayerInput input)
@@ -221,18 +156,7 @@ public class SurvivorsLevelUpPromptUI : MonoBehaviour
 
     private void HandleDraftInput()
     {
-        if (SurvivorsLevelSystem.Instance == null || SurvivorsLevelSystem.Instance.PendingDrafts <= 0)
-        {
-            return;
-        }
-
-        if (SurvivorsCardSelectUI.Instance != null)
-        {
-            SurvivorsCardSelectUI.Instance.OpenDraft();
-        }
-        else
-        {
-            Debug.LogWarning("[SurvivorsLevelUpPromptUI] SurvivorsCardSelectUI.Instance is not available.");
-        }
+        // Legacy Level-Up Draft System: Disabled in favor of between-wave arena upgrade powerups.
+        return;
     }
 }

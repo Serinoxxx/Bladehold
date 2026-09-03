@@ -34,16 +34,63 @@ public class SurvivorsCardSelector : MonoBehaviour
     [SerializeField] private int maxActiveWeapons = 4;
 
     private readonly HashSet<string> banishedNodeIds = new HashSet<string>();
+    public HashSet<string> BanishedNodeIds => banishedNodeIds;
 
     private SkillTreeService TreeService => SkillTreeService.Instance != null ? SkillTreeService.Instance : UnityEngine.Object.FindAnyObjectByType<SkillTreeService>();
 
     /// <summary>
-    ///     Evaluates available skill tree nodes and returns up to <paramref name="count"/> candidate skill cards.
-    ///     A node is eligible if it is marked as a card (isCard), not banished, unlocked/revealed by dependency rules,
-    ///     not maxed, and does not violate the active weapon slot limit.
+    ///     Classifies a skill tree node into a DraftCategory (Fortress, Elemental, or Weapon).
     /// </summary>
-    public List<SkillNode> GetRandomSkillCards(int count = 3, List<SkillNode> excludeList = null)
+    public static DraftCategory GetNodeCategory(SkillNode node)
     {
+        if (node == null || string.IsNullOrEmpty(node.id)) return DraftCategory.Weapon;
+
+        string id = node.id.ToLowerInvariant();
+
+        if (id.StartsWith("fort_") || id.Contains("barricade") || id.Contains("gate"))
+        {
+            return DraftCategory.Fortress;
+        }
+
+        if (id.StartsWith("imbue_") || id.Contains("flame") || id.Contains("freeze") || id.Contains("ice") || id.Contains("lightning") || id.Contains("fire") || id == "imbue_impulse")
+        {
+            return DraftCategory.Elemental;
+        }
+
+        return DraftCategory.Weapon;
+    }
+
+    /// <summary>
+    ///     Evaluates available skill cards and returns up to <paramref name="count"/> candidate cards.
+    ///     Prioritizes the dedicated DraftUpgradeService (DraftUpgrades.csv).
+    /// </summary>
+    public List<SkillNode> GetRandomSkillCards(int count = 3, List<SkillNode> excludeList = null, DraftCategory? category = null)
+    {
+        DraftUpgradeService draftService = DraftUpgradeService.GetOrCreateInstance();
+        if (draftService != null && draftService.AllDefinitions.Count > 0)
+        {
+            DraftCategory cat = category.HasValue ? category.Value : DraftCategory.Weapon;
+            HashSet<string> excludeIds = new HashSet<string>(banishedNodeIds);
+            if (excludeList != null)
+            {
+                foreach (var ex in excludeList)
+                {
+                    if (ex != null && !string.IsNullOrEmpty(ex.id)) excludeIds.Add(ex.id);
+                }
+            }
+
+            List<DraftUpgradeDefinition> draftCandidates = draftService.GetCandidateUpgrades(cat, count, excludeIds);
+            if (draftCandidates != null && draftCandidates.Count > 0)
+            {
+                List<SkillNode> resultNodes = new List<SkillNode>();
+                foreach (var def in draftCandidates)
+                {
+                    resultNodes.Add(draftService.ConvertToSkillNode(def));
+                }
+                return resultNodes;
+            }
+        }
+
         List<SkillNode> candidates = new List<SkillNode>();
         SkillTreeService service = TreeService;
 
@@ -88,14 +135,46 @@ public class SurvivorsCardSelector : MonoBehaviour
             }
         }
 
-        // Shuffle candidates using Fisher-Yates shuffle
-        for (int i = candidates.Count - 1; i > 0; i--)
+        // Apply category filter if requested
+        if (category.HasValue)
         {
-            int randomIndex = Random.Range(0, i + 1);
-            SkillNode temp = candidates[i];
-            candidates[i] = candidates[randomIndex];
-            candidates[randomIndex] = temp;
+            List<SkillNode> categoryMatches = new List<SkillNode>();
+            List<SkillNode> fallbackCandidates = new List<SkillNode>();
+
+            foreach (SkillNode node in candidates)
+            {
+                if (GetNodeCategory(node) == category.Value)
+                {
+                    categoryMatches.Add(node);
+                }
+                else
+                {
+                    fallbackCandidates.Add(node);
+                }
+            }
+
+            // If we don't have enough matching cards in this category, backfill with fallbacks
+            ShuffleList(categoryMatches);
+            ShuffleList(fallbackCandidates);
+
+            List<SkillNode> result = new List<SkillNode>(categoryMatches);
+            if (result.Count < count)
+            {
+                int needed = count - result.Count;
+                int toAdd = Mathf.Min(needed, fallbackCandidates.Count);
+                result.AddRange(fallbackCandidates.GetRange(0, toAdd));
+            }
+
+            if (result.Count > count)
+            {
+                result = result.GetRange(0, count);
+            }
+
+            return result;
         }
+
+        // Shuffle candidates using Fisher-Yates shuffle
+        ShuffleList(candidates);
 
         // Return up to 'count' cards
         if (candidates.Count > count)
@@ -106,12 +185,23 @@ public class SurvivorsCardSelector : MonoBehaviour
         return candidates;
     }
 
+    private void ShuffleList<T>(List<T> list)
+    {
+        for (int i = list.Count - 1; i > 0; i--)
+        {
+            int randomIndex = Random.Range(0, i + 1);
+            T temp = list[i];
+            list[i] = list[randomIndex];
+            list[randomIndex] = temp;
+        }
+    }
+
     /// <summary>
     ///     Fetches a single replacement card that is eligible and not currently displayed.
     /// </summary>
-    public SkillNode GetSingleReplacementCard(List<SkillNode> currentOffered)
+    public SkillNode GetSingleReplacementCard(List<SkillNode> currentOffered, DraftCategory? category = null)
     {
-        List<SkillNode> choices = GetRandomSkillCards(1, currentOffered);
+        List<SkillNode> choices = GetRandomSkillCards(1, currentOffered, category);
         return choices.Count > 0 ? choices[0] : null;
     }
 
@@ -191,11 +281,21 @@ public class SurvivorsCardSelector : MonoBehaviour
         if (node == null) return false;
 
         bool success = false;
-        SkillTreeService service = TreeService;
-        if (service != null)
+        DraftUpgradeService draftService = DraftUpgradeService.GetOrCreateInstance();
+        DraftUpgradeDefinition draftDef = draftService != null ? draftService.GetById(node.id) : null;
+
+        if (draftDef != null)
         {
-            success = service.ApplyFreePurchase(node.id);
-            Debug.Log($"[SurvivorsCardSelector] Selected card: '{node.displayName}' (ID: {node.id}). Granted level {service.GetLevel(node)}.");
+            success = draftService.ApplyUpgrade(draftDef);
+        }
+        else
+        {
+            SkillTreeService service = TreeService;
+            if (service != null)
+            {
+                success = service.ApplyFreePurchase(node.id);
+                Debug.Log($"[SurvivorsCardSelector] Selected card: '{node.displayName}' (ID: {node.id}). Granted level {service.GetLevel(node)}.");
+            }
         }
 
         if (FortDefenseManager.Instance != null)

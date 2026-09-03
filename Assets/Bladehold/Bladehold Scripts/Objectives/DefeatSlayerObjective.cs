@@ -175,7 +175,8 @@ public class DefeatSlayerObjective : MonoBehaviour, ISurvivorsObjective
 
         if (spawnedSlayer != null && (slayerHealth == null || !slayerHealth.IsDead))
         {
-            Destroy(spawnedSlayer);
+            if (Application.isPlaying) Destroy(spawnedSlayer);
+            else DestroyImmediate(spawnedSlayer);
         }
 
         if (BossHealthBarUI.Instance != null)

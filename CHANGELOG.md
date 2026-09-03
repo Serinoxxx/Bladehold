@@ -3,13 +3,46 @@
 ## [0.1.19] - 2026-09-03
 
 ### New Features
+- Overhauled core game loop into 4 rounds of 3 waves with progressive enemy unlocks (Round 1: Goblins & Brutes, Round 2: Big Orks, Round 3: Bubblers, Round 4: Bombers + Slayer Boss)
+- Added dedicated Rest Area scene between rounds (Waves 3, 6, 9) featuring the Well (+20 HP), Merchant Shop, Upgrade Draft station, and Return Gate
+- Added dedicated Meta Progression Area scene upon defeat featuring the Spirit NPC and diegetic 3D weapon pedestals
+- Added universal interaction framework using the 'E' key and gamepad for all world stations, pedestals, and gates
+- Added flexible weapon loadout system allowing switching between 1 Melee weapon (Sword or Axe) and 1 Ranged weapon (Bow or Throwing Axe)
+- Added 3-second ground warning telegraph indicators before enemies spawn and capped active enemies to 20
+- Added destructible Bubble Shields with health pools and a 10-second re-shield cooldown when broken
+- Added wave-end drop rewards (Troll Hearts, Orcish Metal, Goblin Blood, In-Run Gold, and Instant Upgrade Drafts) with 30-second intermissions
+- Added passive Training Dummy Goblin to Rest Area and Meta Progression Area with 1000 HP, floating health display, 10-second idle reset, and poof VFX at origin and destination
+- Added modular UI prefabs for the interaction prompt and rest area shop modal styled with the dark fantasy parchment aesthetic
+- Added MoreMountains Feel feedbacks for Rest Area shop cards: horizontal card shake, red flash, and error sound on invalid buy attempts; spring scale bounce, coins audio, and smooth card disappearance on successful purchase
+- Added arena upgrade powerups dropping between waves that open a 3-card draft for Weapon, Elemental, or Fortress upgrades
+- Added 'Return to the Fortress' objective with a gate waypoint marker upon clearing all 3 waves of a round
+- Added dedicated Draft Upgrades CSV (`DraftUpgrades.csv`) and `DraftUpgradeService` providing targeted weapon upgrades, elemental skill paths, and fortress enhancements
+- Added dedicated Weapon Ultimates: Warhorse Cavalry Charge for Sword (`SwordMountUltimate`) and Axe Vortex bloodstorm cyclone for Throwing Axe (`ThrowingAxeUltimate`) with rapid 3-way fan throws
+- Added category-themed lighting, emission, and interaction prompt feedback to arena powerups and the Rest Area Draft Station (Orange for Weapon, Cyan for Elemental, Golden Amber for Fortress)
 
 ### Fixes
 - Fixed player character getting stuck in air and unable to move when dismounting or after horse death mid-air
+- Fixed interaction prompt persisting indefinitely on screen after moving away from world interactables
+- Fixed inability to interact with the Merchant Shop by dynamically tracking character movement and expanding the shop stall interaction radius
+- Fixed missing EventSystem in Rest Area and Meta Area scenes preventing UI button clicks and modal inputs
+- Fixed enemies continuing to spawn during wave intermissions by strictly halting spawning when the wave quota is wiped
+- Fixed character upgrades and drafted in-run skills resetting when transitioning between the Battle Scene and Rest Area Scene
+- Fixed permanent meta perks (`backstab`, `executioner`, `second_wind`, `agility`) not functioning in gameplay
+- Fixed Rest Area Draft Station failing to open card drafts due to missing scene managers
 
 ### Balance Changes
+- Enforced continuous enemy spawning during wagon escort objectives until the wagon reaches the destination
+- Introduced three-tier currency economy: In-Run Gold (temporary for rest shop), Goblin Blood (permanent for perks), and Orcish Metal (permanent for weapon/tier unlocks)
+- Capped maximum concurrent active enemies on the field to 20
+- Unlocked Dash and Bow by default from wave 1 without requiring skill purchases
+- Enforced weapon ultimate exclusivity permitting at most one active ultimate ability per run
 
 ### General Changes
+- Added Bladehold Rest Area Scene and Bladehold Meta Area Scene to project build settings
+- Preserved player health ratio, Troll Heart bonus health, and in-run upgrade tiers across scene transitions
+- Integrated Bladehold HUD, Pause Menu, and Settings Canvas across the Survivors battle scene, Rest Area, and Meta Area scenes
+- Disabled legacy level-up keybind prompt in favor of between-wave arena upgrade powerup drops
+- Supported both Space and Left Ctrl keys for triggering player Dash/Dodge
 
 ---
 
