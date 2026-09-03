@@ -1,5 +1,18 @@
 # Bladehold - Changelog
 
+## [0.1.19] - 2026-09-03
+
+### New Features
+
+### Fixes
+- Fixed player character getting stuck in air and unable to move when dismounting or after horse death mid-air
+
+### Balance Changes
+
+### General Changes
+
+---
+
 ## [0.1.14] - 2026-08-30
 
 ### New Features

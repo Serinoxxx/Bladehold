@@ -482,6 +482,7 @@ public class PlayerMount : MonoBehaviour
         transform.localScale = originalLocalScale;
         transform.position = ResolveDismountPosition(horse);
         transform.rotation = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
+        Physics.SyncTransforms();
 
         if (hasIsMountedParam)
         {
@@ -496,9 +497,18 @@ public class PlayerMount : MonoBehaviour
             animator.SetFloat(horseSpeedHash, 0f);
         }
 
-        if (!health.IsDead)
+        if (health == null || !health.IsDead)
         {
-            characterController.enabled = true;
+            if (characterController == null)
+            {
+                characterController = GetComponent<CharacterController>();
+            }
+            if (characterController != null)
+            {
+                characterController.enabled = true;
+                Physics.SyncTransforms();
+            }
+
             foreach (MonoBehaviour component in componentsToDisableWhileMounted)
             {
                 if (component != null)
@@ -520,7 +530,7 @@ public class PlayerMount : MonoBehaviour
         OnMountedChanged?.Invoke(false);
     }
 
-    /// <summary>Lands beside the horse, trying the off side / behind when the preferred side is blocked.</summary>
+    /// <summary>Lands beside the horse at its current height, trying the off side / behind when the preferred side is blocked, then falls naturally.</summary>
     private Vector3 ResolveDismountPosition(HorseMotor horse)
     {
         Vector3 offset = horse.DismountLocalOffset;
@@ -534,21 +544,14 @@ public class PlayerMount : MonoBehaviour
             horse.transform.TransformPoint(new Vector3(0f, offset.y, Mathf.Max(2f, Mathf.Abs(offset.x)))),
         };
 
-        // Ground layers: Default and Environment (excluding Player, Enemy, Ragdoll, Ignore Raycast)
-        int groundMask = (1 << LayerMask.NameToLayer("Default")) | (1 << LayerMask.NameToLayer("Environment"));
+        // Layers considered obstacles: Default, Environment, Enemy (excluding Player, Ragdoll, Ignore Raycast)
         int enemyOrObstacleMask = ~((1 << LayerMask.NameToLayer("Player")) | (1 << LayerMask.NameToLayer("Ragdoll")) | (1 << LayerMask.NameToLayer("Ignore Raycast")));
 
         float radius = characterController.radius;
         float height = Mathf.Max(characterController.height, radius * 2f);
 
-        foreach (Vector3 candidatePos in candidates)
+        foreach (Vector3 candidate in candidates)
         {
-            Vector3 candidate = candidatePos;
-            if (Physics.Raycast(candidate + Vector3.up * 2f, Vector3.down, out RaycastHit groundHit, 5f, groundMask, QueryTriggerInteraction.Ignore))
-            {
-                candidate.y = groundHit.point.y;
-            }
-
             // Check if this landing spot is clear of obstacles/enemies
             Vector3 bottom = candidate + Vector3.up * (radius + 0.1f);
             Vector3 top = candidate + Vector3.up * Mathf.Max(height - radius, radius + 0.2f);
@@ -558,12 +561,7 @@ public class PlayerMount : MonoBehaviour
             }
         }
 
-        Vector3 fallback = candidates[0];
-        if (Physics.Raycast(fallback + Vector3.up * 2f, Vector3.down, out RaycastHit fallbackHit, 5f, groundMask, QueryTriggerInteraction.Ignore))
-        {
-            fallback.y = fallbackHit.point.y;
-        }
-        return fallback;
+        return candidates[0];
     }
 
     private void HandleHorseDied()

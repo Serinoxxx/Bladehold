@@ -360,6 +360,10 @@ namespace Synty.AnimationBaseLocomotion.Samples
         private void OnEnable()
         {
             if (!_hasInitialized) return;
+            if (_controller != null && !_controller.enabled)
+            {
+                _controller.enabled = true;
+            }
             _velocity = Vector3.zero;
             if (_animator != null)
             {
@@ -799,6 +803,16 @@ namespace Synty.AnimationBaseLocomotion.Samples
         /// </summary>
         private void Move()
         {
+            if (_controller == null || !_controller.gameObject.activeInHierarchy)
+            {
+                return;
+            }
+
+            if (!_controller.enabled)
+            {
+                _controller.enabled = true;
+            }
+
             _controller.Move(_velocity * Time.deltaTime);
 
             if (_isLockedOn)
