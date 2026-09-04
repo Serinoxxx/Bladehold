@@ -18,8 +18,15 @@ public class GameLoopManager : MonoBehaviour
     [Header("Configurations")]
     [Tooltip("Round pacing config asset containing round rosters, 20 max concurrent limit, 3s indicators, and drop weights.")]
     [SerializeField] private RoundPacingConfigSO pacingConfig;
+    [SerializeField] private WarBannerConfigSO bannerConfig;
+    [SerializeField] private GameObject warBannerPrefab;
+    [SerializeField] private Transform[] bannerSpawnPoints;
 
-    [Header("Scene References")]
+    public BannerBuffType CurrentWaveBuff { get; private set; } = BannerBuffType.None;
+    public BannerBountyType CurrentWaveBounty { get; private set; } = BannerBountyType.None;
+    private List<WarBannerController> activeBanners = new List<WarBannerController>();
+
+    [Header("UI Dependencies")]
     [SerializeField] private SurvivorsSpawner spawner;
     [SerializeField] private Interactable castleGateInteractable;
     [SerializeField] private SurvivorsObjectiveManager objectiveManager;
@@ -131,8 +138,10 @@ public class GameLoopManager : MonoBehaviour
             spawner.OnWaveWiped += HandleSpawnerWaveWiped;
         }
 
-        // Start active wave
-        StartWave(RunSession.CurrentWave > 0 ? RunSession.CurrentWave : 1);
+        // Initialize first wave
+        int initialWave = RunSession.CurrentWave > 0 ? RunSession.CurrentWave : 1;
+        RunSession.CurrentWave = initialWave;
+        CheckAndSpawnBanners(initialWave);
     }
 
     private void OnDestroy()
@@ -346,16 +355,20 @@ public class GameLoopManager : MonoBehaviour
         }
         else
         {
-            // Intermediate wave: Stop enemy spawns, award drops, and drop arena upgrade powerup!
+            // Intermediate wave: Stop enemy spawns, grant bounty, and spawn next banners
             if (spawner != null)
             {
                 spawner.StopSpawning();
             }
 
-            string rewardName = AwardRandomDropReward();
-            OnWaveCleared?.Invoke(clearedWave, rewardName);
+            GrantBounty();
+            OnWaveCleared?.Invoke(clearedWave, "Wave Cleared");
+            
+            CurrentWaveBuff = BannerBuffType.None;
+            CurrentWaveBounty = BannerBountyType.None;
 
-            StartCoroutine(BetweenWaveUpgradeRoutine(rewardName));
+            // Wait a moment before spawning banners for the next wave
+            StartCoroutine(TransitionToNextBannersRoutine());
         }
 
         // Check for stage victory: survived all 4 rounds (Wave 12)
@@ -366,64 +379,57 @@ public class GameLoopManager : MonoBehaviour
         }
     }
 
-    private string AwardRandomDropReward()
+    private void GrantBounty()
     {
-        int weightHeart = pacingConfig != null ? pacingConfig.weightTrollHeart : 15;
-        int weightMetal = pacingConfig != null ? pacingConfig.weightOrcishMetal : 25;
-        int weightBlood = pacingConfig != null ? pacingConfig.weightGoblinBlood : 30;
-        int weightGold = pacingConfig != null ? pacingConfig.weightGold : 20;
-        int weightDraft = pacingConfig != null ? pacingConfig.weightInstantDraft : 10;
+        string rewardDesc = "Bounty Claimed";
 
-        int totalWeight = weightHeart + weightMetal + weightBlood + weightGold + weightDraft;
-        int roll = UnityEngine.Random.Range(0, totalWeight);
-
-        string rewardDesc = "Reward";
-
-        if (roll < weightHeart)
+        switch (CurrentWaveBounty)
         {
-            RunSession.PlayerBonusMaxHealth += 25f;
-            if (Player.Instance != null && Player.Instance.Health != null)
-            {
-                Player.Instance.Health.SetMaxHealth(Player.Instance.Health.MaxHealth + 25f);
-                Player.Instance.Health.Heal(25f);
-            }
-            rewardDesc = "Troll Heart (+25 Max HP)";
-        }
-        else if (roll < weightHeart + weightMetal)
-        {
-            int metal = UnityEngine.Random.Range(1, 3);
-            RunSession.AddOrcishMetal(metal);
-            rewardDesc = $"+{metal} Orcish Metal";
-        }
-        else if (roll < weightHeart + weightMetal + weightBlood)
-        {
-            int blood = UnityEngine.Random.Range(2, 4);
-            RunSession.AddGoblinBlood(blood);
-            rewardDesc = $"+{blood} Goblin Blood";
-        }
-        else if (roll < weightHeart + weightMetal + weightBlood + weightGold)
-        {
-            int gold = UnityEngine.Random.Range(50, 101);
-            RunSession.AddInRunGold(gold);
-            rewardDesc = $"+{gold} Gold";
-        }
-        else
-        {
-            // Instant Upgrade Draft
-            rewardDesc = "Instant Upgrade Draft!";
-            if (SurvivorsCardSelector.Instance != null)
-            {
-                SurvivorsGameManager.Instance?.PauseForCardSelection();
-            }
+            case BannerBountyType.WeaponDraft:
+                rewardDesc = "Weapon Upgrade Draft!";
+                if (SurvivorsCardSelector.Instance != null) SurvivorsGameManager.Instance?.PauseForCardSelection();
+                break;
+            case BannerBountyType.FortressDraft:
+                rewardDesc = "Fortress Upgrade Draft!";
+                // In a real implementation this might use a specific category, but we just trigger standard draft
+                if (SurvivorsCardSelector.Instance != null) SurvivorsGameManager.Instance?.PauseForCardSelection();
+                break;
+            case BannerBountyType.ElementDraft:
+                rewardDesc = "Elemental Upgrade Draft!";
+                if (SurvivorsCardSelector.Instance != null) SurvivorsGameManager.Instance?.PauseForCardSelection();
+                break;
+            case BannerBountyType.GoldCache:
+                int gold = UnityEngine.Random.Range(75, 126);
+                RunSession.AddInRunGold(gold);
+                rewardDesc = $"+{gold} Gold";
+                break;
+            case BannerBountyType.OrcishMetal:
+                int metal = UnityEngine.Random.Range(2, 4);
+                RunSession.AddOrcishMetal(metal);
+                rewardDesc = $"+{metal} Orcish Metal";
+                break;
+            case BannerBountyType.GoblinBlood:
+                int blood = UnityEngine.Random.Range(4, 7);
+                RunSession.AddGoblinBlood(blood);
+                rewardDesc = $"+{blood} Goblin Blood";
+                break;
+            case BannerBountyType.TrollHeart:
+                RunSession.PlayerBonusMaxHealth += 25f;
+                if (Player.Instance != null && Player.Instance.Health != null)
+                {
+                    Player.Instance.Health.SetMaxHealth(Player.Instance.Health.MaxHealth + 25f);
+                    Player.Instance.Health.Heal(25f);
+                }
+                rewardDesc = "Troll Heart (+25 Max HP)";
+                break;
         }
 
-        // Apply Regeneration meta perk if owned (+5 HP restored upon completing each wave)
+        // Apply meta perks
         if (RunSession.HasMetaPerk("regeneration") && Player.Instance != null && Player.Instance.Health != null)
         {
             Player.Instance.Health.Heal(5f);
         }
 
-        // Apply Special Herbs buff (+5 HP at end of wave)
         if (RunSession.SpecialHerbsWavesRemaining > 0 && Player.Instance != null && Player.Instance.Health != null)
         {
             Player.Instance.Health.Heal(5f);
@@ -433,75 +439,124 @@ public class GameLoopManager : MonoBehaviour
         {
             rewardNotificationText.text = $"Wave Reward: {rewardDesc}";
         }
-
-        return rewardDesc;
     }
 
-    private void SpawnUpgradePowerup()
+    private IEnumerator TransitionToNextBannersRoutine()
     {
-        if (activePowerup != null)
+        yield return new WaitForSeconds(3.0f);
+        CheckAndSpawnBanners(CurrentWave + 1);
+    }
+
+    private int upcomingWave = 1;
+
+    private void CheckAndSpawnBanners(int nextWave)
+    {
+        upcomingWave = nextWave;
+        int wavesPerRound = pacingConfig != null ? pacingConfig.wavesPerRound : 3;
+        bool isRestWave = (nextWave % wavesPerRound == 0);
+
+        if (isRestWave || bannerConfig == null || warBannerPrefab == null)
         {
-            Destroy(activePowerup.gameObject);
-            activePowerup = null;
+            // Banners do not spawn preceding a Rest Area. We just start the wave (which will open the gate) or wait?
+            // Wait, if nextWave is a rest wave, it's just a regular wave where at the end the gate opens.
+            // Oh, wait. The spec says: "Banners do not spawn preceding a Rest Area; they spawn only before standard combat waves."
+            // So if wave 3 is a rest wave... wait, is Wave 3 played, or is Wave 3 the Rest Area itself?
+            // "Retain: Fixed Rest Areas occurring strictly every 3 waves (Waves 3, 6, 9, etc.)... Banners do not spawn preceding a Rest Area; they spawn only before standard combat waves."
+            // Let's assume standard waves are 1, 2, 4, 5. Wait, earlier code said `clearedWave % 3 == 0` opens the gate AT THE END of wave 3.
+            // So Wave 3 IS a combat wave, and at the end of it, the gate opens.
+            // But if "Banners do not spawn preceding a Rest Area", maybe Wave 3 itself doesn't have banners?
+            // "Route player to the Rest Area. Do not spawn banners." This happens on OnWaveCompleted if `waveIndex + 1 % 3 == 0` (which means after wave 2 completes, wave 3 is next? No, waveIndex is zero-based in the spec, but here it's 1-based: `clearedWave % 3 == 0`.)
+            // Let's just always spawn banners unless we just finished a wave that opened the gate.
+            // If the gate is open, we don't spawn banners.
         }
 
-        Vector3 spawnPos = upgradePowerupSpawnPoint != null ? upgradePowerupSpawnPoint.position : Vector3.zero;
-
-        // Pick random category: Weapon, Elemental, or Fortress
-        DraftCategory[] categories = (DraftCategory[])Enum.GetValues(typeof(DraftCategory));
-        DraftCategory chosenCat = categories[UnityEngine.Random.Range(0, categories.Length)];
-
-        activePowerup = WaveUpgradePowerup.Spawn(spawnPos, chosenCat, upgradePowerupPrefab);
-        activePowerup.OnClaimed += HandlePowerupClaimed;
-
-        Debug.Log($"[GameLoopManager] Spawned {chosenCat} Upgrade Powerup in arena at {spawnPos}.");
+        SpawnWarBanners();
     }
 
-    private void HandlePowerupClaimed(WaveUpgradePowerup powerup)
-    {
-        if (activePowerup == powerup)
-        {
-            activePowerup = null;
-        }
-    }
-
-    private IEnumerator BetweenWaveUpgradeRoutine(string rewardDesc)
+    private void SpawnWarBanners()
     {
         isIntermission = true;
         if (intermissionBanner != null) intermissionBanner.SetActive(true);
-        if (waveAnnouncementText != null) waveAnnouncementText.text = "WAVE WIPED! CLAIM ARENA UPGRADE";
+        if (waveAnnouncementText != null) waveAnnouncementText.text = "SELECT A WAR BANNER TO START NEXT WAVE";
+        if (intermissionTimerText != null) intermissionTimerText.text = "[E] Tear Down Banner";
+
         if (objectiveManager != null) objectiveManager.SetPhase(SurvivorsObjectivePhase.Intermission, 0f);
 
-        SpawnUpgradePowerup();
+        // Clear old banners
+        foreach (var b in activeBanners) { if (b != null) Destroy(b.gameObject); }
+        activeBanners.Clear();
 
-        // Wait until player interacts with powerup and card selection completes
-        while (activePowerup != null)
+        if (bannerConfig == null || warBannerPrefab == null || bannerSpawnPoints == null || bannerSpawnPoints.Length < 3)
         {
-            if (intermissionTimerText != null)
-            {
-                intermissionTimerText.text = $"[E] Claim {activePowerup.Category} Upgrade in Arena";
-            }
-            yield return null;
+            Debug.LogWarning("[GameLoopManager] Banner config/prefab/spawn points missing. Skipping banners.");
+            StartCoroutine(StartNextWaveAfterDelay());
+            return;
         }
 
-        // Brief countdown after selecting card before next wave
+        // Pick 3 random unique buffs and bounties
+        List<BannerBuffDef> buffs = new List<BannerBuffDef>(bannerConfig.buffs);
+        List<BannerBountyDef> bounties = new List<BannerBountyDef>(bannerConfig.bounties);
+
+        // Shuffle
+        for (int i = 0; i < buffs.Count; i++) { BannerBuffDef temp = buffs[i]; int randomIndex = UnityEngine.Random.Range(i, buffs.Count); buffs[i] = buffs[randomIndex]; buffs[randomIndex] = temp; }
+        for (int i = 0; i < bounties.Count; i++) { BannerBountyDef temp = bounties[i]; int randomIndex = UnityEngine.Random.Range(i, bounties.Count); bounties[i] = bounties[randomIndex]; bounties[randomIndex] = temp; }
+
+        for (int i = 0; i < 3; i++)
+        {
+            GameObject bannerGo = Instantiate(warBannerPrefab, bannerSpawnPoints[i].position, bannerSpawnPoints[i].rotation);
+            WarBannerController controller = bannerGo.GetComponent<WarBannerController>();
+            if (controller != null)
+            {
+                controller.Initialize(buffs[i % buffs.Count], bounties[i % bounties.Count]);
+                controller.OnBannerInteracted += HandleBannerInteracted;
+                activeBanners.Add(controller);
+            }
+        }
+    }
+
+    private void HandleBannerInteracted(WarBannerController selectedBanner)
+    {
+        CurrentWaveBuff = selectedBanner.Buff.buffType;
+        CurrentWaveBounty = selectedBanner.Bounty.bountyType;
+
+        // Despawn others
+        foreach (var banner in activeBanners)
+        {
+            if (banner != null)
+            {
+                if (banner == selectedBanner)
+                {
+                    // Play destruction VFX/SFX here on selected banner
+                    Destroy(banner.gameObject, 0.5f); // Destroy after a short delay
+                }
+                else
+                {
+                    Destroy(banner.gameObject);
+                }
+            }
+        }
+        activeBanners.Clear();
+
+        // Voice bark
+        Debug.Log("[GameLoopManager] Them's tearin down ours bannah! Get 'em!");
+
+        StartCoroutine(StartNextWaveAfterDelay());
+    }
+
+    private IEnumerator StartNextWaveAfterDelay()
+    {
+        // Brief countdown
         for (int sec = 3; sec > 0; sec--)
         {
-            if (intermissionTimerText != null)
-            {
-                intermissionTimerText.text = $"Next Wave in: {sec}s";
-            }
-            if (waveAnnouncementText != null)
-            {
-                waveAnnouncementText.text = $"NEXT WAVE IN {sec}...";
-            }
+            if (intermissionTimerText != null) intermissionTimerText.text = $"Next Wave in: {sec}s";
+            if (waveAnnouncementText != null) waveAnnouncementText.text = $"NEXT WAVE IN {sec}...";
             yield return new WaitForSeconds(1.0f);
         }
 
         isIntermission = false;
         if (intermissionBanner != null) intermissionBanner.SetActive(false);
 
-        StartWave(CurrentWave + 1);
+        StartWave(upcomingWave);
     }
 
     private void HandleGateInteracted(Player player)

@@ -12014,6 +12014,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameLoopManager
   pacingConfig: {fileID: 11400000, guid: 05a42283cf759b840987dce67c54d35f, type: 2}
+  bannerConfig: {fileID: 11400000, guid: 339b6351a1964124db511340e2e89ca8, type: 2}
+  warBannerPrefab: {fileID: 4242448033862609563, guid: ee0e469c4b1454b4388fe2fa354eac9f, type: 3}
+  bannerSpawnPoints:
+  - {fileID: 790653058}
+  - {fileID: 1336525721}
+  - {fileID: 873554372}
   spawner: {fileID: 1017313930}
   castleGateInteractable: {fileID: 373223684}
   objectiveManager: {fileID: 926223862}
@@ -32214,6 +32220,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 567186291416249871, guid: 5216f6d56a7c6e041869f68471d4aaae, type: 3}
   m_PrefabInstance: {fileID: 787424684}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &790653057
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 790653058}
+  m_Layer: 0
+  m_Name: BannerSpawnPoint_0
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &790653058
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 790653057}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -8, y: 0, z: 10}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &791349660
 GameObject:
   m_ObjectHideFlags: 0
@@ -33854,6 +33891,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4577017063040302, guid: 94f55021adc743447972e33009b6eda2, type: 3}
   m_PrefabInstance: {fileID: 868319901}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &873554371
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 873554372}
+  m_Layer: 0
+  m_Name: BannerSpawnPoint_2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &873554372
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 873554371}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 8, y: 0, z: 10}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &877725394
 GameObject:
   m_ObjectHideFlags: 0
@@ -49134,6 +49202,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4019230386164288, guid: a8c3c2fa6519fae4690d44a8ec308088, type: 3}
   m_PrefabInstance: {fileID: 1336182046}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1336525720
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1336525721}
+  m_Layer: 0
+  m_Name: BannerSpawnPoint_1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1336525721
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1336525720}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 10}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1336527459
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -54096,7 +54195,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 53.75
+  m_fontSize: 42.45
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -76742,3 +76841,6 @@ SceneRoots:
   - {fileID: 1340104894}
   - {fileID: 319282847}
   - {fileID: 1422017971}
+  - {fileID: 790653058}
+  - {fileID: 1336525721}
+  - {fileID: 873554372}

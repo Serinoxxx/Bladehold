@@ -35,6 +35,8 @@ public class AIAttack : MonoBehaviour
     private bool playerDead = false;
     private bool anyError = false;
 
+    private float damageMultiplier = 1f;
+
     /// <summary>
     ///     Per-instance damage override (e.g. <see cref="WaveSpawner" /> applying an enemy type's
     ///     roster CSV row). Call right after Instantiate; the shared <see cref="AIAttackSO" /> is
@@ -44,6 +46,13 @@ public class AIAttack : MonoBehaviour
     {
         damageOverride = value;
     }
+
+    public void SetDamageMultiplier(float value)
+    {
+        damageMultiplier = Mathf.Max(0f, value);
+    }
+
+    public float BaseDamage => (damageOverride ?? (attackData != null ? attackData.damage : 0f)) * damageMultiplier;
 
     private void OnValidate()
     {
@@ -247,7 +256,8 @@ public class AIAttack : MonoBehaviour
         {
             target.ReceiveDamage(new Damage
             {
-                value = damageOverride ?? attackData.damage,
+                value = BaseDamage,
+                isCritical = false,
                 type = attackData.damageType,
                 sourcePosition = transform.position,
                 source = health

@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98ab191678664ab4cab031135444323a, type: 3}
+  m_Name: WarBannerConfig
+  m_EditorClassIdentifier: Assembly-CSharp::WarBannerConfigSO
+  buffs:
+  - buffType: 1
+    clanName: Ironfang Clan
+    inGameDescription: Shielded Vanguard
+    gameplayEffect: All enemies spawn with a shield equal to 25% of their max HP.
+    clanSigil: {fileID: 0}
+  - buffType: 2
+    clanName: Wind-Strider Clan
+    inGameDescription: Frenzied Advance
+    gameplayEffect: All enemies gain +35% movement and attack speed.
+    clanSigil: {fileID: 0}
+  - buffType: 3
+    clanName: Blood-Drinker Clan
+    inGameDescription: Glass Cannons
+    gameplayEffect: All enemies deal +50% damage, but have -30% max HP.
+    clanSigil: {fileID: 0}
+  - buffType: 4
+    clanName: Swarm-Blight Clan
+    inGameDescription: Flesh Mending
+    gameplayEffect: Enemies passively regenerate 3% max HP per second.
+    clanSigil: {fileID: 0}
+  - buffType: 5
+    clanName: Stone-Hide Clan
+    inGameDescription: Thick Hide
+    gameplayEffect: Enemies take 25% reduced damage from physical strikes.
+    clanSigil: {fileID: 0}
+  bounties:
+  - bountyType: 1
+    inGameDisplay: Weapon Upgrade Draft
+    rewardDescription: Triggers a 3-card draft restricted to equipped melee/ranged
+      weapons.
+  - bountyType: 2
+    inGameDisplay: Fortress Upgrade Draft
+    rewardDescription: Triggers a 3-card draft for Arrow Slits, Oil, or Barricades.
+  - bountyType: 3
+    inGameDisplay: Elemental Upgrade Draft
+    rewardDescription: Triggers a 3-card draft for the active element.
+  - bountyType: 4
+    inGameDisplay: "Gold Cache (75\u2013125 Gold)"
+    rewardDescription: Adds randomized Gold directly into the player's run balance.
+  - bountyType: 5
+    inGameDisplay: "Plundered Metal (2\u20133 Orcish Metal)"
+    rewardDescription: Grants permanent Orcish Metal to player meta-inventory.
+  - bountyType: 6
+    inGameDisplay: "Blood Vial (4\u20136 Goblin Blood)"
+    rewardDescription: Grants permanent Goblin Blood to player meta-inventory.
+  - bountyType: 7
+    inGameDisplay: Troll Heart (+25 Max HP)
+    rewardDescription: Permanently grants +25 Max HP for the duration of the run.

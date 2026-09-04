@@ -428,8 +428,13 @@ public class SurvivorsSpawner : MonoBehaviour
 
             GameObject enemy = Instantiate(selectedType.prefab, spawnPos, Quaternion.identity);
 
-            // Apply roster stat overrides
             WaveSpawner.ApplyDefinition(enemy, selectedType.def);
+
+            if (GameLoopManager.Instance != null && GameLoopManager.Instance.CurrentWaveBuff != BannerBuffType.None)
+            {
+                EnemyBuffController buffController = enemy.AddComponent<EnemyBuffController>();
+                buffController.Initialize(GameLoopManager.Instance.CurrentWaveBuff);
+            }
 
             if (stats != null)
             {
