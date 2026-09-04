@@ -5938,6 +5938,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6da43522623d4704e979466dc7650b65, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MoreMountains.Tools::MoreMountains.Feedbacks.MMF_Player
+--- !u!1 &168288304
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 168288305}
+  m_Layer: 0
+  m_Name: Waypoint_1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &168288305
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 168288304}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.00000052453663, y: -6.11, z: 12}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 343807143}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &168445188
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -12182,6 +12213,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1082887323}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &329282453
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 329282454}
+  m_Layer: 0
+  m_Name: Waypoint_3
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &329282454
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 329282453}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.00000014309856, y: -6.11, z: -12}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 343807143}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &332563664
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -18023,6 +18085,41 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4507995508610950, guid: 2e7ff8e68a4bb784bad368ed0e72c7a3, type: 3}
   m_PrefabInstance: {fileID: 343630524}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &343807142
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 343807143}
+  m_Layer: 0
+  m_Name: GoldenGoblinWaypoints
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &343807143
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 343807142}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1849167603}
+  - {fileID: 168288305}
+  - {fileID: 1141525047}
+  - {fileID: 329282454}
+  m_Father: {fileID: 926223867}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &347123262
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -35976,6 +36073,7 @@ GameObject:
   - component: {fileID: 926223863}
   - component: {fileID: 926223862}
   - component: {fileID: 926223868}
+  - component: {fileID: 926223869}
   m_Layer: 0
   m_Name: SurvivorsObjectives
   m_TagString: Untagged
@@ -36001,6 +36099,7 @@ MonoBehaviour:
   - {fileID: 926223864}
   - {fileID: 926223863}
   - {fileID: 926223868}
+  - {fileID: 926223869}
   goldXpRewardPerObjective: 50
   cleanupDuration: 30
   intermissionDuration: 30
@@ -36113,6 +36212,7 @@ Transform:
   - {fileID: 1926600363}
   - {fileID: 279125938}
   - {fileID: 1082887323}
+  - {fileID: 343807143}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &926223868
@@ -36135,6 +36235,33 @@ MonoBehaviour:
   - {fileID: 2059504922}
   fallbackSpawnOffset: {x: 0, y: 0, z: 35}
   slayerWaypointIcon: {fileID: 21300000, guid: 6b9d8482dcc5af3429992cd4e692e675, type: 3}
+--- !u!114 &926223869
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 926223861}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: decacd3a957387046bb2034d4ceec40b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GoldenGoblinObjective
+  objectiveId: golden_goblin_event
+  title: Golden Goblin
+  description: Catch the Golden Goblin before he escapes!
+  duration: 30
+  goldenGoblinPrefab: {fileID: 494112403358464087, guid: 0603fd4a9e0e2ad46baa698c0b89d706, type: 3}
+  waypoints:
+  - {fileID: 1849167603}
+  - {fileID: 168288305}
+  - {fileID: 1141525047}
+  - {fileID: 329282454}
+  coinPrefab: {fileID: 8493665466631301938, guid: 26ebce2f78526014da0d1b69d835b6e9, type: 3}
+  goldPerDrop: 5
+  killBonusGold: 100
+  maxHealthOverride: 999
+  knockbackResistOverride: 999
 --- !u!1 &932310033
 GameObject:
   m_ObjectHideFlags: 0
@@ -42667,6 +42794,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4437806874193308, guid: b1caf92b258944948a55d7a715a5afa0, type: 3}
   m_PrefabInstance: {fileID: 1141297996}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1141525046
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1141525047}
+  m_Layer: 0
+  m_Name: Waypoint_2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1141525047
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1141525046}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -12, y: -6.11, z: -0.0000010490733}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 343807143}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1144355619
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -46210,6 +46368,11 @@ MonoBehaviour:
   buffDescriptionText: {fileID: 1400028329}
   bountyDescriptionText: {fileID: 620300106}
   clanSigilImage: {fileID: 0}
+  slamVfxPrefab: {fileID: 0}
+  slamSfx: {fileID: 0}
+  burnVfxPrefab: {fileID: 0}
+  burnSfx: {fileID: 0}
+  groundWaypointPrefab: {fileID: 0}
 --- !u!4 &1245474721
 Transform:
   m_ObjectHideFlags: 0
@@ -63017,6 +63180,10 @@ MonoBehaviour:
   vampiricBlade: {fileID: 0}
   chainLightning: {fileID: 0}
   impulseHitFeedback: {fileID: 0}
+  fireWeaponVfxPrefab: {fileID: 0}
+  iceWeaponVfxPrefab: {fileID: 0}
+  lightningWeaponVfxPrefab: {fileID: 0}
+  poisonWeaponVfxPrefab: {fileID: 0}
 --- !u!1001 &1705976483
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -67011,6 +67178,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1844231850}
   m_LocalEulerAnglesHint: {x: 0, y: -109.01, z: 0}
+--- !u!1 &1849167602
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1849167603}
+  m_Layer: 0
+  m_Name: Waypoint_0
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1849167603
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1849167602}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 12, y: -6.11, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 343807143}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1850466120
 PrefabInstance:
   m_ObjectHideFlags: 0

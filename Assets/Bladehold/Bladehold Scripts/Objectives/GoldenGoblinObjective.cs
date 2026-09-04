@@ -203,7 +203,7 @@ public class GoldenGoblinObjective : MonoBehaviour, ISurvivorsObjective
     {
         if (targetHealth != null)
         {
-            results.Add(new ObjectiveWaypointTarget { Position = targetHealth.transform.position, Label = "Golden Goblin" });
+            results.Add(new ObjectiveWaypointTarget(targetHealth.transform, label: "Golden Goblin"));
         }
     }
 }
