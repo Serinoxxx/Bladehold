@@ -19,7 +19,23 @@ using UnityEngine.Audio;
 /// </summary>
 public class GameSettingsService : MonoBehaviour
 {
-    public static GameSettingsService Instance;
+    private static GameSettingsService _instance;
+    public static GameSettingsService Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = FindFirstObjectByType<GameSettingsService>();
+                if (_instance == null)
+                {
+                    GameObject go = new GameObject("GameSettingsService (Auto)");
+                    _instance = go.AddComponent<GameSettingsService>();
+                }
+            }
+            return _instance;
+        }
+    }
 
     [Tooltip("Mixer exposing MasterVolume/MusicVolume/SfxVolume float parameters (in dB), e.g. MMSoundManagerAudioMixer.")]
     [SerializeField] private AudioMixer mixer;
@@ -52,11 +68,11 @@ public class GameSettingsService : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null)
+        if (_instance == null)
         {
-            Instance = this;
+            _instance = this;
         }
-        else
+        else if (_instance != this)
         {
             Destroy(gameObject);
             return;
@@ -72,9 +88,9 @@ public class GameSettingsService : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (Instance == this)
+        if (_instance == this)
         {
-            Instance = null;
+            _instance = null;
         }
     }
 

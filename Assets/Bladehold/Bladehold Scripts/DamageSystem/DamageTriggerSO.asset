@@ -14,4 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DamageTriggerSO
   radius: 2
   duration: 0.25
-  maxHits: 1
+  maxHits: 10
+  cleaveDamageReduction: 0.5

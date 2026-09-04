@@ -24,7 +24,7 @@ public class RoundPacingConfigSO : ScriptableObject
         new RoundDefinition { roundNumber = 1, allowedEnemyIds = new string[] { "goblin", "goblin_brute" }, requiredKillsPerWave = 15 },
         new RoundDefinition { roundNumber = 2, allowedEnemyIds = new string[] { "goblin", "goblin_brute", "big_ork" }, requiredKillsPerWave = 20 },
         new RoundDefinition { roundNumber = 3, allowedEnemyIds = new string[] { "goblin", "goblin_brute", "big_ork", "bubbler" }, requiredKillsPerWave = 25 },
-        new RoundDefinition { roundNumber = 4, allowedEnemyIds = new string[] { "goblin", "goblin_brute", "big_ork", "bubbler", "bomber" }, requiredKillsPerWave = 30 }
+        new RoundDefinition { roundNumber = 4, allowedEnemyIds = new string[] { "goblin", "goblin_brute", "big_ork", "bomber" }, requiredKillsPerWave = 30 }
     };
 
     [Header("Wave Pacing & Spawner Caps")]

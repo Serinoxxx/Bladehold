@@ -1,9 +1,10 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 [CreateAssetMenu(fileName = "DamageTriggerSO", menuName = "Scriptable Objects/DamageTriggerSO")]
 public class DamageTriggerSO : ScriptableObject
 {
     public float radius = 2f;
     public float duration = 0.25f;
-    public int maxHits = 1;
+    public int maxHits = 10;
+    public float cleaveDamageReduction = 0.5f;
 }

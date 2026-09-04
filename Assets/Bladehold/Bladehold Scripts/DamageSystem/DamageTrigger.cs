@@ -505,6 +505,12 @@ public class DamageTrigger : MonoBehaviour
             }
         }
 
+        // Apply diminishing returns for cleave hits. hitTargets.Count is at least 1 since we just added the target.
+        if (hitTargets.Count > 1)
+        {
+            damage.value *= Mathf.Pow(1f - damageTriggerSO.cleaveDamageReduction, hitTargets.Count - 1);
+        }
+
         damageable.ReceiveDamage(damage);
         OnHit?.Invoke(damageable, damage, hitPoint);
         return true;
@@ -562,7 +568,7 @@ public class DamageTrigger : MonoBehaviour
             value *= stats.GetValue(StatType.CritMultiplier);
         }
 
-        float knockback = stats.GetValue(StatType.KnockbackForce);
+        float knockback = value * stats.GetValue(StatType.KnockbackForce);
 
         // Charged-attack bonuses, latched by PlayerAttack at the moment this swing started.
         if (playerAttack != null)

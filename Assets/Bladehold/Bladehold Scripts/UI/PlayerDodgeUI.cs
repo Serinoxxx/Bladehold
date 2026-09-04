@@ -105,21 +105,7 @@ public class PlayerDodgeUI : MonoBehaviour
 
     private void Update()
     {
-        if (anyError || Player.Instance == null || Player.Instance.Stats == null) return;
-
-        bool isUnlocked = Player.Instance.Stats.GetValue(StatType.DodgeUnlocked) > 0f;
-        if (rootContainer != null)
-        {
-            if (rootContainer.activeSelf != isUnlocked)
-            {
-                rootContainer.SetActive(isUnlocked);
-            }
-        }
-        else if (skillIcon != null && skillIcon.gameObject.activeSelf != isUnlocked)
-        {
-            skillIcon.gameObject.SetActive(isUnlocked);
-            if (keybindIcon != null) keybindIcon.gameObject.SetActive(isUnlocked);
-        }
+        // UI is no longer dynamically hidden because weapons are unlocked by default.
     }
 
     private void HandleCooldownUpdated(float current, float max)

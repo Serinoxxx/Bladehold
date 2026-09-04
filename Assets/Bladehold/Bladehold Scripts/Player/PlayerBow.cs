@@ -905,11 +905,11 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         // Charged draws naturally impart knockback force based on baseKnockback and chargeKnockbackMultiplier.
         float baseKB = stats.GetValue(StatType.BowKnockback);
         float knockbackMult = config != null ? config.chargeKnockbackMultiplier : 1.5f;
-        float knockbackForce = baseKB * (1f + actualRatio * knockbackMult);
+        float knockbackForce = value * baseKB * (1f + actualRatio * knockbackMult);
         if (stats.GetValue(StatType.BowImpulseArrows) >= 1f && impulseBuff != null && impulseBuff.IsActive)
         {
             value *= impulseBuff.DamageMultiplier;
-            knockbackForce = Mathf.Max(knockbackForce, config.knockbackBlastForce * impulseBuff.KnockbackMultiplier);
+            knockbackForce = Mathf.Max(knockbackForce, value * config.knockbackBlastForce * impulseBuff.KnockbackMultiplier);
         }
 
         if (IsUltimateLocked)

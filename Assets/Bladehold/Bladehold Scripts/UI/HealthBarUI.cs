@@ -54,6 +54,16 @@ public class HealthBarUI : MonoBehaviour
             return;
         }
 
+        Collider col = GetComponentInParent<Collider>();
+        if (col != null)
+        {
+            float topY = col.bounds.max.y;
+            if (transform.position.y < topY + 0.2f)
+            {
+                transform.position = new Vector3(transform.position.x, topY + 0.2f, transform.position.z);
+            }
+        }
+
         initialLocalPosition = transform.localPosition;
         parentTransform = transform.parent;
         

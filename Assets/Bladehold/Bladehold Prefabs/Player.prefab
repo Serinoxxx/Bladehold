@@ -1584,6 +1584,7 @@ GameObject:
   - component: {fileID: 924873914309187086}
   - component: {fileID: 5480821993270956645}
   - component: {fileID: 4218521274988385536}
+  - component: {fileID: -2629898692341894258}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -1872,6 +1873,31 @@ MonoBehaviour:
   promptLabel: {fileID: 0}
   promptContainer: {fileID: 0}
   promptPrefab: {fileID: 7198720221044566266, guid: 529047ff5f95deb4ca650cb3e1fbeebd, type: 3}
+--- !u!114 &-2629898692341894258
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 635090733411138093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40976439f79fe1143a93781300f41ce3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ElementalEffectsManager
+  fireStatusVfx: {fileID: 1392961458021664, guid: 7c2d45330a7b1894ca1aacb0ebd30599, type: 3}
+  iceStatusVfx: {fileID: 1334071670866236, guid: edf12e91890b8434eb8ea701f9bc40a2, type: 3}
+  frozenStatusVfx: {fileID: 1828717585066262, guid: 15020532ea6e8b449a74e895e1097087, type: 3}
+  discordRingVfx: {fileID: 5149531693756767107, guid: d73f2fcd8b9493a4a8beabbe79e90b0c, type: 3}
+  thermalShockVfx: {fileID: 1809022330002312, guid: ed511b7776af6174e9b1255c7a81e59c, type: 3}
+  plasmaOverloadVfx: {fileID: 1722081097931586, guid: 4b21d5ab091be5a46ad6e87699fab62c, type: 3}
+  superconductorVfx: {fileID: 1454807473737458, guid: 6108438f5e38d0b4b8fed06af6b74254, type: 3}
+  statusAppliedSfx: {fileID: 8300000, guid: 4a21b5d16c1fc430cad65456a4e6d2e1, type: 3}
+  frozenSfx: {fileID: 8300000, guid: 1c4930795ec17e84bbc36a8f863da650, type: 3}
+  thermalShockSfx: {fileID: 8300000, guid: 001cb6b1e3595df45aa7eb64a76d15c7, type: 3}
+  plasmaOverloadSfx: {fileID: 8300000, guid: e53c50cdd14c0004f8f381d4a956ab7b, type: 3}
+  superconductorSfx: {fileID: 8300000, guid: 7418f4853db77134f83e1ecba7247878, type: 3}
+  discordAppliedSfx: {fileID: 8300000, guid: 024181c54bd1444cabee9fb713b92ec4, type: 3}
 --- !u!1 &758177441954652393
 GameObject:
   m_ObjectHideFlags: 0
@@ -23881,7 +23907,7 @@ PrefabInstance:
       objectReference: {fileID: 6944173513739371956}
     - target: {fileID: 5919225009398288093, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
       propertyPath: knockbackForce
-      value: 6
+      value: 0.15
       objectReference: {fileID: 0}
     - target: {fileID: 6519288246009007488, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
       propertyPath: m_LocalPosition.y
@@ -26618,7 +26644,7 @@ PrefabInstance:
       objectReference: {fileID: 2251505163923793700}
     - target: {fileID: 5919225009398288093, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
       propertyPath: knockbackForce
-      value: 6
+      value: 0.35
       objectReference: {fileID: 0}
     - target: {fileID: 8712639765058582103, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
       propertyPath: m_Layer

@@ -2437,13 +2437,14 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   readsPlayerStats: 1
+  elementSlot: SLOT_MELEE
   baseCritMultiplier: 1.5
   playerAttack: {fileID: 0}
   impulseBuff: {fileID: 0}
   rageBuff: {fileID: 0}
   painIntoPower: {fileID: 0}
   weaponTrail: {fileID: 0}
-  knockbackForce: 0
+  knockbackForce: 0.15
 --- !u!114 &2879380361252328939
 MonoBehaviour:
   m_ObjectHideFlags: 0

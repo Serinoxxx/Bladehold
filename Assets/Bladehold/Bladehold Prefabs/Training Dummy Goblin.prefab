@@ -7862,7 +7862,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TrainingDummy
   maxHealth: 1000
   resetIdleDelay: 10
-  poofVfxPrefab: {fileID: 1014252301174022, guid: 76ef43c1bd544924b8aeb115e01163b5, type: 3}
+  poofVfxPrefab: {fileID: 2015303338481677235, guid: 17d1039496044be419303fb3623e32ff, type: 3}
   poofSfx: {fileID: 8300000, guid: 4a21b5d16c1fc430cad65456a4e6d2e1, type: 3}
   healthText: {fileID: 764716375682744419}
 --- !u!1 &7836698847341442407

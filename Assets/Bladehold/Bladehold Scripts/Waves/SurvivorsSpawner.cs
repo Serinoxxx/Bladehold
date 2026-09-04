@@ -301,7 +301,7 @@ public class SurvivorsSpawner : MonoBehaviour
             int effectiveBatchSize = config != null && config.spawnBatchSize > 0 ? config.spawnBatchSize : (spawnBatchSize > 0 ? spawnBatchSize : 10);
             float effectiveBatchInterval = config != null && config.spawnBatchInterval > 0f ? config.spawnBatchInterval : (spawnBatchInterval > 0f ? spawnBatchInterval : 8.0f);
             float effectiveSpawnInterval = config != null && config.spawnInterval > 0f ? config.spawnInterval : (spawnInterval > 0f ? spawnInterval : 0.2f);
-            int effectiveMaxConcurrent = config != null && config.maxConcurrent > 0 ? config.maxConcurrent : (maxConcurrentEnemies > 0 ? maxConcurrentEnemies : 50);
+            int effectiveMaxConcurrent = MaxConcurrentEnemies;
 
             if (aliveCount < effectiveMaxConcurrent && remainingToSpawn > 0)
             {

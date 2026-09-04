@@ -61,34 +61,7 @@ public class WeaponHUDController : MonoBehaviour
 
     private void Update()
     {
-        if (anyError || Player.Instance == null) return;
-
-        bool rangedUnlocked = false;
-        var classController = Player.Instance.GetComponentInChildren<PlayerClassController>();
-        if (classController != null && classController.ActiveAimWeapon != null)
-        {
-            rangedUnlocked = classController.IsAimWeaponUnlocked;
-        }
-        else if (Player.Instance.Stats != null)
-        {
-            rangedUnlocked = Player.Instance.Stats.GetValue(StatType.BowUnlocked) > 0f;
-        }
-
-        if (rangedRootContainer != null)
-        {
-            if (rangedRootContainer.activeSelf != rangedUnlocked)
-            {
-                rangedRootContainer.SetActive(rangedUnlocked);
-            }
-        }
-        else if (rangedWeaponIcon != null)
-        {
-            if (rangedWeaponIcon.gameObject.activeSelf != rangedUnlocked)
-            {
-                rangedWeaponIcon.gameObject.SetActive(rangedUnlocked);
-                if (rangedKeybindIcon != null) rangedKeybindIcon.gameObject.SetActive(rangedUnlocked);
-            }
-        }
+        // UI is no longer dynamically hidden because weapons are unlocked by default.
     }
 
     private IEnumerator InitIconsRoutine()

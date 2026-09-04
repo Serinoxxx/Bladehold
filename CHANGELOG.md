@@ -3,6 +3,7 @@
 ## [0.1.19] - 2026-09-03
 
 ### New Features
+- Added Golden Goblin wave objective: a special goblin with 999 health that drops gold based on damage and a 100 gold bonus if killed within 30 seconds.
 - Overhauled core game loop into 4 rounds of 3 waves with progressive enemy unlocks (Round 1: Goblins & Brutes, Round 2: Big Orks, Round 3: Bubblers, Round 4: Bombers + Slayer Boss)
 - Replaced end-of-wave reward drops with a physical, interactive War Banner selection system granting unique modifiers and rewards
 - Refactored single-element lock into a Hades-inspired ability-slot elemental system (Melee, Ranged, Mobility, Ultimate, Fortress)
@@ -29,6 +30,9 @@
 - Added new visual and sound effects for War Banners including a staggered slam-down animation on spawn, ground waypoints, and a burning sequence when selected
 
 ### Fixes
+- Fixed wave spawner occasionally exceeding the 20 concurrent enemy limit.
+- Fixed enemy health bars rendering inside the models of larger enemies (like Big Ork and Bosses) by dynamically checking height.
+- Fixed language settings changes failing to apply in the Main Menu.
 - Fixed an issue where objective waypoint markers remained on screen after destroying targets like catapults
 - Fixed player character getting stuck in air and unable to move when dismounting or after horse death mid-air
 - Fixed interaction prompt persisting indefinitely on screen after moving away from world interactables
@@ -40,6 +44,8 @@
 - Fixed Rest Area Draft Station failing to open card drafts due to missing scene managers
 
 ### Balance Changes
+- Bubblers will now only spawn in Round 3 (removed from Round 4).
+- Adjusted default tunables and mechanics for weapons and dash, and updated training dummy.
 - Enforced continuous enemy spawning during wagon escort objectives until the wagon reaches the destination
 - Introduced three-tier currency economy: In-Run Gold (temporary for rest shop), Goblin Blood (permanent for perks), and Orcish Metal (permanent for weapon/tier unlocks)
 - Capped maximum concurrent active enemies on the field to 20
@@ -219,3 +225,9 @@
 ### General Changes
 - Added hit sparks, screen shake, and impact sounds
 - Added Berserker and Mage skill tree preview panels
+
+
+
+
+
+

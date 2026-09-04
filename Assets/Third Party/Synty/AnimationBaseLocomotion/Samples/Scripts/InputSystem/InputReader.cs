@@ -92,18 +92,17 @@ namespace Synty.AnimationBaseLocomotion.Samples.InputSystem
             _movementInputDetected = _moveComposite.magnitude > 0;
         }
 
-        /// <summary>
-        ///     Defines the action to perform when the OnJump callback is called.
-        /// </summary>
-        /// <param name="context">The context of the callback.</param>
         public void OnJump(InputAction.CallbackContext context)
         {
+            // Jumping disabled by user request.
+            /*
             if (!context.performed)
             {
                 return;
             }
 
             onJumpPerformed?.Invoke();
+            */
         }
 
         /// <summary>

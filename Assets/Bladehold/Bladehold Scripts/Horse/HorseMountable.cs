@@ -1,18 +1,17 @@
 using UnityEngine;
 
 /// <summary>
-///     The mount trigger on a riderless horse: the player mounts by JUMPING into this trigger
-///     collider (a grounded walk-through does nothing), which snaps them to the saddle via
-///     <c>PlayerMount.TryMount</c>. Gated on the riding skill (<c>PlayerMount.CanRide</c>), the horse
-///     being alive, and nobody already in the saddle — the mounted-knight prefab ships this
-///     component disabled and <c>MountedKnightRider</c> enables it when the knight is unseated.
-///     Uses the pickup idiom (trigger-enter + <c>GetComponentInParent</c>) to resolve the player.
+///     The mount trigger on a riderless horse: the player mounts by interacting with this object.
+///     Gated on the horse being alive and nobody already in the saddle.
 /// </summary>
-[RequireComponent(typeof(Collider))]
-public class HorseMountable : MonoBehaviour
+public class HorseMountable : MonoBehaviour, IInteractable
 {
     [SerializeField] private Health health;
     [SerializeField] private HorseMotor horseMotor;
+
+    public string PromptText => "Mount Horse";
+    public bool CanInteract => !IsOccupied && health != null && !health.IsDead;
+    public Vector3 InteractionPosition => transform.position;
 
     /// <summary>True while anyone (knight or player) sits in the saddle; the trigger ignores the player until it clears.</summary>
     public bool IsOccupied { get; private set; }
@@ -59,12 +58,6 @@ public class HorseMountable : MonoBehaviour
             Debug.LogError("HorseMotor component is not assigned or found on a parent.");
             anyError = true;
         }
-
-        Collider triggerCollider = GetComponent<Collider>();
-        if (triggerCollider != null && !triggerCollider.isTrigger)
-        {
-            Debug.LogWarning("HorseMountable's collider is not a trigger; mounting will not detect the player.", this);
-        }
     }
 
     /// <summary>Marks the saddle taken (or free). Set by <c>PlayerMount</c> and <c>MountedKnightRider</c>.</summary>
@@ -73,18 +66,12 @@ public class HorseMountable : MonoBehaviour
         IsOccupied = value;
     }
 
-    private void OnTriggerEnter(Collider other)
+    public void Interact(Player player)
     {
         if (anyError || IsOccupied || health.IsDead) return;
 
-        Player player = other.GetComponentInParent<Player>();
-        if (player == null) return;
-
         PlayerMount mount = player.GetComponent<PlayerMount>();
-        if (mount == null || mount.IsMounted) return; // || !mount.CanRide) return;
-
-        // Mounting is a deliberate jump into the saddle, not a walk-by.
-        if (mount.CharacterController != null && mount.CharacterController.isGrounded) return;
+        if (mount == null || mount.IsMounted) return;
 
         mount.TryMount(horseMotor);
     }

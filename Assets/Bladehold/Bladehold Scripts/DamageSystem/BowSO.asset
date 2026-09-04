@@ -18,10 +18,10 @@ MonoBehaviour:
   baseArrowSpeed: 30
   arrowGravity: 9.81
   arrowRadius: 0.05
-  chargeTimePerLevel: 0.6
+  chargeTimePerLevel: 0
   baseMaxChargeLevels: 3
   baseChargeDamageBonus: 0.5
-  baseKnockback: 2
+  baseKnockback: 0.1
   chargeKnockbackMultiplier: 1.5
   baseMultishotChance: 1
   multishotSpreadDegrees: 6
@@ -37,5 +37,5 @@ MonoBehaviour:
   aimBlendSeconds: 0.2
   aimLookMaxPitchDegrees: 60
   impulseBlastRadius: 4
-  knockbackBlastForce: 10
+  knockbackBlastForce: 0.5
   headExplosionPrefab: {fileID: 1277154925287174, guid: 3b517eddec185dd4a830743a742ad00b, type: 3}

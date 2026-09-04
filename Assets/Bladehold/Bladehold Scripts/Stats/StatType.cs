@@ -359,6 +359,10 @@ public enum StatType
     IcePermafrostUnlocked,
     IceShardsBurstDamage,
 
+    DuoThermalShock,
+    DuoPlasmaOverload,
+    DuoSuperconductor,
+
     // --- Ultimates ---
     UltimateSwordMountUnlocked,
     UltimateThrowingAxeVortexUnlocked,
