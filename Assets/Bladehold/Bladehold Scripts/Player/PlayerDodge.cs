@@ -167,6 +167,7 @@ public class PlayerDodge : MonoBehaviour
                             sourcePosition = transform.position,
                             source = player.Damageable,
                             isPlayerDamage = true,
+                            elementId = RunSession.ElementalSlots.GetValueOrDefault("SLOT_MOBILITY", "")
                         });
 
                         if (enemyHealth.IsDead && chainReduction > 0f)

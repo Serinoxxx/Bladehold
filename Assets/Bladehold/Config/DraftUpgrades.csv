@@ -1,5 +1,5 @@
-id,displayName,category,weapon,element,isUltimate,maxLevel,description,upgradeText,stat,kind,amount,icon
-sword_lunge_mastery,Lunge Mastery,Weapon,sword,,0,1,Lunge deals +200% damage and gains +40% critical strike chance.,,SwordLungeDamageBonus;SwordLungeCritBonus,Percent;Flat,2.0;0.40,sword_dmg
+id,displayName,category,weapon,element,isUltimate,maxLevel,description,upgradeText,stat,kind,amount,icon,targetSlot,isDuo,prerequisiteElements
+sword_lunge_mastery,Lunge Mastery,Weapon,sword,,0,1,Lunge deals +200% damage and gains +40% critical strike chance.,,SwordLungeDamageBonus;SwordLungeCritBonus,Percent;Flat,2.0;0.40,sword_dmg,,,
 sword_nimble_strike,Nimble Strike,Weapon,sword,,0,1,Dashing performs an automatic attack along the movement path.,,SwordNimbleStrike,Flat,1,dodge_damage
 sword_shieldbreaker,ShieldBreaker,Weapon,sword,,0,1,Sword attacks deal +200% damage to shielded targets.,,SwordShieldBreakerBonus,Percent,2.0,sword_dmg
 sword_vampire_blade,Vampire Blade,Weapon,sword,,0,1,Heals 2 HP per hit but player takes 50% extra elemental damage.,,SwordVampireBladeHeal;SwordVampireExtraElementalDamage,Flat;Percent,2;0.50,vamp
@@ -43,3 +43,8 @@ elem_ice_deep_freeze,Deep Freeze,Elemental,,Ice,0,1,Applying chill to an already
 elem_ice_shatter,Shatter,Elemental,,Ice,0,4,Frozen enemies take massive bonus damage from all hits.,Increases bonus damage to frozen foes,IceShatterBonus,Percent,2.0|3.0|4.0|5.0,icebreaker
 elem_ice_permafrost,Permafrost,Elemental,,Ice,0,1,Fortress walls passively emit an aura that chills adjacent foes.,,IcePermafrostUnlocked,Flat,1,imbue_ice
 elem_ice_ice_shards,Ice Shards,Elemental,,Ice,0,4,Ranged kills shatter enemies into an 8-way projectile burst.,Increases ice shard burst damage,IceShardsBurstDamage,Flat,50|60|70|80,brainfreeze
+duo_thermal_shock,Thermal Shock,Element,,,0,1,Enemies afflicted by Fire and Ice take massive burst damage.,,DuoThermalShock,Flat,1,duo_thermal_shock,,TRUE,Fire|Ice
+duo_plasma_overload,Plasma Overload,Element,,,0,1,Fire and Lightning cause explosions.,,DuoPlasmaOverload,Flat,1,duo_plasma_overload,,TRUE,Fire|Lightning
+duo_superconductor,Superconductor,Element,,,0,1,Ice and Lightning create larger chain lightning.,,DuoSuperconductor,Flat,1,duo_superconductor,,TRUE,Ice|Lightning
+fort_electrified_oil,Electrified Oil,Fortress,,,0,1,Boiling Oil combined with Lightning electrifies the oil.,,FortElectrifiedOil,Flat,1,fort_electrified_oil,,TRUE,Lightning
+fort_permafrost_spikes,Permafrost Spikes,Fortress,,,0,1,Spiked Barricades combined with Ice chill enemies.,,FortPermafrostSpikes,Flat,1,fort_permafrost_spikes,,TRUE,Ice

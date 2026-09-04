@@ -623,6 +623,7 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
             source = ownerDamageable != null ? ownerDamageable : (Player.Instance != null ? Player.Instance.Damageable : null),
             isProjectile = true,
             isPlayerDamage = true,
+            elementId = RunSession.ElementalSlots.GetValueOrDefault("SLOT_RANGED", "")
         };
     }
 

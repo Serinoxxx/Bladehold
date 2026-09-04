@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 [Serializable]
 public class DraftUpgradeDefinition
@@ -15,6 +16,11 @@ public class DraftUpgradeDefinition
     public string upgradeText;
     public List<SkillEffect> effects = new List<SkillEffect>();
     public string iconName;
+    
+    [Header("Elemental Synergy System")]
+    public string targetSlot;
+    public bool isDuo;
+    public List<string> prerequisiteElements = new List<string>();
 
     public string GetDescriptionForLevel(int currentLevel)
     {

@@ -173,7 +173,8 @@ public class ThrowingAxeUltimate : MonoBehaviour, IUltimateHandler
                     knockbackForce = 5f,
                     sourcePosition = orbitalBlades[i].position,
                     source = player.Damageable,
-                    isPlayerDamage = true
+                    isPlayerDamage = true,
+                    elementId = RunSession.ElementalSlots.GetValueOrDefault("SLOT_ULTIMATE", "")
                 };
 
                 damageable.ReceiveDamage(d);

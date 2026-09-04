@@ -113,7 +113,7 @@ public class DraftUpgradeService : MonoBehaviour
         List<string> cols = ParseCsvRow(row);
         if (cols.Count < 10) return null;
 
-        // Columns: id,displayName,category,weapon,element,isUltimate,maxLevel,description,upgradeText,stat,kind,amount,icon
+        // Columns: id,displayName,category,weapon,element,isUltimate,maxLevel,description,upgradeText,stat,kind,amount,icon,targetSlot,isDuo,prerequisiteElements
         DraftUpgradeDefinition def = new DraftUpgradeDefinition
         {
             id = cols[0].Trim(),
@@ -124,8 +124,15 @@ public class DraftUpgradeService : MonoBehaviour
             maxLevel = cols.Count > 6 && int.TryParse(cols[6].Trim(), out int ml) ? Mathf.Max(1, ml) : 1,
             description = cols.Count > 7 ? cols[7].Trim() : "",
             upgradeText = cols.Count > 8 ? cols[8].Trim() : "",
-            iconName = cols.Count > 12 ? cols[12].Trim() : ""
+            iconName = cols.Count > 12 ? cols[12].Trim() : "",
+            targetSlot = cols.Count > 13 ? cols[13].Trim() : "",
+            isDuo = cols.Count > 14 && (cols[14].Trim() == "1" || cols[14].Trim().Equals("true", StringComparison.OrdinalIgnoreCase))
         };
+
+        if (cols.Count > 15 && !string.IsNullOrEmpty(cols[15]))
+        {
+            def.prerequisiteElements.AddRange(cols[15].Split('|', StringSplitOptions.RemoveEmptyEntries));
+        }
 
         if (cols.Count > 2 && Enum.TryParse<DraftCategory>(cols[2].Trim(), true, out DraftCategory parsedCat))
         {
@@ -263,16 +270,22 @@ public class DraftUpgradeService : MonoBehaviour
                 }
             }
 
-            // Elemental lock rule
+            // Elemental slot rule
             if (def.category == DraftCategory.Elemental)
             {
-                if (RunSession.HasElementalLock && !string.IsNullOrEmpty(def.element))
+                if (def.isDuo)
                 {
-                    string lockedElem = RunSession.SelectedElement.Value.ToString();
-                    if (!def.element.Equals(lockedElem, StringComparison.OrdinalIgnoreCase))
+                    bool meetsPrereqs = true;
+                    HashSet<string> activeElements = RunSession.GetActiveElements();
+                    foreach (var prereq in def.prerequisiteElements)
                     {
-                        continue;
+                        if (!activeElements.Contains(prereq))
+                        {
+                            meetsPrereqs = false;
+                            break;
+                        }
                     }
+                    if (!meetsPrereqs) continue;
                 }
             }
 
@@ -304,11 +317,42 @@ public class DraftUpgradeService : MonoBehaviour
 
     /// <summary>
     ///     Applies the selected draft card, records it in RunSession, updates PlayerStats,
-    ///     and activates any ultimate or elemental locks.
+    ///     and activates any ultimate or elemental slots.
     /// </summary>
     public bool ApplyUpgrade(DraftUpgradeDefinition def)
     {
         if (def == null) return false;
+
+        // Handle Elemental Slots Overwrite
+        if (def.category == DraftCategory.Elemental && !string.IsNullOrEmpty(def.targetSlot))
+        {
+            if (RunSession.ElementalSlots.TryGetValue(def.targetSlot, out string currentElement))
+            {
+                // We are overwriting a slot. Is it a different element?
+                if (!currentElement.Equals(def.element, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Find the previous upgrade id for this slot (we can store it in RunSession.ElementalSlotUpgrades if we added it)
+                    // Wait, we can iterate all upgrades, find the one with this targetSlot, and remove it.
+                    foreach (var kvp in RunSession.InRunUpgradeLevels)
+                    {
+                        if (kvp.Value > 0)
+                        {
+                            DraftUpgradeDefinition oldDef = GetById(kvp.Key);
+                            if (oldDef != null && oldDef.category == DraftCategory.Elemental && oldDef.targetSlot == def.targetSlot && !oldDef.isDuo)
+                            {
+                                RemoveUpgrade(oldDef, kvp.Value);
+                                RunSession.SetUpgradeLevel(oldDef.id, 0);
+                                
+                                // Award conversion bonus
+                                RunSession.AddInRunGold(25);
+                                Debug.Log($"[DraftUpgradeService] Overwrote slot {def.targetSlot}. Removed {oldDef.id}, awarded 25 gold.");
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         int nextLevel = RunSession.GetUpgradeLevel(def.id) + 1;
         RunSession.SetUpgradeLevel(def.id, nextLevel);
@@ -336,14 +380,11 @@ public class DraftUpgradeService : MonoBehaviour
             }
         }
 
-        // Handle Elemental Lock
-        if (def.category == DraftCategory.Elemental && !string.IsNullOrEmpty(def.element))
+        // Handle Elemental Slots
+        if (def.category == DraftCategory.Elemental && !string.IsNullOrEmpty(def.targetSlot) && !string.IsNullOrEmpty(def.element))
         {
-            if (!RunSession.HasElementalLock && Enum.TryParse<ElementType>(def.element, true, out ElementType elemType))
-            {
-                RunSession.LockElement(elemType);
-                Debug.Log($"[DraftUpgradeService] Locked Run into Element: {elemType}!");
-            }
+            RunSession.SetElementalSlot(def.targetSlot, def.element);
+            Debug.Log($"[DraftUpgradeService] Equipped Element {def.element} to {def.targetSlot}");
         }
 
         // Handle Fortress Upgrades
@@ -357,6 +398,20 @@ public class DraftUpgradeService : MonoBehaviour
 
         Debug.Log($"[DraftUpgradeService] Applied Upgrade: '{def.displayName}' (Level {nextLevel}/{def.maxLevel}).");
         return true;
+    }
+
+    public void RemoveUpgrade(DraftUpgradeDefinition def, int levelToRemove)
+    {
+        if (def == null || levelToRemove <= 0) return;
+
+        Player player = Player.Instance;
+        if (player != null && player.Stats != null)
+        {
+            foreach (SkillEffect effect in def.effects)
+            {
+                player.Stats.AddModifier(effect.stat, effect.kind, -effect.AmountForLevel(levelToRemove));
+            }
+        }
     }
 
     public static void ConfigureUltimateHandler(Player player, string ultimateId)

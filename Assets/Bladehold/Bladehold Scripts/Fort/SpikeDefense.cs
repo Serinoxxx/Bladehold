@@ -219,7 +219,8 @@ public class SpikeDefense : FortDefense
                 direction = Vector3.up,
                 knockbackForce = knockback,
                 unparryable = true,
-                isPlayerDamage = true
+                isPlayerDamage = true,
+                elementId = RunSession.ElementalSlots.GetValueOrDefault("SLOT_FORTRESS", "")
             };
 
             enemyHealth.ReceiveDamage(damage);

@@ -88,7 +88,8 @@ public class BurningOilZone : MonoBehaviour
                 value = damagePerTick,
                 type = DamageType.elemental,
                 sourcePosition = transform.position,
-                isPlayerDamage = true
+                isPlayerDamage = true,
+                elementId = RunSession.ElementalSlots.GetValueOrDefault("SLOT_FORTRESS", "")
             };
             health.ReceiveDamage(damage);
 

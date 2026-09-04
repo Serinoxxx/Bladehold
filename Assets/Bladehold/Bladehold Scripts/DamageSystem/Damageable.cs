@@ -22,6 +22,9 @@ public class Damage
     /// <summary>World position the hit came from; the target is pushed away from this point.</summary>
     public Vector3 sourcePosition;
 
+    /// <summary>Element ID (e.g. FIRE, ICE, LIGHTNING) if this damage carries an elemental status effect.</summary>
+    public string elementId;
+
     /// <summary>
     ///     The attacker's own damage sink (e.g. its <see cref="Health" />), if the hit came from a
     ///     single identifiable source. Used by retaliation effects (e.g. the player's Counterstrike

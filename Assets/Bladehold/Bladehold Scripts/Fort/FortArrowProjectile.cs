@@ -68,7 +68,8 @@ public class FortArrowProjectile : MonoBehaviour
                     direction = direction,
                     sourcePosition = currentPos,
                     hitCollider = hit.collider,
-                    isPlayerDamage = true
+                    isPlayerDamage = true,
+                    elementId = RunSession.GetElementInSlot("SLOT_FORTRESS")
                 };
                 targetHealth.ReceiveDamage(damage);
 

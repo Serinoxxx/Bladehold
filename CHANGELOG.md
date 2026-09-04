@@ -4,6 +4,12 @@
 
 ### New Features
 - Overhauled core game loop into 4 rounds of 3 waves with progressive enemy unlocks (Round 1: Goblins & Brutes, Round 2: Big Orks, Round 3: Bubblers, Round 4: Bombers + Slayer Boss)
+- Replaced end-of-wave reward drops with a physical, interactive War Banner selection system granting unique modifiers and rewards
+- Refactored single-element lock into a Hades-inspired ability-slot elemental system (Melee, Ranged, Mobility, Ultimate, Fortress)
+- Added new elemental statuses: Ignited (DoT), Chilled (Slow), Frozen (Stun), and Conductive (Chain Lightning)
+- Added Elemental Discord mechanic: Enemies inflicted with 2 or more distinct elements take +40% damage from all sources
+- Added Duo Synergies to the Draft Upgrade pool (Thermal Shock, Plasma Overload, Superconductor) requiring specific elements equipped
+- Added compensation mechanic for replacing an elemental ability slot (+25 In-Run Gold)
 - Added dedicated Rest Area scene between rounds (Waves 3, 6, 9) featuring the Well (+20 HP), Merchant Shop, Upgrade Draft station, and Return Gate
 - Added dedicated Meta Progression Area scene upon defeat featuring the Spirit NPC and diegetic 3D weapon pedestals
 - Added universal interaction framework using the 'E' key and gamepad for all world stations, pedestals, and gates

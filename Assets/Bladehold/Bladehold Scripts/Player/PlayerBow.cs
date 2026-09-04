@@ -917,6 +917,8 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
             knockbackForce = 50f; // huge knockback during Ranger Ultimate
         }
 
+        string effectiveSlot = IsUltimateLocked ? "SLOT_ULTIMATE" : "SLOT_RANGED";
+
         return new Damage
         {
             value = value,
@@ -927,6 +929,7 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
             source = ownerDamageable,
             isProjectile = true,
             isPlayerDamage = true,
+            elementId = RunSession.ElementalSlots.GetValueOrDefault(effectiveSlot, "")
         };
     }
 

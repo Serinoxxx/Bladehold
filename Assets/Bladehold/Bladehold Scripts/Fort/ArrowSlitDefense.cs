@@ -423,7 +423,8 @@ public class ArrowSlitDefense : FortDefense
                 isProjectile = true,
                 direction = dir,
                 sourcePosition = startPos,
-                isPlayerDamage = true
+                isPlayerDamage = true,
+                elementId = RunSession.GetElementInSlot("SLOT_FORTRESS")
             };
             target.ReceiveDamage(damage);
 

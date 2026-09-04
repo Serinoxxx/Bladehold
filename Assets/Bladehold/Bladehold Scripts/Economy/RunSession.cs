@@ -12,8 +12,23 @@ public static class RunSession
     public static int InRunGold { get; set; }
     public static int CurrentWave { get; set; } = 1;
     public static int RestVisitsCount { get; set; } = 0;
-    public static ElementType? SelectedElement { get; set; } = null;
-    public static bool HasElementalLock => SelectedElement.HasValue;
+    
+    // Elemental Ability Slots Mapping (SlotName -> ElementType)
+    public static Dictionary<string, string> ElementalSlots { get; private set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+    public static HashSet<string> GetActiveElements()
+    {
+        return new HashSet<string>(ElementalSlots.Values, StringComparer.OrdinalIgnoreCase);
+    }
+
+    public static void SetElementalSlot(string slotName, string element)
+    {
+        if (string.IsNullOrEmpty(slotName) || string.IsNullOrEmpty(element)) return;
+        ElementalSlots[slotName] = element;
+        OnElementalSlotChanged?.Invoke(slotName, element);
+    }
+
+    public static event Action<string, string> OnElementalSlotChanged;
 
     public static int CrystalWaterWavesRemaining { get; set; } = 0;
     public static int SpecialHerbsWavesRemaining { get; set; } = 0;
@@ -24,7 +39,6 @@ public static class RunSession
     public static int CurrentRound => Mathf.Clamp((CurrentWave - 1) / 3 + 1, 1, 4);
 
     public static event Action<int> OnInRunGoldChanged;
-    public static event Action<ElementType> OnElementLocked;
 
     /// <summary>
     ///     Checks if a permanent meta-progression perk is owned in SaveData.
@@ -67,7 +81,7 @@ public static class RunSession
     {
         CurrentWave = 1;
         RestVisitsCount = 0;
-        SelectedElement = null;
+        ElementalSlots.Clear();
         CrystalWaterWavesRemaining = 0;
         SpecialHerbsWavesRemaining = 0;
         PlayerBonusMaxHealth = 0f;
@@ -208,10 +222,13 @@ public static class RunSession
         SaveSystem.Save(data);
     }
 
-    public static void LockElement(ElementType element)
+    public static string GetElementInSlot(string slotName)
     {
-        SelectedElement = element;
-        OnElementLocked?.Invoke(element);
+        if (ElementalSlots.TryGetValue(slotName, out string element))
+        {
+            return element;
+        }
+        return "";
     }
 
     /// <summary>

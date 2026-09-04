@@ -161,6 +161,11 @@ public class Health : MonoBehaviour, IDamageable
             return;
         }
 
+        if (damage.isPlayerDamage && !string.IsNullOrEmpty(damage.elementId))
+        {
+            EnemyStatusManager.GetOrAdd(this);
+        }
+
         if (BlockDamage(damage))
         {
             return;

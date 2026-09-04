@@ -43,6 +43,9 @@ public class DamageTrigger : MonoBehaviour
     /// Lets systems like <see cref="RunTelemetry" /> find the sword among the player's triggers.</summary>
     public bool ReadsPlayerStats => readsPlayerStats;
 
+    [Tooltip("Which elemental slot to read from (e.g., SLOT_MELEE, SLOT_ULTIMATE). Used to infuse hits with elemental status.")]
+    [SerializeField] string elementSlot = "SLOT_MELEE";
+
     [Tooltip("Base critical-strike damage multiplier, registered as the CritMultiplier stat base. 1.5 = crits deal 1.5x before Critical Damage skill nodes raise it.")]
     [SerializeField] float baseCritMultiplier = 1.5f;
 
@@ -594,6 +597,16 @@ public class DamageTrigger : MonoBehaviour
         // multiplier — "adds to the damage of that attack".
         value += activationPainBonus;
 
+        string effectiveSlot = elementSlot;
+        if (isPlayer && Player.Instance != null)
+        {
+            var ultCtrl = Player.Instance.GetComponentInChildren<PlayerUltimateController>();
+            if (ultCtrl != null && ultCtrl.IsUltimateActive)
+            {
+                effectiveSlot = "SLOT_ULTIMATE";
+            }
+        }
+
         return new Damage
         {
             value = value,
@@ -605,6 +618,7 @@ public class DamageTrigger : MonoBehaviour
             // receives, and this trigger never damages its owner.
             source = ownerDamageable,
             isPlayerDamage = isPlayer,
+            elementId = isPlayer ? RunSession.ElementalSlots.GetValueOrDefault(effectiveSlot, "") : "",
         };
     }
 }
