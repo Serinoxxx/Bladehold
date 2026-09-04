@@ -475,6 +475,11 @@ public class GameLoopManager : MonoBehaviour
 
     private void SpawnWarBanners()
     {
+        StartCoroutine(SpawnWarBannersRoutine());
+    }
+
+    private IEnumerator SpawnWarBannersRoutine()
+    {
         isIntermission = true;
         if (intermissionBanner != null) intermissionBanner.SetActive(true);
         if (waveAnnouncementText != null) waveAnnouncementText.text = "SELECT A WAR BANNER TO START NEXT WAVE";
@@ -490,7 +495,7 @@ public class GameLoopManager : MonoBehaviour
         {
             Debug.LogWarning("[GameLoopManager] Banner config/prefab/spawn points missing. Skipping banners.");
             StartCoroutine(StartNextWaveAfterDelay());
-            return;
+            yield break;
         }
 
         // Pick 3 random unique buffs and bounties
@@ -511,6 +516,7 @@ public class GameLoopManager : MonoBehaviour
                 controller.OnBannerInteracted += HandleBannerInteracted;
                 activeBanners.Add(controller);
             }
+            yield return new WaitForSeconds(0.6f);
         }
     }
 

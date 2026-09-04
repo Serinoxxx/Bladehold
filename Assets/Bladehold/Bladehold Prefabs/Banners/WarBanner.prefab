@@ -294,6 +294,11 @@ MonoBehaviour:
   buffDescriptionText: {fileID: 3483030738197735232}
   bountyDescriptionText: {fileID: 8587150329809468027}
   clanSigilImage: {fileID: 0}
+  slamVfxPrefab: {fileID: 1809022330002312, guid: ed511b7776af6174e9b1255c7a81e59c, type: 3}
+  slamSfx: {fileID: 8300000, guid: 620a1203e97355d46974c284456ffc8f, type: 3}
+  burnVfxPrefab: {fileID: 1392961458021664, guid: 7c2d45330a7b1894ca1aacb0ebd30599, type: 3}
+  burnSfx: {fileID: 8300000, guid: 72fcfa7f43d834350a46f96454f27706, type: 3}
+  groundWaypointPrefab: {fileID: 4429605933074003170, guid: 9ab5d3e06ba58e5489977d1620c9c852, type: 3}
 --- !u!114 &95009452656718062
 MonoBehaviour:
   m_ObjectHideFlags: 0

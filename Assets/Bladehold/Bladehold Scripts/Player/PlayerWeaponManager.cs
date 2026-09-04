@@ -33,6 +33,12 @@ public class PlayerWeaponManager : MonoBehaviour
     [SerializeField] private ChainLightning chainLightning;
     [SerializeField] private ImpulseHitFeedback impulseHitFeedback;
 
+    [Header("Elemental VFX Prefabs")]
+    [SerializeField] private GameObject fireWeaponVfxPrefab;
+    [SerializeField] private GameObject iceWeaponVfxPrefab;
+    [SerializeField] private GameObject lightningWeaponVfxPrefab;
+    [SerializeField] private GameObject poisonWeaponVfxPrefab;
+
     private string currentMeleeId = "sword";
     private string currentRangedId = "bow";
 
@@ -40,6 +46,9 @@ public class PlayerWeaponManager : MonoBehaviour
     public string CurrentRangedId => currentRangedId;
     public DamageTrigger ActiveMeleeTrigger { get; private set; }
     public IChargedAimWeapon ActiveAimWeapon { get; private set; }
+
+    private GameObject activeMeleeVfxInstance;
+    private GameObject activeRangedVfxInstance;
 
     private void Awake()
     {
@@ -50,13 +59,70 @@ public class PlayerWeaponManager : MonoBehaviour
 
         AutoFindReferences();
         ApplySavedLoadout();
+        
+        RunSession.OnElementalSlotChanged -= HandleElementalSlotChanged;
+        RunSession.OnElementalSlotChanged += HandleElementalSlotChanged;
+    }
+
+    private void Start()
+    {
+        // Apply initial from session
+        HandleElementalSlotChanged("SLOT_MELEE", RunSession.ElementalSlots.GetValueOrDefault("SLOT_MELEE", ""));
+        HandleElementalSlotChanged("SLOT_RANGED", RunSession.ElementalSlots.GetValueOrDefault("SLOT_RANGED", ""));
     }
 
     private void OnDestroy()
     {
+        RunSession.OnElementalSlotChanged -= HandleElementalSlotChanged;
         if (Instance == this)
         {
             Instance = null;
+        }
+    }
+
+    private GameObject GetVfxPrefabForElement(string elementId)
+    {
+        switch (elementId?.ToUpper())
+        {
+            case "FIRE": return fireWeaponVfxPrefab;
+            case "ICE": return iceWeaponVfxPrefab;
+            case "LIGHTNING": return lightningWeaponVfxPrefab;
+            case "POISON": return poisonWeaponVfxPrefab;
+            default: return null;
+        }
+    }
+
+    private void HandleElementalSlotChanged(string slotName, string elementId)
+    {
+        if (slotName == "SLOT_MELEE")
+        {
+            if (activeMeleeVfxInstance != null) Destroy(activeMeleeVfxInstance);
+            GameObject prefab = GetVfxPrefabForElement(elementId);
+            if (prefab != null)
+            {
+                Transform parent = currentMeleeId == "axe" ? axeObject.transform : swordObject.transform;
+                if (parent != null)
+                {
+                    activeMeleeVfxInstance = Instantiate(prefab, parent);
+                    activeMeleeVfxInstance.transform.localPosition = Vector3.zero;
+                    activeMeleeVfxInstance.transform.localRotation = Quaternion.identity;
+                }
+            }
+        }
+        else if (slotName == "SLOT_RANGED")
+        {
+            if (activeRangedVfxInstance != null) Destroy(activeRangedVfxInstance);
+            GameObject prefab = GetVfxPrefabForElement(elementId);
+            if (prefab != null)
+            {
+                Transform parent = currentRangedId == "throwing_axe" ? playerThrownAxe.transform : playerBow.transform;
+                if (parent != null)
+                {
+                    activeRangedVfxInstance = Instantiate(prefab, parent);
+                    activeRangedVfxInstance.transform.localPosition = Vector3.zero;
+                    activeRangedVfxInstance.transform.localRotation = Quaternion.identity;
+                }
+            }
         }
     }
 

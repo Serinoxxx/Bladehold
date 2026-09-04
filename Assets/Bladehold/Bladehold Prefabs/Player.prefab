@@ -1793,6 +1793,10 @@ MonoBehaviour:
   facingCamera: {fileID: 0}
   dashDuration: 0.2
   dashVfxPrefab: {fileID: 1049843463841446, guid: 2966910701d40974c87f0338bb5694e3, type: 3}
+  fireDashVfxPrefab: {fileID: 1677232327238848, guid: 673011a12ec748844a398a9504a957a4, type: 3}
+  iceDashVfxPrefab: {fileID: 1728184095918548, guid: a977b50d367fe4d4d8f6c288bad7df24, type: 3}
+  lightningDashVfxPrefab: {fileID: 1454807473737458, guid: 6108438f5e38d0b4b8fed06af6b74254, type: 3}
+  poisonDashVfxPrefab: {fileID: 1447051283816784, guid: 61400dcd69108c64b970eb523f3d1783, type: 3}
   dodgeSfx: {fileID: 8300000, guid: 63b2fb57cfa12054698d3604b978dd65, type: 3}
   dodgeFeedback: {fileID: 0}
 --- !u!114 &924873914309187086
@@ -1846,6 +1850,10 @@ MonoBehaviour:
   vampiricBlade: {fileID: 0}
   chainLightning: {fileID: 0}
   impulseHitFeedback: {fileID: 0}
+  fireWeaponVfxPrefab: {fileID: 1392961458021664, guid: 7c2d45330a7b1894ca1aacb0ebd30599, type: 3}
+  iceWeaponVfxPrefab: {fileID: 1828717585066262, guid: 15020532ea6e8b449a74e895e1097087, type: 3}
+  lightningWeaponVfxPrefab: {fileID: 1454807473737458, guid: 6108438f5e38d0b4b8fed06af6b74254, type: 3}
+  poisonWeaponVfxPrefab: {fileID: 1447051283816784, guid: 61400dcd69108c64b970eb523f3d1783, type: 3}
 --- !u!114 &4218521274988385536
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14039,6 +14047,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   readsPlayerStats: 0
+  elementSlot: SLOT_MELEE
   baseCritMultiplier: 1.5
   playerAttack: {fileID: 0}
   impulseBuff: {fileID: 0}
@@ -31319,6 +31328,10 @@ MonoBehaviour:
   facingCamera: {fileID: 0}
   dashDuration: 0.2
   dashVfxPrefab: {fileID: 1049843463841446, guid: 2966910701d40974c87f0338bb5694e3, type: 3}
+  fireDashVfxPrefab: {fileID: 0}
+  iceDashVfxPrefab: {fileID: 0}
+  lightningDashVfxPrefab: {fileID: 0}
+  poisonDashVfxPrefab: {fileID: 0}
   dodgeSfx: {fileID: 8300000, guid: 63b2fb57cfa12054698d3604b978dd65, type: 3}
   dodgeFeedback: {fileID: 0}
 --- !u!4 &8319765117670202089 stripped

@@ -57,9 +57,59 @@ public class WarBannerController : MonoBehaviour
         interactable.CanInteract = true;
     }
 
+    [Header("Effects")]
+    [SerializeField] private GameObject slamVfxPrefab;
+    [SerializeField] private AudioClip slamSfx;
+    [SerializeField] private GameObject burnVfxPrefab;
+    [SerializeField] private AudioClip burnSfx;
+    [SerializeField] private GameObject groundWaypointPrefab;
+
+    private GameObject activeGroundWaypoint;
+
     private void HandleInteracted(Player player)
     {
         interactable.CanInteract = false;
+        TearDown();
         OnBannerInteracted?.Invoke(this);
+    }
+
+    public void SlamDown()
+    {
+        Vector3 endPos = transform.position;
+        // Start high up
+        transform.position = endPos + Vector3.up * 15f;
+        
+        // LeanTween slam down
+        LeanTween.moveY(gameObject, endPos.y, 0.4f).setEase(LeanTweenType.easeInCubic).setOnComplete(() =>
+        {
+            if (slamVfxPrefab != null)
+            {
+                Instantiate(slamVfxPrefab, transform.position, Quaternion.identity);
+            }
+            if (slamSfx != null)
+            {
+                AudioSource.PlayClipAtPoint(slamSfx, transform.position, 1.0f);
+            }
+            if (groundWaypointPrefab != null)
+            {
+                activeGroundWaypoint = Instantiate(groundWaypointPrefab, transform.position, Quaternion.identity, transform);
+            }
+        });
+    }
+
+    private void TearDown()
+    {
+        if (activeGroundWaypoint != null) Destroy(activeGroundWaypoint);
+        
+        if (burnVfxPrefab != null)
+        {
+            GameObject fire = Instantiate(burnVfxPrefab, transform.position, Quaternion.identity, transform);
+            // offset slightly up
+            fire.transform.localPosition = new Vector3(0, 1.5f, 0);
+        }
+        if (burnSfx != null)
+        {
+            AudioSource.PlayClipAtPoint(burnSfx, transform.position, 1.0f);
+        }
     }
 }

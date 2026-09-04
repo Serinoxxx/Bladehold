@@ -179,7 +179,7 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
                 ObjectiveWaypointTarget target = targetBuffer[i];
                 if (target.Transform == null)
                 {
-                    if (marker.IsActive) marker.Unbind();
+                    marker.Unbind();
                     continue;
                 }
 
@@ -198,15 +198,12 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
                 bool isBehindCamera = screenPos.z < 0;
 
                 Vector2 fromCenter = (Vector2)screenPos - screenCenter;
-                if (isBehindCamera)
-                {
-                    fromCenter = -fromCenter;
-                }
 
-                bool isOffScreen = isBehindCamera ||
-                                   screenPos.x < screenEdgePadding.x ||
-                                   screenPos.x > Screen.width - screenEdgePadding.x ||
-                                   screenPos.y < screenEdgePadding.y ||
+                // Offscreen clamping
+                bool isOffScreen = isBehindCamera || 
+                                   screenPos.x < screenEdgePadding.x || 
+                                   screenPos.x > Screen.width - screenEdgePadding.x || 
+                                   screenPos.y < screenEdgePadding.y || 
                                    screenPos.y > Screen.height - screenEdgePadding.y;
 
                 float arrowAngle = 0f;
@@ -214,7 +211,17 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
 
                 if (isOffScreen)
                 {
-                    if (fromCenter.sqrMagnitude < 0.001f)
+                    // Clamp to edge
+                    if (isBehindCamera)
+                    {
+                        fromCenter = -fromCenter;
+                        if (fromCenter == Vector2.zero)
+                        {
+                            fromCenter = Vector2.up;
+                        }
+                    }
+
+                    if (fromCenter == Vector2.zero)
                     {
                         fromCenter = Vector2.up;
                     }
@@ -246,10 +253,7 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
             }
             else
             {
-                if (marker.IsActive)
-                {
-                    marker.Unbind();
-                }
+                marker.Unbind();
             }
         }
     }

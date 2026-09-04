@@ -25,8 +25,11 @@
 - Added dedicated Draft Upgrades CSV (`DraftUpgrades.csv`) and `DraftUpgradeService` providing targeted weapon upgrades, elemental skill paths, and fortress enhancements
 - Added dedicated Weapon Ultimates: Warhorse Cavalry Charge for Sword (`SwordMountUltimate`) and Axe Vortex bloodstorm cyclone for Throwing Axe (`ThrowingAxeUltimate`) with rapid 3-way fan throws
 - Added category-themed lighting, emission, and interaction prompt feedback to arena powerups and the Rest Area Draft Station (Orange for Weapon, Cyan for Elemental, Golden Amber for Fortress)
+- Added specific visual effects for equipped weapons and dash trails when drafting elemental cards (Fire, Ice, Lightning, Poison)
+- Added new visual and sound effects for War Banners including a staggered slam-down animation on spawn, ground waypoints, and a burning sequence when selected
 
 ### Fixes
+- Fixed an issue where objective waypoint markers remained on screen after destroying targets like catapults
 - Fixed player character getting stuck in air and unable to move when dismounting or after horse death mid-air
 - Fixed interaction prompt persisting indefinitely on screen after moving away from world interactables
 - Fixed inability to interact with the Merchant Shop by dynamically tracking character movement and expanding the shop stall interaction radius

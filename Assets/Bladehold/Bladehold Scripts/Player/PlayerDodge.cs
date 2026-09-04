@@ -18,6 +18,11 @@ public class PlayerDodge : MonoBehaviour
     [Header("Juice & Effects")]
     [Tooltip("Particle VFX prefab spawned during the dodge dash.")]
     [SerializeField] private GameObject dashVfxPrefab;
+    [SerializeField] private GameObject fireDashVfxPrefab;
+    [SerializeField] private GameObject iceDashVfxPrefab;
+    [SerializeField] private GameObject lightningDashVfxPrefab;
+    [SerializeField] private GameObject poisonDashVfxPrefab;
+    
     [Tooltip("Sound effect played on dodge initiation.")]
     [SerializeField] private AudioClip dodgeSfx;
     [Tooltip("Optional MMF_Player feedback triggered on dodge.")]
@@ -96,9 +101,19 @@ public class PlayerDodge : MonoBehaviour
         }
 
         GameObject activeVfx = null;
-        if (dashVfxPrefab != null)
+        GameObject prefabToUse = dashVfxPrefab;
+        string elementId = RunSession.ElementalSlots.GetValueOrDefault("SLOT_MOBILITY", "");
+        switch (elementId?.ToUpper())
         {
-            activeVfx = Instantiate(dashVfxPrefab, transform.position, transform.rotation, transform);
+            case "FIRE": if (fireDashVfxPrefab != null) prefabToUse = fireDashVfxPrefab; break;
+            case "ICE": if (iceDashVfxPrefab != null) prefabToUse = iceDashVfxPrefab; break;
+            case "LIGHTNING": if (lightningDashVfxPrefab != null) prefabToUse = lightningDashVfxPrefab; break;
+            case "POISON": if (poisonDashVfxPrefab != null) prefabToUse = poisonDashVfxPrefab; break;
+        }
+
+        if (prefabToUse != null)
+        {
+            activeVfx = Instantiate(prefabToUse, transform.position, transform.rotation, transform);
             Destroy(activeVfx, dashDuration + 1f);
         }
 
