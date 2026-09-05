@@ -49,11 +49,7 @@ public class EnemyZooTab
 
         EditorGUILayout.LabelField("Enemy Zoo (live)", EditorStyles.boldLabel);
 
-        bool battle = EditorGUILayout.ToggleLeft("Battle Mode (gallery fights the player)", zoo.BattleMode);
-        if (battle != zoo.BattleMode)
-        {
-            zoo.SetBattleMode(battle);
-        }
+
 
         if (GUILayout.Button("Respawn Gallery", GUILayout.Height(24f)))
         {

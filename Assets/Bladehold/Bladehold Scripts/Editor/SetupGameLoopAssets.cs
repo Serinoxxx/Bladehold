@@ -703,8 +703,8 @@ public static class SetupGameLoopAssets
             shopUI.RefreshUI();
             int goldBeforeBuy = RunSession.InRunGold;
             // Purchase slot 0
-            var buyMethod = typeof(ShopUI).GetMethod("BuyItem", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (buyMethod != null) buyMethod.Invoke(shopUI, new object[] { 0 });
+            var buyMethod = typeof(ShopUI).GetMethod("HandleBuyAttempt", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (buyMethod != null) buyMethod.Invoke(shopUI, new object[] { 0, null });
             int goldAfterBuy = RunSession.InRunGold;
             sb.AppendLine($"- Shop: Gold before purchase={goldBeforeBuy}, after purchase={goldAfterBuy} (Deducted={goldBeforeBuy > goldAfterBuy})");
             shopUI.CloseShop();

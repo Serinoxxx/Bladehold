@@ -30,6 +30,7 @@
 - Added new visual and sound effects for War Banners including a staggered slam-down animation on spawn, ground waypoints, and a burning sequence when selected
 
 ### Fixes
+- Fixed the game appearing to freeze after clearing a wave by displaying the intermission choice menu immediately, and fixed the pause menu breaking the camera when opened during the intermission
 - Fixed wave spawner occasionally exceeding the 20 concurrent enemy limit.
 - Fixed enemy health bars rendering inside the models of larger enemies (like Big Ork and Bosses) by dynamically checking height.
 - Fixed language settings changes failing to apply in the Main Menu.
@@ -225,6 +226,7 @@
 ### General Changes
 - Added hit sparks, screen shake, and impact sounds
 - Added Berserker and Mage skill tree preview panels
+
 
 
 

@@ -99,6 +99,8 @@ public class PauseMenuController : MonoBehaviour
         SetPaused(!IsPaused);
     }
 
+    private float prePauseTimeScale;
+
     public void SetPaused(bool paused)
     {
         if (IsPaused == paused)
@@ -114,13 +116,21 @@ public class PauseMenuController : MonoBehaviour
         IsPaused = paused;
         if (paused)
         {
+            prePauseTimeScale = Time.timeScale;
             Time.timeScale = 0f;
             MoreMountains.Feedbacks.MMTimeScaleEvent.Trigger(MoreMountains.Feedbacks.MMTimeScaleMethods.For, 0f, 0f, false, 0f, true);
         }
         else
         {
             MoreMountains.Feedbacks.MMTimeScaleEvent.Reset();
-            Time.timeScale = GameSettingsService.TargetTimeScale;
+            if (prePauseTimeScale > 0f)
+            {
+                Time.timeScale = GameSettingsService.TargetTimeScale;
+            }
+            else
+            {
+                Time.timeScale = 0f;
+            }
         }
 
         CursorLockManager.SetUnlock("PauseMenu", paused);

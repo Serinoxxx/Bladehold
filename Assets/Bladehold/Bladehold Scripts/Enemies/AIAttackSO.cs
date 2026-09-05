@@ -6,6 +6,14 @@ public class AIAttackSO : ScriptableObject
     [Header("Targeting")]
     [Tooltip("Distance to the player within which the goblin will start an attack.")]
     public float attackRange = 2f;
+    [Tooltip("Half-angle of the cone in front of the enemy within which the player must be to start an attack (degrees).")]
+    public float attackConeAngle = 45f;
+
+    [Header("Turning")]
+    [Tooltip("Turn rate multiplier applied after an attack.")]
+    public float postAttackTurnMultiplier = 0.5f;
+    [Tooltip("Duration of the turn rate penalty after an attack.")]
+    public float postAttackTurnPenaltyDuration = 1.0f;
 
     [Header("Damage")]
     [Tooltip("Damage dealt to the player if they are still in range at the attack's apex.")]

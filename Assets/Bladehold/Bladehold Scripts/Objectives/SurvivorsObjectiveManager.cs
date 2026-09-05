@@ -44,7 +44,7 @@ public class SurvivorsObjectiveManager : MonoBehaviour
     private ISurvivorsObjective currentObjective;
     private SurvivorsObjectivePhase currentPhase = SurvivorsObjectivePhase.Active;
     private float phaseTimer = 0f;
-    private int currentWave = 1;
+    private int currentWave = 0;
     private int lastObjectiveIndex = -1;
     private int completedObjectiveCount = 0;
     private bool isRunning;

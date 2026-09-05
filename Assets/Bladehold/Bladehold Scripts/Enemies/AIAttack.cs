@@ -19,6 +19,7 @@ public class AIAttack : MonoBehaviour
     [SerializeField] private MMF_Player startAttackFeedback;
     [SerializeField] private MMF_Player attackHitFeedback;
     [SerializeField] private KnockbackReceiver knockbackReceiver;
+    [SerializeField] private AIMovement movement;
 
     // Animator trigger that starts the attack. Wire an attack state driven by this in the Animator.
     [SerializeField] private string attackTrigger = "Attack";
@@ -73,6 +74,10 @@ public class AIAttack : MonoBehaviour
         {
             knockbackReceiver = GetComponent<KnockbackReceiver>();
         }
+        if (movement == null)
+        {
+            movement = GetComponent<AIMovement>();
+        }
     }
 
     private void Start()
@@ -95,6 +100,10 @@ public class AIAttack : MonoBehaviour
         if (knockbackReceiver == null)
         {
             knockbackReceiver = GetComponent<KnockbackReceiver>();
+        }
+        if (movement == null)
+        {
+            movement = GetComponent<AIMovement>();
         }
 
         if (anyError)
@@ -149,6 +158,10 @@ public class AIAttack : MonoBehaviour
             StopCoroutine(attackRoutine);
             attackRoutine = null;
         }
+        if (movement != null)
+        {
+            movement.SetTurningPaused(false);
+        }
         // Corpses have nothing left to tick. (Coroutines survive a disable, and ApplyDamageAtApex
         // already bails on isDead.)
         enabled = false;
@@ -169,9 +182,27 @@ public class AIAttack : MonoBehaviour
             }
 
             animator.SetTrigger(staggerTriggerHash);
+            
+            if (movement != null)
+            {
+                movement.SetTurningPaused(true);
+            }
 
             // Put attack on cooldown so they don't immediately attack again when the animation finishes
             lastAttackTime = Time.time + attackData.staggerCooldown - attackData.attackCooldown;
+            
+            // We need to unpause turning after stagger cooldown. Since staggerCooldown represents the animation duration effectively here.
+            // We can just use Invoke or a Coroutine to unpause turning.
+            StartCoroutine(UnpauseTurningAfterDelay(attackData.staggerCooldown));
+        }
+    }
+
+    private IEnumerator UnpauseTurningAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (movement != null && !isDead)
+        {
+            movement.SetTurningPaused(false);
         }
     }
 
@@ -222,7 +253,24 @@ public class AIAttack : MonoBehaviour
         // attacker. Ground-to-ground targets are unaffected (their height difference is ~0).
         Vector3 toTarget = targetPosition - transform.position;
         toTarget.y = 0f;
-        return toTarget.sqrMagnitude <= attackData.attackRange * attackData.attackRange;
+        
+        if (toTarget.sqrMagnitude > attackData.attackRange * attackData.attackRange)
+        {
+            return false;
+        }
+        
+        if (toTarget.sqrMagnitude > 0.0001f)
+        {
+            Vector3 forward = transform.forward;
+            forward.y = 0f;
+            float angle = Vector3.Angle(forward, toTarget);
+            if (angle > attackData.attackConeAngle)
+            {
+                return false;
+            }
+        }
+        
+        return true;
     }
 
     private IEnumerator PrepareAndAttack()
@@ -244,6 +292,11 @@ public class AIAttack : MonoBehaviour
         }
         lastAttackTime = Time.time;
         animator.SetTrigger(attackTriggerHash);
+        
+        if (movement != null)
+        {
+            movement.SetTurningPaused(true);
+        }
 
         // The apex is approximated by a tunable wind-up so it stays in sync with the attack clip
         // without needing an animation event.
@@ -267,6 +320,12 @@ public class AIAttack : MonoBehaviour
             {
                 attackHitFeedback.PlayFeedbacks();
             }
+        }
+        
+        if (movement != null)
+        {
+            movement.SetTurningPaused(false);
+            movement.ApplyTurnPenalty(attackData.postAttackTurnMultiplier, attackData.postAttackTurnPenaltyDuration);
         }
         
         attackRoutine = null;

@@ -149,17 +149,17 @@ public class WaveStatsPanel : MonoBehaviour
         yield return new WaitForSecondsRealtime(lineStagger);
         if (damageDealtText != null)
         {
-            yield return CountUp(damageDealtText, damageDealtBar, Loc.Get("wavestats.damage_dealt") ?? "{0} Damage Dealt", Mathf.RoundToInt(damageDealt), damageDealtRevealFeedback);
+            yield return CountUp(damageDealtText, damageDealtBar, Loc.Get("wavestats.damage_dealt", "{0} Damage Dealt"), Mathf.RoundToInt(damageDealt), damageDealtRevealFeedback);
             yield return new WaitForSecondsRealtime(lineStagger);
         }
         if (damageTakenText != null)
         {
-            yield return CountUp(damageTakenText, damageTakenBar, Loc.Get("wavestats.damage_taken") ?? "{0} Damage Taken", Mathf.RoundToInt(damageTaken), damageTakenRevealFeedback);
+            yield return CountUp(damageTakenText, damageTakenBar, Loc.Get("wavestats.damage_taken", "{0} Damage Taken"), Mathf.RoundToInt(damageTaken), damageTakenRevealFeedback);
             yield return new WaitForSecondsRealtime(lineStagger);
         }
         if (critsText != null)
         {
-            yield return CountUp(critsText, critsBar, Loc.Get("wavestats.crits") ?? "{0} Critical Hits", crits, critsRevealFeedback);
+            yield return CountUp(critsText, critsBar, Loc.Get("wavestats.crits", "{0} Critical Hits"), crits, critsRevealFeedback);
             yield return new WaitForSecondsRealtime(lineStagger);
         }
         yield return CountUp(goldEarnedText, goldBar, Loc.Get("wavestats.gold_earned"), gold, goldRevealFeedback);

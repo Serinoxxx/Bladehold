@@ -190,14 +190,14 @@ public class WaveIntermissionUI : MonoBehaviour
         // Free the cursor so the choice buttons are clickable (the camera pivot locks it for look).
         CursorLockManager.SetUnlock("WaveIntermission", true);
 
-        if (statsPanel != null)
-        {
-            yield return statsPanel.PlayReveal(clearedWave);
-        }
-
         if (choiceButtons != null)
         {
             choiceButtons.SetActive(true);
+        }
+
+        if (statsPanel != null)
+        {
+            yield return statsPanel.PlayReveal(clearedWave);
         }
     }
 

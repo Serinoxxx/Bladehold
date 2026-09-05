@@ -18,6 +18,10 @@ public class AIMovement : MonoBehaviour
     bool isDead = false;
     bool playerDead = false;
     bool isPaused = false;
+    bool isTurningPaused = false;
+    float turnMultiplier = 1f;
+    float turnMultiplierEndTime = 0f;
+    float baseAngularSpeed = 120f;
     bool anyError = false;
     float? speedOverride;
     float speedMultiplier = 1f;
@@ -96,6 +100,7 @@ public class AIMovement : MonoBehaviour
         }
 
         agent.speed = BaseSpeed;
+        baseAngularSpeed = agent.angularSpeed;
 
         // Avoidance is applied in code so the prefab's NavMeshAgent stays untouched. Start in the
         // near tier; the repath tick moves the agent between tiers as its distance changes.
@@ -172,11 +177,6 @@ public class AIMovement : MonoBehaviour
         }
     }
 
-    /// <summary>
-    ///     Temporarily halts/resumes chasing without touching the death/player-death state above —
-    ///     used by attacks with a long wind-up (e.g. <see cref="TrollSlamAttack" />) that shouldn't
-    ///     slide out from under a telegraph locked to the enemy's position when the wind-up started.
-    /// </summary>
     public void SetMovementPaused(bool paused)
     {
         if (anyError || isDead) return;
@@ -193,12 +193,39 @@ public class AIMovement : MonoBehaviour
         }
     }
 
+    public void SetTurningPaused(bool paused)
+    {
+        if (anyError || isDead) return;
+        isTurningPaused = paused;
+        if (agent != null && agent.isOnNavMesh)
+        {
+            agent.updateRotation = !paused;
+        }
+    }
+
+    public void ApplyTurnPenalty(float multiplier, float duration)
+    {
+        if (anyError || isDead) return;
+        turnMultiplier = multiplier;
+        turnMultiplierEndTime = Time.time + duration;
+    }
+
     float lastUpdateTime;
     bool isFar;
     // Update is called once per frame
     void Update()
     {
         if (anyError || isDead || playerDead || isPaused) return;
+
+        if (Time.time > turnMultiplierEndTime)
+        {
+            turnMultiplier = 1f;
+        }
+
+        if (agent != null && agent.isOnNavMesh && !isTurningPaused)
+        {
+            agent.angularSpeed = baseAngularSpeed * turnMultiplier;
+        }
 
         // Far agents repath less often — with the stagger above, ~300 agents spread their
         // SetDestination calls evenly instead of spiking the path queue in lockstep.
@@ -223,6 +250,7 @@ public class AIMovement : MonoBehaviour
     /// </summary>
     private void FaceTargetWhenStopped()
     {
+        if (isTurningPaused) return;
         if (agent.pathPending || agent.remainingDistance > agent.stoppingDistance) return;
 
         Vector3 targetPosition = targetSelector != null ? targetSelector.TargetPosition : player.transform.position;
@@ -231,7 +259,7 @@ public class AIMovement : MonoBehaviour
         if (toTarget.sqrMagnitude < 0.0001f) return;
 
         Quaternion desired = Quaternion.LookRotation(toTarget);
-        transform.rotation = Quaternion.RotateTowards(transform.rotation, desired, movementSO.stoppedTurnSpeed * Time.deltaTime);
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, desired, movementSO.stoppedTurnSpeed * turnMultiplier * Time.deltaTime);
     }
 
     /// <summary>

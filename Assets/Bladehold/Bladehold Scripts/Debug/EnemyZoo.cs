@@ -47,8 +47,6 @@ public class EnemyZoo : MonoBehaviour
     [SerializeField] private float nameplateTiltAngle = 40f;
     [Tooltip("Max distance a slot is snapped onto the baked NavMesh.")]
     [SerializeField] private float navSampleRadius = 4f;
-    [Tooltip("Height above each enemy at which its IMGUI health label is drawn.")]
-    [SerializeField] private float labelHeight = 2.2f;
 
     [Header("On-demand spawns")]
     [Tooltip("Where picker-spawned enemies appear. Defaults to this object's position if unset.")]
@@ -62,18 +60,10 @@ public class EnemyZoo : MonoBehaviour
         public GameObject prefab;
     }
 
-    // A live gallery member and the AI drivers battle mode toggles.
-    private class ZooEntry
+    private class DummyEntry
     {
         public EnemyDefinition def;
         public GameObject instance;
-        public Health health;
-        // Movement is paused via SetMovementPaused (which stops the agent) rather than by disabling
-        // the component, since a disabled AIMovement leaves its NavMeshAgent following its last path.
-        public AIMovement movement;
-        // Attack behaviours are frozen by disabling them (their Start defers until re-enabled, so a
-        // frozen gallery enemy never even resolves Player.Instance).
-        public Behaviour[] attacks;
         public GameObject nameplate;
         public TextMeshPro nameplateTmp;
     }
@@ -86,16 +76,14 @@ public class EnemyZoo : MonoBehaviour
     }
 
     private readonly List<Spawnable> spawnables = new List<Spawnable>();
-    private readonly List<ZooEntry> gallery = new List<ZooEntry>();
+    private readonly List<DummyEntry> gallery = new List<DummyEntry>();
     private readonly List<ExtraSpawn> extraSpawns = new List<ExtraSpawn>();
 
-    private bool battleMode;
     private bool anyError;
     private bool guiVisible = true;
     private int pickerIndex;
     private int batchSize = 1;
     private string batchText = "1";
-    private Camera cam;
 
     private const float PanelWidth = 240f;
     private const float Padding = 10f;
@@ -124,17 +112,38 @@ public class EnemyZoo : MonoBehaviour
             return;
         }
 
-        cam = Camera.main;
         BuildGallery();
+
+        // Handle player death cleanly in the test scene
+        if (Player.Instance != null && Player.Instance.Health != null)
+        {
+            Player.Instance.Health.TryPreventDeath += HandlePlayerDeath;
+        }
     }
 
     private void OnDestroy()
     {
+        if (Player.Instance != null && Player.Instance.Health != null)
+        {
+            Player.Instance.Health.TryPreventDeath -= HandlePlayerDeath;
+        }
         ClearGallery();
         ClearExtraSpawns();
     }
 
-    /// <summary>Pairs each roster row with its prefab from the shared map asset — the same wiring WaveSpawner uses.</summary>
+    private bool HandlePlayerDeath()
+    {
+        // Cleanly revive the player to max health
+        Player.Instance.Health.Revive(Player.Instance.Health.MaxHealth);
+        Debug.Log("[EnemyZoo] Player died. Reviving to full health and clearing live enemies.");
+
+        // Clear all spawned enemies so they don't immediately kill the player again
+        ClearExtraSpawns();
+
+        // Prevent actual death sequence
+        return true;
+    }
+
     private void BuildSpawnables()
     {
         foreach (EnemyDefinition def in roster.Enemies)
@@ -163,7 +172,7 @@ public class EnemyZoo : MonoBehaviour
         {
             Vector3 slot = galleryOrigin + dir * (i * lineSpacing);
 
-            GameObject instance = SpawnInstance(spawnables[i], slot, facing);
+            GameObject instance = SpawnGalleryDummy(spawnables[i], slot, facing);
             if (instance == null)
             {
                 continue;
@@ -171,19 +180,13 @@ public class EnemyZoo : MonoBehaviour
 
             GameObject nameplateObj = CreateNameplate(spawnables[i].def, slot);
 
-            var entry = new ZooEntry
+            var entry = new DummyEntry
             {
                 def = spawnables[i].def,
                 instance = instance,
-                health = instance.GetComponent<Health>(),
-                movement = instance.GetComponent<AIMovement>(),
-                attacks = CollectAttacks(instance),
                 nameplate = nameplateObj,
                 nameplateTmp = nameplateObj != null ? nameplateObj.GetComponent<TextMeshPro>() : null,
             };
-            // Gallery enemies start frozen (AI disabled before its Start runs → no chase, no
-            // Player.Instance dependency) until battle mode is switched on.
-            SetEntryBattle(entry, battleMode);
             gallery.Add(entry);
         }
     }
@@ -205,49 +208,50 @@ public class EnemyZoo : MonoBehaviour
         return labelObj;
     }
 
-    /// <summary>Instantiates a roster-faithful enemy, snapped onto the NavMesh.</summary>
-    private GameObject SpawnInstance(Spawnable spawnable, Vector3 position, Quaternion rotation)
+    private GameObject SpawnGalleryDummy(Spawnable spawnable, Vector3 position, Quaternion rotation)
+    {
+        Vector3 snapped = SnapToNavMesh(position);
+        GameObject instance = Instantiate(spawnable.prefab, snapped, rotation);
+        
+        if (applyRosterOverrides)
+        {
+            WaveSpawner.ApplyDefinition(instance, spawnable.def);
+        }
+
+        // Strip everything that makes it alive
+        var agent = instance.GetComponent<NavMeshAgent>();
+        if (agent != null) Destroy(agent);
+
+        var rb = instance.GetComponent<Rigidbody>();
+        if (rb != null) Destroy(rb);
+
+        foreach (var mb in instance.GetComponentsInChildren<MonoBehaviour>(true))
+        {
+            mb.enabled = false;
+        }
+
+        // Make it interactable to spawn the real enemy
+        var interactable = instance.AddComponent<Interactable>();
+        interactable.PromptText = $"Spawn {spawnable.def.displayName}";
+        interactable.OnInteractedEvent += (p) => 
+        {
+            // Spawn a live instance slightly in front of the dummy
+            Vector3 spawnPos = instance.transform.position + instance.transform.forward * 2f;
+            SpawnLiveEnemy(spawnable, spawnPos, Quaternion.identity);
+        };
+
+        return instance;
+    }
+
+    private void SpawnLiveEnemy(Spawnable spawnable, Vector3 position, Quaternion rotation)
     {
         Vector3 snapped = SnapToNavMesh(position);
         GameObject instance = Instantiate(spawnable.prefab, snapped, rotation);
         if (applyRosterOverrides)
         {
-            // Same single source of truth the waves use, applied before the instance's Start runs.
             WaveSpawner.ApplyDefinition(instance, spawnable.def);
         }
-        return instance;
-    }
-
-    /// <summary>Every "*Attack" behaviour on the instance (AIAttack, LightningBallAttack, …).</summary>
-    private static Behaviour[] CollectAttacks(GameObject instance)
-    {
-        var list = new List<Behaviour>();
-        foreach (MonoBehaviour mb in instance.GetComponents<MonoBehaviour>())
-        {
-            if (mb != null && mb.GetType().Name.EndsWith("Attack", StringComparison.Ordinal))
-            {
-                list.Add(mb);
-            }
-        }
-        return list.ToArray();
-    }
-
-    private static void SetEntryBattle(ZooEntry entry, bool on)
-    {
-        if (entry.movement != null)
-        {
-            entry.movement.SetMovementPaused(!on);
-        }
-        if (entry.attacks != null)
-        {
-            foreach (Behaviour attack in entry.attacks)
-            {
-                if (attack != null)
-                {
-                    attack.enabled = on;
-                }
-            }
-        }
+        extraSpawns.Add(new ExtraSpawn { id = spawnable.def.id, instance = instance });
     }
 
     private Vector3 SnapToNavMesh(Vector3 p)
@@ -256,15 +260,6 @@ public class EnemyZoo : MonoBehaviour
     }
 
     // ---- Controls --------------------------------------------------------
-
-    private void ToggleBattle()
-    {
-        battleMode = !battleMode;
-        foreach (ZooEntry entry in gallery)
-        {
-            SetEntryBattle(entry, battleMode);
-        }
-    }
 
     public void RespawnGallery()
     {
@@ -287,18 +282,13 @@ public class EnemyZoo : MonoBehaviour
             // Ring scatter so a batch doesn't stack on one point.
             float angle = (i / (float)Mathf.Max(1, batchSize)) * Mathf.PI * 2f;
             Vector3 offset = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * spawnScatter;
-            // On-demand spawns are always live (that's the point of spawning them), so no battle toggle.
-            GameObject instance = SpawnInstance(pick, origin + offset, Quaternion.identity);
-            if (instance != null)
-            {
-                extraSpawns.Add(new ExtraSpawn { id = pick.def.id, instance = instance });
-            }
+            SpawnLiveEnemy(pick, origin + offset, Quaternion.identity);
         }
     }
 
     private void ClearGallery()
     {
-        foreach (ZooEntry entry in gallery)
+        foreach (DummyEntry entry in gallery)
         {
             if (entry.instance != null)
             {
@@ -314,6 +304,9 @@ public class EnemyZoo : MonoBehaviour
 
     private void ClearExtraSpawns()
     {
+        // Must clean up any dead items that might have been destroyed by the player naturally
+        extraSpawns.RemoveAll(s => s.instance == null);
+
         foreach (ExtraSpawn spawn in extraSpawns)
         {
             if (spawn.instance != null)
@@ -326,20 +319,8 @@ public class EnemyZoo : MonoBehaviour
 
     // ---- Editor-tool API (Enemy Manager window) ----------------------------
 
-    /// <summary>Whether the zoo booted with a valid roster + prefab map and can take commands.</summary>
     public bool IsReady => !anyError && spawnables.Count > 0;
 
-    public bool BattleMode => battleMode;
-
-    public void SetBattleMode(bool on)
-    {
-        if (battleMode != on)
-        {
-            ToggleBattle();
-        }
-    }
-
-    /// <summary>Points the spawn picker at a roster id. False when the id has no spawnable (no prefab mapping).</summary>
     public bool TrySelect(string id)
     {
         for (int i = 0; i < spawnables.Count; i++)
@@ -353,7 +334,6 @@ public class EnemyZoo : MonoBehaviour
         return false;
     }
 
-    /// <summary>Spawns a batch of the given type at the spawn point (always live, like the panel's Spawn button).</summary>
     public bool SpawnBatchOf(string id, int count)
     {
         if (!TrySelect(id))
@@ -366,12 +346,6 @@ public class EnemyZoo : MonoBehaviour
         return true;
     }
 
-    /// <summary>
-    ///     Replaces a roster row's definition for this zoo session (future spawns use it) and re-applies
-    ///     it to every live instance of that type via <see cref="WaveSpawner.ApplyDefinitionLive" /> —
-    ///     current damage fractions survive the tweak. Returns how many live instances were updated.
-    ///     The roster asset itself is untouched; saving is the Enemy Manager's explicit CSV save.
-    /// </summary>
     public int ApplyLiveDefinition(EnemyDefinition def)
     {
         if (def == null || string.IsNullOrEmpty(def.id))
@@ -388,11 +362,13 @@ public class EnemyZoo : MonoBehaviour
         }
 
         int updated = 0;
-        foreach (ZooEntry entry in gallery)
+        foreach (DummyEntry entry in gallery)
         {
             if (entry.def.id == def.id && entry.instance != null)
             {
                 entry.def = def;
+                // Don't apply live to dummy because the dummy might reactivate scripts?
+                // ApplyDefinitionLive doesn't enable scripts, it just sets stats.
                 WaveSpawner.ApplyDefinitionLive(entry.instance, def);
                 if (entry.nameplateTmp != null)
                 {
@@ -401,6 +377,8 @@ public class EnemyZoo : MonoBehaviour
                 updated++;
             }
         }
+
+        extraSpawns.RemoveAll(s => s.instance == null);
         foreach (ExtraSpawn spawn in extraSpawns)
         {
             if (spawn.id == def.id && spawn.instance != null)
@@ -414,60 +392,29 @@ public class EnemyZoo : MonoBehaviour
 
     // ---- IMGUI -----------------------------------------------------------
 
+    private void Update()
+    {
+        if (UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.f3Key.wasPressedThisFrame)
+        {
+            guiVisible = !guiVisible;
+        }
+    }
+
     private void OnGUI()
     {
         if (anyError || !guiVisible)
         {
             return;
         }
-        DrawLabels();
         DrawPanel();
-    }
-
-    private void DrawLabels()
-    {
-        if (cam == null)
-        {
-            cam = Camera.main;
-            if (cam == null)
-            {
-                return;
-            }
-        }
-
-        foreach (ZooEntry entry in gallery)
-        {
-            if (entry.instance == null)
-            {
-                continue;
-            }
-            Vector3 world = entry.instance.transform.position + Vector3.up * labelHeight;
-            Vector3 screen = cam.WorldToScreenPoint(world);
-            if (screen.z <= 0f)
-            {
-                continue; // behind the camera
-            }
-
-            string name = string.IsNullOrEmpty(entry.def.displayName) ? entry.def.id : entry.def.displayName;
-            string hp = entry.health == null ? ""
-                : entry.health.IsDead ? "  (dead)"
-                : $"  {Mathf.CeilToInt(entry.health.CurrentHealth)}/{Mathf.CeilToInt(entry.health.MaxHealth)}";
-
-            var rect = new Rect(screen.x - 90f, Screen.height - screen.y - 12f, 180f, 24f);
-            GUI.Label(rect, name + hp, LabelStyle);
-        }
     }
 
     private void DrawPanel()
     {
         float x = Screen.width - PanelWidth - Padding;
         GUILayout.BeginArea(new Rect(x, Padding, PanelWidth, Screen.height - 2f * Padding), GUI.skin.box);
-        GUILayout.Label("Enemy Zoo");
+        GUILayout.Label("Enemy Zoo (Press F3 to hide)", new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold });
 
-        if (GUILayout.Button(battleMode ? "Battle Mode: ON (freeze)" : "Battle Mode: OFF (fight)", GUILayout.Height(ButtonHeight)))
-        {
-            ToggleBattle();
-        }
         if (GUILayout.Button("Respawn Gallery", GUILayout.Height(ButtonHeight)))
         {
             RespawnGallery();
@@ -492,10 +439,12 @@ public class EnemyZoo : MonoBehaviour
 
         Spawnable pick = spawnables[Mathf.Clamp(pickerIndex, 0, spawnables.Count - 1)];
         string pickName = string.IsNullOrEmpty(pick.def.displayName) ? pick.def.id : pick.def.displayName;
-        if (GUILayout.Button($"Spawn {batchSize}× {pickName}", GUILayout.Height(ButtonHeight)))
+        if (GUILayout.Button($"Spawn {batchSize}x {pickName}", GUILayout.Height(ButtonHeight)))
         {
             SpawnBatch();
         }
+        
+        extraSpawns.RemoveAll(s => s.instance == null);
         if (GUILayout.Button($"Clear Spawns ({extraSpawns.Count})", GUILayout.Height(ButtonHeight)))
         {
             ClearExtraSpawns();
@@ -520,23 +469,6 @@ public class EnemyZoo : MonoBehaviour
             pickerIndex = (pickerIndex + 1) % spawnables.Count;
         }
         GUILayout.EndHorizontal();
-    }
-
-    private GUIStyle labelStyle;
-    private GUIStyle LabelStyle
-    {
-        get
-        {
-            if (labelStyle == null)
-            {
-                labelStyle = new GUIStyle(GUI.skin.label)
-                {
-                    alignment = TextAnchor.MiddleCenter,
-                    fontStyle = FontStyle.Bold,
-                };
-            }
-            return labelStyle;
-        }
     }
 }
 #endif
