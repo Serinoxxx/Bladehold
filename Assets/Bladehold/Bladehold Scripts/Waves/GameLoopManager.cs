@@ -750,4 +750,35 @@ public class GameLoopManager : MonoBehaviour
             SceneManager.LoadScene("Bladehold Meta Area Scene");
         }
     }
+
+    private void OnGUI()
+    {
+        if (!Application.isPlaying) return;
+
+        GUILayout.BeginArea(new Rect(10, 10, 350, 250), GUI.skin.box);
+        GUILayout.Label("<b>GameLoopManager State</b>");
+        GUILayout.Label($"Round: {CurrentRound} | Wave: {CurrentWave} (Rest Visits: {RunSession.RestVisitsCount})");
+        GUILayout.Label($"Wave Active: {isWaveActive} | Intermission: {isIntermission}");
+        GUILayout.Label($"Kills: {killsThisWave} / {targetKillsThisWave}");
+        
+        if (currentObjective != null)
+        {
+            GUILayout.Label($"Objective: {currentObjective.Title}");
+            GUILayout.Label($"Objective Complete: {isObjectiveComplete}");
+        }
+        else
+        {
+            GUILayout.Label("Objective: None");
+        }
+
+        if (spawner != null)
+        {
+            GUILayout.Label($"Spawner Active: {spawner.IsSpawningActive}");
+            GUILayout.Label($"Enemies Alive: {spawner.AliveCount} / {spawner.MaxConcurrentEnemies}");
+            GUILayout.Label($"Remaining to Spawn: {spawner.RemainingToSpawn}");
+            GUILayout.Label($"Remaining to Kill: {Mathf.Max(0, targetKillsThisWave - killsThisWave)}");
+        }
+        
+        GUILayout.EndArea();
+    }
 }
