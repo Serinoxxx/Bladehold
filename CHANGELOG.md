@@ -3,6 +3,7 @@
 ## [0.1.19] - 2026-09-03
 
 ### New Features
+- Added Goblin Blood and Orcish Metal displays to the HUD and updated the Gold display to track run-specific gold
 - Added modular Clan Buff and Banner Reward ScriptableObjects allowing easy buff and reward pool customization
 - Replaced text-heavy War Banners with a quick-facts card showing clan icon, 1-line buff fact, and reward quantity
 - Added Golden Goblin wave objective: a special goblin with 999 health that drops gold based on damage and a 100 gold bonus if killed within 30 seconds.
@@ -32,6 +33,8 @@
 - Added new visual and sound effects for War Banners including a staggered slam-down animation on spawn, ground waypoints, and a burning sequence when selected
 
 ### Fixes
+- Fixed Chain Dash elemental upgrade failing to imbue the next melee swing with chain lightning
+- Fixed Axe charge attack failing when actively equipped via the new weapon loadout system
 - Fixed the game appearing to freeze after clearing a wave by displaying the intermission choice menu immediately, and fixed the pause menu breaking the camera when opened during the intermission
 - Fixed wave spawner occasionally exceeding the 20 concurrent enemy limit.
 - Fixed enemy health bars rendering inside the models of larger enemies (like Big Ork and Bosses) by dynamically checking height.
@@ -57,6 +60,8 @@
 - Enforced weapon ultimate exclusivity permitting at most one active ultimate ability per run
 
 ### General Changes
+- Added sound effects and floating popups when collecting Goblin Blood, Orcish Metal, and Gold resource rewards
+- Applied the dark fantasy parchment theme to the Meta Upgrades shop UI
 - Added Bladehold Rest Area Scene and Bladehold Meta Area Scene to project build settings
 - Preserved player health ratio, Troll Heart bonus health, and in-run upgrade tiers across scene transitions
 - Integrated Bladehold HUD, Pause Menu, and Settings Canvas across the Survivors battle scene, Rest Area, and Meta Area scenes
@@ -229,6 +234,11 @@
 ### General Changes
 - Added hit sparks, screen shake, and impact sounds
 - Added Berserker and Mage skill tree preview panels
+
+
+
+
+
 
 
 

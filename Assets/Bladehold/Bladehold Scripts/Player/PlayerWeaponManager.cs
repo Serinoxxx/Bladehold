@@ -66,6 +66,7 @@ public class PlayerWeaponManager : MonoBehaviour
 
     private void Start()
     {
+        ApplySavedLoadout();
         // Apply initial from session
         HandleElementalSlotChanged("SLOT_MELEE", RunSession.ElementalSlots.GetValueOrDefault("SLOT_MELEE", ""));
         HandleElementalSlotChanged("SLOT_RANGED", RunSession.ElementalSlots.GetValueOrDefault("SLOT_RANGED", ""));

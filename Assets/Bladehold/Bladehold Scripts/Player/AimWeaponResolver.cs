@@ -17,6 +17,11 @@ public static class AimWeaponResolver
 
         if (Player.Instance != null)
         {
+            if (PlayerWeaponManager.Instance != null && PlayerWeaponManager.Instance.ActiveAimWeapon != null)
+            {
+                return PlayerWeaponManager.Instance.ActiveAimWeapon;
+            }
+
             PlayerClassController classController = UnityEngine.Object.FindAnyObjectByType<PlayerClassController>();
             if (classController != null && classController.ActiveAimWeapon != null)
             {

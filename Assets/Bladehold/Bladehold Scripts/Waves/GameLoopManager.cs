@@ -59,6 +59,12 @@ public class GameLoopManager : MonoBehaviour
     private WaveUpgradePowerup activePowerup;
     private bool isRestGateOpen = false;
 
+    [Header("Resource Reward Feedback (Auto-Wired)")]
+    public DamageNumbersPro.DamageNumber goldPopupPrefab;
+    public DamageNumbersPro.DamageNumber metalPopupPrefab;
+    public DamageNumbersPro.DamageNumber bloodPopupPrefab;
+    public AudioClip rewardSfx;
+
     public IReadOnlyList<WarBannerController> ActiveBanners => activeBanners;
 
     public int CurrentWave => RunSession.CurrentWave;
@@ -471,9 +477,55 @@ public class GameLoopManager : MonoBehaviour
             rewardNotificationText.text = $"Wave Reward: {rewardDesc}";
         }
 
+        PlayRewardFeedback(bounty, rewardDesc);
+
         if (!isDraft)
         {
             onComplete?.Invoke();
+        }
+    }
+
+    private void PlayRewardFeedback(BannerBountyType bounty, string desc)
+    {
+        if (Player.Instance == null) return;
+        Vector3 pos = Player.Instance.transform.position + new Vector3(0, 2f, 0);
+
+        if (rewardSfx != null)
+        {
+#if UNITY_EDITOR
+            if (Application.isPlaying)
+            {
+                MoreMountains.Tools.MMSoundManagerPlayOptions options = MoreMountains.Tools.MMSoundManagerPlayOptions.Default;
+                options.MmSoundManagerTrack = MoreMountains.Tools.MMSoundManager.MMSoundManagerTracks.UI;
+                options.Location = pos;
+                options.Volume = 1f;
+                MoreMountains.Tools.MMSoundManagerSoundPlayEvent.Trigger(rewardSfx, options);
+            }
+#else
+            MoreMountains.Tools.MMSoundManagerPlayOptions options = MoreMountains.Tools.MMSoundManagerPlayOptions.Default;
+            options.MmSoundManagerTrack = MoreMountains.Tools.MMSoundManager.MMSoundManagerTracks.UI;
+            options.Location = pos;
+            options.Volume = 1f;
+            MoreMountains.Tools.MMSoundManagerSoundPlayEvent.Trigger(rewardSfx, options);
+#endif
+        }
+
+        DamageNumbersPro.DamageNumber prefab = null;
+        if (bounty == BannerBountyType.GoldCache) prefab = goldPopupPrefab;
+        else if (bounty == BannerBountyType.OrcishMetal) prefab = metalPopupPrefab;
+        else if (bounty == BannerBountyType.GoblinBlood) prefab = bloodPopupPrefab;
+
+        if (prefab != null)
+        {
+            // Extract the number from desc (e.g. "+75 Gold")
+            string[] parts = desc.Split(' ');
+            if (parts.Length > 0 && parts[0].StartsWith("+"))
+            {
+                if (int.TryParse(parts[0].Substring(1), out int amount))
+                {
+                    prefab.Spawn(pos, amount);
+                }
+            }
         }
     }
 

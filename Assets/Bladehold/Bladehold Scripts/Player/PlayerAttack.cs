@@ -265,7 +265,7 @@ public class PlayerAttack : MonoBehaviour
         if (classController != null && classController.ActiveMeleeTrigger != null && classController.ActiveMeleeTrigger.IsWhirlwindActive) return;
 
         // While the active class's aim weapon (bow/axe/wand) is drawn, this press fires it instead
-        IChargedAimWeapon aimWeapon = classController != null ? classController.ActiveAimWeapon : null;
+        IChargedAimWeapon aimWeapon = PlayerWeaponManager.Instance != null ? PlayerWeaponManager.Instance.ActiveAimWeapon : (classController != null ? classController.ActiveAimWeapon : null);
         if (aimWeapon != null && aimWeapon.IsAiming) return;
 
         // Ignore presses while melee attack is on cooldown (prevents interrupting a swing in progress).

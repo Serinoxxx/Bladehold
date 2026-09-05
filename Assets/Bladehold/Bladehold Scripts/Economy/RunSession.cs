@@ -206,12 +206,16 @@ public static class RunSession
         return true;
     }
 
+    public static event Action<int> OnGoblinBloodChanged;
+    public static event Action<int> OnOrcishMetalChanged;
+
     public static void AddGoblinBlood(int amount)
     {
         if (amount <= 0) return;
         SaveData data = SaveSystem.Load();
         data.goblinBlood += amount;
         SaveSystem.Save(data);
+        OnGoblinBloodChanged?.Invoke(data.goblinBlood);
     }
 
     public static void AddOrcishMetal(int amount)
@@ -220,6 +224,7 @@ public static class RunSession
         SaveData data = SaveSystem.Load();
         data.orcishMetal += amount;
         SaveSystem.Save(data);
+        OnOrcishMetalChanged?.Invoke(data.orcishMetal);
     }
 
     public static string GetElementInSlot(string slotName)

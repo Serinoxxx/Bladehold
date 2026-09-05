@@ -33,31 +33,21 @@ public class CoinUI : MonoBehaviour
             anyError = true;
         }
 
-        Player player = Player.Instance;
-        if (player == null || player.Wallet == null)
-        {
-            Debug.LogError("No player Wallet found for CoinUI to display.");
-            anyError = true;
-        }
-
         if (anyError)
         {
             return;
         }
 
-        wallet = player.Wallet;
-        wallet.OnCoinsChanged += UpdateLabel;
+        RunSession.OnInRunGoldChanged -= UpdateLabel;
+        RunSession.OnInRunGoldChanged += UpdateLabel;
 
         // Show the starting total immediately.
-        UpdateLabel(wallet.Coins);
+        UpdateLabel(RunSession.InRunGold);
     }
 
     private void OnDestroy()
     {
-        if (wallet != null)
-        {
-            wallet.OnCoinsChanged -= UpdateLabel;
-        }
+        RunSession.OnInRunGoldChanged -= UpdateLabel;
     }
 
     private void UpdateLabel(int coins)

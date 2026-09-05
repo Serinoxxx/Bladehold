@@ -51,6 +51,9 @@ public class ChainLightning : MonoBehaviour
         swordTrigger = trigger;
     }
 
+    private int chainDashCharges = 0;
+    private PlayerDodge playerDodge;
+
     private void Start()
     {
         if (buff == null)
@@ -88,6 +91,12 @@ public class ChainLightning : MonoBehaviour
         }
 
         swordTrigger.OnHit += HandleHit;
+
+        playerDodge = Player.Instance != null ? Player.Instance.GetComponentInChildren<PlayerDodge>() : null;
+        if (playerDodge != null)
+        {
+            playerDodge.OnDodgeStarted += HandleDodge;
+        }
     }
 
     private void OnDestroy()
@@ -96,11 +105,30 @@ public class ChainLightning : MonoBehaviour
         {
             swordTrigger.OnHit -= HandleHit;
         }
+        if (playerDodge != null)
+        {
+            playerDodge.OnDodgeStarted -= HandleDodge;
+        }
+    }
+
+    private void HandleDodge()
+    {
+        if (stats != null && stats.GetValue(StatType.LightningChainDashTargets) > 0)
+        {
+            chainDashCharges = 1;
+        }
     }
 
     private void HandleHit(IDamageable target, Damage damage, Vector3 hitPoint)
     {
         TryChain(target, damage.value, hitPoint);
+        
+        if (chainDashCharges > 0)
+        {
+            chainDashCharges--;
+            int dashBounces = Mathf.RoundToInt(stats.GetValue(StatType.LightningChainDashTargets));
+            ForceChain(damage.value, hitPoint, target, dashBounces);
+        }
     }
 
     /// <summary>
@@ -125,19 +153,19 @@ public class ChainLightning : MonoBehaviour
     ///     <paramref name="excludeTarget" /> keeps the first hop from arcing straight back into the
     ///     enemy that triggered the chain (pass the enemy that was just hit, when there is one).
     /// </summary>
-    public void ForceChain(float triggeringDamage, Vector3 hitPoint, IDamageable excludeTarget = null)
+    public void ForceChain(float triggeringDamage, Vector3 hitPoint, IDamageable excludeTarget = null, int overrideBounces = -1)
     {
         if (anyError)
         {
             return;
         }
-        Chain(excludeTarget, triggeringDamage, hitPoint);
+        Chain(excludeTarget, triggeringDamage, hitPoint, overrideBounces);
     }
 
-    private void Chain(IDamageable target, float triggeringDamage, Vector3 hitPoint)
+    private void Chain(IDamageable target, float triggeringDamage, Vector3 hitPoint, int overrideBounces = -1)
     {
-        int bounces = buff.CurrentBounces;
-        float damagePercent = buff.CurrentDamagePercent;
+        int bounces = overrideBounces > 0 ? overrideBounces : buff.CurrentBounces;
+        float damagePercent = buff.CurrentDamagePercent > 0f ? buff.CurrentDamagePercent : 0.5f; // fallback if locked
         if (bounces <= 0 || damagePercent <= 0f)
         {
             return;
