@@ -59,12 +59,9 @@ public class SurvivorsHUDUI : MonoBehaviour
     private void HandleTimerUpdated(float currentSeconds, float maxSeconds)
     {
         if (timerText == null) return;
-
-        int totalSeconds = Mathf.FloorToInt(currentSeconds);
-        int minutes = totalSeconds / 60;
-        int seconds = totalSeconds % 60;
-
-        timerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+        
+        // Hide the legacy clock timer as pacing is now wave/round based
+        timerText.gameObject.SetActive(false);
     }
 
     private void HandleXPChanged(int currentXP, int targetXP, int level)

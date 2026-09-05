@@ -218,8 +218,9 @@ public class ShopUI : MonoBehaviour
                 RunSession.PlayerBonusMaxHealth += item.effectValue;
                 if (h != null)
                 {
+                    float current = h.CurrentHealth;
                     h.SetMaxHealth(h.MaxHealth + item.effectValue);
-                    h.Heal(item.effectValue);
+                    h.SetCurrentHealth(current + item.effectValue);
                 }
                 break;
 

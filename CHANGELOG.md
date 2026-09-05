@@ -3,6 +3,8 @@
 ## [0.1.19] - 2026-09-03
 
 ### New Features
+- Added modular Clan Buff and Banner Reward ScriptableObjects allowing easy buff and reward pool customization
+- Replaced text-heavy War Banners with a quick-facts card showing clan icon, 1-line buff fact, and reward quantity
 - Added Golden Goblin wave objective: a special goblin with 999 health that drops gold based on damage and a 100 gold bonus if killed within 30 seconds.
 - Overhauled core game loop into 4 rounds of 3 waves with progressive enemy unlocks (Round 1: Goblins & Brutes, Round 2: Big Orks, Round 3: Bubblers, Round 4: Bombers + Slayer Boss)
 - Replaced end-of-wave reward drops with a physical, interactive War Banner selection system granting unique modifiers and rewards
@@ -45,6 +47,7 @@
 - Fixed Rest Area Draft Station failing to open card drafts due to missing scene managers
 
 ### Balance Changes
+- Adjusted Swarm-Blight Clan buff to regenerate a flat 2 HP per second
 - Bubblers will now only spawn in Round 3 (removed from Round 4).
 - Adjusted default tunables and mechanics for weapons and dash, and updated training dummy.
 - Enforced continuous enemy spawning during wagon escort objectives until the wagon reaches the destination
@@ -226,6 +229,9 @@
 ### General Changes
 - Added hit sparks, screen shake, and impact sounds
 - Added Berserker and Mage skill tree preview panels
+
+
+
 
 
 

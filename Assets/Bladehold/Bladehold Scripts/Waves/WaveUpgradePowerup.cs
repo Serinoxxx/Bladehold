@@ -11,7 +11,7 @@ using UnityEngine;
 public class WaveUpgradePowerup : MonoBehaviour
 {
     [Header("Category Configuration")]
-    [SerializeField] private DraftCategory category = DraftCategory.Weapon;
+    [SerializeField] private BannerBountyType bountyType = BannerBountyType.WeaponDraft;
 
     [Header("Visual Effects")]
     [SerializeField] private float bobAmplitude = 0.25f;
@@ -27,7 +27,8 @@ public class WaveUpgradePowerup : MonoBehaviour
     private Vector3 initialVisualPosition;
     private bool isCollected = false;
 
-    public DraftCategory Category => category;
+    public BannerBountyType Bounty => bountyType;
+    public string BountyName => GetBountyName(bountyType);
     public bool IsCollected => isCollected;
 
     public event Action<WaveUpgradePowerup> OnClaimed;
@@ -45,7 +46,7 @@ public class WaveUpgradePowerup : MonoBehaviour
 
     private void Start()
     {
-        InitializeCategory(category);
+        InitializeBounty(bountyType);
 
         if (spawnSfx != null)
         {
@@ -73,11 +74,11 @@ public class WaveUpgradePowerup : MonoBehaviour
     }
 
     /// <summary>
-    ///     Initializes the powerup with a specific upgrade category and updates prompt text and visual tint.
+    ///     Initializes the powerup with a specific bounty type and updates prompt text and visual tint.
     /// </summary>
-    public void InitializeCategory(DraftCategory newCategory)
+    public void InitializeBounty(BannerBountyType newBounty)
     {
-        category = newCategory;
+        bountyType = newBounty;
         if (interactable == null)
         {
             interactable = GetComponent<Interactable>();
@@ -85,21 +86,40 @@ public class WaveUpgradePowerup : MonoBehaviour
 
         if (interactable != null)
         {
-            interactable.PromptText = $"Claim Upgrade ({category})";
+            interactable.PromptText = $"Claim Reward ({BountyName})";
             interactable.OnInteractedEvent -= HandleInteracted;
             interactable.OnInteractedEvent += HandleInteracted;
         }
 
-        ApplyCategoryColor(category);
+        ApplyBountyColor(bountyType);
     }
 
-    private void ApplyCategoryColor(DraftCategory cat)
+    private string GetBountyName(BannerBountyType type)
     {
-        Color color = cat switch
+        return type switch
         {
-            DraftCategory.Weapon => new Color(1f, 0.4f, 0.1f, 1f),       // Fiery Orange
-            DraftCategory.Elemental => new Color(0.2f, 0.8f, 1f, 1f),    // Cyan / Ice Lightning
-            DraftCategory.Fortress => new Color(0.9f, 0.8f, 0.2f, 1f),   // Golden Amber
+            BannerBountyType.WeaponDraft => "Weapon Upgrade",
+            BannerBountyType.ElementDraft => "Elemental Upgrade",
+            BannerBountyType.FortressDraft => "Fortress Upgrade",
+            BannerBountyType.GoldCache => "Gold Cache",
+            BannerBountyType.OrcishMetal => "Orcish Metal",
+            BannerBountyType.GoblinBlood => "Goblin Blood",
+            BannerBountyType.TrollHeart => "Troll Heart",
+            _ => "Reward"
+        };
+    }
+
+    private void ApplyBountyColor(BannerBountyType type)
+    {
+        Color color = type switch
+        {
+            BannerBountyType.WeaponDraft => new Color(1f, 0.4f, 0.1f, 1f),       // Fiery Orange
+            BannerBountyType.ElementDraft => new Color(0.2f, 0.8f, 1f, 1f),    // Cyan / Ice Lightning
+            BannerBountyType.FortressDraft => new Color(0.9f, 0.8f, 0.2f, 1f),   // Golden Amber
+            BannerBountyType.GoldCache => new Color(1f, 0.9f, 0.2f, 1f),
+            BannerBountyType.OrcishMetal => new Color(0.6f, 0.6f, 0.7f, 1f),
+            BannerBountyType.GoblinBlood => new Color(0.8f, 0.1f, 0.1f, 1f),
+            BannerBountyType.TrollHeart => new Color(0.2f, 0.8f, 0.3f, 1f),
             _ => Color.white
         };
 
@@ -139,30 +159,18 @@ public class WaveUpgradePowerup : MonoBehaviour
             AudioSource.PlayClipAtPoint(interactSfx, transform.position, 1.0f);
         }
 
-        if (SurvivorsCardSelectUI.Instance != null)
-        {
-            SurvivorsCardSelectUI.Instance.OpenDraft(category, onComplete: () =>
-            {
-                CompleteCollection();
-            });
-        }
-        else
-        {
-            Debug.LogWarning("[WaveUpgradePowerup] SurvivorsCardSelectUI instance not found! Auto-completing draft.");
-            CompleteCollection();
-        }
+        OnClaimed?.Invoke(this);
     }
 
-    private void CompleteCollection()
+    public void DestroyPowerup()
     {
-        OnClaimed?.Invoke(this);
         Destroy(gameObject);
     }
 
     /// <summary>
     ///     Creates a runtime fallback powerup GameObject if no prefab was assigned.
     /// </summary>
-    public static WaveUpgradePowerup Spawn(Vector3 position, DraftCategory cat, GameObject prefab = null)
+    public static WaveUpgradePowerup Spawn(Vector3 position, BannerBountyType bounty, GameObject prefab = null)
     {
         GameObject go;
         if (prefab != null)
@@ -214,7 +222,7 @@ public class WaveUpgradePowerup : MonoBehaviour
             powerup = go.AddComponent<WaveUpgradePowerup>();
         }
 
-        powerup.InitializeCategory(cat);
+        powerup.InitializeBounty(bounty);
         return powerup;
     }
 }

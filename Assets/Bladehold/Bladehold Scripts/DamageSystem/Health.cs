@@ -213,6 +213,13 @@ public class Health : MonoBehaviour, IDamageable
         OnHealthChanged?.Invoke();
     }
 
+    /// <summary>Explicitly sets current health to an exact amount. Used for restoring health state across scene loads.</summary>
+    public void SetCurrentHealth(float amount)
+    {
+        currentHealth = Mathf.Clamp(amount, 0.01f, MaxHealth);
+        OnHealthChanged?.Invoke();
+    }
+
     /// <summary>Restores health up to <see cref="MaxHealth" /> (e.g. lifesteal). Ignored while dead — death is signalled, never healed away.</summary>
     public void Heal(float amount)
     {

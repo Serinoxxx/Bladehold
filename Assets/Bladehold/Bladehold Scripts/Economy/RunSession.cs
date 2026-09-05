@@ -121,7 +121,7 @@ public static class RunSession
             }
             if (PlayerHealthRatio > 0f && PlayerHealthRatio <= 1f)
             {
-                player.Health.Heal(player.Health.MaxHealth * PlayerHealthRatio);
+                player.Health.SetCurrentHealth(player.Health.MaxHealth * PlayerHealthRatio);
             }
 
             // 2. Wire Second Wind permanent meta perk (revive once per run with 50% HP)

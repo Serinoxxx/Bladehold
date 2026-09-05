@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdeb9d838f5246b18230561f7cf8d6eb, type: 3}
+  m_Name: Clan_BloodDrinker
+  m_EditorClassIdentifier: Assembly-CSharp::WarBannerClanSO
+  clanName: Blood-Drinker Clan
+  clanIcon: {fileID: 21300000, guid: 909bcd70b903e5f4f9745723e406373c, type: 3}
+  buffType: 3
+  quickFact: +50% DMG, -30% Max HP
+  buffMagnitude: 1.5
+  detailedEffect: Glass cannons: enemies deal +50% damage but have -30% max HP.

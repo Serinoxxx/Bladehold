@@ -137,8 +137,26 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
                 worldOffset: new Vector3(0f, 1.5f, 0f),
                 customIcon: defaultObjectiveIcon,
                 tintColor: new Color(1f, 0.85f, 0.2f, 1f),
-                label: $"{GameLoopManager.Instance.ActivePowerup.Category} Upgrade"
+                label: $"{GameLoopManager.Instance.ActivePowerup.BountyName}"
             ));
+        }
+
+        // Check for active banners during intermission
+        if (GameLoopManager.Instance != null && GameLoopManager.Instance.IsIntermission && GameLoopManager.Instance.ActiveBanners != null)
+        {
+            foreach (var banner in GameLoopManager.Instance.ActiveBanners)
+            {
+                if (banner != null)
+                {
+                    targetBuffer.Add(new ObjectiveWaypointTarget(
+                        banner.transform,
+                        worldOffset: new Vector3(0f, 2.0f, 0f),
+                        customIcon: destinationGateIcon,
+                        tintColor: new Color(0.9f, 0.3f, 0.3f, 1f),
+                        label: "War Banner"
+                    ));
+                }
+            }
         }
 
         // Also check for endgame Siegebreaker boss

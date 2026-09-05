@@ -167,28 +167,6 @@ public class ObjectiveTrackerUI : MonoBehaviour
         if (sgm == null) return;
         if (objectiveManager == null) objectiveManager = SurvivorsObjectiveManager.Instance ?? FindObjectOfType<SurvivorsObjectiveManager>();
 
-        // 1. Overall "Survive the Siege" Timer Header
-        if (objectiveHeaderText != null)
-        {
-            if (sgm.HasSurvivedSiege)
-            {
-                objectiveHeaderText.text = "SURVIVE THE SIEGE: THE SIEGEBREAKER ARRIVED!";
-            }
-            else if (sgm.IsInFinalCountdown)
-            {
-                int totalSec = Mathf.Max(0, Mathf.CeilToInt(sgm.SiegeTimeRemaining));
-                int mins = totalSec / 60;
-                int secs = totalSec % 60;
-                objectiveHeaderText.text = $"SURVIVE THE SIEGE: {mins:00}:{secs:00} (FINAL ASSAULT)";
-            }
-            else
-            {
-                int totalSec = Mathf.Max(0, Mathf.CeilToInt(sgm.SiegeTimeRemaining));
-                int mins = totalSec / 60;
-                int secs = totalSec % 60;
-                objectiveHeaderText.text = $"SURVIVE THE SIEGE: {mins:00}:{secs:00}";
-            }
-        }
 
         // 2. Active rotating sub-objective / cleanup / intermission / boss status
         if (objectiveProgressText != null)
@@ -200,7 +178,7 @@ public class ObjectiveTrackerUI : MonoBehaviour
             }
             else if (GameLoopManager.Instance != null && GameLoopManager.Instance.ActivePowerup != null)
             {
-                objectiveProgressText.text = $"[Wave Cleared!]\nClaim {GameLoopManager.Instance.ActivePowerup.Category} Upgrade in the arena.";
+                objectiveProgressText.text = $"[Wave Cleared!]\nClaim {GameLoopManager.Instance.ActivePowerup.BountyName} in the arena.";
             }
             else if (sgm.HasSurvivedSiege)
             {

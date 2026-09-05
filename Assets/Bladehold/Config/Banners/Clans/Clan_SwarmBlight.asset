@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdeb9d838f5246b18230561f7cf8d6eb, type: 3}
+  m_Name: Clan_SwarmBlight
+  m_EditorClassIdentifier: Assembly-CSharp::WarBannerClanSO
+  clanName: Swarm-Blight Clan
+  clanIcon: {fileID: 21300000, guid: b3e25ab96c7cd1c4184457738789d002, type: 3}
+  buffType: 4
+  quickFact: Enemies heal 2 HP/s
+  buffMagnitude: 2
+  detailedEffect: Enemies passively regenerate 2 HP per second.

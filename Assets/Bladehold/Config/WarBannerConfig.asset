@@ -12,32 +12,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98ab191678664ab4cab031135444323a, type: 3}
   m_Name: WarBannerConfig
   m_EditorClassIdentifier: Assembly-CSharp::WarBannerConfigSO
+  clans:
+  - {fileID: 11400000, guid: ebc776cb20154ac08293fbb577228b84, type: 2}
+  - {fileID: 11400000, guid: a886375df93f45d892b94beae8fb75be, type: 2}
+  - {fileID: 11400000, guid: 082212e3a9e547f787c5936df350e777, type: 2}
+  - {fileID: 11400000, guid: c9be40d36a484cc4a2f6efc11aed7a98, type: 2}
+  - {fileID: 11400000, guid: 60b8c4dc54304c3d917021f9ee90c404, type: 2}
+  rewards:
+  - {fileID: 11400000, guid: 4a6c821bdcd24d75a7808c2d055421e4, type: 2}
+  - {fileID: 11400000, guid: 435eab72f8f94553a32da146b3e8503e, type: 2}
+  - {fileID: 11400000, guid: 75ea754707ef4b829483bb9fb99d9eab, type: 2}
+  - {fileID: 11400000, guid: 691ecd06928c4bbdbaba837012d221d7, type: 2}
+  - {fileID: 11400000, guid: 390a4892c74b45e4a52ba6a2a72df790, type: 2}
+  - {fileID: 11400000, guid: 955d0842f64844c5b2054996ad41d520, type: 2}
+  - {fileID: 11400000, guid: 70b6d8989eb44d2d91e7bdc810bcdc7d, type: 2}
   buffs:
   - buffType: 1
     clanName: Ironfang Clan
     inGameDescription: Shielded Vanguard
     gameplayEffect: All enemies spawn with a shield equal to 25% of their max HP.
-    clanSigil: {fileID: 0}
+    clanSigil: {fileID: 21300000, guid: 1af87594b1869624ebb19161290adaa7, type: 3}
   - buffType: 2
     clanName: Wind-Strider Clan
     inGameDescription: Frenzied Advance
     gameplayEffect: All enemies gain +35% movement and attack speed.
-    clanSigil: {fileID: 0}
+    clanSigil: {fileID: 21300000, guid: b641cf7e09d3e284aada0c77af4215d9, type: 3}
   - buffType: 3
     clanName: Blood-Drinker Clan
     inGameDescription: Glass Cannons
     gameplayEffect: All enemies deal +50% damage, but have -30% max HP.
-    clanSigil: {fileID: 0}
+    clanSigil: {fileID: 21300000, guid: 3c3df9679104dfa4d979eefe948fe240, type: 3}
   - buffType: 4
     clanName: Swarm-Blight Clan
     inGameDescription: Flesh Mending
     gameplayEffect: Enemies passively regenerate 3% max HP per second.
-    clanSigil: {fileID: 0}
+    clanSigil: {fileID: 21300000, guid: 81493905a0a451b469e3844bb85ebf22, type: 3}
   - buffType: 5
     clanName: Stone-Hide Clan
     inGameDescription: Thick Hide
     gameplayEffect: Enemies take 25% reduced damage from physical strikes.
-    clanSigil: {fileID: 0}
+    clanSigil: {fileID: 21300000, guid: 3b0695fbfd3fb5a4c9ad2bb5d8c5e2fa, type: 3}
   bounties:
   - bountyType: 1
     inGameDisplay: Weapon Upgrade Draft

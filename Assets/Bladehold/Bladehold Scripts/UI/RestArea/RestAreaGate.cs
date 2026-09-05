@@ -48,6 +48,12 @@ public class RestAreaGate : MonoBehaviour
         Debug.Log("[RestAreaGate] Returning to battle scene...");
         Time.timeScale = 1f;
 
+        // Preserve player health ratio when leaving the Rest Area (e.g. from shop healing or Troll Hearts)
+        if (player != null && player.Health != null)
+        {
+            RunSession.PlayerHealthRatio = player.Health.CurrentHealth / player.Health.MaxHealth;
+        }
+
         // Next wave is after the completed rest (e.g. wave 3 rest -> wave 4)
         RunSession.CurrentWave = Mathf.Max(1, RunSession.RestVisitsCount * 3 + 1);
 

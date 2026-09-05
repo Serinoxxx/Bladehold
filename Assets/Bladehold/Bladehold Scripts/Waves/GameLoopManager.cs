@@ -24,6 +24,8 @@ public class GameLoopManager : MonoBehaviour
 
     public BannerBuffType CurrentWaveBuff { get; private set; } = BannerBuffType.None;
     public BannerBountyType CurrentWaveBounty { get; private set; } = BannerBountyType.None;
+    public WarBannerClanSO CurrentClanBuffSO { get; private set; }
+    public WarBannerRewardSO CurrentBannerRewardSO { get; private set; }
     private List<WarBannerController> activeBanners = new List<WarBannerController>();
 
     [Header("UI Dependencies")]
@@ -56,6 +58,8 @@ public class GameLoopManager : MonoBehaviour
     private GameObject spawnedBoss;
     private WaveUpgradePowerup activePowerup;
     private bool isRestGateOpen = false;
+
+    public IReadOnlyList<WarBannerController> ActiveBanners => activeBanners;
 
     public int CurrentWave => RunSession.CurrentWave;
     public int CurrentRound => RunSession.CurrentRound;
@@ -99,7 +103,6 @@ public class GameLoopManager : MonoBehaviour
         if (Player.Instance != null && Player.Instance.Health != null)
         {
             Player.Instance.Health.OnDied += HandlePlayerDied;
-            ApplyPlayerTrollHeartBonus();
         }
 
         // Auto-discover gate if not wired
@@ -173,15 +176,6 @@ public class GameLoopManager : MonoBehaviour
     {
         Debug.Log("[GameLoopManager] Spawner reported wave wiped!");
         CheckWaveCompletionConditions();
-    }
-
-    private void ApplyPlayerTrollHeartBonus()
-    {
-        if (RunSession.PlayerBonusMaxHealth > 0f && Player.Instance != null && Player.Instance.Health != null)
-        {
-            Player.Instance.Health.SetMaxHealth(Player.Instance.Health.MaxHealth + RunSession.PlayerBonusMaxHealth);
-            Player.Instance.Health.Heal(RunSession.PlayerBonusMaxHealth);
-        }
     }
 
     private void HookupSpawnerEnemyDeaths()
@@ -355,20 +349,15 @@ public class GameLoopManager : MonoBehaviour
         }
         else
         {
-            // Intermediate wave: Stop enemy spawns, grant bounty, and spawn next banners
+            // Intermediate wave: Stop enemy spawns, spawn powerup for the bounty
             if (spawner != null)
             {
                 spawner.StopSpawning();
             }
 
-            GrantBounty();
             OnWaveCleared?.Invoke(clearedWave, "Wave Cleared");
             
-            CurrentWaveBuff = BannerBuffType.None;
-            CurrentWaveBounty = BannerBountyType.None;
-
-            // Wait a moment before spawning banners for the next wave
-            StartCoroutine(TransitionToNextBannersRoutine());
+            SpawnPowerupForCurrentBounty();
         }
 
         // Check for stage victory: survived all 4 rounds (Wave 12)
@@ -379,24 +368,65 @@ public class GameLoopManager : MonoBehaviour
         }
     }
 
-    private void GrantBounty()
+    private void SpawnPowerupForCurrentBounty()
+    {
+        if (CurrentWaveBounty == BannerBountyType.None)
+        {
+            StartCoroutine(TransitionToNextBannersRoutine());
+            return;
+        }
+
+        Vector3 spawnPos = upgradePowerupSpawnPoint != null ? upgradePowerupSpawnPoint.position : Vector3.zero;
+        
+        activePowerup = WaveUpgradePowerup.Spawn(spawnPos, CurrentWaveBounty, upgradePowerupPrefab);
+        activePowerup.OnClaimed += HandlePowerupClaimed;
+    }
+
+    private void HandlePowerupClaimed(WaveUpgradePowerup powerup)
+    {
+        powerup.OnClaimed -= HandlePowerupClaimed;
+
+        ApplyBounty(powerup.Bounty, () => 
+        {
+            powerup.DestroyPowerup();
+            CurrentWaveBuff = BannerBuffType.None;
+            CurrentWaveBounty = BannerBountyType.None;
+            CurrentClanBuffSO = null;
+            CurrentBannerRewardSO = null;
+            StartCoroutine(TransitionToNextBannersRoutine());
+        });
+    }
+
+    private void ApplyBounty(BannerBountyType bounty, Action onComplete)
     {
         string rewardDesc = "Bounty Claimed";
+        bool isDraft = false;
 
-        switch (CurrentWaveBounty)
+        switch (bounty)
         {
             case BannerBountyType.WeaponDraft:
                 rewardDesc = "Weapon Upgrade Draft!";
-                if (SurvivorsCardSelector.Instance != null) SurvivorsGameManager.Instance?.PauseForCardSelection();
+                if (SurvivorsCardSelectUI.Instance != null)
+                {
+                    isDraft = true;
+                    SurvivorsCardSelectUI.Instance.OpenDraft(DraftCategory.Weapon, onComplete);
+                }
                 break;
             case BannerBountyType.FortressDraft:
                 rewardDesc = "Fortress Upgrade Draft!";
-                // In a real implementation this might use a specific category, but we just trigger standard draft
-                if (SurvivorsCardSelector.Instance != null) SurvivorsGameManager.Instance?.PauseForCardSelection();
+                if (SurvivorsCardSelectUI.Instance != null)
+                {
+                    isDraft = true;
+                    SurvivorsCardSelectUI.Instance.OpenDraft(DraftCategory.Fortress, onComplete);
+                }
                 break;
             case BannerBountyType.ElementDraft:
                 rewardDesc = "Elemental Upgrade Draft!";
-                if (SurvivorsCardSelector.Instance != null) SurvivorsGameManager.Instance?.PauseForCardSelection();
+                if (SurvivorsCardSelectUI.Instance != null)
+                {
+                    isDraft = true;
+                    SurvivorsCardSelectUI.Instance.OpenDraft(DraftCategory.Elemental, onComplete);
+                }
                 break;
             case BannerBountyType.GoldCache:
                 int gold = UnityEngine.Random.Range(75, 126);
@@ -417,8 +447,9 @@ public class GameLoopManager : MonoBehaviour
                 RunSession.PlayerBonusMaxHealth += 25f;
                 if (Player.Instance != null && Player.Instance.Health != null)
                 {
+                    float current = Player.Instance.Health.CurrentHealth;
                     Player.Instance.Health.SetMaxHealth(Player.Instance.Health.MaxHealth + 25f);
-                    Player.Instance.Health.Heal(25f);
+                    Player.Instance.Health.SetCurrentHealth(current + 25f);
                 }
                 rewardDesc = "Troll Heart (+25 Max HP)";
                 break;
@@ -438,6 +469,11 @@ public class GameLoopManager : MonoBehaviour
         if (rewardNotificationText != null)
         {
             rewardNotificationText.text = $"Wave Reward: {rewardDesc}";
+        }
+
+        if (!isDraft)
+        {
+            onComplete?.Invoke();
         }
     }
 
@@ -498,13 +534,13 @@ public class GameLoopManager : MonoBehaviour
             yield break;
         }
 
-        // Pick 3 random unique buffs and bounties
-        List<BannerBuffDef> buffs = new List<BannerBuffDef>(bannerConfig.buffs);
-        List<BannerBountyDef> bounties = new List<BannerBountyDef>(bannerConfig.bounties);
+        // Pick 3 random unique clans and rewards
+        List<WarBannerClanSO> availableClans = new List<WarBannerClanSO>(bannerConfig.GetActiveClans());
+        List<WarBannerRewardSO> availableRewards = new List<WarBannerRewardSO>(bannerConfig.GetActiveRewards());
 
         // Shuffle
-        for (int i = 0; i < buffs.Count; i++) { BannerBuffDef temp = buffs[i]; int randomIndex = UnityEngine.Random.Range(i, buffs.Count); buffs[i] = buffs[randomIndex]; buffs[randomIndex] = temp; }
-        for (int i = 0; i < bounties.Count; i++) { BannerBountyDef temp = bounties[i]; int randomIndex = UnityEngine.Random.Range(i, bounties.Count); bounties[i] = bounties[randomIndex]; bounties[randomIndex] = temp; }
+        for (int i = 0; i < availableClans.Count; i++) { WarBannerClanSO temp = availableClans[i]; int randomIndex = UnityEngine.Random.Range(i, availableClans.Count); availableClans[i] = availableClans[randomIndex]; availableClans[randomIndex] = temp; }
+        for (int i = 0; i < availableRewards.Count; i++) { WarBannerRewardSO temp = availableRewards[i]; int randomIndex = UnityEngine.Random.Range(i, availableRewards.Count); availableRewards[i] = availableRewards[randomIndex]; availableRewards[randomIndex] = temp; }
 
         for (int i = 0; i < 3; i++)
         {
@@ -512,7 +548,7 @@ public class GameLoopManager : MonoBehaviour
             WarBannerController controller = bannerGo.GetComponent<WarBannerController>();
             if (controller != null)
             {
-                controller.Initialize(buffs[i % buffs.Count], bounties[i % bounties.Count]);
+                controller.Initialize(availableClans[i % availableClans.Count], availableRewards[i % availableRewards.Count]);
                 controller.OnBannerInteracted += HandleBannerInteracted;
                 activeBanners.Add(controller);
             }
@@ -522,8 +558,10 @@ public class GameLoopManager : MonoBehaviour
 
     private void HandleBannerInteracted(WarBannerController selectedBanner)
     {
-        CurrentWaveBuff = selectedBanner.Buff.buffType;
-        CurrentWaveBounty = selectedBanner.Bounty.bountyType;
+        CurrentClanBuffSO = selectedBanner.Clan;
+        CurrentBannerRewardSO = selectedBanner.Reward;
+        CurrentWaveBuff = selectedBanner.Clan != null ? selectedBanner.Clan.buffType : selectedBanner.Buff.buffType;
+        CurrentWaveBounty = selectedBanner.Reward != null ? selectedBanner.Reward.bountyType : selectedBanner.Bounty.bountyType;
 
         // Despawn others
         foreach (var banner in activeBanners)
