@@ -33,6 +33,7 @@
 - Added new visual and sound effects for War Banners including a staggered slam-down animation on spawn, ground waypoints, and a burning sequence when selected
 
 ### Fixes
+- Fixed a softlock where the game would freeze in an empty arena if a timed wave objective was failed
 - Fixed Chain Dash elemental upgrade failing to imbue the next melee swing with chain lightning
 - Fixed Axe charge attack failing when actively equipped via the new weapon loadout system
 - Fixed the game appearing to freeze after clearing a wave by displaying the intermission choice menu immediately, and fixed the pause menu breaking the camera when opened during the intermission
@@ -234,6 +235,7 @@
 ### General Changes
 - Added hit sparks, screen shake, and impact sounds
 - Added Berserker and Mage skill tree preview panels
+
 
 
 

@@ -170,6 +170,7 @@ public class GameLoopManager : MonoBehaviour
         if (objectiveManager != null)
         {
             objectiveManager.OnObjectiveCompleted -= HandleObjectiveCompleted;
+            objectiveManager.OnObjectiveFailed -= HandleObjectiveFailed;
         }
 
         if (spawner != null)
@@ -256,6 +257,9 @@ public class GameLoopManager : MonoBehaviour
         {
             objectiveManager.OnObjectiveCompleted -= HandleObjectiveCompleted;
             objectiveManager.OnObjectiveCompleted += HandleObjectiveCompleted;
+            
+            objectiveManager.OnObjectiveFailed -= HandleObjectiveFailed;
+            objectiveManager.OnObjectiveFailed += HandleObjectiveFailed;
 
             isObjectiveComplete = false;
             objectiveManager.StartWaveObjective(waveNumber);
@@ -273,6 +277,13 @@ public class GameLoopManager : MonoBehaviour
     {
         isObjectiveComplete = true;
         Debug.Log($"[GameLoopManager] Objective Completed: {obj?.Title}");
+        CheckWaveCompletionConditions();
+    }
+
+    private void HandleObjectiveFailed(ISurvivorsObjective obj)
+    {
+        isObjectiveComplete = true;
+        Debug.Log($"[GameLoopManager] Objective Failed: {obj?.Title}. Proceeding with wave clear.");
         CheckWaveCompletionConditions();
     }
 
