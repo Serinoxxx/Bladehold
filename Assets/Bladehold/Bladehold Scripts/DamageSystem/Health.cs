@@ -60,6 +60,21 @@ public class Health : MonoBehaviour, IDamageable
     /// </summary>
     public IDamageable LastDamageSource { get; private set; }
 
+    /// <summary>
+    ///     The timestamp of the most recent ranged hit from the player. Used by Fort Focus Fire bonus.
+    /// </summary>
+    public float LastPlayerRangedHitTime { get; set; } = -999f;
+
+    /// <summary>
+    ///     The timestamp of the most recent tick from boiling oil. Used by Fort Scalding Heat bonus.
+    /// </summary>
+    public float LastBoilingOilTime { get; set; } = -999f;
+
+    /// <summary>
+    ///     The timestamp of the most recent presence in a spike barricade zone. Used by Fort Vulnerability Field bonus.
+    /// </summary>
+    public float LastSpikeZoneTime { get; set; } = -999f;
+
     /// <summary>The current health value, for listeners reacting to <see cref="OnHealthChanged" />.</summary>
     public float CurrentHealth => currentHealth;
 

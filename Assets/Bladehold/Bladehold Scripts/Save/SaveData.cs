@@ -55,6 +55,12 @@ public class SaveData
     /// <summary>Currently equipped ranged weapon id (e.g. 'bow', 'throwing_axe').</summary>
     public string equippedRangedWeapon = "bow";
 
+    /// <summary>Currently equipped armour set id (e.g. 'default_armour').</summary>
+    public string equippedArmourSet = "default_armour";
+
+    /// <summary>Permanently unlocked armour sets. 'default_armour' is unlocked by default.</summary>
+    public List<string> unlockedArmourSets = new List<string> { "default_armour" };
+
     /// <summary>Highest unlocked meta-progression tier (1 = default, 2 = costs 5 Orcish Metal, 3 = costs 10 Orcish Metal).</summary>
     public int unlockedMetaTier = 1;
 
@@ -142,6 +148,8 @@ public class SaveData
         unlockedWeapons = new List<string>(defaults.unlockedWeapons);
         equippedMeleeWeapon = defaults.equippedMeleeWeapon;
         equippedRangedWeapon = defaults.equippedRangedWeapon;
+        equippedArmourSet = defaults.equippedArmourSet;
+        unlockedArmourSets = new List<string>(defaults.unlockedArmourSets);
         unlockedMetaTier = defaults.unlockedMetaTier;
         purchasedMetaPerks.Clear();
     }

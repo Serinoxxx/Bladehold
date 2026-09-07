@@ -82,6 +82,10 @@ public class BurningOilZone : MonoBehaviour
 
             processedHealths.Add(health);
 
+            // Track boiling oil tick timestamp for scalding heat bonus and ensure status manager is present
+            health.LastBoilingOilTime = Time.time;
+            EnemyStatusManager.GetOrAdd(health);
+
             // Apply elemental fire damage
             Damage damage = new Damage
             {
@@ -98,6 +102,48 @@ public class BurningOilZone : MonoBehaviour
             if (slow != null)
             {
                 slow.ApplySlow(slowFraction, 1.2f);
+            }
+
+            // Apply Fire status if Fiery Pitch upgrade is unlocked
+            if (Player.Instance != null && Player.Instance.Stats != null && Player.Instance.Stats.GetValue(StatType.FortFieryPitchUnlocked) > 0f)
+            {
+                EnemyStatusManager.GetOrAdd(health)?.ApplyStatus("Fire");
+            }
+
+            // Apply Electrified Oil if unlocked
+            if (Player.Instance != null && Player.Instance.Stats != null && Player.Instance.Stats.GetValue(StatType.FortElectrifiedOil) > 0f)
+            {
+                if (!health.IsDead)
+                {
+                    Damage shock = new Damage
+                    {
+                        value = damagePerTick * 0.75f,
+                        type = DamageType.elemental,
+                        elementId = "Lightning",
+                        isPlayerDamage = true,
+                        sourcePosition = transform.position
+                    };
+                    health.ReceiveDamage(shock);
+
+                    EnemyStatusManager.GetOrAdd(health)?.ApplyStatus("Lightning");
+
+                    if (ElementalEffectsManager.Instance != null)
+                    {
+                        Vector3 shockPos = health.transform.position;
+                        if (ElementalEffectsManager.Instance.superconductorVfx != null)
+                        {
+                            Instantiate(ElementalEffectsManager.Instance.superconductorVfx, shockPos, Quaternion.identity);
+                        }
+
+                        AudioClip zapClip = ElementalEffectsManager.Instance.superconductorSfx != null
+                            ? ElementalEffectsManager.Instance.superconductorSfx
+                            : ElementalEffectsManager.Instance.statusAppliedSfx;
+                        if (zapClip != null)
+                        {
+                            AudioSource.PlayClipAtPoint(zapClip, shockPos);
+                        }
+                    }
+                }
             }
         }
     }

@@ -22,11 +22,6 @@ public static class AimWeaponResolver
                 return PlayerWeaponManager.Instance.ActiveAimWeapon;
             }
 
-            PlayerClassController classController = UnityEngine.Object.FindAnyObjectByType<PlayerClassController>();
-            if (classController != null && classController.ActiveAimWeapon != null)
-            {
-                return classController.ActiveAimWeapon;
-            }
             if (serializedBow == null)
             {
                 serializedBow = Player.Instance.GetComponentInChildren<PlayerBow>();

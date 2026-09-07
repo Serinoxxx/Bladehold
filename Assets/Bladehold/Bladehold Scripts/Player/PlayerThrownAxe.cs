@@ -75,9 +75,6 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
     /// <summary>Fired once per throw (hit or miss), the moment the axe leaves the hand — for cosmetic listeners.</summary>
     public event Action OnThrown;
 
-    /// <summary>True once the "Throwing Axe" skill node has been bought; while false, aiming does nothing and melee works normally.</summary>
-    public bool IsUnlocked => !anyError && stats.GetValue(StatType.AxeThrowUnlocked) >= 1f;
-
     /// <summary>Set during the Axe Vortex ultimate to enable instant charge and multi-fan throws.</summary>
     public bool IsVortexUltimateActive { get; set; } = false;
 
@@ -134,6 +131,7 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
     private readonly RaycastHit[] castBuffer = new RaycastHit[MaxCastHits];
 
     private IDamageable ownerDamageable;
+    public IDamageable Damageable => ownerDamageable != null ? ownerDamageable : (Player.Instance != null ? Player.Instance.Damageable : null);
     private IDamageable ignoredTarget;
 
     /// <summary>
@@ -278,6 +276,10 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
         stats.SetBase(StatType.AxeThrowWidth, config.baseWidth);
         // Boomerang is its own gate: base 0 = the axe lodges where it stops, until the node is bought.
         stats.SetBase(StatType.AxeBoomerangUnlocked, 0f);
+        stats.SetBase(StatType.AxeFirstStrikeBonus, 0f);
+        stats.SetBase(StatType.AxeBloodsplosionDamage, 0f);
+        stats.SetBase(StatType.AxeSpinTopDPS, 0f);
+        stats.SetBase(StatType.IceShardsBurstDamage, 0f);
 
         Subscribe();
     }
@@ -358,9 +360,8 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
 
     private void StartAim()
     {
-        if (anyError || !IsUnlocked)
+        if (anyError)
         {
-            // Axe still locked: leave IsAiming false so the melee swing (and everything else) works normally.
             return;
         }
 
@@ -419,8 +420,9 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
         }
         if (hasWeaponTypeParam && playerAnimator != null)
         {
-            playerAnimator.SetInteger(rangedWeaponTypeHash, 0);
-            playerAnimator.SetInteger(weaponTypeHash, 0);
+            int meleeType = PlayerWeaponManager.Instance != null ? PlayerWeaponManager.Instance.CurrentMeleeWeaponType : 0;
+            playerAnimator.SetInteger(rangedWeaponTypeHash, meleeType);
+            playerAnimator.SetInteger(weaponTypeHash, meleeType);
         }
 
         if (meleeWeaponModel != null)
@@ -490,27 +492,7 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
         float currentRatio = ChargeTimePerLevel > 0f ? (Time.time - chargeStartTime) / ChargeTimePerLevel : MaxChargeLevels;
         currentRatio = Mathf.Clamp(currentRatio, 0f, MaxChargeLevels);
 
-        AxeProjectile.LaunchSpec launchSpec = new AxeProjectile.LaunchSpec
-        {
-            origin = origin,
-            direction = direction,
-            speed = config.projectileSpeed,
-            maxRange = config.maxRange,
-            radius = width * 0.5f,
-            pierceBudget = pierceBudget,
-            hitLayers = hitLayers,
-            chargeLevel = ChargeLevel,
-            chargeRatio = currentRatio,
-            painBonus = painBonus,
-            owner = ownerDamageable ?? GetComponentInParent<IDamageable>() ?? (Player.Instance != null ? Player.Instance.Damageable : null),
-            ignoredTarget = ignoredTarget,
-            boomerang = stats.GetValue(StatType.AxeBoomerangUnlocked) >= 1f,
-            returnSpeedMultiplier = config.returnSpeedMultiplier,
-            returnTarget = throwOrigin,
-            // Wide Arc widens the damage sweep — scale the prop with it so the upgrade reads
-            // visually (the SwordRange localScale convention).
-            visualScale = width / Mathf.Max(0.05f, config.baseWidth),
-        };
+        AxeProjectile.LaunchSpec launchSpec = BuildLaunchSpec(origin, direction, width, pierceBudget, currentRatio, painBonus);
 
         AxeProjectile projectile = Instantiate(projectilePrefab, origin, Quaternion.LookRotation(direction));
         projectile.Launch(this, launchSpec);
@@ -530,6 +512,39 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
             specR.direction = rightDir;
             projR.Launch(this, specR);
         }
+    }
+
+    private AxeProjectile.LaunchSpec BuildLaunchSpec(Vector3 origin, Vector3 direction, float width, int pierceBudget, float currentRatio, float painBonus)
+    {
+        float speed = config.projectileSpeed;
+        float spinTopDPS = stats != null ? stats.GetValue(StatType.AxeSpinTopDPS) : 0f;
+        if (spinTopDPS > 0f)
+        {
+            speed *= 0.5f;
+        }
+
+        return new AxeProjectile.LaunchSpec
+        {
+            origin = origin,
+            direction = direction,
+            speed = speed,
+            maxRange = config.maxRange,
+            radius = width * 0.5f,
+            pierceBudget = pierceBudget,
+            hitLayers = hitLayers,
+            chargeLevel = ChargeLevel,
+            chargeRatio = currentRatio,
+            painBonus = painBonus,
+            owner = ownerDamageable ?? GetComponentInParent<IDamageable>() ?? (Player.Instance != null ? Player.Instance.Damageable : null),
+            ignoredTarget = ignoredTarget,
+            boomerang = stats.GetValue(StatType.AxeBoomerangUnlocked) >= 1f,
+            returnSpeedMultiplier = config.returnSpeedMultiplier,
+            returnTarget = throwOrigin != null ? throwOrigin : transform,
+            // Wide Arc widens the damage sweep — scale the prop with it so the upgrade reads
+            // visually (the SwordRange localScale convention).
+            visualScale = width / Mathf.Max(0.05f, config.baseWidth),
+            spinTopDPS = spinTopDPS,
+        };
     }
 
     /// <summary>

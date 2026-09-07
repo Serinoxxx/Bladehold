@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -75,6 +76,8 @@ public class ArrowProjectile : MonoBehaviour, IPlayerProjectile
         public bool collectPickups;
         /// <summary>True for a main arrow once Unstable Orbs is bought: detonate orbs along each flight segment.</summary>
         public bool detonateOrbs;
+        /// <summary>How many enemies the arrow pierces through before despawning.</summary>
+        public int pierceCount;
     }
 
     [Tooltip("Seconds the arrow stays visible where it lodges before despawning.")]
@@ -92,6 +95,8 @@ public class ArrowProjectile : MonoBehaviour, IPlayerProjectile
     private float travelled;
     private bool launched;
     private bool lodged;
+    private int piercesRemaining;
+    private readonly HashSet<IDamageable> piercedTargets = new HashSet<IDamageable>();
 
     /// <summary>Sends the arrow flying. Damage happens where it lands; the prefab is destroyed when it lodges, runs out of range, or times out.</summary>
     public void Launch(PlayerBow bow, LaunchSpec spec)
@@ -102,6 +107,8 @@ public class ArrowProjectile : MonoBehaviour, IPlayerProjectile
         travelled = 0f;
         launched = true;
         lodged = false;
+        piercesRemaining = spec.pierceCount;
+        piercedTargets.Clear();
 
         transform.position = spec.origin;
         if (velocity.sqrMagnitude > 0.0001f)
@@ -188,6 +195,12 @@ public class ArrowProjectile : MonoBehaviour, IPlayerProjectile
 
             if (damageable != null)
             {
+                if (piercedTargets.Contains(damageable))
+                {
+                    continue;
+                }
+                piercedTargets.Add(damageable);
+
                 // The body capsule can sit in front of a head sphere along the same sweep — check
                 // every hit this cast scored on the target for a VulnerableSpot (the hitscan rule).
                 bool hitVulnerableSpot = false;
@@ -209,6 +222,13 @@ public class ArrowProjectile : MonoBehaviour, IPlayerProjectile
 
                 Vector3 hitPoint = HitPointOf(hit, from, direction);
                 bow.ApplyArrowHit(damageable, hitPoint, direction, hit.collider, hitVulnerableSpot, vulnerableSpot, spec.damageScale, spec.chargeLevel, spec.chargeRatio);
+
+                if (piercesRemaining > 0)
+                {
+                    piercesRemaining--;
+                    continue;
+                }
+
                 Destroy(gameObject);
                 return true;
             }

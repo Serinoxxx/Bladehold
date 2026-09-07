@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -55,10 +56,23 @@ public class PlayerUltimateController : MonoBehaviour
     }
 
     private float nextTrickleTime;
+    private float nextEyeOfStormStrikeTime = 0f;
 
     private void Update()
     {
-        if (IsUltimateActive || player == null || player.Stats == null) return;
+        if (player == null || player.Stats == null) return;
+
+        if (IsUltimateActive)
+        {
+            float eyeDmg = player.Stats.GetValue(StatType.LightningEyeOfTheStormDamage);
+            if (eyeDmg > 0f && Time.time >= nextEyeOfStormStrikeTime)
+            {
+                nextEyeOfStormStrikeTime = Time.time + 1.0f;
+                TriggerEyeOfTheStorm(eyeDmg);
+            }
+            return;
+        }
+
         if (player.Stats.GetValue(StatType.UltimateUnlocked) <= 0f) return;
 
         if (Time.time >= nextTrickleTime)
@@ -80,6 +94,8 @@ public class PlayerUltimateController : MonoBehaviour
             player.Stats.SetBase(StatType.UltimateDurationSeconds, 6f);
             player.Stats.SetBase(StatType.UltimateUnlocked, 0f);
             player.Stats.SetBase(StatType.UltimatePassiveChargeRate, 0.5f); // 0.5 charge per second = 200s to full without damage
+            player.Stats.SetBase(StatType.FireInfernoBurstUnlocked, 0f);
+            player.Stats.SetBase(StatType.LightningEyeOfTheStormDamage, 0f);
         }
     }
 
@@ -235,9 +251,15 @@ public class PlayerUltimateController : MonoBehaviour
     {
         IsUltimateActive = true;
         CurrentCharge = 0f;
+        nextEyeOfStormStrikeTime = 0f;
         OnChargeChanged?.Invoke(CurrentCharge);
 
         OnUltimateActivated?.Invoke();
+
+        if (player != null && player.Stats != null && player.Stats.GetValue(StatType.FireInfernoBurstUnlocked) > 0f)
+        {
+            TriggerInfernoBurst();
+        }
 
         var handlers = GetComponentsInChildren<IUltimateHandler>(true);
         bool handlerActivated = false;
@@ -254,6 +276,114 @@ public class PlayerUltimateController : MonoBehaviour
         if (!handlerActivated)
         {
             EndUltimate();
+        }
+    }
+
+    private void TriggerInfernoBurst()
+    {
+        Vector3 center = player != null ? player.transform.position : transform.position;
+
+        if (ElementalEffectsManager.Instance != null && ElementalEffectsManager.Instance.thermalShockVfx != null)
+        {
+            Instantiate(ElementalEffectsManager.Instance.thermalShockVfx, center, Quaternion.identity);
+            if (ElementalEffectsManager.Instance.thermalShockSfx != null)
+            {
+                AudioSource.PlayClipAtPoint(ElementalEffectsManager.Instance.thermalShockSfx, center);
+            }
+        }
+
+        Collider[] hits = Physics.OverlapSphere(center, 12f);
+        HashSet<Health> processed = new HashSet<Health>();
+
+        float damageMultiplier = 1f;
+        if (player != null && player.Stats != null)
+        {
+            float allMult = player.Stats.GetValue(StatType.AllDamageMultiplier);
+            if (allMult > 0f) damageMultiplier = allMult;
+        }
+
+        float blastDamage = 25f * damageMultiplier;
+
+        for (int i = 0; i < hits.Length; i++)
+        {
+            Collider hit = hits[i];
+            if (hit == null) continue;
+
+            Health enemyHealth = hit.GetComponentInParent<Health>();
+            if (enemyHealth == null || enemyHealth.IsDead) continue;
+            if (player != null && (enemyHealth.gameObject == player.gameObject || enemyHealth.transform.root == player.transform.root)) continue;
+            if (processed.Contains(enemyHealth)) continue;
+
+            processed.Add(enemyHealth);
+
+            EnemyStatusManager.GetOrAdd(enemyHealth)?.ApplyStatus("Fire");
+
+            enemyHealth.ReceiveDamage(new Damage
+            {
+                value = blastDamage,
+                type = DamageType.elemental,
+                elementId = "Fire",
+                sourcePosition = center,
+                source = player != null ? player.Damageable : null,
+                isPlayerDamage = true
+            });
+        }
+    }
+
+    private void TriggerEyeOfTheStorm(float eyeDmg)
+    {
+        Vector3 center = player != null ? player.transform.position : transform.position;
+        Collider[] hits = Physics.OverlapSphere(center, 15f);
+        List<Health> validEnemies = new List<Health>();
+        HashSet<Health> processed = new HashSet<Health>();
+
+        for (int i = 0; i < hits.Length; i++)
+        {
+            Collider hit = hits[i];
+            if (hit == null) continue;
+
+            Health enemyHealth = hit.GetComponentInParent<Health>();
+            if (enemyHealth == null || enemyHealth.IsDead) continue;
+            if (player != null && (enemyHealth.gameObject == player.gameObject || enemyHealth.transform.root == player.transform.root)) continue;
+            if (processed.Contains(enemyHealth)) continue;
+
+            processed.Add(enemyHealth);
+            validEnemies.Add(enemyHealth);
+        }
+
+        if (validEnemies.Count == 0) return;
+
+        Health targetHealth = validEnemies[UnityEngine.Random.Range(0, validEnemies.Count)];
+        Vector3 targetPos = targetHealth.transform.position;
+
+        float allMult = player != null && player.Stats != null ? player.Stats.GetValue(StatType.AllDamageMultiplier) : 1f;
+        if (allMult <= 0f) allMult = 1f;
+
+        targetHealth.ReceiveDamage(new Damage
+        {
+            value = eyeDmg * allMult,
+            type = DamageType.elemental,
+            elementId = "Lightning",
+            sourcePosition = center,
+            source = player != null ? player.Damageable : null,
+            isPlayerDamage = true
+        });
+
+        EnemyStatusManager.GetOrAdd(targetHealth)?.ApplyStatus("Lightning");
+
+        if (ElementalEffectsManager.Instance != null)
+        {
+            if (ElementalEffectsManager.Instance.superconductorVfx != null)
+            {
+                Instantiate(ElementalEffectsManager.Instance.superconductorVfx, targetPos, Quaternion.identity);
+            }
+            AudioClip zapClip = ElementalEffectsManager.Instance.superconductorSfx != null
+                ? ElementalEffectsManager.Instance.superconductorSfx
+                : ElementalEffectsManager.Instance.statusAppliedSfx;
+            if (zapClip != null)
+            {
+                AudioSource.PlayClipAtPoint(zapClip, targetPos);
+            }
         }
     }
 

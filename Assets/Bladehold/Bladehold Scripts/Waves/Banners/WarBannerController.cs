@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.Events;
 using System.Collections.Generic;
+using HighlightPlus;
+using MoreMountains.Feedbacks;
 
 public class WarBannerController : MonoBehaviour
 {
@@ -13,6 +15,12 @@ public class WarBannerController : MonoBehaviour
     [Header("Core References")]
     [SerializeField] private Interactable interactable;
     [SerializeField] private GameObject uiPanel;
+    
+    [Header("Cinematic Effects")]
+    [SerializeField] private HighlightEffect highlightEffect;
+    [SerializeField] private MMF_Player slamFeedback;
+    [SerializeField] private GameObject burnVfxPrefab;
+    [SerializeField] private AudioClip burnSfx;
 
     [Header("Clan Quick Facts UI")]
     [SerializeField] private UnityEngine.UI.Image clanSigilImage;
@@ -31,8 +39,11 @@ public class WarBannerController : MonoBehaviour
     // Use an Action to notify GameLoopManager
     public event System.Action<WarBannerController> OnBannerInteracted;
 
+    private Vector3 spawnPosition;
+
     private void Awake()
     {
+        spawnPosition = transform.position;
         if (interactable == null)
         {
             interactable = GetComponent<Interactable>();
@@ -41,6 +52,23 @@ public class WarBannerController : MonoBehaviour
                 interactable = gameObject.AddComponent<Interactable>();
             }
         }
+    }
+
+    public void StageHighUp()
+    {
+        transform.position = spawnPosition + Vector3.up * 18f;
+    }
+
+    public void SlamDown()
+    {
+        // LeanTween slam down
+        LeanTween.moveY(gameObject, spawnPosition.y, 0.35f).setEase(LeanTweenType.easeInCubic).setOnComplete(() =>
+        {
+            if (slamFeedback != null)
+            {
+                slamFeedback.PlayFeedbacks();
+            }
+        });
     }
 
     private void Start()
@@ -54,6 +82,14 @@ public class WarBannerController : MonoBehaviour
         if (interactable != null)
         {
             interactable.OnInteractedEvent -= HandleInteracted;
+        }
+    }
+    
+    public void SetInteractable(bool canInteract)
+    {
+        if (interactable != null)
+        {
+            interactable.CanInteract = canInteract;
         }
     }
 
@@ -135,6 +171,27 @@ public class WarBannerController : MonoBehaviour
             interactable.PromptText = $"Tear Down Banner\n{Buff.clanName}";
             interactable.CanInteract = true;
         }
+        
+        ApplyClanGlow(Buff.buffType);
+    }
+    
+    private void ApplyClanGlow(BannerBuffType buffType)
+    {
+        if (highlightEffect == null) return;
+        
+        Color glowColor = Color.white;
+        switch (buffType)
+        {
+            case BannerBuffType.Berserk: glowColor = new Color(1f, 0.23f, 0.18f); break; // Crimson Red
+            case BannerBuffType.Shield: glowColor = new Color(0f, 0.47f, 1f); break; // Arcane Blue
+            case BannerBuffType.Haste: glowColor = new Color(1f, 0.8f, 0f); break; // Golden Amber
+            case BannerBuffType.Regen: glowColor = new Color(0.2f, 0.78f, 0.35f); break; // Emerald Green
+            case BannerBuffType.Armor: glowColor = new Color(0.68f, 0.32f, 0.87f); break; // Royal Violet
+        }
+        
+        highlightEffect.outlineColor = glowColor;
+        highlightEffect.glowHQColor = glowColor;
+        highlightEffect.highlighted = true;
     }
 
     /// <summary>
@@ -159,51 +216,20 @@ public class WarBannerController : MonoBehaviour
         Initialize(tempClan, tempReward);
     }
 
-    [Header("Effects")]
-    [SerializeField] private GameObject slamVfxPrefab;
-    [SerializeField] private AudioClip slamSfx;
-    [SerializeField] private GameObject burnVfxPrefab;
-    [SerializeField] private AudioClip burnSfx;
-    [SerializeField] private GameObject groundWaypointPrefab;
-
-    private GameObject activeGroundWaypoint;
-
     private void HandleInteracted(Player player)
     {
         if (interactable != null)
             interactable.CanInteract = false;
 
-        TearDown();
         OnBannerInteracted?.Invoke(this);
     }
 
-    public void SlamDown()
+    public void TearDown()
     {
-        Vector3 endPos = transform.position;
-        // Start high up
-        transform.position = endPos + Vector3.up * 15f;
-        
-        // LeanTween slam down
-        LeanTween.moveY(gameObject, endPos.y, 0.4f).setEase(LeanTweenType.easeInCubic).setOnComplete(() =>
+        if (uiPanel != null)
         {
-            if (slamVfxPrefab != null)
-            {
-                Instantiate(slamVfxPrefab, transform.position, Quaternion.identity);
-            }
-            if (slamSfx != null)
-            {
-                AudioSource.PlayClipAtPoint(slamSfx, transform.position, 1.0f);
-            }
-            if (groundWaypointPrefab != null)
-            {
-                activeGroundWaypoint = Instantiate(groundWaypointPrefab, transform.position, Quaternion.identity, transform);
-            }
-        });
-    }
-
-    private void TearDown()
-    {
-        if (activeGroundWaypoint != null) Destroy(activeGroundWaypoint);
+            uiPanel.SetActive(false);
+        }
         
         if (burnVfxPrefab != null)
         {
@@ -215,5 +241,19 @@ public class WarBannerController : MonoBehaviour
         {
             AudioSource.PlayClipAtPoint(burnSfx, transform.position, 1.0f);
         }
+        
+        // Simple dissolve simulation: fade out or scale over 3 seconds
+        LeanTween.scale(gameObject, Vector3.zero, 3.0f).setEase(LeanTweenType.easeInSine);
+        Destroy(gameObject, 3.1f);
+    }
+    
+    public void ShrinkOut()
+    {
+        if (uiPanel != null)
+        {
+            uiPanel.SetActive(false);
+        }
+        LeanTween.scale(gameObject, Vector3.zero, 0.5f).setEase(LeanTweenType.easeInBack);
+        Destroy(gameObject, 0.6f);
     }
 }

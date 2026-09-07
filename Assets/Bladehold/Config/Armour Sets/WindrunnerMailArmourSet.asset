@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af21e701f1dd64f4582c7fdf510cae2d, type: 3}
+  m_Name: WindrunnerMailArmourSet
+  m_EditorClassIdentifier: Assembly-CSharp::ArmourSetSO
+  id: windrunner_mail
+  displayName: Windrunner Mail
+  description: Lightweight chainmail favored by scouts and swift skirmishers. Enhances
+    agility and precision.
+  orcishMetalUnlockCost: 5
+  icon: {fileID: 0}
+  characterModelPrefab: {fileID: 1851888093067133743, guid: b441e4a1b06b550499cd5d9bedd7927b, type: 3}
+  statModifiers:
+  - stat: 2
+    kind: 1
+    amount: 0.12
+  - stat: 3
+    kind: 1
+    amount: 0.15
+  - stat: 4
+    kind: 0
+    amount: 0.08

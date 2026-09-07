@@ -36,7 +36,6 @@ public class BerserkerUltimate : MonoBehaviour, IUltimateHandler
     [SerializeField] private Transform spinTransform;
 
     private Player player;
-    private PlayerClassController classController;
     private Animator animator;
     private DamageTrigger activeTrigger;
     private GameObject activeWhirlwindVfx;
@@ -54,7 +53,6 @@ public class BerserkerUltimate : MonoBehaviour, IUltimateHandler
     private void Awake()
     {
         player = GetComponentInChildren<Player>();
-        classController = GetComponentInParent<PlayerClassController>() ?? GetComponentInChildren<PlayerClassController>();
     }
 
     private void Start()
@@ -73,11 +71,6 @@ public class BerserkerUltimate : MonoBehaviour, IUltimateHandler
         {
             Debug.LogError("[BerserkerUltimate] PlayerStats component missing on Player.", this);
             anyError = true;
-        }
-
-        if (classController == null)
-        {
-            classController = GetComponentInParent<PlayerClassController>() ?? GetComponentInChildren<PlayerClassController>();
         }
 
         if (player != null)
@@ -151,7 +144,7 @@ public class BerserkerUltimate : MonoBehaviour, IUltimateHandler
         }
 
         // Activate equipped melee weapon in whirlwind mode
-        activeTrigger = classController != null ? classController.ActiveMeleeTrigger : null;
+        activeTrigger = PlayerWeaponManager.Instance != null ? PlayerWeaponManager.Instance.ActiveMeleeTrigger : null;
         if (activeTrigger == null && player != null)
         {
             activeTrigger = player.GetComponentInChildren<DamageTrigger>();

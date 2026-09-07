@@ -79,6 +79,7 @@ public class Damage
 public enum DamageType
 {
     sharp = 0,
+    slash = 0,
     blunt = 1,
     elemental = 2
 }

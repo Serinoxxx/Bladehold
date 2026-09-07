@@ -340,6 +340,8 @@ public enum StatType
     FortConcussiveSpikesDuration,
     FortShoveInterval,
     FortVulnerabilityFieldBonus,
+    FortElectrifiedOil,
+    FortPermafrostSpikes,
 
     // --- Elemental Draft Upgrades ---
     FireBlazingTrailDPS,

@@ -80,11 +80,12 @@ public class EnemyStatusManager : MonoBehaviour
         if (health != null && health.IsDead) return;
 
         List<string> expired = new List<string>();
-        foreach (var kvp in activeStatuses)
+        List<string> keys = new List<string>(activeStatuses.Keys);
+        foreach (var key in keys)
         {
-            float newTime = kvp.Value - Time.deltaTime;
-            if (newTime <= 0f) expired.Add(kvp.Key);
-            else activeStatuses[kvp.Key] = newTime;
+            float newTime = activeStatuses[key] - Time.deltaTime;
+            if (newTime <= 0f) expired.Add(key);
+            else activeStatuses[key] = newTime;
         }
 
         foreach (var id in expired)
@@ -99,7 +100,9 @@ public class EnemyStatusManager : MonoBehaviour
             if (ignitedTickTimer >= 1f)
             {
                 ignitedTickTimer -= 1f;
-                float dotDamage = (Player.Instance != null && Player.Instance.Stats != null) ? Player.Instance.Stats.GetValue(StatType.SwordDamage) * 0.15f : 10f;
+                float combustionDPS = (Player.Instance != null && Player.Instance.Stats != null) ? Player.Instance.Stats.GetValue(StatType.FireCombustionDPS) : 0f;
+                float baseTick = (Player.Instance != null && Player.Instance.Stats != null) ? Player.Instance.Stats.GetValue(StatType.SwordDamage) * 0.15f : 10f;
+                float dotDamage = baseTick + combustionDPS;
                 Damage dot = new Damage { value = dotDamage, type = DamageType.elemental, source = Player.Instance?.Damageable, isPlayerDamage = true };
                 health.ReceiveDamage(dot);
             }
@@ -128,13 +131,15 @@ public class EnemyStatusManager : MonoBehaviour
         }
     }
 
-    public void ApplyStatus(string elementId)
+    public void ApplyStatus(string elementId, float slowOverride = -1f)
     {
         if (string.IsNullOrEmpty(elementId)) return;
 
         if (elementId.Equals("Ice", System.StringComparison.OrdinalIgnoreCase))
         {
-            if (HasStatus("Ice") && activeStatuses["Ice"] > 0f)
+            bool canDeepFreeze = Player.Instance != null && Player.Instance.Stats != null && Player.Instance.Stats.GetValue(StatType.IceDeepFreezeUnlocked) > 0f;
+
+            if (canDeepFreeze && HasStatus("Ice") && activeStatuses["Ice"] > 0f)
             {
                 activeStatuses["Frozen"] = 2f; 
                 SlowStatus.GetOrAdd(health)?.ApplySlow(1.0f, 2f); 
@@ -151,7 +156,8 @@ public class EnemyStatusManager : MonoBehaviour
             else
             {
                 activeStatuses["Ice"] = 3f;
-                SlowStatus.GetOrAdd(health)?.ApplySlow(0.35f, 3f);
+                float slowToApply = slowOverride > 0f ? slowOverride : 0.35f;
+                SlowStatus.GetOrAdd(health)?.ApplySlow(slowToApply, 3f);
                 if (iceVisual == null && ElementalEffectsManager.Instance != null && ElementalEffectsManager.Instance.iceStatusVfx != null)
                 {
                     iceVisual = Instantiate(ElementalEffectsManager.Instance.iceStatusVfx, transform.position, Quaternion.identity, transform);
@@ -212,11 +218,54 @@ public class EnemyStatusManager : MonoBehaviour
 
     private float HandleScaleDamageTaken(Damage damage)
     {
+        float mult = 1f;
         if (GetUniqueElementCount() >= 2)
         {
-            return 1.40f; 
+            mult *= 1.40f; 
         }
-        return 1f;
+
+        if (HasStatus("Fire"))
+        {
+            float kindling = (Player.Instance != null && Player.Instance.Stats != null) ? Player.Instance.Stats.GetValue(StatType.FireKindlingDamageBonus) : 0f;
+            if (kindling > 0f)
+            {
+                mult *= (1f + kindling);
+            }
+        }
+
+        if (HasStatus("Frozen"))
+        {
+            float shatter = (Player.Instance != null && Player.Instance.Stats != null) ? Player.Instance.Stats.GetValue(StatType.IceShatterBonus) : 0f;
+            if (shatter > 0f)
+            {
+                mult *= (1f + shatter);
+            }
+        }
+
+        if (health == null)
+        {
+            health = GetComponent<Health>();
+        }
+
+        if (health != null && Time.time - health.LastBoilingOilTime <= 1.2f)
+        {
+            float scalding = (Player.Instance != null && Player.Instance.Stats != null) ? Player.Instance.Stats.GetValue(StatType.FortScaldingHeatBonus) : 0f;
+            if (scalding > 0f)
+            {
+                mult *= (1f + scalding);
+            }
+        }
+
+        if (health != null && Time.time - health.LastSpikeZoneTime <= 1.2f)
+        {
+            float vuln = (Player.Instance != null && Player.Instance.Stats != null) ? Player.Instance.Stats.GetValue(StatType.FortVulnerabilityFieldBonus) : 0f;
+            if (vuln > 0f)
+            {
+                mult *= (1f + vuln);
+            }
+        }
+
+        return mult;
     }
 
     private void HandleDamageReceived(Damage damage)

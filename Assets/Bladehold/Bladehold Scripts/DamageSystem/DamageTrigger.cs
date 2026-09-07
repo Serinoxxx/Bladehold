@@ -96,6 +96,7 @@ public class DamageTrigger : MonoBehaviour
     int activePointCount;
     float reachBonus;
     float activationPainBonus;
+    private float lastChainHitTime = -999f;
 
     bool anyError = false;
 
@@ -161,6 +162,7 @@ public class DamageTrigger : MonoBehaviour
             stats.SetBase(StatType.ChargeKnockbackBonus, 0f);
             stats.SetBase(StatType.MaxHitsPerSwing, damageTriggerSO.maxHits);
             stats.SetBase(StatType.IceBreakerDamageBonus, 0f);
+            stats.SetBase(StatType.LightningStaticEdgeDamage, 0f);
 
             stats.OnStatChanged += HandleStatChanged;
             ApplyRangeScale();
@@ -503,6 +505,33 @@ public class DamageTrigger : MonoBehaviour
                     damage.value *= 1f + iceBreakerBonus;
                 }
             }
+
+            // Lightning Static Edge: first hit of a melee chain deals bonus lightning damage and applies Lightning status
+            bool isFirstHitOfChain = (Time.time - lastChainHitTime > 1.5f);
+            lastChainHitTime = Time.time;
+            if (isFirstHitOfChain && stats != null)
+            {
+                float staticEdge = stats.GetValue(StatType.LightningStaticEdgeDamage);
+                if (staticEdge > 0f)
+                {
+                    damage.value += staticEdge;
+                    EnemyStatusManager.GetOrAdd(targetComponent)?.ApplyStatus("Lightning");
+                    if (ElementalEffectsManager.Instance != null)
+                    {
+                        if (ElementalEffectsManager.Instance.superconductorVfx != null)
+                        {
+                            Instantiate(ElementalEffectsManager.Instance.superconductorVfx, hitPoint, Quaternion.identity);
+                        }
+                        AudioClip zapClip = ElementalEffectsManager.Instance.superconductorSfx != null
+                            ? ElementalEffectsManager.Instance.superconductorSfx
+                            : ElementalEffectsManager.Instance.statusAppliedSfx;
+                        if (zapClip != null)
+                        {
+                            AudioSource.PlayClipAtPoint(zapClip, hitPoint);
+                        }
+                    }
+                }
+            }
         }
 
         // Apply diminishing returns for cleave hits. hitTargets.Count is at least 1 since we just added the target.
@@ -561,11 +590,20 @@ public class DamageTrigger : MonoBehaviour
 
         float value = stats.GetValue(StatType.SwordDamage) * GlobalDamageMultiplier();
 
+        bool isLungeWindow = Player.Instance != null && Player.Instance.GetComponent<PlayerDodge>()?.IsLungeWindowActive == true;
+        float lungeCritBonus = isLungeWindow ? stats.GetValue(StatType.SwordLungeCritBonus) : 0f;
+        float lungeDmgBonus = isLungeWindow ? stats.GetValue(StatType.SwordLungeDamageBonus) : 0f;
+
         // Roll crit per target so each enemy in a sweep crits independently.
-        bool crit = UnityEngine.Random.value < stats.GetValue(StatType.CritChance);
+        bool crit = UnityEngine.Random.value < (stats.GetValue(StatType.CritChance) + lungeCritBonus);
         if (crit)
         {
             value *= stats.GetValue(StatType.CritMultiplier);
+        }
+
+        if (lungeDmgBonus > 0f)
+        {
+            value *= (1f + lungeDmgBonus);
         }
 
         float knockback = value * stats.GetValue(StatType.KnockbackForce);

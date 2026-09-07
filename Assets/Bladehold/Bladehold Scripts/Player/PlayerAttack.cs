@@ -14,13 +14,13 @@ public class PlayerAttack : MonoBehaviour
     [Tooltip("Synty InputReader that raises the attack press/release events. Usually on the player root.")]
     [SerializeField] private InputReader inputReader;
     [SerializeField] private PlayerStats stats;
-    [Tooltip("Optional: the class controller, polled for the active class's aim weapon. While that weapon is aiming, attack presses fire it instead of swinging, so the melee hold-to-charge is skipped.")]
-    [SerializeField] private PlayerClassController classController;
     [Tooltip("Optional: the player animation controller, checked for attack cooldown to prevent resetting charge timing mid-swing.")]
     [SerializeField] private SamplePlayerAnimationController animController;
 
     [Tooltip("Seconds of holding the attack button to gain each charge level (level 1 at 1×, level 2 at 2×, ...).")]
     [SerializeField] private float chargeTimePerLevel = 0.33f;
+    [Tooltip("Optional reference to PlayerDodge, used for dodge-synergy attack upgrades (like Axe Power Dash).")]
+    [SerializeField] private PlayerDodge playerDodge;
 
     [Header("Earth Splitter")]
     [Tooltip("Red box telegraph prefab shown in front of the player when Earth Splitter is at full charge.")]
@@ -38,6 +38,10 @@ public class PlayerAttack : MonoBehaviour
 
     private GameObject activeTelegraph;
     private bool isEarthSplitterReady;
+
+    private Health health;
+    private float currentShieldHP = 0f;
+    private float shieldExpireTime = 0f;
 
     private bool charging;
     private float chargeStartTime;
@@ -73,10 +77,33 @@ public class PlayerAttack : MonoBehaviour
     }
 
     /// <summary>Time in seconds required per charge level.</summary>
-    public float ChargeTimePerLevel => chargeTimePerLevel;
+    public float ChargeTimePerLevel
+    {
+        get
+        {
+            float time = chargeTimePerLevel;
+            if (stats != null)
+            {
+                float powerDash = stats.GetValue(StatType.AxePowerDashChargeSpeed);
+                if (powerDash > 0f)
+                {
+                    if (playerDodge == null && Player.Instance != null)
+                    {
+                        playerDodge = Player.Instance.GetComponentInChildren<PlayerDodge>();
+                    }
+
+                    if (playerDodge != null && (playerDodge.IsDodging || playerDodge.TimeSinceDodge <= 2.5f))
+                    {
+                        time /= (1f + powerDash);
+                    }
+                }
+            }
+            return time;
+        }
+    }
 
     /// <summary>Total time in seconds required to reach maximum charge levels.</summary>
-    public float MaxChargeTime => MaxChargeLevels * chargeTimePerLevel;
+    public float MaxChargeTime => MaxChargeLevels * ChargeTimePerLevel;
 
     /// <summary>Elapsed time in seconds of the current attack charge, clamped to [0, MaxChargeTime].</summary>
     public float CurrentChargeTime => charging ? Mathf.Min(Time.time - chargeStartTime, MaxChargeTime) : 0f;
@@ -86,7 +113,7 @@ public class PlayerAttack : MonoBehaviour
 
     /// <summary>
     ///     Per-class charge pacing (heavier weapons charge slower). Called by
-    ///     <see cref="PlayerClassController" /> in Awake; the serialized value is the Swordsman default.
+    ///     <see cref="PlayerWeaponManager" /> in Awake.
     /// </summary>
     public void SetChargeTimePerLevel(float seconds)
     {
@@ -103,10 +130,6 @@ public class PlayerAttack : MonoBehaviour
         {
             stats = GetComponent<PlayerStats>();
         }
-        if (classController == null)
-        {
-            classController = GetComponentInParent<PlayerClassController>();
-        }
         if (animController == null)
         {
             animController = GetComponent<SamplePlayerAnimationController>();
@@ -114,6 +137,10 @@ public class PlayerAttack : MonoBehaviour
             {
                 animController = GetComponentInChildren<SamplePlayerAnimationController>();
             }
+        }
+        if (playerDodge == null)
+        {
+            playerDodge = GetComponent<PlayerDodge>() ?? GetComponentInParent<PlayerDodge>() ?? GetComponentInChildren<PlayerDodge>();
         }
     }
 
@@ -130,6 +157,15 @@ public class PlayerAttack : MonoBehaviour
             anyError = true;
         }
 
+        if (playerDodge == null)
+        {
+            playerDodge = GetComponent<PlayerDodge>() ?? GetComponentInParent<PlayerDodge>() ?? GetComponentInChildren<PlayerDodge>();
+            if (playerDodge == null && Player.Instance != null)
+            {
+                playerDodge = Player.Instance.GetComponentInChildren<PlayerDodge>();
+            }
+        }
+
         if (anyError)
         {
             return;
@@ -139,6 +175,19 @@ public class PlayerAttack : MonoBehaviour
         stats.SetBase(StatType.ChargeDamageBonus, 0f);
         stats.SetBase(StatType.MaxChargeLevels, 1f);
         stats.SetBase(StatType.EarthSplitterUnlocked, 0f);
+        stats.SetBase(StatType.AxePowerDashChargeSpeed, 0f);
+        stats.SetBase(StatType.AxeHeavyStanceShield, 0f);
+
+        health = GetComponentInParent<Health>();
+        if (health == null && Player.Instance != null)
+        {
+            health = Player.Instance.Health;
+        }
+
+        if (health != null)
+        {
+            health.TryBlockDamage += HandleShieldBlock;
+        }
 
         Subscribe();
     }
@@ -162,6 +211,10 @@ public class PlayerAttack : MonoBehaviour
     private void OnDestroy()
     {
         Unsubscribe();
+        if (health != null)
+        {
+            health.TryBlockDamage -= HandleShieldBlock;
+        }
         if (activeTelegraph != null)
         {
             Destroy(activeTelegraph);
@@ -262,10 +315,10 @@ public class PlayerAttack : MonoBehaviour
         if (anyError) return;
 
         // While whirlwind is active on the equipped melee weapon, melee hold-to-charge is skipped
-        if (classController != null && classController.ActiveMeleeTrigger != null && classController.ActiveMeleeTrigger.IsWhirlwindActive) return;
+        if (PlayerWeaponManager.Instance != null && PlayerWeaponManager.Instance.ActiveMeleeTrigger != null && PlayerWeaponManager.Instance.ActiveMeleeTrigger.IsWhirlwindActive) return;
 
         // While the active class's aim weapon (bow/axe/wand) is drawn, this press fires it instead
-        IChargedAimWeapon aimWeapon = PlayerWeaponManager.Instance != null ? PlayerWeaponManager.Instance.ActiveAimWeapon : (classController != null ? classController.ActiveAimWeapon : null);
+        IChargedAimWeapon aimWeapon = PlayerWeaponManager.Instance != null ? PlayerWeaponManager.Instance.ActiveAimWeapon : null;
         if (aimWeapon != null && aimWeapon.IsAiming) return;
 
         // Ignore presses while melee attack is on cooldown (prevents interrupting a swing in progress).
@@ -288,6 +341,16 @@ public class PlayerAttack : MonoBehaviour
         // Latch the final value for the strike that plays on release.
         RecomputeMultiplier();
         charging = false;
+
+        if (ChargeLevel >= MaxChargeLevels || CurrentChargeTime >= MaxChargeTime)
+        {
+            float shieldAmount = stats != null ? stats.GetValue(StatType.AxeHeavyStanceShield) : 0f;
+            if (shieldAmount > 0f)
+            {
+                currentShieldHP = shieldAmount;
+                shieldExpireTime = Time.time + 2.0f;
+            }
+        }
 
         if (isEarthSplitterReady && stats.GetValue(StatType.EarthSplitterUnlocked) > 0f)
         {
@@ -374,11 +437,32 @@ public class PlayerAttack : MonoBehaviour
     {
         int maxLevels = MaxChargeLevels;
         float elapsed = Mathf.Max(0f, Time.time - chargeStartTime);
-        float chargeRatio = chargeTimePerLevel > 0f ? elapsed / chargeTimePerLevel : maxLevels;
+        float chargeTime = ChargeTimePerLevel;
+        float chargeRatio = chargeTime > 0f ? elapsed / chargeTime : maxLevels;
         chargeRatio = Mathf.Clamp(chargeRatio, 0f, maxLevels);
         ChargeLevel = Mathf.Clamp(Mathf.FloorToInt(chargeRatio), 0, maxLevels);
 
         float damagePerLevel = 1.9f + stats.GetValue(StatType.ChargeDamageBonus);
         AttackDamageMultiplier = 0.1f + damagePerLevel * chargeRatio;
+    }
+
+    private bool HandleShieldBlock(Damage damage)
+    {
+        if (Time.time <= shieldExpireTime && currentShieldHP > 0f && damage != null && damage.value > 0f)
+        {
+            if (damage.value <= currentShieldHP)
+            {
+                currentShieldHP -= damage.value;
+                return true; // Entire damage absorbed
+            }
+            else
+            {
+                damage.value -= currentShieldHP;
+                currentShieldHP = 0f;
+                return false; // Partially absorbed, remainder passes through
+            }
+        }
+
+        return false;
     }
 }

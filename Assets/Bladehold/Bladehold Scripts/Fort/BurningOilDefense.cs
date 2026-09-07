@@ -174,13 +174,27 @@ public class BurningOilDefense : FortDefense
             AudioSource.PlayClipAtPoint(splashSound, groundPos, 0.9f);
         }
 
+        float effectiveRadius = detectionRadius;
+        if (Player.Instance != null && Player.Instance.Stats != null)
+        {
+            float vatsPercent = Player.Instance.Stats.GetValue(StatType.FortExpandedVatsPercent);
+            if (vatsPercent > 0f)
+            {
+                effectiveRadius *= (1f + vatsPercent);
+            }
+        }
+
         if (oilZonePrefab != null)
         {
             GameObject zoneObj = Instantiate(oilZonePrefab, groundPos, Quaternion.identity);
-            BurningOilZone zone = zoneObj.GetComponent<BurningOilZone>();
+            if (zoneObj != null && detectionRadius > 0f)
+            {
+                zoneObj.transform.localScale = Vector3.one * (effectiveRadius / detectionRadius);
+            }
+            BurningOilZone zone = zoneObj != null ? zoneObj.GetComponent<BurningOilZone>() : null;
             if (zone != null)
             {
-                zone.Init(detectionRadius, GetEffectiveDuration(), GetEffectiveDPS(), slowFraction);
+                zone.Init(effectiveRadius, GetEffectiveDuration(), GetEffectiveDPS(), slowFraction);
             }
         }
         else
@@ -188,8 +202,12 @@ public class BurningOilDefense : FortDefense
             // Create runtime fallback zone
             GameObject fallbackZone = new GameObject("BurningOilZone_Runtime");
             fallbackZone.transform.position = groundPos;
+            if (detectionRadius > 0f)
+            {
+                fallbackZone.transform.localScale = Vector3.one * (effectiveRadius / detectionRadius);
+            }
             BurningOilZone zone = fallbackZone.AddComponent<BurningOilZone>();
-            zone.Init(detectionRadius, GetEffectiveDuration(), GetEffectiveDPS(), slowFraction);
+            zone.Init(effectiveRadius, GetEffectiveDuration(), GetEffectiveDPS(), slowFraction);
         }
 
         // Hold tipped pose briefly

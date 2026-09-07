@@ -62,6 +62,23 @@ public class PlayerStats : MonoBehaviour
         OnStatChanged?.Invoke(stat);
     }
 
+    /// <summary>Removes a modifier of the given kind.</summary>
+    public void RemoveModifier(StatType stat, ModifierKind kind, float amount)
+    {
+        if (entries.TryGetValue(stat, out Entry entry))
+        {
+            if (kind == ModifierKind.Flat)
+            {
+                entry.flat -= amount;
+            }
+            else
+            {
+                entry.percent -= amount;
+            }
+            OnStatChanged?.Invoke(stat);
+        }
+    }
+
     /// <summary>The effective value of a stat, or 0 if nothing has registered it yet.</summary>
     public float GetValue(StatType stat)
     {

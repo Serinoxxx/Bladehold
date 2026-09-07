@@ -70,10 +70,60 @@ public class ArrowSlitDefense : FortDefense
         }
     }
 
+    private float GetEffectiveRange()
+    {
+        float effectiveRange = range;
+        if (Player.Instance != null && Player.Instance.Stats != null)
+        {
+            if (Player.Instance.Stats.GetValue(StatType.FortSniperNestUnlocked) > 0f)
+            {
+                effectiveRange = range * 1.5f;
+            }
+        }
+        return effectiveRange;
+    }
+
+    private bool IsSniperNestActive()
+    {
+        if (Player.Instance == null || Player.Instance.Stats == null) return false;
+        if (Player.Instance.Stats.GetValue(StatType.FortSniperNestUnlocked) <= 0f) return false;
+
+        Transform fp = (firePoint != null && firePoint) ? firePoint : transform;
+        Vector3 origin = fp.position;
+
+        int mask = enemyLayers.value;
+        if (mask == ~0 || mask == 0)
+        {
+            mask = LayerMask.GetMask("Enemy");
+            if (mask == 0) mask = 1 << 7;
+        }
+
+        int hitCount = Physics.OverlapSphereNonAlloc(origin, 10f, targetBuffer, mask, QueryTriggerInteraction.Collide);
+        for (int i = 0; i < hitCount; i++)
+        {
+            Collider col = targetBuffer[i];
+            if (col == null) continue;
+
+            Health h = col.GetComponentInParent<Health>();
+            if (h == null || h.IsDead) continue;
+            if (Player.Instance != null && h.transform.root == Player.Instance.transform.root) continue;
+
+            // Enemy found within 10m
+            return false;
+        }
+
+        return true;
+    }
+
     private float GetEffectiveDamage()
     {
         // Level 1: base (18), Level 2: +10, Level 3: +20, Level 4: +35
-        return baseDamage + (currentLevel - 1) * 12f;
+        float dmg = baseDamage + (currentLevel - 1) * 12f;
+        if (IsSniperNestActive())
+        {
+            dmg *= 3f;
+        }
+        return dmg;
     }
 
     private float GetEffectiveFireInterval()
@@ -84,7 +134,12 @@ public class ArrowSlitDefense : FortDefense
 
     private int GetBurstCount()
     {
-        return currentLevel >= 4 ? 2 : 1;
+        int burst = currentLevel >= 4 ? 2 : 1;
+        if (Player.Instance != null && Player.Instance.Stats != null)
+        {
+            burst += Mathf.RoundToInt(Player.Instance.Stats.GetValue(StatType.FortArrowSlitsCount));
+        }
+        return burst;
     }
 
     private Health FindBestTarget()
@@ -99,10 +154,14 @@ public class ArrowSlitDefense : FortDefense
             if (mask == 0) mask = 1 << 7;
         }
 
-        int hitCount = Physics.OverlapSphereNonAlloc(origin, range, targetBuffer, mask, QueryTriggerInteraction.Collide);
+        float searchRange = GetEffectiveRange();
+        int hitCount = Physics.OverlapSphereNonAlloc(origin, searchRange, targetBuffer, mask, QueryTriggerInteraction.Collide);
 
         Health bestTarget = null;
+        bool bestIsFocused = false;
         float closestDistSqr = float.MaxValue;
+        float focusBonus = (Player.Instance != null && Player.Instance.Stats != null) ? Player.Instance.Stats.GetValue(StatType.FortFocusFireBonus) : 0f;
+        bool hasFocusBonus = focusBonus > 0f;
 
         Vector3 forwardXZ = new Vector3(transform.forward.x, 0f, transform.forward.z).normalized;
 
@@ -127,10 +186,27 @@ public class ArrowSlitDefense : FortDefense
                 if (Vector3.Angle(forwardXZ, toTargetXZ) > maxTargetAngle * 0.5f) continue;
             }
 
-            if (distSqr < closestDistSqr)
+            bool isFocused = hasFocusBonus && (Time.time - h.LastPlayerRangedHitTime <= 5.0f);
+
+            if (bestTarget == null)
             {
-                closestDistSqr = distSqr;
                 bestTarget = h;
+                bestIsFocused = isFocused;
+                closestDistSqr = distSqr;
+            }
+            else if (isFocused && !bestIsFocused)
+            {
+                bestTarget = h;
+                bestIsFocused = true;
+                closestDistSqr = distSqr;
+            }
+            else if (isFocused == bestIsFocused)
+            {
+                if (distSqr < closestDistSqr)
+                {
+                    bestTarget = h;
+                    closestDistSqr = distSqr;
+                }
             }
         }
 
@@ -426,6 +502,19 @@ public class ArrowSlitDefense : FortDefense
                 isPlayerDamage = true,
                 elementId = RunSession.GetElementInSlot("SLOT_FORTRESS")
             };
+
+            if (Player.Instance != null && Player.Instance.Stats != null)
+            {
+                if (Time.time - target.LastPlayerRangedHitTime <= 5.0f)
+                {
+                    float focusBonus = Player.Instance.Stats.GetValue(StatType.FortFocusFireBonus);
+                    if (focusBonus > 0f)
+                    {
+                        damage.value *= (1f + focusBonus);
+                    }
+                }
+            }
+
             target.ReceiveDamage(damage);
 
             if (hitSound != null)

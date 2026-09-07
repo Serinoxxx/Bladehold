@@ -173,9 +173,7 @@ public class MageImbuement : MonoBehaviour
             ownerDamageable = Player.Instance.Damageable;
         }
 
-        PlayerClassController classController = GetComponentInParent<PlayerClassController>();
-        bool isMage = classController != null && classController.ActiveClass != null &&
-                      classController.ActiveClass.id.Equals("mage", StringComparison.OrdinalIgnoreCase);
+        bool isMage = true;
 
         // Register authored SO values as stat bases. Non-Mage classes start with 0 runestone charges until unlocked in skill tree.
         stats.SetBase(StatType.MageImbuementDuration, config.imbuementDurationSeconds);
@@ -203,10 +201,9 @@ public class MageImbuement : MonoBehaviour
             staffTrigger.OnHit += HandleHit;
         }
 
-        PlayerClassController classController = GetComponentInParent<PlayerClassController>();
-        if (classController != null && classController.ActiveMeleeTrigger != null && classController.ActiveMeleeTrigger != staffTrigger)
+        if (PlayerWeaponManager.Instance != null && PlayerWeaponManager.Instance.ActiveMeleeTrigger != null && PlayerWeaponManager.Instance.ActiveMeleeTrigger != staffTrigger)
         {
-            activeMeleeTrigger = classController.ActiveMeleeTrigger;
+            activeMeleeTrigger = PlayerWeaponManager.Instance.ActiveMeleeTrigger;
             activeMeleeTrigger.OnHit += HandleHit;
         }
 

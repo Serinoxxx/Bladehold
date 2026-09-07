@@ -295,6 +295,23 @@ public class DraftUpgradeService : MonoBehaviour
                 if (hasUltimate) continue;
             }
 
+            // Fortress prerequisites rule
+            if (def.category == DraftCategory.Fortress)
+            {
+                if (def.id == "fort_reinforced_slits" || def.id == "fort_sniper_nest" || def.id == "fort_focus_fire")
+                {
+                    if (RunSession.GetUpgradeLevel("fort_arrow_slits") == 0) continue;
+                }
+                else if (def.id == "fort_fiery_pitch" || def.id == "fort_scalding_heat" || def.id == "fort_expanded_vats")
+                {
+                    if (RunSession.GetUpgradeLevel("fort_boiling_oil") == 0) continue;
+                }
+                else if (def.id == "fort_concussive_spikes" || def.id == "fort_shove" || def.id == "fort_vulnerability_field")
+                {
+                    if (RunSession.GetUpgradeLevel("fort_spike_barricades") == 0) continue;
+                }
+            }
+
             candidates.Add(def);
         }
 

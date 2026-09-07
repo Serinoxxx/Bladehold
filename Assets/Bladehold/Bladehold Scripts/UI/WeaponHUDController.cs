@@ -70,14 +70,14 @@ public class WeaponHUDController : MonoBehaviour
 
         if (Player.Instance != null)
         {
-            var classController = Player.Instance.GetComponent<PlayerClassController>();
-            if (classController != null && classController.ActiveClass != null)
+            var weaponManager = PlayerWeaponManager.Instance;
+            if (weaponManager != null)
             {
-                if (classController.ActiveClass.meleeIcon != null)
-                    meleeWeaponIcon.sprite = classController.ActiveClass.meleeIcon;
+                if (weaponManager.ActiveMeleeDefinition != null && weaponManager.ActiveMeleeDefinition.icon != null)
+                    meleeWeaponIcon.sprite = weaponManager.ActiveMeleeDefinition.icon;
                 
-                if (classController.ActiveClass.rangedIcon != null)
-                    rangedWeaponIcon.sprite = classController.ActiveClass.rangedIcon;
+                if (weaponManager.ActiveRangedDefinition != null && weaponManager.ActiveRangedDefinition.icon != null)
+                    rangedWeaponIcon.sprite = weaponManager.ActiveRangedDefinition.icon;
             }
 
             playerInput = Player.Instance.GetComponent<PlayerInput>();

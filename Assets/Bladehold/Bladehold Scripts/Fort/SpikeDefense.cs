@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using MoreMountains.Feedbacks;
 using UnityEngine;
+using UnityEngine.AI;
 
 /// <summary>
 ///     Fort defense for ground spike traps.
@@ -37,9 +38,12 @@ public class SpikeDefense : FortDefense
 
     private readonly Collider[] overlapBuffer = new Collider[64];
     private readonly HashSet<Health> hitEnemiesThisThrust = new HashSet<Health>();
+    private readonly HashSet<Health> shovedEnemies = new HashSet<Health>();
     private Vector3 initialMeshLocalPos;
     private Coroutine trapCycleRoutine;
     private bool isThrusting = false;
+    private float nextShoveTime = 0f;
+    private float nextZoneScanTime = 0f;
 
     private void Awake()
     {
@@ -70,6 +74,68 @@ public class SpikeDefense : FortDefense
         {
             StopCoroutine(trapCycleRoutine);
             trapCycleRoutine = null;
+        }
+    }
+
+    private void Update()
+    {
+        if (Time.time >= nextZoneScanTime)
+        {
+            nextZoneScanTime = Time.time + 0.25f;
+            UpdateBarricadeZonePresence();
+        }
+
+        if (Player.Instance != null && Player.Instance.Stats != null)
+        {
+            float shoveInterval = Player.Instance.Stats.GetValue(StatType.FortShoveInterval);
+            if (shoveInterval > 0f && Time.time >= nextShoveTime)
+            {
+                nextShoveTime = Time.time + shoveInterval;
+
+                int count = Physics.OverlapSphereNonAlloc(transform.position, 4f, overlapBuffer);
+                shovedEnemies.Clear();
+
+                for (int i = 0; i < count; i++)
+                {
+                    Collider col = overlapBuffer[i];
+                    if (col == null) continue;
+
+                    // Skip player
+                    if (Player.Instance != null && col.transform.root == Player.Instance.transform.root) continue;
+
+                    Health enemyHealth = col.GetComponentInParent<Health>();
+                    if (enemyHealth == null || enemyHealth.IsDead) continue;
+                    if (!shovedEnemies.Add(enemyHealth)) continue;
+
+                    // Determine shove direction: away from fortress / along transform.forward (or (col.transform.position - transform.position).normalized flattened on XZ)
+                    Vector3 shoveDir = col.transform.position - transform.position;
+                    shoveDir.y = 0f;
+                    if (shoveDir.sqrMagnitude < 0.001f)
+                    {
+                        shoveDir = transform.forward;
+                        shoveDir.y = 0f;
+                    }
+
+                    if (shoveDir.sqrMagnitude > 0.001f)
+                    {
+                        shoveDir.Normalize();
+                    }
+                    else
+                    {
+                        shoveDir = Vector3.forward;
+                    }
+
+                    // Displace enemy ~2 meters backward:
+                    if ((col.TryGetComponent<NavMeshAgent>(out var agent) || enemyHealth.TryGetComponent<NavMeshAgent>(out agent)) && agent.isOnNavMesh)
+                    {
+                        agent.Move(shoveDir * 2.0f);
+                    }
+                    else if ((col.TryGetComponent<Rigidbody>(out var rb) || enemyHealth.TryGetComponent<Rigidbody>(out rb)) && !rb.isKinematic)
+                    {
+                        rb.AddForce(shoveDir * 6f, ForceMode.Impulse);
+                    }
+                }
+            }
         }
     }
 
@@ -187,6 +253,27 @@ public class SpikeDefense : FortDefense
         isThrusting = false;
     }
 
+    private void UpdateBarricadeZonePresence()
+    {
+        Vector3 boxCenter = transform.TransformPoint(GetBoxCenterOffset());
+        Vector3 halfExtents = GetBoxSize() * 0.5f;
+
+        int hitCount = Physics.OverlapBoxNonAlloc(boxCenter, halfExtents, overlapBuffer, transform.rotation);
+        for (int i = 0; i < hitCount; i++)
+        {
+            Collider col = overlapBuffer[i];
+            if (col == null) continue;
+
+            if (Player.Instance != null && col.transform.root == Player.Instance.transform.root) continue;
+
+            Health enemyHealth = col.GetComponentInParent<Health>();
+            if (enemyHealth == null || enemyHealth.IsDead) continue;
+
+            enemyHealth.LastSpikeZoneTime = Time.time;
+            EnemyStatusManager.GetOrAdd(enemyHealth);
+        }
+    }
+
     private void ApplyTrapDamage()
     {
         Vector3 boxCenter = transform.TransformPoint(GetBoxCenterOffset());
@@ -207,6 +294,9 @@ public class SpikeDefense : FortDefense
             Health enemyHealth = col.GetComponentInParent<Health>();
             if (enemyHealth == null || enemyHealth.IsDead) continue;
 
+            enemyHealth.LastSpikeZoneTime = Time.time;
+            EnemyStatusManager.GetOrAdd(enemyHealth);
+
             if (hitEnemiesThisThrust.Contains(enemyHealth)) continue;
             hitEnemiesThisThrust.Add(enemyHealth);
 
@@ -223,7 +313,54 @@ public class SpikeDefense : FortDefense
                 elementId = RunSession.ElementalSlots.GetValueOrDefault("SLOT_FORTRESS", "")
             };
 
+            if (Player.Instance != null && Player.Instance.Stats != null)
+            {
+                float pyreBonus = Player.Instance.Stats.GetValue(StatType.FireFortressPyreBonus);
+                if (pyreBonus > 0f)
+                {
+                    if (enemyHealth.GetComponent<EnemyStatusManager>()?.HasStatus("Fire") == true)
+                    {
+                        damage.value *= (1f + pyreBonus);
+                    }
+                }
+            }
+
             enemyHealth.ReceiveDamage(damage);
+
+            if (Player.Instance != null && Player.Instance.Stats != null)
+            {
+                float stunDuration = Player.Instance.Stats.GetValue(StatType.FortConcussiveSpikesDuration);
+                if (stunDuration > 0f)
+                {
+                    SlowStatus.GetOrAdd(col)?.ApplySlow(1.0f, stunDuration);
+                    if (col.TryGetComponent<NavMeshAgent>(out var agent) && agent.isOnNavMesh)
+                    {
+                        agent.velocity = Vector3.zero;
+                    }
+                }
+
+                if (Player.Instance.Stats.GetValue(StatType.FortPermafrostSpikes) > 0f)
+                {
+                    EnemyStatusManager.GetOrAdd(col)?.ApplyStatus("Ice");
+                    SlowStatus.GetOrAdd(col)?.ApplySlow(0.5f, 3.0f);
+
+                    if (ElementalEffectsManager.Instance != null)
+                    {
+                        if (ElementalEffectsManager.Instance.iceStatusVfx != null)
+                        {
+                            Instantiate(ElementalEffectsManager.Instance.iceStatusVfx, col.transform.position, Quaternion.identity);
+                        }
+
+                        AudioClip chillClip = ElementalEffectsManager.Instance.statusAppliedSfx != null
+                            ? ElementalEffectsManager.Instance.statusAppliedSfx
+                            : ElementalEffectsManager.Instance.frozenSfx;
+                        if (chillClip != null)
+                        {
+                            AudioSource.PlayClipAtPoint(chillClip, col.transform.position, 0.8f);
+                        }
+                    }
+                }
+            }
 
             if (bloodSplatterPrefab != null)
             {

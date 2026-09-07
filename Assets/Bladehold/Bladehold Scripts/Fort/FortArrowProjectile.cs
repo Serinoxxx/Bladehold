@@ -71,6 +71,28 @@ public class FortArrowProjectile : MonoBehaviour
                     isPlayerDamage = true,
                     elementId = RunSession.GetElementInSlot("SLOT_FORTRESS")
                 };
+
+                if (Player.Instance != null && Player.Instance.Stats != null)
+                {
+                    float pyreBonus = Player.Instance.Stats.GetValue(StatType.FireFortressPyreBonus);
+                    if (pyreBonus > 0f)
+                    {
+                        if (targetHealth.GetComponent<EnemyStatusManager>()?.HasStatus("Fire") == true)
+                        {
+                            damage.value *= (1f + pyreBonus);
+                        }
+                    }
+
+                    if (Time.time - targetHealth.LastPlayerRangedHitTime <= 5.0f)
+                    {
+                        float focusBonus = Player.Instance.Stats.GetValue(StatType.FortFocusFireBonus);
+                        if (focusBonus > 0f)
+                        {
+                            damage.value *= (1f + focusBonus);
+                        }
+                    }
+                }
+
                 targetHealth.ReceiveDamage(damage);
 
                 if (hitSound != null)

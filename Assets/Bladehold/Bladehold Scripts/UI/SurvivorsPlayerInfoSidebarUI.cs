@@ -65,18 +65,10 @@ public class SurvivorsPlayerInfoSidebarUI : MonoBehaviour
     private void PopulatePlayerInfo()
     {
         Player player = Player.Instance;
-        PlayerClassController classController = player != null ? player.GetComponent<PlayerClassController>() : null;
-        if (classController == null)
-        {
-            classController = UnityEngine.Object.FindAnyObjectByType<PlayerClassController>();
-        }
 
         if (classNameText != null)
         {
-            string cName = classController != null && classController.ActiveClass != null
-                ? classController.ActiveClass.displayName
-                : "Hero";
-            classNameText.text = cName.ToUpperInvariant();
+            classNameText.text = "HERO";
         }
 
         if (healthText != null)

@@ -124,6 +124,8 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
 
     [Tooltip("Optional: the player's mount. While mounted, aiming is gated behind the Horse Archer skill node.")]
     [SerializeField] private PlayerMount mount;
+    [Tooltip("The player's Health component. Auto-wired from parents or Player.Instance.")]
+    [SerializeField] private Health playerHealth;
 
     /// <summary>Fired once per arrow (or bounce) that actually damaged a target, with the world hit point — the <see cref="DamageTrigger.OnHit" /> shape, so feedback listeners can treat bow and sword alike.</summary>
     public event Action<IDamageable, Damage, Vector3> OnHit;
@@ -140,7 +142,6 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
     public event Action OnFired;
 
     /// <summary>True once the "Bow" skill node has been bought; while false, aiming does nothing and the sword stays out.</summary>
-    public bool IsUnlocked => !anyError && stats.GetValue(StatType.BowUnlocked) >= 1f;
 
     /// <summary>True while the aim button is held and the bow is drawn.</summary>
     public bool IsAiming { get; private set; }
@@ -223,6 +224,8 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
     private bool hasWeaponTypeParam;
     private float chargeStartTime;
     private float lastFireTime = Mathf.NegativeInfinity;
+    private float lastDesperateVolleyTime = Mathf.NegativeInfinity;
+    private const float DesperateVolleyCooldown = 12f;
     private bool subscribed;
     private bool anyError = false;
 
@@ -244,6 +247,10 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         if (mount == null)
         {
             mount = GetComponent<PlayerMount>();
+        }
+        if (playerHealth == null)
+        {
+            playerHealth = GetComponentInParent<Health>();
         }
     }
 
@@ -338,6 +345,7 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         stats.SetBase(StatType.BowMultishotArrows, 0f);
         stats.SetBase(StatType.BowMultishotDamagePercent, config.baseMultishotDamagePercent);
         stats.SetBase(StatType.BowBounceChance, 0f);
+        stats.SetBase(StatType.BowBounceCount, 0f);
         stats.SetBase(StatType.BowImpulseArrows, 0f);
         stats.SetBase(StatType.BowStormArrows, 0f);
         stats.SetBase(StatType.BowPickupArrows, 0f);
@@ -353,6 +361,10 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         // The BowUnlocked gate, mounted edition: base 0 = the bow can't be drawn from horseback
         // until the "Horse Archer" node is bought.
         stats.SetBase(StatType.HorseArcheryUnlocked, 0f);
+        stats.SetBase(StatType.BowAutoShotOnDash, 0f);
+        stats.SetBase(StatType.BowPierceCount, 0f);
+        stats.SetBase(StatType.BowDesperateVolleyArrows, 0f);
+        stats.SetBase(StatType.IceShardsBurstDamage, 0f);
 
         // Missing buff/chain components are not errors — those skill lines are optional features
         // (the DamageTrigger ImpulseBuff fallback idiom).
@@ -363,6 +375,19 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         if (chainLightning == null && Player.Instance != null)
         {
             chainLightning = Player.Instance.GetComponentInChildren<ChainLightning>();
+        }
+
+        if (playerHealth == null)
+        {
+            playerHealth = GetComponentInParent<Health>();
+        }
+        if (playerHealth == null && Player.Instance != null)
+        {
+            playerHealth = Player.Instance.Health;
+        }
+        if (playerHealth != null)
+        {
+            playerHealth.OnDamaged += HandlePlayerDamaged;
         }
 
         Subscribe();
@@ -389,6 +414,10 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
     private void OnDestroy()
     {
         Unsubscribe();
+        if (playerHealth != null)
+        {
+            playerHealth.OnDamaged -= HandlePlayerDamaged;
+        }
     }
 
     private void Subscribe()
@@ -444,9 +473,8 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
 
     private void StartAim()
     {
-        if (anyError || !IsUnlocked)
+        if (anyError)
         {
-            // Bow still locked: leave IsAiming false so the sword swing (and everything else) works normally.
             return;
         }
 
@@ -514,8 +542,9 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         }
         if (hasWeaponTypeParam && playerAnimator != null)
         {
-            playerAnimator.SetInteger(rangedWeaponTypeHash, 0);
-            playerAnimator.SetInteger(weaponTypeHash, 0);
+            int meleeType = PlayerWeaponManager.Instance != null ? PlayerWeaponManager.Instance.CurrentMeleeWeaponType : 0;
+            playerAnimator.SetInteger(rangedWeaponTypeHash, meleeType);
+            playerAnimator.SetInteger(weaponTypeHash, meleeType);
         }
 
         if (swordModel != null)
@@ -617,16 +646,166 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
     }
 
     /// <summary>
+    ///     Fires an automatic fully charged arrow at the nearest alive enemy within search radius.
+    ///     Called during player dodge when <see cref="StatType.BowAutoShotOnDash" /> is unlocked.
+    /// </summary>
+    public void FireAutoShotAtNearest(float searchRadius = 25f)
+    {
+        if (anyError || stats == null)
+        {
+            return;
+        }
+
+        Vector3 origin = arrowOrigin != null ? arrowOrigin.position : transform.position;
+        Vector3 aimDirection = transform.forward;
+
+        int count = Physics.OverlapSphereNonAlloc(origin, searchRadius, overlapBuffer, bounceLayers, QueryTriggerInteraction.Collide);
+        float nearestSqrDist = float.MaxValue;
+        Collider nearestCollider = null;
+        Health nearestEnemy = null;
+        Health playerHealth = Player.Instance != null ? Player.Instance.Health : null;
+
+        for (int i = 0; i < count; i++)
+        {
+            Collider col = overlapBuffer[i];
+            if (col == null) continue;
+
+            Health enemyHealth = col.GetComponentInParent<Health>();
+            if (enemyHealth == null || enemyHealth.IsDead) continue;
+            if (playerHealth != null && enemyHealth == playerHealth) continue;
+            if (ownerDamageable != null && (enemyHealth as IDamageable) == ownerDamageable) continue;
+            if (enemyHealth.ImmuneToPlayerDamage) continue;
+
+            float sqrDist = (col.bounds.center - origin).sqrMagnitude;
+            if (sqrDist < nearestSqrDist)
+            {
+                nearestSqrDist = sqrDist;
+                nearestEnemy = enemyHealth;
+                nearestCollider = col;
+            }
+        }
+
+        if (nearestEnemy != null && nearestCollider != null)
+        {
+            Vector3 targetCenter = nearestCollider.bounds.center;
+            Vector3 toTarget = targetCenter - origin;
+            if (toTarget.sqrMagnitude > 0.001f)
+            {
+                aimDirection = toTarget.normalized;
+            }
+        }
+
+        int fullChargeLevel = Mathf.Max(1, MaxChargeLevels);
+        float fullChargeRatio = fullChargeLevel;
+
+        if (fireFeedback != null)
+        {
+            fireFeedback.PlayFeedbacks();
+        }
+        if (hasAimAnimatorParams && playerAnimator != null)
+        {
+            playerAnimator.SetTrigger(bowFireHash);
+        }
+        OnFired?.Invoke();
+
+        FireArrow(origin, aimDirection, 1f, isMainArrow: true, fullChargeRatio, fullChargeLevel);
+
+        // Multi Shot: extra arrows fan out in a flat arc alternating left/right of the main arrow.
+        int extraArrows = Mathf.RoundToInt(stats.GetValue(StatType.BowMultishotArrows));
+        if (extraArrows > 0)
+        {
+            float multishotChance = config.baseMultishotChance * fullChargeRatio;
+            if (UnityEngine.Random.value < multishotChance)
+            {
+                float extraDamageScale = stats.GetValue(StatType.BowMultishotDamagePercent);
+                Vector3 upAxis = aimCamera != null ? aimCamera.transform.up : Vector3.up;
+                for (int i = 1; i <= extraArrows; i++)
+                {
+                    int step = (i + 1) / 2;
+                    float sign = i % 2 == 1 ? -1f : 1f;
+                    Vector3 dir = Quaternion.AngleAxis(sign * step * config.multishotSpreadDegrees, upAxis) * aimDirection;
+                    FireArrow(origin, dir, extraDamageScale, isMainArrow: false, fullChargeRatio, fullChargeLevel);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Fires a radial ring of arrows when player health drops below 50% HP.
+    ///     Gated by <see cref="StatType.BowDesperateVolleyArrows" /> and an internal cooldown.
+    /// </summary>
+    private void HandlePlayerDamaged(Damage damage)
+    {
+        if (anyError || stats == null || playerHealth == null)
+        {
+            return;
+        }
+
+        if (stats.GetValue(StatType.BowDesperateVolleyArrows) <= 0f)
+        {
+            return;
+        }
+
+        float maxHp = playerHealth.MaxHealth;
+        float currentHp = playerHealth.CurrentHealth;
+        if (currentHp <= 0f || currentHp > maxHp * 0.5f)
+        {
+            return;
+        }
+
+        if (Time.time - lastDesperateVolleyTime < DesperateVolleyCooldown)
+        {
+            return;
+        }
+
+        lastDesperateVolleyTime = Time.time;
+
+        int arrowCount = Mathf.RoundToInt(stats.GetValue(StatType.BowDesperateVolleyArrows));
+        if (arrowCount <= 0)
+        {
+            return;
+        }
+
+        Vector3 origin = arrowOrigin != null ? arrowOrigin.position : transform.position;
+        Vector3 forward = transform.forward;
+        if (forward.sqrMagnitude < 0.001f)
+        {
+            forward = Vector3.forward;
+        }
+
+        for (int i = 0; i < arrowCount; i++)
+        {
+            Vector3 dir = Quaternion.Euler(0f, i * (360f / arrowCount), 0f) * forward;
+            FireArrow(origin, dir, 1f, isMainArrow: (i == 0));
+        }
+
+        if (fireFeedback != null)
+        {
+            fireFeedback.PlayFeedbacks();
+        }
+        if (hasAimAnimatorParams && playerAnimator != null)
+        {
+            playerAnimator.SetTrigger(bowFireHash);
+        }
+        OnFired?.Invoke();
+    }
+
+    /// <summary>
     ///     One arrow. With an <see cref="arrowPrefab" /> wired, launches a real
     ///     <see cref="ArrowProjectile" /> that flies, drops, and calls <see cref="ApplyArrowHit" />
     ///     back when it strikes something; without one, falls back to the original instant hitscan.
     ///     Either way the hit gets charge, crit, precision, impulse, and global multipliers, then the
     ///     storm/bounce and per-path pickup/orb skill effects.
     /// </summary>
-    private void FireArrow(Vector3 origin, Vector3 direction, float damageScale, bool isMainArrow)
+    private void FireArrow(Vector3 origin, Vector3 direction, float damageScale, bool isMainArrow, float chargeRatioOverride = -1f, int chargeLevelOverride = -1)
     {
-        float currentRatio = ChargeTimePerLevel > 0f ? CurrentChargeTime / ChargeTimePerLevel : MaxChargeLevels;
-        currentRatio = Mathf.Clamp(currentRatio, 0f, MaxChargeLevels);
+        float currentRatio = chargeRatioOverride >= 0f
+            ? chargeRatioOverride
+            : (ChargeTimePerLevel > 0f ? CurrentChargeTime / ChargeTimePerLevel : MaxChargeLevels);
+        currentRatio = Mathf.Clamp(currentRatio, 0f, MaxChargeLevels > 0 ? MaxChargeLevels : 1f);
+        int chargeLevel = chargeLevelOverride >= 0
+            ? chargeLevelOverride
+            : (chargeRatioOverride >= 0f ? Mathf.RoundToInt(currentRatio) : ChargeLevel);
 
         if (arrowPrefab != null)
         {
@@ -640,12 +819,13 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
                 maxRange = config.maxRange,
                 radius = config.arrowRadius,
                 hitLayers = hitLayers,
-                chargeLevel = ChargeLevel,
+                chargeLevel = chargeLevel,
                 chargeRatio = currentRatio,
                 damageScale = damageScale,
                 isMainArrow = isMainArrow,
                 owner = ownerDamageable,
                 ignoredTarget = ignoredTarget,
+                pierceCount = Mathf.RoundToInt(stats.GetValue(StatType.BowPierceCount)),
                 collectPickups = stats.GetValue(StatType.BowPickupArrows) >= 1f,
                 detonateOrbs = isMainArrow && stats.GetValue(StatType.BowUnstableOrbs) >= 1f,
             });
@@ -665,7 +845,7 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         // the pickup sweep, so a detonated orb can't also be collected as a buff.
         if (isMainArrow && stats.GetValue(StatType.BowUnstableOrbs) >= 1f)
         {
-            DetonateOrbsAlongPath(origin, endPoint, damageScale, ChargeLevel);
+            DetonateOrbsAlongPath(origin, endPoint, damageScale, chargeLevel);
         }
 
         // Pickup Arrows: sweep the flight path for coins/orbs, whoever the arrow hit.
@@ -676,7 +856,7 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
 
         if (target != null)
         {
-            ApplyArrowHit(target, endPoint, direction, hit.collider, hitVulnerableSpot, vulnerableSpot, damageScale, ChargeLevel, currentRatio);
+            ApplyArrowHit(target, endPoint, direction, hit.collider, hitVulnerableSpot, vulnerableSpot, damageScale, chargeLevel, currentRatio);
         }
     }
 
@@ -705,6 +885,16 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
             && target is Component bomberComponent)
         {
             bomberComponent.GetComponentInParent<BomberAttack>()?.Detonate();
+        }
+
+        Health targetHealth = target as Health;
+        if (targetHealth == null && target is Component comp)
+        {
+            targetHealth = comp.GetComponentInParent<Health>();
+        }
+        if (targetHealth != null)
+        {
+            targetHealth.LastPlayerRangedHitTime = Time.time;
         }
 
         Damage damage = BuildArrowDamage(origin, damageScale, hitVulnerableSpot, chargeLevel, chargeRatio);
@@ -791,6 +981,12 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
             {
                 TryBounce(target, damage, endPoint);
             }
+        }
+
+        // Ice Shards on Ranged Kill: shatter killed enemies into an 8-way projectile burst
+        if (targetHealth != null && targetHealth.IsDead)
+        {
+            TriggerIceShardsBurst(targetHealth, endPoint);
         }
     }
 
@@ -933,52 +1129,86 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         };
     }
 
-    /// <summary>Bounce Shot: the arrow arcs from its hit to the nearest other enemy in range for the same damage.</summary>
-    private void TryBounce(IDamageable alreadyHit, Damage damage, Vector3 hitPoint)
+    /// <summary>Bounce Shot: the arrow arcs from its hit to nearby enemies in range for the same damage.</summary>
+    private void TryBounce(IDamageable initialTarget, Damage damage, Vector3 initialHitPoint)
     {
-        IDamageable best = null;
-        Vector3 bestPosition = hitPoint;
-        float bestSqrDistance = float.MaxValue;
+        int maxBounces = Mathf.Max(1, Mathf.RoundToInt(stats.GetValue(StatType.BowBounceCount)));
 
-        int count = Physics.OverlapSphereNonAlloc(hitPoint, config.bounceRadius, overlapBuffer, bounceLayers, QueryTriggerInteraction.Collide);
-        for (int i = 0; i < count; i++)
+        HashSet<IDamageable> hitTargets = new HashSet<IDamageable>();
+        if (initialTarget != null)
         {
-            Collider collider = overlapBuffer[i];
-            IDamageable damageable = ResolveDamageable(collider);
-            if (damageable == null || damageable == alreadyHit || damageable == ownerDamageable
-                || (ignoredTarget != null && damageable == ignoredTarget))
-            {
-                continue;
-            }
-
-            float sqrDistance = (collider.transform.position - hitPoint).sqrMagnitude;
-            if (sqrDistance < bestSqrDistance)
-            {
-                bestSqrDistance = sqrDistance;
-                best = damageable;
-                bestPosition = collider.transform.position;
-            }
+            hitTargets.Add(initialTarget);
+        }
+        if (ownerDamageable != null)
+        {
+            hitTargets.Add(ownerDamageable);
+        }
+        if (ignoredTarget != null)
+        {
+            hitTargets.Add(ignoredTarget);
         }
 
-        if (best == null)
-        {
-            return;
-        }
+        Vector3 currentPoint = initialHitPoint;
 
-        Damage bounceDamage = new Damage
+        for (int bounce = 0; bounce < maxBounces; bounce++)
         {
-            value = damage.value,
-            type = damage.type,
-            isCritical = damage.isCritical,
-            sourcePosition = hitPoint,
-            knockbackForce = damage.knockbackForce,
-            source = ownerDamageable,
-            isProjectile = true,
-            isPlayerDamage = true,
-        };
-        best.ReceiveDamage(bounceDamage);
-        OnHit?.Invoke(best, bounceDamage, bestPosition);
-        SpawnTracer(hitPoint, bestPosition);
+            IDamageable best = null;
+            Vector3 bestPosition = currentPoint;
+            float bestSqrDistance = float.MaxValue;
+
+            int count = Physics.OverlapSphereNonAlloc(currentPoint, config.bounceRadius, overlapBuffer, bounceLayers, QueryTriggerInteraction.Collide);
+            for (int i = 0; i < count; i++)
+            {
+                Collider collider = overlapBuffer[i];
+                IDamageable damageable = ResolveDamageable(collider);
+                if (damageable == null || hitTargets.Contains(damageable))
+                {
+                    continue;
+                }
+
+                float sqrDistance = (collider.transform.position - currentPoint).sqrMagnitude;
+                if (sqrDistance < bestSqrDistance)
+                {
+                    bestSqrDistance = sqrDistance;
+                    best = damageable;
+                    bestPosition = collider.transform.position;
+                }
+            }
+
+            if (best == null)
+            {
+                break;
+            }
+
+            hitTargets.Add(best);
+
+            Damage bounceDamage = new Damage
+            {
+                value = damage.value,
+                type = damage.type,
+                isCritical = damage.isCritical,
+                sourcePosition = currentPoint,
+                knockbackForce = damage.knockbackForce,
+                source = ownerDamageable,
+                isProjectile = true,
+                isPlayerDamage = true,
+                elementId = damage.elementId,
+            };
+            Health bounceHealth = best as Health;
+            if (bounceHealth == null && best is Component comp)
+            {
+                bounceHealth = comp.GetComponentInParent<Health>();
+            }
+            if (bounceHealth != null)
+            {
+                bounceHealth.LastPlayerRangedHitTime = Time.time;
+            }
+
+            best.ReceiveDamage(bounceDamage);
+            OnHit?.Invoke(best, bounceDamage, bestPosition);
+            SpawnTracer(currentPoint, bestPosition);
+            currentPoint = bestPosition;
+        }
     }
 
     /// <summary>Pickup Arrows: collect any coin/orb pickups within a capsule along the arrow's flight path. <see cref="ArrowProjectile" /> calls this per tick segment as it flies.</summary>
@@ -1113,5 +1343,105 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         }
         BowTracer tracer = Instantiate(tracerPrefab, from, Quaternion.identity);
         tracer.Show(from, to);
+    }
+
+    /// <summary>
+    ///     Ice Shards on Ranged Kill: shatters killed enemies into an 8-way projectile burst.
+    /// </summary>
+    public void TriggerIceShardsBurst(Health killedTarget, Vector3 burstPosition)
+    {
+        if (stats == null) return;
+        float shardDmg = stats.GetValue(StatType.IceShardsBurstDamage);
+        if (shardDmg <= 0f) return;
+
+        float allDamage = stats.GetValue(StatType.AllDamageMultiplier);
+        float finalDamageValue = shardDmg * (allDamage > 0f ? allDamage : 1f);
+
+        // Visual & audio effect at the shatter position
+        if (ElementalEffectsManager.Instance != null)
+        {
+            GameObject vfxPrefab = ElementalEffectsManager.Instance.frozenStatusVfx != null
+                ? ElementalEffectsManager.Instance.frozenStatusVfx
+                : ElementalEffectsManager.Instance.iceStatusVfx;
+            if (vfxPrefab != null)
+            {
+                Instantiate(vfxPrefab, burstPosition, Quaternion.identity);
+            }
+
+            AudioClip sfx = ElementalEffectsManager.Instance.frozenSfx != null
+                ? ElementalEffectsManager.Instance.frozenSfx
+                : ElementalEffectsManager.Instance.statusAppliedSfx;
+            if (sfx != null)
+            {
+                AudioSource.PlayClipAtPoint(sfx, burstPosition);
+            }
+        }
+
+        HashSet<IDamageable> hitEnemies = new HashSet<IDamageable>();
+        if (killedTarget != null)
+        {
+            hitEnemies.Add(killedTarget);
+        }
+        if (ownerDamageable != null)
+        {
+            hitEnemies.Add(ownerDamageable);
+        }
+        if (ignoredTarget != null)
+        {
+            hitEnemies.Add(ignoredTarget);
+        }
+
+        Vector3 rayOrigin = burstPosition + Vector3.up * 0.5f;
+
+        for (int i = 0; i < 8; i++)
+        {
+            Vector3 dir = Quaternion.Euler(0f, i * 45f, 0f) * Vector3.forward;
+            RaycastHit[] hits = Physics.SphereCastAll(rayOrigin, 0.4f, dir, 6f, hitLayers, QueryTriggerInteraction.Collide);
+
+            for (int h = 0; h < hits.Length; h++)
+            {
+                RaycastHit hit = hits[h];
+                IDamageable hitDamageable = ResolveDamageable(hit.collider);
+                if (hitDamageable == null || hitEnemies.Contains(hitDamageable))
+                {
+                    continue;
+                }
+
+                if (hitDamageable is Health hth && (hth.IsDead || (Player.Instance != null && hth == Player.Instance.Health)))
+                {
+                    continue;
+                }
+
+                if (Player.Instance != null && hitDamageable == Player.Instance.Damageable)
+                {
+                    continue;
+                }
+
+                hitEnemies.Add(hitDamageable);
+
+                Damage shardDamage = new Damage
+                {
+                    value = finalDamageValue,
+                    type = DamageType.elemental,
+                    elementId = "Ice",
+                    sourcePosition = burstPosition,
+                    source = ownerDamageable,
+                    isPlayerDamage = true,
+                    isProjectile = true
+                };
+
+                hitDamageable.ReceiveDamage(shardDamage);
+                OnHit?.Invoke(hitDamageable, shardDamage, hit.point != Vector3.zero ? hit.point : hit.collider.transform.position);
+
+                if (hitDamageable is Component enemyComp)
+                {
+                    EnemyStatusManager statusMgr = enemyComp.GetComponentInParent<EnemyStatusManager>();
+                    if (statusMgr != null)
+                    {
+                        statusMgr.ApplyStatus("Ice");
+                    }
+                }
+            }
+        }
     }
 }

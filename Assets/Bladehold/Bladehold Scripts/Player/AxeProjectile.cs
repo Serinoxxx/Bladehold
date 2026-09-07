@@ -81,6 +81,8 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
         public Transform returnTarget;
         /// <summary>Uniform prop scale so "Wide Arc" width upgrades read visually (the SwordRange localScale convention).</summary>
         public float visualScale;
+        /// <summary>Spin Top upgrade: AoE DPS dealt in a radius around the flying axe (0 = disabled).</summary>
+        public float spinTopDPS;
     }
 
     [Tooltip("Local axis the axe tumbles around in flight.")]
@@ -112,6 +114,7 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
     private float travelled;
     private int damaged;
     private bool launched;
+    private float vortexTimer;
 
     /// <summary>Sends the axe flying. Damage happens as it travels; the prefab is destroyed when it lodges, is caught, or times out.</summary>
     public void Launch(PlayerThrownAxe thrower, LaunchSpec spec)
@@ -123,6 +126,13 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
         damaged = 0;
         hitTargets.Clear();
         launched = true;
+        vortexTimer = 0f;
+
+        if (spec.spinTopDPS > 0f)
+        {
+            spinDegreesPerSecond *= 1.75f;
+            maxLifetimeSeconds = Mathf.Max(maxLifetimeSeconds, 30f);
+        }
 
         transform.position = spec.origin;
         if (spec.direction.sqrMagnitude > 0.0001f)
@@ -151,6 +161,16 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
         if (!launched || state == FlightState.Lodged)
         {
             return;
+        }
+
+        if (spec.spinTopDPS > 0f)
+        {
+            vortexTimer += Time.fixedDeltaTime;
+            if (vortexTimer >= 0.25f)
+            {
+                vortexTimer -= 0.25f;
+                PerformVortexTick();
+            }
         }
 
         Vector3 from = transform.position;
@@ -255,9 +275,76 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
 
             Vector3 hitPoint = HitPointOf(hit, from, direction);
             Damage damage = thrower.CreateHitDamage(spec.chargeLevel, spec.painBonus, from, spec.chargeRatio);
+
+            Health targetHealth = null;
+            if (damageable is Component comp)
+            {
+                targetHealth = comp.GetComponentInParent<Health>();
+                if (targetHealth != null && targetHealth.MaxHealth > 0f && targetHealth.CurrentHealth >= targetHealth.MaxHealth - 0.01f)
+                {
+                    float firstStrike = (Player.Instance != null && Player.Instance.Stats != null) ? Player.Instance.Stats.GetValue(StatType.AxeFirstStrikeBonus) : 0f;
+                    if (firstStrike > 0f)
+                    {
+                        damage.value *= (1f + firstStrike);
+                    }
+                }
+            }
+
+            if (targetHealth != null)
+            {
+                targetHealth.LastPlayerRangedHitTime = Time.time;
+            }
+
             damageable.ReceiveDamage(damage);
             thrower.ReportHit(damageable, damage, hitPoint);
             damaged++;
+
+            if (targetHealth != null && targetHealth.IsDead)
+            {
+                float bloodsplosionDamage = (Player.Instance != null && Player.Instance.Stats != null)
+                    ? Player.Instance.Stats.GetValue(StatType.AxeBloodsplosionDamage)
+                    : 0f;
+
+                if (bloodsplosionDamage > 0f)
+                {
+                    // Perform an AoE blood explosion around hitPoint (radius ~4f)
+                    Collider[] nearbyColliders = Physics.OverlapSphere(hitPoint, 4f);
+                    HashSet<Health> affectedHealths = new HashSet<Health>();
+
+                    for (int n = 0; n < nearbyColliders.Length; n++)
+                    {
+                        Health nearby = nearbyColliders[n].GetComponentInParent<Health>();
+                        if (nearby != null && !nearby.IsDead && nearby != targetHealth && affectedHealths.Add(nearby))
+                        {
+                            // Ensure not player
+                            if (Player.Instance != null && (nearby == Player.Instance.Health || nearby.GetComponentInParent<Player>() != null))
+                            {
+                                continue;
+                            }
+
+                            nearby.ReceiveDamage(new Damage
+                            {
+                                value = bloodsplosionDamage,
+                                type = DamageType.blunt,
+                                source = thrower.Damageable,
+                                isPlayerDamage = true,
+                                sourcePosition = hitPoint
+                            });
+                        }
+                    }
+
+                    // Spawn blood decal if available
+                    EnemyRagdoll ragdoll = targetHealth.GetComponentInParent<EnemyRagdoll>();
+                    RagdollConfigSO ragdollConfig = ragdoll != null ? ragdoll.Config : null;
+                    if (ragdollConfig != null)
+                    {
+                        BloodDecalManager.SpawnDecal(hitPoint, Vector3.up, 1.5f, ragdollConfig);
+                    }
+                }
+
+                // Ice Shards on Ranged Kill: shatter killed enemies into an 8-way projectile burst
+                TriggerIceShardsBurst(targetHealth, hitPoint);
+            }
 
             if (damaged >= spec.pierceBudget && state == FlightState.Outbound)
             {
@@ -318,5 +405,154 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
             return c.bounds.ClosestPoint(origin + direction * 0.1f);
         }
         return origin;
+    }
+
+    private void PerformVortexTick()
+    {
+        Collider[] nearbyColliders = Physics.OverlapSphere(transform.position, 2.5f);
+        HashSet<Health> affectedHealths = new HashSet<Health>();
+
+        for (int i = 0; i < nearbyColliders.Length; i++)
+        {
+            Collider col = nearbyColliders[i];
+            Health health = col.GetComponentInParent<Health>();
+            if (health == null || health.IsDead || !affectedHealths.Add(health))
+            {
+                continue;
+            }
+
+            if (Player.Instance != null && (health == Player.Instance.Health || health.GetComponentInParent<Player>() != null))
+            {
+                continue;
+            }
+
+            IDamageable damageable = PlayerThrownAxe.ResolveDamageable(col);
+            if (damageable == null)
+            {
+                damageable = health;
+            }
+
+            if (IsOwner(damageable))
+            {
+                continue;
+            }
+
+            Damage vortexDamage = new Damage
+            {
+                value = spec.spinTopDPS * 0.25f,
+                type = DamageType.slash,
+                source = thrower != null ? thrower.Damageable : (spec.owner ?? (Player.Instance != null ? Player.Instance.Damageable : null)),
+                isPlayerDamage = true,
+                sourcePosition = transform.position
+            };
+
+            damageable.ReceiveDamage(vortexDamage);
+            health.LastPlayerRangedHitTime = Time.time;
+        }
+    }
+
+    /// <summary>
+    ///     Ice Shards on Ranged Kill: shatters killed enemies into an 8-way projectile burst.
+    /// </summary>
+    private void TriggerIceShardsBurst(Health killedTarget, Vector3 burstPosition)
+    {
+        if (Player.Instance == null || Player.Instance.Stats == null) return;
+        PlayerStats stats = Player.Instance.Stats;
+        float shardDmg = stats.GetValue(StatType.IceShardsBurstDamage);
+        if (shardDmg <= 0f) return;
+
+        float allDamage = stats.GetValue(StatType.AllDamageMultiplier);
+        float finalDamageValue = shardDmg * (allDamage > 0f ? allDamage : 1f);
+
+        // Visual & audio effect at the shatter position
+        if (ElementalEffectsManager.Instance != null)
+        {
+            GameObject vfxPrefab = ElementalEffectsManager.Instance.frozenStatusVfx != null
+                ? ElementalEffectsManager.Instance.frozenStatusVfx
+                : ElementalEffectsManager.Instance.iceStatusVfx;
+            if (vfxPrefab != null)
+            {
+                Instantiate(vfxPrefab, burstPosition, Quaternion.identity);
+            }
+
+            AudioClip sfx = ElementalEffectsManager.Instance.frozenSfx != null
+                ? ElementalEffectsManager.Instance.frozenSfx
+                : ElementalEffectsManager.Instance.statusAppliedSfx;
+            if (sfx != null)
+            {
+                AudioSource.PlayClipAtPoint(sfx, burstPosition);
+            }
+        }
+
+        HashSet<IDamageable> hitEnemies = new HashSet<IDamageable>();
+        if (killedTarget != null)
+        {
+            hitEnemies.Add(killedTarget);
+        }
+        IDamageable ownerDamageable = thrower != null ? thrower.Damageable : (spec.owner ?? (Player.Instance != null ? Player.Instance.Damageable : null));
+        if (ownerDamageable != null)
+        {
+            hitEnemies.Add(ownerDamageable);
+        }
+        if (spec.ignoredTarget != null)
+        {
+            hitEnemies.Add(spec.ignoredTarget);
+        }
+
+        Vector3 rayOrigin = burstPosition + Vector3.up * 0.5f;
+
+        for (int i = 0; i < 8; i++)
+        {
+            Vector3 dir = Quaternion.Euler(0f, i * 45f, 0f) * Vector3.forward;
+            RaycastHit[] hits = Physics.SphereCastAll(rayOrigin, 0.4f, dir, 6f, spec.hitLayers, QueryTriggerInteraction.Collide);
+
+            for (int h = 0; h < hits.Length; h++)
+            {
+                RaycastHit hit = hits[h];
+                IDamageable hitDamageable = PlayerThrownAxe.ResolveDamageable(hit.collider);
+                if (hitDamageable == null || hitEnemies.Contains(hitDamageable))
+                {
+                    continue;
+                }
+
+                if (hitDamageable is Health hth && (hth.IsDead || (Player.Instance != null && hth == Player.Instance.Health)))
+                {
+                    continue;
+                }
+
+                if (Player.Instance != null && hitDamageable == Player.Instance.Damageable)
+                {
+                    continue;
+                }
+
+                hitEnemies.Add(hitDamageable);
+
+                Damage shardDamage = new Damage
+                {
+                    value = finalDamageValue,
+                    type = DamageType.elemental,
+                    elementId = "Ice",
+                    sourcePosition = burstPosition,
+                    source = ownerDamageable,
+                    isPlayerDamage = true,
+                    isProjectile = true
+                };
+
+                hitDamageable.ReceiveDamage(shardDamage);
+                if (thrower != null)
+                {
+                    thrower.ReportHit(hitDamageable, shardDamage, hit.point != Vector3.zero ? hit.point : hit.collider.transform.position);
+                }
+
+                if (hitDamageable is Component enemyComp)
+                {
+                    EnemyStatusManager statusMgr = enemyComp.GetComponentInParent<EnemyStatusManager>();
+                    if (statusMgr != null)
+                    {
+                        statusMgr.ApplyStatus("Ice");
+                    }
+                }
+            }
+        }
     }
 }

@@ -288,10 +288,7 @@ public class RunTelemetry : MonoBehaviour
         yield return null;
 
         Wallet wallet = Player.Instance != null ? Player.Instance.Wallet : null;
-        PlayerClassController classController = UnityEngine.Object.FindAnyObjectByType<PlayerClassController>();
-        string classId = classController != null && classController.ActiveClass != null
-            ? classController.ActiveClass.id
-            : SaveSystem.Load().playerClassId;
+        string classId = SaveSystem.Load().equippedArmourSet;
         string detail = Invariant($"startWave={RunState.StartingWave};class={classId};gold={(wallet != null ? wallet.Coins : 0)};goldNodes={CountOwned(goldTree)};reincNodes={CountOwned(reincarnateTree)}");
         AppendRow("run_start", wave: Invariant($"{RunState.StartingWave}"), runSeconds: "0", detail: detail);
     }
@@ -417,8 +414,7 @@ public class RunTelemetry : MonoBehaviour
             sprint: Invariant($"{totalSprintSeconds:F1}"),
             detail: "run totals");
 
-        PlayerClassController classController = UnityEngine.Object.FindAnyObjectByType<PlayerClassController>();
-        string classId = classController != null && classController.ActiveClass != null ? classController.ActiveClass.id : SaveSystem.Load().playerClassId;
+        string classId = SaveSystem.Load().equippedArmourSet;
 
         RunTelemetryData data = new RunTelemetryData
         {

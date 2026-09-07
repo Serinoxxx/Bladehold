@@ -1572,7 +1572,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7878518536322400475}
-  - component: {fileID: 6087743525908991930}
   - component: {fileID: 750790735201583508}
   - component: {fileID: 7214776964763429847}
   - component: {fileID: -3139709946327129171}
@@ -1585,6 +1584,7 @@ GameObject:
   - component: {fileID: 5480821993270956645}
   - component: {fileID: 4218521274988385536}
   - component: {fileID: -2629898692341894258}
+  - component: {fileID: 2740881670530611650}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -1614,54 +1614,6 @@ Transform:
   - {fileID: 2005427420724235582}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6087743525908991930
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 635090733411138093}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bd0000e561e1562429c9ea43fca632b2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerClassController
-  slots:
-  - definition: {fileID: 11400000, guid: b2c5646ed5566ac4bbd85c1c3216f296, type: 2}
-    weaponObjects:
-    - {fileID: 4103658122623789462}
-    meleeTrigger: {fileID: 1385601990044069648}
-    hitFeedback: {fileID: 7415870910017827878}
-    classComponents:
-    - {fileID: 9219490616039227213}
-    - {fileID: 6103277860756355011}
-    - {fileID: -8624898676133849212}
-  - definition: {fileID: 11400000, guid: b8bd097fe0432fd47b997c9bdffdf080, type: 2}
-    weaponObjects:
-    - {fileID: 1914903598473155407}
-    meleeTrigger: {fileID: 3556331140146632137}
-    hitFeedback: {fileID: 4938886051864039167}
-    classComponents:
-    - {fileID: 1884176435561181024}
-    - {fileID: 1189341416886070749}
-    - {fileID: 2251505163923793700}
-    - {fileID: 1666059115837360206}
-  - definition: {fileID: 11400000, guid: 3744ccb9d8259274593759d4464f9df8, type: 2}
-    weaponObjects:
-    - {fileID: 2397259762771066973}
-    meleeTrigger: {fileID: 760402401777354459}
-    hitFeedback: {fileID: 9177684110434262509}
-    classComponents:
-    - {fileID: 3199331394848741230}
-    - {fileID: 301137670904236349}
-    - {fileID: -9218812370878724873}
-  animationEvents: {fileID: 7588341616895648688}
-  playerAttack: {fileID: 6944173513739371956}
-  vampiricBlade: {fileID: 6386471045121578881}
-  chainLightning: {fileID: 4664109616690436507}
-  impulseHitFeedback: {fileID: 8241250634216195633}
-  playerMount: {fileID: 1504036595472203636}
-  animator: {fileID: 3663620996007313722}
 --- !u!114 &750790735201583508
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1674,7 +1626,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 57aa5e8ecb142cd4d96c0fe115c3a713, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ActiveBuffWeaponGlow
-  classController: {fileID: 0}
   impulseBuff: {fileID: 0}
   emissiveColor: {r: 0, g: 1.5, b: 2.5, a: 2.5}
   emissiveKeyword: _EMISSION
@@ -1691,7 +1642,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 57aa5e8ecb142cd4d96c0fe115c3a713, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ActiveBuffWeaponGlow
-  classController: {fileID: 0}
   impulseBuff: {fileID: 0}
   emissiveColor: {r: 0, g: 1.5, b: 2.5, a: 2.5}
   emissiveKeyword: _EMISSION
@@ -1800,6 +1750,11 @@ MonoBehaviour:
   poisonDashVfxPrefab: {fileID: 1447051283816784, guid: 61400dcd69108c64b970eb523f3d1783, type: 3}
   dodgeSfx: {fileID: 8300000, guid: 63b2fb57cfa12054698d3604b978dd65, type: 3}
   dodgeFeedback: {fileID: 0}
+  nimbleStrikeFeedback: {fileID: 0}
+  nimbleStrikeSfx: {fileID: 0}
+  iceChillSfx: {fileID: 0}
+  swordHitFeedback: {fileID: 0}
+  playerBow: {fileID: 0}
 --- !u!114 &924873914309187086
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1837,20 +1792,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0763600b1c0b7f94989be07d5b0cafd7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerWeaponManager
-  swordObject: {fileID: 0}
-  swordTrigger: {fileID: 0}
-  swordHitFeedback: {fileID: 0}
-  axeObject: {fileID: 0}
-  axeTrigger: {fileID: 0}
-  axeHitFeedback: {fileID: 0}
-  playerBow: {fileID: 0}
-  playerThrownAxe: {fileID: 0}
+  meleeWeapons:
+  - definition: {fileID: 11400000, guid: d59b9ea41300f794f95184303532cb43, type: 2}
+    weaponObject: {fileID: 4103658122623789462}
+    damageTrigger: {fileID: 1385601990044069648}
+    hitFeedback: {fileID: 0}
+  - definition: {fileID: 11400000, guid: f099e3b8f07715a43a860c9fcb2a7988, type: 2}
+    weaponObject: {fileID: 1914903598473155407}
+    damageTrigger: {fileID: 3556331140146632137}
+    hitFeedback: {fileID: 0}
+  rangedWeapons:
+  - definition: {fileID: 11400000, guid: e31f1d101e4f3c148b0bb7560229cdea, type: 2}
+    weaponObject: {fileID: 2198975143494039244}
+    aimWeaponComponent: {fileID: 9219490616039227213}
+  - definition: {fileID: 11400000, guid: c25f236c91f285944a027fc08b9859fe, type: 2}
+    weaponObject: {fileID: 4741742994959581751}
+    aimWeaponComponent: {fileID: 1884176435561181024}
   animationEvents: {fileID: 0}
   playerAttack: {fileID: 0}
   animator: {fileID: 0}
   vampiricBlade: {fileID: 0}
   chainLightning: {fileID: 0}
   impulseHitFeedback: {fileID: 0}
+  playerMount: {fileID: 0}
   fireWeaponVfxPrefab: {fileID: 1392961458021664, guid: 7c2d45330a7b1894ca1aacb0ebd30599, type: 3}
   iceWeaponVfxPrefab: {fileID: 1828717585066262, guid: 15020532ea6e8b449a74e895e1097087, type: 3}
   lightningWeaponVfxPrefab: {fileID: 1454807473737458, guid: 6108438f5e38d0b4b8fed06af6b74254, type: 3}
@@ -1898,6 +1862,27 @@ MonoBehaviour:
   plasmaOverloadSfx: {fileID: 8300000, guid: e53c50cdd14c0004f8f381d4a956ab7b, type: 3}
   superconductorSfx: {fileID: 8300000, guid: 7418f4853db77134f83e1ecba7247878, type: 3}
   discordAppliedSfx: {fileID: 8300000, guid: 024181c54bd1444cabee9fb713b92ec4, type: 3}
+--- !u!114 &2740881670530611650
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 635090733411138093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c247d0f46ccca684e83102a2c57f6691, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerArmourManager
+  animator: {fileID: 3663620996007313722}
+  stats: {fileID: 5156588240620538864}
+  availableArmourSets:
+  - {fileID: 11400000, guid: ff937f56372ca0e4eba951b30ec61071, type: 2}
+  - {fileID: 11400000, guid: 8d5dc469aa98f3c488b6d6f287b80af1, type: 2}
+  - {fileID: 11400000, guid: 1739480251ab0514a8fcca92861b13e5, type: 2}
+  - {fileID: 11400000, guid: 3e83ea055040de54b95ff143696476be, type: 2}
+  equipVfxPrefab: {fileID: 2015303338481677235, guid: 17d1039496044be419303fb3623e32ff, type: 3}
+  equipSfx: {fileID: 8300000, guid: 59fdba02fd13cf146a3509be502883ac, type: 3}
 --- !u!1 &758177441954652393
 GameObject:
   m_ObjectHideFlags: 0
@@ -26339,17 +26324,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6da43522623d4704e979466dc7650b65, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MoreMountains.Tools::MoreMountains.Feedbacks.MMF_Player
---- !u!114 &9177684110434262509 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2879380361252328939, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
-  m_PrefabInstance: {fileID: 6388411306759686150}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2397259762771066973}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b3f89d11cb87e0149a62387daff213c9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SwordHitFeedback
 --- !u!1001 &7137086128289256621
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -27437,17 +27411,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6519288246009007488, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
   m_PrefabInstance: {fileID: 7169712588158311188}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &4938886051864039167 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2879380361252328939, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
-  m_PrefabInstance: {fileID: 7169712588158311188}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1914903598473155407}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b3f89d11cb87e0149a62387daff213c9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SwordHitFeedback
 --- !u!1 &8808763542966492249 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1819714117364041549, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
@@ -30822,9 +30785,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAttack
   inputReader: {fileID: 6872381413864324108}
   stats: {fileID: 5156588240620538864}
-  classController: {fileID: 6087743525908991930}
   animController: {fileID: 6674464755654316294}
   chargeTimePerLevel: 1
+  playerDodge: {fileID: 7366275845714083973}
   earthSplitterTelegraphPrefab: {fileID: 6821233308554425452, guid: 17b328836a9f70e45a8b6e69999b54ac, type: 3}
   rockExplosionVfxPrefab: {fileID: 1610468776334564, guid: fdb430cc0b3926f4cb38424d890e7b3c, type: 3}
   earthSplitterSfx: {fileID: 8300000, guid: 808c1dae3002f1c45816cabdd9fc29fc, type: 3}
@@ -30943,6 +30906,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   mount: {fileID: 1504036595472203636}
+  playerHealth: {fileID: 46043393445266479}
 --- !u!114 &1839661837703581504
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -31360,6 +31324,11 @@ MonoBehaviour:
   poisonDashVfxPrefab: {fileID: 0}
   dodgeSfx: {fileID: 8300000, guid: 63b2fb57cfa12054698d3604b978dd65, type: 3}
   dodgeFeedback: {fileID: 0}
+  nimbleStrikeFeedback: {fileID: 0}
+  nimbleStrikeSfx: {fileID: 0}
+  iceChillSfx: {fileID: 0}
+  swordHitFeedback: {fileID: 0}
+  playerBow: {fileID: 9219490616039227213}
 --- !u!4 &8319765117670202089 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8013909246233647550, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
@@ -31599,8 +31568,7 @@ MonoBehaviour:
   m_RequiresDepthTextureOption: 2
   m_RequiresOpaqueTextureOption: 2
   m_CameraType: 0
-  m_Cameras:
-  - {fileID: 0}
+  m_Cameras: []
   m_RendererIndex: -1
   m_VolumeLayerMask:
     serializedVersion: 2
@@ -31976,6 +31944,11 @@ Transform:
 --- !u!95 &1610570114615792224 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 8178659506650784045, guid: 044e592295947d84c8489bcf8fea2fd9, type: 3}
+  m_PrefabInstance: {fileID: 7483165643215369037}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &2198975143494039244 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8745392064174376321, guid: 044e592295947d84c8489bcf8fea2fd9, type: 3}
   m_PrefabInstance: {fileID: 7483165643215369037}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &3965847709966729521 stripped

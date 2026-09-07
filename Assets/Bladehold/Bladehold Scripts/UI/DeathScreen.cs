@@ -68,8 +68,6 @@ public class DeathScreen : MonoBehaviour
     [SerializeField] private GameObject goldTreePanel;
     [Tooltip("Optional: the Reincarnate skill-tree panel; hidden until the player clicks Reincarnate, then shown so banked points can be spent before the new run starts.")]
     [SerializeField] private GameObject reincarnateTreePanel;
-    [Tooltip("Optional: the full-screen class-select screen shown after banking Reincarnate Points, so the player can reincarnate as a different class. Leave unassigned to keep the current class (the one-click Reincarnate() fallback).")]
-    [SerializeField] private ClassSelectScreen classSelectScreen;
     [Tooltip("Seconds to fade the screen in.")]
     [SerializeField] private float fadeDuration = 1f;
 
@@ -121,10 +119,6 @@ public class DeathScreen : MonoBehaviour
         if (reincarnateTreePanel != null)
         {
             reincarnateTreePanel.SetActive(false);
-        }
-        if (classSelectScreen != null)
-        {
-            classSelectScreen.gameObject.SetActive(false);
         }
 
         tryAgainButton.onClick.AddListener(RestartFromLevelOne);
@@ -469,32 +463,7 @@ public class DeathScreen : MonoBehaviour
             return;
         }
 
-        // Without a Reincarnate tree panel or class-select screen to hand off to, fall back to the
-        // one-click flow.
-        if (reincarnateTreePanel == null || classSelectScreen == null)
-        {
-            ReincarnateService.Instance.Reincarnate();
-            return;
-        }
-
-        // Single click: bank the points, wipe the gold tree, and open the full-screen class picker —
-        // it owns the Reincarnate tree ("Spend Points" toggle) and the reload (Confirm) from here.
-        reincarnateBanked = true;
-        ReincarnateService.Instance.BankPointsAndResetGoldTree();
-
-        if (goldTreePanel != null)
-        {
-            goldTreePanel.SetActive(false);
-        }
-        // The old run is already gone (gold tree wiped, wave reset) — the only way forward is the new run.
-        tryAgainButton.gameObject.SetActive(false);
-        if (restartCurrentWaveButton != null)
-        {
-            restartCurrentWaveButton.gameObject.SetActive(false);
-        }
-        reincarnateButton.gameObject.SetActive(false);
-
-        classSelectScreen.Open();
+        ReincarnateService.Instance.Reincarnate();
     }
 
     private void Reload()

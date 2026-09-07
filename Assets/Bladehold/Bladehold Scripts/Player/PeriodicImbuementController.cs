@@ -37,7 +37,6 @@ public class PeriodicImbuementController : MonoBehaviour
     [SerializeField] private GameObject impulseAuraVisual;
 
     private PlayerStats stats;
-    private PlayerClassController classController;
     private ChainLightning chainLightning;
     private readonly List<DamageTrigger> subscribedMeleeTriggers = new List<DamageTrigger>();
     private PlayerBow bow;
@@ -85,9 +84,6 @@ public class PeriodicImbuementController : MonoBehaviour
         if (stats == null) stats = Player.Instance != null ? Player.Instance.Stats : GetComponentInChildren<PlayerStats>(true);
         if (stats == null) stats = GetComponentInParent<PlayerStats>();
         if (stats == null) stats = UnityEngine.Object.FindAnyObjectByType<PlayerStats>();
-
-        if (classController == null) classController = GetComponentInChildren<PlayerClassController>(true);
-        if (classController == null) classController = GetComponentInParent<PlayerClassController>();
 
         if (chainLightning == null) chainLightning = Player.Instance != null ? Player.Instance.GetComponentInChildren<ChainLightning>() : GetComponentInChildren<ChainLightning>(true);
 

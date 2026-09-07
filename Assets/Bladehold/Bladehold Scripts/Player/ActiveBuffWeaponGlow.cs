@@ -6,7 +6,6 @@ using UnityEngine;
 /// </summary>
 public class ActiveBuffWeaponGlow : MonoBehaviour
 {
-    [SerializeField] private PlayerClassController classController;
     [SerializeField] private ImpulseBuff impulseBuff;
 
     [Header("Glow Settings")]
@@ -22,12 +21,10 @@ public class ActiveBuffWeaponGlow : MonoBehaviour
 
     private void Start()
     {
-        if (classController == null)
-            classController = GetComponentInParent<PlayerClassController>();
         if (impulseBuff == null)
             impulseBuff = GetComponentInChildren<ImpulseBuff>();
 
-        if (classController == null || impulseBuff == null)
+        if (impulseBuff == null)
         {
             anyError = true;
             return;
@@ -35,10 +32,9 @@ public class ActiveBuffWeaponGlow : MonoBehaviour
 
         propBlock = new MaterialPropertyBlock();
 
-        // The class controller activates the weapon in Awake.
-        if (classController.ActiveMeleeTrigger != null)
+        if (PlayerWeaponManager.Instance != null && PlayerWeaponManager.Instance.ActiveMeleeTrigger != null)
         {
-            weaponRenderers = classController.ActiveMeleeTrigger.GetComponentsInChildren<Renderer>(true);
+            weaponRenderers = PlayerWeaponManager.Instance.ActiveMeleeTrigger.GetComponentsInChildren<Renderer>(true);
         }
 
         impulseBuff.OnChanged += HandleBuffChanged;

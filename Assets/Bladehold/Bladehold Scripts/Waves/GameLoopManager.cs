@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Unity.Cinemachine;
 
 /// <summary>
 ///     Master controller for the overhauled 4-round / 12-wave game loop.
@@ -27,6 +28,10 @@ public class GameLoopManager : MonoBehaviour
     public WarBannerClanSO CurrentClanBuffSO { get; private set; }
     public WarBannerRewardSO CurrentBannerRewardSO { get; private set; }
     private List<WarBannerController> activeBanners = new List<WarBannerController>();
+
+    [Header("Cinematic Intermission")]
+    [SerializeField] private CinemachineCamera intermissionVirtualCamera;
+    [SerializeField] private GameObject intermissionStatsPanel;
 
     [Header("UI Dependencies")]
     [SerializeField] private SurvivorsSpawner spawner;
@@ -86,6 +91,7 @@ public class GameLoopManager : MonoBehaviour
     public event Action<float> OnIntermissionTick;
     public event Action OnRestGateOpened;
     public event Action OnVictory;
+    public event Action<Health> OnEnemyKilledEvent;
 
     private void Awake()
     {
@@ -199,6 +205,7 @@ public class GameLoopManager : MonoBehaviour
         // Roll gold drop into in-run purse
         RunSession.AddInRunGold(UnityEngine.Random.Range(2, 6));
 
+        OnEnemyKilledEvent?.Invoke(enemyHealth);
         CheckWaveCompletionConditions();
     }
 
@@ -303,6 +310,8 @@ public class GameLoopManager : MonoBehaviour
         CheckWaveCompletionConditions();
     }
 
+    private float cleanupTimer = 0f;
+
     private void CheckWaveCompletionConditions()
     {
         if (!isWaveActive) return;
@@ -321,13 +330,63 @@ public class GameLoopManager : MonoBehaviour
             if (!isObjectiveComplete)
             {
                 // Wagon has not reached the destination yet; wave cannot end
+                cleanupTimer = 0f;
                 return;
             }
         }
 
         if (killQuotaMet && isObjectiveComplete)
         {
+            if (spawner != null && spawner.IsSpawningActive)
+            {
+                spawner.StopSpawning();
+            }
+
+            if (spawner != null && spawner.AliveCount > 0)
+            {
+                // Wait until all remaining enemies on the field are killed
+                return;
+            }
+
             ClearActiveWave();
+        }
+        else
+        {
+            cleanupTimer = 0f;
+        }
+    }
+
+    private void Update()
+    {
+        if (isWaveActive && isObjectiveComplete)
+        {
+            bool killQuotaMet = killsThisWave >= targetKillsThisWave;
+            if (currentObjective is GoblinRushObjective) killQuotaMet = true;
+            
+            bool spawnerExhausted = spawner != null && spawner.RemainingToSpawn <= 0;
+            
+            if (killQuotaMet || spawnerExhausted)
+            {
+                cleanupTimer += Time.deltaTime;
+                if (cleanupTimer >= 20f)
+                {
+                    Debug.LogWarning($"[GameLoopManager] Catch-all 20s cleanup timer expired! (QuotaMet: {killQuotaMet}, SpawnerExhausted: {spawnerExhausted}). Forcing wave clear.");
+                    if (spawner != null)
+                    {
+                        spawner.StopSpawning();
+                        spawner.DespawnAllAliveEnemies();
+                    }
+                    ClearActiveWave();
+                }
+            }
+            else
+            {
+                cleanupTimer = 0f;
+            }
+        }
+        else
+        {
+            cleanupTimer = 0f;
         }
     }
 
@@ -607,7 +666,7 @@ public class GameLoopManager : MonoBehaviour
             StartCoroutine(StartNextWaveAfterDelay());
             yield break;
         }
-
+        
         // Pick 3 random unique clans and rewards
         List<WarBannerClanSO> availableClans = new List<WarBannerClanSO>(bannerConfig.GetActiveClans());
         List<WarBannerRewardSO> availableRewards = new List<WarBannerRewardSO>(bannerConfig.GetActiveRewards());
@@ -624,9 +683,51 @@ public class GameLoopManager : MonoBehaviour
             {
                 controller.Initialize(availableClans[i % availableClans.Count], availableRewards[i % availableRewards.Count]);
                 controller.OnBannerInteracted += HandleBannerInteracted;
+                controller.StageHighUp();
                 activeBanners.Add(controller);
+                
+                if (i == 0 && intermissionVirtualCamera != null)
+                {
+                    intermissionVirtualCamera.LookAt = bannerGo.transform;
+                }
             }
-            yield return new WaitForSeconds(0.6f);
+        }
+        
+        // --- Cinematic Sequence Start ---
+        
+        // 1. Brief slow motion
+        Time.timeScale = 0.3f;
+        
+        // 2. Camera transition
+        if (intermissionVirtualCamera != null)
+        {
+            intermissionVirtualCamera.gameObject.SetActive(true);
+        }
+        
+        yield return new WaitForSecondsRealtime(0.6f);
+        Time.timeScale = 1.0f;
+        
+        // Show side stats panel
+        if (intermissionStatsPanel != null)
+        {
+            intermissionStatsPanel.SetActive(true);
+        }
+
+        // 3. Drop banners
+        for (int i = 0; i < 3; i++)
+        {
+            if (activeBanners.Count > i && activeBanners[i] != null)
+            {
+                activeBanners[i].SlamDown();
+            }
+            yield return new WaitForSeconds(0.4f);
+        }
+        
+        // Wait a moment to admire the banners, then cut back to player
+        yield return new WaitForSeconds(1.0f);
+        if (intermissionVirtualCamera != null)
+        {
+            intermissionVirtualCamera.gameObject.SetActive(false);
         }
     }
 
@@ -637,26 +738,60 @@ public class GameLoopManager : MonoBehaviour
         CurrentWaveBuff = selectedBanner.Clan != null ? selectedBanner.Clan.buffType : selectedBanner.Buff.buffType;
         CurrentWaveBounty = selectedBanner.Reward != null ? selectedBanner.Reward.bountyType : selectedBanner.Bounty.bountyType;
 
-        // Despawn others
+        StartCoroutine(BannerTeardownRoutine(selectedBanner));
+    }
+    
+    private IEnumerator BannerTeardownRoutine(WarBannerController selectedBanner)
+    {
+        if (intermissionVirtualCamera != null)
+        {
+            intermissionVirtualCamera.LookAt = selectedBanner.transform;
+            intermissionVirtualCamera.gameObject.SetActive(true);
+        }
+
+        // 1. Lock interaction on all banners
+        foreach (var banner in activeBanners)
+        {
+            if (banner != null)
+            {
+                banner.SetInteractable(false);
+            }
+        }
+        
+        // 2. Hide Stats Panel
+        if (intermissionStatsPanel != null)
+        {
+            intermissionStatsPanel.SetActive(false);
+        }
+        
+        // 3. Trigger animations
         foreach (var banner in activeBanners)
         {
             if (banner != null)
             {
                 if (banner == selectedBanner)
                 {
-                    // Play destruction VFX/SFX here on selected banner
-                    Destroy(banner.gameObject, 0.5f); // Destroy after a short delay
+                    banner.TearDown();
                 }
                 else
                 {
-                    Destroy(banner.gameObject);
+                    banner.ShrinkOut();
                 }
             }
         }
+        
         activeBanners.Clear();
-
-        // Voice bark
+        
         Debug.Log("[GameLoopManager] Them's tearin down ours bannah! Get 'em!");
+        
+        // 4. Wait for burning dissolve to finish
+        yield return new WaitForSeconds(3.0f);
+        
+        // 5. Restore camera
+        if (intermissionVirtualCamera != null)
+        {
+            intermissionVirtualCamera.gameObject.SetActive(false);
+        }
 
         StartCoroutine(StartNextWaveAfterDelay());
     }

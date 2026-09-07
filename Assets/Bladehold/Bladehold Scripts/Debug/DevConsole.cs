@@ -221,7 +221,6 @@ public class DevConsole : MonoBehaviour
         DrawWaveControls();
         DrawObjectiveControls();
         DrawEnemySpawnControls();
-        DrawClassControls();
         DrawLanguageControls();
         DrawRageReadout();
         DrawImbuementReadout();
@@ -415,78 +414,7 @@ public class DevConsole : MonoBehaviour
         }
     }
 
-    /// <summary>
-    ///     Class-switch cheat: a ◄/► picker over <see cref="PlayerClassController.Slots" /> plus a
-    ///     switch button. Switching is reload-based (never hot-swapped): it persists the chosen id via
-    ///     <see cref="PlayerClassController.SetSavedClass" /> and reloads the scene, the same shape as
-    ///     "Wipe Progress &amp; Reload". Purchased nodes of the other class's tree just go dormant —
-    ///     <see cref="SkillTreeService" /> skips ids the active tree doesn't know.
-    /// </summary>
-    private void DrawClassControls()
-    {
-        PlayerClassController controller = UnityEngine.Object.FindAnyObjectByType<PlayerClassController>();
-        if (controller == null)
-        {
-            return;
-        }
-        if (controller.Slots.Count == 0)
-        {
-            GUILayout.Label("Class (No slots configured)");
-            return;
-        }
-
-        var slots = controller.Slots;
-        if (classIndex < 0)
-        {
-            // First draw this scene: start the picker on the class actually in play.
-            for (int i = 0; i < slots.Count; i++)
-            {
-                if (slots[i]?.definition != null && slots[i].definition == controller.ActiveClass)
-                {
-                    classIndex = i;
-                    break;
-                }
-            }
-        }
-        classIndex = Mathf.Clamp(classIndex, 0, slots.Count - 1);
-
-        GUILayout.Label($"Class (current: {(controller.ActiveClass != null ? controller.ActiveClass.id : "?")})");
-        GUILayout.BeginHorizontal();
-        if (GUILayout.Button("<", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
-        {
-            classIndex = (classIndex - 1 + slots.Count) % slots.Count;
-        }
-        ClassDefinitionSO selected = slots[classIndex]?.definition;
-        string label = selected != null
-            ? (string.IsNullOrEmpty(selected.displayName) ? selected.id : selected.displayName)
-            : "<no definition>";
-        GUILayout.Label(label, GUILayout.ExpandWidth(true));
-        if (GUILayout.Button(">", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
-        {
-            classIndex = (classIndex + 1) % slots.Count;
-        }
-        GUILayout.EndHorizontal();
-
-        if (selected != null)
-        {
-            if (GUILayout.Button($"Switch to {label} & Reload", GUILayout.Height(ButtonHeight)))
-            {
-                PlayerClassController.SetSavedClass(selected.id);
-                Time.timeScale = GameSettingsService.TargetTimeScale;
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-            }
-            if (GUILayout.Button($"Switch to {label} & Wipe Progress", GUILayout.Height(ButtonHeight)))
-            {
-                PlayerClassController.SetSavedClass(selected.id);
-                SaveData data = SaveSystem.Load();
-                data.ResetProgress();
-                SaveSystem.Save(data);
-                RunState.StartingWave = 1;
-                Time.timeScale = GameSettingsService.TargetTimeScale;
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-            }
-        }
-    }
+    // Class controls removed because the game is now classless.
 
     /// <summary>
     ///     Language cheats: one button per supported language plus the pseudo-locale ("XX" — wraps all

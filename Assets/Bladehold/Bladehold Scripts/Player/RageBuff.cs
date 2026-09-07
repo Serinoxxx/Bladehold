@@ -92,10 +92,9 @@ public class RageBuff : MonoBehaviour
             anyError = true;
         }
 
-        if (meleeTrigger == null)
+        if (meleeTrigger == null && PlayerWeaponManager.Instance != null)
         {
-            PlayerClassController classController = GetComponentInParent<PlayerClassController>();
-            meleeTrigger = classController != null ? classController.ActiveMeleeTrigger : null;
+            meleeTrigger = PlayerWeaponManager.Instance.ActiveMeleeTrigger;
         }
 
         if (anyError)
