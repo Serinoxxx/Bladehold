@@ -517,6 +517,11 @@ public class SurvivorsSpawner : MonoBehaviour
         RoundPacingConfigSO.RoundDefinition roundDef = pacingConfig != null ? pacingConfig.GetRound(currentRound) : null;
         string[] allowed = roundDef != null ? roundDef.allowedEnemyIds : null;
 
+        if (GameLoopManager.Instance != null && GameLoopManager.Instance.CurrentObjective is IOverrideEnemySpawns overrideObj)
+        {
+            allowed = overrideObj.AllowedEnemyIds;
+        }
+
         foreach (SpawnType type in spawnTypes)
         {
             if (type.def.enabled && waveNumber >= type.def.unlockWave)

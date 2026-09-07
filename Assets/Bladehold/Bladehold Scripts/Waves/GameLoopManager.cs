@@ -225,6 +225,11 @@ public class GameLoopManager : MonoBehaviour
         // Start wave objective via SurvivorsObjectiveManager
         StartWaveObjective(waveNumber);
 
+        if (currentObjective is GoblinRushObjective)
+        {
+            targetKillsThisWave = 999999;
+        }
+
         // Start Spawner with round-specific settings & quota
         if (spawner != null)
         {
@@ -303,6 +308,12 @@ public class GameLoopManager : MonoBehaviour
         if (!isWaveActive) return;
 
         bool killQuotaMet = killsThisWave >= targetKillsThisWave;
+
+        // Special rule for time-based survival objectives: they end exactly when the time is up, regardless of kills
+        if (currentObjective is GoblinRushObjective)
+        {
+            killQuotaMet = true;
+        }
 
         // Escort wagon special rule: enemies must keep spawning until wagon arrives at the destination!
         if (currentObjective is ProtectWagonObjective)

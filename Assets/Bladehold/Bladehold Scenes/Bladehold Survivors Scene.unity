@@ -10145,6 +10145,10 @@ MonoBehaviour:
   rewardNotificationText: {fileID: 0}
   intermissionBanner: {fileID: 0}
   victoryScreen: {fileID: 0}
+  goldPopupPrefab: {fileID: 0}
+  metalPopupPrefab: {fileID: 0}
+  bloodPopupPrefab: {fileID: 0}
+  rewardSfx: {fileID: 0}
 --- !u!4 &319282847
 Transform:
   m_ObjectHideFlags: 0
@@ -31724,6 +31728,7 @@ GameObject:
   - component: {fileID: 926223862}
   - component: {fileID: 926223868}
   - component: {fileID: 926223869}
+  - component: {fileID: 926223870}
   m_Layer: 0
   m_Name: SurvivorsObjectives
   m_TagString: Untagged
@@ -31750,6 +31755,7 @@ MonoBehaviour:
   - {fileID: 926223863}
   - {fileID: 926223868}
   - {fileID: 926223869}
+  - {fileID: 926223870}
   goldXpRewardPerObjective: 50
   cleanupDuration: 30
   intermissionDuration: 30
@@ -31912,6 +31918,24 @@ MonoBehaviour:
   killBonusGold: 100
   maxHealthOverride: 999
   knockbackResistOverride: 999
+--- !u!114 &926223870
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 926223861}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b65d52cd2397ae4a80bb59720454090, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GoblinRushObjective
+  objectiveId: goblin_rush
+  title: Goblin Rush!
+  description: Survive the continuous goblin rush and kill as many as you can!
+  durationSeconds: 120
+  allowedEnemyIds:
+  - goblin
 --- !u!1 &932310033
 GameObject:
   m_ObjectHideFlags: 0
@@ -48050,7 +48074,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 42.15
+  m_fontSize: 56.6
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1

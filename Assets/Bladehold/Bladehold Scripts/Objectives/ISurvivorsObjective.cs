@@ -1,5 +1,10 @@
 using System;
 
+public interface IOverrideEnemySpawns
+{
+    string[] AllowedEnemyIds { get; }
+}
+
 /// <summary>
 ///     Defines the contract for an objective in Survivors Mode (e.g. kill wave, destroy siege engines,
 ///     escort wagon, free prisoners).
