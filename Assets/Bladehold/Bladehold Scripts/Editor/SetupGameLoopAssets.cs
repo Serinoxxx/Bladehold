@@ -58,6 +58,7 @@ public static class SetupGameLoopAssets
         CreateWeaponAsset(weaponsDir, "axe", "Battleaxe", WeaponCategory.Melee, false, 10, false, "Heavy two-handed axe that cleaves wide arcs.", "Hold attack to charge a crushing overhead cleave.", 1, 0.45f, "2H_Axe");
         CreateWeaponAsset(weaponsDir, "bow", "Recurve Bow", WeaponCategory.Ranged, true, 0, false, "Fast firing bow with piercing arrows.", "RMB Aim + LMB Fire.", 0, 0.25f, "Wep_RecurveBow_01");
         CreateWeaponAsset(weaponsDir, "throwing_axe", "Throwing Axe", WeaponCategory.Ranged, false, 10, false, "Heavy throwing axe with lethal velocity.", "RMB Aim + LMB to hurl spinning axe.", 0, 0.35f, "SM_Wep_Axe_01");
+        CreateWeaponAsset(weaponsDir, "mace", "Heavy War Mace", WeaponCategory.Melee, false, 10, false, "Colossal two-handed mace that crushes armor and staggers crowds with heavy blunt impact.", "Hold attack to charge a devastating overhead seismic strike that stuns foes.", 1, 0.42f, "SM_Wep_Mace_Blades_01");
         CreateWeaponAsset(weaponsDir, "staff", "Arcane Staff", WeaponCategory.Ranged, false, 0, true, "Staff of primal magic.", "Locked for demo.", 0, 0.5f, "");
         CreateWeaponAsset(weaponsDir, "wand", "Crystal Wand", WeaponCategory.Ranged, false, 0, true, "Focusing wand of raw arcana.", "Locked for demo.", 0, 0.2f, "");
 
@@ -456,7 +457,8 @@ public static class SetupGameLoopAssets
         spiritInteractable.PromptText = "Commune with Spirit (Meta Upgrades)";
         spiritGo.AddComponent<SpiritNPC>();
 
-        // 4. Weapon Pedestals (Sword, Axe, Bow, Throwing Axe)
+        // 4. Weapon Pedestals (Sword, Axe, Bow, Throwing Axe, Mace)
+        CreatePedestal("Pedestal_Mace", new Vector3(-10f, 0f, 0f), "Assets/Bladehold/Bladehold Config/Weapons/mace.asset");
         CreatePedestal("Pedestal_Sword", new Vector3(-6f, 0f, 0f), "Assets/Bladehold/Bladehold Config/Weapons/sword.asset");
         CreatePedestal("Pedestal_Axe", new Vector3(-2f, 0f, 0f), "Assets/Bladehold/Bladehold Config/Weapons/axe.asset");
         CreatePedestal("Pedestal_Bow", new Vector3(2f, 0f, 0f), "Assets/Bladehold/Bladehold Config/Weapons/bow.asset");
@@ -789,6 +791,8 @@ public static class SetupGameLoopAssets
             // Wave 3 (Round 1 Rest Wave)
             glm.StartWave(3);
             glm.DebugCompleteObjective();
+            var spawner = Object.FindAnyObjectByType<SurvivorsSpawner>();
+            if (spawner != null) spawner.DespawnAllAliveEnemies();
             for (int k = 0; k < glm.TargetKillsThisWave; k++) glm.OnEnemyKilled(null);
             bool isRestGateOpen = gateInteractable.CanInteract;
             sb.AppendLine($"- Wave 3 (Round 1 Finale) Cleared. Rest Gate Interactable: {isRestGateOpen} (Expected: True)");
@@ -879,7 +883,7 @@ public static class SetupGameLoopAssets
             // Grant test meta currencies
             SaveData save = SaveSystem.Load();
             save.goblinBlood = 50;
-            save.orcishMetal = 20;
+            save.orcishMetal = 30;
             save.unlockedMetaTier = 1;
             save.unlockedWeapons = new System.Collections.Generic.List<string> { "sword", "bow" };
             save.equippedMeleeWeapon = "sword";
@@ -891,11 +895,9 @@ public static class SetupGameLoopAssets
             if (metaUI == null) throw new System.Exception("MetaUpgradesUI not found in Meta Area Scene!");
             metaUI.Open();
 
-            // Purchase Perk: backstab (10 Blood)
-            MetaPerkDefinitionSO backstabPerk = AssetDatabase.LoadAssetAtPath<MetaPerkDefinitionSO>("Assets/Bladehold/Bladehold Config/MetaPerks/backstab.asset");
-            var purchaseMethod = typeof(MetaUpgradesUI).GetMethod("PurchasePerk", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (purchaseMethod != null && backstabPerk != null) purchaseMethod.Invoke(metaUI, new object[] { backstabPerk });
-
+            // Purchase Perk 'backstab' (10 Blood)
+            var buyPerkMethod = typeof(MetaUpgradesUI).GetMethod("BuyPerk", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (buyPerkMethod != null) buyPerkMethod.Invoke(metaUI, new object[] { "backstab", 10 });
             SaveData postPerkSave = SaveSystem.Load();
             bool hasBackstab = postPerkSave.purchasedMetaPerks.Contains("backstab");
             sb.AppendLine($"- Purchased 'backstab' perk: Owned={hasBackstab}, Remaining Blood={postPerkSave.goblinBlood} (Expected: 40)");
@@ -904,7 +906,7 @@ public static class SetupGameLoopAssets
             var unlockTierMethod = typeof(MetaUpgradesUI).GetMethod("UnlockTier", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             if (unlockTierMethod != null) unlockTierMethod.Invoke(metaUI, new object[] { 2, 5 });
             SaveData postTierSave = SaveSystem.Load();
-            sb.AppendLine($"- Unlocked Meta Tier 2: CurrentTier={postTierSave.unlockedMetaTier}, Remaining Metal={postTierSave.orcishMetal} (Expected: 15)");
+            sb.AppendLine($"- Unlocked Meta Tier 2: CurrentTier={postTierSave.unlockedMetaTier}, Remaining Metal={postTierSave.orcishMetal} (Expected: 25)");
             metaUI.Close();
 
             // Test Weapon Pedestal (Axe)
@@ -920,12 +922,24 @@ public static class SetupGameLoopAssets
             axePedestal.OnPedestalInteracted(metaPlayer);
             SaveData postAxeUnlock = SaveSystem.Load();
             bool isAxeUnlocked = postAxeUnlock.unlockedWeapons.Contains("axe");
-            sb.AppendLine($"- Unlocked Battleaxe on Pedestal: Unlocked={isAxeUnlocked}, Remaining Metal={postAxeUnlock.orcishMetal} (Expected: 5)");
+            sb.AppendLine($"- Unlocked Battleaxe on Pedestal: Unlocked={isAxeUnlocked}, Remaining Metal={postAxeUnlock.orcishMetal} (Expected: 15)");
 
-            // Equip Axe
-            axePedestal.OnPedestalInteracted(metaPlayer);
-            SaveData postAxeEquip = SaveSystem.Load();
-            sb.AppendLine($"- Equipped Battleaxe on Pedestal: Equipped Melee={postAxeEquip.equippedMeleeWeapon} (Expected: 'axe')");
+            // Test Weapon Pedestal (Mace)
+            WeaponPedestal macePedestal = System.Array.Find(pedestals, p => p.WeaponData != null && p.WeaponData.id == "mace");
+            if (macePedestal == null) throw new System.Exception("Mace Pedestal not found in Meta Area Scene!");
+            macePedestal.Initialize();
+            macePedestal.RefreshPedestal();
+
+            // Unlock Mace (10 Metal)
+            macePedestal.OnPedestalInteracted(metaPlayer);
+            SaveData postMaceUnlock = SaveSystem.Load();
+            bool isMaceUnlocked = postMaceUnlock.unlockedWeapons.Contains("mace");
+            sb.AppendLine($"- Unlocked Heavy War Mace on Pedestal: Unlocked={isMaceUnlocked}, Remaining Metal={postMaceUnlock.orcishMetal} (Expected: 5)");
+
+            // Equip Mace
+            macePedestal.OnPedestalInteracted(metaPlayer);
+            SaveData postMaceEquip = SaveSystem.Load();
+            sb.AppendLine($"- Equipped Heavy War Mace on Pedestal: Equipped Melee={postMaceEquip.equippedMeleeWeapon} (Expected: 'mace')");
 
             // Test Battle Portal
             BattlePortal portal = Object.FindAnyObjectByType<BattlePortal>();
@@ -934,14 +948,14 @@ public static class SetupGameLoopAssets
             portal.EnterBattle(metaPlayer);
             sb.AppendLine($"- Battle Portal Activated: Next Run Started. RunSession InRunGold={RunSession.InRunGold}");
 
-            // Return to Battle Scene to confirm active loadout reflects new equipped axe
+            // Return to Battle Scene to confirm active loadout reflects new equipped mace
             EditorSceneManager.OpenScene(battleScenePath, OpenSceneMode.Single);
             Player newRunPlayer = Object.FindAnyObjectByType<Player>();
             PlayerWeaponManager pwm = newRunPlayer != null ? newRunPlayer.GetComponent<PlayerWeaponManager>() : null;
             if (pwm != null)
             {
                 pwm.ApplySavedLoadout();
-                sb.AppendLine($"- New Run Loaded in Battle Scene. Active Melee Weapon: {pwm.CurrentMeleeId} (Expected: 'axe')");
+                sb.AppendLine($"- New Run Loaded in Battle Scene. Active Melee Weapon: {pwm.CurrentMeleeId} (Expected: 'mace')");
             }
 
             sb.AppendLine("\n>>> ALL TESTS PASSED SUCCESSFULLY! <<<");

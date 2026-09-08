@@ -9,6 +9,12 @@ using UnityEngine;
 /// </summary>
 public class SwordMountUltimate : MonoBehaviour, IUltimateHandler
 {
+    [Header("Config")]
+    [Tooltip("Configuration ScriptableObject defining base duration and metadata.")]
+    [SerializeField] private UltimateConfigSO config;
+
+    public float BaseDuration => config != null && config.baseDuration > 0f ? config.baseDuration : 15f;
+
     [SerializeField] private GameObject horsePrefab;
 
     private Player player;
@@ -52,8 +58,8 @@ public class SwordMountUltimate : MonoBehaviour, IUltimateHandler
             return;
         }
 
-        float duration = player.Stats != null ? player.Stats.GetValue(StatType.UltimateDurationSeconds) : 8f;
-        if (duration <= 0f) duration = 8f;
+        float duration = player.Stats != null ? player.Stats.GetValue(StatType.UltimateDurationSeconds) : BaseDuration;
+        if (duration <= 0f) duration = BaseDuration;
 
         ultimateEndTime = Time.time + duration;
         ultimateStartTime = Time.time;

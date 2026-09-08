@@ -459,6 +459,126 @@ public class DraftUpgradeService : MonoBehaviour
         }
     }
 
+    /// <summary>
+    ///     Debug/Cheat method: directly sets a draft upgrade's level, accurately applying
+    ///     or reverting stat modifiers and updating RunSession / Ultimate / Fortress state.
+    /// </summary>
+    public void DebugSetDraftLevel(DraftUpgradeDefinition def, int targetLevel)
+    {
+        if (def == null) return;
+        EnsureInitialized();
+
+        int currentLevel = RunSession.GetUpgradeLevel(def.id);
+        targetLevel = Mathf.Clamp(targetLevel, 0, def.maxLevel);
+        if (currentLevel == targetLevel) return;
+
+        Player player = Player.Instance;
+
+        // Revert old level stat modifiers
+        if (currentLevel > 0 && player != null && player.Stats != null && def.effects != null)
+        {
+            foreach (SkillEffect effect in def.effects)
+            {
+                player.Stats.AddModifier(effect.stat, effect.kind, -effect.AmountForLevel(currentLevel));
+            }
+        }
+
+        // Apply new level stat modifiers
+        if (targetLevel > 0 && player != null && player.Stats != null && def.effects != null)
+        {
+            foreach (SkillEffect effect in def.effects)
+            {
+                player.Stats.AddModifier(effect.stat, effect.kind, effect.AmountForLevel(targetLevel));
+            }
+        }
+
+        RunSession.SetUpgradeLevel(def.id, targetLevel);
+
+        if (def.isUltimate && player != null && player.Stats != null)
+        {
+            if (targetLevel > 0)
+            {
+                RunSession.ActiveUltimateId = def.id;
+                player.Stats.SetBase(StatType.UltimateUnlocked, 1f);
+                ConfigureUltimateHandler(player, def.id);
+            }
+            else if (string.Equals(RunSession.ActiveUltimateId, def.id, StringComparison.OrdinalIgnoreCase))
+            {
+                RunSession.ActiveUltimateId = null;
+                player.Stats.SetBase(StatType.UltimateUnlocked, 0f);
+            }
+        }
+
+        if (def.category == DraftCategory.Fortress && targetLevel > 0)
+        {
+            if (FortDefenseManager.Instance != null)
+            {
+                FortDefenseManager.Instance.HandleSkillNodePurchased(def.id);
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Debug/Cheat method: sets all regular draft upgrades to their maximum level,
+    ///     optionally unlocking and configuring the equipped weapon's ultimate.
+    /// </summary>
+    public void DebugMaxAllDrafts(bool includeCurrentWeaponUltimate = true)
+    {
+        EnsureInitialized();
+        foreach (var def in allDefinitions)
+        {
+            if (def == null) continue;
+            if (def.isUltimate) continue;
+            DebugSetDraftLevel(def, def.maxLevel);
+        }
+
+        if (includeCurrentWeaponUltimate)
+        {
+            UnlockDefaultWeaponUltimate();
+        }
+    }
+
+    /// <summary>
+    ///     Debug/Cheat method: unlocks the default ultimate for the currently equipped weapons.
+    /// </summary>
+    public void UnlockDefaultWeaponUltimate()
+    {
+        string ultId = RunSession.ActiveUltimateId;
+        if (string.IsNullOrEmpty(ultId))
+        {
+            string meleeId = PlayerWeaponManager.Instance != null ? PlayerWeaponManager.Instance.CurrentMeleeId : "sword";
+            if (meleeId.Contains("mace")) ultId = "mace_earthshaker_ult";
+            else if (meleeId.Contains("axe")) ultId = "axe_bladestorm_ult";
+            else ultId = "sword_mount_ult";
+        }
+
+        DraftUpgradeDefinition ultDef = GetById(ultId);
+        if (ultDef != null)
+        {
+            DebugSetDraftLevel(ultDef, 1);
+        }
+    }
+
+    /// <summary>
+    ///     Debug/Cheat method: resets all draft upgrades to 0 and clears ultimate state.
+    /// </summary>
+    public void DebugResetAllDrafts()
+    {
+        EnsureInitialized();
+        foreach (var def in allDefinitions)
+        {
+            if (def != null)
+            {
+                DebugSetDraftLevel(def, 0);
+            }
+        }
+        RunSession.ActiveUltimateId = null;
+        if (Player.Instance != null && Player.Instance.Stats != null)
+        {
+            Player.Instance.Stats.SetBase(StatType.UltimateUnlocked, 0f);
+        }
+    }
+
     public static void ConfigureUltimateHandler(Player player, string ultimateId)
     {
         if (player == null || string.IsNullOrEmpty(ultimateId)) return;
@@ -497,6 +617,18 @@ public class DraftUpgradeService : MonoBehaviour
             ThrowingAxeUltimate taxeUlt = rootTr.GetComponentInChildren<ThrowingAxeUltimate>(true);
             if (taxeUlt == null) taxeUlt = targetGo.AddComponent<ThrowingAxeUltimate>();
             taxeUlt.enabled = true;
+        }
+        else if (ultimateId.StartsWith("mace_earthshaker", StringComparison.OrdinalIgnoreCase))
+        {
+            MaceUltimate maceUlt = rootTr.GetComponentInChildren<MaceUltimate>(true);
+            if (maceUlt == null) maceUlt = targetGo.AddComponent<MaceUltimate>();
+            maceUlt.enabled = true;
+        }
+        else if (ultimateId.StartsWith("mage", StringComparison.OrdinalIgnoreCase) || ultimateId.StartsWith("staff", StringComparison.OrdinalIgnoreCase) || ultimateId.StartsWith("wand", StringComparison.OrdinalIgnoreCase))
+        {
+            MageUltimate mageUlt = rootTr.GetComponentInChildren<MageUltimate>(true);
+            if (mageUlt == null) mageUlt = targetGo.AddComponent<MageUltimate>();
+            mageUlt.enabled = true;
         }
     }
 

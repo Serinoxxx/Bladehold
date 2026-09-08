@@ -489,6 +489,18 @@ public class DamageTrigger : MonoBehaviour
                 }
             }
 
+            // Mace Armor Shatter (+bonus damage to shielded and heavy/armored targets)
+            float maceShatter = stats.GetValue(StatType.MaceArmorShatterBonus);
+            if (maceShatter > 0f)
+            {
+                BubbleShield bubbleShield = targetComponent.GetComponentInParent<BubbleShield>();
+                Health enemyHealth = targetComponent.GetComponentInParent<Health>();
+                if (bubbleShield != null || (enemyHealth != null && enemyHealth.MaxHealth >= 80f))
+                {
+                    damage.value *= 1f + maceShatter;
+                }
+            }
+
             // Vampire Blade (heals 2 HP per hit)
             float vampHeal = stats.GetValue(StatType.SwordVampireBladeHeal);
             if (vampHeal > 0f && Player.Instance != null && Player.Instance.Health != null)

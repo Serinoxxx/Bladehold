@@ -3,6 +3,12 @@ using UnityEngine;
 
 public class RangerUltimate : MonoBehaviour, IUltimateHandler
 {
+    [Header("Config")]
+    [Tooltip("Configuration ScriptableObject defining base duration and metadata.")]
+    [SerializeField] private UltimateConfigSO config;
+
+    public float BaseDuration => config != null && config.baseDuration > 0f ? config.baseDuration : 5f;
+
     private Player player;
     private PlayerBow bow;
     private float ultimateEndTime;
@@ -32,8 +38,8 @@ public class RangerUltimate : MonoBehaviour, IUltimateHandler
     {
         this.controller = controller;
         FindDependencies();
-        float duration = player != null && player.Stats != null ? player.Stats.GetValue(StatType.UltimateDurationSeconds) : 6f;
-        if (duration <= 0f) duration = 6f;
+        float duration = player != null && player.Stats != null ? player.Stats.GetValue(StatType.UltimateDurationSeconds) : BaseDuration;
+        if (duration <= 0f) duration = BaseDuration;
         ultimateEndTime = Time.time + duration;
         isRunning = true;
         

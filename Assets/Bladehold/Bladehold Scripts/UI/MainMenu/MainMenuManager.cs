@@ -22,6 +22,7 @@ namespace Bladehold.UI
         public Image logoLoadingFill;
         public Slider loadingBar;
         public TextMeshProUGUI loadingText;
+        public TextMeshProUGUI enteringTitleText;
         public string gameplaySceneName = "Bladehold Survivors Scene";
 
         [Header("Shader Prewarming")]
@@ -180,6 +181,13 @@ namespace Bladehold.UI
                 sceneToLoad = "Bladehold Survivors Scene";
             }
 
+            var meta = AreaDatabase.GetMetadata(sceneToLoad);
+            string enteringName = !string.IsNullOrEmpty(meta?.displayName) ? meta.displayName : sceneToLoad;
+            if (enteringTitleText != null)
+            {
+                enteringTitleText.text = $"Entering {enteringName}";
+            }
+
             AsyncOperation op = SceneManager.LoadSceneAsync(sceneToLoad);
             if (op == null)
             {
@@ -198,7 +206,12 @@ namespace Bladehold.UI
 
                 if (logoLoadingFill) logoLoadingFill.fillAmount = overallProgress;
                 if (loadingBar) loadingBar.value = overallProgress;
-                if (loadingText) loadingText.text = $"Loading Scene... {(overallProgress * 100):F0}%";
+                if (loadingText)
+                {
+                    loadingText.text = enteringTitleText != null
+                        ? $"Loading... {(overallProgress * 100):F0}%"
+                        : $"Entering {enteringName}... {(overallProgress * 100):F0}%";
+                }
                 yield return null;
             }
 

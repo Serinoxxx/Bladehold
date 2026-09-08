@@ -69,6 +69,8 @@ public class UltimateBarUI : MonoBehaviour
             ultimateController.OnChargeChanged += UpdateBar;
             ultimateController.OnUltimateActivated -= HandleActivated;
             ultimateController.OnUltimateActivated += HandleActivated;
+            ultimateController.OnUltimateDeactivated -= HandleDeactivated;
+            ultimateController.OnUltimateDeactivated += HandleDeactivated;
             isSubscribed = true;
             Debug.Log($"[UltimateBarUI] Successfully bound to PlayerUltimateController on '{ultimateController.gameObject.name}'. Initial charge={ultimateController.CurrentCharge}, progressBar={(progressBar != null ? progressBar.name : "NULL")}");
             UpdateBar(ultimateController.CurrentCharge);
@@ -81,12 +83,15 @@ public class UltimateBarUI : MonoBehaviour
         {
             ultimateController.OnChargeChanged -= UpdateBar;
             ultimateController.OnUltimateActivated -= HandleActivated;
+            ultimateController.OnUltimateDeactivated -= HandleDeactivated;
             isSubscribed = false;
         }
     }
 
     private void UpdateBar(float charge)
     {
+        if (ultimateController != null && ultimateController.IsUltimateActive) return;
+
         float fraction = charge / PlayerUltimateController.MaxCharge;
         Debug.Log($"[UltimateBarUI] UpdateBar(charge={charge:F1}) -> fraction={fraction:P0}, progressBar={(progressBar != null ? progressBar.name : "NULL")}");
         
@@ -118,9 +123,21 @@ public class UltimateBarUI : MonoBehaviour
 
     private void HandleActivated()
     {
-        // Flash or reset
-        UpdateBar(0f);
+        if (progressBar != null)
+        {
+            progressBar.SetBar(PlayerUltimateController.MaxCharge, 0f, PlayerUltimateController.MaxCharge);
+        }
+        if (inputKeyText != null) inputKeyText.gameObject.SetActive(false);
+        if (glowImage != null) glowImage.gameObject.SetActive(true);
         if (activatedFeedback != null) activatedFeedback.PlayFeedbacks();
+    }
+
+    private void HandleDeactivated()
+    {
+        isFull = false;
+        if (glowImage != null) glowImage.gameObject.SetActive(false);
+        if (inputKeyText != null) inputKeyText.gameObject.SetActive(false);
+        UpdateBar(ultimateController != null ? ultimateController.CurrentCharge : 0f);
     }
 
     private void Update()
@@ -128,6 +145,39 @@ public class UltimateBarUI : MonoBehaviour
         if (!isSubscribed)
         {
             TryBindController();
+        }
+
+        if (ultimateController != null && ultimateController.IsUltimateActive)
+        {
+            float remaining = ultimateController.ActiveUltimateRemainingTime;
+            float total = ultimateController.ActiveUltimateDuration;
+            float fraction = total > 0f ? Mathf.Clamp01(remaining / total) : 0f;
+
+            if (progressBar != null)
+            {
+                // Use SetBar per mm-progress-bars skill so per-frame updates do not freeze lerp coroutine
+                progressBar.SetBar(fraction * PlayerUltimateController.MaxCharge, 0f, PlayerUltimateController.MaxCharge);
+            }
+
+            if (chargeText != null)
+            {
+                chargeText.text = $"{remaining:F1}s";
+            }
+
+            if (inputKeyText != null && inputKeyText.gameObject.activeSelf)
+            {
+                inputKeyText.gameObject.SetActive(false);
+            }
+
+            if (glowImage != null && glowImage.gameObject.activeSelf)
+            {
+                float alpha = Mathf.Lerp(glowAlphaMin, glowAlphaMax, (Mathf.Sin(Time.time * glowSpeed * 2f) + 1f) / 2f);
+                Color c = glowImage.color;
+                c.a = alpha;
+                glowImage.color = c;
+            }
+
+            return;
         }
 
         if (isFull && glowImage != null && glowImage.gameObject.activeSelf)

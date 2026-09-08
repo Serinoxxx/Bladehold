@@ -1,5 +1,19 @@
 # Bladehold - Changelog
 
+## [0.1.20] - 2026-09-08
+
+### New Features
+- Added the Heavy War Mace as an unlockable two-handed melee weapon with high-impact blunt staggering, armor-shattering strikes, and charged ground shockwaves
+- Added diegetic Mace Pedestal in the Meta Area allowing permanent unlock with Orcish Metal and immediate loadout equipping
+- Added 5 targeted mace draft cards to in-run upgrade pools (Armor Shatter, Concussive Impact, Earthshaker, Colossal Force, and Seismic Quake)
+- Added signature Seismic Quake ultimate ability triggering a cataclysmic radial ground slam that crushes, launches, and stuns surrounding foes
+- Added multi-door Rest Area exit system allowing navigation to distinct scenes and stages with contextual interaction prompts
+- Added meta-information loading screen displaying "Entering [Area Name]" alongside subtitles, lore descriptions, and progress bars during scene transitions
+- Added AreaDefinition ScriptableObject and global AreaDatabase mapping scene destinations to rich player-facing stage lore
+
+### General Changes
+- Unified scene transition and loading logic between Main Menu, Meta Area Battle Portal, and Rest Area exits with shader prewarming support
+
 ## [0.1.19] - 2026-09-03
 
 ### New Features

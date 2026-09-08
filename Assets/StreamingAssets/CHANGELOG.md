@@ -1,5 +1,110 @@
 # Bladehold - Changelog
 
+## [0.1.20] - 2026-09-08
+
+### New Features
+- Added the Heavy War Mace as an unlockable two-handed melee weapon with high-impact blunt staggering, armor-shattering strikes, and charged ground shockwaves
+- Added diegetic Mace Pedestal in the Meta Area allowing permanent unlock with Orcish Metal and immediate loadout equipping
+- Added 5 targeted mace draft cards to in-run upgrade pools (Armor Shatter, Concussive Impact, Earthshaker, Colossal Force, and Seismic Quake)
+- Added signature Seismic Quake ultimate ability triggering a cataclysmic radial ground slam that crushes, launches, and stuns surrounding foes
+- Added multi-door Rest Area exit system allowing navigation to distinct scenes and stages with contextual interaction prompts
+- Added meta-information loading screen displaying "Entering [Area Name]" alongside subtitles, lore descriptions, and progress bars during scene transitions
+- Added AreaDefinition ScriptableObject and global AreaDatabase mapping scene destinations to rich player-facing stage lore
+
+### General Changes
+- Unified scene transition and loading logic between Main Menu, Meta Area Battle Portal, and Rest Area exits with shader prewarming support
+
+## [0.1.19] - 2026-09-03
+
+### New Features
+- Added dramatic lightning strike elimination for enemies remaining when the 20-second post-quota catch-all timer expires, dealing lethal damage with thunderous visual and audio effects instead of abruptly vanishing
+- Added Goblin Blood and Orcish Metal displays to the HUD and updated the Gold display to track run-specific gold
+- Added modular Clan Buff and Banner Reward ScriptableObjects allowing easy buff and reward pool customization
+- Replaced text-heavy War Banners with a quick-facts card showing clan icon, 1-line buff fact, and reward quantity
+- Added Golden Goblin wave objective: a special goblin with 999 health that drops gold based on damage and a 100 gold bonus if killed within 30 seconds.
+- Replaced end-of-wave reward drops with a physical, interactive War Banner selection system granting unique modifiers and rewards
+- Refactored single-element lock into a Hades-inspired ability-slot elemental system (Melee, Ranged, Mobility, Ultimate, Fortress)
+- Added new elemental statuses: Ignited (DoT), Chilled (Slow), Frozen (Stun), and Conductive (Chain Lightning)
+- Added Elemental Discord mechanic: Enemies inflicted with 2 or more distinct elements take +40% damage from all sources
+- Added Duo Synergies to the Draft Upgrade pool (Thermal Shock, Plasma Overload, Superconductor) requiring specific elements equipped
+- Added compensation mechanic for replacing an elemental ability slot (+25 In-Run Gold)
+- Added dedicated Rest Area scene between rounds (Waves 3, 6, 9) featuring the Well (+20 HP), Merchant Shop, Upgrade Draft station, and Return Gate
+- Added dedicated Meta Progression Area scene upon defeat featuring the Spirit NPC and diegetic 3D weapon pedestals
+- Added universal interaction framework using the 'E' key and gamepad for all world stations, pedestals, and gates
+- Added flexible weapon loadout system allowing switching between 1 Melee weapon (Sword or Axe) and 1 Ranged weapon (Bow or Throwing Axe)
+- Added 3-second ground warning telegraph indicators before enemies spawn and capped active enemies to 20
+- Added destructible Bubble Shields with health pools and a 10-second re-shield cooldown when broken
+- Added wave-end drop rewards (Troll Hearts, Orcish Metal, Goblin Blood, In-Run Gold, and Instant Upgrade Drafts) with 30-second intermissions
+- Added passive Training Dummy Goblin to Rest Area and Meta Progression Area with 1000 HP, floating health display, 10-second idle reset, and poof VFX at origin and destination
+- Added modular UI prefabs for the interaction prompt and rest area shop modal styled with the dark fantasy parchment aesthetic
+- Added MoreMountains Feel feedbacks for Rest Area shop cards: horizontal card shake, red flash, and error sound on invalid buy attempts; spring scale bounce, coins audio, and smooth card disappearance on successful purchase
+- Added arena upgrade powerups dropping between waves that open a 3-card draft for Weapon, Elemental, or Fortress upgrades
+- Added 'Return to the Fortress' objective with a gate waypoint marker upon clearing all 3 waves of a round
+- Replaced end-of-wave reward drops with a physical, interactive War Banner selection system granting unique modifiers and rewards
+- Refactored single-element lock into a Hades-inspired ability-slot elemental system (Melee, Ranged, Mobility, Ultimate, Fortress)
+- Added new elemental statuses: Ignited (DoT), Chilled (Slow), Frozen (Stun), and Conductive (Chain Lightning)
+- Added Elemental Discord mechanic: Enemies inflicted with 2 or more distinct elements take +40% damage from all sources
+- Added Duo Synergies to the Draft Upgrade pool (Thermal Shock, Plasma Overload, Superconductor) requiring specific elements equipped
+- Added compensation mechanic for replacing an elemental ability slot (+25 In-Run Gold)
+- Added dedicated Rest Area scene between rounds (Waves 3, 6, 9) featuring the Well (+20 HP), Merchant Shop, Upgrade Draft station, and Return Gate
+- Added dedicated Meta Progression Area scene upon defeat featuring the Spirit NPC and diegetic 3D weapon pedestals
+- Added universal interaction framework using the 'E' key and gamepad for all world stations, pedestals, and gates
+- Added flexible weapon loadout system allowing switching between 1 Melee weapon (Sword or Axe) and 1 Ranged weapon (Bow or Throwing Axe)
+- Added 3-second ground warning telegraph indicators before enemies spawn and capped active enemies to 20
+- Added destructible Bubble Shields with health pools and a 10-second re-shield cooldown when broken
+- Added wave-end drop rewards (Troll Hearts, Orcish Metal, Goblin Blood, In-Run Gold, and Instant Upgrade Drafts) with 30-second intermissions
+- Added passive Training Dummy Goblin to Rest Area and Meta Progression Area with 1000 HP, floating health display, 10-second idle reset, and poof VFX at origin and destination
+- Added modular UI prefabs for the interaction prompt and rest area shop modal styled with the dark fantasy parchment aesthetic
+- Added MoreMountains Feel feedbacks for Rest Area shop cards: horizontal card shake, red flash, and error sound on invalid buy attempts; spring scale bounce, coins audio, and smooth card disappearance on successful purchase
+- Added arena upgrade powerups dropping between waves that open a 3-card draft for Weapon, Elemental, or Fortress upgrades
+- Added 'Return to the Fortress' objective with a gate waypoint marker upon clearing all 3 waves of a round
+- Added dedicated Draft Upgrades CSV (`DraftUpgrades.csv`) and `DraftUpgradeService` providing targeted weapon upgrades, elemental skill paths, and fortress enhancements
+- Added dedicated Weapon Ultimates: Warhorse Cavalry Charge for Sword (`SwordMountUltimate`) and Axe Vortex bloodstorm cyclone for Throwing Axe (`ThrowingAxeUltimate`) with rapid 3-way fan throws
+- Added category-themed lighting, emission, and interaction prompt feedback to arena powerups and the Rest Area Draft Station (Orange for Weapon, Cyan for Elemental, Golden Amber for Fortress)
+- Added specific visual effects for equipped weapons and dash trails when drafting elemental cards (Fire, Ice, Lightning, Poison)
+- Added new visual and sound effects for War Banners including a staggered slam-down animation on spawn, ground waypoints, and a burning sequence when selected
+
+### Fixes
+- Fixed an issue where activating an unlocked Warhorse Mount ultimate triggered the Arrow Stream ability instead by ensuring ultimate handlers are correctly configured across player hierarchy transforms and synchronized to the active loadout.
+- Fixed enemies pathing and flocking toward objective points (such as the supply wagon or prisoner cages) and idling without attacking; enemies now prioritize and path directly toward the player
+- Fixed a softlock where the game would freeze in an empty arena if a timed wave objective was failed
+- Fixed Chain Dash elemental upgrade failing to imbue the next melee swing with chain lightning
+- Fixed Axe charge attack failing when actively equipped via the new weapon loadout system
+- Fixed the game appearing to freeze after clearing a wave by displaying the intermission choice menu immediately, and fixed the pause menu breaking the camera when opened during the intermission
+- Fixed wave spawner occasionally exceeding the 20 concurrent enemy limit.
+- Fixed enemy health bars rendering inside the models of larger enemies (like Big Ork and Bosses) by dynamically checking height.
+- Fixed language settings changes failing to apply in the Main Menu.
+- Fixed an issue where objective waypoint markers remained on screen after destroying targets like catapults
+- Fixed player character getting stuck in air and unable to move when dismounting or after horse death mid-air
+- Fixed interaction prompt persisting indefinitely on screen after moving away from world interactables
+- Fixed inability to interact with the Merchant Shop by dynamically tracking character movement and expanding the shop stall interaction radius
+- Fixed missing EventSystem in Rest Area and Meta Area scenes preventing UI button clicks and modal inputs
+- Fixed enemies continuing to spawn during wave intermissions by strictly halting spawning when the wave quota is wiped
+- Fixed character upgrades and drafted in-run skills resetting when transitioning between the Battle Scene and Rest Area Scene
+- Fixed permanent meta perks (`backstab`, `executioner`, `second_wind`, `agility`) not functioning in gameplay
+- Fixed Rest Area Draft Station failing to open card drafts due to missing scene managers
+
+### Balance Changes
+- Adjusted Swarm-Blight Clan buff to regenerate a flat 2 HP per second
+- Bubblers will now only spawn in Round 3 (removed from Round 4).
+- Adjusted default tunables and mechanics for weapons and dash, and updated training dummy.
+- Enforced continuous enemy spawning during wagon escort objectives until the wagon reaches the destination
+- Introduced three-tier currency economy: In-Run Gold (temporary for rest shop), Goblin Blood (permanent for perks), and Orcish Metal (permanent for weapon/tier unlocks)
+- Capped maximum concurrent active enemies on the field to 20
+- Unlocked Dash and Bow by default from wave 1 without requiring skill purchases
+- Enforced weapon ultimate exclusivity permitting at most one active ultimate ability per run
+
+### General Changes
+- Added sound effects and floating popups when collecting Goblin Blood, Orcish Metal, and Gold resource rewards
+- Applied the dark fantasy parchment theme to the Meta Upgrades shop UI
+- Added Bladehold Rest Area Scene and Bladehold Meta Area Scene to project build settings
+- Preserved player health ratio, Troll Heart bonus health, and in-run upgrade tiers across scene transitions
+- Integrated Bladehold HUD, Pause Menu, and Settings Canvas across the Survivors battle scene, Rest Area, and Meta Area scenes
+- Disabled legacy level-up keybind prompt in favor of between-wave arena upgrade powerup drops
+- Supported both Space and Left Ctrl keys for triggering player Dash/Dodge
+
+---
+
 ## [0.1.14] - 2026-08-30
 
 ### New Features
@@ -164,3 +269,19 @@
 ### General Changes
 - Added hit sparks, screen shake, and impact sounds
 - Added Berserker and Mage skill tree preview panels
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

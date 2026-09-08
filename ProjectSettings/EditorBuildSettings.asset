@@ -10,10 +10,16 @@ EditorBuildSettings:
     guid: b17de6ce669ffa74c98cec3ef8bb56bc
   - enabled: 1
     path: Assets/Bladehold/Bladehold Scenes/Bladehold Rest Area Scene.unity
-    guid: 00000000000000000000000000000000
+    guid: 3b7b951e57e8aab44af1e330cf4af0dc
   - enabled: 1
     path: Assets/Bladehold/Bladehold Scenes/Bladehold Meta Area Scene.unity
-    guid: 00000000000000000000000000000000
+    guid: 6c2e0b96931a29b48a6ddc2fa3a62612
+  - enabled: 1
+    path: Assets/Synty/PolygonNatureBiomes/PNB_Enchanted_Forest/Scene/Enchanted_Forest_Demo_01.unity
+    guid: 198eb44694e31524baead99cabfac386
+  - enabled: 1
+    path: Assets/Synty/PolygonNatureBiomes/PNB_Alpine_Mountain/Scene/Alpine_Demo_URP.unity
+    guid: 7965bd3c6ddcfa14890967dbfe22ced2
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: 38f78d68449feb14783c9753605fe827, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

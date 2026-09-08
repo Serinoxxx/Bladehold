@@ -51,7 +51,7 @@ public class BattlePortal : MonoBehaviour
 
         if (Application.isPlaying)
         {
-            SceneManager.LoadScene(battleSceneName);
+            Bladehold.UI.LoadingScreenManager.Instance.LoadScene(battleSceneName);
         }
     }
 }

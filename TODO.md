@@ -1,5 +1,62 @@
 # Unity Editor Wiring TODOs
 
+## Heavy War Mace (2H Melee Weapon) Wiring & Verification
+
+C# implementation, asset definitions, and scene wiring are complete! The Mace is wired as Slot 2 in `Player.prefab` (`PlayerWeaponManager.meleeWeapons`), features blunt staggering, armor-shattering, and ground shockwave mechanics, includes 5 draft cards, and has a dedicated unlock pedestal in `Bladehold Meta Area Scene.unity`.
+
+- [x] Create `WeaponDefinitionSO` (`Assets/Bladehold/Bladehold Config/Weapons/mace.asset`) with 10 Metal cost and Melee category.
+- [x] Configure `2H_Mace` under `prop_r` socket on `Player.prefab` with `MeshFilter`, `MeshRenderer`, `MeshCollider`, `DamageTrigger`, `SwordHitFeedback`, `HitstopFeedback`, and `AudioSource`.
+- [x] Wire `2H_Mace` into `PlayerWeaponManager.meleeWeapons[2]` on `Player.prefab`.
+- [x] Add `MaceCombatController` and `MaceUltimate` components to `Player.prefab`.
+- [x] Create `Pedestal_Mace` in `Bladehold Meta Area Scene.unity` at `(-10, 0, 0)` with floating/rotating mace visual and unlock interaction.
+- [x] Automated in-editor integration tests in `SetupGameLoopAssets.RunFullGameLoopIntegrationTest()` passing.
+
+Manual verification:
+- [ ] Load into `Bladehold Meta Area Scene.unity` in Play Mode.
+- [ ] Walk up to the Mace pedestal, press `[E]` to unlock with 10 Orcish Metal, and press `[E]` again to equip.
+- [ ] Enter the Battle Portal into `Bladehold Survivors Scene.unity`.
+- [ ] Verify light attacks trigger 2H swings with concussive stagger, and charged heavy attacks unleash rock shockwaves.
+- [ ] Trigger Ultimate (`F` / North Gamepad button) to unleash the Seismic Quake radial ground slam.
+
+## Rest Area Multi-Door Exit & Meta Loading Screen Wiring
+
+C# implementation is complete! Multiple doors in the Rest Area can now lead to different scenes/stages with contextual HUD prompts, state persistence (`RunSession`), and an atmospheric loading screen displaying `"Entering [Area Name]"` with subtitles, lore, and progress bars.
+
+### 1. (Optional) Create AreaDefinitionSO Assets
+- [ ] In the Project window, right-click in `Assets/Bladehold/Config/` (or any subfolder) > **Create > Scriptable Objects > Bladehold > Area Definition**.
+- [ ] Configure the asset:
+  - **Scene Name**: Target Unity scene (e.g. `Bladehold Survivors Scene`).
+  - **Stage Number**: Stage 1-5.
+  - **Display Name**: Player-facing name (e.g. `Bladehold Fortress`, `Outer Ramparts`).
+  - **Subtitle**: Subtitle (e.g. `The Inner Gate`, `Perimeter Defense`).
+  - **Description**: Lore blurb or tips to show while loading.
+  - **Preview Sprite**: (Optional) Art or screenshot.
+  - **Door Prompt Format**: Default is `"Enter {0}"` (renders as `"Enter Outer Ramparts"`).
+
+### 2. Configure Exit Doors in Bladehold Rest Area Scene
+- [ ] Open `Assets/Bladehold/Bladehold Scenes/Bladehold Rest Area Scene.unity`.
+- [ ] Locate the existing `Station_4_ExitGate` or create duplicate door GameObjects for each exit path:
+  - Ensure each door has a Collider (e.g. Box Collider) set up for interaction.
+  - Ensure `Interactable` is attached.
+  - Attach `RestAreaDoor` (or keep `RestAreaGate` on the default exit):
+    - Assign an `AreaDefinitionSO` OR fill out the inspector fields directly (`Target Scene Name`, `Target Display Name`, `Target Subtitle`, etc.).
+    - (Optional) Set `Is Locked` or `Required Stage Unlocked` if this door requires progression.
+- [ ] Save the scene.
+
+### 3. (Optional) Custom Loading Screen Prefab
+- [ ] If you'd like to use a custom-styled Canvas instead of the built-in automatic fallback:
+  - Take the existing `LoadingScreen` GameObject from `Assets/Bladehold/Bladehold Scenes/MainMenu.unity` and save it as a Prefab under `Assets/Bladehold/Bladehold Prefabs/UI/LoadingScreen.prefab`.
+  - Attach `LoadingScreenUI` to its root.
+  - Wire its references (`logoLoadingFill`, `loadingBar`, `loadingText`, `enteringTitleText`, `subtitleText`, `descriptionText`, `previewImage`, `canvasGroup`).
+  - Drop this prefab into the `loadingScreenPrefab` slot on a `LoadingScreenManager` GameObject in the scene (or let `LoadingScreenManager` load it dynamically).
+
+Manual verification:
+- [ ] Enter Play Mode in `Bladehold Rest Area Scene`.
+- [ ] Walk up to each door; verify the HUD prompt displays `[E] Enter [Area Name]` (or custom text).
+- [ ] Press `[E]` to enter.
+- [ ] Verify the loading screen displays `"Entering [Area Name]"` with subtitle, description, and smooth progress fill.
+- [ ] Verify the target scene loads and player stats/upgrades are intact.
+
 ## Loadout System & Armour Sets Wiring
 
 C# refactoring is complete! The old `PlayerClassController` is gone, and the player now uses a mix-and-match Loadout system (`PlayerWeaponManager`) and an Armour Set system (`PlayerArmourManager`).

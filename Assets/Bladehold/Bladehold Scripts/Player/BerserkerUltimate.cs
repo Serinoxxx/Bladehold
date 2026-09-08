@@ -11,6 +11,12 @@ using UnityEngine;
 /// </summary>
 public class BerserkerUltimate : MonoBehaviour, IUltimateHandler
 {
+    [Header("Config")]
+    [Tooltip("Configuration ScriptableObject defining base duration and metadata.")]
+    [SerializeField] private UltimateConfigSO config;
+
+    public float BaseDuration => config != null && config.baseDuration > 0f ? config.baseDuration : 5f;
+
     [Header("Animation")]
     [Tooltip("Animator trigger sent to start the spinning whirlwind animation on the override layer.")]
     [SerializeField] private string startTrigger = "StartWhirlwind";
@@ -103,6 +109,7 @@ public class BerserkerUltimate : MonoBehaviour, IUltimateHandler
 
     public void Activate(PlayerUltimateController controller)
     {
+        FindDependencies();
         if (anyError || player == null || player.Stats == null)
         {
             controller?.EndUltimate();
@@ -111,7 +118,7 @@ public class BerserkerUltimate : MonoBehaviour, IUltimateHandler
 
         this.controller = controller;
         float duration = player.Stats.GetValue(StatType.UltimateDurationSeconds);
-        if (duration <= 0f) duration = 6f;
+        if (duration <= 0f) duration = BaseDuration;
 
         ultimateEndTime = Time.time + duration;
         isRunning = true;

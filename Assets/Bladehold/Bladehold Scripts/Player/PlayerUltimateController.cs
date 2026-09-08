@@ -13,6 +13,8 @@ public class PlayerUltimateController : MonoBehaviour
     public event Action OnUltimateDeactivated;
 
     public bool IsUltimateActive { get; private set; }
+    public float ActiveUltimateDuration { get; private set; }
+    public float ActiveUltimateRemainingTime { get; private set; }
 
     private Player player;
     private InputAction ultimateAction;
@@ -71,6 +73,8 @@ public class PlayerUltimateController : MonoBehaviour
 
         if (IsUltimateActive)
         {
+            ActiveUltimateRemainingTime = Mathf.Max(0f, ActiveUltimateRemainingTime - Time.deltaTime);
+
             float eyeDmg = player.Stats.GetValue(StatType.LightningEyeOfTheStormDamage);
             if (eyeDmg > 0f && Time.time >= nextEyeOfStormStrikeTime)
             {
@@ -237,11 +241,8 @@ public class PlayerUltimateController : MonoBehaviour
         CurrentCharge = Mathf.Clamp(amount, 0f, MaxCharge);
         RunSession.PlayerUltimateCharge = CurrentCharge;
 
-        if (!Mathf.Approximately(oldCharge, CurrentCharge))
-        {
-            Debug.Log($"[PlayerUltimateController] Charge explicitly set: {oldCharge:F1} -> {CurrentCharge:F1} / {MaxCharge}");
-            OnChargeChanged?.Invoke(CurrentCharge);
-        }
+        Debug.Log($"[PlayerUltimateController] Charge explicitly set: {oldCharge:F1} -> {CurrentCharge:F1} / {MaxCharge}");
+        OnChargeChanged?.Invoke(CurrentCharge);
     }
 
     public void AddCharge(float amount)
@@ -270,11 +271,48 @@ public class PlayerUltimateController : MonoBehaviour
 
     private void ActivateUltimate()
     {
+        SyncActiveUltimateHandler();
+
+        var handlers = transform.root.GetComponentsInChildren<IUltimateHandler>(true);
+        IUltimateHandler activeHandler = null;
+        foreach (var handler in handlers)
+        {
+            if (handler is MonoBehaviour mb && mb.enabled)
+            {
+                activeHandler = handler;
+                break; // Only one ultimate activates per run
+            }
+        }
+
+        if (activeHandler == null)
+        {
+            EndUltimate();
+            return;
+        }
+
+        float baseDur = activeHandler.BaseDuration;
+        if (player != null && player.Stats != null)
+        {
+            if (baseDur > 0f)
+            {
+                player.Stats.SetBase(StatType.UltimateDurationSeconds, baseDur);
+            }
+            float totalDuration = player.Stats.GetValue(StatType.UltimateDurationSeconds);
+            if (totalDuration <= 0f) totalDuration = baseDur > 0f ? baseDur : 5f;
+
+            ActiveUltimateDuration = totalDuration;
+            ActiveUltimateRemainingTime = totalDuration;
+        }
+        else
+        {
+            ActiveUltimateDuration = baseDur > 0f ? baseDur : 5f;
+            ActiveUltimateRemainingTime = ActiveUltimateDuration;
+        }
+
         IsUltimateActive = true;
         CurrentCharge = 0f;
         RunSession.PlayerUltimateCharge = 0f;
         nextEyeOfStormStrikeTime = 0f;
-        OnChargeChanged?.Invoke(CurrentCharge);
 
         OnUltimateActivated?.Invoke();
 
@@ -283,24 +321,7 @@ public class PlayerUltimateController : MonoBehaviour
             TriggerInfernoBurst();
         }
 
-        SyncActiveUltimateHandler();
-
-        var handlers = transform.root.GetComponentsInChildren<IUltimateHandler>(true);
-        bool handlerActivated = false;
-        foreach (var handler in handlers)
-        {
-            if (handler is MonoBehaviour mb && mb.enabled)
-            {
-                handler.Activate(this);
-                handlerActivated = true;
-                break; // Only one ultimate activates per run
-            }
-        }
-
-        if (!handlerActivated)
-        {
-            EndUltimate();
-        }
+        activeHandler.Activate(this);
     }
 
     public void SyncActiveUltimateHandler()
@@ -324,6 +345,16 @@ public class PlayerUltimateController : MonoBehaviour
         if (!string.IsNullOrEmpty(targetUltId))
         {
             DraftUpgradeService.ConfigureUltimateHandler(player, targetUltId);
+
+            var handlers = transform.root.GetComponentsInChildren<IUltimateHandler>(true);
+            foreach (var handler in handlers)
+            {
+                if (handler is MonoBehaviour mb && mb.enabled && handler.BaseDuration > 0f)
+                {
+                    player.Stats.SetBase(StatType.UltimateDurationSeconds, handler.BaseDuration);
+                    break;
+                }
+            }
         }
     }
 
@@ -337,7 +368,9 @@ public class PlayerUltimateController : MonoBehaviour
             meleeId = save != null && !string.IsNullOrEmpty(save.equippedMeleeWeapon) ? save.equippedMeleeWeapon.ToLower() : "sword";
         }
 
+        if (meleeId.Contains("mace")) return "mace_earthshaker_ult";
         if (meleeId.Contains("axe")) return "axe_bladestorm_ult";
+        if (meleeId.Contains("staff")) return "mage_skyfall_ult";
         if (meleeId.Contains("sword")) return "sword_mount_ult";
 
         // 2. Check ranged weapon
@@ -348,6 +381,7 @@ public class PlayerUltimateController : MonoBehaviour
             rangedId = save != null && !string.IsNullOrEmpty(save.equippedRangedWeapon) ? save.equippedRangedWeapon.ToLower() : "bow";
         }
 
+        if (rangedId.Contains("wand")) return "mage_skyfall_ult";
         if (rangedId.Contains("throwing") || rangedId.Contains("taxe")) return "taxe_vortex_ult";
         return "bow_stream_ult";
     }
@@ -464,11 +498,14 @@ public class PlayerUltimateController : MonoBehaviour
     {
         if (!IsUltimateActive) return;
         IsUltimateActive = false;
+        ActiveUltimateRemainingTime = 0f;
         OnUltimateDeactivated?.Invoke();
+        OnChargeChanged?.Invoke(CurrentCharge);
     }
 }
 
 public interface IUltimateHandler
 {
     void Activate(PlayerUltimateController controller);
+    float BaseDuration { get; }
 }

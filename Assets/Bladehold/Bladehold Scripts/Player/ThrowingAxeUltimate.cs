@@ -9,6 +9,12 @@ using UnityEngine;
 /// </summary>
 public class ThrowingAxeUltimate : MonoBehaviour, IUltimateHandler
 {
+    [Header("Config")]
+    [Tooltip("Configuration ScriptableObject defining base duration and metadata.")]
+    [SerializeField] private UltimateConfigSO config;
+
+    public float BaseDuration => config != null && config.baseDuration > 0f ? config.baseDuration : 7f;
+
     [Header("Vortex Properties")]
     [SerializeField] private int orbitBladeCount = 4;
     [SerializeField] private float orbitRadius = 2.5f;
@@ -54,8 +60,8 @@ public class ThrowingAxeUltimate : MonoBehaviour, IUltimateHandler
             return;
         }
 
-        float duration = player.Stats != null ? player.Stats.GetValue(StatType.UltimateDurationSeconds) : 7f;
-        if (duration <= 0f) duration = 7f;
+        float duration = player.Stats != null ? player.Stats.GetValue(StatType.UltimateDurationSeconds) : BaseDuration;
+        if (duration <= 0f) duration = BaseDuration;
 
         ultimateEndTime = Time.time + duration;
         isRunning = true;

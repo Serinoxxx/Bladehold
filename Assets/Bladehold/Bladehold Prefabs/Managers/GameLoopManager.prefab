@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &5654439144933082580
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7136255850546618526}
+  - component: {fileID: 8972233930406780696}
+  m_Layer: 0
+  m_Name: GameLoopManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7136255850546618526
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5654439144933082580}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8972233930406780696
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5654439144933082580}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e9beaf20a3c6084580c77f191c6b19a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameLoopManager
+  pacingConfig: {fileID: 11400000, guid: 05a42283cf759b840987dce67c54d35f, type: 2}
+  bannerConfig: {fileID: 11400000, guid: 339b6351a1964124db511340e2e89ca8, type: 2}
+  warBannerPrefab: {fileID: 4242448033862609563, guid: ee0e469c4b1454b4388fe2fa354eac9f, type: 3}
+  bannerSpawnPoints:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  intermissionVirtualCamera: {fileID: 0}
+  intermissionStatsPanel: {fileID: 0}
+  spawner: {fileID: 0}
+  castleGateInteractable: {fileID: 0}
+  objectiveManager: {fileID: 0}
+  bossSpawnPoint: {fileID: 0}
+  siegebreakerBossPrefab: {fileID: 0}
+  upgradePowerupSpawnPoint: {fileID: 0}
+  upgradePowerupPrefab: {fileID: 0}
+  waveAnnouncementText: {fileID: 0}
+  intermissionTimerText: {fileID: 0}
+  rewardNotificationText: {fileID: 0}
+  intermissionBanner: {fileID: 0}
+  victoryScreen: {fileID: 0}
+  goldPopupPrefab: {fileID: 5445448510257546009, guid: 0c337af341cc6e840986619c86ca00fb, type: 3}
+  metalPopupPrefab: {fileID: 7212774677060581359, guid: daf7aed4cdbc39d4f82ca1db658db4ee, type: 3}
+  bloodPopupPrefab: {fileID: 1192120745535362886, guid: 93673a9b375f96a4ca575e11f2d5a90c, type: 3}
+  rewardSfx: {fileID: 8300000, guid: 774311a6c62694c269df1de5a61a42f7, type: 3}

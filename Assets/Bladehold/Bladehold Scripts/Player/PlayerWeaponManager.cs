@@ -76,7 +76,11 @@ public class PlayerWeaponManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null)
+        if (meleeWeapons != null && meleeWeapons.Length > 0)
+        {
+            Instance = this;
+        }
+        else if (Instance == null)
         {
             Instance = this;
         }
@@ -396,5 +400,142 @@ public class PlayerWeaponManager : MonoBehaviour
         HandleElementalSlotChanged("SLOT_RANGED", RunSession.ElementalSlots.GetValueOrDefault("SLOT_RANGED", ""));
         OnRangedChanged?.Invoke(ActiveRangedDefinition);
         OnWeaponLoadoutChanged?.Invoke();
+    }
+
+    /// <summary>
+    ///     Gets the active PlayerWeaponManager instance, ensuring it is a populated manager with weapons wired.
+    /// </summary>
+    public static PlayerWeaponManager GetInstance()
+    {
+        if (Instance != null && Instance.meleeWeapons != null && Instance.meleeWeapons.Length > 0)
+        {
+            return Instance;
+        }
+
+        if (Player.Instance != null)
+        {
+            foreach (var pwm in Player.Instance.transform.root.GetComponentsInChildren<PlayerWeaponManager>(true))
+            {
+                if (pwm != null && pwm.meleeWeapons != null && pwm.meleeWeapons.Length > 0)
+                {
+                    Instance = pwm;
+                    return pwm;
+                }
+            }
+        }
+
+        var all = FindObjectsByType<PlayerWeaponManager>(FindObjectsSortMode.None);
+        foreach (var pwm in all)
+        {
+            if (pwm != null && pwm.meleeWeapons != null && pwm.meleeWeapons.Length > 0)
+            {
+                Instance = pwm;
+                return pwm;
+            }
+        }
+
+        return Instance;
+    }
+
+    /// <summary>
+    ///     Cycles to the previous (-1) or next (+1) melee weapon and equips it, optionally updating SaveData.
+    /// </summary>
+    public void CycleMeleeWeapon(int direction = 1, bool updateSave = true)
+    {
+        if (meleeWeapons == null || meleeWeapons.Length == 0)
+        {
+            var valid = GetInstance();
+            if (valid != null && valid != this)
+            {
+                valid.CycleMeleeWeapon(direction, updateSave);
+            }
+            return;
+        }
+
+        int currentIndex = -1;
+        for (int i = 0; i < meleeWeapons.Length; i++)
+        {
+            if (meleeWeapons[i].definition != null && string.Equals(meleeWeapons[i].definition.id, currentMeleeId, StringComparison.OrdinalIgnoreCase))
+            {
+                currentIndex = i;
+                break;
+            }
+        }
+
+        int nextIndex = (currentIndex + direction) % meleeWeapons.Length;
+        if (nextIndex < 0) nextIndex += meleeWeapons.Length;
+
+        if (meleeWeapons[nextIndex].definition != null)
+        {
+            string newId = meleeWeapons[nextIndex].definition.id;
+            EquipMelee(newId);
+            Debug.Log($"[PlayerWeaponManager] Cycled melee weapon to: {newId} ({meleeWeapons[nextIndex].definition.displayName})");
+
+            if (updateSave)
+            {
+                SaveData data = SaveSystem.Load();
+                if (data != null)
+                {
+                    data.equippedMeleeWeapon = newId;
+                    if (data.unlockedWeapons == null) data.unlockedWeapons = new List<string>();
+                    if (!data.unlockedWeapons.Contains(newId))
+                    {
+                        data.unlockedWeapons.Add(newId);
+                    }
+                    SaveSystem.Save(data);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Cycles to the previous (-1) or next (+1) ranged weapon and equips it, optionally updating SaveData.
+    /// </summary>
+    public void CycleRangedWeapon(int direction = 1, bool updateSave = true)
+    {
+        if (rangedWeapons == null || rangedWeapons.Length == 0)
+        {
+            var valid = GetInstance();
+            if (valid != null && valid != this)
+            {
+                valid.CycleRangedWeapon(direction, updateSave);
+            }
+            return;
+        }
+
+        int currentIndex = -1;
+        for (int i = 0; i < rangedWeapons.Length; i++)
+        {
+            if (rangedWeapons[i].definition != null && string.Equals(rangedWeapons[i].definition.id, currentRangedId, StringComparison.OrdinalIgnoreCase))
+            {
+                currentIndex = i;
+                break;
+            }
+        }
+
+        int nextIndex = (currentIndex + direction) % rangedWeapons.Length;
+        if (nextIndex < 0) nextIndex += rangedWeapons.Length;
+
+        if (rangedWeapons[nextIndex].definition != null)
+        {
+            string newId = rangedWeapons[nextIndex].definition.id;
+            EquipRanged(newId);
+            Debug.Log($"[PlayerWeaponManager] Cycled ranged weapon to: {newId} ({rangedWeapons[nextIndex].definition.displayName})");
+
+            if (updateSave)
+            {
+                SaveData data = SaveSystem.Load();
+                if (data != null)
+                {
+                    data.equippedRangedWeapon = newId;
+                    if (data.unlockedWeapons == null) data.unlockedWeapons = new List<string>();
+                    if (!data.unlockedWeapons.Contains(newId))
+                    {
+                        data.unlockedWeapons.Add(newId);
+                    }
+                    SaveSystem.Save(data);
+                }
+            }
+        }
     }
 }

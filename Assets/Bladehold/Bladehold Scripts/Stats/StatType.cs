@@ -370,6 +370,13 @@ public enum StatType
     // --- Ultimates ---
     UltimateSwordMountUnlocked,
     UltimateThrowingAxeVortexUnlocked,
+    UltimateMaceEarthquakeUnlocked,
+
+    // --- 2H Mace Upgrades ---
+    MaceArmorShatterBonus,
+    MaceStunDuration,
+    MaceShockwaveDamage,
+    MaceKnockbackMultiplier,
 }
 
 /// <summary>

@@ -14,10 +14,10 @@ public class DevConsole : MonoBehaviour
     public static DevConsole Instance { get; private set; }
     public static bool IsVisible => Instance != null && Instance.visible;
 
-    private const float PanelWidth = 220f;
-    private const float SkillsPanelWidth = 320f;
+    private const float PanelWidth = 260f;
+    private const float SkillsPanelWidth = 360f;
     private const float Padding = 10f;
-    private const float ButtonHeight = 32f;
+    private const float ButtonHeight = 30f;
     private const string NextWaveFieldName = "DevConsoleNextWave";
 
     private bool visible;
@@ -26,8 +26,29 @@ public class DevConsole : MonoBehaviour
     private int objectiveIndex;
     private int classIndex = -1;
     private bool isGodMode;
+    private Vector2 mainScrollPos;
     private Vector2 skillsScrollPos;
+    private Vector2 draftScrollPos;
+    private int activeRightPanelTab = 0;
+    private DraftCategory draftFilter = DraftCategory.Weapon;
+    private bool filterAllDrafts = true;
+    private int selectedUltimateIndex = 0;
     private Health subscribedHealth;
+
+    private struct UltimateOption
+    {
+        public string id;
+        public string displayName;
+    }
+
+    private static readonly UltimateOption[] AvailableUltimates = new[]
+    {
+        new UltimateOption { id = "sword_mount_ult", displayName = "Warhorse Mount" },
+        new UltimateOption { id = "axe_bladestorm_ult", displayName = "Bladestorm" },
+        new UltimateOption { id = "bow_stream_ult", displayName = "Arrow Stream" },
+        new UltimateOption { id = "taxe_vortex_ult", displayName = "Axe Vortex" },
+        new UltimateOption { id = "mace_earthshaker_ult", displayName = "Seismic Quake" },
+    };
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Bootstrap()
@@ -117,26 +138,47 @@ public class DevConsole : MonoBehaviour
         }
 
         GUILayout.BeginArea(new Rect(Padding, Padding, PanelWidth, Screen.height - 2f * Padding), GUI.skin.box);
-        GUILayout.Label("Dev Console");
+        GUILayout.Label("Dev Console", new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold });
+        mainScrollPos = GUILayout.BeginScrollView(mainScrollPos, false, false);
         DrawButtons();
+        GUILayout.EndScrollView();
         GUILayout.EndArea();
 
-        DrawSkillsColumn();
+        DrawRightPanel();
     }
 
-    private void DrawSkillsColumn()
+    private void DrawRightPanel()
     {
-        SkillTreeService service = SkillTreeService.Instance;
-        if (service == null || service.Tree == null || service.Tree.Nodes == null)
-        {
-            return;
-        }
-
-        var nodes = service.Tree.Nodes;
         float x = Padding + PanelWidth + Padding;
         float height = Screen.height - 2f * Padding;
 
         GUILayout.BeginArea(new Rect(x, Padding, SkillsPanelWidth, height), GUI.skin.box);
+
+        activeRightPanelTab = GUILayout.Toolbar(activeRightPanelTab, new string[] { "Meta Skills (Gold)", "Draft Abilities" }, GUILayout.Height(28f));
+        GUILayout.Space(6f);
+
+        if (activeRightPanelTab == 0)
+        {
+            DrawMetaSkillsTab();
+        }
+        else
+        {
+            DrawDraftAbilitiesTab();
+        }
+
+        GUILayout.EndArea();
+    }
+
+    private void DrawMetaSkillsTab()
+    {
+        SkillTreeService service = SkillTreeService.Instance;
+        if (service == null || service.Tree == null || service.Tree.Nodes == null)
+        {
+            GUILayout.Label("SkillTreeService not ready.");
+            return;
+        }
+
+        var nodes = service.Tree.Nodes;
         GUILayout.Label($"Skill Upgrades ({nodes.Count})");
 
         GUILayout.BeginHorizontal();
@@ -188,7 +230,90 @@ public class DevConsole : MonoBehaviour
         }
 
         GUILayout.EndScrollView();
-        GUILayout.EndArea();
+    }
+
+    private void DrawDraftAbilitiesTab()
+    {
+        DraftUpgradeService service = DraftUpgradeService.GetOrCreateInstance();
+        if (service == null || service.AllDefinitions == null)
+        {
+            GUILayout.Label("DraftUpgradeService not ready.");
+            return;
+        }
+
+        var allDrafts = service.AllDefinitions;
+        GUILayout.Label($"Draft Abilities ({allDrafts.Count})");
+
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Max All", GUILayout.Height(ButtonHeight)))
+        {
+            service.DebugMaxAllDrafts(true);
+        }
+        if (GUILayout.Button("Reset All", GUILayout.Height(ButtonHeight)))
+        {
+            service.DebugResetAllDrafts();
+        }
+        GUILayout.EndHorizontal();
+
+        GUILayout.Space(4f);
+        GUILayout.Label("Filter Category:");
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Toggle(filterAllDrafts, "All", GUI.skin.button, GUILayout.Height(24f)))
+        {
+            filterAllDrafts = true;
+        }
+        if (GUILayout.Toggle(!filterAllDrafts && draftFilter == DraftCategory.Weapon, "Wep", GUI.skin.button, GUILayout.Height(24f)))
+        {
+            filterAllDrafts = false;
+            draftFilter = DraftCategory.Weapon;
+        }
+        if (GUILayout.Toggle(!filterAllDrafts && draftFilter == DraftCategory.Elemental, "Elem", GUI.skin.button, GUILayout.Height(24f)))
+        {
+            filterAllDrafts = false;
+            draftFilter = DraftCategory.Elemental;
+        }
+        if (GUILayout.Toggle(!filterAllDrafts && draftFilter == DraftCategory.Fortress, "Fort", GUI.skin.button, GUILayout.Height(24f)))
+        {
+            filterAllDrafts = false;
+            draftFilter = DraftCategory.Fortress;
+        }
+        GUILayout.EndHorizontal();
+
+        GUILayout.Space(4f);
+        draftScrollPos = GUILayout.BeginScrollView(draftScrollPos, false, true);
+
+        foreach (DraftUpgradeDefinition def in allDrafts)
+        {
+            if (def == null) continue;
+            if (!filterAllDrafts && def.category != draftFilter) continue;
+
+            int curLevel = RunSession.GetUpgradeLevel(def.id);
+            string name = string.IsNullOrEmpty(def.displayName) ? def.id : def.displayName;
+            string badge = def.isUltimate ? " [ULT]" : "";
+            string label = $"{name}{badge} [{curLevel}/{def.maxLevel}]";
+
+            GUILayout.BeginHorizontal();
+
+            GUI.enabled = curLevel > 0;
+            if (GUILayout.Button("<", GUILayout.Width(28f), GUILayout.Height(24f)))
+            {
+                service.DebugSetDraftLevel(def, curLevel - 1);
+            }
+
+            GUI.enabled = true;
+            GUILayout.Label(label, GUILayout.ExpandWidth(true));
+
+            GUI.enabled = curLevel < def.maxLevel;
+            if (GUILayout.Button(">", GUILayout.Width(28f), GUILayout.Height(24f)))
+            {
+                service.DebugSetDraftLevel(def, curLevel + 1);
+            }
+            GUI.enabled = true;
+
+            GUILayout.EndHorizontal();
+        }
+
+        GUILayout.EndScrollView();
     }
 
     private void DrawButtons()
@@ -218,6 +343,11 @@ public class DevConsole : MonoBehaviour
             }
         }
 
+        DrawWeaponControls();
+        DrawArmourControls();
+        DrawUltimateControls();
+        DrawDraftControls();
+
         DrawWaveControls();
         DrawObjectiveControls();
         DrawEnemySpawnControls();
@@ -246,6 +376,194 @@ public class DevConsole : MonoBehaviour
             Time.timeScale = GameSettingsService.TargetTimeScale; // ensure normal speed resumes even if something paused time on death.
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
+    }
+
+    private PlayerWeaponManager GetWeaponManager()
+    {
+        return PlayerWeaponManager.GetInstance();
+    }
+
+    private PlayerUltimateController GetUltimateController()
+    {
+        if (Player.Instance != null)
+        {
+            var ctrl = Player.Instance.transform.root.GetComponentInChildren<PlayerUltimateController>(true);
+            if (ctrl != null) return ctrl;
+        }
+        return FindFirstObjectByType<PlayerUltimateController>();
+    }
+
+    private void DrawWeaponControls()
+    {
+        PlayerWeaponManager pwm = GetWeaponManager();
+
+        if (pwm != null)
+        {
+            // Melee Weapon
+            string meleeName = pwm.ActiveMeleeDefinition != null ? pwm.ActiveMeleeDefinition.displayName : pwm.CurrentMeleeId;
+            GUILayout.Label($"Melee Weapon: {meleeName}");
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("<", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
+            {
+                pwm.CycleMeleeWeapon(-1);
+            }
+            if (GUILayout.Button("Cycle Melee", GUILayout.Height(ButtonHeight)))
+            {
+                pwm.CycleMeleeWeapon(1);
+            }
+            if (GUILayout.Button(">", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
+            {
+                pwm.CycleMeleeWeapon(1);
+            }
+            GUILayout.EndHorizontal();
+
+            // Ranged Weapon
+            string rangedName = pwm.ActiveRangedDefinition != null ? pwm.ActiveRangedDefinition.displayName : pwm.CurrentRangedId;
+            GUILayout.Label($"Ranged Weapon: {rangedName}");
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("<", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
+            {
+                pwm.CycleRangedWeapon(-1);
+            }
+            if (GUILayout.Button("Cycle Ranged", GUILayout.Height(ButtonHeight)))
+            {
+                pwm.CycleRangedWeapon(1);
+            }
+            if (GUILayout.Button(">", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
+            {
+                pwm.CycleRangedWeapon(1);
+            }
+            GUILayout.EndHorizontal();
+        }
+    }
+
+    private void DrawArmourControls()
+    {
+        PlayerArmourManager pam = PlayerArmourManager.Instance;
+        if (pam == null && Player.Instance != null)
+        {
+            pam = Player.Instance.GetComponentInChildren<PlayerArmourManager>();
+        }
+
+        if (pam != null && pam.availableArmourSets != null && pam.availableArmourSets.Length > 0)
+        {
+            string armourName = pam.ActiveArmourSet != null ? pam.ActiveArmourSet.displayName : "Default";
+            GUILayout.Label($"Armour Set: {armourName}");
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("<", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
+            {
+                pam.CycleArmour(-1);
+            }
+            if (GUILayout.Button("Cycle Armour", GUILayout.Height(ButtonHeight)))
+            {
+                pam.CycleArmour(1);
+            }
+            if (GUILayout.Button(">", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
+            {
+                pam.CycleArmour(1);
+            }
+            GUILayout.EndHorizontal();
+        }
+    }
+
+    private void DrawUltimateControls()
+    {
+        selectedUltimateIndex = Mathf.Clamp(selectedUltimateIndex, 0, AvailableUltimates.Length - 1);
+        UltimateOption opt = AvailableUltimates[selectedUltimateIndex];
+
+        GUILayout.Label($"Ultimate: {opt.displayName}");
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("<", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
+        {
+            selectedUltimateIndex = (selectedUltimateIndex - 1 + AvailableUltimates.Length) % AvailableUltimates.Length;
+        }
+        if (GUILayout.Button("Cycle Ult", GUILayout.Height(ButtonHeight)))
+        {
+            selectedUltimateIndex = (selectedUltimateIndex + 1) % AvailableUltimates.Length;
+        }
+        if (GUILayout.Button(">", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
+        {
+            selectedUltimateIndex = (selectedUltimateIndex + 1) % AvailableUltimates.Length;
+        }
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Unlock Ult", GUILayout.Height(ButtonHeight)))
+        {
+            UnlockSelectedUltimate(opt.id);
+        }
+        if (GUILayout.Button("Fill Charge 100%", GUILayout.Height(ButtonHeight)))
+        {
+            FillUltimateCharge();
+        }
+        GUILayout.EndHorizontal();
+    }
+
+    private void UnlockSelectedUltimate(string ultId)
+    {
+        Player player = Player.Instance;
+        if (player != null && player.Stats != null)
+        {
+            player.Stats.SetBase(StatType.UltimateUnlocked, 1f);
+            RunSession.ActiveUltimateId = ultId;
+            DraftUpgradeService.ConfigureUltimateHandler(player, ultId);
+
+            DraftUpgradeService draftService = DraftUpgradeService.GetOrCreateInstance();
+            if (draftService != null)
+            {
+                var def = draftService.GetById(ultId);
+                if (def != null)
+                {
+                    RunSession.SetUpgradeLevel(def.id, 1);
+                }
+            }
+            Debug.Log($"[DevConsole] Unlocked and configured ultimate: {ultId}");
+        }
+    }
+
+    private void FillUltimateCharge()
+    {
+        Player player = Player.Instance != null ? Player.Instance : FindFirstObjectByType<Player>();
+        PlayerUltimateController ultCtrl = GetUltimateController();
+
+        if (player != null && player.Stats != null)
+        {
+            player.Stats.SetBase(StatType.UltimateUnlocked, 1f);
+            if (string.IsNullOrEmpty(RunSession.ActiveUltimateId))
+            {
+                selectedUltimateIndex = Mathf.Clamp(selectedUltimateIndex, 0, AvailableUltimates.Length - 1);
+                RunSession.ActiveUltimateId = AvailableUltimates[selectedUltimateIndex].id;
+            }
+            DraftUpgradeService.ConfigureUltimateHandler(player, RunSession.ActiveUltimateId);
+        }
+
+        if (ultCtrl != null)
+        {
+            ultCtrl.SetCharge(PlayerUltimateController.MaxCharge);
+            Debug.Log($"[DevConsole] Ultimate charge set to {PlayerUltimateController.MaxCharge:F0}%. Active ult: {RunSession.ActiveUltimateId}. Press Q to unleash!");
+        }
+        else
+        {
+            Debug.LogError("[DevConsole] Failed to find PlayerUltimateController in scene!");
+        }
+    }
+
+    private void DrawDraftControls()
+    {
+        DraftUpgradeService draftService = DraftUpgradeService.GetOrCreateInstance();
+        if (draftService == null) return;
+
+        GUILayout.Label("In-Run Draft Cheats");
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Max All Drafts", GUILayout.Height(ButtonHeight)))
+        {
+            draftService.DebugMaxAllDrafts(true);
+        }
+        if (GUILayout.Button("Reset Drafts", GUILayout.Height(ButtonHeight)))
+        {
+            draftService.DebugResetAllDrafts();
+        }
+        GUILayout.EndHorizontal();
     }
 
     /// <summary>

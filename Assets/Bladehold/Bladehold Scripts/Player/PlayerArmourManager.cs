@@ -10,6 +10,8 @@ using UnityEngine;
 /// </summary>
 public class PlayerArmourManager : MonoBehaviour
 {
+    public static PlayerArmourManager Instance { get; private set; }
+
     [Tooltip("The player rig's Animator. Synty rigs keep it on a child.")]
     [SerializeField] private Animator animator;
     [SerializeField] private PlayerStats stats;
@@ -53,6 +55,11 @@ public class PlayerArmourManager : MonoBehaviour
 
     private void Awake()
     {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+
         ResolveDependencies();
         CaptureAuthoredRenderers();
 
@@ -85,6 +92,14 @@ public class PlayerArmourManager : MonoBehaviour
         if (activeArmourSet != null && stats != null)
         {
             ApplyModifiers(activeArmourSet);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
         }
     }
 
@@ -138,6 +153,11 @@ public class PlayerArmourManager : MonoBehaviour
         if (data != null)
         {
             data.equippedArmourSet = newArmourSet.id;
+            if (data.unlockedArmourSets == null) data.unlockedArmourSets = new List<string>();
+            if (!data.unlockedArmourSets.Contains(newArmourSet.id))
+            {
+                data.unlockedArmourSets.Add(newArmourSet.id);
+            }
             SaveSystem.Save(data);
         }
 
@@ -148,6 +168,33 @@ public class PlayerArmourManager : MonoBehaviour
         }
 
         Debug.Log($"[PlayerArmourManager] Equipped armour: {newArmourSet.displayName}!");
+    }
+
+    /// <summary>
+    ///     Cycles to the previous (-1) or next (+1) available armour set and equips it.
+    /// </summary>
+    public void CycleArmour(int direction = 1)
+    {
+        if (availableArmourSets == null || availableArmourSets.Length == 0) return;
+
+        int currentIndex = -1;
+        for (int i = 0; i < availableArmourSets.Length; i++)
+        {
+            if (availableArmourSets[i] == activeArmourSet || 
+                (activeArmourSet != null && availableArmourSets[i] != null && string.Equals(availableArmourSets[i].id, activeArmourSet.id, StringComparison.OrdinalIgnoreCase)))
+            {
+                currentIndex = i;
+                break;
+            }
+        }
+
+        int nextIndex = (currentIndex + direction) % availableArmourSets.Length;
+        if (nextIndex < 0) nextIndex += availableArmourSets.Length;
+
+        if (availableArmourSets[nextIndex] != null)
+        {
+            EquipArmour(availableArmourSets[nextIndex], true);
+        }
     }
 
     private void ApplyModifiers(ArmourSetSO set)

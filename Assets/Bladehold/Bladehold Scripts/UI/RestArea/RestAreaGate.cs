@@ -10,6 +10,8 @@ public class RestAreaGate : MonoBehaviour
 {
     [SerializeField] private string battleSceneName = "Bladehold Survivors Scene";
 
+    [SerializeField] private Bladehold.UI.AreaDefinitionSO areaDefinition;
+
     private Interactable interactable;
 
     public void Initialize()
@@ -19,7 +21,15 @@ public class RestAreaGate : MonoBehaviour
             interactable = GetComponent<Interactable>();
             if (interactable != null)
             {
-                interactable.PromptText = "Return to Battle";
+                if (areaDefinition != null)
+                {
+                    interactable.PromptText = areaDefinition.GetDoorPrompt();
+                }
+                else
+                {
+                    interactable.PromptText = "Return to Battle";
+                }
+                interactable.OnInteractedEvent -= HandleReturnToBattle;
                 interactable.OnInteractedEvent += HandleReturnToBattle;
             }
         }
@@ -84,7 +94,14 @@ public class RestAreaGate : MonoBehaviour
 
         if (Application.isPlaying)
         {
-            SceneManager.LoadScene(battleSceneName);
+            if (areaDefinition != null)
+            {
+                Bladehold.UI.LoadingScreenManager.Instance.LoadArea(areaDefinition);
+            }
+            else
+            {
+                Bladehold.UI.LoadingScreenManager.Instance.LoadScene(battleSceneName);
+            }
         }
     }
 }
