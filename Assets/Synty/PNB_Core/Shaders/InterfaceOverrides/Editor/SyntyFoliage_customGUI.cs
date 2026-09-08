@@ -91,7 +91,7 @@ public class SyntyFoliage_customGUI : ShaderGUI
             int renderFace = (int)material.GetFloat("_BUILTIN_CullMode");
             renderFace = EditorGUILayout.Popup("Render Face", renderFace, new string[] { "Both", "Back", "Front" });
             material.SetFloat("_BUILTIN_CullMode", renderFace);
-            
+
             // Alpha Clipping
             bool alphaClip = material.GetFloat("_BUILTIN_AlphaClip") == 1;
             alphaClip = EditorGUILayout.Toggle("Alpha Clipping", alphaClip);
@@ -108,10 +108,6 @@ public class SyntyFoliage_customGUI : ShaderGUI
                 material.DisableKeyword("_BUILTIN_AlphaClip");
             }
 
-            // Back Face Lighting
-            bool backFaceLighting = material.GetFloat("_Enable_Back_Face_Lighting") == 1;
-            backFaceLighting = EditorGUILayout.Toggle("Enable Back Face Lighting", backFaceLighting);
-            material.SetFloat("_Enable_Back_Face_Lighting", backFaceLighting ? 1 : 0);
 
             EditorGUILayout.EndVertical();
             EditorGUILayout.Separator();
@@ -178,10 +174,6 @@ public class SyntyFoliage_customGUI : ShaderGUI
                 material.DisableKeyword("_ALPHABLEND_ON");
             }
 
-            // Back Face Lighting
-            bool backFaceLightingURP = material.GetFloat("_Enable_Back_Face_Lighting") == 1;
-            backFaceLightingURP = EditorGUILayout.Toggle("Enable Back Face Lighting", backFaceLightingURP);
-            material.SetFloat("_Enable_Back_Face_Lighting", backFaceLightingURP ? 1 : 0);
 
             EditorGUILayout.EndVertical();
 
