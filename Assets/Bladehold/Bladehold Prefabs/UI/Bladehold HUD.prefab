@@ -9525,6 +9525,7 @@ MonoBehaviour:
   readyColor: {r: 1, g: 1, b: 1, a: 1}
   cooldownFinishedFeedback: {fileID: 0}
   activatedFeedback: {fileID: 0}
+  playerDodge: {fileID: 0}
   rootContainer: {fileID: 0}
 --- !u!1 &4510904472361703529
 GameObject:

@@ -28,7 +28,7 @@ public class PlayerDodgeUI : MonoBehaviour
     public MMF_Player activatedFeedback;
 
     private PlayerInput playerInput;
-    private PlayerDodge playerDodge;
+    [SerializeField]private PlayerDodge playerDodge;
     private bool anyError;
 
     private void Start()
@@ -50,7 +50,9 @@ public class PlayerDodgeUI : MonoBehaviour
 
         if (Player.Instance != null)
         {
-            playerDodge = Player.Instance.GetComponentInChildren<PlayerDodge>();
+            if (playerDodge == null)
+                playerDodge = Player.Instance.transform.root.GetComponentInChildren<PlayerDodge>();
+
             if (playerDodge != null)
             {
                 playerDodge.OnCooldownUpdated += HandleCooldownUpdated;

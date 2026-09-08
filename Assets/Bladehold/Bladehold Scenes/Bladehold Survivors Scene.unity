@@ -52939,6 +52939,10 @@ PrefabInstance:
       propertyPath: ultimateController
       value: 
       objectReference: {fileID: 333608211}
+    - target: {fileID: 7953429344002710357, guid: b7b1623129186884eb3f2419ca4ed3b5, type: 3}
+      propertyPath: playerDodge
+      value: 
+      objectReference: {fileID: 1471638553}
     - target: {fileID: 8132204974845055268, guid: b7b1623129186884eb3f2419ca4ed3b5, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
