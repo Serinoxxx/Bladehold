@@ -120,6 +120,7 @@ Material:
     - _DstBlendAlpha: 0
     - _EmissiveAmount: 0
     - _Emissive_Amount: 0
+    - _Enable_Back_Face_Lighting: 0
     - _Enable_Breeze: 1
     - _Enable_Emission: 0
     - _Enable_Frosting: 0
