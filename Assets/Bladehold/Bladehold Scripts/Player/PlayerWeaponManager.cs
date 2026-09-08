@@ -42,6 +42,12 @@ public class PlayerWeaponManager : MonoBehaviour
     [SerializeField] private ChainLightning chainLightning;
     [SerializeField] private ImpulseHitFeedback impulseHitFeedback;
     [SerializeField] private PlayerMount playerMount;
+    [SerializeField] private PlayerBow playerBow;
+    [SerializeField] private PlayerThrownAxe playerThrownAxe;
+
+    public static event Action OnWeaponLoadoutChanged;
+    public event Action<WeaponDefinitionSO> OnMeleeChanged;
+    public event Action<WeaponDefinitionSO> OnRangedChanged;
 
     [Header("Elemental VFX Prefabs")]
     [SerializeField] private GameObject fireWeaponVfxPrefab;
@@ -248,6 +254,8 @@ public class PlayerWeaponManager : MonoBehaviour
         if (chainLightning == null) chainLightning = GetComponentInChildren<ChainLightning>();
         if (impulseHitFeedback == null) impulseHitFeedback = GetComponentInChildren<ImpulseHitFeedback>();
         if (playerMount == null) playerMount = GetComponentInChildren<PlayerMount>();
+        if (playerBow == null) playerBow = GetComponentInChildren<PlayerBow>(true);
+        if (playerThrownAxe == null) playerThrownAxe = GetComponentInChildren<PlayerThrownAxe>(true);
     }
 
     /// <summary>
@@ -271,6 +279,7 @@ public class PlayerWeaponManager : MonoBehaviour
     public void EquipMelee(string weaponId)
     {
         currentMeleeId = weaponId;
+        AutoFindReferences();
         
         foreach (var slot in meleeWeapons)
         {
@@ -328,8 +337,21 @@ public class PlayerWeaponManager : MonoBehaviour
                 }
                 
                 ApplyAnimatorWeaponType(ActiveMeleeDefinition.animatorWeaponType);
+
+                if (playerBow != null)
+                {
+                    playerBow.SetMeleeWeaponModel(slot.weaponObject);
+                }
+                if (playerThrownAxe != null)
+                {
+                    playerThrownAxe.SetMeleeWeaponModel(slot.weaponObject);
+                }
             }
         }
+
+        HandleElementalSlotChanged("SLOT_MELEE", RunSession.ElementalSlots.GetValueOrDefault("SLOT_MELEE", ""));
+        OnMeleeChanged?.Invoke(ActiveMeleeDefinition);
+        OnWeaponLoadoutChanged?.Invoke();
     }
 
     private void ApplyAnimatorWeaponType(int typeInt)
@@ -351,6 +373,7 @@ public class PlayerWeaponManager : MonoBehaviour
     public void EquipRanged(string weaponId)
     {
         currentRangedId = weaponId;
+        AutoFindReferences();
         
         foreach (var slot in rangedWeapons)
         {
@@ -369,5 +392,9 @@ public class PlayerWeaponManager : MonoBehaviour
                 ActiveAimWeapon = slot.aimWeaponComponent as IChargedAimWeapon;
             }
         }
+
+        HandleElementalSlotChanged("SLOT_RANGED", RunSession.ElementalSlots.GetValueOrDefault("SLOT_RANGED", ""));
+        OnRangedChanged?.Invoke(ActiveRangedDefinition);
+        OnWeaponLoadoutChanged?.Invoke();
     }
 }

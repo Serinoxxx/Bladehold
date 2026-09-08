@@ -29,6 +29,10 @@ public class SurvivorsCardSelectUI : MonoBehaviour
     [Tooltip("Right-side player info and acquired skills sidebar.")]
     [SerializeField] private SurvivorsPlayerInfoSidebarUI sidebar;
 
+    [Header("Icon Lookup (optional)")]
+    [Tooltip("Central skill tree icons asset for resolving draft icons when SkillTreeService is absent.")]
+    [SerializeField] private SkillTreeIconsSO iconsConfig;
+
     [Header("Click Protection & Transition")]
     [Tooltip("Delay in seconds before cards become interactable after modal opens (default: 0.5s).")]
     [SerializeField] private float clickDelaySeconds = 0.5f;
@@ -68,6 +72,11 @@ public class SurvivorsCardSelectUI : MonoBehaviour
         if (sidebar == null)
         {
             sidebar = GetComponentInChildren<SurvivorsPlayerInfoSidebarUI>(true);
+        }
+
+        if (iconsConfig == null)
+        {
+            iconsConfig = Resources.Load<SkillTreeIconsSO>("SkillTreeIcons");
         }
     }
 
@@ -192,6 +201,35 @@ public class SurvivorsCardSelectUI : MonoBehaviour
         enableButtonsCoroutine = null;
     }
 
+    /// <summary>
+    ///     Resolves a sprite icon by name via configured SkillTreeIconsSO, DraftUpgradeService, or fallback.
+    /// </summary>
+    public Sprite ResolveIcon(string iconName)
+    {
+        if (string.IsNullOrEmpty(iconName)) return null;
+
+        if (iconsConfig != null)
+        {
+            Sprite s = iconsConfig.GetIcon(iconName);
+            if (s != null) return s;
+        }
+
+        DraftUpgradeService draftService = DraftUpgradeService.Instance ?? DraftUpgradeService.GetOrCreateInstance();
+        if (draftService != null)
+        {
+            Sprite s = draftService.GetIcon(iconName);
+            if (s != null) return s;
+        }
+
+        if (SkillTreeService.Instance != null && SkillTreeService.Instance.Tree != null)
+        {
+            Sprite s = SkillTreeService.Instance.Tree.GetIcon(iconName);
+            if (s != null) return s;
+        }
+
+        return null;
+    }
+
     private void PopulateCards(List<SkillNode> offeredNodes)
     {
         for (int i = 0; i < cards.Length; i++)
@@ -210,9 +248,7 @@ public class SurvivorsCardSelectUI : MonoBehaviour
                     currentLevel = SkillTreeService.Instance.GetLevel(node);
                 }
 
-                Sprite icon = SkillTreeService.Instance != null && SkillTreeService.Instance.Tree != null
-                    ? SkillTreeService.Instance.Tree.GetIcon(node.iconName)
-                    : null;
+                Sprite icon = ResolveIcon(node.iconName);
 
                 int index = i; // Closure capture
                 cardUI.SetData(

@@ -47,6 +47,11 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
     [Header("Weapon models (optional)")]
     [Tooltip("Melee weapon model shown while not aiming. Optional.")]
     [SerializeField] private GameObject meleeWeaponModel;
+
+    public void SetMeleeWeaponModel(GameObject model)
+    {
+        meleeWeaponModel = model;
+    }
     [Tooltip("Throwing-axe model shown in hand while aiming. Optional.")]
     [SerializeField] private GameObject thrownAxeModel;
 

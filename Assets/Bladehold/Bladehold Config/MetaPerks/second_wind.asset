@@ -17,4 +17,4 @@ MonoBehaviour:
   description: Revive once per run with 50% max HP upon death.
   tier: 2
   goblinBloodCost: 25
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 699d3bb5ffa2cbb4caaae8d886b8004a, type: 3}

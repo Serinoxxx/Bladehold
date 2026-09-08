@@ -56,6 +56,7 @@ public class PlayerDodgeUI : MonoBehaviour
                 playerDodge.OnCooldownUpdated += HandleCooldownUpdated;
                 playerDodge.OnAbilityReady += HandleAbilityReady;
                 playerDodge.OnDodgeStarted += HandleAbilityTriggered;
+                playerDodge.OnChargesChanged += HandleChargesChanged;
             }
 
             playerInput = Player.Instance.GetComponentInChildren<PlayerInput>();
@@ -78,6 +79,7 @@ public class PlayerDodgeUI : MonoBehaviour
             playerDodge.OnCooldownUpdated -= HandleCooldownUpdated;
             playerDodge.OnAbilityReady -= HandleAbilityReady;
             playerDodge.OnDodgeStarted -= HandleAbilityTriggered;
+            playerDodge.OnChargesChanged -= HandleChargesChanged;
         }
     }
 
@@ -110,16 +112,45 @@ public class PlayerDodgeUI : MonoBehaviour
 
     private void HandleCooldownUpdated(float current, float max)
     {
-        skillIcon.color = cooldownColor;
-        radialFillImage.fillAmount = max > 0 ? current / max : 0;
-        timerText.text = current.ToString("0.0");
+        int currentCharges = playerDodge != null ? playerDodge.CurrentCharges : 0;
+        int maxCharges = playerDodge != null ? playerDodge.MaxCharges : 1;
+
+        if (currentCharges > 0)
+        {
+            skillIcon.color = readyColor;
+        }
+        else
+        {
+            skillIcon.color = cooldownColor;
+        }
+
+        radialFillImage.fillAmount = max > 0 ? (current / max) : 0f;
+
+        if (maxCharges > 1)
+        {
+            if (currentCharges > 0)
+            {
+                timerText.text = currentCharges.ToString();
+            }
+            else
+            {
+                timerText.text = current.ToString("0.0");
+            }
+        }
+        else
+        {
+            timerText.text = currentCharges > 0 ? "" : current.ToString("0.0");
+        }
     }
 
     private void HandleAbilityReady()
     {
+        int currentCharges = playerDodge != null ? playerDodge.CurrentCharges : 1;
+        int maxCharges = playerDodge != null ? playerDodge.MaxCharges : 1;
+
         skillIcon.color = readyColor;
         radialFillImage.fillAmount = 0f;
-        timerText.text = "";
+        timerText.text = maxCharges > 1 ? currentCharges.ToString() : "";
         
         if (cooldownFinishedFeedback != null)
         {
@@ -129,9 +160,47 @@ public class PlayerDodgeUI : MonoBehaviour
 
     private void HandleAbilityTriggered()
     {
+        int currentCharges = playerDodge != null ? playerDodge.CurrentCharges : 0;
+        int maxCharges = playerDodge != null ? playerDodge.MaxCharges : 1;
+
+        if (currentCharges <= 0)
+        {
+            skillIcon.color = cooldownColor;
+        }
+        else
+        {
+            skillIcon.color = readyColor;
+        }
+
+        if (maxCharges > 1)
+        {
+            timerText.text = currentCharges > 0 ? currentCharges.ToString() : "";
+        }
+
         if (activatedFeedback != null)
         {
             activatedFeedback.PlayFeedbacks();
+        }
+    }
+
+    private void HandleChargesChanged(int current, int max)
+    {
+        if (current > 0)
+        {
+            skillIcon.color = readyColor;
+        }
+        else
+        {
+            skillIcon.color = cooldownColor;
+        }
+
+        if (max > 1)
+        {
+            timerText.text = current > 0 ? current.ToString() : "";
+        }
+        else if (current > 0)
+        {
+            timerText.text = "";
         }
     }
 

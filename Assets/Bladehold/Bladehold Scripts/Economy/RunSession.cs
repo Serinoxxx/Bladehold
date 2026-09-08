@@ -61,6 +61,9 @@ public static class RunSession
     public static readonly Dictionary<string, int> InRunUpgradeLevels = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
     public static string ActiveUltimateId { get; set; } = null;
     public static bool SecondWindUsed { get; set; } = false;
+    public static float PlayerUltimateCharge { get; set; } = 0f;
+    public static float FortressGateCurrentHealth { get; set; } = -1f;
+    public static float FortressGateMaxHealth { get; set; } = -1f;
 
     public static int GetUpgradeLevel(string upgradeId)
     {
@@ -86,6 +89,9 @@ public static class RunSession
         SpecialHerbsWavesRemaining = 0;
         PlayerBonusMaxHealth = 0f;
         PlayerHealthRatio = 1f;
+        PlayerUltimateCharge = 0f;
+        FortressGateCurrentHealth = -1f;
+        FortressGateMaxHealth = -1f;
         DraftRerollsRemaining = HasMetaPerk("master_tactician") ? 1 : 0;
         SecondWindUsed = false;
         InRunUpgradeLevels.Clear();
@@ -132,10 +138,10 @@ public static class RunSession
             }
         }
 
-        // 3. Reapply Agility permanent meta perk (+1 dash charge / faster cooldown)
+        // 3. Reapply Agility permanent meta perk (+1 dash charge)
         if (HasMetaPerk("agility") && player.Stats != null)
         {
-            player.Stats.AddModifier(StatType.DodgeCooldown, ModifierKind.Percent, -0.25f);
+            player.Stats.AddModifier(StatType.DodgeMaxCharges, ModifierKind.Flat, 1f);
         }
 
         // 4. Reapply all drafted mid-run upgrades from InRunUpgradeLevels
@@ -163,6 +169,16 @@ public static class RunSession
             player.Stats.SetBase(StatType.UltimateUnlocked, 1f);
             DraftUpgradeService.ConfigureUltimateHandler(player, ActiveUltimateId);
             Debug.Log($"[RunSession] Restored Active Ultimate: {ActiveUltimateId}");
+        }
+
+        // 6. Reapply preserved Ultimate Charge
+        if (PlayerUltimateCharge > 0f)
+        {
+            PlayerUltimateController ult = player.GetComponent<PlayerUltimateController>();
+            if (ult != null)
+            {
+                ult.SetCharge(PlayerUltimateCharge);
+            }
         }
 
         Debug.Log($"[RunSession] Restored {InRunUpgradeLevels.Count} in-run upgrades on player in {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}.");

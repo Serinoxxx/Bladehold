@@ -52,19 +52,23 @@ public class BerserkerUltimate : MonoBehaviour, IUltimateHandler
 
     private void Awake()
     {
-        player = GetComponentInChildren<Player>();
+        FindDependencies();
+    }
+
+    private void FindDependencies()
+    {
+        Transform rootTr = transform.root;
+        if (player == null) player = rootTr.GetComponentInChildren<Player>(true) ?? GetComponentInParent<Player>() ?? GetComponentInChildren<Player>(true) ?? Player.Instance;
+        if (animator == null && player != null) animator = player.GetComponentInChildren<Animator>();
     }
 
     private void Start()
     {
-        if (player == null)
-        {
-            player = GetComponentInChildren<Player>();
-        }
+        FindDependencies();
 
         if (player == null)
         {
-            Debug.LogError("[BerserkerUltimate] Player component not found in children.", this);
+            Debug.LogError("[BerserkerUltimate] Player component not found.", this);
             anyError = true;
         }
         else if (player.Stats == null)

@@ -1125,7 +1125,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3659221211329486830, guid: d91ec65b493ec304fad8b37ece4ea72d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.257
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 3659221211329486830, guid: d91ec65b493ec304fad8b37ece4ea72d, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1202,15 +1202,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4579814239632620, guid: a74818deaafdbbf4eb78281d5ea03747, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 17.982439
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4579814239632620, guid: a74818deaafdbbf4eb78281d5ea03747, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -5.9994497
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4579814239632620, guid: a74818deaafdbbf4eb78281d5ea03747, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 14.008897
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4579814239632620, guid: a74818deaafdbbf4eb78281d5ea03747, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1292,6 +1292,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
   healthData: {fileID: 0}
+  immuneToPlayerDamage: 0
   currentHealth: 0
   damageFeedback: {fileID: 0}
   deathFeedback: {fileID: 0}
@@ -1573,7 +1574,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 23d2e5980571d6543a4e421005ac83aa, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0.25699997
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 23d2e5980571d6543a4e421005ac83aa, type: 3}
       propertyPath: m_LocalPosition.z

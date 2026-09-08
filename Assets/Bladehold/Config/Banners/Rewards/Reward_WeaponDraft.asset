@@ -18,4 +18,6 @@ MonoBehaviour:
   quantityText: x 1 Draft
   minAmount: 1
   maxAmount: 1
-  rewardDescription: Triggers a 3-card draft restricted to equipped melee/ranged weapons.
+  rewardPrefab: {fileID: 133660, guid: 971412afe90b27640b1c78c0641deec9, type: 3}
+  rewardDescription: Triggers a 3-card draft restricted to equipped melee/ranged
+    weapons.

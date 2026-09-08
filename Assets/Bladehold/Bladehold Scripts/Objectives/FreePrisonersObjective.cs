@@ -25,14 +25,6 @@ public class FreePrisonersObjective : MonoBehaviour, ISurvivorsObjective
     [Tooltip("Pre-placed spawn point transforms for the cages.")]
     [SerializeField] private Transform[] spawnPoints;
 
-    [Tooltip("Fallback spawn offsets if spawn points array is empty.")]
-    [SerializeField] private Vector3[] fallbackSpawnPositions = new Vector3[]
-    {
-        new Vector3(-15f, 0f, 15f),
-        new Vector3(18f, 0f, 22f),
-        new Vector3(-10f, 0f, 35f)
-    };
-
     private readonly List<PrisonerCage> spawnedCages = new List<PrisonerCage>();
     private int freedCount;
     private float timeRemaining;
@@ -111,11 +103,6 @@ public class FreePrisonersObjective : MonoBehaviour, ISurvivorsObjective
             {
                 pos = spawnPoints[i].position;
                 rot = spawnPoints[i].rotation;
-            }
-            else if (fallbackSpawnPositions != null && fallbackSpawnPositions.Length > i)
-            {
-                Vector3 center = Player.Instance != null ? Player.Instance.transform.position : Vector3.zero;
-                pos = center + fallbackSpawnPositions[i];
             }
 
             GameObject instance = Instantiate(cagePrefab, pos, rot);

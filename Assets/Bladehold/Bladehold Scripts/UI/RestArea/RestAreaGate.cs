@@ -54,6 +54,31 @@ public class RestAreaGate : MonoBehaviour
             RunSession.PlayerHealthRatio = player.Health.CurrentHealth / player.Health.MaxHealth;
         }
 
+        // Preserve player ultimate charge
+        if (player != null)
+        {
+            var ult = player.GetComponent<PlayerUltimateController>();
+            if (ult != null)
+            {
+                RunSession.PlayerUltimateCharge = ult.CurrentCharge;
+            }
+        }
+
+        // Preserve fortress gate health
+        if (Gate.All != null && Gate.All.Count > 0)
+        {
+            foreach (var g in Gate.All)
+            {
+                if (g != null && g.GetComponent<Health>() != null)
+                {
+                    var gh = g.GetComponent<Health>();
+                    RunSession.FortressGateCurrentHealth = gh.CurrentHealth;
+                    RunSession.FortressGateMaxHealth = gh.MaxHealth;
+                    break;
+                }
+            }
+        }
+
         // Next wave is after the completed rest (e.g. wave 3 rest -> wave 4)
         RunSession.CurrentWave = Mathf.Max(1, RunSession.RestVisitsCount * 3 + 1);
 

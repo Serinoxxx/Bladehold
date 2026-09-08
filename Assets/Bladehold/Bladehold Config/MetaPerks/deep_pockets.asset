@@ -17,4 +17,4 @@ MonoBehaviour:
   description: Rest Area Merchant offers 4 item slots instead of 3.
   tier: 3
   goblinBloodCost: 50
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 451ff7c11f569644da48f8434d725dc1, type: 3}

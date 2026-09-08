@@ -18,4 +18,5 @@ MonoBehaviour:
   quantityText: x 1 (+25 HP)
   minAmount: 1
   maxAmount: 1
+  rewardPrefab: {fileID: 144976, guid: 045cc9e875b3f1f48b4774837b97b949, type: 3}
   rewardDescription: Permanently grants +25 Max HP for the duration of the run.

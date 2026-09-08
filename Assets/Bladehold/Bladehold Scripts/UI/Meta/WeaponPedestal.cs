@@ -178,9 +178,20 @@ public class WeaponPedestal : MonoBehaviour
             {
                 data.orcishMetal -= weaponData.orcishMetalUnlockCost;
                 data.unlockedWeapons.Add(weaponData.id);
+                // Also auto-equip newly unlocked weapon so player can test it immediately
+                if (weaponData.category == WeaponCategory.Melee)
+                {
+                    data.equippedMeleeWeapon = weaponData.id;
+                }
+                else
+                {
+                    data.equippedRangedWeapon = weaponData.id;
+                }
                 SaveSystem.Save(data);
 
-                Debug.Log($"[WeaponPedestal] Unlocked weapon: {weaponData.displayName}!");
+                ApplyEquippedToPlayer(player);
+
+                Debug.Log($"[WeaponPedestal] Unlocked and equipped weapon: {weaponData.displayName}!");
                 RefreshAllPedestals();
             }
         }
@@ -197,8 +208,30 @@ public class WeaponPedestal : MonoBehaviour
             }
             SaveSystem.Save(data);
 
+            ApplyEquippedToPlayer(player);
+
             Debug.Log($"[WeaponPedestal] Equipped weapon: {weaponData.displayName}!");
             RefreshAllPedestals();
+        }
+    }
+
+    private void ApplyEquippedToPlayer(Player player)
+    {
+        PlayerWeaponManager pwm = player != null ? player.GetComponentInParent<PlayerWeaponManager>() : null;
+        if (pwm == null && player != null) pwm = player.GetComponentInChildren<PlayerWeaponManager>();
+        if (pwm == null) pwm = PlayerWeaponManager.Instance;
+        if (pwm == null) pwm = FindAnyObjectByType<PlayerWeaponManager>();
+
+        if (pwm != null)
+        {
+            if (weaponData.category == WeaponCategory.Melee)
+            {
+                pwm.EquipMelee(weaponData.id);
+            }
+            else
+            {
+                pwm.EquipRanged(weaponData.id);
+            }
         }
     }
 

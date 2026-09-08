@@ -13,6 +13,7 @@ public class DraftUpgradeService : MonoBehaviour
     public static DraftUpgradeService Instance { get; private set; }
 
     [SerializeField] private TextAsset draftUpgradesCsv;
+    [SerializeField] private SkillTreeIconsSO iconsConfig;
 
     private readonly List<DraftUpgradeDefinition> allDefinitions = new List<DraftUpgradeDefinition>();
     private readonly Dictionary<string, DraftUpgradeDefinition> byId = new Dictionary<string, DraftUpgradeDefinition>(StringComparer.OrdinalIgnoreCase);
@@ -60,6 +61,10 @@ public class DraftUpgradeService : MonoBehaviour
     {
         if (isInitialized) return;
         isInitialized = true;
+        if (iconsConfig == null)
+        {
+            iconsConfig = Resources.Load<SkillTreeIconsSO>("SkillTreeIcons");
+        }
         ParseCsv();
     }
 
@@ -219,6 +224,29 @@ public class DraftUpgradeService : MonoBehaviour
         if (string.IsNullOrEmpty(id)) return null;
         EnsureInitialized();
         return byId.TryGetValue(id, out DraftUpgradeDefinition def) ? def : null;
+    }
+
+    /// <summary>
+    ///     Resolves a sprite icon for the given icon asset name.
+    /// </summary>
+    public Sprite GetIcon(string iconName)
+    {
+        if (string.IsNullOrEmpty(iconName)) return null;
+        EnsureInitialized();
+
+        if (iconsConfig != null)
+        {
+            Sprite s = iconsConfig.GetIcon(iconName);
+            if (s != null) return s;
+        }
+
+        if (SkillTreeService.Instance != null && SkillTreeService.Instance.Tree != null)
+        {
+            Sprite s = SkillTreeService.Instance.Tree.GetIcon(iconName);
+            if (s != null) return s;
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -435,34 +463,39 @@ public class DraftUpgradeService : MonoBehaviour
     {
         if (player == null || string.IsNullOrEmpty(ultimateId)) return;
 
-        // Disable all handlers first
-        foreach (IUltimateHandler h in player.GetComponentsInChildren<IUltimateHandler>(true))
+        // Ensure we search the entire player hierarchy (both root Player and child SidekickSyntyCharacter)
+        Transform rootTr = player.transform.root;
+        foreach (IUltimateHandler h in rootTr.GetComponentsInChildren<IUltimateHandler>(true))
         {
             if (h is MonoBehaviour mb) mb.enabled = false;
         }
 
+        // Attach or enable handler on the GameObject holding PlayerUltimateController if present, otherwise player.gameObject
+        PlayerUltimateController controller = rootTr.GetComponentInChildren<PlayerUltimateController>();
+        GameObject targetGo = controller != null ? controller.gameObject : player.gameObject;
+
         if (ultimateId.StartsWith("sword_mount", StringComparison.OrdinalIgnoreCase))
         {
-            SwordMountUltimate mountUlt = player.GetComponent<SwordMountUltimate>();
-            if (mountUlt == null) mountUlt = player.gameObject.AddComponent<SwordMountUltimate>();
+            SwordMountUltimate mountUlt = rootTr.GetComponentInChildren<SwordMountUltimate>(true);
+            if (mountUlt == null) mountUlt = targetGo.AddComponent<SwordMountUltimate>();
             mountUlt.enabled = true;
         }
         else if (ultimateId.StartsWith("axe_bladestorm", StringComparison.OrdinalIgnoreCase))
         {
-            BerserkerUltimate axeUlt = player.GetComponent<BerserkerUltimate>();
-            if (axeUlt == null) axeUlt = player.gameObject.AddComponent<BerserkerUltimate>();
+            BerserkerUltimate axeUlt = rootTr.GetComponentInChildren<BerserkerUltimate>(true);
+            if (axeUlt == null) axeUlt = targetGo.AddComponent<BerserkerUltimate>();
             axeUlt.enabled = true;
         }
         else if (ultimateId.StartsWith("bow_stream", StringComparison.OrdinalIgnoreCase))
         {
-            RangerUltimate bowUlt = player.GetComponent<RangerUltimate>();
-            if (bowUlt == null) bowUlt = player.gameObject.AddComponent<RangerUltimate>();
+            RangerUltimate bowUlt = rootTr.GetComponentInChildren<RangerUltimate>(true);
+            if (bowUlt == null) bowUlt = targetGo.AddComponent<RangerUltimate>();
             bowUlt.enabled = true;
         }
         else if (ultimateId.StartsWith("taxe_vortex", StringComparison.OrdinalIgnoreCase))
         {
-            ThrowingAxeUltimate taxeUlt = player.GetComponent<ThrowingAxeUltimate>();
-            if (taxeUlt == null) taxeUlt = player.gameObject.AddComponent<ThrowingAxeUltimate>();
+            ThrowingAxeUltimate taxeUlt = rootTr.GetComponentInChildren<ThrowingAxeUltimate>(true);
+            if (taxeUlt == null) taxeUlt = targetGo.AddComponent<ThrowingAxeUltimate>();
             taxeUlt.enabled = true;
         }
     }

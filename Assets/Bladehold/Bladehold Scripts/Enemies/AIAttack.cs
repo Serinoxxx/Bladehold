@@ -150,6 +150,19 @@ public class AIAttack : MonoBehaviour
         }
     }
 
+    private void OnDisable()
+    {
+        if (attackRoutine != null)
+        {
+            StopCoroutine(attackRoutine);
+            attackRoutine = null;
+        }
+        if (movement != null)
+        {
+            movement.SetTurningPaused(false);
+        }
+    }
+
     private void HandleDied()
     {
         isDead = true;
@@ -170,7 +183,19 @@ public class AIAttack : MonoBehaviour
     private void HandleDamaged(Damage damage)
     {
         if (isDead || health.CurrentHealth <= 0f) return;
-        if (knockbackReceiver != null && knockbackReceiver.IsIncapacitated) return;
+        if (knockbackReceiver != null && knockbackReceiver.IsIncapacitated)
+        {
+            if (attackRoutine != null)
+            {
+                StopCoroutine(attackRoutine);
+                attackRoutine = null;
+            }
+            if (movement != null)
+            {
+                movement.SetTurningPaused(false);
+            }
+            return;
+        }
 
         // If the player hit us, stagger and interrupt the attack
         if (damage.source != null && playerHealth != null && ReferenceEquals(damage.source, playerHealth))

@@ -67,13 +67,13 @@ public class MetaUpgradesUI : MonoBehaviour
         CursorLockManager.SetUnlock("MetaUpgrades", true);
         Time.timeScale = 0f;
 
+        HideTooltip();
         RefreshUI();
     }
 
     public void Close()
     {
         if (windowRoot != null) windowRoot.SetActive(false);
-        if (tooltipBox != null) tooltipBox.SetActive(false);
         CursorLockManager.SetUnlock("MetaUpgrades", false);
         Time.timeScale = 1f;
     }
@@ -102,8 +102,8 @@ public class MetaUpgradesUI : MonoBehaviour
                 unlockTier2Button.interactable = canAfford;
                 if (unlockTier2ButtonText != null)
                 {
-                    unlockTier2ButtonText.text = "Unlock Tier 2 (5 Orcish Metal)";
-                    unlockTier2ButtonText.color = canAfford ? Color.white : Color.red;
+                    unlockTier2ButtonText.text = "Unlock Tier II (5 Metal)";
+                    unlockTier2ButtonText.color = canAfford ? new Color(0.24f, 0.21f, 0.18f, 1f) : new Color(0.6f, 0.2f, 0.2f, 1f);
                 }
             }
         }
@@ -122,8 +122,8 @@ public class MetaUpgradesUI : MonoBehaviour
                 unlockTier3Button.interactable = canAfford;
                 if (unlockTier3ButtonText != null)
                 {
-                    unlockTier3ButtonText.text = "Unlock Tier 3 (10 Orcish Metal)";
-                    unlockTier3ButtonText.color = canAfford ? Color.white : Color.red;
+                    unlockTier3ButtonText.text = unlockedTier < 2 ? "Requires Tier II" : "Unlock Tier III (10 Metal)";
+                    unlockTier3ButtonText.color = canAfford ? new Color(0.24f, 0.21f, 0.18f, 1f) : new Color(0.6f, 0.2f, 0.2f, 1f);
                 }
             }
         }
@@ -167,17 +167,25 @@ public class MetaUpgradesUI : MonoBehaviour
         Button buyBtn = card.GetComponent<Button>() ?? card.Find("BuyButton")?.GetComponent<Button>();
 
         if (nameText != null) nameText.text = perk.displayName;
-        if (iconImage != null && perk.icon != null)
+        if (iconImage != null)
         {
-            iconImage.sprite = perk.icon;
-            iconImage.enabled = true;
+            if (perk.icon != null)
+            {
+                iconImage.sprite = perk.icon;
+                iconImage.enabled = true;
+            }
+            else
+            {
+                iconImage.enabled = false;
+            }
         }
 
         CanvasGroup cg = card.GetComponent<CanvasGroup>();
         if (cg != null)
         {
-            cg.alpha = isTierUnlocked ? 1.0f : 0.4f;
+            cg.alpha = isTierUnlocked ? (isOwned ? 0.8f : 1.0f) : 0.4f;
             cg.interactable = isTierUnlocked;
+            cg.blocksRaycasts = true;
         }
 
         if (costText != null)
@@ -185,18 +193,18 @@ public class MetaUpgradesUI : MonoBehaviour
             if (isOwned)
             {
                 costText.text = "OWNED";
-                costText.color = Color.green;
+                costText.color = new Color(0.18f, 0.52f, 0.2f, 1f); // clean green
             }
             else if (!isTierUnlocked)
             {
                 costText.text = "LOCKED";
-                costText.color = Color.gray;
+                costText.color = new Color(0.48f, 0.42f, 0.36f, 1f);
             }
             else
             {
                 bool canAfford = blood >= perk.goblinBloodCost;
                 costText.text = $"{perk.goblinBloodCost} Blood";
-                costText.color = canAfford ? Color.white : Color.red;
+                costText.color = canAfford ? new Color(0.68f, 0.18f, 0.18f, 1f) : new Color(0.72f, 0.28f, 0.28f, 0.6f);
             }
         }
 
@@ -248,7 +256,8 @@ public class MetaUpgradesUI : MonoBehaviour
 
     public void HideTooltip()
     {
-        if (tooltipBox != null) tooltipBox.SetActive(false);
+        if (tooltipTitle != null) tooltipTitle.text = "Blessings of the Spirit";
+        if (tooltipDescription != null) tooltipDescription.text = "Hover over any blessing to inspect its power. Click to unlock.";
     }
 }
 

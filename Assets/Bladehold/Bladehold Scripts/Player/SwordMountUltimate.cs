@@ -20,14 +20,12 @@ public class SwordMountUltimate : MonoBehaviour, IUltimateHandler
 
     private void Awake()
     {
-        player = GetComponentInChildren<Player>();
-        playerMount = GetComponentInChildren<PlayerMount>();
+        FindDependencies();
     }
 
     private void Start()
     {
-        if (player == null) player = GetComponentInChildren<Player>();
-        if (playerMount == null) playerMount = GetComponentInChildren<PlayerMount>();
+        FindDependencies();
         if (horsePrefab == null)
         {
             horsePrefab = Resources.Load<GameObject>("Horse") ?? 
@@ -35,14 +33,21 @@ public class SwordMountUltimate : MonoBehaviour, IUltimateHandler
         }
     }
 
+    private void FindDependencies()
+    {
+        Transform rootTr = transform.root;
+        if (player == null) player = rootTr.GetComponentInChildren<Player>(true) ?? GetComponentInParent<Player>() ?? GetComponentInChildren<Player>(true) ?? Player.Instance;
+        if (playerMount == null) playerMount = rootTr.GetComponentInChildren<PlayerMount>(true) ?? GetComponentInParent<PlayerMount>() ?? GetComponentInChildren<PlayerMount>(true);
+    }
+
     public void Activate(PlayerUltimateController controller)
     {
         this.controller = controller;
-        if (player == null) player = GetComponentInChildren<Player>();
-        if (playerMount == null) playerMount = GetComponentInChildren<PlayerMount>();
+        FindDependencies();
 
         if (player == null || playerMount == null)
         {
+            Debug.LogError($"[SwordMountUltimate] Missing player ({player}) or playerMount ({playerMount})!");
             controller?.EndUltimate();
             return;
         }

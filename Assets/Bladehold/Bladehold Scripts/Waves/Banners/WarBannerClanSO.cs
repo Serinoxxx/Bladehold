@@ -14,6 +14,9 @@ public class WarBannerClanSO : ScriptableObject
     [Tooltip("Sigil or badge sprite representing this clan.")]
     public Sprite clanIcon;
 
+    [Tooltip("Optional custom material applied to the banner mesh for this clan.")]
+    public Material bannerMaterial;
+
     [Tooltip("Gameplay buff type applied to enemies when this banner is active.")]
     public BannerBuffType buffType = BannerBuffType.None;
 

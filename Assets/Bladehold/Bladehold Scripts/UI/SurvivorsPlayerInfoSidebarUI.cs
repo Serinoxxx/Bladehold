@@ -148,6 +148,7 @@ public class SurvivorsPlayerInfoSidebarUI : MonoBehaviour
 
         if (SkillTreeService.Instance == null || SkillTreeService.Instance.Tree == null)
         {
+            PopulateFromDraftService();
             return;
         }
 
@@ -201,6 +202,35 @@ public class SurvivorsPlayerInfoSidebarUI : MonoBehaviour
             {
                 spawnedSkillItems.Add(itemGO);
                 SetupSkillItemData(itemGO, node, level, tree.GetIcon(node.iconName));
+            }
+        }
+    }
+
+    private void PopulateFromDraftService()
+    {
+        DraftUpgradeService draftService = DraftUpgradeService.Instance ?? DraftUpgradeService.GetOrCreateInstance();
+        if (draftService == null) return;
+
+        foreach (var kvp in RunSession.InRunUpgradeLevels)
+        {
+            string upgradeId = kvp.Key;
+            int level = kvp.Value;
+            if (level <= 0) continue;
+
+            DraftUpgradeDefinition def = draftService.GetById(upgradeId);
+            if (def == null) continue;
+
+            SkillNode node = draftService.ConvertToSkillNode(def);
+            Sprite icon = draftService.GetIcon(def.iconName);
+
+            GameObject itemGO = skillItemPrefab != null
+                ? Instantiate(skillItemPrefab, skillsListContainer)
+                : CreateDefaultSkillItem(node, level, icon, isWeapon: def.isUltimate);
+
+            if (itemGO != null)
+            {
+                spawnedSkillItems.Add(itemGO);
+                SetupSkillItemData(itemGO, node, level, icon);
             }
         }
     }

@@ -18,4 +18,5 @@ MonoBehaviour:
   quantityText: x 5
   minAmount: 4
   maxAmount: 6
+  rewardPrefab: {fileID: 1135754012712868, guid: 5ac1b88cb9dd80342b54231233526bfe, type: 3}
   rewardDescription: Grants permanent Goblin Blood to player meta-inventory.

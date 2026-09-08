@@ -88,6 +88,13 @@ public class SurvivorsSpawner : MonoBehaviour
     [Tooltip("Maximum concurrent shielders (bubblers) allowed simultaneously in Survivors Mode.")]
     [SerializeField] private int maxConcurrentShielders = 2;
 
+    [Header("Catch-all Cleanup Lightning")]
+    [Tooltip("Optional override for the lightning strike VFX prefab. If null, falls back to ElementalEffectsManager.superconductorVfx.")]
+    [SerializeField] private GameObject cleanupLightningVfx;
+
+    [Tooltip("Optional override for the lightning strike SFX clip. If null, falls back to ElementalEffectsManager.superconductorSfx.")]
+    [SerializeField] private AudioClip cleanupLightningSfx;
+
     [Tooltip("Whether to ignore per-row maxConcurrent limits in CSV to allow horde spawning up to maxConcurrentEnemies.")]
     [SerializeField] private bool ignoreRowMaxConcurrent = true;
 
@@ -284,6 +291,72 @@ public class SurvivorsSpawner : MonoBehaviour
             if (health != null && !health.IsDead && health.gameObject != null)
             {
                 Destroy(health.gameObject);
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Strikes all currently alive enemies with lightning, dealing lethal damage (default 9999)
+    ///     with visual and audio effects so they die properly rather than just disappearing.
+    /// </summary>
+    public void StrikeAllAliveWithLightning(float damage = 9999f)
+    {
+        List<Health> toKill = new List<Health>(aliveEnemies);
+
+        // Also capture any other active enemy Health in the scene not in aliveEnemies (e.g. objective spawns)
+        Health[] allHealth = FindObjectsByType<Health>(FindObjectsSortMode.None);
+        foreach (Health h in allHealth)
+        {
+            if (h != null && !h.IsDead && !toKill.Contains(h))
+            {
+                if (Player.Instance != null && (h == Player.Instance.Health || h.gameObject == Player.Instance.gameObject || h.transform.root == Player.Instance.transform.root))
+                    continue;
+                if (h.GetComponent<Gate>() != null || h.GetComponentInParent<Gate>() != null)
+                    continue;
+                toKill.Add(h);
+            }
+        }
+
+        GameObject vfxPrefab = cleanupLightningVfx != null
+            ? cleanupLightningVfx
+            : (ElementalEffectsManager.Instance != null ? ElementalEffectsManager.Instance.superconductorVfx : null);
+
+        AudioClip sfxClip = cleanupLightningSfx != null
+            ? cleanupLightningSfx
+            : (ElementalEffectsManager.Instance != null
+                ? (ElementalEffectsManager.Instance.superconductorSfx != null
+                    ? ElementalEffectsManager.Instance.superconductorSfx
+                    : ElementalEffectsManager.Instance.statusAppliedSfx)
+                : null);
+
+        foreach (Health health in toKill)
+        {
+            if (health != null && !health.IsDead && health.gameObject != null)
+            {
+                Vector3 targetPos = health.transform.position;
+
+                if (vfxPrefab != null)
+                {
+                    Instantiate(vfxPrefab, targetPos, Quaternion.identity);
+                }
+
+                if (sfxClip != null)
+                {
+                    AudioSource.PlayClipAtPoint(sfxClip, targetPos);
+                }
+
+                Damage dmg = new Damage
+                {
+                    value = damage,
+                    type = DamageType.elemental,
+                    elementId = "Lightning",
+                    sourcePosition = targetPos,
+                    source = Player.Instance != null ? Player.Instance.Damageable : null,
+                    isPlayerDamage = true
+                };
+
+                health.ReceiveDamage(dmg);
+                EnemyStatusManager.GetOrAdd(health)?.ApplyStatus("Lightning");
             }
         }
     }

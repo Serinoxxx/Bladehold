@@ -25,17 +25,30 @@ public class MageUltimate : MonoBehaviour, IUltimateHandler
 
     private void Awake()
     {
-        player = GetComponentInChildren<Player>();
-        wand = GetComponentInChildren<PlayerWand>();
-        characterController = GetComponent<CharacterController>();
-        imbuement = GetComponent<MageImbuement>();
-        animator = GetComponentInChildren<Animator>();
+        FindDependencies();
+    }
+
+    private void Start()
+    {
+        FindDependencies();
+    }
+
+    private void FindDependencies()
+    {
+        Transform rootTr = transform.root;
+        if (player == null) player = rootTr.GetComponentInChildren<Player>(true) ?? GetComponentInParent<Player>() ?? GetComponentInChildren<Player>(true) ?? Player.Instance;
+        if (wand == null) wand = rootTr.GetComponentInChildren<PlayerWand>(true) ?? GetComponentInParent<PlayerWand>() ?? GetComponentInChildren<PlayerWand>(true);
+        if (characterController == null) characterController = rootTr.GetComponentInChildren<CharacterController>(true) ?? GetComponentInParent<CharacterController>() ?? GetComponent<CharacterController>();
+        if (imbuement == null) imbuement = rootTr.GetComponentInChildren<MageImbuement>(true) ?? GetComponentInParent<MageImbuement>() ?? GetComponent<MageImbuement>();
+        if (animator == null && player != null) animator = player.GetComponentInChildren<Animator>();
     }
 
     public void Activate(PlayerUltimateController controller)
     {
         this.controller = controller;
-        float duration = player.Stats.GetValue(StatType.UltimateDurationSeconds);
+        FindDependencies();
+        float duration = player != null && player.Stats != null ? player.Stats.GetValue(StatType.UltimateDurationSeconds) : 6f;
+        if (duration <= 0f) duration = 6f;
         ultimateEndTime = Time.time + duration;
         isRunning = true;
 

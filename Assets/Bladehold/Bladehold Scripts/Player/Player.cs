@@ -95,6 +95,7 @@ public class Player : MonoBehaviour
             // Dodge bases: unlocked by default
             Stats.SetBase(StatType.DodgeUnlocked, 1f);
             Stats.SetBase(StatType.DodgeCooldown, 1f);
+            Stats.SetBase(StatType.DodgeMaxCharges, 2f);
             Stats.SetBase(StatType.DodgeDistance, 2f);
             Stats.SetBase(StatType.DodgeDamageMultiplier, 0f);
             Stats.SetBase(StatType.DodgeKnockbackForce, 0f);

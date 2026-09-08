@@ -18,4 +18,5 @@ MonoBehaviour:
   quantityText: x 100
   minAmount: 75
   maxAmount: 125
+  rewardPrefab: {fileID: 1452693738808372, guid: cb4aec065755ca34ca39b132f34a6fe2, type: 3}
   rewardDescription: Adds randomized Gold directly into the player's run balance.

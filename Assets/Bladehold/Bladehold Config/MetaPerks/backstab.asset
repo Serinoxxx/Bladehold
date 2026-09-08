@@ -17,4 +17,4 @@ MonoBehaviour:
   description: Deal +20% bonus damage when striking enemies from behind.
   tier: 1
   goblinBloodCost: 10
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 10320c6f1b223fb4d94617c9b7848baf, type: 3}

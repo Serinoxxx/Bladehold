@@ -64,21 +64,40 @@ public class WeaponHUDController : MonoBehaviour
         // UI is no longer dynamically hidden because weapons are unlocked by default.
     }
 
+    private void OnEnable()
+    {
+        PlayerWeaponManager.OnWeaponLoadoutChanged += RefreshWeaponIcons;
+    }
+
+    private void OnDisable()
+    {
+        PlayerWeaponManager.OnWeaponLoadoutChanged -= RefreshWeaponIcons;
+        if (playerInput != null)
+        {
+            playerInput.onControlsChanged -= OnControlsChanged;
+        }
+    }
+
+    public void RefreshWeaponIcons()
+    {
+        var weaponManager = PlayerWeaponManager.Instance;
+        if (weaponManager != null)
+        {
+            if (weaponManager.ActiveMeleeDefinition != null && weaponManager.ActiveMeleeDefinition.icon != null && meleeWeaponIcon != null)
+                meleeWeaponIcon.sprite = weaponManager.ActiveMeleeDefinition.icon;
+            
+            if (weaponManager.ActiveRangedDefinition != null && weaponManager.ActiveRangedDefinition.icon != null && rangedWeaponIcon != null)
+                rangedWeaponIcon.sprite = weaponManager.ActiveRangedDefinition.icon;
+        }
+    }
+
     private IEnumerator InitIconsRoutine()
     {
         yield return null;
 
         if (Player.Instance != null)
         {
-            var weaponManager = PlayerWeaponManager.Instance;
-            if (weaponManager != null)
-            {
-                if (weaponManager.ActiveMeleeDefinition != null && weaponManager.ActiveMeleeDefinition.icon != null)
-                    meleeWeaponIcon.sprite = weaponManager.ActiveMeleeDefinition.icon;
-                
-                if (weaponManager.ActiveRangedDefinition != null && weaponManager.ActiveRangedDefinition.icon != null)
-                    rangedWeaponIcon.sprite = weaponManager.ActiveRangedDefinition.icon;
-            }
+            RefreshWeaponIcons();
 
             playerInput = Player.Instance.GetComponent<PlayerInput>();
             if (playerInput != null)

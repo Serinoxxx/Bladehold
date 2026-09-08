@@ -18,4 +18,5 @@ MonoBehaviour:
   quantityText: x 1 Draft
   minAmount: 1
   maxAmount: 1
+  rewardPrefab: {fileID: 4003603189485666069, guid: d2d1684b47b3c254ca653563fce46e21, type: 3}
   rewardDescription: Triggers a 3-card draft for Arrow Slits, Oil, or Barricades.

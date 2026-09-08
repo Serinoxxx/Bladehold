@@ -15,6 +15,8 @@ public class WarBannerController : MonoBehaviour
     [Header("Core References")]
     [SerializeField] private Interactable interactable;
     [SerializeField] private GameObject uiPanel;
+    [Tooltip("MeshRenderer on the banner model to swap materials per clan.")]
+    [SerializeField] private Renderer bannerRenderer;
     
     [Header("Cinematic Effects")]
     [SerializeField] private HighlightEffect highlightEffect;
@@ -51,6 +53,10 @@ public class WarBannerController : MonoBehaviour
             {
                 interactable = gameObject.AddComponent<Interactable>();
             }
+        }
+        if (bannerRenderer == null)
+        {
+            bannerRenderer = GetComponentInChildren<Renderer>();
         }
     }
 
@@ -171,6 +177,12 @@ public class WarBannerController : MonoBehaviour
             interactable.PromptText = $"Tear Down Banner\n{Buff.clanName}";
             interactable.CanInteract = true;
         }
+
+        // --- Clan Banner Material Swap ---
+        if (bannerRenderer != null && clan != null && clan.bannerMaterial != null)
+        {
+            bannerRenderer.sharedMaterial = clan.bannerMaterial;
+        }
         
         ApplyClanGlow(Buff.buffType);
     }
@@ -192,6 +204,7 @@ public class WarBannerController : MonoBehaviour
         highlightEffect.outlineColor = glowColor;
         highlightEffect.glowHQColor = glowColor;
         highlightEffect.highlighted = true;
+        highlightEffect.Refresh();
     }
 
     /// <summary>

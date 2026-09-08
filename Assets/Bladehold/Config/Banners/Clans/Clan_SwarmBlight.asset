@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WarBannerClanSO
   clanName: Swarm-Blight Clan
   clanIcon: {fileID: 21300000, guid: b3e25ab96c7cd1c4184457738789d002, type: 3}
+  bannerMaterial: {fileID: 2100000, guid: 677c1b3a96d0442478c508f22f3dff23, type: 2}
   buffType: 4
   quickFact: Enemies heal 2 HP/s
   buffMagnitude: 2

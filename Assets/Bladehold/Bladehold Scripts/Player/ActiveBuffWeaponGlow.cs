@@ -38,14 +38,26 @@ public class ActiveBuffWeaponGlow : MonoBehaviour
         }
 
         impulseBuff.OnChanged += HandleBuffChanged;
+        PlayerWeaponManager.OnWeaponLoadoutChanged += HandleWeaponLoadoutChanged;
         HandleBuffChanged(); // Initial apply
     }
 
     private void OnDestroy()
     {
+        PlayerWeaponManager.OnWeaponLoadoutChanged -= HandleWeaponLoadoutChanged;
         if (impulseBuff != null)
         {
             impulseBuff.OnChanged -= HandleBuffChanged;
+        }
+    }
+
+    private void HandleWeaponLoadoutChanged()
+    {
+        if (PlayerWeaponManager.Instance != null && PlayerWeaponManager.Instance.ActiveMeleeTrigger != null)
+        {
+            weaponRenderers = PlayerWeaponManager.Instance.ActiveMeleeTrigger.GetComponentsInChildren<Renderer>(true);
+            wasActive = !wasActive; // Force re-apply in HandleBuffChanged
+            HandleBuffChanged();
         }
     }
 

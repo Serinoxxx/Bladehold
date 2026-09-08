@@ -17,4 +17,4 @@ MonoBehaviour:
   description: Begin every combat run with 75 starting Gold.
   tier: 3
   goblinBloodCost: 50
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: ebdb39511ec182b4aa810729668a2a9c, type: 3}

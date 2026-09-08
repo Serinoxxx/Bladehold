@@ -21,8 +21,8 @@ MonoBehaviour:
   chargeTimePerLevel: 0
   baseMaxChargeLevels: 3
   baseChargeDamageBonus: 0.5
-  baseKnockback: 0.1
-  chargeKnockbackMultiplier: 1.5
+  baseKnockback: 0
+  chargeKnockbackMultiplier: 0.5
   baseMultishotChance: 1
   multishotSpreadDegrees: 6
   baseMultishotDamagePercent: 0.25

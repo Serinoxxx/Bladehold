@@ -3,11 +3,29 @@
 ## [0.1.19] - 2026-09-03
 
 ### New Features
+- Added dramatic lightning strike elimination for enemies remaining when the 20-second post-quota catch-all timer expires, dealing lethal damage with thunderous visual and audio effects instead of abruptly vanishing
 - Added Goblin Blood and Orcish Metal displays to the HUD and updated the Gold display to track run-specific gold
 - Added modular Clan Buff and Banner Reward ScriptableObjects allowing easy buff and reward pool customization
 - Replaced text-heavy War Banners with a quick-facts card showing clan icon, 1-line buff fact, and reward quantity
 - Added Golden Goblin wave objective: a special goblin with 999 health that drops gold based on damage and a 100 gold bonus if killed within 30 seconds.
-- Overhauled core game loop into 4 rounds of 3 waves with progressive enemy unlocks (Round 1: Goblins & Brutes, Round 2: Big Orks, Round 3: Bubblers, Round 4: Bombers + Slayer Boss)
+- Replaced end-of-wave reward drops with a physical, interactive War Banner selection system granting unique modifiers and rewards
+- Refactored single-element lock into a Hades-inspired ability-slot elemental system (Melee, Ranged, Mobility, Ultimate, Fortress)
+- Added new elemental statuses: Ignited (DoT), Chilled (Slow), Frozen (Stun), and Conductive (Chain Lightning)
+- Added Elemental Discord mechanic: Enemies inflicted with 2 or more distinct elements take +40% damage from all sources
+- Added Duo Synergies to the Draft Upgrade pool (Thermal Shock, Plasma Overload, Superconductor) requiring specific elements equipped
+- Added compensation mechanic for replacing an elemental ability slot (+25 In-Run Gold)
+- Added dedicated Rest Area scene between rounds (Waves 3, 6, 9) featuring the Well (+20 HP), Merchant Shop, Upgrade Draft station, and Return Gate
+- Added dedicated Meta Progression Area scene upon defeat featuring the Spirit NPC and diegetic 3D weapon pedestals
+- Added universal interaction framework using the 'E' key and gamepad for all world stations, pedestals, and gates
+- Added flexible weapon loadout system allowing switching between 1 Melee weapon (Sword or Axe) and 1 Ranged weapon (Bow or Throwing Axe)
+- Added 3-second ground warning telegraph indicators before enemies spawn and capped active enemies to 20
+- Added destructible Bubble Shields with health pools and a 10-second re-shield cooldown when broken
+- Added wave-end drop rewards (Troll Hearts, Orcish Metal, Goblin Blood, In-Run Gold, and Instant Upgrade Drafts) with 30-second intermissions
+- Added passive Training Dummy Goblin to Rest Area and Meta Progression Area with 1000 HP, floating health display, 10-second idle reset, and poof VFX at origin and destination
+- Added modular UI prefabs for the interaction prompt and rest area shop modal styled with the dark fantasy parchment aesthetic
+- Added MoreMountains Feel feedbacks for Rest Area shop cards: horizontal card shake, red flash, and error sound on invalid buy attempts; spring scale bounce, coins audio, and smooth card disappearance on successful purchase
+- Added arena upgrade powerups dropping between waves that open a 3-card draft for Weapon, Elemental, or Fortress upgrades
+- Added 'Return to the Fortress' objective with a gate waypoint marker upon clearing all 3 waves of a round
 - Replaced end-of-wave reward drops with a physical, interactive War Banner selection system granting unique modifiers and rewards
 - Refactored single-element lock into a Hades-inspired ability-slot elemental system (Melee, Ranged, Mobility, Ultimate, Fortress)
 - Added new elemental statuses: Ignited (DoT), Chilled (Slow), Frozen (Stun), and Conductive (Chain Lightning)
@@ -33,6 +51,8 @@
 - Added new visual and sound effects for War Banners including a staggered slam-down animation on spawn, ground waypoints, and a burning sequence when selected
 
 ### Fixes
+- Fixed an issue where activating an unlocked Warhorse Mount ultimate triggered the Arrow Stream ability instead by ensuring ultimate handlers are correctly configured across player hierarchy transforms and synchronized to the active loadout.
+- Fixed enemies pathing and flocking toward objective points (such as the supply wagon or prisoner cages) and idling without attacking; enemies now prioritize and path directly toward the player
 - Fixed a softlock where the game would freeze in an empty arena if a timed wave objective was failed
 - Fixed Chain Dash elemental upgrade failing to imbue the next melee swing with chain lightning
 - Fixed Axe charge attack failing when actively equipped via the new weapon loadout system

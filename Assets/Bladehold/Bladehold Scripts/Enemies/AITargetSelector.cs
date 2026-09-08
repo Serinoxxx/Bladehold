@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 /// <summary>
@@ -47,13 +48,18 @@ public class AITargetSelector : MonoBehaviour
         assignedGate = gate;
     }
 
-    /// <summary>True when the current target is the player rather than a gate or objective point.</summary>
+    /// <summary>True when the current target is the player rather than a gate.</summary>
     public bool IsTargetingPlayer
     {
         get
         {
             if (ShouldTargetPlayer()) return true;
-            if (TryGetObjectiveTarget(out _, out _)) return false;
+            if (IsDefendingGate())
+            {
+                return ResolveGate() == null;
+            }
+            Player p = Player.Instance;
+            if (p != null && p.Health != null && !p.Health.IsDead && !ignorePlayer) return true;
             return ResolveGate() == null;
         }
     }
@@ -69,25 +75,36 @@ public class AITargetSelector : MonoBehaviour
                 return player != null ? player.transform.position : transform.position;
             }
 
-            if (TryGetObjectiveTarget(out Vector3 objPos, out _))
+            // When the objective is to defend the gate (or assigned a gate), path to the gate
+            if (IsDefendingGate())
             {
-                return objPos;
+                Gate gate = ResolveGate();
+                if (gate != null)
+                {
+                    return gate.TargetPosition;
+                }
             }
 
-            Gate gate = ResolveGate();
-            if (gate != null)
+            // Otherwise, instead of enemies pathing to the objective, make them path to the player
+            Player p = Player.Instance;
+            if (p != null && p.Health != null && !p.Health.IsDead && !ignorePlayer)
             {
-                return gate.TargetPosition;
+                return p.transform.position;
             }
-            Player fallbackPlayer = Player.Instance;
-            return fallbackPlayer != null ? fallbackPlayer.transform.position : transform.position;
+
+            Gate fallbackGate = ResolveGate();
+            if (fallbackGate != null)
+            {
+                return fallbackGate.TargetPosition;
+            }
+            return p != null ? p.transform.position : transform.position;
         }
     }
 
-    /// <summary>True when flocking to an objective point (not targeting player or gate).</summary>
-    public bool IsFlockingToObjective => !ShouldTargetPlayer() && TryGetObjectiveTarget(out _, out _);
+    /// <summary>Enemies no longer flock to objectives; they path to the player or gate.</summary>
+    public bool IsFlockingToObjective => false;
 
-    /// <summary>The current target's damage sink (the gate's Health, or the player's). Null if none exists or flocking to an objective.</summary>
+    /// <summary>The current target's damage sink (the gate's Health, or the player's). Null if none exists.</summary>
     public IDamageable TargetDamageable
     {
         get
@@ -98,20 +115,49 @@ public class AITargetSelector : MonoBehaviour
                 return player != null ? player.Damageable : null;
             }
 
-            if (TryGetObjectiveTarget(out _, out _))
+            if (IsDefendingGate())
             {
-                // Flocking to an objective: enemies do NOT attack the objective, they only wait there.
-                return null;
+                Gate gate = ResolveGate();
+                if (gate != null)
+                {
+                    return gate.Damageable;
+                }
             }
 
-            Gate gate = ResolveGate();
-            if (gate != null)
+            Player p = Player.Instance;
+            if (p != null && p.Health != null && !p.Health.IsDead && !ignorePlayer)
             {
-                return gate.Damageable;
+                return p.Damageable;
             }
-            Player fallbackPlayer = Player.Instance;
-            return fallbackPlayer != null ? fallbackPlayer.Damageable : null;
+
+            Gate fallbackGate = ResolveGate();
+            if (fallbackGate != null)
+            {
+                return fallbackGate.Damageable;
+            }
+            return p != null ? p.Damageable : null;
         }
+    }
+
+    /// <summary>
+    /// Checks whether the enemy should target the gate (e.g. assigned gate, Slayer charging gate, or when defending the gate in Hold the Gate).
+    /// </summary>
+    private bool IsDefendingGate()
+    {
+        if (assignedGate != null && !assignedGate.IsDestroyed) return true;
+        if (ignorePlayer) return true;
+
+        if (SurvivorsObjectiveManager.Instance != null && SurvivorsObjectiveManager.Instance.CurrentObjective != null)
+        {
+            var currentObj = SurvivorsObjectiveManager.Instance.CurrentObjective;
+            if (currentObj.IsActive)
+            {
+                if (currentObj is KillEnemiesObjective) return true;
+                if (!string.IsNullOrEmpty(currentObj.Title) && currentObj.Title.IndexOf("Hold the Gate", StringComparison.OrdinalIgnoreCase) >= 0) return true;
+            }
+        }
+
+        return false;
     }
 
     private bool ShouldTargetPlayer()
@@ -145,20 +191,6 @@ public class AITargetSelector : MonoBehaviour
     {
         objPos = Vector3.zero;
         objDmg = null;
-        if (SurvivorsObjectiveManager.Instance != null && SurvivorsObjectiveManager.Instance.CurrentObjective != null)
-        {
-            var obj = SurvivorsObjectiveManager.Instance.CurrentObjective;
-            if (obj.IsActive)
-            {
-                Vector3? pos = obj.GetObjectiveTargetPosition(transform.position);
-                if (pos.HasValue)
-                {
-                    objPos = pos.Value;
-                    objDmg = obj.GetObjectiveDamageable(transform.position);
-                    return true;
-                }
-            }
-        }
         return false;
     }
 

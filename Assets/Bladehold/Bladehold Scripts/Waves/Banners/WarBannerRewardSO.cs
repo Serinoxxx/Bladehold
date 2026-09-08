@@ -28,6 +28,10 @@ public class WarBannerRewardSO : ScriptableObject
     [Tooltip("Maximum amount awarded if numeric (e.g. 125 gold).")]
     public int maxAmount = 1;
 
+    [Header("In-World Visuals")]
+    [Tooltip("Optional 3D visual prefab spawned in the arena when claiming this reward. If null, falls back to default.")]
+    public GameObject rewardPrefab;
+
     [Header("Designer Notes")]
     [TextArea(2, 4)]
     [Tooltip("Designer notes or reward description.")]

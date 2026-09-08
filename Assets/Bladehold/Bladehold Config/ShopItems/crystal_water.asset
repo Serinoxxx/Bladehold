@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: Crystal Water
   description: Grants +20% movement speed for the next 5 waves.
   goldCost: 25
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 0531c6d8a23e80947a928120e8b5ea95, type: 3}
   effectType: 2
   effectValue: 0.2
   durationWaves: 5

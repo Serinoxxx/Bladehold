@@ -99,6 +99,11 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
     [Header("Weapon models (optional)")]
     [Tooltip("Sword model shown while not aiming. Optional.")]
     [SerializeField] private GameObject swordModel;
+
+    public void SetMeleeWeaponModel(GameObject model)
+    {
+        swordModel = model;
+    }
     [Tooltip("Bow model shown while aiming. Optional (no bow model exists yet).")]
     [SerializeField] private GameObject bowModel;
 

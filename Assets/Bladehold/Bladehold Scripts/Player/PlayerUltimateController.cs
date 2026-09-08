@@ -53,6 +53,13 @@ public class PlayerUltimateController : MonoBehaviour
         {
             BindInput();
         }
+
+        if (RunSession.PlayerUltimateCharge > 0f)
+        {
+            SetCharge(RunSession.PlayerUltimateCharge);
+        }
+
+        SyncActiveUltimateHandler();
     }
 
     private float nextTrickleTime;
@@ -224,6 +231,19 @@ public class PlayerUltimateController : MonoBehaviour
         AddCharge(chargeGained);
     }
 
+    public void SetCharge(float amount)
+    {
+        float oldCharge = CurrentCharge;
+        CurrentCharge = Mathf.Clamp(amount, 0f, MaxCharge);
+        RunSession.PlayerUltimateCharge = CurrentCharge;
+
+        if (!Mathf.Approximately(oldCharge, CurrentCharge))
+        {
+            Debug.Log($"[PlayerUltimateController] Charge explicitly set: {oldCharge:F1} -> {CurrentCharge:F1} / {MaxCharge}");
+            OnChargeChanged?.Invoke(CurrentCharge);
+        }
+    }
+
     public void AddCharge(float amount)
     {
         if (IsUltimateActive || player == null || player.Stats == null) return;
@@ -234,6 +254,7 @@ public class PlayerUltimateController : MonoBehaviour
         
         if (!Mathf.Approximately(oldCharge, CurrentCharge))
         {
+            RunSession.PlayerUltimateCharge = CurrentCharge;
             Debug.Log($"[PlayerUltimateController] Charge updated: {oldCharge:F1} -> {CurrentCharge:F1} / {MaxCharge}");
             OnChargeChanged?.Invoke(CurrentCharge);
         }
@@ -251,6 +272,7 @@ public class PlayerUltimateController : MonoBehaviour
     {
         IsUltimateActive = true;
         CurrentCharge = 0f;
+        RunSession.PlayerUltimateCharge = 0f;
         nextEyeOfStormStrikeTime = 0f;
         OnChargeChanged?.Invoke(CurrentCharge);
 
@@ -261,7 +283,9 @@ public class PlayerUltimateController : MonoBehaviour
             TriggerInfernoBurst();
         }
 
-        var handlers = GetComponentsInChildren<IUltimateHandler>(true);
+        SyncActiveUltimateHandler();
+
+        var handlers = transform.root.GetComponentsInChildren<IUltimateHandler>(true);
         bool handlerActivated = false;
         foreach (var handler in handlers)
         {
@@ -277,6 +301,55 @@ public class PlayerUltimateController : MonoBehaviour
         {
             EndUltimate();
         }
+    }
+
+    public void SyncActiveUltimateHandler()
+    {
+        if (player == null) player = GetComponentInChildren<Player>();
+        if (player == null || player.Stats == null) return;
+
+        float unlocked = player.Stats.GetValue(StatType.UltimateUnlocked);
+        if (unlocked <= 0f) return;
+
+        string targetUltId = RunSession.ActiveUltimateId;
+        if (string.IsNullOrEmpty(targetUltId))
+        {
+            targetUltId = GetDefaultUltimateIdForEquippedWeapons();
+            if (!string.IsNullOrEmpty(targetUltId))
+            {
+                RunSession.ActiveUltimateId = targetUltId;
+            }
+        }
+
+        if (!string.IsNullOrEmpty(targetUltId))
+        {
+            DraftUpgradeService.ConfigureUltimateHandler(player, targetUltId);
+        }
+    }
+
+    private string GetDefaultUltimateIdForEquippedWeapons()
+    {
+        // 1. Check weapon manager melee weapon
+        string meleeId = PlayerWeaponManager.Instance != null ? PlayerWeaponManager.Instance.CurrentMeleeId : "sword";
+        if (string.IsNullOrEmpty(meleeId))
+        {
+            SaveData save = SaveSystem.Load();
+            meleeId = save != null && !string.IsNullOrEmpty(save.equippedMeleeWeapon) ? save.equippedMeleeWeapon.ToLower() : "sword";
+        }
+
+        if (meleeId.Contains("axe")) return "axe_bladestorm_ult";
+        if (meleeId.Contains("sword")) return "sword_mount_ult";
+
+        // 2. Check ranged weapon
+        string rangedId = PlayerWeaponManager.Instance != null ? PlayerWeaponManager.Instance.CurrentRangedId : "bow";
+        if (string.IsNullOrEmpty(rangedId))
+        {
+            SaveData save = SaveSystem.Load();
+            rangedId = save != null && !string.IsNullOrEmpty(save.equippedRangedWeapon) ? save.equippedRangedWeapon.ToLower() : "bow";
+        }
+
+        if (rangedId.Contains("throwing") || rangedId.Contains("taxe")) return "taxe_vortex_ult";
+        return "bow_stream_ult";
     }
 
     private void TriggerInfernoBurst()

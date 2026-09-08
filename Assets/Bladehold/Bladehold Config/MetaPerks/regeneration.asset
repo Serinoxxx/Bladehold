@@ -17,4 +17,4 @@ MonoBehaviour:
   description: Restores +5 HP upon successfully surviving each wave.
   tier: 1
   goblinBloodCost: 10
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 0d51f29393d5a5b46a7b98a833dda962, type: 3}

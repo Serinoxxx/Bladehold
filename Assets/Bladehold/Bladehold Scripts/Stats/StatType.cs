@@ -153,6 +153,8 @@ public enum StatType
     DodgeUnlocked,
     /// <summary>Cooldown in seconds before dodging again.</summary>
     DodgeCooldown,
+    /// <summary>Maximum number of dodge/dash charges stored simultaneously.</summary>
+    DodgeMaxCharges,
     /// <summary>Distance the dodge covers in metres.</summary>
     DodgeDistance,
     /// <summary>Multiplier on base sword damage dealt to enemies dashed through. 0 = no damage.</summary>

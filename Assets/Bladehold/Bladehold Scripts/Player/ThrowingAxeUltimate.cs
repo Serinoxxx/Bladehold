@@ -28,21 +28,25 @@ public class ThrowingAxeUltimate : MonoBehaviour, IUltimateHandler
 
     private void Awake()
     {
-        player = GetComponentInChildren<Player>();
-        playerThrownAxe = GetComponentInChildren<PlayerThrownAxe>();
+        FindDependencies();
     }
 
     private void Start()
     {
-        if (player == null) player = GetComponentInChildren<Player>();
-        if (playerThrownAxe == null) playerThrownAxe = GetComponentInChildren<PlayerThrownAxe>();
+        FindDependencies();
+    }
+
+    private void FindDependencies()
+    {
+        Transform rootTr = transform.root;
+        if (player == null) player = rootTr.GetComponentInChildren<Player>(true) ?? GetComponentInParent<Player>() ?? GetComponentInChildren<Player>(true) ?? Player.Instance;
+        if (playerThrownAxe == null) playerThrownAxe = rootTr.GetComponentInChildren<PlayerThrownAxe>(true) ?? GetComponentInParent<PlayerThrownAxe>() ?? GetComponentInChildren<PlayerThrownAxe>(true);
     }
 
     public void Activate(PlayerUltimateController controller)
     {
         this.controller = controller;
-        if (player == null) player = GetComponentInChildren<Player>();
-        if (playerThrownAxe == null) playerThrownAxe = GetComponentInChildren<PlayerThrownAxe>();
+        FindDependencies();
 
         if (player == null)
         {

@@ -17,4 +17,4 @@ MonoBehaviour:
   description: Gain 1 free card reroll per Rest Area draft.
   tier: 3
   goblinBloodCost: 50
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 1614684cabfd3bc49863c68a00a035b5, type: 3}

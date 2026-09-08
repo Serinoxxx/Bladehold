@@ -73,10 +73,10 @@ public static class SetupGameLoopAssets
         CreatePerkAsset(metaDir, "deep_pockets", "Deep Pockets", 3, 50, "Rest Area Merchant offers 4 item slots instead of 3.");
 
         // 4. ShopItemSO assets
-        CreateShopItemAsset(shopDir, "maggoty_bread", "Maggoty Bread", 5, "Instant snack restoring +5 HP.", ShopItemEffectType.HealInstant, 5f, 0);
-        CreateShopItemAsset(shopDir, "troll_heart", "Troll Heart", 50, "Increases Max HP by +25 for the remainder of this run.", ShopItemEffectType.MaxHealthRun, 25f, 0);
-        CreateShopItemAsset(shopDir, "crystal_water", "Crystal Water", 25, "Grants +20% movement speed for the next 5 waves.", ShopItemEffectType.MoveSpeedTemporary, 0.2f, 5);
-        CreateShopItemAsset(shopDir, "special_herbs", "Special Herbs", 40, "Restores +5 HP at the end of each wave for 5 waves.", ShopItemEffectType.WaveEndHealTemporary, 5f, 5);
+        CreateShopItemAsset(shopDir, "maggoty_bread", "Maggoty Bread", 5, "Instant snack restoring +5 HP.", ShopItemEffectType.HealInstant, 5f, 0, "medpack");
+        CreateShopItemAsset(shopDir, "troll_heart", "Troll Heart", 50, "Increases Max HP by +25 for the remainder of this run.", ShopItemEffectType.MaxHealthRun, 25f, 0, "hp_1");
+        CreateShopItemAsset(shopDir, "crystal_water", "Crystal Water", 25, "Grants +20% movement speed for the next 5 waves.", ShopItemEffectType.MoveSpeedTemporary, 0.2f, 5, "move_1");
+        CreateShopItemAsset(shopDir, "special_herbs", "Special Herbs", 40, "Restores +5 HP at the end of each wave for 5 waves.", ShopItemEffectType.WaveEndHealTemporary, 5f, 5, "hp_2");
 
         AssetDatabase.SaveAssets();
     }
@@ -129,7 +129,7 @@ public static class SetupGameLoopAssets
         EditorUtility.SetDirty(perk);
     }
 
-    private static void CreateShopItemAsset(string dir, string id, string name, int cost, string desc, ShopItemEffectType type, float val, int dur)
+    private static void CreateShopItemAsset(string dir, string id, string name, int cost, string desc, ShopItemEffectType type, float val, int dur, string iconName = null)
     {
         string path = $"{dir}/{id}.asset";
         ShopItemSO item = AssetDatabase.LoadAssetAtPath<ShopItemSO>(path);
@@ -145,6 +145,10 @@ public static class SetupGameLoopAssets
         item.effectType = type;
         item.effectValue = val;
         item.durationWaves = dur;
+        if (!string.IsNullOrEmpty(iconName))
+        {
+            item.icon = AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/Bladehold/Art/Icons/Skills/Base/{iconName}.png");
+        }
         EditorUtility.SetDirty(item);
     }
 

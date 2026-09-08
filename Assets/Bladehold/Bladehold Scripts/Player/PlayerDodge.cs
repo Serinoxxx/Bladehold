@@ -8,6 +8,11 @@ using UnityEngine.InputSystem;
 
 public class PlayerDodge : MonoBehaviour
 {
+    [Header("Config")]
+    [Tooltip("Tunable ScriptableObject for dash cooldown, max charges, distance, and buffer timings.")]
+    [SerializeField] private PlayerDodgeSO config;
+
+    [Header("References")]
     [SerializeField] private Player player;
     [SerializeField] private CharacterController characterController;
     [SerializeField] private Animator animator;
@@ -39,13 +44,31 @@ public class PlayerDodge : MonoBehaviour
     public event Action<float, float> OnCooldownUpdated;
     public event Action OnAbilityReady;
     public event Action OnDodgeStarted;
+    public event Action<int, int> OnChargesChanged;
 
-    private float remainingCooldown;
-    private float maxCooldown;
-    private bool isCooldownActive;
+    private int currentCharges;
+    private float chargeRechargeTimer;
+    private float bufferedDashUntilTime;
     private bool isDodging;
+    private bool anyError;
     private float lastDodgeEndTime = -999f;
     private int attackTriggerHash;
+
+#if UNITY_EDITOR
+    private float lastCachedConfigCooldown = -1f;
+    private int lastCachedConfigCharges = -1;
+#endif
+
+    public int CurrentCharges => currentCharges;
+    public int MaxCharges => player != null && player.Stats != null 
+        ? Mathf.Max(1, Mathf.RoundToInt(player.Stats.GetValue(StatType.DodgeMaxCharges))) 
+        : (config != null ? config.baseMaxCharges : 2);
+    public float MaxCooldown => player != null && player.Stats != null 
+        ? Mathf.Max(0.05f, player.Stats.GetValue(StatType.DodgeCooldown)) 
+        : (config != null ? config.baseCooldown : 1.2f);
+    public float RemainingCooldown => chargeRechargeTimer;
+    public bool IsCooldownActive => currentCharges < MaxCharges;
+    public bool CanDodge => !isDodging && currentCharges > 0 && (player == null || !player.Health.IsDead) && (player == null || player.Stats.GetValue(StatType.DodgeUnlocked) > 0f);
 
     public bool IsDodging => isDodging;
     public float TimeSinceDodge => Time.time - lastDodgeEndTime;
@@ -71,6 +94,27 @@ public class PlayerDodge : MonoBehaviour
         if (swordHitFeedback == null) swordHitFeedback = GetComponentInChildren<SwordHitFeedback>();
         if (playerBow == null && player != null) playerBow = player.GetComponentInChildren<PlayerBow>();
 
+        if (player == null || characterController == null)
+        {
+            Debug.LogError("[PlayerDodge] Essential dependencies missing on Player GameObject!");
+            anyError = true;
+            return;
+        }
+
+        if (config != null && player.Stats != null)
+        {
+            player.Stats.SetBase(StatType.DodgeCooldown, config.baseCooldown);
+            player.Stats.SetBase(StatType.DodgeMaxCharges, config.baseMaxCharges);
+            player.Stats.SetBase(StatType.DodgeDistance, config.baseDistance);
+            dashDuration = config.dashDuration;
+#if UNITY_EDITOR
+            lastCachedConfigCooldown = config.baseCooldown;
+            lastCachedConfigCharges = config.baseMaxCharges;
+#endif
+        }
+
+        currentCharges = MaxCharges;
+        chargeRechargeTimer = 0f;
         InitAttackTriggerHash();
     }
 
@@ -93,18 +137,56 @@ public class PlayerDodge : MonoBehaviour
 
     private void Update()
     {
-        if (player == null || player.Health.IsDead) return;
+        if (anyError || player == null || player.Health.IsDead) return;
 
-        if (isCooldownActive)
+#if UNITY_EDITOR
+        if (config != null && player.Stats != null)
         {
-            remainingCooldown -= Time.deltaTime;
-            OnCooldownUpdated?.Invoke(remainingCooldown, maxCooldown);
-
-            if (remainingCooldown <= 0f)
+            if (!Mathf.Approximately(config.baseCooldown, lastCachedConfigCooldown))
             {
-                isCooldownActive = false;
-                OnAbilityReady?.Invoke();
+                lastCachedConfigCooldown = config.baseCooldown;
+                player.Stats.SetBase(StatType.DodgeCooldown, config.baseCooldown);
             }
+            if (config.baseMaxCharges != lastCachedConfigCharges)
+            {
+                lastCachedConfigCharges = config.baseMaxCharges;
+                player.Stats.SetBase(StatType.DodgeMaxCharges, config.baseMaxCharges);
+            }
+        }
+#endif
+
+        int maxCharges = MaxCharges;
+        float maxCd = MaxCooldown;
+
+        if (currentCharges > maxCharges)
+        {
+            currentCharges = maxCharges;
+            OnChargesChanged?.Invoke(currentCharges, maxCharges);
+        }
+
+        if (currentCharges < maxCharges)
+        {
+            chargeRechargeTimer -= Time.deltaTime;
+            if (chargeRechargeTimer <= 0f)
+            {
+                currentCharges++;
+                OnChargesChanged?.Invoke(currentCharges, maxCharges);
+
+                if (currentCharges < maxCharges)
+                {
+                    chargeRechargeTimer += maxCd;
+                }
+                else
+                {
+                    chargeRechargeTimer = 0f;
+                    OnAbilityReady?.Invoke();
+                }
+            }
+            OnCooldownUpdated?.Invoke(chargeRechargeTimer, maxCd);
+        }
+        else
+        {
+            chargeRechargeTimer = 0f;
         }
 
         if (player.Stats.GetValue(StatType.DodgeUnlocked) <= 0f) return;
@@ -116,9 +198,23 @@ public class PlayerDodge : MonoBehaviour
                           Keyboard.current.rightCtrlKey.wasPressedThisFrame ||
                           Keyboard.current.spaceKey.wasPressedThisFrame;
         }
-
-        if (!isDodging && !isCooldownActive && dashPressed)
+        if (Gamepad.current != null)
         {
+            dashPressed = dashPressed || Gamepad.current.buttonEast.wasPressedThisFrame ||
+                          Gamepad.current.leftShoulder.wasPressedThisFrame;
+        }
+
+        float bufferDuration = config != null ? config.inputBufferDuration : 0.15f;
+        if (dashPressed)
+        {
+            bufferedDashUntilTime = Time.time + bufferDuration;
+        }
+
+        bool wantsDash = dashPressed || (Time.time <= bufferedDashUntilTime);
+
+        if (!isDodging && currentCharges > 0 && wantsDash)
+        {
+            bufferedDashUntilTime = 0f;
             StartCoroutine(PerformDodge());
         }
     }
@@ -126,6 +222,10 @@ public class PlayerDodge : MonoBehaviour
     private IEnumerator PerformDodge()
     {
         isDodging = true;
+        currentCharges--;
+        int maxCharges = MaxCharges;
+        float maxCd = MaxCooldown;
+        OnChargesChanged?.Invoke(currentCharges, maxCharges);
         OnDodgeStarted?.Invoke();
 
         if (dodgeFeedback != null)
@@ -148,16 +248,18 @@ public class PlayerDodge : MonoBehaviour
             case "POISON": if (poisonDashVfxPrefab != null) prefabToUse = poisonDashVfxPrefab; break;
         }
 
+        float effectiveDashDuration = config != null ? config.dashDuration : dashDuration;
         if (prefabToUse != null)
         {
             activeVfx = Instantiate(prefabToUse, transform.position, transform.rotation, transform);
-            Destroy(activeVfx, dashDuration + 1f);
+            Destroy(activeVfx, effectiveDashDuration + 1f);
         }
 
-        maxCooldown = player.Stats.GetValue(StatType.DodgeCooldown);
-        remainingCooldown = maxCooldown;
-        isCooldownActive = true;
-        OnCooldownUpdated?.Invoke(remainingCooldown, maxCooldown);
+        if (chargeRechargeTimer <= 0f)
+        {
+            chargeRechargeTimer = maxCd;
+            OnCooldownUpdated?.Invoke(chargeRechargeTimer, maxCd);
+        }
 
         float distance = player.Stats.GetValue(StatType.DodgeDistance);
         
@@ -230,11 +332,11 @@ public class PlayerDodge : MonoBehaviour
             TriggerFrostStepPulse(transform.position, frostSlow);
         }
 
-        while (timePassed < dashDuration)
+        while (timePassed < effectiveDashDuration)
         {
             if (player.Health.IsDead) break;
 
-            float moveStep = (distance / dashDuration) * Time.deltaTime;
+            float moveStep = (distance / effectiveDashDuration) * Time.deltaTime;
             characterController.Move(dashDir * moveStep);
 
             if (fireDPS > 0f && Vector3.Distance(lastTrailPos, transform.position) >= 0.6f)
@@ -273,9 +375,22 @@ public class PlayerDodge : MonoBehaviour
 
                         if (enemyHealth.IsDead && chainReduction > 0f)
                         {
-                            remainingCooldown -= chainReduction;
-                            if (remainingCooldown < 0f) remainingCooldown = 0f;
-                            OnCooldownUpdated?.Invoke(remainingCooldown, maxCooldown);
+                            chargeRechargeTimer -= chainReduction;
+                            if (chargeRechargeTimer <= 0f && currentCharges < maxCharges)
+                            {
+                                currentCharges++;
+                                OnChargesChanged?.Invoke(currentCharges, maxCharges);
+                                if (currentCharges < maxCharges)
+                                {
+                                    chargeRechargeTimer += maxCd;
+                                }
+                                else
+                                {
+                                    chargeRechargeTimer = 0f;
+                                    OnAbilityReady?.Invoke();
+                                }
+                            }
+                            OnCooldownUpdated?.Invoke(chargeRechargeTimer, maxCd);
                         }
                     }
                 }

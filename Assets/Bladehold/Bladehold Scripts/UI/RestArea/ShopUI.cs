@@ -139,10 +139,18 @@ public class ShopUI : MonoBehaviour
 
         if (nameText != null) nameText.text = item != null ? item.displayName : "Item";
         if (descText != null) descText.text = item != null ? item.description : "";
-        if (iconImage != null && item != null && item.icon != null)
+        if (iconImage != null)
         {
-            iconImage.sprite = item.icon;
-            iconImage.enabled = true;
+            if (item != null && item.icon != null)
+            {
+                iconImage.sprite = item.icon;
+                iconImage.enabled = true;
+            }
+            else
+            {
+                iconImage.sprite = null;
+                iconImage.enabled = false;
+            }
         }
 
         if (buyButton != null)

@@ -13,14 +13,27 @@ public class RangerUltimate : MonoBehaviour, IUltimateHandler
 
     private void Awake()
     {
-        player = GetComponentInChildren<Player>();
-        bow = GetComponentInChildren<PlayerBow>();
+        FindDependencies();
+    }
+
+    private void Start()
+    {
+        FindDependencies();
+    }
+
+    private void FindDependencies()
+    {
+        Transform rootTr = transform.root;
+        if (player == null) player = rootTr.GetComponentInChildren<Player>(true) ?? GetComponentInParent<Player>() ?? GetComponentInChildren<Player>(true) ?? Player.Instance;
+        if (bow == null) bow = rootTr.GetComponentInChildren<PlayerBow>(true) ?? GetComponentInParent<PlayerBow>() ?? GetComponentInChildren<PlayerBow>(true);
     }
 
     public void Activate(PlayerUltimateController controller)
     {
         this.controller = controller;
-        float duration = player.Stats.GetValue(StatType.UltimateDurationSeconds);
+        FindDependencies();
+        float duration = player != null && player.Stats != null ? player.Stats.GetValue(StatType.UltimateDurationSeconds) : 6f;
+        if (duration <= 0f) duration = 6f;
         ultimateEndTime = Time.time + duration;
         isRunning = true;
         

@@ -155,7 +155,32 @@ public class Gate : MonoBehaviour
             return;
         }
 
+        // Restore or initialize gate health across scene loads via RunSession
+        if (RunSession.FortressGateCurrentHealth > 0f)
+        {
+            if (RunSession.FortressGateMaxHealth > 0f)
+            {
+                health.SetMaxHealth(RunSession.FortressGateMaxHealth, false);
+            }
+            health.SetCurrentHealth(RunSession.FortressGateCurrentHealth);
+        }
+        else
+        {
+            RunSession.FortressGateCurrentHealth = health.CurrentHealth;
+            RunSession.FortressGateMaxHealth = health.MaxHealth;
+        }
+
+        health.OnHealthChanged += HandleHealthChanged;
         health.OnDied += HandleDied;
+    }
+
+    private void HandleHealthChanged()
+    {
+        if (health != null)
+        {
+            RunSession.FortressGateCurrentHealth = health.CurrentHealth;
+            RunSession.FortressGateMaxHealth = health.MaxHealth;
+        }
     }
 
     private void OnDestroy()
@@ -163,6 +188,7 @@ public class Gate : MonoBehaviour
         all.Remove(this);
         if (health != null)
         {
+            health.OnHealthChanged -= HandleHealthChanged;
             health.OnDied -= HandleDied;
         }
     }

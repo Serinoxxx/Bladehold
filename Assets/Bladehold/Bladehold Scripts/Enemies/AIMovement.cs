@@ -132,6 +132,15 @@ public class AIMovement : MonoBehaviour
         }
     }
 
+    private void OnEnable()
+    {
+        isTurningPaused = false;
+        if (agent != null && agent.isOnNavMesh)
+        {
+            agent.updateRotation = true;
+        }
+    }
+
     private void OnDestroy()
     {
         if (health != null)
@@ -222,9 +231,16 @@ public class AIMovement : MonoBehaviour
             turnMultiplier = 1f;
         }
 
-        if (agent != null && agent.isOnNavMesh && !isTurningPaused)
+        if (agent != null && agent.isOnNavMesh)
         {
-            agent.angularSpeed = baseAngularSpeed * turnMultiplier;
+            if (!isTurningPaused)
+            {
+                if (!agent.updateRotation)
+                {
+                    agent.updateRotation = true;
+                }
+                agent.angularSpeed = baseAngularSpeed * turnMultiplier;
+            }
         }
 
         // Far agents repath less often — with the stagger above, ~300 agents spread their

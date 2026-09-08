@@ -370,13 +370,17 @@ public class GameLoopManager : MonoBehaviour
                 cleanupTimer += Time.deltaTime;
                 if (cleanupTimer >= 20f)
                 {
+                    cleanupTimer = 0f;
                     Debug.LogWarning($"[GameLoopManager] Catch-all 20s cleanup timer expired! (QuotaMet: {killQuotaMet}, SpawnerExhausted: {spawnerExhausted}). Forcing wave clear.");
                     if (spawner != null)
                     {
                         spawner.StopSpawning();
-                        spawner.DespawnAllAliveEnemies();
+                        spawner.StrikeAllAliveWithLightning(9999f);
                     }
-                    ClearActiveWave();
+                    if (isWaveActive)
+                    {
+                        ClearActiveWave();
+                    }
                 }
             }
             else
@@ -392,7 +396,9 @@ public class GameLoopManager : MonoBehaviour
 
     private void ClearActiveWave()
     {
+        if (!isWaveActive) return;
         isWaveActive = false;
+        cleanupTimer = 0f;
         int clearedWave = CurrentWave;
         int wavesPerRound = pacingConfig != null ? pacingConfig.wavesPerRound : 3;
         bool isRestWave = (clearedWave % wavesPerRound == 0);
@@ -457,6 +463,12 @@ public class GameLoopManager : MonoBehaviour
 
     private void SpawnPowerupForCurrentBounty()
     {
+        if (activePowerup != null)
+        {
+            Debug.LogWarning("[GameLoopManager] activePowerup is already present; skipping duplicate powerup spawn.");
+            return;
+        }
+
         if (CurrentWaveBounty == BannerBountyType.None)
         {
             StartCoroutine(TransitionToNextBannersRoutine());
@@ -465,7 +477,27 @@ public class GameLoopManager : MonoBehaviour
 
         Vector3 spawnPos = upgradePowerupSpawnPoint != null ? upgradePowerupSpawnPoint.position : Vector3.zero;
         
-        activePowerup = WaveUpgradePowerup.Spawn(spawnPos, CurrentWaveBounty, upgradePowerupPrefab);
+        GameObject prefabToSpawn = null;
+        if (CurrentBannerRewardSO != null && CurrentBannerRewardSO.rewardPrefab != null)
+        {
+            prefabToSpawn = CurrentBannerRewardSO.rewardPrefab;
+        }
+        else if (bannerConfig != null)
+        {
+            var activeRewards = bannerConfig.GetActiveRewards();
+            var matchingReward = activeRewards.Find(r => r != null && r.bountyType == CurrentWaveBounty);
+            if (matchingReward != null && matchingReward.rewardPrefab != null)
+            {
+                prefabToSpawn = matchingReward.rewardPrefab;
+            }
+        }
+
+        if (prefabToSpawn == null)
+        {
+            prefabToSpawn = upgradePowerupPrefab;
+        }
+
+        activePowerup = WaveUpgradePowerup.Spawn(spawnPos, CurrentWaveBounty, prefabToSpawn);
         activePowerup.OnClaimed += HandlePowerupClaimed;
     }
 
@@ -821,6 +853,31 @@ public class GameLoopManager : MonoBehaviour
         if (Player.Instance != null && Player.Instance.Health != null)
         {
             RunSession.PlayerHealthRatio = Player.Instance.Health.CurrentHealth / Player.Instance.Health.MaxHealth;
+        }
+
+        // Preserve player ultimate charge
+        if (Player.Instance != null)
+        {
+            var ult = Player.Instance.GetComponent<PlayerUltimateController>();
+            if (ult != null)
+            {
+                RunSession.PlayerUltimateCharge = ult.CurrentCharge;
+            }
+        }
+
+        // Preserve fortress gate health
+        if (Gate.All != null && Gate.All.Count > 0)
+        {
+            foreach (var g in Gate.All)
+            {
+                if (g != null && g.GetComponent<Health>() != null)
+                {
+                    var gh = g.GetComponent<Health>();
+                    RunSession.FortressGateCurrentHealth = gh.CurrentHealth;
+                    RunSession.FortressGateMaxHealth = gh.MaxHealth;
+                    break;
+                }
+            }
         }
 
         // Load Rest Area Scene

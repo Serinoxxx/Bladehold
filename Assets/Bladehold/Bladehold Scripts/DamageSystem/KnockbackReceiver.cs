@@ -477,13 +477,16 @@ public class KnockbackReceiver : MonoBehaviour
         }
 
         ragdoll.ExitRagdoll();
-        transform.SetPositionAndRotation(navHit.position, UprightYaw());
+        transform.SetPositionAndRotation(navHit.position, UprightYaw(navHit.position));
         rootCollider.enabled = true;
         agent.enabled = true;
         agent.Warp(navHit.position);
+        agent.updateRotation = true;
         agent.isStopped = false;
 
         animator.enabled = true;
+        animator.Rebind();
+        animator.Update(0f);
         animator.ResetTrigger("Stagger");
         animator.Play(getUpStateHash, 0, 0f);
         animator.Update(0f);
@@ -502,14 +505,20 @@ public class KnockbackReceiver : MonoBehaviour
         State = KnockbackState.Normal;
         SetAiEnabled(true);
 
-        if (agent.enabled && agent.isOnNavMesh)
+        if (aiMovement != null)
         {
+            aiMovement.SetTurningPaused(false);
+        }
+
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
+        {
+            agent.updateRotation = true;
             agent.isStopped = false;
         }
 
         if (playerHealth != null && playerHealth.IsDead)
         {
-            if (agent.enabled && agent.isOnNavMesh) agent.isStopped = true;
+            if (agent != null && agent.enabled && agent.isOnNavMesh) agent.isStopped = true;
             animator.SetTrigger(cheerTriggerHash);
         }
         routine = null;
@@ -547,9 +556,31 @@ public class KnockbackReceiver : MonoBehaviour
     }
 
 
-    private Quaternion UprightYaw()
+    private Quaternion UprightYaw(Vector3 landingPosition)
     {
-        Vector3 forward = ragdoll.Pelvis != null ? ragdoll.Pelvis.transform.forward : transform.forward;
+        Vector3 targetPos = Vector3.zero;
+        AITargetSelector selector = GetComponent<AITargetSelector>();
+        if (selector != null)
+        {
+            targetPos = selector.TargetPosition;
+        }
+        else if (playerHealth != null)
+        {
+            targetPos = playerHealth.transform.position;
+        }
+        else if (Player.Instance != null)
+        {
+            targetPos = Player.Instance.transform.position;
+        }
+
+        Vector3 toTarget = targetPos - landingPosition;
+        toTarget.y = 0f;
+        if (toTarget.sqrMagnitude > 0.0001f)
+        {
+            return Quaternion.LookRotation(toTarget.normalized);
+        }
+
+        Vector3 forward = transform.forward;
         forward.y = 0f;
         return forward.sqrMagnitude > 0.0001f ? Quaternion.LookRotation(forward.normalized) : transform.rotation;
     }

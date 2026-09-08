@@ -18,6 +18,8 @@ public class WaveUpgradePowerup : MonoBehaviour
     [SerializeField] private float bobSpeed = 2.5f;
     [SerializeField] private float rotationSpeed = 60f;
     [SerializeField] private Transform visualTransform;
+    [Tooltip("If true, overrides child renderer material colors with the bounty type color. Recommended false for prefabs with their own textures.")]
+    [SerializeField] private bool tintMaterialsWithBountyColor = false;
 
     [Header("Audio")]
     [SerializeField] private AudioClip spawnSfx;
@@ -123,16 +125,19 @@ public class WaveUpgradePowerup : MonoBehaviour
             _ => Color.white
         };
 
-        // Tint any renderers or lights attached
-        Renderer[] renderers = GetComponentsInChildren<Renderer>();
-        foreach (Renderer rend in renderers)
+        // Tint renderers if enabled
+        if (tintMaterialsWithBountyColor)
         {
-            if (rend != null && rend.material != null)
+            Renderer[] renderers = GetComponentsInChildren<Renderer>();
+            foreach (Renderer rend in renderers)
             {
-                rend.material.color = color;
-                if (rend.material.HasProperty("_EmissionColor"))
+                if (rend != null && rend.material != null)
                 {
-                    rend.material.SetColor("_EmissionColor", color * 1.5f);
+                    rend.material.color = color;
+                    if (rend.material.HasProperty("_EmissionColor"))
+                    {
+                        rend.material.SetColor("_EmissionColor", color * 1.5f);
+                    }
                 }
             }
         }
@@ -168,17 +173,55 @@ public class WaveUpgradePowerup : MonoBehaviour
     }
 
     /// <summary>
-    ///     Creates a runtime fallback powerup GameObject if no prefab was assigned.
+    ///     Creates a runtime fallback powerup GameObject if no prefab was assigned,
+    ///     or instantiates and configures a custom visual prefab.
     /// </summary>
     public static WaveUpgradePowerup Spawn(Vector3 position, BannerBountyType bounty, GameObject prefab = null)
     {
         GameObject go;
+        bool isProceduralFallback = false;
+
         if (prefab != null)
         {
             go = Instantiate(prefab, position, Quaternion.identity);
+
+            // Ensure any existing colliders act as triggers so player movement isn't blocked
+            Collider[] existingColliders = go.GetComponentsInChildren<Collider>();
+            if (existingColliders.Length > 0)
+            {
+                foreach (Collider col in existingColliders)
+                {
+                    col.isTrigger = true;
+                }
+            }
+            else
+            {
+                SphereCollider sc = go.AddComponent<SphereCollider>();
+                sc.isTrigger = true;
+                sc.radius = 2.5f;
+            }
+
+            // Ensure powerup light exists for ambiance
+            if (go.GetComponentInChildren<Light>() == null)
+            {
+                GameObject lightObj = new GameObject("PowerupLight");
+                lightObj.transform.SetParent(go.transform, false);
+                lightObj.transform.localPosition = new Vector3(0f, 1.2f, 0f);
+                Light l = lightObj.AddComponent<Light>();
+                l.type = LightType.Point;
+                l.range = 6f;
+                l.intensity = 2.0f;
+            }
+
+            // Ensure interactable exists
+            if (go.GetComponent<Interactable>() == null)
+            {
+                go.AddComponent<Interactable>();
+            }
         }
         else
         {
+            isProceduralFallback = true;
             go = new GameObject("WaveUpgradePowerup");
             go.transform.position = position;
 
@@ -220,6 +263,11 @@ public class WaveUpgradePowerup : MonoBehaviour
         if (powerup == null)
         {
             powerup = go.AddComponent<WaveUpgradePowerup>();
+        }
+
+        if (isProceduralFallback)
+        {
+            powerup.tintMaterialsWithBountyColor = true;
         }
 
         powerup.InitializeBounty(bounty);
