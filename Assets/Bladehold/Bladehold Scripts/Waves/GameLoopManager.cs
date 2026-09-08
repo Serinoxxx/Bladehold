@@ -947,7 +947,10 @@ public class GameLoopManager : MonoBehaviour
     private IEnumerator TransitionToMetaSceneRoutine()
     {
         yield return new WaitForSeconds(2.0f);
-        CursorLockManager.SetUnlock("MetaArea", true);
+        // PlayerCameraPivot stops following while any cursor-unlock request is active.
+        // Clear death UI state before loading the playable Meta Area.
+        CursorLockManager.SetUnlock("DeathScreen", false);
+        CursorLockManager.SetUnlock("MetaArea", false);
         if (Application.isPlaying)
         {
             SceneManager.LoadScene("Bladehold Meta Area Scene");

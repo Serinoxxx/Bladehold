@@ -11,6 +11,9 @@
 - Added meta-information loading screen displaying "Entering [Area Name]" alongside subtitles, lore descriptions, and progress bars during scene transitions
 - Added AreaDefinition ScriptableObject and global AreaDatabase mapping scene destinations to rich player-facing stage lore
 
+### Fixes
+- Fixed the Meta Area camera no longer following the player after a death transition
+
 ### General Changes
 - Unified scene transition and loading logic between Main Menu, Meta Area Battle Portal, and Rest Area exits with shader prewarming support
 
@@ -269,7 +272,6 @@
 ### General Changes
 - Added hit sparks, screen shake, and impact sounds
 - Added Berserker and Mage skill tree preview panels
-
 
 
 
