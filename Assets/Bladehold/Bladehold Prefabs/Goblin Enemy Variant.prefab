@@ -785,6 +785,7 @@ MonoBehaviour:
   startAttackFeedback: {fileID: 531501347744972787}
   attackHitFeedback: {fileID: 1294620434156887580}
   knockbackReceiver: {fileID: 8743446565083701594}
+  movement: {fileID: 8448426296968807282}
   attackTrigger: Attack
 --- !u!114 &4122440191477999408
 MonoBehaviour:
@@ -833,6 +834,7 @@ MonoBehaviour:
   landingVfxPrefab: {fileID: 0}
   landingSfx: {fileID: 0}
   flyingScreamSfx: []
+  forceRagdollOnDeath: 0
 --- !u!114 &6572349470805921892
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1688,7 +1690,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HealthBarUI
   health: {fileID: 2416392165065999887}
   healthBar: {fileID: 8820619236359328086}
-  ragdoll: {fileID: 2774917170554717151}
+  headBone: {fileID: 1721589853788191651}
+  heightAboveHead: 0.2
 --- !u!114 &8820619236359328086
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1866,7 +1869,7 @@ MonoBehaviour:
   NestDrawnHealthBar: 0
   Billboard: 1
   InstantiatedOnDeath: {fileID: 0}
-  HealthBarOffset: {x: 0, y: 2, z: 0}
+  HealthBarOffset: {x: 0, y: 0, z: 0}
   AlwaysVisible: 0
   DisplayDurationOnHit: 1
   HideBarAtZero: 1
@@ -2591,6 +2594,11 @@ SkinnedMeshRenderer:
 --- !u!95 &1638963520121624715 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 95801823229539542, guid: c4e3b5d3572bced46ab0fdb482897812, type: 3}
+  m_PrefabInstance: {fileID: 1723365606788574301}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &1721589853788191651 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4168500796200958, guid: c4e3b5d3572bced46ab0fdb482897812, type: 3}
   m_PrefabInstance: {fileID: 1723365606788574301}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &1721822686231175371 stripped

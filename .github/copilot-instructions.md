@@ -1,0 +1,1 @@
+"C:\Users\lance\source\repos\My project\.agents\AGENTS.md"

@@ -2220,6 +2220,10 @@ PrefabInstance:
       propertyPath: ragdoll
       value: 
       objectReference: {fileID: 2478729102720309143}
+    - target: {fileID: 8451620069487980483, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: headBone
+      value: 
+      objectReference: {fileID: 7594857129507189348}
     - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 
@@ -2552,6 +2556,11 @@ Animator:
 --- !u!137 &7530310674780234246 stripped
 SkinnedMeshRenderer:
   m_CorrespondingSourceObject: {fileID: 137813620778190748, guid: c4e3b5d3572bced46ab0fdb482897812, type: 3}
+  m_PrefabInstance: {fileID: 7595485059783222682}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &7594857129507189348 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4168500796200958, guid: c4e3b5d3572bced46ab0fdb482897812, type: 3}
   m_PrefabInstance: {fileID: 7595485059783222682}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &7595089961711102220 stripped

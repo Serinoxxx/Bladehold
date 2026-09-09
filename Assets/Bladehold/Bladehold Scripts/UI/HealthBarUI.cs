@@ -5,17 +5,16 @@ using UnityEngine;
 ///     Binds an <see cref="MMHealthBar" /> to a <see cref="Health" />: refreshes the bar whenever
 ///     health changes. It listens to <see cref="Health.OnHealthChanged" />; Health stays unaware of
 ///     the bar. Hiding at zero, lerping and bump-on-change are all handled by the MMHealthBar itself.
-///     If an <see cref="EnemyRagdoll" /> is present, it will follow the ragdoll's pelvis.
+///     The bar follows the character's head bone so it stays aligned during animation and ragdolls.
 /// </summary>
 public class HealthBarUI : MonoBehaviour
 {
     [SerializeField] private Health health;
     [SerializeField] private MMHealthBar healthBar;
-    [SerializeField] private EnemyRagdoll ragdoll;
+    [SerializeField] private Transform headBone;
+    [SerializeField, Min(0f)] private float heightAboveHead = 0.2f;
 
     private bool anyError = false;
-    private Vector3 initialLocalPosition;
-    private Transform parentTransform;
 
     private void OnValidate()
     {
@@ -29,9 +28,9 @@ public class HealthBarUI : MonoBehaviour
             healthBar = GetComponent<MMHealthBar>();
         }
 
-        if (ragdoll == null)
+        if (headBone == null)
         {
-            ragdoll = GetComponentInParent<EnemyRagdoll>();
+            headBone = ResolveHeadBone();
         }
     }
 
@@ -54,22 +53,16 @@ public class HealthBarUI : MonoBehaviour
             return;
         }
 
-        Collider col = GetComponentInParent<Collider>();
-        if (col != null)
+        if (headBone == null)
         {
-            float topY = col.bounds.max.y;
-            if (transform.position.y < topY + 0.2f)
+            headBone = ResolveHeadBone();
+            if (headBone == null)
             {
-                transform.position = new Vector3(transform.position.x, topY + 0.2f, transform.position.z);
+                Debug.LogWarning(
+                    $"[{nameof(HealthBarUI)}] No head transform found for '{health.name}'. " +
+                    "The health bar will retain its authored local position.",
+                    this);
             }
-        }
-
-        initialLocalPosition = transform.localPosition;
-        parentTransform = transform.parent;
-        
-        if (ragdoll == null)
-        {
-            ragdoll = GetComponentInParent<EnemyRagdoll>();
         }
 
         health.OnHealthChanged += Refresh;
@@ -91,18 +84,34 @@ public class HealthBarUI : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (ragdoll != null && ragdoll.IsRagdolled && ragdoll.Pelvis != null)
+        if (headBone != null)
         {
-            // The ragdoll pelvis has moved away from the root.
-            // Move this GameObject to track the Pelvis position + original offset.
-            Vector3 worldOffset = parentTransform != null ? parentTransform.TransformVector(initialLocalPosition) : initialLocalPosition;
-            transform.position = ragdoll.Pelvis.position + worldOffset;
+            transform.position = headBone.position + Vector3.up * heightAboveHead;
         }
-        else
+    }
+
+    private Transform ResolveHeadBone()
+    {
+        Transform searchRoot = health != null ? health.transform : transform.root;
+        Animator animator = searchRoot.GetComponentInChildren<Animator>(true);
+        if (animator != null && animator.isHuman)
         {
-            // Restore local position when not ragdolled (or if pelvis is missing)
-            transform.localPosition = initialLocalPosition;
+            Transform humanoidHead = animator.GetBoneTransform(HumanBodyBones.Head);
+            if (humanoidHead != null)
+            {
+                return humanoidHead;
+            }
         }
+
+        foreach (Transform child in searchRoot.GetComponentsInChildren<Transform>(true))
+        {
+            if (string.Equals(child.name, "Head", System.StringComparison.OrdinalIgnoreCase))
+            {
+                return child;
+            }
+        }
+
+        return null;
     }
 
     private void HandleDied()

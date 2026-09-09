@@ -1527,7 +1527,7 @@ MonoBehaviour:
   FollowTargetMode: 2
   FollowRotation: 0
   FollowScale: 1
-  NestDrawnHealthBar: 1
+  NestDrawnHealthBar: 0
   Billboard: 1
   InstantiatedOnDeath: {fileID: 0}
   HealthBarOffset: {x: 0, y: 3, z: 0}
