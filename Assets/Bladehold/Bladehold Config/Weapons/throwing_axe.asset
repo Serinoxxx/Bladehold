@@ -20,7 +20,7 @@ MonoBehaviour:
   isLockedForDemo: 0
   description: Heavy throwing axe with lethal velocity.
   chargeDescription: RMB Aim + LMB to hurl spinning axe.
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 3960861a25a518c4d9e33e35dd1beccc, type: 3}
   modelPrefab: {fileID: 100000, guid: 39f02ad978519fc45b717fabe7e64836, type: 3}
   chargeTimePerLevel: 0.35
   attackCooldown: 0.5

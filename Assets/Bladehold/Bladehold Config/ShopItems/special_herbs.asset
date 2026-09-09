@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: Special Herbs
   description: Restores +5 HP at the end of each wave for 5 waves.
   goldCost: 40
-  icon: {fileID: 21300000, guid: 12162c4c8d7ae1c4a9b44ace39ae3f1a, type: 3}
+  icon: {fileID: 21300000, guid: 8c2c2554c960526408b30aeac8254cef, type: 3}
   effectType: 3
   effectValue: 5
   durationWaves: 5

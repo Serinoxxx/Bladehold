@@ -23,6 +23,8 @@ public class GameLoopManager : MonoBehaviour
     [SerializeField] private GameObject warBannerPrefab;
     [SerializeField] private Transform[] bannerSpawnPoints;
 
+    [SerializeField] private bool enableGameLoopManageStateDebug = false;
+
     public BannerBuffType CurrentWaveBuff { get; private set; } = BannerBuffType.None;
     public BannerBountyType CurrentWaveBounty { get; private set; } = BannerBountyType.None;
     public WarBannerClanSO CurrentClanBuffSO { get; private set; }
@@ -960,6 +962,8 @@ public class GameLoopManager : MonoBehaviour
     private void OnGUI()
     {
         if (!Application.isPlaying) return;
+        
+        if (!enableGameLoopManageStateDebug) return;
 
         GUILayout.BeginArea(new Rect(10, 10, 350, 250), GUI.skin.box);
         GUILayout.Label("<b>GameLoopManager State</b>");
