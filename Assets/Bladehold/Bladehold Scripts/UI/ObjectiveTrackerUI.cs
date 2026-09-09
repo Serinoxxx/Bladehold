@@ -18,6 +18,11 @@ public class ObjectiveTrackerUI : MonoBehaviour
     [Tooltip("The text displaying the specific task progress (e.g. Slay all enemies: 24/26)")]
     [SerializeField] private TMP_Text objectiveProgressText;
 
+    [Header("Scene Guidance")]
+    [Tooltip("Persistent guidance shown in scenes without a wave spawner or objective manager.")]
+    [TextArea]
+    [SerializeField] private string guidanceObjectiveText;
+
     private bool anyError;
     private bool waveInProgress;
 
@@ -46,6 +51,15 @@ public class ObjectiveTrackerUI : MonoBehaviour
 
         if (spawner == null && objectiveManager == null)
         {
+            if (!string.IsNullOrWhiteSpace(guidanceObjectiveText))
+            {
+                if (objectiveProgressText != null)
+                {
+                    objectiveProgressText.text = guidanceObjectiveText;
+                }
+                return;
+            }
+
             Debug.LogWarning("ObjectiveTrackerUI: Neither WaveSpawner nor SurvivorsObjectiveManager was found in the scene.");
             anyError = true;
             return;

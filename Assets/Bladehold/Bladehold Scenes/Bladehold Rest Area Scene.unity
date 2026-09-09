@@ -93192,6 +93192,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1060151021066171350, guid: b7b1623129186884eb3f2419ca4ed3b5, type: 3}
+      propertyPath: guidanceObjectiveText
+      value: Rest up and then head back out to battle
+      objectReference: {fileID: 0}
     - target: {fileID: 1221169833645006037, guid: b7b1623129186884eb3f2419ca4ed3b5, type: 3}
       propertyPath: m_IsActive
       value: 0
