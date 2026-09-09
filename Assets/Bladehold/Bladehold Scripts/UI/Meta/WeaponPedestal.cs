@@ -189,7 +189,7 @@ public class WeaponPedestal : MonoBehaviour
                 }
                 SaveSystem.Save(data);
 
-                ApplyEquippedToPlayer(player);
+                ApplyEquippedToPlayer();
 
                 Debug.Log($"[WeaponPedestal] Unlocked and equipped weapon: {weaponData.displayName}!");
                 RefreshAllPedestals();
@@ -208,30 +208,30 @@ public class WeaponPedestal : MonoBehaviour
             }
             SaveSystem.Save(data);
 
-            ApplyEquippedToPlayer(player);
+            ApplyEquippedToPlayer();
 
             Debug.Log($"[WeaponPedestal] Equipped weapon: {weaponData.displayName}!");
             RefreshAllPedestals();
         }
     }
 
-    private void ApplyEquippedToPlayer(Player player)
+    private void ApplyEquippedToPlayer()
     {
-        PlayerWeaponManager pwm = player != null ? player.GetComponentInParent<PlayerWeaponManager>() : null;
-        if (pwm == null && player != null) pwm = player.GetComponentInChildren<PlayerWeaponManager>();
-        if (pwm == null) pwm = PlayerWeaponManager.Instance;
-        if (pwm == null) pwm = FindAnyObjectByType<PlayerWeaponManager>();
+        PlayerWeaponManager pwm = PlayerWeaponManager.GetInstance();
 
-        if (pwm != null)
+        if (pwm == null)
         {
-            if (weaponData.category == WeaponCategory.Melee)
-            {
-                pwm.EquipMelee(weaponData.id);
-            }
-            else
-            {
-                pwm.EquipRanged(weaponData.id);
-            }
+            Debug.LogError("[WeaponPedestal] Could not find a populated PlayerWeaponManager to apply the equipped weapon.");
+            return;
+        }
+
+        if (weaponData.category == WeaponCategory.Melee)
+        {
+            pwm.EquipMelee(weaponData.id);
+        }
+        else
+        {
+            pwm.EquipRanged(weaponData.id);
         }
     }
 

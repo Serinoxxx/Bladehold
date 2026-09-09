@@ -12,6 +12,7 @@
 - Added AreaDefinition ScriptableObject and global AreaDatabase mapping scene destinations to rich player-facing stage lore
 
 ### Fixes
+- Fixed equipped weapons not updating visually in the Meta Area
 - Fixed the Meta Area camera no longer following the player after a death transition
 
 ### General Changes
@@ -272,18 +273,3 @@
 ### General Changes
 - Added hit sparks, screen shake, and impact sounds
 - Added Berserker and Mage skill tree preview panels
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
