@@ -25,14 +25,22 @@ public class WeaponPedestal : MonoBehaviour
     [SerializeField] private float bobAmplitude = 0.08f;
 
     [Header("World UI Elements")]
+    [SerializeField] private Canvas worldCanvas;
+    [SerializeField] private CanvasGroup panelCanvasGroup;
     [SerializeField] private TMP_Text nameLabel;
     [SerializeField] private TMP_Text costLabel;
     [SerializeField] private TMP_Text statusLabel;
     [SerializeField] private Image currencyIcon;
 
+    [Header("Proximity / Focus Settings")]
+    [SerializeField] private float focusDistance = 4.5f;
+    [SerializeField] private float fadeSpeed = 8f;
+
     private Interactable interactable;
     private Vector3 baseMountPosition;
     private GameObject spawnedModel;
+    private Transform playerTransform;
+    private PlayerInteraction playerInteraction;
 
     public WeaponDefinitionSO WeaponData => weaponData;
 
@@ -64,6 +72,7 @@ public class WeaponPedestal : MonoBehaviour
 
     private void Start()
     {
+        ResolvePlayerReferences();
         SpawnModel();
         RefreshPedestal();
     }
@@ -83,6 +92,63 @@ public class WeaponPedestal : MonoBehaviour
             modelMountPoint.Rotate(Vector3.up, rotationSpeed * Time.deltaTime, Space.World);
             modelMountPoint.localPosition = baseMountPosition + Vector3.up * (Mathf.Sin(Time.time * 2.0f) * bobAmplitude);
         }
+
+        Camera cam = Camera.main;
+        if (cam != null && worldCanvas != null)
+        {
+            worldCanvas.transform.rotation = cam.transform.rotation;
+        }
+
+        UpdatePanelVisibility();
+    }
+
+    private void ResolvePlayerReferences()
+    {
+        if (playerTransform == null)
+        {
+            Player player = Player.Instance ?? FindAnyObjectByType<Player>();
+            if (player != null)
+            {
+                playerTransform = player.transform;
+                playerInteraction = player.GetComponent<PlayerInteraction>() ?? player.GetComponentInChildren<PlayerInteraction>();
+            }
+        }
+    }
+
+    private void UpdatePanelVisibility()
+    {
+        if (panelCanvasGroup == null) return;
+
+        if (playerTransform == null)
+        {
+            ResolvePlayerReferences();
+        }
+
+        bool isFocused = false;
+
+        if (playerInteraction != null && playerInteraction.CurrentTarget == (IInteractable)interactable)
+        {
+            isFocused = true;
+        }
+        else if (playerTransform != null)
+        {
+            float dist = Vector3.Distance(transform.position, playerTransform.position);
+            if (dist <= focusDistance)
+            {
+                Vector3 toPedestal = (transform.position - playerTransform.position).normalized;
+                toPedestal.y = 0f;
+                Vector3 playerFwd = playerTransform.forward;
+                playerFwd.y = 0f;
+
+                if (Vector3.Dot(playerFwd.normalized, toPedestal) > 0.2f)
+                {
+                    isFocused = true;
+                }
+            }
+        }
+
+        float targetAlpha = isFocused ? 1f : 0f;
+        panelCanvasGroup.alpha = Mathf.MoveTowards(panelCanvasGroup.alpha, targetAlpha, Time.deltaTime * fadeSpeed);
     }
 
     private void SpawnModel()

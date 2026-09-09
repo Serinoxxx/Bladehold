@@ -1109,6 +1109,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8624594157084672226}
   - component: {fileID: 5973575286874419609}
+  - component: {fileID: 7418256390147285103}
   m_Layer: 0
   m_Name: WorldUI
   m_TagString: Untagged
@@ -1159,6 +1160,18 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
+--- !u!225 &7418256390147285103
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2762282239055193721}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &4266980854235534248
 GameObject:
   m_ObjectHideFlags: 0
@@ -3661,10 +3674,14 @@ MonoBehaviour:
   modelMountPoint: {fileID: 3483889863955144055}
   rotationSpeed: 35
   bobAmplitude: 0.08
+  worldCanvas: {fileID: 5973575286874419609}
+  panelCanvasGroup: {fileID: 7418256390147285103}
   nameLabel: {fileID: 7293478172744186103}
   costLabel: {fileID: 6530621304356573290}
   statusLabel: {fileID: 1171248249284429926}
   currencyIcon: {fileID: 0}
+  focusDistance: 2.5
+  fadeSpeed: 8
 --- !u!1001 &8500261019098941348
 PrefabInstance:
   m_ObjectHideFlags: 0
