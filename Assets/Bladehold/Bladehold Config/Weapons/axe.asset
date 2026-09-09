@@ -21,7 +21,7 @@ MonoBehaviour:
   description: Heavy two-handed axe that cleaves wide arcs.
   chargeDescription: Hold attack to charge a crushing overhead cleave.
   icon: {fileID: 0}
-  modelPrefab: {fileID: 0}
+  modelPrefab: {fileID: 1935799505049554, guid: 43b1bad21e17ccf4ca8cd01cdb6ae93e, type: 3}
   chargeTimePerLevel: 0.45
   attackCooldown: 0.5
   animatorWeaponType: 1

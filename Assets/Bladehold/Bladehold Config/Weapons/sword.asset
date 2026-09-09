@@ -21,7 +21,7 @@ MonoBehaviour:
   description: Balanced melee blade delivering rapid sweeps.
   chargeDescription: Hold attack to charge a sweeping 3-stage slash.
   icon: {fileID: 0}
-  modelPrefab: {fileID: 8785666567801047131, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
+  modelPrefab: {fileID: 1539838672620298, guid: 000ba31fdb0111d4584775b384f6efac, type: 3}
   chargeTimePerLevel: 0.33
   attackCooldown: 0.5
   animatorWeaponType: 0

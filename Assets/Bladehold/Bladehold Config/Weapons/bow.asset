@@ -21,7 +21,7 @@ MonoBehaviour:
   description: Fast firing bow with piercing arrows.
   chargeDescription: RMB Aim + LMB Fire.
   icon: {fileID: 0}
-  modelPrefab: {fileID: 919132149155446097, guid: 76b4ecddf512e8940b87cbfc9eba2c3f, type: 3}
+  modelPrefab: {fileID: 4424598538026117818, guid: 26b32057aeedf3f468eb6ed7565e5219, type: 3}
   chargeTimePerLevel: 0.25
   attackCooldown: 0.5
   animatorWeaponType: 0
