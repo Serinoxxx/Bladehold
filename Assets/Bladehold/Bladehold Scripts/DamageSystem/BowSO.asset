@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: BowSO
   m_EditorClassIdentifier: Assembly-CSharp::BowSO
   baseDamage: 2
-  maxRange: 60
+  maxRange: 100
   fireCooldownSeconds: 0.7
-  baseArrowSpeed: 30
-  arrowGravity: 9.81
+  baseArrowSpeed: 100
+  arrowGravity: 0
   arrowRadius: 0.05
   chargeTimePerLevel: 0
   baseMaxChargeLevels: 3

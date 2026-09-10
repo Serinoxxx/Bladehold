@@ -5950,7 +5950,7 @@ MonoBehaviour:
     - rid: 3583623160260722845
       type: {class: MMF_TimescaleModifier, ns: MoreMountains.Feedbacks, asm: MoreMountains.Tools}
       data:
-        Active: 1
+        Active: 0
         UniqueID: -774048637
         Label: MMFeedback
         OriginalLabel: Timescale Modifier
@@ -57060,7 +57060,7 @@ MonoBehaviour:
     - rid: 3583622880602620009
       type: {class: MMF_TimescaleModifier, ns: MoreMountains.Feedbacks, asm: MoreMountains.Tools}
       data:
-        Active: 1
+        Active: 0
         UniqueID: 1368151545
         Label: MMFeedback
         OriginalLabel: Timescale Modifier
@@ -59062,7 +59062,7 @@ MonoBehaviour:
     - rid: 3583622880602620011
       type: {class: MMF_TimescaleModifier, ns: MoreMountains.Feedbacks, asm: MoreMountains.Tools}
       data:
-        Active: 1
+        Active: 0
         UniqueID: 1348625442
         Label: MMFeedback
         OriginalLabel: Timescale Modifier
@@ -60422,7 +60422,7 @@ MonoBehaviour:
     - rid: 3583623160260722845
       type: {class: MMF_TimescaleModifier, ns: MoreMountains.Feedbacks, asm: MoreMountains.Tools}
       data:
-        Active: 1
+        Active: 0
         UniqueID: -774048637
         Label: MMFeedback
         OriginalLabel: Timescale Modifier
@@ -63270,12 +63270,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1286234636382112833}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 5255166155743652319}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1351914398226097599}
   m_SourcePrefab: {fileID: 100100000, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
 --- !u!4 &190421269890890082 stripped
 Transform:
@@ -64751,51 +64745,6 @@ MonoBehaviour:
   stats: {fileID: 5156588240620538864}
   meleeTrigger: {fileID: 3556331140146632137}
   thrownAxe: {fileID: 0}
---- !u!114 &5255166155743652319
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8033356972124291578}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0763600b1c0b7f94989be07d5b0cafd7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerWeaponManager
-  meleeWeapons: []
-  rangedWeapons: []
-  animationEvents: {fileID: 0}
-  playerAttack: {fileID: 0}
-  animator: {fileID: 0}
-  vampiricBlade: {fileID: 0}
-  chainLightning: {fileID: 0}
-  impulseHitFeedback: {fileID: 0}
-  playerMount: {fileID: 0}
-  playerBow: {fileID: 0}
-  playerThrownAxe: {fileID: 0}
-  fireWeaponProfile: {fileID: 0}
-  iceWeaponProfile: {fileID: 0}
-  lightningWeaponProfile: {fileID: 0}
-  poisonWeaponVfxPrefab: {fileID: 0}
---- !u!114 &1351914398226097599
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8033356972124291578}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4f757a03c5aa14747bfa00f4bc61c658, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerInteraction
-  inputReader: {fileID: 0}
-  player: {fileID: 0}
-  maxInteractionDistance: 4
-  promptLabel: {fileID: 0}
-  promptContainer: {fileID: 0}
-  promptPrefab: {fileID: 0}
 --- !u!4 &8319765117670202089 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8013909246233647550, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}

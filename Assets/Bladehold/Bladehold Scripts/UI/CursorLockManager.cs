@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -22,10 +23,18 @@ public class CursorLockManager : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Bootstrap()
     {
+
+        ForceUnlock();
         if (Instance != null) return;
         GameObject go = new GameObject("CursorLockManager");
         go.AddComponent<CursorLockManager>();
         DontDestroyOnLoad(go);
+    }
+
+    private static void ForceUnlock()
+    {
+        unlockRequests.Clear();
+        ApplyState();
     }
 
     private void Awake()

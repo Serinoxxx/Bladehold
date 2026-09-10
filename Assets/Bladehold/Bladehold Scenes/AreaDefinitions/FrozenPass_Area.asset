@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36759f4ab9824fd41ae9658a870e148b, type: 3}
   m_Name: FrozenPass_Area
   m_EditorClassIdentifier: Assembly-CSharp::Bladehold.UI.AreaDefinitionSO
-  sceneName: Blasehold Frozen Pass Scene
+  sceneName: Bladehold Frozen Pass Scene
   stageNumber: 2
   displayName: Frozen Pass
   subtitle: Atop the frosty mountain
