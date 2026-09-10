@@ -2,13 +2,13 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 
-[InitializeOnLoad]
+//[InitializeOnLoad]
 public static class AutoWireHUD
 {
-    static AutoWireHUD()
-    {
-        EditorApplication.delayCall += WireHUD;
-    }
+    //static AutoWireHUD()
+    //{
+    //    EditorApplication.delayCall += WireHUD;
+    //}
 
     [MenuItem("Bladehold/Wire HUD Currencies")]
     public static void WireHUD()

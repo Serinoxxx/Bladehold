@@ -5,7 +5,7 @@ using MoreMountains.Tools;
 
 public static class FixHorseBar
 {
-    [InitializeOnLoadMethod]
+    //[InitializeOnLoadMethod]
     public static void FixPrefab()
     {
         string path = "Assets/Bladehold/Bladehold Prefabs/UI/Bladehold HUD.prefab";

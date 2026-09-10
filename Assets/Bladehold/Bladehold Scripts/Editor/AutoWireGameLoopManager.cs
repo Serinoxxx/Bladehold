@@ -3,13 +3,13 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using DamageNumbersPro;
 
-[InitializeOnLoad]
+//[InitializeOnLoad]
 public static class AutoWireGameLoopManager
 {
-    static AutoWireGameLoopManager()
-    {
-        EditorApplication.delayCall += Wire;
-    }
+    //static AutoWireGameLoopManager()
+    //{
+    //    EditorApplication.delayCall += Wire;
+    //}
 
     [MenuItem("Bladehold/Wire GameLoopManager")]
     public static void Wire()

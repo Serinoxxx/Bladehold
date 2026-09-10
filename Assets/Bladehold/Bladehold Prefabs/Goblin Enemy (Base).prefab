@@ -1778,6 +1778,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HealthBarUI
   health: {fileID: 2416392165065999887}
   healthBar: {fileID: 8820619236359328086}
+  followHead: 1
   headBone: {fileID: 6139257280512272503}
   heightAboveHead: 0.5
 --- !u!114 &8820619236359328086
@@ -1957,7 +1958,7 @@ MonoBehaviour:
   NestDrawnHealthBar: 0
   Billboard: 1
   InstantiatedOnDeath: {fileID: 0}
-  HealthBarOffset: {x: 0, y: 0.25, z: 0}
+  HealthBarOffset: {x: 0, y: 0.5, z: 0}
   AlwaysVisible: 0
   DisplayDurationOnHit: 1
   HideBarAtZero: 1

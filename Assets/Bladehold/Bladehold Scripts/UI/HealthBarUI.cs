@@ -11,6 +11,8 @@ public class HealthBarUI : MonoBehaviour
 {
     [SerializeField] private Health health;
     [SerializeField] private MMHealthBar healthBar;
+
+    [SerializeField] private bool followHead;
     [SerializeField] private Transform headBone;
     [SerializeField, Min(0f)] private float heightAboveHead = 0.2f;
 
@@ -28,7 +30,7 @@ public class HealthBarUI : MonoBehaviour
             healthBar = GetComponent<MMHealthBar>();
         }
 
-        if (headBone == null)
+        if (headBone == null && followHead)
         {
             headBone = ResolveHeadBone();
         }
@@ -53,7 +55,7 @@ public class HealthBarUI : MonoBehaviour
             return;
         }
 
-        if (headBone == null)
+        if (headBone == null && followHead)
         {
             headBone = ResolveHeadBone();
             if (headBone == null)
@@ -84,7 +86,8 @@ public class HealthBarUI : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (headBone != null)
+
+        if (headBone != null && followHead)
         {
             transform.position = headBone.position + Vector3.up * heightAboveHead;
         }
