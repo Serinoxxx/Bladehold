@@ -348,6 +348,7 @@ public class DevConsole : MonoBehaviour
         DrawArmourControls();
         DrawUltimateControls();
         DrawDraftControls();
+        DrawSceneControls();
 
         DrawWaveControls();
         DrawObjectiveControls();
@@ -376,6 +377,24 @@ public class DevConsole : MonoBehaviour
             RunState.StartingWave = 1;
             Time.timeScale = GameSettingsService.TargetTimeScale; // ensure normal speed resumes even if something paused time on death.
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+    }
+
+    private void DrawSceneControls()
+    {
+        GUILayout.Label("Load Scene");
+        DrawSceneLoadButton("Bladehold Frozen Pass Scene");
+        DrawSceneLoadButton("Bladehold Meta Area Scene");
+        DrawSceneLoadButton("Bladehold Rest Area Scene");
+        DrawSceneLoadButton("Bladehold Survivors Scene");
+        DrawSceneLoadButton("Bladehold Ancient Garden");
+    }
+
+    private void DrawSceneLoadButton(string sceneName)
+    {
+        if (GUILayout.Button(sceneName, GUILayout.Height(ButtonHeight)))
+        {
+            SceneManager.LoadScene(sceneName);
         }
     }
 
