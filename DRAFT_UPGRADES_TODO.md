@@ -1,6 +1,7 @@
 # Draft Upgrades Implementation Tracker
 
-This document tracks the implementation status of all 52 draft cards in `DraftUpgrades.csv`.
+This document tracks the implementation status of the draft cards in `Assets/Bladehold/Resources/DraftUpgrades.csv`.
+The catalog lives in Resources so it is bundled in player builds and can load without a scene reference.
 Items are executed **one by one in order**, with compilation verification (`dotnet build`) and Unity refresh after each.
 
 ---

@@ -73,23 +73,15 @@ public class DraftUpgradeService : MonoBehaviour
         allDefinitions.Clear();
         byId.Clear();
 
-        string csvText = null;
-        if (draftUpgradesCsv != null)
-        {
-            csvText = draftUpgradesCsv.text;
-        }
-        else
-        {
-            string path = Path.Combine(Application.dataPath, "Bladehold/Config/DraftUpgrades.csv");
-            if (File.Exists(path))
-            {
-                csvText = File.ReadAllText(path);
-            }
-        }
+        // Resources are bundled in players, unlike loose files under Application.dataPath.
+        TextAsset csv = draftUpgradesCsv != null
+            ? draftUpgradesCsv
+            : Resources.Load<TextAsset>("DraftUpgrades");
+        string csvText = csv != null ? csv.text : null;
 
         if (string.IsNullOrEmpty(csvText))
         {
-            Debug.LogWarning("[DraftUpgradeService] DraftUpgrades.csv not found or empty!");
+            Debug.LogError("[DraftUpgradeService] Draft catalog is missing or empty. Assign draftUpgradesCsv or include Resources/DraftUpgrades.csv.");
             return;
         }
 
