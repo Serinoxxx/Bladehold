@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using HighlightPlus;
 using Synty.AnimationBaseLocomotion.Samples;
 using UnityEngine;
 using UnityEngine.AI;
@@ -20,6 +21,7 @@ public class PlayerWeaponManager : MonoBehaviour
         public GameObject weaponObject;
         public DamageTrigger damageTrigger;
         public SwordHitFeedback hitFeedback;
+        public HighlightEffect elementalHighlight;
     }
 
     [Serializable]
@@ -28,6 +30,7 @@ public class PlayerWeaponManager : MonoBehaviour
         public WeaponDefinitionSO definition;
         public GameObject weaponObject;
         public Behaviour aimWeaponComponent; // Must implement IChargedAimWeapon
+        public HighlightEffect elementalHighlight;
     }
 
     [Header("Weapon Loadout Slots")]
@@ -49,10 +52,12 @@ public class PlayerWeaponManager : MonoBehaviour
     public event Action<WeaponDefinitionSO> OnMeleeChanged;
     public event Action<WeaponDefinitionSO> OnRangedChanged;
 
-    [Header("Elemental VFX Prefabs")]
-    [SerializeField] private GameObject fireWeaponVfxPrefab;
-    [SerializeField] private GameObject iceWeaponVfxPrefab;
-    [SerializeField] private GameObject lightningWeaponVfxPrefab;
+    [Header("Draft Weapon Highlights")]
+    [SerializeField] private HighlightProfile fireWeaponProfile;
+    [SerializeField] private HighlightProfile iceWeaponProfile;
+    [SerializeField] private HighlightProfile lightningWeaponProfile;
+
+    [Header("Other Elemental VFX")]
     [SerializeField] private GameObject poisonWeaponVfxPrefab;
 
     private string currentMeleeId = "sword";
@@ -189,9 +194,6 @@ public class PlayerWeaponManager : MonoBehaviour
     {
         switch (elementId?.ToUpper())
         {
-            case "FIRE": return fireWeaponVfxPrefab;
-            case "ICE": return iceWeaponVfxPrefab;
-            case "LIGHTNING": return lightningWeaponVfxPrefab;
             case "POISON": return poisonWeaponVfxPrefab;
             default: return null;
         }
@@ -199,8 +201,13 @@ public class PlayerWeaponManager : MonoBehaviour
 
     private void HandleElementalSlotChanged(string slotName, string elementId)
     {
-        if (slotName == "SLOT_MELEE")
+        if (string.Equals(slotName, "SLOT_MELEE", StringComparison.OrdinalIgnoreCase))
         {
+            foreach (var slot in meleeWeapons)
+            {
+                bool equipped = slot.definition != null && string.Equals(slot.definition.id, currentMeleeId, StringComparison.OrdinalIgnoreCase);
+                SetWeaponHighlight(slot.elementalHighlight, equipped ? elementId : "");
+            }
             if (activeMeleeVfxInstance != null) Destroy(activeMeleeVfxInstance);
             GameObject prefab = GetVfxPrefabForElement(elementId);
             if (prefab != null)
@@ -223,8 +230,13 @@ public class PlayerWeaponManager : MonoBehaviour
                 }
             }
         }
-        else if (slotName == "SLOT_RANGED")
+        else if (string.Equals(slotName, "SLOT_RANGED", StringComparison.OrdinalIgnoreCase))
         {
+            foreach (var slot in rangedWeapons)
+            {
+                bool equipped = slot.definition != null && string.Equals(slot.definition.id, currentRangedId, StringComparison.OrdinalIgnoreCase);
+                SetWeaponHighlight(slot.elementalHighlight, equipped ? elementId : "");
+            }
             if (activeRangedVfxInstance != null) Destroy(activeRangedVfxInstance);
             GameObject prefab = GetVfxPrefabForElement(elementId);
             if (prefab != null)
@@ -247,6 +259,37 @@ public class PlayerWeaponManager : MonoBehaviour
                 }
             }
         }
+    }
+
+    private void SetWeaponHighlight(HighlightEffect effect, string elementId)
+    {
+        HighlightProfile profile = null;
+        switch (elementId?.ToUpperInvariant())
+        {
+            case "FIRE": profile = fireWeaponProfile; break;
+            case "ICE": profile = iceWeaponProfile; break;
+            case "LIGHTNING": profile = lightningWeaponProfile; break;
+        }
+
+        bool elemental = string.Equals(elementId, "Fire", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(elementId, "Ice", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(elementId, "Lightning", StringComparison.OrdinalIgnoreCase);
+        if (elemental && (effect == null || profile == null))
+        {
+            Debug.LogError($"[PlayerWeaponManager] Missing weapon HighlightEffect or profile for {elementId}.", this);
+        }
+        if (effect == null) return;
+
+        if (profile == null)
+        {
+            effect.SetHighlighted(false);
+            effect.enabled = false;
+            return;
+        }
+
+        effect.ProfileLoad(profile);
+        effect.enabled = true;
+        effect.SetHighlighted(true);
     }
 
     private void AutoFindReferences()

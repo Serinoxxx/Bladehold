@@ -1620,6 +1620,7 @@ GameObject:
   - component: {fileID: 4870078003626833523}
   - component: {fileID: 9064934731767258215}
   - component: {fileID: 110190067101808267}
+  - component: {fileID: 7928644260860046996}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -1836,21 +1837,26 @@ MonoBehaviour:
     weaponObject: {fileID: 4103658122623789462}
     damageTrigger: {fileID: 1385601990044069648}
     hitFeedback: {fileID: 0}
+    elementalHighlight: {fileID: 7316548603683026249}
   - definition: {fileID: 11400000, guid: f099e3b8f07715a43a860c9fcb2a7988, type: 2}
     weaponObject: {fileID: 1914903598473155407}
     damageTrigger: {fileID: 3556331140146632137}
     hitFeedback: {fileID: 0}
+    elementalHighlight: {fileID: 833683787114664145}
   - definition: {fileID: 11400000, guid: 4effa2c38607a6344b7d1ce1da244913, type: 2}
     weaponObject: {fileID: 3083262074463172127}
     damageTrigger: {fileID: 999350180837838281}
     hitFeedback: {fileID: 1062165917694629073}
+    elementalHighlight: {fileID: 7532704426468976865}
   rangedWeapons:
   - definition: {fileID: 11400000, guid: e31f1d101e4f3c148b0bb7560229cdea, type: 2}
     weaponObject: {fileID: 2198975143494039244}
     aimWeaponComponent: {fileID: 9219490616039227213}
+    elementalHighlight: {fileID: 4881355016033561707}
   - definition: {fileID: 11400000, guid: c25f236c91f285944a027fc08b9859fe, type: 2}
     weaponObject: {fileID: 4741742994959581751}
     aimWeaponComponent: {fileID: 1884176435561181024}
+    elementalHighlight: {fileID: 2195032483274565463}
   animationEvents: {fileID: 0}
   playerAttack: {fileID: 0}
   animator: {fileID: 0}
@@ -1860,9 +1866,9 @@ MonoBehaviour:
   playerMount: {fileID: 0}
   playerBow: {fileID: 0}
   playerThrownAxe: {fileID: 0}
-  fireWeaponVfxPrefab: {fileID: 1392961458021664, guid: 7c2d45330a7b1894ca1aacb0ebd30599, type: 3}
-  iceWeaponVfxPrefab: {fileID: 1828717585066262, guid: 15020532ea6e8b449a74e895e1097087, type: 3}
-  lightningWeaponVfxPrefab: {fileID: 1454807473737458, guid: 6108438f5e38d0b4b8fed06af6b74254, type: 3}
+  fireWeaponProfile: {fileID: 11400000, guid: 02e6b64599e19ed499091251be02600a, type: 2}
+  iceWeaponProfile: {fileID: 11400000, guid: 873ddec415502124c8ea8ddefd6d8cb0, type: 2}
+  lightningWeaponProfile: {fileID: 11400000, guid: 1c850fc62b5d4cd4db3f60b7e1d0899a, type: 2}
   poisonWeaponVfxPrefab: {fileID: 1447051283816784, guid: 61400dcd69108c64b970eb523f3d1783, type: 3}
 --- !u!114 &4218521274988385536
 MonoBehaviour:
@@ -1995,6 +2001,25 @@ MonoBehaviour:
   buffDuration: 6
   seismicVfxPrefab: {fileID: 1610468776334564, guid: fdb430cc0b3926f4cb38424d890e7b3c, type: 3}
   slamSfx: {fileID: 8300000, guid: 808c1dae3002f1c45816cabdd9fc29fc, type: 3}
+--- !u!114 &7928644260860046996
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 635090733411138093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c66237d5cd8e47b4aa03446462d00c48, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DraftWeaponElementEffects
+  config: {fileID: 11400000, guid: 0d674ca183a97d646a9b378c1172bbc5, type: 2}
+  weapons: {fileID: 5480821993270956645}
+  stats: {fileID: 5156588240620538864}
+  chainLightning: {fileID: 4664109616690436507}
+  enemyLayers:
+    serializedVersion: 2
+    m_Bits: 128
 --- !u!1 &758177441954652393
 GameObject:
   m_ObjectHideFlags: 0
@@ -5485,6 +5510,7 @@ GameObject:
   - component: {fileID: 9020548462152708064}
   - component: {fileID: 7714245157783901467}
   - component: {fileID: 7331283231611199993}
+  - component: {fileID: 7532704426468976865}
   m_Layer: 2
   m_Name: 2H_Mace
   m_TagString: Untagged
@@ -6185,6 +6211,265 @@ MonoBehaviour:
         Velocity: {x: 5, y: 5, z: 5}
         ClearImpulseOnStop: 0
         DrawGizmos: 0
+--- !u!114 &7532704426468976865
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3083262074463172127}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 888380afc233049ce9e618f9f36c8ba8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighlightPlus.Runtime::HighlightPlus.HighlightEffect
+  profile: {fileID: 0}
+  profileSync: 0
+  camerasLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  effectGroup: 1
+  effectTarget: {fileID: 0}
+  effectGroupLayer:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  effectNameFilter: 
+  effectNameUseRegEx: 0
+  excludeObjectsWithHighlightEffect: 0
+  combineMeshes: 0
+  alphaCutOff: 0
+  alphaCutOffTextureName: 
+  cullBackFaces: 1
+  ignoreObjectVisibility: 0
+  reflectionProbes: 0
+  GPUInstancing: 1
+  sortingPriority: 0
+  optimizeSkinnedMesh: 1
+  depthClip: 0
+  cameraDistanceFade: 0
+  cameraDistanceFadeNear: 0
+  cameraDistanceFadeFar: 1000
+  useOriginalShader: 0
+  customPassName: 
+  normalsOption: 0
+  ignore: 0
+  _highlighted: 0
+  fadeInDuration: 0
+  fadeOutDuration: 0
+  flipY: 0
+  constantWidth: 1
+  extraCoveragePixels: 0
+  minimumWidth: 0
+  subMeshMask: -1
+  vertexTransformMode: 0
+  overlay: 0
+  overlayMode: 0
+  overlayPattern: 0
+  overlayPatternScrolling: {x: 0, y: 0}
+  overlayColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  overlayAnimationSpeed: 1
+  overlayMinIntensity: 0.5
+  overlayBlending: 1
+  overlayTexture: {fileID: 0}
+  overlayTextureUVSpace: 1
+  overlayTextureScale: 1
+  overlayTextureScrolling: {x: 0, y: 0}
+  overlayVisibility: 0
+  overlayBlendMode: 0
+  overlayPatternScale: 10
+  overlayPatternSize: 0.15
+  overlayPatternSoftness: 0.02
+  overlayPatternRotation: 0
+  outline: 1
+  outlineColor: {r: 0, g: 0, b: 0, a: 1}
+  outlineColorStyle: 0
+  outlineGradient:
+    serializedVersion: 2
+    key0: {r: 1, g: 1, b: 1, a: 1}
+    key1: {r: 1, g: 1, b: 1, a: 1}
+    key2: {r: 0, g: 0, b: 0, a: 0}
+    key3: {r: 0, g: 0, b: 0, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 65535
+    ctime2: 0
+    ctime3: 0
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_ColorSpace: -1
+    m_NumColorKeys: 2
+    m_NumAlphaKeys: 2
+  outlineGradientInLocalSpace: 0
+  outlineWidth: 0.45
+  outlineBlurPasses: 2
+  outlineQuality: 3
+  outlineEdgeMode: 0
+  outlineEdgeThreshold: 0.995
+  outlineDistanceScaleBias: 25
+  outlineSharpness: 1
+  outlineDownsampling: 1
+  outlineVisibility: 0
+  glowBlendMode: 0
+  outlineBlitDebug: 0
+  outlineIndependent: 0
+  outlineContourStyle: 0
+  outlineMaskMode: 0
+  outlineGradientKnee: 0.4
+  outlineGradientPower: 8
+  padding: 0
+  outlinePixelation: 0
+  outlineStylized: 0
+  outlinePattern: {fileID: 0}
+  outlinePatternScale: 0.3
+  outlinePatternThreshold: 0.3
+  outlinePatternDistortionAmount: 0.5
+  outlinePatternDistortionTexture: {fileID: 0}
+  outlinePatternStopMotionScale: 5
+  outlineDashed: 0
+  outlineDashWidth: 0.5
+  outlineDashGap: 0.3
+  outlineDashSpeed: 2
+  glow: 0
+  glowWidth: 0.4
+  glowQuality: 3
+  glowBlurMethod: 0
+  glowHighPrecision: 1
+  glowDistanceScaleBias: 25
+  glowDownsampling: 2
+  glowHQColor: {r: 0.64, g: 1, b: 0, a: 1}
+  glowDithering: 1
+  glowDitheringStyle: 0
+  glowMagicNumber1: 0.75
+  glowMagicNumber2: 0.5
+  glowAnimationSpeed: 1
+  glowVisibility: 0
+  glowBlitDebug: 0
+  glowBlendPasses: 1
+  glowPasses: []
+  glowMaskMode: 0
+  glowPixelation: 0
+  innerGlow: 0
+  innerGlowWidth: 1
+  innerGlowPower: 1
+  innerGlowColor: {r: 1, g: 1, b: 1, a: 1}
+  innerGlowBlendMode: 0
+  innerGlowVisibility: 0
+  focus: 0
+  focusColor: {r: 0, g: 0, b: 0, a: 0.9412}
+  focusBlur: 0
+  focusBlurDownsampling: 2
+  focusDesaturation: 0
+  targetFX: 0
+  targetFXStyle: 0
+  targetFXFrameWidth: 0.1
+  targetFXCornerLength: 0.25
+  targetFXFrameMinOpacity: 0
+  targetFXGroundMinAltitude: -1000
+  targetFXTexture: {fileID: 0}
+  targetFXColor: {r: 1, g: 1, b: 1, a: 1}
+  targetFXCenter: {fileID: 0}
+  targetFXRotationSpeed: 50
+  targetFXRotationAngle: 0
+  targetFXInitialScale: 4
+  targetFXEndScale: 1.5
+  targetFXScaleToRenderBounds: 1
+  targetFXUseEnclosingBounds: 0
+  targetFXSquare: 1
+  targetFXAlignToGround: 0
+  targetFXOffset: {x: 0, y: 0, z: 0}
+  targetFxCenterOnHitPosition: 0
+  targetFxAlignToNormal: 0
+  targetFXFadePower: 32
+  targetFXGroundMaxDistance: 10
+  targetFXGroundLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  targetFXTransitionDuration: 0.5
+  targetFXStayDuration: 1.5
+  targetFXVisibility: 1
+  iconFX: 0
+  iconFXAssetType: 0
+  iconFXPrefab: {fileID: 0}
+  iconFXMesh: {fileID: 0}
+  iconFXLightColor: {r: 1, g: 1, b: 1, a: 1}
+  iconFXDarkColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  iconFXCenter: {fileID: 0}
+  iconFXRotationSpeed: 50
+  iconFXAnimationOption: 0
+  iconFXAnimationAmount: 0.1
+  iconFXAnimationSpeed: 3
+  iconFXScale: 1
+  iconFXScaleToRenderBounds: 0
+  iconFXOffset: {x: 0, y: 1, z: 0}
+  iconFXTransitionDuration: 0.5
+  iconFXStayDuration: 1.5
+  labelEnabled: 0
+  labelRenderMode: 0
+  labelText: Label
+  labelTextSize: 14
+  labelColor: {r: 1, g: 1, b: 1, a: 1}
+  labelPrefab: {fileID: 7963606135631250497, guid: 933a5612c43104c29af0a700ea5fa149, type: 3}
+  labelViewportOffset: {x: 0, y: 0}
+  labelVerticalOffset: 0
+  labelLineLength: 200
+  labelTarget: {fileID: 0}
+  labelFollowCursor: 1
+  labelMode: 0
+  labelShowInEditorMode: 1
+  labelAlignment: 0
+  labelRelativeAlignment: 0
+  labelAlignmentTransform: {fileID: 0}
+  labelMaxDistance: 250
+  labelFadeStartDistance: 200
+  labelScaleByDistance: 0
+  labelScaleMin: 1
+  labelScaleMax: 1
+  labelWorldSpaceScale: 0.005
+  seeThrough: 2
+  seeThroughOccluderMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  seeThroughOccluderThreshold: 0.3
+  seeThroughOccluderMaskAccurate: 0
+  seeThroughOccluderCheckInterval: 1
+  seeThroughOccluderCheckIndividualObjects: 0
+  seeThroughDepthOffset: 0
+  seeThroughMaxDepth: 0
+  seeThroughFadeRange: 0
+  seeThroughIntensity: 0.8
+  seeThroughTintAlpha: 0.5
+  seeThroughTintColor: {r: 1, g: 0, b: 0, a: 1}
+  seeThroughNoise: 1
+  seeThroughBorder: 0
+  seeThroughBorderColor: {r: 0, g: 0, b: 0, a: 1}
+  seeThroughBorderOnly: 0
+  seeThroughBorderWidth: 0.45
+  seeThroughOrdered: 0
+  seeThroughTexture: {fileID: 0}
+  seeThroughTextureUVSpace: 0
+  seeThroughTextureScale: 1
+  seeThroughChildrenSortingMode: 0
+  rmsCount: 0
+  hitFxInitialIntensity: 0
+  hitFxMode: 0
+  hitFXTriggerMode: 0
+  hitFxFadeOutDuration: 0.25
+  hitFxColor: {r: 1, g: 1, b: 1, a: 1}
+  hitFxRadius: 0.5
 --- !u!1 &3218101272088750175
 GameObject:
   m_ObjectHideFlags: 0
@@ -56603,6 +56888,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 8785666567801047131, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
       insertIndex: -1
       addedObject: {fileID: 9110530551023911647}
+    - targetCorrespondingSourceObject: {fileID: 8785666567801047131, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7316548603683026249}
     - targetCorrespondingSourceObject: {fileID: 1819714117364041549, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4114245449866589469}
@@ -57033,6 +57321,265 @@ MonoBehaviour:
         Velocity: {x: 5, y: 5, z: 5}
         ClearImpulseOnStop: 0
         DrawGizmos: 0
+--- !u!114 &7316548603683026249
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4103658122623789462}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 888380afc233049ce9e618f9f36c8ba8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighlightPlus.Runtime::HighlightPlus.HighlightEffect
+  profile: {fileID: 0}
+  profileSync: 0
+  camerasLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  effectGroup: 1
+  effectTarget: {fileID: 0}
+  effectGroupLayer:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  effectNameFilter: 
+  effectNameUseRegEx: 0
+  excludeObjectsWithHighlightEffect: 0
+  combineMeshes: 0
+  alphaCutOff: 0
+  alphaCutOffTextureName: 
+  cullBackFaces: 1
+  ignoreObjectVisibility: 0
+  reflectionProbes: 0
+  GPUInstancing: 1
+  sortingPriority: 0
+  optimizeSkinnedMesh: 1
+  depthClip: 0
+  cameraDistanceFade: 0
+  cameraDistanceFadeNear: 0
+  cameraDistanceFadeFar: 1000
+  useOriginalShader: 0
+  customPassName: 
+  normalsOption: 0
+  ignore: 0
+  _highlighted: 0
+  fadeInDuration: 0
+  fadeOutDuration: 0
+  flipY: 0
+  constantWidth: 1
+  extraCoveragePixels: 0
+  minimumWidth: 0
+  subMeshMask: -1
+  vertexTransformMode: 0
+  overlay: 0
+  overlayMode: 0
+  overlayPattern: 0
+  overlayPatternScrolling: {x: 0, y: 0}
+  overlayColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  overlayAnimationSpeed: 1
+  overlayMinIntensity: 0.5
+  overlayBlending: 1
+  overlayTexture: {fileID: 0}
+  overlayTextureUVSpace: 1
+  overlayTextureScale: 1
+  overlayTextureScrolling: {x: 0, y: 0}
+  overlayVisibility: 0
+  overlayBlendMode: 0
+  overlayPatternScale: 10
+  overlayPatternSize: 0.15
+  overlayPatternSoftness: 0.02
+  overlayPatternRotation: 0
+  outline: 1
+  outlineColor: {r: 0, g: 0, b: 0, a: 1}
+  outlineColorStyle: 0
+  outlineGradient:
+    serializedVersion: 2
+    key0: {r: 1, g: 1, b: 1, a: 1}
+    key1: {r: 1, g: 1, b: 1, a: 1}
+    key2: {r: 0, g: 0, b: 0, a: 0}
+    key3: {r: 0, g: 0, b: 0, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 65535
+    ctime2: 0
+    ctime3: 0
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_ColorSpace: -1
+    m_NumColorKeys: 2
+    m_NumAlphaKeys: 2
+  outlineGradientInLocalSpace: 0
+  outlineWidth: 0.45
+  outlineBlurPasses: 2
+  outlineQuality: 3
+  outlineEdgeMode: 0
+  outlineEdgeThreshold: 0.995
+  outlineDistanceScaleBias: 25
+  outlineSharpness: 1
+  outlineDownsampling: 1
+  outlineVisibility: 0
+  glowBlendMode: 0
+  outlineBlitDebug: 0
+  outlineIndependent: 0
+  outlineContourStyle: 0
+  outlineMaskMode: 0
+  outlineGradientKnee: 0.4
+  outlineGradientPower: 8
+  padding: 0
+  outlinePixelation: 0
+  outlineStylized: 0
+  outlinePattern: {fileID: 0}
+  outlinePatternScale: 0.3
+  outlinePatternThreshold: 0.3
+  outlinePatternDistortionAmount: 0.5
+  outlinePatternDistortionTexture: {fileID: 0}
+  outlinePatternStopMotionScale: 5
+  outlineDashed: 0
+  outlineDashWidth: 0.5
+  outlineDashGap: 0.3
+  outlineDashSpeed: 2
+  glow: 0
+  glowWidth: 0.4
+  glowQuality: 3
+  glowBlurMethod: 0
+  glowHighPrecision: 1
+  glowDistanceScaleBias: 25
+  glowDownsampling: 2
+  glowHQColor: {r: 0.64, g: 1, b: 0, a: 1}
+  glowDithering: 1
+  glowDitheringStyle: 0
+  glowMagicNumber1: 0.75
+  glowMagicNumber2: 0.5
+  glowAnimationSpeed: 1
+  glowVisibility: 0
+  glowBlitDebug: 0
+  glowBlendPasses: 1
+  glowPasses: []
+  glowMaskMode: 0
+  glowPixelation: 0
+  innerGlow: 0
+  innerGlowWidth: 1
+  innerGlowPower: 1
+  innerGlowColor: {r: 1, g: 1, b: 1, a: 1}
+  innerGlowBlendMode: 0
+  innerGlowVisibility: 0
+  focus: 0
+  focusColor: {r: 0, g: 0, b: 0, a: 0.9412}
+  focusBlur: 0
+  focusBlurDownsampling: 2
+  focusDesaturation: 0
+  targetFX: 0
+  targetFXStyle: 0
+  targetFXFrameWidth: 0.1
+  targetFXCornerLength: 0.25
+  targetFXFrameMinOpacity: 0
+  targetFXGroundMinAltitude: -1000
+  targetFXTexture: {fileID: 0}
+  targetFXColor: {r: 1, g: 1, b: 1, a: 1}
+  targetFXCenter: {fileID: 0}
+  targetFXRotationSpeed: 50
+  targetFXRotationAngle: 0
+  targetFXInitialScale: 4
+  targetFXEndScale: 1.5
+  targetFXScaleToRenderBounds: 1
+  targetFXUseEnclosingBounds: 0
+  targetFXSquare: 1
+  targetFXAlignToGround: 0
+  targetFXOffset: {x: 0, y: 0, z: 0}
+  targetFxCenterOnHitPosition: 0
+  targetFxAlignToNormal: 0
+  targetFXFadePower: 32
+  targetFXGroundMaxDistance: 10
+  targetFXGroundLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  targetFXTransitionDuration: 0.5
+  targetFXStayDuration: 1.5
+  targetFXVisibility: 1
+  iconFX: 0
+  iconFXAssetType: 0
+  iconFXPrefab: {fileID: 0}
+  iconFXMesh: {fileID: 0}
+  iconFXLightColor: {r: 1, g: 1, b: 1, a: 1}
+  iconFXDarkColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  iconFXCenter: {fileID: 0}
+  iconFXRotationSpeed: 50
+  iconFXAnimationOption: 0
+  iconFXAnimationAmount: 0.1
+  iconFXAnimationSpeed: 3
+  iconFXScale: 1
+  iconFXScaleToRenderBounds: 0
+  iconFXOffset: {x: 0, y: 1, z: 0}
+  iconFXTransitionDuration: 0.5
+  iconFXStayDuration: 1.5
+  labelEnabled: 0
+  labelRenderMode: 0
+  labelText: Label
+  labelTextSize: 14
+  labelColor: {r: 1, g: 1, b: 1, a: 1}
+  labelPrefab: {fileID: 7963606135631250497, guid: 933a5612c43104c29af0a700ea5fa149, type: 3}
+  labelViewportOffset: {x: 0, y: 0}
+  labelVerticalOffset: 0
+  labelLineLength: 200
+  labelTarget: {fileID: 0}
+  labelFollowCursor: 1
+  labelMode: 0
+  labelShowInEditorMode: 1
+  labelAlignment: 0
+  labelRelativeAlignment: 0
+  labelAlignmentTransform: {fileID: 0}
+  labelMaxDistance: 250
+  labelFadeStartDistance: 200
+  labelScaleByDistance: 0
+  labelScaleMin: 1
+  labelScaleMax: 1
+  labelWorldSpaceScale: 0.005
+  seeThrough: 2
+  seeThroughOccluderMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  seeThroughOccluderThreshold: 0.3
+  seeThroughOccluderMaskAccurate: 0
+  seeThroughOccluderCheckInterval: 1
+  seeThroughOccluderCheckIndividualObjects: 0
+  seeThroughDepthOffset: 0
+  seeThroughMaxDepth: 0
+  seeThroughFadeRange: 0
+  seeThroughIntensity: 0.8
+  seeThroughTintAlpha: 0.5
+  seeThroughTintColor: {r: 1, g: 0, b: 0, a: 1}
+  seeThroughNoise: 1
+  seeThroughBorder: 0
+  seeThroughBorderColor: {r: 0, g: 0, b: 0, a: 1}
+  seeThroughBorderOnly: 0
+  seeThroughBorderWidth: 0.45
+  seeThroughOrdered: 0
+  seeThroughTexture: {fileID: 0}
+  seeThroughTextureUVSpace: 0
+  seeThroughTextureScale: 1
+  seeThroughChildrenSortingMode: 0
+  rmsCount: 0
+  hitFxInitialIntensity: 0
+  hitFxMode: 0
+  hitFXTriggerMode: 0
+  hitFxFadeOutDuration: 0.25
+  hitFxColor: {r: 1, g: 1, b: 1, a: 1}
+  hitFxRadius: 0.5
 --- !u!114 &4270824904339173705 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8816621988902244484, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
@@ -58743,7 +59290,10 @@ PrefabInstance:
     - {fileID: 7146176148469858077, guid: 1e5bfd1de7e91bf4f903e3e4beded246, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2504573296147682970, guid: 1e5bfd1de7e91bf4f903e3e4beded246, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2195032483274565463}
   m_SourcePrefab: {fileID: 100100000, guid: 1e5bfd1de7e91bf4f903e3e4beded246, type: 3}
 --- !u!4 &4739314024419958089 stripped
 Transform:
@@ -58755,6 +59305,265 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 2504573296147682970, guid: 1e5bfd1de7e91bf4f903e3e4beded246, type: 3}
   m_PrefabInstance: {fileID: 7137086128289256621}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2195032483274565463
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4741742994959581751}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 888380afc233049ce9e618f9f36c8ba8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighlightPlus.Runtime::HighlightPlus.HighlightEffect
+  profile: {fileID: 0}
+  profileSync: 0
+  camerasLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  effectGroup: 1
+  effectTarget: {fileID: 0}
+  effectGroupLayer:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  effectNameFilter: 
+  effectNameUseRegEx: 0
+  excludeObjectsWithHighlightEffect: 0
+  combineMeshes: 0
+  alphaCutOff: 0
+  alphaCutOffTextureName: 
+  cullBackFaces: 1
+  ignoreObjectVisibility: 0
+  reflectionProbes: 0
+  GPUInstancing: 1
+  sortingPriority: 0
+  optimizeSkinnedMesh: 1
+  depthClip: 0
+  cameraDistanceFade: 0
+  cameraDistanceFadeNear: 0
+  cameraDistanceFadeFar: 1000
+  useOriginalShader: 0
+  customPassName: 
+  normalsOption: 0
+  ignore: 0
+  _highlighted: 0
+  fadeInDuration: 0
+  fadeOutDuration: 0
+  flipY: 0
+  constantWidth: 1
+  extraCoveragePixels: 0
+  minimumWidth: 0
+  subMeshMask: -1
+  vertexTransformMode: 0
+  overlay: 0
+  overlayMode: 0
+  overlayPattern: 0
+  overlayPatternScrolling: {x: 0, y: 0}
+  overlayColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  overlayAnimationSpeed: 1
+  overlayMinIntensity: 0.5
+  overlayBlending: 1
+  overlayTexture: {fileID: 0}
+  overlayTextureUVSpace: 1
+  overlayTextureScale: 1
+  overlayTextureScrolling: {x: 0, y: 0}
+  overlayVisibility: 0
+  overlayBlendMode: 0
+  overlayPatternScale: 10
+  overlayPatternSize: 0.15
+  overlayPatternSoftness: 0.02
+  overlayPatternRotation: 0
+  outline: 1
+  outlineColor: {r: 0, g: 0, b: 0, a: 1}
+  outlineColorStyle: 0
+  outlineGradient:
+    serializedVersion: 2
+    key0: {r: 1, g: 1, b: 1, a: 1}
+    key1: {r: 1, g: 1, b: 1, a: 1}
+    key2: {r: 0, g: 0, b: 0, a: 0}
+    key3: {r: 0, g: 0, b: 0, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 65535
+    ctime2: 0
+    ctime3: 0
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_ColorSpace: -1
+    m_NumColorKeys: 2
+    m_NumAlphaKeys: 2
+  outlineGradientInLocalSpace: 0
+  outlineWidth: 0.45
+  outlineBlurPasses: 2
+  outlineQuality: 3
+  outlineEdgeMode: 0
+  outlineEdgeThreshold: 0.995
+  outlineDistanceScaleBias: 25
+  outlineSharpness: 1
+  outlineDownsampling: 1
+  outlineVisibility: 0
+  glowBlendMode: 0
+  outlineBlitDebug: 0
+  outlineIndependent: 0
+  outlineContourStyle: 0
+  outlineMaskMode: 0
+  outlineGradientKnee: 0.4
+  outlineGradientPower: 8
+  padding: 0
+  outlinePixelation: 0
+  outlineStylized: 0
+  outlinePattern: {fileID: 0}
+  outlinePatternScale: 0.3
+  outlinePatternThreshold: 0.3
+  outlinePatternDistortionAmount: 0.5
+  outlinePatternDistortionTexture: {fileID: 0}
+  outlinePatternStopMotionScale: 5
+  outlineDashed: 0
+  outlineDashWidth: 0.5
+  outlineDashGap: 0.3
+  outlineDashSpeed: 2
+  glow: 0
+  glowWidth: 0.4
+  glowQuality: 3
+  glowBlurMethod: 0
+  glowHighPrecision: 1
+  glowDistanceScaleBias: 25
+  glowDownsampling: 2
+  glowHQColor: {r: 0.64, g: 1, b: 0, a: 1}
+  glowDithering: 1
+  glowDitheringStyle: 0
+  glowMagicNumber1: 0.75
+  glowMagicNumber2: 0.5
+  glowAnimationSpeed: 1
+  glowVisibility: 0
+  glowBlitDebug: 0
+  glowBlendPasses: 1
+  glowPasses: []
+  glowMaskMode: 0
+  glowPixelation: 0
+  innerGlow: 0
+  innerGlowWidth: 1
+  innerGlowPower: 1
+  innerGlowColor: {r: 1, g: 1, b: 1, a: 1}
+  innerGlowBlendMode: 0
+  innerGlowVisibility: 0
+  focus: 0
+  focusColor: {r: 0, g: 0, b: 0, a: 0.9412}
+  focusBlur: 0
+  focusBlurDownsampling: 2
+  focusDesaturation: 0
+  targetFX: 0
+  targetFXStyle: 0
+  targetFXFrameWidth: 0.1
+  targetFXCornerLength: 0.25
+  targetFXFrameMinOpacity: 0
+  targetFXGroundMinAltitude: -1000
+  targetFXTexture: {fileID: 0}
+  targetFXColor: {r: 1, g: 1, b: 1, a: 1}
+  targetFXCenter: {fileID: 0}
+  targetFXRotationSpeed: 50
+  targetFXRotationAngle: 0
+  targetFXInitialScale: 4
+  targetFXEndScale: 1.5
+  targetFXScaleToRenderBounds: 1
+  targetFXUseEnclosingBounds: 0
+  targetFXSquare: 1
+  targetFXAlignToGround: 0
+  targetFXOffset: {x: 0, y: 0, z: 0}
+  targetFxCenterOnHitPosition: 0
+  targetFxAlignToNormal: 0
+  targetFXFadePower: 32
+  targetFXGroundMaxDistance: 10
+  targetFXGroundLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  targetFXTransitionDuration: 0.5
+  targetFXStayDuration: 1.5
+  targetFXVisibility: 1
+  iconFX: 0
+  iconFXAssetType: 0
+  iconFXPrefab: {fileID: 0}
+  iconFXMesh: {fileID: 0}
+  iconFXLightColor: {r: 1, g: 1, b: 1, a: 1}
+  iconFXDarkColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  iconFXCenter: {fileID: 0}
+  iconFXRotationSpeed: 50
+  iconFXAnimationOption: 0
+  iconFXAnimationAmount: 0.1
+  iconFXAnimationSpeed: 3
+  iconFXScale: 1
+  iconFXScaleToRenderBounds: 0
+  iconFXOffset: {x: 0, y: 1, z: 0}
+  iconFXTransitionDuration: 0.5
+  iconFXStayDuration: 1.5
+  labelEnabled: 0
+  labelRenderMode: 0
+  labelText: Label
+  labelTextSize: 14
+  labelColor: {r: 1, g: 1, b: 1, a: 1}
+  labelPrefab: {fileID: 7963606135631250497, guid: 933a5612c43104c29af0a700ea5fa149, type: 3}
+  labelViewportOffset: {x: 0, y: 0}
+  labelVerticalOffset: 0
+  labelLineLength: 200
+  labelTarget: {fileID: 0}
+  labelFollowCursor: 1
+  labelMode: 0
+  labelShowInEditorMode: 1
+  labelAlignment: 0
+  labelRelativeAlignment: 0
+  labelAlignmentTransform: {fileID: 0}
+  labelMaxDistance: 250
+  labelFadeStartDistance: 200
+  labelScaleByDistance: 0
+  labelScaleMin: 1
+  labelScaleMax: 1
+  labelWorldSpaceScale: 0.005
+  seeThrough: 2
+  seeThroughOccluderMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  seeThroughOccluderThreshold: 0.3
+  seeThroughOccluderMaskAccurate: 0
+  seeThroughOccluderCheckInterval: 1
+  seeThroughOccluderCheckIndividualObjects: 0
+  seeThroughDepthOffset: 0
+  seeThroughMaxDepth: 0
+  seeThroughFadeRange: 0
+  seeThroughIntensity: 0.8
+  seeThroughTintAlpha: 0.5
+  seeThroughTintColor: {r: 1, g: 0, b: 0, a: 1}
+  seeThroughNoise: 1
+  seeThroughBorder: 0
+  seeThroughBorderColor: {r: 0, g: 0, b: 0, a: 1}
+  seeThroughBorderOnly: 0
+  seeThroughBorderWidth: 0.45
+  seeThroughOrdered: 0
+  seeThroughTexture: {fileID: 0}
+  seeThroughTextureUVSpace: 0
+  seeThroughTextureScale: 1
+  seeThroughChildrenSortingMode: 0
+  rmsCount: 0
+  hitFxInitialIntensity: 0
+  hitFxMode: 0
+  hitFXTriggerMode: 0
+  hitFxFadeOutDuration: 0.25
+  hitFxColor: {r: 1, g: 1, b: 1, a: 1}
+  hitFxRadius: 0.5
 --- !u!1001 &7169712588158311188
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -59439,6 +60248,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 8785666567801047131, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4535222942300496963}
+    - targetCorrespondingSourceObject: {fileID: 8785666567801047131, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 833683787114664145}
     - targetCorrespondingSourceObject: {fileID: 1819714117364041549, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4314704673241665172}
@@ -59859,6 +60671,265 @@ MonoBehaviour:
         Velocity: {x: 5, y: 5, z: 5}
         ClearImpulseOnStop: 0
         DrawGizmos: 0
+--- !u!114 &833683787114664145
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1914903598473155407}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 888380afc233049ce9e618f9f36c8ba8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighlightPlus.Runtime::HighlightPlus.HighlightEffect
+  profile: {fileID: 0}
+  profileSync: 0
+  camerasLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  effectGroup: 1
+  effectTarget: {fileID: 0}
+  effectGroupLayer:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  effectNameFilter: 
+  effectNameUseRegEx: 0
+  excludeObjectsWithHighlightEffect: 0
+  combineMeshes: 0
+  alphaCutOff: 0
+  alphaCutOffTextureName: 
+  cullBackFaces: 1
+  ignoreObjectVisibility: 0
+  reflectionProbes: 0
+  GPUInstancing: 1
+  sortingPriority: 0
+  optimizeSkinnedMesh: 1
+  depthClip: 0
+  cameraDistanceFade: 0
+  cameraDistanceFadeNear: 0
+  cameraDistanceFadeFar: 1000
+  useOriginalShader: 0
+  customPassName: 
+  normalsOption: 0
+  ignore: 0
+  _highlighted: 0
+  fadeInDuration: 0
+  fadeOutDuration: 0
+  flipY: 0
+  constantWidth: 1
+  extraCoveragePixels: 0
+  minimumWidth: 0
+  subMeshMask: -1
+  vertexTransformMode: 0
+  overlay: 0
+  overlayMode: 0
+  overlayPattern: 0
+  overlayPatternScrolling: {x: 0, y: 0}
+  overlayColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  overlayAnimationSpeed: 1
+  overlayMinIntensity: 0.5
+  overlayBlending: 1
+  overlayTexture: {fileID: 0}
+  overlayTextureUVSpace: 1
+  overlayTextureScale: 1
+  overlayTextureScrolling: {x: 0, y: 0}
+  overlayVisibility: 0
+  overlayBlendMode: 0
+  overlayPatternScale: 10
+  overlayPatternSize: 0.15
+  overlayPatternSoftness: 0.02
+  overlayPatternRotation: 0
+  outline: 1
+  outlineColor: {r: 0, g: 0, b: 0, a: 1}
+  outlineColorStyle: 0
+  outlineGradient:
+    serializedVersion: 2
+    key0: {r: 1, g: 1, b: 1, a: 1}
+    key1: {r: 1, g: 1, b: 1, a: 1}
+    key2: {r: 0, g: 0, b: 0, a: 0}
+    key3: {r: 0, g: 0, b: 0, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 65535
+    ctime2: 0
+    ctime3: 0
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_ColorSpace: -1
+    m_NumColorKeys: 2
+    m_NumAlphaKeys: 2
+  outlineGradientInLocalSpace: 0
+  outlineWidth: 0.45
+  outlineBlurPasses: 2
+  outlineQuality: 3
+  outlineEdgeMode: 0
+  outlineEdgeThreshold: 0.995
+  outlineDistanceScaleBias: 25
+  outlineSharpness: 1
+  outlineDownsampling: 1
+  outlineVisibility: 0
+  glowBlendMode: 0
+  outlineBlitDebug: 0
+  outlineIndependent: 0
+  outlineContourStyle: 0
+  outlineMaskMode: 0
+  outlineGradientKnee: 0.4
+  outlineGradientPower: 8
+  padding: 0
+  outlinePixelation: 0
+  outlineStylized: 0
+  outlinePattern: {fileID: 0}
+  outlinePatternScale: 0.3
+  outlinePatternThreshold: 0.3
+  outlinePatternDistortionAmount: 0.5
+  outlinePatternDistortionTexture: {fileID: 0}
+  outlinePatternStopMotionScale: 5
+  outlineDashed: 0
+  outlineDashWidth: 0.5
+  outlineDashGap: 0.3
+  outlineDashSpeed: 2
+  glow: 0
+  glowWidth: 0.4
+  glowQuality: 3
+  glowBlurMethod: 0
+  glowHighPrecision: 1
+  glowDistanceScaleBias: 25
+  glowDownsampling: 2
+  glowHQColor: {r: 0.64, g: 1, b: 0, a: 1}
+  glowDithering: 1
+  glowDitheringStyle: 0
+  glowMagicNumber1: 0.75
+  glowMagicNumber2: 0.5
+  glowAnimationSpeed: 1
+  glowVisibility: 0
+  glowBlitDebug: 0
+  glowBlendPasses: 1
+  glowPasses: []
+  glowMaskMode: 0
+  glowPixelation: 0
+  innerGlow: 0
+  innerGlowWidth: 1
+  innerGlowPower: 1
+  innerGlowColor: {r: 1, g: 1, b: 1, a: 1}
+  innerGlowBlendMode: 0
+  innerGlowVisibility: 0
+  focus: 0
+  focusColor: {r: 0, g: 0, b: 0, a: 0.9412}
+  focusBlur: 0
+  focusBlurDownsampling: 2
+  focusDesaturation: 0
+  targetFX: 0
+  targetFXStyle: 0
+  targetFXFrameWidth: 0.1
+  targetFXCornerLength: 0.25
+  targetFXFrameMinOpacity: 0
+  targetFXGroundMinAltitude: -1000
+  targetFXTexture: {fileID: 0}
+  targetFXColor: {r: 1, g: 1, b: 1, a: 1}
+  targetFXCenter: {fileID: 0}
+  targetFXRotationSpeed: 50
+  targetFXRotationAngle: 0
+  targetFXInitialScale: 4
+  targetFXEndScale: 1.5
+  targetFXScaleToRenderBounds: 1
+  targetFXUseEnclosingBounds: 0
+  targetFXSquare: 1
+  targetFXAlignToGround: 0
+  targetFXOffset: {x: 0, y: 0, z: 0}
+  targetFxCenterOnHitPosition: 0
+  targetFxAlignToNormal: 0
+  targetFXFadePower: 32
+  targetFXGroundMaxDistance: 10
+  targetFXGroundLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  targetFXTransitionDuration: 0.5
+  targetFXStayDuration: 1.5
+  targetFXVisibility: 1
+  iconFX: 0
+  iconFXAssetType: 0
+  iconFXPrefab: {fileID: 0}
+  iconFXMesh: {fileID: 0}
+  iconFXLightColor: {r: 1, g: 1, b: 1, a: 1}
+  iconFXDarkColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  iconFXCenter: {fileID: 0}
+  iconFXRotationSpeed: 50
+  iconFXAnimationOption: 0
+  iconFXAnimationAmount: 0.1
+  iconFXAnimationSpeed: 3
+  iconFXScale: 1
+  iconFXScaleToRenderBounds: 0
+  iconFXOffset: {x: 0, y: 1, z: 0}
+  iconFXTransitionDuration: 0.5
+  iconFXStayDuration: 1.5
+  labelEnabled: 0
+  labelRenderMode: 0
+  labelText: Label
+  labelTextSize: 14
+  labelColor: {r: 1, g: 1, b: 1, a: 1}
+  labelPrefab: {fileID: 7963606135631250497, guid: 933a5612c43104c29af0a700ea5fa149, type: 3}
+  labelViewportOffset: {x: 0, y: 0}
+  labelVerticalOffset: 0
+  labelLineLength: 200
+  labelTarget: {fileID: 0}
+  labelFollowCursor: 1
+  labelMode: 0
+  labelShowInEditorMode: 1
+  labelAlignment: 0
+  labelRelativeAlignment: 0
+  labelAlignmentTransform: {fileID: 0}
+  labelMaxDistance: 250
+  labelFadeStartDistance: 200
+  labelScaleByDistance: 0
+  labelScaleMin: 1
+  labelScaleMax: 1
+  labelWorldSpaceScale: 0.005
+  seeThrough: 2
+  seeThroughOccluderMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  seeThroughOccluderThreshold: 0.3
+  seeThroughOccluderMaskAccurate: 0
+  seeThroughOccluderCheckInterval: 1
+  seeThroughOccluderCheckIndividualObjects: 0
+  seeThroughDepthOffset: 0
+  seeThroughMaxDepth: 0
+  seeThroughFadeRange: 0
+  seeThroughIntensity: 0.8
+  seeThroughTintAlpha: 0.5
+  seeThroughTintColor: {r: 1, g: 0, b: 0, a: 1}
+  seeThroughNoise: 1
+  seeThroughBorder: 0
+  seeThroughBorderColor: {r: 0, g: 0, b: 0, a: 1}
+  seeThroughBorderOnly: 0
+  seeThroughBorderWidth: 0.45
+  seeThroughOrdered: 0
+  seeThroughTexture: {fileID: 0}
+  seeThroughTextureUVSpace: 0
+  seeThroughTextureScale: 1
+  seeThroughChildrenSortingMode: 0
+  rmsCount: 0
+  hitFxInitialIntensity: 0
+  hitFxMode: 0
+  hitFXTriggerMode: 0
+  hitFxFadeOutDuration: 0.25
+  hitFxColor: {r: 1, g: 1, b: 1, a: 1}
+  hitFxRadius: 0.5
 --- !u!4 &2866189811545402143 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4952041965036466187, guid: 41d36f0e8702c4f439eca08f764cf773, type: 3}
@@ -63373,7 +64444,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   bounceVfxPrefab: {fileID: 1190131086089332, guid: 0bd177434eca5da43a8235ff71e707e9, type: 3}
-  chainVfx: {fileID: 0}
+  chainVfx: {fileID: 8538993598752285722}
   chainFeedback: {fileID: 3549566127248762991}
 --- !u!114 &1138285761668203886
 MonoBehaviour:
@@ -63691,9 +64762,9 @@ MonoBehaviour:
   playerMount: {fileID: 0}
   playerBow: {fileID: 0}
   playerThrownAxe: {fileID: 0}
-  fireWeaponVfxPrefab: {fileID: 0}
-  iceWeaponVfxPrefab: {fileID: 0}
-  lightningWeaponVfxPrefab: {fileID: 0}
+  fireWeaponProfile: {fileID: 0}
+  iceWeaponProfile: {fileID: 0}
+  lightningWeaponProfile: {fileID: 0}
   poisonWeaponVfxPrefab: {fileID: 0}
 --- !u!114 &1351914398226097599
 MonoBehaviour:
@@ -64303,6 +65374,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7026693026539742034, guid: 044e592295947d84c8489bcf8fea2fd9, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3733317002179905216}
+    - targetCorrespondingSourceObject: {fileID: 8745392064174376321, guid: 044e592295947d84c8489bcf8fea2fd9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4881355016033561707}
   m_SourcePrefab: {fileID: 100100000, guid: 044e592295947d84c8489bcf8fea2fd9, type: 3}
 --- !u!1 &457783407429013535 stripped
 GameObject:
@@ -64343,6 +65417,265 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 8745392064174376321, guid: 044e592295947d84c8489bcf8fea2fd9, type: 3}
   m_PrefabInstance: {fileID: 7483165643215369037}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &4881355016033561707
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2198975143494039244}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 888380afc233049ce9e618f9f36c8ba8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HighlightPlus.Runtime::HighlightPlus.HighlightEffect
+  profile: {fileID: 0}
+  profileSync: 0
+  camerasLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  effectGroup: 1
+  effectTarget: {fileID: 0}
+  effectGroupLayer:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  effectNameFilter: 
+  effectNameUseRegEx: 0
+  excludeObjectsWithHighlightEffect: 0
+  combineMeshes: 0
+  alphaCutOff: 0
+  alphaCutOffTextureName: 
+  cullBackFaces: 1
+  ignoreObjectVisibility: 0
+  reflectionProbes: 0
+  GPUInstancing: 1
+  sortingPriority: 0
+  optimizeSkinnedMesh: 1
+  depthClip: 0
+  cameraDistanceFade: 0
+  cameraDistanceFadeNear: 0
+  cameraDistanceFadeFar: 1000
+  useOriginalShader: 0
+  customPassName: 
+  normalsOption: 0
+  ignore: 0
+  _highlighted: 0
+  fadeInDuration: 0
+  fadeOutDuration: 0
+  flipY: 0
+  constantWidth: 1
+  extraCoveragePixels: 0
+  minimumWidth: 0
+  subMeshMask: -1
+  vertexTransformMode: 0
+  overlay: 0
+  overlayMode: 0
+  overlayPattern: 0
+  overlayPatternScrolling: {x: 0, y: 0}
+  overlayColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  overlayAnimationSpeed: 1
+  overlayMinIntensity: 0.5
+  overlayBlending: 1
+  overlayTexture: {fileID: 0}
+  overlayTextureUVSpace: 1
+  overlayTextureScale: 1
+  overlayTextureScrolling: {x: 0, y: 0}
+  overlayVisibility: 0
+  overlayBlendMode: 0
+  overlayPatternScale: 10
+  overlayPatternSize: 0.15
+  overlayPatternSoftness: 0.02
+  overlayPatternRotation: 0
+  outline: 1
+  outlineColor: {r: 0, g: 0, b: 0, a: 1}
+  outlineColorStyle: 0
+  outlineGradient:
+    serializedVersion: 2
+    key0: {r: 1, g: 1, b: 1, a: 1}
+    key1: {r: 1, g: 1, b: 1, a: 1}
+    key2: {r: 0, g: 0, b: 0, a: 0}
+    key3: {r: 0, g: 0, b: 0, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 65535
+    ctime2: 0
+    ctime3: 0
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_ColorSpace: -1
+    m_NumColorKeys: 2
+    m_NumAlphaKeys: 2
+  outlineGradientInLocalSpace: 0
+  outlineWidth: 0.45
+  outlineBlurPasses: 2
+  outlineQuality: 3
+  outlineEdgeMode: 0
+  outlineEdgeThreshold: 0.995
+  outlineDistanceScaleBias: 25
+  outlineSharpness: 1
+  outlineDownsampling: 1
+  outlineVisibility: 0
+  glowBlendMode: 0
+  outlineBlitDebug: 0
+  outlineIndependent: 0
+  outlineContourStyle: 0
+  outlineMaskMode: 0
+  outlineGradientKnee: 0.4
+  outlineGradientPower: 8
+  padding: 0
+  outlinePixelation: 0
+  outlineStylized: 0
+  outlinePattern: {fileID: 0}
+  outlinePatternScale: 0.3
+  outlinePatternThreshold: 0.3
+  outlinePatternDistortionAmount: 0.5
+  outlinePatternDistortionTexture: {fileID: 0}
+  outlinePatternStopMotionScale: 5
+  outlineDashed: 0
+  outlineDashWidth: 0.5
+  outlineDashGap: 0.3
+  outlineDashSpeed: 2
+  glow: 0
+  glowWidth: 0.4
+  glowQuality: 3
+  glowBlurMethod: 0
+  glowHighPrecision: 1
+  glowDistanceScaleBias: 25
+  glowDownsampling: 2
+  glowHQColor: {r: 0.64, g: 1, b: 0, a: 1}
+  glowDithering: 1
+  glowDitheringStyle: 0
+  glowMagicNumber1: 0.75
+  glowMagicNumber2: 0.5
+  glowAnimationSpeed: 1
+  glowVisibility: 0
+  glowBlitDebug: 0
+  glowBlendPasses: 1
+  glowPasses: []
+  glowMaskMode: 0
+  glowPixelation: 0
+  innerGlow: 0
+  innerGlowWidth: 1
+  innerGlowPower: 1
+  innerGlowColor: {r: 1, g: 1, b: 1, a: 1}
+  innerGlowBlendMode: 0
+  innerGlowVisibility: 0
+  focus: 0
+  focusColor: {r: 0, g: 0, b: 0, a: 0.9412}
+  focusBlur: 0
+  focusBlurDownsampling: 2
+  focusDesaturation: 0
+  targetFX: 0
+  targetFXStyle: 0
+  targetFXFrameWidth: 0.1
+  targetFXCornerLength: 0.25
+  targetFXFrameMinOpacity: 0
+  targetFXGroundMinAltitude: -1000
+  targetFXTexture: {fileID: 0}
+  targetFXColor: {r: 1, g: 1, b: 1, a: 1}
+  targetFXCenter: {fileID: 0}
+  targetFXRotationSpeed: 50
+  targetFXRotationAngle: 0
+  targetFXInitialScale: 4
+  targetFXEndScale: 1.5
+  targetFXScaleToRenderBounds: 1
+  targetFXUseEnclosingBounds: 0
+  targetFXSquare: 1
+  targetFXAlignToGround: 0
+  targetFXOffset: {x: 0, y: 0, z: 0}
+  targetFxCenterOnHitPosition: 0
+  targetFxAlignToNormal: 0
+  targetFXFadePower: 32
+  targetFXGroundMaxDistance: 10
+  targetFXGroundLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  targetFXTransitionDuration: 0.5
+  targetFXStayDuration: 1.5
+  targetFXVisibility: 1
+  iconFX: 0
+  iconFXAssetType: 0
+  iconFXPrefab: {fileID: 0}
+  iconFXMesh: {fileID: 0}
+  iconFXLightColor: {r: 1, g: 1, b: 1, a: 1}
+  iconFXDarkColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  iconFXCenter: {fileID: 0}
+  iconFXRotationSpeed: 50
+  iconFXAnimationOption: 0
+  iconFXAnimationAmount: 0.1
+  iconFXAnimationSpeed: 3
+  iconFXScale: 1
+  iconFXScaleToRenderBounds: 0
+  iconFXOffset: {x: 0, y: 1, z: 0}
+  iconFXTransitionDuration: 0.5
+  iconFXStayDuration: 1.5
+  labelEnabled: 0
+  labelRenderMode: 0
+  labelText: Label
+  labelTextSize: 14
+  labelColor: {r: 1, g: 1, b: 1, a: 1}
+  labelPrefab: {fileID: 7963606135631250497, guid: 933a5612c43104c29af0a700ea5fa149, type: 3}
+  labelViewportOffset: {x: 0, y: 0}
+  labelVerticalOffset: 0
+  labelLineLength: 200
+  labelTarget: {fileID: 0}
+  labelFollowCursor: 1
+  labelMode: 0
+  labelShowInEditorMode: 1
+  labelAlignment: 0
+  labelRelativeAlignment: 0
+  labelAlignmentTransform: {fileID: 0}
+  labelMaxDistance: 250
+  labelFadeStartDistance: 200
+  labelScaleByDistance: 0
+  labelScaleMin: 1
+  labelScaleMax: 1
+  labelWorldSpaceScale: 0.005
+  seeThrough: 2
+  seeThroughOccluderMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  seeThroughOccluderThreshold: 0.3
+  seeThroughOccluderMaskAccurate: 0
+  seeThroughOccluderCheckInterval: 1
+  seeThroughOccluderCheckIndividualObjects: 0
+  seeThroughDepthOffset: 0
+  seeThroughMaxDepth: 0
+  seeThroughFadeRange: 0
+  seeThroughIntensity: 0.8
+  seeThroughTintAlpha: 0.5
+  seeThroughTintColor: {r: 1, g: 0, b: 0, a: 1}
+  seeThroughNoise: 1
+  seeThroughBorder: 0
+  seeThroughBorderColor: {r: 0, g: 0, b: 0, a: 1}
+  seeThroughBorderOnly: 0
+  seeThroughBorderWidth: 0.45
+  seeThroughOrdered: 0
+  seeThroughTexture: {fileID: 0}
+  seeThroughTextureUVSpace: 0
+  seeThroughTextureScale: 1
+  seeThroughChildrenSortingMode: 0
+  rmsCount: 0
+  hitFxInitialIntensity: 0
+  hitFxMode: 0
+  hitFXTriggerMode: 0
+  hitFxFadeOutDuration: 0.25
+  hitFxColor: {r: 1, g: 1, b: 1, a: 1}
+  hitFxRadius: 0.5
 --- !u!4 &3965847709966729521 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5823170792453534332, guid: 044e592295947d84c8489bcf8fea2fd9, type: 3}

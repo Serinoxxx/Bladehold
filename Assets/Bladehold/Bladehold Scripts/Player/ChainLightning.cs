@@ -152,20 +152,23 @@ public class ChainLightning : MonoBehaviour
     ///     player's charged blade. Still stat-gated: a no-op until something grants bounces/damage.
     ///     <paramref name="excludeTarget" /> keeps the first hop from arcing straight back into the
     ///     enemy that triggered the chain (pass the enemy that was just hit, when there is one).
+    ///     Explicit bounce/damage overrides let draft weapon charges work independently of orb upgrades.
     /// </summary>
-    public void ForceChain(float triggeringDamage, Vector3 hitPoint, IDamageable excludeTarget = null, int overrideBounces = -1)
+    public void ForceChain(float triggeringDamage, Vector3 hitPoint, IDamageable excludeTarget = null, int overrideBounces = -1, float overrideDamagePercent = -1f)
     {
         if (anyError)
         {
             return;
         }
-        Chain(excludeTarget, triggeringDamage, hitPoint, overrideBounces);
+        Chain(excludeTarget, triggeringDamage, hitPoint, overrideBounces, overrideDamagePercent);
     }
 
-    private void Chain(IDamageable target, float triggeringDamage, Vector3 hitPoint, int overrideBounces = -1)
+    private void Chain(IDamageable target, float triggeringDamage, Vector3 hitPoint, int overrideBounces = -1, float overrideDamagePercent = -1f)
     {
-        int bounces = overrideBounces > 0 ? overrideBounces : buff.CurrentBounces;
-        float damagePercent = buff.CurrentDamagePercent > 0f ? buff.CurrentDamagePercent : 0.5f; // fallback if locked
+        int bounces = overrideBounces >= 0 ? overrideBounces : buff.CurrentBounces;
+        float damagePercent = overrideDamagePercent >= 0f
+            ? overrideDamagePercent
+            : buff.CurrentDamagePercent > 0f ? buff.CurrentDamagePercent : 0.5f;
         if (bounces <= 0 || damagePercent <= 0f)
         {
             return;
@@ -249,6 +252,12 @@ public class ChainLightning : MonoBehaviour
             if (damageable == null || excluded.Contains(damageable))
             {
                 continue;
+            }
+            if (damageable is Component component)
+            {
+                if (Player.Instance != null && component.transform.root == Player.Instance.transform.root) continue;
+                Health health = component.GetComponentInParent<Health>();
+                if (health != null && (health.IsDead || health.ImmuneToPlayerDamage)) continue;
             }
 
             float sqrDistance = (collider.transform.position - origin).sqrMagnitude;

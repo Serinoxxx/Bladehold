@@ -44,6 +44,10 @@ public static class StatDisplay
 
     private static readonly Dictionary<StatType, Info> Table = new Dictionary<StatType, Info>
     {
+        { StatType.WeaponFireExplosionDamagePercent, new Info("Fire Charge Explosion Damage", StatFormat.Percent) },
+        { StatType.WeaponFireExplosionRadius, new Info("Fire Charge Explosion Radius", StatFormat.Number) },
+        { StatType.WeaponLightningBounces, new Info("Lightning Charge Bounces", StatFormat.Integer) },
+        { StatType.WeaponLightningDamagePercent, new Info("Lightning Charge Damage", StatFormat.Percent) },
         { StatType.SwordDamage, new Info("Sword Damage", StatFormat.Number) },
         { StatType.SwordRange, new Info("Sword Range", StatFormat.Multiplier) },
         { StatType.MoveSpeed, new Info("Move Speed", StatFormat.Multiplier) },

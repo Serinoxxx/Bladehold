@@ -377,6 +377,12 @@ public enum StatType
     MaceStunDuration,
     MaceShockwaveDamage,
     MaceKnockbackMultiplier,
+
+    // Base effects of draft-assigned weapon charges (independent of timed imbuements).
+    WeaponFireExplosionDamagePercent,
+    WeaponFireExplosionRadius,
+    WeaponLightningBounces,
+    WeaponLightningDamagePercent,
 }
 
 /// <summary>

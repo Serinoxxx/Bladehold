@@ -30,6 +30,19 @@ public static class RunSession
 
     public static event Action<string, string> OnElementalSlotChanged;
 
+    public static void ClearElementalSlot(string slotName)
+    {
+        if (string.IsNullOrEmpty(slotName))
+        {
+            Debug.LogError("[RunSession] Cannot clear an elemental charge without a slot name.");
+            return;
+        }
+        if (ElementalSlots.Remove(slotName))
+        {
+            OnElementalSlotChanged?.Invoke(slotName, "");
+        }
+    }
+
     public static int CrystalWaterWavesRemaining { get; set; } = 0;
     public static int SpecialHerbsWavesRemaining { get; set; } = 0;
     public static float PlayerBonusMaxHealth { get; set; } = 0f;
@@ -84,7 +97,10 @@ public static class RunSession
     {
         CurrentWave = 1;
         RestVisitsCount = 0;
-        ElementalSlots.Clear();
+        foreach (string slot in new List<string>(ElementalSlots.Keys))
+        {
+            ClearElementalSlot(slot);
+        }
         CrystalWaterWavesRemaining = 0;
         SpecialHerbsWavesRemaining = 0;
         PlayerBonusMaxHealth = 0f;

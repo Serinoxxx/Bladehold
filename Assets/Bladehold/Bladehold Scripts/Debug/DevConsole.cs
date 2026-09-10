@@ -14,7 +14,7 @@ public class DevConsole : MonoBehaviour
     public static DevConsole Instance { get; private set; }
     public static bool IsVisible => Instance != null && Instance.visible;
 
-    private const float PanelWidth = 260f;
+    private const float PanelWidth = 400f;
     private const float SkillsPanelWidth = 360f;
     private const float Padding = 10f;
     private const float ButtonHeight = 30f;
@@ -344,6 +344,7 @@ public class DevConsole : MonoBehaviour
         }
 
         DrawWeaponControls();
+        DrawElementalChargeControls();
         DrawArmourControls();
         DrawUltimateControls();
         DrawDraftControls();
@@ -464,6 +465,26 @@ public class DevConsole : MonoBehaviour
             }
             GUILayout.EndHorizontal();
         }
+    }
+
+    private void DrawElementalChargeControls()
+    {
+        if (GetWeaponManager() == null) return;
+        GUILayout.Label("Draft Weapon Charges");
+        DrawElementalChargeRow("Melee", "SLOT_MELEE");
+        DrawElementalChargeRow("Ranged", "SLOT_RANGED");
+    }
+
+    private void DrawElementalChargeRow(string label, string slotName)
+    {
+        string element = RunSession.GetElementInSlot(slotName);
+        GUILayout.Label($"{label}: {(string.IsNullOrEmpty(element) ? "None" : element)}");
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Fire", GUILayout.Height(ButtonHeight))) RunSession.SetElementalSlot(slotName, "FIRE");
+        if (GUILayout.Button("Ice", GUILayout.Height(ButtonHeight))) RunSession.SetElementalSlot(slotName, "ICE");
+        if (GUILayout.Button("Lightning", GUILayout.Height(ButtonHeight))) RunSession.SetElementalSlot(slotName, "LIGHTNING");
+        GUILayout.EndHorizontal();
+        if (GUILayout.Button($"Clear {label} Charge", GUILayout.Height(ButtonHeight))) RunSession.ClearElementalSlot(slotName);
     }
 
     private void DrawUltimateControls()
