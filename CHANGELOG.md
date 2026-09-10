@@ -18,6 +18,7 @@
 ### General Changes
 - Updated weapon pedestal information panels to appear when approached or focused
 - Unified scene transition and loading logic between Main Menu, Meta Area Battle Portal, and Rest Area exits with shader prewarming support
+- Added developer-console shortcuts for testing scene transitions
 
 ## [0.1.19] - 2026-09-03
 
