@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: mace
   m_EditorClassIdentifier: Assembly-CSharp::WeaponDefinitionSO
   id: mace
-  displayName: Heavy War Mace
+  displayName: Winged Mace
   category: 0
   isUnlockedByDefault: 0
   orcishMetalUnlockCost: 10
@@ -24,6 +24,18 @@ MonoBehaviour:
     that stuns foes.
   icon: {fileID: 21300000, guid: 6eba6e450a3186c46a029c940fb364ab, type: 3}
   modelPrefab: {fileID: 138258, guid: 8e0ba5a27e6e44846a80b38bd2d8dbfd, type: 3}
+  pedestalCombatStats: 
+  pedestalDescription: Demolish your enemies and fling them skyward
+  pedestalUpgrades:
+  - name: 
+    description: 
+  - name: 
+    description: 
+  - name: 
+    description: 
+  pedestalUltimateName: SIESMIC SMASH
+  pedestalUltimateDescription: Instantly smash the ground causing a mini earthquake
+    and devastating nearby enemies
   chargeTimePerLevel: 0.42
   attackCooldown: 0.55
   animatorWeaponType: 1

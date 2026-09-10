@@ -4,13 +4,9 @@ using UnityEditor.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
 
-[InitializeOnLoad]
+//[InitializeOnLoad]
 public static class AutoStyleMetaUI
 {
-    static AutoStyleMetaUI()
-    {
-        EditorApplication.delayCall += ApplyStyle;
-    }
 
     [MenuItem("Bladehold/Style Meta UI")]
     public static void ApplyStyle()

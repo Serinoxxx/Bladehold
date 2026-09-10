@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: bow
   m_EditorClassIdentifier: Assembly-CSharp::WeaponDefinitionSO
   id: bow
-  displayName: Recurve Bow
+  displayName: Elven Bow
   category: 1
   isUnlockedByDefault: 1
   orcishMetalUnlockCost: 0
@@ -22,6 +22,17 @@ MonoBehaviour:
   chargeDescription: RMB Aim + LMB Fire.
   icon: {fileID: 21300000, guid: ae2a881ff27d7c443acbbc4692748aad, type: 3}
   modelPrefab: {fileID: 4424598538026117818, guid: 26b32057aeedf3f468eb6ed7565e5219, type: 3}
+  pedestalCombatStats: 
+  pedestalDescription: 'Fast firing ranged weapon '
+  pedestalUpgrades:
+  - name: 
+    description: 
+  - name: 
+    description: 
+  - name: 
+    description: 
+  pedestalUltimateName: ARROW BLITZ
+  pedestalUltimateDescription: Fire arrows at inhuman speed for a short duration
   chargeTimePerLevel: 0.25
   attackCooldown: 0.5
   animatorWeaponType: 0

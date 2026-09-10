@@ -41,7 +41,7 @@ public class AssassinAttackSO : ScriptableObject
 
     [Header("Animation Triggers")]
     [Tooltip("Animator trigger to fire when starting windup.")]
-    public string windupTrigger = "Attack";
+    public string startSpinTrigger = "StartSpin";
     [Tooltip("Animator trigger to fire during stun/dizzy state.")]
     public string stunTrigger = "Stagger";
 }

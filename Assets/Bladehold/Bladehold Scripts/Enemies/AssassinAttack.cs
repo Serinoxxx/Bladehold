@@ -40,7 +40,7 @@ public class AssassinAttack : MonoBehaviour
     private readonly Collider[] overlapBuffer = new Collider[MaxOverlapResults];
     private readonly HashSet<IDamageable> hitThisPulse = new HashSet<IDamageable>();
 
-    private int windupTriggerHash;
+    private int startSpinHash;
     private int stunTriggerHash;
     private float? damageOverride;
     private IDamageable ownerDamageable;
@@ -122,7 +122,7 @@ public class AssassinAttack : MonoBehaviour
             return;
         }
 
-        windupTriggerHash = !string.IsNullOrEmpty(attackData.windupTrigger) ? Animator.StringToHash(attackData.windupTrigger) : 0;
+        startSpinHash = !string.IsNullOrEmpty(attackData.startSpinTrigger) ? Animator.StringToHash(attackData.startSpinTrigger) : 0;
         stunTriggerHash = !string.IsNullOrEmpty(attackData.stunTrigger) ? Animator.StringToHash(attackData.stunTrigger) : 0;
 
         ownerDamageable = GetComponentInParent<IDamageable>();
@@ -231,10 +231,9 @@ public class AssassinAttack : MonoBehaviour
         {
             windupFeedback.PlayFeedbacks();
         }
-
-        if (windupTriggerHash != 0)
+        if (startSpinHash != 0)
         {
-            animator.SetTrigger(windupTriggerHash);
+            animator.SetTrigger(startSpinHash);
         }
 
         // Lock telegraph at current position on ground

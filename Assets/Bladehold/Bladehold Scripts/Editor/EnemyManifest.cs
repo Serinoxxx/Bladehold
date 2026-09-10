@@ -848,7 +848,7 @@ internal static class EnemyManifest
                         data.spinDegreesPerSecond = 720f;
                         data.stunDuration = 4.0f;
                         data.attackCooldown = 3.0f;
-                        data.windupTrigger = "Attack";
+                        data.startSpinTrigger = "StartSpin";
                         data.stunTrigger = "Stagger";
                     }
                 }

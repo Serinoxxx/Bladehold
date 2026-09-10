@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: axe
   m_EditorClassIdentifier: Assembly-CSharp::WeaponDefinitionSO
   id: axe
-  displayName: Battleaxe
+  displayName: Dwarven Axe
   category: 0
   isUnlockedByDefault: 0
   orcishMetalUnlockCost: 10
@@ -22,6 +22,18 @@ MonoBehaviour:
   chargeDescription: Hold attack to charge a crushing overhead cleave.
   icon: {fileID: 21300000, guid: 3960861a25a518c4d9e33e35dd1beccc, type: 3}
   modelPrefab: {fileID: 1935799505049554, guid: 43b1bad21e17ccf4ca8cd01cdb6ae93e, type: 3}
+  pedestalCombatStats: 
+  pedestalDescription: Cleave your enemies for massive damage
+  pedestalUpgrades:
+  - name: 
+    description: 
+  - name: 
+    description: 
+  - name: 
+    description: 
+  pedestalUltimateName: WHIRLWIND
+  pedestalUltimateDescription: Become a vortex of blades, slicing all nearby enemies
+    for a short duration
   chargeTimePerLevel: 0.45
   attackCooldown: 0.5
   animatorWeaponType: 1

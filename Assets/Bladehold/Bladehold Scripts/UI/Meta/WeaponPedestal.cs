@@ -30,6 +30,10 @@ public class WeaponPedestal : MonoBehaviour
     [SerializeField] private TMP_Text nameLabel;
     [SerializeField] private TMP_Text costLabel;
     [SerializeField] private TMP_Text statusLabel;
+    [SerializeField] private TMP_Text descriptionLabel;
+    [SerializeField] private TMP_Text combatStatsLabel;
+    [SerializeField] private TMP_Text upgradesLabel;
+    [SerializeField] private TMP_Text ultimateLabel;
     [SerializeField] private Image currencyIcon;
 
     [Header("Proximity / Focus Settings")]
@@ -180,6 +184,7 @@ public class WeaponPedestal : MonoBehaviour
         }
 
         if (nameLabel != null) nameLabel.text = weaponData.displayName;
+        RefreshWeaponDetails();
 
         if (weaponData.isLockedForDemo)
         {
@@ -227,6 +232,46 @@ public class WeaponPedestal : MonoBehaviour
 
             interactable.PromptText = $"Unlock {weaponData.displayName} ({weaponData.orcishMetalUnlockCost} Metal)";
             interactable.CanInteract = canAfford;
+        }
+    }
+
+    private void RefreshWeaponDetails()
+    {
+        if (descriptionLabel != null)
+        {
+            descriptionLabel.text = weaponData.pedestalDescription;
+        }
+
+        if (combatStatsLabel != null)
+        {
+            combatStatsLabel.text = weaponData.pedestalCombatStats;
+        }
+
+        System.Text.StringBuilder upgrades = new System.Text.StringBuilder("<b>UPGRADES</b>");
+        if (weaponData.pedestalUpgrades != null)
+        {
+            for (int i = 0; i < weaponData.pedestalUpgrades.Length && i < 3; i++)
+            {
+                WeaponPedestalUpgrade upgrade = weaponData.pedestalUpgrades[i];
+                if (string.IsNullOrWhiteSpace(upgrade.name) && string.IsNullOrWhiteSpace(upgrade.description)) continue;
+                upgrades.Append($"\n• <b>{upgrade.name}</b>");
+                if (!string.IsNullOrWhiteSpace(upgrade.description))
+                {
+                    upgrades.Append($" — {upgrade.description}");
+                }
+            }
+        }
+
+        if (upgradesLabel != null)
+        {
+            upgradesLabel.text = upgrades.ToString();
+        }
+
+        if (ultimateLabel != null)
+        {
+            ultimateLabel.text = string.IsNullOrWhiteSpace(weaponData.pedestalUltimateName)
+                ? ""
+                : $"<b>ULTIMATE ABILITY: {weaponData.pedestalUltimateName}</b>\n{weaponData.pedestalUltimateDescription}";
         }
     }
 

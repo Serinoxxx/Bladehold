@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53defb979aaec1948b1384a74295f790, type: 3}
   m_Name: BubblerCasterSO
   m_EditorClassIdentifier: Assembly-CSharp::BubblerCasterSO
-  castRange: 15
-  breakRange: 18
+  castRange: 5
+  breakRange: 8
   tickInterval: 0.2
-  keepDistance: 10
+  keepDistance: 3
   fleeSampleRadius: 6
   allyFollowDistance: 8

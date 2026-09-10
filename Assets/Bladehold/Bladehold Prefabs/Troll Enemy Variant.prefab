@@ -1082,6 +1082,10 @@ PrefabInstance:
       propertyPath: ragdoll
       value: 
       objectReference: {fileID: 1389315540600091067}
+    - target: {fileID: 8451620069487980483, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: headBone
+      value: 
+      objectReference: {fileID: 8318042807270795238}
     - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: aiAttack
       value: 
@@ -1296,7 +1300,7 @@ PrefabInstance:
     - target: {fileID: 95998111322576624, guid: 2250a4a4fc528684c85ba955eb992ec6, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 22100000, guid: 2a18527a884921d43aae1e09d0c1310d, type: 2}
+      objectReference: {fileID: 9100000, guid: 5768081f49a1f3e41b5be1437cb562b5, type: 2}
     - target: {fileID: 95998111322576624, guid: 2250a4a4fc528684c85ba955eb992ec6, type: 3}
       propertyPath: m_ApplyRootMotion
       value: 0
@@ -1447,6 +1451,11 @@ PrefabInstance:
 --- !u!95 &8226603554372097498 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 95998111322576624, guid: 2250a4a4fc528684c85ba955eb992ec6, type: 3}
+  m_PrefabInstance: {fileID: 8322592319701058346}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &8318042807270795238 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4598442906313932, guid: 2250a4a4fc528684c85ba955eb992ec6, type: 3}
   m_PrefabInstance: {fileID: 8322592319701058346}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &8318146123333548662 stripped

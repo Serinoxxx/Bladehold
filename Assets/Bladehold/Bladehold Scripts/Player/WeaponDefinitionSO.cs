@@ -6,6 +6,17 @@ public enum WeaponCategory
     Ranged
 }
 
+[System.Serializable]
+public struct WeaponPedestalUpgrade
+{
+    [Tooltip("Short player-facing upgrade name shown on the weapon pedestal.")]
+    public string name;
+
+    [Tooltip("Short player-facing upgrade description shown on the weapon pedestal.")]
+    [TextArea(1, 2)]
+    public string description;
+}
+
 /// <summary>
 ///     Configurable definition of a player weapon (Sword, Axe, Bow, Throwing Axe, Staff, Wand).
 /// </summary>
@@ -43,6 +54,25 @@ public class WeaponDefinitionSO : ScriptableObject
 
     [Tooltip("3D model prefab displayed on pedestals in the meta area.")]
     public GameObject modelPrefab;
+
+    [Header("Pedestal Display")]
+    [Tooltip("The complete short-form combat stat text displayed on this weapon's pedestal.")]
+    [TextArea(3, 5)]
+    public string pedestalCombatStats;
+
+    [Tooltip("Short player-facing weapon description displayed on this weapon's pedestal.")]
+    [TextArea(1, 2)]
+    public string pedestalDescription;
+
+    [Tooltip("The three short-form weapon upgrades displayed on this weapon's pedestal.")]
+    public WeaponPedestalUpgrade[] pedestalUpgrades = new WeaponPedestalUpgrade[3];
+
+    [Tooltip("Short player-facing ultimate name shown on the weapon pedestal.")]
+    public string pedestalUltimateName;
+
+    [Tooltip("Short player-facing ultimate description shown on the weapon pedestal.")]
+    [TextArea(1, 3)]
+    public string pedestalUltimateDescription;
 
     [Header("Combat Tuning")]
     [Tooltip("Hold attack charge time per level in seconds.")]
