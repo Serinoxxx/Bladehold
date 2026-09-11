@@ -15,7 +15,7 @@ MonoBehaviour:
   triggerRange: 3
   slamRadius: 2
   forwardOffset: 2.5
-  telegraphSeconds: 1.5
+  telegraphSeconds: 2
   attackCooldown: 6
   damage: 20
   damageType: 1

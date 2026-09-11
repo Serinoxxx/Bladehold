@@ -53,6 +53,7 @@ public class TrollSlamAttack : MonoBehaviour
     private bool isDead = false;
     private bool playerDead = false;
     private bool anyError = false;
+    private bool isSlamming;
 
     /// <summary>
     ///     Per-instance damage override (e.g. <see cref="WaveSpawner" /> applying an enemy type's
@@ -156,11 +157,27 @@ public class TrollSlamAttack : MonoBehaviour
         }
     }
 
+    private void OnDisable()
+    {
+        if (!isSlamming) return;
+
+        StopAllCoroutines();
+        if (activeTelegraph != null)
+        {
+            Destroy(activeTelegraph);
+            activeTelegraph = null;
+        }
+        if (animator != null)
+        {
+            animator.ResetTrigger(slamTriggerHash);
+        }
+        FinishSlam();
+    }
+
     private void HandleDied()
     {
         isDead = true;
-        // Corpses have nothing left to tick. (Coroutines survive a disable; SlamAfterTelegraph
-        // bails on isDead and cleans up the telegraph.)
+        // OnDisable cancels the wind-up and removes its telegraph immediately.
         enabled = false;
     }
 
@@ -171,7 +188,7 @@ public class TrollSlamAttack : MonoBehaviour
 
     private void Update()
     {
-        if (anyError || isDead || playerDead) return;
+        if (anyError || isDead || playerDead || isSlamming) return;
 
         if (Time.time - lastAttackTime < attackData.attackCooldown) return;
 
@@ -197,6 +214,7 @@ public class TrollSlamAttack : MonoBehaviour
 
     private void StartSlam()
     {
+        isSlamming = true;
         lastAttackTime = Time.time;
 
         // The telegraph is locked to this position — the troll must hold still until the slam
@@ -233,7 +251,7 @@ public class TrollSlamAttack : MonoBehaviour
         // A troll killed mid-wind-up never lands the slam; a dead player means the run is over.
         if (isDead || playerDead)
         {
-            movement.SetMovementPaused(false);
+            FinishSlam();
             yield break;
         }
 
@@ -247,7 +265,26 @@ public class TrollSlamAttack : MonoBehaviour
         }
 
         ApplySlamDamage(center);
-        movement.SetMovementPaused(false);
+
+        // Tagged slam states own movement through recovery, not just until damage lands.
+        // Untagged legacy controllers retain their existing impact-time release.
+        while (!isDead && !playerDead && animator.enabled
+            && (animator.GetCurrentAnimatorStateInfo(0).IsTag("Slam")
+                || (animator.IsInTransition(0) && animator.GetNextAnimatorStateInfo(0).IsTag("Slam"))))
+        {
+            yield return null;
+        }
+
+        FinishSlam();
+    }
+
+    private void FinishSlam()
+    {
+        isSlamming = false;
+        if (movement != null && !isDead && !playerDead)
+        {
+            movement.SetMovementPaused(false);
+        }
     }
 
     /// <summary>

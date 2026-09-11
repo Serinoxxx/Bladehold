@@ -669,9 +669,9 @@ public class WaveSpawner : MonoBehaviour
                 agent.radius = 0.5f * targetScale;
                 agent.height = 2f * targetScale;
                 
-                // Adjust the baseOffset to lower the pivot and keep the feet planted on the ground.
-                // The visual mesh feet are offset by 0.08 units vertically in the base prefab.
-                agent.baseOffset = -0.08f * targetScale;
+                // baseOffset is local-space: the agent already applies the transform scale.
+                // Scaling it here again buries large enemies below the NavMesh.
+                agent.baseOffset = -0.08f;
             }
         }
         else
