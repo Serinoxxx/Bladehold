@@ -12343,6 +12343,7 @@ RectTransform:
   m_Children:
   - {fileID: 5977645745434412339}
   - {fileID: 2715151296399934825}
+  - {fileID: 3501934835351167179}
   - {fileID: 6193392387876577492}
   - {fileID: 7989981163088168526}
   - {fileID: 5093631043272640757}
@@ -20373,9 +20374,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7937365742732396715, guid: 57ec00676314bc546bee4e774896cbd9, type: 3}
       insertIndex: 0
       addedObject: {fileID: 891965467949716828}
-    - targetCorrespondingSourceObject: {fileID: 7937365742732396715, guid: 57ec00676314bc546bee4e774896cbd9, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 3501934835351167179}
     - targetCorrespondingSourceObject: {fileID: 7606908076764021845, guid: 57ec00676314bc546bee4e774896cbd9, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4881530428130665335}
@@ -26007,7 +26005,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 7682136491679844615}
+    m_TransformParent: {fileID: 1019680735882541997}
     m_Modifications:
     - target: {fileID: 398094922858920237, guid: 529047ff5f95deb4ca650cb3e1fbeebd, type: 3}
       propertyPath: m_fontSize
@@ -26071,15 +26069,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4867781747027285220, guid: 529047ff5f95deb4ca650cb3e1fbeebd, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 4867781747027285220, guid: 529047ff5f95deb4ca650cb3e1fbeebd, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 4867781747027285220, guid: 529047ff5f95deb4ca650cb3e1fbeebd, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 4867781747027285220, guid: 529047ff5f95deb4ca650cb3e1fbeebd, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -26087,7 +26085,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4867781747027285220, guid: 529047ff5f95deb4ca650cb3e1fbeebd, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
+      value: 22.000004
       objectReference: {fileID: 0}
     - target: {fileID: 4867781747027285220, guid: 529047ff5f95deb4ca650cb3e1fbeebd, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x

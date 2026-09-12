@@ -543,6 +543,11 @@ public class DevConsole : MonoBehaviour
         }
         if (GUILayout.Button("Toggle HUD", GUILayout.Height(ButtonHeight)))
         {
+            if (hud == null)
+            {
+                hud = GameObject.FindGameObjectWithTag("HUD");
+            }
+
             hud.SetActive(!hud.activeInHierarchy);
         }
         if (GUILayout.Button("Toggle HealthBars", GUILayout.Height(ButtonHeight)))
