@@ -26,15 +26,14 @@ MonoBehaviour:
   staminaDrainPerSecond: 25
   staminaRegenPerSecond: 15
   exhaustedRecoveryFraction: 0.35
-  trampleMinSpeedFraction: 0.55
-  trampleMinDamageFraction: 0.35
-  hitSpeedLossFraction: 0.2
-  hitSpeedLossPerResistance: 0.1
-  chargeDamage: 5
+  trampleMinSpeedFraction: 0
+  trampleMinDamageFraction: 1
+  hitSpeedLossFraction: 0
+  hitSpeedLossPerResistance: 0
+  chargeDamage: 20
   damageType: 1
-  impulsePower: 8
-  impulseForce: 16
-  hitCooldownSeconds: 1
+  knockbackForce: 7
+  hitCooldownSeconds: 0.2
   hitBoxHalfExtents: {x: 0.8, y: 0.8, z: 1.2}
   hitBoxForwardOffset: 2.19
   crowdLayers:
@@ -43,7 +42,7 @@ MonoBehaviour:
   crowdPushRadius: 3
   crowdForwardOffset: 1
   crowdPushSpeed: 4
-  crowdDragPerEnemy: 0.06
-  crowdMinSpeedFraction: 0.17
+  crowdDragPerEnemy: 0
+  crowdMinSpeedFraction: 1
   blockedSpeedReconcileRate: 30
   dismountLocalOffset: {x: 1.4, y: 0, z: 0}

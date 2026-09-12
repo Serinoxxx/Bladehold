@@ -8616,7 +8616,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
-  m_Father: {fileID: 7682136491679844615}
+  m_Father: {fileID: 1019680735882541997}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -10936,7 +10936,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
-  m_Father: {fileID: 7682136491679844615}
+  m_Father: {fileID: 1019680735882541997}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -12341,6 +12341,8 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 5977645745434412339}
+  - {fileID: 2715151296399934825}
   - {fileID: 6193392387876577492}
   - {fileID: 7989981163088168526}
   - {fileID: 5093631043272640757}
@@ -20250,6 +20252,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 8513258622496127539, guid: 57ec00676314bc546bee4e774896cbd9, type: 3}
+      propertyPath: m_TagString
+      value: HUD
+      objectReference: {fileID: 0}
     - target: {fileID: 8545558757271673902, guid: 57ec00676314bc546bee4e774896cbd9, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -20367,12 +20373,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7937365742732396715, guid: 57ec00676314bc546bee4e774896cbd9, type: 3}
       insertIndex: 0
       addedObject: {fileID: 891965467949716828}
-    - targetCorrespondingSourceObject: {fileID: 7937365742732396715, guid: 57ec00676314bc546bee4e774896cbd9, type: 3}
-      insertIndex: 2
-      addedObject: {fileID: 5977645745434412339}
-    - targetCorrespondingSourceObject: {fileID: 7937365742732396715, guid: 57ec00676314bc546bee4e774896cbd9, type: 3}
-      insertIndex: 3
-      addedObject: {fileID: 2715151296399934825}
     - targetCorrespondingSourceObject: {fileID: 7937365742732396715, guid: 57ec00676314bc546bee4e774896cbd9, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3501934835351167179}

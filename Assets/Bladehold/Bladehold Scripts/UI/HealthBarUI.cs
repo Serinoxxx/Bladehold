@@ -91,6 +91,18 @@ public class HealthBarUI : MonoBehaviour
         {
             transform.position = headBone.position + Vector3.up * heightAboveHead;
         }
+
+        if (DevConsole.Instance != null)
+        {
+            if (!DevConsole.Instance.enableHealthbars)
+            {
+                if (healthBar != null)
+                {
+                    healthBar.ShowBar(false);
+                }
+                return;
+            }
+        }
     }
 
     private Transform ResolveHeadBone()

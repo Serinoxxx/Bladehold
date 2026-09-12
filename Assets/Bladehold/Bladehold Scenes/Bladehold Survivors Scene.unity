@@ -43129,7 +43129,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 43.5
+  m_fontSize: 50.8
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -52812,6 +52812,10 @@ PrefabInstance:
       propertyPath: playerDodge
       value: 
       objectReference: {fileID: 1471638553}
+    - target: {fileID: 8259168395730516895, guid: b7b1623129186884eb3f2419ca4ed3b5, type: 3}
+      propertyPath: m_TagString
+      value: HUD
+      objectReference: {fileID: 0}
     - target: {fileID: 8451865121176791838, guid: b7b1623129186884eb3f2419ca4ed3b5, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0

@@ -637,6 +637,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
   healthData: {fileID: 11400000, guid: 39949d85fc80c2c4dafda457f64ccf42, type: 2}
+  immuneToPlayerDamage: 1
   currentHealth: 0
   damageFeedback: {fileID: 4633747342467011373}
   deathFeedback: {fileID: 434985180034381590}
@@ -1573,7 +1574,7 @@ MonoBehaviour:
     - rid: 6386679686630473850
       type: {class: MMF_ParticlesInstantiation, ns: MoreMountains.Feedbacks, asm: MoreMountains.Tools}
       data:
-        Active: 1
+        Active: 0
         UniqueID: 1202756054
         Label: Particles Instantiation
         OriginalLabel: Particles Instantiation
@@ -1670,7 +1671,7 @@ MonoBehaviour:
     - rid: 6386679686630473851
       type: {class: MMF_CinemachineImpulse, ns: MoreMountains.FeedbacksForThirdParty, asm: MoreMountains.Tools}
       data:
-        Active: 1
+        Active: 0
         UniqueID: 538227938
         Label: Cinemachine Impulse
         OriginalLabel: Cinemachine Impulse

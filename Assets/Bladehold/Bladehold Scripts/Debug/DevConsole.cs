@@ -67,6 +67,11 @@ public class DevConsole : MonoBehaviour
         }
         Instance = this;
     }
+    GameObject hud;
+    private void Start()
+    {
+        hud = GameObject.FindGameObjectWithTag("HUD");
+    }
 
     private void OnDestroy()
     {
@@ -505,7 +510,7 @@ public class DevConsole : MonoBehaviour
         GUILayout.EndHorizontal();
         if (GUILayout.Button($"Clear {label} Charge", GUILayout.Height(ButtonHeight))) RunSession.ClearElementalSlot(slotName);
     }
-
+    public bool enableHealthbars = true;
     private void DrawUltimateControls()
     {
         selectedUltimateIndex = Mathf.Clamp(selectedUltimateIndex, 0, AvailableUltimates.Length - 1);
@@ -536,7 +541,15 @@ public class DevConsole : MonoBehaviour
         {
             FillUltimateCharge();
         }
-        GUILayout.EndHorizontal();
+        if (GUILayout.Button("Toggle HUD", GUILayout.Height(ButtonHeight)))
+        {
+            hud.SetActive(!hud.activeInHierarchy);
+        }
+        if (GUILayout.Button("Toggle HealthBars", GUILayout.Height(ButtonHeight)))
+        {
+            enableHealthbars = !enableHealthbars;
+        }
+            GUILayout.EndHorizontal();
     }
 
     private void UnlockSelectedUltimate(string ultId)
