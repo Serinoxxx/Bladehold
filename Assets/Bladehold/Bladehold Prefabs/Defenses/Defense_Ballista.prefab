@@ -695,7 +695,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 320e6eb354c3f6e48acf5d4cfec4e0ac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BallistaDefense
-  defenseType: 0
+  defenseType: 4
   currentLevel: 1
   maxLevel: 3
   currentSupply: 50

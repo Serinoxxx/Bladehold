@@ -216,7 +216,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bbf9951787b1954498d4495553fadcd9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpikeTrapDefense
-  defenseType: 0
+  defenseType: 2
   currentLevel: 1
   maxLevel: 3
   currentSupply: 50

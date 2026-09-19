@@ -219,7 +219,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f97cb219d0ac71e46bc7768be6af32dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OilVatDefense
-  defenseType: 0
+  defenseType: 1
   currentLevel: 1
   maxLevel: 3
   currentSupply: 50

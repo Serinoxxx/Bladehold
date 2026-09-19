@@ -399,7 +399,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3290c1a388ed55c4ea7eedea43f8e3c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NetThrowerDefense
-  defenseType: 0
+  defenseType: 5
   currentLevel: 1
   maxLevel: 3
   currentSupply: 50

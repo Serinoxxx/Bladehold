@@ -470,7 +470,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0297898355124f42b54bdefa524005f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CatapultDefense
-  defenseType: 0
+  defenseType: 3
   currentLevel: 1
   maxLevel: 3
   currentSupply: 50
