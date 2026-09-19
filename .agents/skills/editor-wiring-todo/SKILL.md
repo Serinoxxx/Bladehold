@@ -37,10 +37,10 @@ Ordered roughly: assets → prefabs → scene → cosmetics → balance.
 - The happy path, step by step ("Reach wave 5 → a bomber spawns and…").
 - **Negative cases** — things that must *never* happen ("the explosion is never parried", "a chest is never flung"). These catch the subtle regressions.
 - Interactions with existing systems (death/restart, Reincarnate wipe, save/load, Hold the Line, class switch).
-- How to reach the state fast: DevConsole cheats (`DebugSetNextWave`, `DebugWipeWave`, `DebugSpawnBurst`, class picker), the `EnemyZoo` gallery scene, `SkillTreePreview.unity` for tree/tooltip checks.
+- How to reach the state fast: DevConsole cheats (`DebugSetNextWave`, `DebugWipeWave`, `DebugSpawnBurst`, weapon/draft controls), the `EnemyZoo` gallery scene.
 
 ## Rules
 
 - Don't delete or reorder existing entries; completed items get `- [x]` in place.
 - Keep ids/paths/values **exact** — the reader executes this in the Editor without the code open.
-- If the feature lands in stages (the Berserker A–E pattern), one blurb + checklist per stage under the same header.
+- If the feature lands in stages (the staged A–E pattern), one blurb + checklist per stage under the same header.

@@ -223,6 +223,12 @@ public class ArrowProjectile : MonoBehaviour, IPlayerProjectile
                 Vector3 hitPoint = HitPointOf(hit, from, direction);
                 bow.ApplyArrowHit(damageable, hitPoint, direction, hit.collider, hitVulnerableSpot, vulnerableSpot, spec.damageScale, spec.chargeLevel, spec.chargeRatio);
 
+                if (damageable is IShieldBlocker)
+                {
+                    Destroy(gameObject);
+                    return true;
+                }
+
                 if (piercesRemaining > 0)
                 {
                     piercesRemaining--;

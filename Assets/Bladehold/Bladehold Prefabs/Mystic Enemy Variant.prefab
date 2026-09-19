@@ -489,6 +489,10 @@ PrefabInstance:
       propertyPath: animator
       value: 
       objectReference: {fileID: 6154116606496547470}
+    - target: {fileID: 8451620069487980483, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: headBone
+      value: 
+      objectReference: {fileID: 6063442285305128790}
     - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 
@@ -809,6 +813,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 6757924186538898288}
   m_SourcePrefab: {fileID: 100100000, guid: e218b66930d51a741a5150ddb1bfeec0, type: 3}
+--- !u!4 &6063442285305128790 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4958184014451332, guid: e218b66930d51a741a5150ddb1bfeec0, type: 3}
+  m_PrefabInstance: {fileID: 6067529380942869970}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &6066364602456499032 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1195874054313610, guid: e218b66930d51a741a5150ddb1bfeec0, type: 3}

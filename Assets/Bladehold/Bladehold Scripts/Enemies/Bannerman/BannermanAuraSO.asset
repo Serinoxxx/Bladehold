@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a0bec510068281469811f4f2b8a9046, type: 3}
+  m_Name: BannermanAuraSO
+  m_EditorClassIdentifier: Assembly-CSharp::BannermanAuraSO
+  auraRadius: 8
+  checkInterval: 0.2
+  defaultBuffType: 3
+  damageBuffMultiplier: 1.5
+  healingPerSecond: 3
+  shieldFraction: 0.3
+  bannerHealth: 25
+  damageBuffProfile: {fileID: 11400000, guid: c676a85511cd431a8160b7baf6fc550a, type: 2}
+  healingBuffProfile: {fileID: 11400000, guid: 2c71ebddb436437790d9e80f925e4301, type: 2}
+  shieldBuffProfile: {fileID: 11400000, guid: 8412a973d70e42f1bf3f3ee6564395a3, type: 2}

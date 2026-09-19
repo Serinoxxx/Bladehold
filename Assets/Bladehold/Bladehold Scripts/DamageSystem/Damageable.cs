@@ -62,6 +62,11 @@ public class Damage
     public bool canPinToWall;
 
     /// <summary>
+    ///     True if this hit landed from behind the target (facing alignment > 0.4f).
+    /// </summary>
+    public bool isBackstab;
+
+    /// <summary>
     ///     Explicitly marks whether this damage originated from the player (weapon, skill, projectile, proc, zone, ultimate).
     /// </summary>
     public bool isPlayerDamage;

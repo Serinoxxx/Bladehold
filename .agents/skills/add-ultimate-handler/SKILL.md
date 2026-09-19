@@ -37,3 +37,9 @@ Record any Unity Editor manual setup steps in `TODO.md` using the `editor-wiring
 - Adding the new component to the specific class prefab variant.
 - Configuring any `[SerializeField]` particle effects, VFX, or sound clips.
 - Adding specific animator states or triggers required by the ultimate.
+
+## Step 5 — Automated Behavioral Testing (Mandatory)
+
+Follow `/maintain-mechanic-tests` to add an automated test assertion to `WeaponReachBenchmark.cs` (or an integration test):
+- Assert that activating the ultimate correctly sets active states, applies duration/cooldown, modifies stats (e.g. damage reduction or damage buffs), and cleanly reverts after termination.
+- Verify using headless batchmode or Unity MCP.

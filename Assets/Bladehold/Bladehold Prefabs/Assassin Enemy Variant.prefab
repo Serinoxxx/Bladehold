@@ -118,6 +118,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4676986922810954, guid: 9d2d21ead9f817446aa6c299b76f7e89, type: 3}
   m_PrefabInstance: {fileID: 2936507152597392191}
   m_PrefabAsset: {fileID: 0}
+--- !u!95 &2995505646004633159 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 95346563739444600, guid: 9d2d21ead9f817446aa6c299b76f7e89, type: 3}
+  m_PrefabInstance: {fileID: 2936507152597392191}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &4386830841325871973
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -202,11 +207,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db56e9d19beb0f64c87b16fb7d59a889, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
---- !u!95 &2829075424682944290 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 1991649265611916359, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
-  m_PrefabInstance: {fileID: 4386830841325871973}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &4195762710677248818 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 494112403358464087, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
@@ -224,7 +224,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16e37db1b8466d14faa6c4ee7231b202, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AssassinAttack
-  animator: {fileID: 2829075424682944290}
+  animator: {fileID: 2995505646004633159}
   health: {fileID: 2119393013519033706}
   movement: {fileID: 5323238941037551639}
   attackData: {fileID: 11400000, guid: 57894c964a2443c4fac5dc58f9bfc2fd, type: 2}

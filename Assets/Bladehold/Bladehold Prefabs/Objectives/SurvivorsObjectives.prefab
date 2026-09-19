@@ -463,6 +463,7 @@ GameObject:
   - component: {fileID: 7725334535644409513}
   - component: {fileID: 7576439261361255311}
   - component: {fileID: 1695020756877412634}
+  - component: {fileID: 4864106011337213385}
   m_Layer: 0
   m_Name: SurvivorsObjectives
   m_TagString: Untagged
@@ -598,6 +599,7 @@ MonoBehaviour:
   - {fileID: 7725334535644409513}
   - {fileID: 7576439261361255311}
   - {fileID: 1695020756877412634}
+  - {fileID: 4864106011337213385}
   goldXpRewardPerObjective: 50
   cleanupDuration: 30
   intermissionDuration: 30
@@ -666,6 +668,28 @@ MonoBehaviour:
   durationSeconds: 120
   allowedEnemyIds:
   - goblin
+--- !u!114 &4864106011337213385
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6816927931934308697}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cbcd3ee823d34ab49452fababf3ee103, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StopBatteringRamObjective
+  objectiveId: stop_battering_ram
+  title: Stop the Battering Ram
+  description: Destroy the battering ram before it breaches the gate!
+  batteringRamPrefab: {fileID: 994022192464808381, guid: 70e6a39ad322d724aa58bbb69131708e, type: 3}
+  ramSpawnPoint: {fileID: 8336601004889876031}
+  gateDestinationPoint: {fileID: 4870277499996398598}
+  fallbackSpawnPosition: {x: 30, y: 4.1, z: -25}
+  fallbackDestinationPosition: {x: 0, y: 0, z: 0}
+  ramWaypointIcon: {fileID: 21300000, guid: c2c35eea2047bc64b880be3c543b5767, type: 3}
+  destinationWaypointIcon: {fileID: 21300000, guid: bf99f27e83c88bb45b08fc4daf9bda6e, type: 3}
 --- !u!1 &7023876691590412226
 GameObject:
   m_ObjectHideFlags: 0

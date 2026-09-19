@@ -85,6 +85,7 @@ public class DamageTrigger : MonoBehaviour
     PlayerStats stats;
 
     bool isActive;
+    public bool IsActive => isActive;
     bool isWhirlwindActive;
     float whirlwindHitInterval = 0.3f;
     readonly Dictionary<IDamageable, float> targetLastHitTime = new Dictionary<IDamageable, float>();
@@ -455,14 +456,16 @@ public class DamageTrigger : MonoBehaviour
         // BuildDamage's rolls) because it depends on the target's SlowStatus, not the swing.
         if (readsPlayerStats && damageable is Component targetComponent)
         {
-            // Backstab permanent meta perk (+20% bonus damage when striking enemies from behind)
-            if (RunSession.HasMetaPerk("backstab"))
+            // Backstab detection: striking enemies from behind (player facing matches target facing)
+            Vector3 playerFwd = (owner != null ? owner.transform.forward : transform.forward);
+            Vector3 targetFwd = targetComponent.transform.forward;
+            playerFwd.y = 0f;
+            targetFwd.y = 0f;
+            if (playerFwd.sqrMagnitude > 0.001f && targetFwd.sqrMagnitude > 0.001f &&
+                Vector3.Dot(playerFwd.normalized, targetFwd.normalized) > 0.4f)
             {
-                Vector3 playerFwd = (owner != null ? owner.transform.forward : transform.forward);
-                Vector3 targetFwd = targetComponent.transform.forward;
-                playerFwd.y = 0f;
-                targetFwd.y = 0f;
-                if (Vector3.Dot(playerFwd.normalized, targetFwd.normalized) > 0.4f)
+                damage.isBackstab = true;
+                if (RunSession.HasMetaPerk("backstab"))
                 {
                     damage.value *= 1.20f;
                 }
@@ -554,6 +557,14 @@ public class DamageTrigger : MonoBehaviour
 
         damageable.ReceiveDamage(damage);
         OnHit?.Invoke(damageable, damage, hitPoint);
+
+        if (damageable is IShieldBlocker blocker && blocker.ShouldBlockAttack(damage))
+        {
+            OnBlocked?.Invoke();
+            Deactivate();
+            return false;
+        }
+
         return true;
     }
 

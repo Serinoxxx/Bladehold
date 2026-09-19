@@ -106,6 +106,18 @@ public class EnemyRosterSO : ScriptableObject
         EnsureParsed();
     }
 
+    /// <summary>Finds an enemy definition by its roster CSV id.</summary>
+    public EnemyDefinition Find(string id)
+    {
+        EnsureParsed();
+        if (enemies == null || string.IsNullOrEmpty(id)) return null;
+        foreach (var def in enemies)
+        {
+            if (def != null && string.Equals(def.id, id, StringComparison.OrdinalIgnoreCase)) return def;
+        }
+        return null;
+    }
+
     private void EnsureParsed()
     {
         if (enemies != null)

@@ -69,3 +69,9 @@ MonoBehaviour:
     prefab: {fileID: 2336506927749830714, guid: 31e3feb49f108bd448f9b5744351feef, type: 3}
   - id: assassin
     prefab: {fileID: 4195762710677248818, guid: 08d1d6bd71bd1334cb32392b06d9ebda, type: 3}
+  - id: powder_keg
+    prefab: {fileID: 2428240954730564978, guid: f117e5fd19e7eb74c9876105fa385a6a, type: 3}
+  - id: bannerman
+    prefab: {fileID: 4179199600163991995, guid: 562a8d8060b703f44b43b04ad5731ba9, type: 3}
+  - id: bulwark
+    prefab: {fileID: 6748165462985918841, guid: 80461029e18c1dd47ba102ebb4f316d4, type: 3}

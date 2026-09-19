@@ -100,6 +100,10 @@ PrefabInstance:
       propertyPath: movementSO
       value: 
       objectReference: {fileID: 11400000, guid: 12931bd1454e0ae48be2e9f612d1154d, type: 2}
+    - target: {fileID: 8451620069487980483, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: headBone
+      value: 
+      objectReference: {fileID: 8668778976910511054}
     - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 
@@ -373,6 +377,11 @@ PrefabInstance:
 --- !u!4 &8668600090502059996 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4615360315754548, guid: 9984be23625843a48a44d88aae5669f2, type: 3}
+  m_PrefabInstance: {fileID: 8673203356189777896}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &8668778976910511054 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4742138173248550, guid: 9984be23625843a48a44d88aae5669f2, type: 3}
   m_PrefabInstance: {fileID: 8673203356189777896}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &8671773340030908366 stripped

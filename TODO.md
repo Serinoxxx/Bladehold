@@ -1,5 +1,51 @@
 # Unity Editor Wiring TODOs
 
+## Powder Keg & Bannerman Enemies — Unity Editor Wiring & Verification
+
+The C# implementation, animator controllers, highlight profiles, Enemies.csv rows, and prefab variants are generated and registered in `EnemyPrefabMap.asset` via `EnemyPrefabGenerator.GenerateAll`.
+- **Powder Keg** (`Assets/Bladehold/Bladehold Scripts/Enemies/PowderKeg/PowderKegAttack.cs`, `PowderKegBarrel.cs`, `PowderKegAttackSO.cs`): Slow-moving enemy holding an explosive barrel overhead (`HoldBarrel` animation state on masked upper body layer). When hit by an arrow/projectile on the barrel (`PowderKegBarrel` implements `IDamageable`), or upon reaching within 2m of Castle Gate (`AITargetSelector`), the barrel triggers a 25 damage AoE explosion (`LayerMask.GetMask("Enemies", "Player")`) and self-destructs.
+- **Bannerman** (`Assets/Bladehold/Bladehold Scripts/Enemies/Bannerman/BannermanAura.cs`, `DestructibleBanner.cs`, `BannermanAuraSO.cs`): Carries a banner overhead granting proximity buffs to nearby enemies based on active wave banner buff (Damage Buff -> Red Glow, Healing Buff -> Green Glow, Shield Buff -> Yellow Glow via `HighlightEffect` profiles). The banner can be shot and destroyed independently (`DestructibleBanner` with 25 HP / collider); destroying the banner or killing the Bannerman disables the buff aura. `SurvivorsSpawner.cs` localizes banner buffs to Bannerman auras so distant enemies don't get the buff.
+
+### Wiring & Asset Checklist
+- [x] Create Highlight Profile assets:
+  - `Assets/Bladehold/Bladehold Highlight Profiles/Banner Damage Buff HPP.asset`
+  - `Assets/Bladehold/Bladehold Highlight Profiles/Banner Healing Buff HPP.asset`
+  - `Assets/Bladehold/Bladehold Highlight Profiles/Banner Shield Buff HPP.asset`
+- [x] Create Animator Controllers:
+  - `Assets/Bladehold/Bladehold Animations/PowderKeg.controller` (Upper Body layer with `Upper Body Mask.mask`, `HoldBarrel`, `SlamBarrel`, `Slam` trigger)
+  - `Assets/Bladehold/Bladehold Animations/Bannerman.controller` (Based on `SimplifiedEnemyAC.controller`)
+- [x] Register rows in `Assets/Bladehold/Config/Enemies.csv`: `powder_keg` and `bannerman`.
+- [x] Create ScriptableObjects: `PowderKegAttackSO.asset` and `BannermanAuraSO.asset`.
+- [x] Generate Prefab variants: `Assets/Bladehold/Bladehold Prefabs/Powder Keg Enemy Variant.prefab` and `Assets/Bladehold/Bladehold Prefabs/Bannerman Enemy Variant.prefab` via `EnemyPrefabGenerator.GenerateAll`.
+- [ ] Animator Pose Refinement (Optional Polish):
+  - In `PowderKeg.controller`, adjust the `HoldBarrel` state motion/pose on the `Upper Body` layer if a custom keyframed pose holding arms aloft is desired.
+  - Set `SlamBarrel` state animation clip to keyframe the barrel slamming onto the ground.
+- [ ] Visual FX Polish:
+  - If desired, adjust color parameters or rim glow intensities on the 3 `Banner * Buff HPP.asset` Highlight Profile assets.
+
+### Manual Verification (Powder Keg & Bannerman)
+- [ ] Load `Assets/Bladehold/Bladehold Scenes/Bladehold Survivors Scene.unity` in Play mode.
+- [ ] **Powder Keg - Gate Detonation**:
+  - Allow a Powder Keg enemy to approach within 2m of the Castle Gate (`GateTarget` / `AITargetSelector`).
+  - Verify Powder Keg plays the slam trigger and detonates, damaging gate/nearby units for 25 AoE damage.
+- [ ] **Powder Keg - Arrow Detonation**:
+  - Aim bow/arrows at a Powder Keg carrying the barrel.
+  - Shoot the barrel directly.
+  - Verify the barrel detonates immediately in mid-transit, damaging all nearby enemies and eliminating the Powder Keg.
+- [ ] **Powder Keg - Negative Cases**:
+  - Verify hitting the Powder Keg's legs/body with a sword melee strike damages the goblin directly without immediately detonating the barrel unless the barrel itself takes lethal splash damage.
+- [ ] **Bannerman - Proximity Buffing**:
+  - When a wave buff is active (e.g. Damage, Healing, Shield), observe enemies near the Bannerman.
+  - Verify nearby enemies gain the corresponding glow (Red for Damage, Green for Healing, Yellow for Shield).
+  - Verify enemies far from the Bannerman do NOT receive the buff glow or stat multipliers.
+- [ ] **Bannerman - Banner Destruction**:
+  - Shoot the banner carried above the Bannerman's head with arrows.
+  - Verify the banner takes damage (25 HP) and is destroyed/unparented/hidden.
+  - Verify destroying the banner immediately removes the aura buff from all nearby enemies, even if the Bannerman is still alive.
+- [ ] **Bannerman - Unit Death**:
+  - Kill the Bannerman directly; verify buff aura clears from all nearby allies upon death.
+
+
 ## Heavy War Mace (2H Melee Weapon) Wiring & Verification
 
 C# implementation, asset definitions, and scene wiring are complete! The Mace is wired as Slot 2 in `Player.prefab` (`PlayerWeaponManager.meleeWeapons`), features blunt staggering, armor-shattering, and ground shockwave mechanics, includes 5 draft cards, and has a dedicated unlock pedestal in `Bladehold Meta Area Scene.unity`.
@@ -111,3 +157,31 @@ Manual verification:
 - [ ] Verify that no other enemies spawn.
 - [ ] Verify the goblin runs in circles along the waypoints.
 - [ ] Verify hitting him drops gold periodically, and killing him gives a bonus and ends the wave.
+
+## Enraged Captains & War Banner Difficulty Tiers Wiring & Verification
+
+The C# implementation for the War Banner difficulty tier system and Clan Captains is complete! War Banners roll difficulty tiers (Standard 1💀, Enraged 2💀, Nightmare 3💀, Omega 4💀) providing 1x, 2x, 4x, and 8x reward multipliers. Tearing down an Enraged or higher banner summons a dedicated Clan Captain (e.g. Captain Fraglob) with custom abilities, accompanied by a cinematic announcement displaying difficulty skulls.
+
+### Wiring & Asset Checklist
+- [ ] **Assign Captain Prefab (Goblin Sidekick)**:
+  - In `Assets/Bladehold/Bladehold Scenes/Bladehold Survivors Scene.unity`, select `GameLoopManager`.
+  - In the Inspector under **Captain Settings**, assign your customized Goblin Sidekick prefab to the `Captain Prefab` field (or leave null to use the built-in scaled Brute placeholder).
+  - Ensure the prefab has `CaptainEnemyController`, `Health`, `AIMovement`, and `AIAttack` attached.
+- [ ] **(Optional) War Banner Prefab UI Wiring**:
+  - In `Assets/Bladehold/Bladehold Prefabs/WarBanner.prefab`, check if you want dedicated TextMeshPro components wired to:
+    - `Difficulty Skulls Text`: Shows `💀 💀`
+    - `Difficulty Tag Text`: Shows `ENRAGED [2x REWARDS]`
+    - Note: If unassigned, the difficulty tier and multiplier are automatically included in the prompt text (`[E] Tear Down Banner...`).
+
+### Manual Verification Checklist
+- [ ] Load `Assets/Bladehold/Bladehold Scenes/Bladehold Survivors Scene.unity` in Play mode.
+- [ ] Clear Wave 1 to trigger the War Banner selection intermission.
+- [ ] On Run 2+ (or higher rounds), observe that at least one banner rolls **ENRAGED (2💀)** with an Amber glow and 2x reward indicator.
+- [ ] Tear down the Enraged banner with `[E]`:
+  - Verify the cinematic announcement displays: `"CAPTAIN FRAGLOB HAS ARRIVED!"` with skulls `💀 💀` underneath.
+  - Verify Captain Fraglob spawns and leads the wave.
+  - Test **Rallying War Cry**: Captain roars, buffing nearby minions with speed and attack power.
+  - Test **Seismic Stomp**: Captain telegraphs a ground circle and stomps, knocking back the player.
+  - Slay Captain Fraglob: Verify nearby enemies are staggered for 2 seconds (Morale Break) and bonus Gold/Blood drops.
+- [ ] Complete the wave:
+  - Collect the bounty powerup and verify the reward amount is doubled (e.g. `+150 Gold (2x)` or bonus draft rerolls).

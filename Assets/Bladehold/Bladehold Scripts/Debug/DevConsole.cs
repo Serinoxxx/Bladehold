@@ -24,12 +24,9 @@ public class DevConsole : MonoBehaviour
     private string nextWaveText = "";
     private int spawnTypeIndex;
     private int objectiveIndex;
-    private int classIndex = -1;
     private bool isGodMode;
     private Vector2 mainScrollPos;
-    private Vector2 skillsScrollPos;
     private Vector2 draftScrollPos;
-    private int activeRightPanelTab = 0;
     private DraftCategory draftFilter = DraftCategory.Weapon;
     private bool filterAllDrafts = true;
     private int selectedUltimateIndex = 0;
@@ -158,83 +155,8 @@ public class DevConsole : MonoBehaviour
         float height = Screen.height - 2f * Padding;
 
         GUILayout.BeginArea(new Rect(x, Padding, SkillsPanelWidth, height), GUI.skin.box);
-
-        activeRightPanelTab = GUILayout.Toolbar(activeRightPanelTab, new string[] { "Meta Skills (Gold)", "Draft Abilities" }, GUILayout.Height(28f));
-        GUILayout.Space(6f);
-
-        if (activeRightPanelTab == 0)
-        {
-            DrawMetaSkillsTab();
-        }
-        else
-        {
-            DrawDraftAbilitiesTab();
-        }
-
+        DrawDraftAbilitiesTab();
         GUILayout.EndArea();
-    }
-
-    private void DrawMetaSkillsTab()
-    {
-        SkillTreeService service = SkillTreeService.Instance;
-        if (service == null || service.Tree == null || service.Tree.Nodes == null)
-        {
-            GUILayout.Label("SkillTreeService not ready.");
-            return;
-        }
-
-        var nodes = service.Tree.Nodes;
-        GUILayout.Label($"Skill Upgrades ({nodes.Count})");
-
-        GUILayout.BeginHorizontal();
-        if (GUILayout.Button("Max All", GUILayout.Height(ButtonHeight)))
-        {
-            foreach (var node in nodes)
-            {
-                if (node != null) service.DebugSetLevel(node.id, node.maxLevel);
-            }
-        }
-        if (GUILayout.Button("Reset All", GUILayout.Height(ButtonHeight)))
-        {
-            foreach (var node in nodes)
-            {
-                if (node != null) service.DebugSetLevel(node.id, 0);
-            }
-        }
-        GUILayout.EndHorizontal();
-
-        skillsScrollPos = GUILayout.BeginScrollView(skillsScrollPos, false, true);
-
-        foreach (SkillNode node in nodes)
-        {
-            if (node == null) continue;
-
-            int curLevel = service.GetLevel(node);
-            string name = string.IsNullOrEmpty(node.displayName) ? node.id : node.displayName;
-            string label = $"{name} [{curLevel}/{node.maxLevel}]";
-
-            GUILayout.BeginHorizontal();
-
-            GUI.enabled = curLevel > 0;
-            if (GUILayout.Button("<", GUILayout.Width(28f), GUILayout.Height(24f)))
-            {
-                service.DebugSetLevel(node.id, curLevel - 1);
-            }
-
-            GUI.enabled = true;
-            GUILayout.Label(label, GUILayout.ExpandWidth(true));
-
-            GUI.enabled = curLevel < node.maxLevel;
-            if (GUILayout.Button(">", GUILayout.Width(28f), GUILayout.Height(24f)))
-            {
-                service.DebugSetLevel(node.id, curLevel + 1);
-            }
-            GUI.enabled = true;
-
-            GUILayout.EndHorizontal();
-        }
-
-        GUILayout.EndScrollView();
     }
 
     private void DrawDraftAbilitiesTab()
@@ -348,6 +270,7 @@ public class DevConsole : MonoBehaviour
             }
         }
 
+        DrawScenarioControls();
         DrawWeaponControls();
         DrawElementalChargeControls();
         DrawArmourControls();
@@ -881,4 +804,274 @@ public class DevConsole : MonoBehaviour
             }
         }
     }
+
+    #region 1-Click Combat Scenarios
+    private readonly List<GameObject> activeScenarioSpawns = new List<GameObject>();
+    private bool aiPassiveMode = true;
+
+    private void DrawScenarioControls()
+    {
+        GUILayout.Space(6f);
+        GUILayout.Label("=== 1-Click Combat Scenarios ===");
+
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Sword vs Dummy", GUILayout.Height(ButtonHeight)))
+        {
+            SetupScenarioSwordVsDummy();
+        }
+        if (GUILayout.Button("Axe vs 3 Brutes", GUILayout.Height(ButtonHeight)))
+        {
+            SetupScenarioAxeVsBrutes();
+        }
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Mace vs Bubbler", GUILayout.Height(ButtonHeight)))
+        {
+            SetupScenarioMaceVsBubbler();
+        }
+        if (GUILayout.Button("Fire Imbue Swarm", GUILayout.Height(ButtonHeight)))
+        {
+            SetupScenarioFireSwarm();
+        }
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Bow Longshot", GUILayout.Height(ButtonHeight)))
+        {
+            SetupScenarioBowLongshot();
+        }
+        if (GUILayout.Button("100% Ult Unleash", GUILayout.Height(ButtonHeight)))
+        {
+            SetupScenarioUltUnleash();
+        }
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Spawn Infinite Dummy", GUILayout.Height(ButtonHeight)))
+        {
+            SpawnScenarioEnemy("goblin", new Vector3(0f, 0f, 2.0f), asDummy: true);
+        }
+        string aiModeText = aiPassiveMode ? "AI: PASSIVE" : "AI: AGGRO";
+        if (GUILayout.Button(aiModeText, GUILayout.Height(ButtonHeight)))
+        {
+            aiPassiveMode = !aiPassiveMode;
+            UpdateScenarioAiStates();
+        }
+        GUILayout.EndHorizontal();
+
+        if (GUILayout.Button("Clear All Test Spawns", GUILayout.Height(ButtonHeight)))
+        {
+            ClearAllScenarioSpawns();
+        }
+        GUILayout.Space(6f);
+    }
+
+    private GameObject SpawnScenarioEnemy(string enemyId, Vector3 forwardRightOffset, bool asDummy)
+    {
+        Player player = Player.Instance;
+        Vector3 originPos = player != null ? player.transform.position : Vector3.zero;
+        Vector3 forward = player != null ? player.transform.forward : Vector3.forward;
+        Vector3 right = player != null ? player.transform.right : Vector3.right;
+
+        Vector3 spawnTarget = originPos + forward * forwardRightOffset.z + right * forwardRightOffset.x;
+        if (UnityEngine.AI.NavMesh.SamplePosition(spawnTarget, out UnityEngine.AI.NavMeshHit hit, 4f, UnityEngine.AI.NavMesh.AllAreas))
+        {
+            spawnTarget = hit.position;
+        }
+
+        Vector3 toPlayer = originPos - spawnTarget;
+        toPlayer.y = 0f;
+        Quaternion lookRot = toPlayer.sqrMagnitude > 0.01f ? Quaternion.LookRotation(toPlayer) : Quaternion.identity;
+
+        EnemyPrefabMapSO map = null;
+        if (WaveSpawner.Instance != null) map = WaveSpawner.Instance.PrefabMap;
+        if (map == null && SurvivorsSpawner.Instance != null) map = SurvivorsSpawner.Instance.PrefabMap;
+        if (map == null)
+        {
+            var maps = Resources.FindObjectsOfTypeAll<EnemyPrefabMapSO>();
+            if (maps != null && maps.Length > 0) map = maps[0];
+        }
+
+        GameObject prefab = map != null ? map.FindPrefab(enemyId) : null;
+        if (prefab == null)
+        {
+            Debug.LogWarning($"[DevConsole] Could not find prefab for enemy id: '{enemyId}' in EnemyPrefabMapSO.");
+            return null;
+        }
+
+        GameObject spawned = Instantiate(prefab, spawnTarget, lookRot);
+        activeScenarioSpawns.Add(spawned);
+
+        EnemyRosterSO roster = null;
+        if (WaveSpawner.Instance != null) roster = WaveSpawner.Instance.Roster;
+        if (roster == null && SurvivorsSpawner.Instance != null) roster = SurvivorsSpawner.Instance.Roster;
+        EnemyDefinition def = roster != null ? roster.Find(enemyId) : new EnemyDefinition { id = enemyId };
+
+        WaveSpawner.ApplyDefinition(spawned, def);
+
+        if (asDummy || aiPassiveMode)
+        {
+            ApplyPassiveState(spawned, true);
+        }
+
+        return spawned;
+    }
+
+    private void ApplyPassiveState(GameObject enemy, bool passive)
+    {
+        if (enemy == null) return;
+
+        if (enemy.TryGetComponent(out UnityEngine.AI.NavMeshAgent agent))
+        {
+            agent.isStopped = passive;
+        }
+        if (enemy.TryGetComponent(out AIMovement move))
+        {
+            move.enabled = !passive;
+        }
+        if (enemy.TryGetComponent(out AIAttack attack))
+        {
+            attack.enabled = !passive;
+        }
+
+        if (passive)
+        {
+            if (enemy.GetComponent<TrainingDummy>() == null)
+            {
+                enemy.AddComponent<TrainingDummy>();
+            }
+        }
+        else
+        {
+            TrainingDummy td = enemy.GetComponent<TrainingDummy>();
+            if (td != null) Destroy(td);
+        }
+    }
+
+    private void UpdateScenarioAiStates()
+    {
+        activeScenarioSpawns.RemoveAll(go => go == null);
+        foreach (var enemy in activeScenarioSpawns)
+        {
+            ApplyPassiveState(enemy, aiPassiveMode);
+        }
+        Debug.Log($"[DevConsole] Updated {activeScenarioSpawns.Count} test spawns to {(aiPassiveMode ? "PASSIVE" : "AGGRO")}");
+    }
+
+    private void ClearAllScenarioSpawns()
+    {
+        activeScenarioSpawns.RemoveAll(go => go == null);
+        foreach (var obj in activeScenarioSpawns)
+        {
+            if (obj != null) Destroy(obj);
+        }
+        activeScenarioSpawns.Clear();
+
+        var dummies = new List<TrainingDummy>(TrainingDummy.ActiveDummies);
+        foreach (var d in dummies)
+        {
+            if (d != null) Destroy(d.gameObject);
+        }
+
+        Debug.Log("[DevConsole] Cleared all scenario test spawns.");
+    }
+
+    private void SetupScenarioSwordVsDummy()
+    {
+        ClearAllScenarioSpawns();
+        isGodMode = true;
+
+        PlayerWeaponManager pwm = GetWeaponManager();
+        if (pwm != null) pwm.EquipMelee("sword");
+
+        DraftUpgradeService draftService = DraftUpgradeService.GetOrCreateInstance();
+        if (draftService != null) draftService.DebugResetAllDrafts();
+
+        SpawnScenarioEnemy("goblin", new Vector3(0f, 0f, 2.0f), asDummy: true);
+        Debug.Log("<color=#00FF88>[DevConsole]</color> Scenario: Sword vs. Dummy initialized.");
+    }
+
+    private void SetupScenarioAxeVsBrutes()
+    {
+        ClearAllScenarioSpawns();
+        isGodMode = true;
+
+        PlayerWeaponManager pwm = GetWeaponManager();
+        if (pwm != null) pwm.EquipMelee("axe");
+
+        DraftUpgradeService draftService = DraftUpgradeService.GetOrCreateInstance();
+        if (draftService != null)
+        {
+            draftService.DebugResetAllDrafts();
+            var def = draftService.GetById("draft_axe_whirlwind") ?? draftService.GetById("draft_axe_damage");
+            if (def != null) draftService.DebugSetDraftLevel(def, 2);
+        }
+
+        SpawnScenarioEnemy("brute", new Vector3(-1.2f, 0f, 2.5f), asDummy: aiPassiveMode);
+        SpawnScenarioEnemy("brute", new Vector3(0f, 0f, 3.0f), asDummy: aiPassiveMode);
+        SpawnScenarioEnemy("brute", new Vector3(1.2f, 0f, 2.5f), asDummy: aiPassiveMode);
+        Debug.Log("<color=#00FF88>[DevConsole]</color> Scenario: Two-Handed Axe vs 3 Brutes initialized.");
+    }
+
+    private void SetupScenarioMaceVsBubbler()
+    {
+        ClearAllScenarioSpawns();
+        isGodMode = true;
+
+        PlayerWeaponManager pwm = GetWeaponManager();
+        if (pwm != null) pwm.EquipMelee("mace");
+
+        SpawnScenarioEnemy("bubbler", new Vector3(0f, 0f, 2.2f), asDummy: aiPassiveMode);
+        Debug.Log("<color=#00FF88>[DevConsole]</color> Scenario: Mace vs Bubbler Shield initialized.");
+    }
+
+    private void SetupScenarioFireSwarm()
+    {
+        ClearAllScenarioSpawns();
+        isGodMode = true;
+
+        DraftUpgradeService draftService = DraftUpgradeService.GetOrCreateInstance();
+        if (draftService != null)
+        {
+            var def = draftService.GetById("draft_fire_weapon") ?? draftService.GetById("draft_fire_burn");
+            if (def != null) draftService.DebugSetDraftLevel(def, 3);
+        }
+
+        SpawnScenarioEnemy("goblin", new Vector3(-1.5f, 0f, 2.5f), asDummy: aiPassiveMode);
+        SpawnScenarioEnemy("goblin", new Vector3(-0.7f, 0f, 3.0f), asDummy: aiPassiveMode);
+        SpawnScenarioEnemy("goblin", new Vector3(0f, 0f, 2.5f), asDummy: aiPassiveMode);
+        SpawnScenarioEnemy("goblin", new Vector3(0.7f, 0f, 3.0f), asDummy: aiPassiveMode);
+        SpawnScenarioEnemy("goblin", new Vector3(1.5f, 0f, 2.5f), asDummy: aiPassiveMode);
+        Debug.Log("<color=#00FF88>[DevConsole]</color> Scenario: Fire Imbuement Swarm initialized.");
+    }
+
+    private void SetupScenarioBowLongshot()
+    {
+        ClearAllScenarioSpawns();
+        isGodMode = true;
+
+        PlayerWeaponManager pwm = GetWeaponManager();
+        if (pwm != null) pwm.EquipRanged("bow");
+
+        SpawnScenarioEnemy("goblin", new Vector3(0f, 0f, 12.0f), asDummy: true);
+        Debug.Log("<color=#00FF88>[DevConsole]</color> Scenario: Bow Longshot initialized.");
+    }
+
+    private void SetupScenarioUltUnleash()
+    {
+        ClearAllScenarioSpawns();
+        isGodMode = true;
+
+        FillUltimateCharge();
+
+        for (int i = 0; i < 6; i++)
+        {
+            float angle = (i - 2.5f) * 20f * Mathf.Deg2Rad;
+            Vector3 offset = new Vector3(Mathf.Sin(angle) * 3.5f, 0f, Mathf.Cos(angle) * 3.5f);
+            SpawnScenarioEnemy("goblin", offset, asDummy: aiPassiveMode);
+        }
+        Debug.Log("<color=#00FF88>[DevConsole]</color> Scenario: 100% Ultimate Unleash initialized. Press Q!");
+    }
+    #endregion
 }

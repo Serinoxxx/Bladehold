@@ -38,6 +38,9 @@ public class SurvivorsSpawner : MonoBehaviour
     [Tooltip("Enemy prefab map asset.")]
     [SerializeField] private EnemyPrefabMapSO prefabMap;
 
+    public EnemyPrefabMapSO PrefabMap => prefabMap;
+    public EnemyRosterSO Roster => roster;
+
     [Header("Wave Spawner Settings")]
     [Tooltip("Round pacing config asset containing round rosters, 20 max concurrent limit, 3s indicators, and drop weights.")]
     [SerializeField] private RoundPacingConfigSO pacingConfig;
@@ -503,11 +506,7 @@ public class SurvivorsSpawner : MonoBehaviour
 
             WaveSpawner.ApplyDefinition(enemy, selectedType.def);
 
-            if (GameLoopManager.Instance != null && GameLoopManager.Instance.CurrentWaveBuff != BannerBuffType.None)
-            {
-                EnemyBuffController buffController = enemy.AddComponent<EnemyBuffController>();
-                buffController.Initialize(GameLoopManager.Instance.CurrentWaveBuff);
-            }
+            // Note: Banner wave buffs are localized to Bannerman units and their auras (others do not get it globally)
 
             if (stats != null)
             {
@@ -744,8 +743,8 @@ public class SurvivorsSpawner : MonoBehaviour
         }
     }
 
-    /// <summary>Debug helper for DevConsole: spawns one enemy of the specified type id.</summary>
-    public void DebugSpawnEnemyType(string id)
+    /// <summary>Debug helper for DevConsole: spawns one enemy of the specified type id and returns the instance.</summary>
+    public GameObject DebugSpawnEnemyType(string id)
     {
         SpawnType type = spawnTypes.Find(t => t.def != null && t.def.id == id);
         if (type == null)
@@ -755,8 +754,9 @@ public class SurvivorsSpawner : MonoBehaviour
 
         if (type != null)
         {
-            SpawnEnemyForType(type);
+            return SpawnEnemyForType(type);
         }
+        return null;
     }
 
     /// <summary>Debug helper for DevConsole: burst spawns N enemies immediately.</summary>
@@ -768,9 +768,9 @@ public class SurvivorsSpawner : MonoBehaviour
         }
     }
 
-    private void SpawnEnemyForType(SpawnType type)
+    private GameObject SpawnEnemyForType(SpawnType type)
     {
-        if (type == null || type.prefab == null) return;
+        if (type == null || type.prefab == null) return null;
 
         Vector3 spawnPos = ResolveSpawnPosition();
         GameObject enemy = Instantiate(type.prefab, spawnPos, Quaternion.identity);
@@ -795,5 +795,7 @@ public class SurvivorsSpawner : MonoBehaviour
             };
             health.OnDied += handler;
         }
+
+        return enemy;
     }
 }

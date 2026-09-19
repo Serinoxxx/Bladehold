@@ -38,12 +38,9 @@ Use this skill to run rapid, deterministic, in-editor integration tests for Blad
    - Pure C# `field != null ? field : fallback` will evaluate to `true` and throw an `UnassignedReferenceException` upon field access.
    - **Always use Unity truthiness**: `(field ? field : fallback)` or `(field != null && field)`.
 
-4. **Multi-Class Isolation Verification**:
-   - Bladehold maintains separate skill tree CSVs and ScriptableObjects per class:
-     - Swordsman: `Assets/Bladehold/Config/SkillTree.csv` & `SkillTreeSO.asset`
-     - Berserker: `Assets/Bladehold/Config/SkillTreeBerserker.csv` & `SkillTreeSOBerserker.asset`
-     - Mage: `Assets/Bladehold/Config/SkillTreeMage.csv` & `SkillTreeSOMage.asset`
-   - Any test verifying upgrade availability, draft candidate pools, or stat unlocks **must loop across all 3 class trees**.
+4. **Draft Upgrade & Loadout Verification**:
+   - Bladehold uses `DraftUpgradeService` driven by `Assets/Bladehold/Resources/DraftUpgrades.csv`.
+   - Any test verifying upgrade availability, draft candidate pools, or stat unlocks must verify against the player's equipped weapon loadout (`PlayerWeaponManager.Instance.ActiveMeleeDefinition` / `ActiveRangedDefinition`) and draft category pools (`Weapon`, `Fortress`, `Elemental`).
 
 5. **Self-Collision & Spawn Geometry**:
    - Projectiles or raycasts spawned at the center of structures/sockets can immediately intersect parent meshes at `distance: 0`.
@@ -111,5 +108,5 @@ return testReport;
 | **Ragdoll & Knockback** | `EnemyRagdoll.IsRagdolled == true`, `KnockbackReceiver.State`, `RagdollDamageMultiplier == 5.0x`. |
 | **Corpse Impale / Embed** | `Health.IsDead == true`, `Ragdoll.Pelvis.isKinematic == true`. |
 | **Area DoT / Zones** | `DamagePerTick > 0`, `SlowStatus.GetOrAdd() != null`, status duration refreshed. |
-| **Card Draft Pools** | Candidate cards count > 0, node is present in `SkillTreeSO` across Swordsman, Berserker, and Mage. |
+| **Card Draft Pools** | Candidate cards count > 0, definition matches equipped weapon / category rules in `DraftUpgradeService`. |
 | **Socket Deployments** | `FortDefenseSocket.IsOccupied == true`, `CurrentDefense.Level == ExpectedLevel`. |

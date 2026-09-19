@@ -25,6 +25,9 @@ public class EnemyIntroUI : MonoBehaviour
     [Tooltip("Text component displaying the enemy name at the top in white.")]
     [SerializeField] private TextMeshProUGUI enemyNameText;
 
+    [Tooltip("Optional text component displaying difficulty skulls and subtitle tags.")]
+    [SerializeField] private TextMeshProUGUI subtitleText;
+
     [Tooltip("Container or RectTransform for the name text slide animation.")]
     [SerializeField] private RectTransform nameContainer;
 
@@ -73,6 +76,14 @@ public class EnemyIntroUI : MonoBehaviour
     /// </summary>
     public void ShowIntro(string enemyName, float totalDuration, System.Action onComplete = null)
     {
+        ShowIntro(enemyName, 0, "", totalDuration, onComplete);
+    }
+
+    /// <summary>
+    ///     Plays the cinematic letterbox and enemy name intro sequence with difficulty skulls and subtitle.
+    /// </summary>
+    public void ShowIntro(string enemyName, int difficultySkulls, string subtitle = "", float totalDuration = 3.5f, System.Action onComplete = null)
+    {
         if (activeIntroRoutine != null)
         {
             StopCoroutine(activeIntroRoutine);
@@ -83,7 +94,62 @@ public class EnemyIntroUI : MonoBehaviour
             enemyNameText.text = enemyName.ToUpper();
         }
 
+        EnsureSubtitleText();
+
+        if (subtitleText != null)
+        {
+            if (difficultySkulls > 0)
+            {
+                string skulls = BannerDifficultyHelper.GetSkullString((BannerDifficultyTier)Mathf.Clamp(difficultySkulls, 1, 4));
+                Color tierCol = BannerDifficultyHelper.GetTierColor((BannerDifficultyTier)Mathf.Clamp(difficultySkulls, 1, 4));
+                string hexCol = ColorUtility.ToHtmlStringRGB(tierCol);
+
+                if (!string.IsNullOrEmpty(subtitle))
+                {
+                    subtitleText.text = $"{skulls}   <color=#{hexCol}>[{subtitle}]</color>";
+                }
+                else
+                {
+                    subtitleText.text = $"{skulls}";
+                }
+                subtitleText.gameObject.SetActive(true);
+            }
+            else if (!string.IsNullOrEmpty(subtitle))
+            {
+                subtitleText.text = subtitle;
+                subtitleText.gameObject.SetActive(true);
+            }
+            else
+            {
+                subtitleText.gameObject.SetActive(false);
+            }
+        }
+
         activeIntroRoutine = StartCoroutine(IntroSequenceRoutine(totalDuration, onComplete));
+    }
+
+    private void EnsureSubtitleText()
+    {
+        if (subtitleText != null) return;
+        if (enemyNameText == null) return;
+
+        GameObject subObj = new GameObject("SubtitleText", typeof(RectTransform));
+        subObj.transform.SetParent(enemyNameText.transform.parent != null ? enemyNameText.transform.parent : enemyNameText.transform, false);
+
+        subtitleText = subObj.AddComponent<TextMeshProUGUI>();
+        subtitleText.font = enemyNameText.font;
+        subtitleText.fontSize = enemyNameText.fontSize * 0.5f;
+        subtitleText.alignment = TextAlignmentOptions.Center;
+        subtitleText.color = new Color(1f, 0.85f, 0.3f);
+        subtitleText.enableWordWrapping = false;
+
+        RectTransform rt = subtitleText.rectTransform;
+        RectTransform nameRt = enemyNameText.rectTransform;
+        rt.anchorMin = nameRt.anchorMin;
+        rt.anchorMax = nameRt.anchorMax;
+        rt.pivot = new Vector2(0.5f, 1f);
+        rt.sizeDelta = new Vector2(nameRt.sizeDelta.x, 40f);
+        rt.anchoredPosition = new Vector2(nameRt.anchoredPosition.x, nameRt.anchoredPosition.y - 45f);
     }
 
     /// <summary>
@@ -132,6 +198,10 @@ public class EnemyIntroUI : MonoBehaviour
         {
             enemyNameText.alpha = 0f;
         }
+        if (subtitleText != null)
+        {
+            subtitleText.alpha = 0f;
+        }
 
         // Phase 1: Rapid slide-in (0.3s)
         float elapsed = 0f;
@@ -149,6 +219,10 @@ public class EnemyIntroUI : MonoBehaviour
             {
                 enemyNameText.alpha = ease;
             }
+            if (subtitleText != null)
+            {
+                subtitleText.alpha = ease;
+            }
 
             yield return null;
         }
@@ -158,6 +232,7 @@ public class EnemyIntroUI : MonoBehaviour
         if (bottomBar != null) bottomBar.anchoredPosition = new Vector2(0f, bottomBarVisibleY);
         if (nameContainer != null) nameContainer.anchoredPosition = nameVisiblePos;
         if (enemyNameText != null) enemyNameText.alpha = 1f;
+        if (subtitleText != null) subtitleText.alpha = 1f;
 
         // Phase 2: Hold & Slow Horizontal Drift
         float holdDuration = Mathf.Max(0.1f, totalDuration - slideInDuration - slideOutDuration);

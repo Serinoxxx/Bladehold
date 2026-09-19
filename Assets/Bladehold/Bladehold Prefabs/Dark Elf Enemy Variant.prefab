@@ -249,6 +249,11 @@ Animator:
   m_CorrespondingSourceObject: {fileID: 95346563739444600, guid: 9d2d21ead9f817446aa6c299b76f7e89, type: 3}
   m_PrefabInstance: {fileID: 7453213512895424120}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &7448958799608781706 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4264716272041458, guid: 9d2d21ead9f817446aa6c299b76f7e89, type: 3}
+  m_PrefabInstance: {fileID: 7453213512895424120}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &7448977442558821612 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4283388011225748, guid: 9d2d21ead9f817446aa6c299b76f7e89, type: 3}
@@ -1581,6 +1586,10 @@ PrefabInstance:
       propertyPath: animator
       value: 
       objectReference: {fileID: 7367219399364412160}
+    - target: {fileID: 8451620069487980483, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: headBone
+      value: 
+      objectReference: {fileID: 7448958799608781706}
     - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 

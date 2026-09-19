@@ -297,7 +297,7 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
         {
             return slayerBossIcon != null ? slayerBossIcon : defaultObjectiveIcon;
         }
-        if (label.Contains("catapult") || label.Contains("siege"))
+        if (label.Contains("catapult") || label.Contains("siege") || label.Contains("ram"))
         {
             return siegeEngineIcon != null ? siegeEngineIcon : defaultObjectiveIcon;
         }

@@ -492,6 +492,10 @@ PrefabInstance:
       propertyPath: animator
       value: 
       objectReference: {fileID: 8374159409175381066}
+    - target: {fileID: 8451620069487980483, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: headBone
+      value: 
+      objectReference: {fileID: 8463381831079251850}
     - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 
@@ -2055,5 +2059,10 @@ CharacterJoint:
 --- !u!4 &8463126446485581394 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4986658054915990, guid: eda5ef8bfa1b36842be7b6d0ddc57616, type: 3}
+  m_PrefabInstance: {fileID: 8458507764183230916}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &8463381831079251850 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4889597498566222, guid: eda5ef8bfa1b36842be7b6d0ddc57616, type: 3}
   m_PrefabInstance: {fileID: 8458507764183230916}
   m_PrefabAsset: {fileID: 0}

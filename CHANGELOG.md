@@ -1,5 +1,26 @@
 # Bladehold - Changelog
 
+## [0.1.28] - 2026-09-13
+
+### New Features
+
+- Updated Bulwark with directional blocking allowing backstab strikes to bypass the shield and stagger, separated block animations onto an upper body layer for continuous locomotion, and added distinct full-body stagger flinch reactions
+- Added Bulwark enemy carrying a destructible physical shield that stops player melee attacks, mitigates projectile damage, and retaliates with a telegraphed counter-slam
+- Added Stop the Battering Ram objective where enemies push a siege ram toward the castle gate requiring the player to destroy it before it breaches the defenses
+- Added Powder Keg enemy type carrying an overhead explosive barrel that can be shot with arrows to detonate into nearby foes or slams down to detonate near the castle gate
+- Added Bannerman enemy type granting localized proximity aura buffs to nearby allies based on the active wave banner with distinct highlight glows
+- Added destructible overhead banner system allowing players to shoot and disable enemy buff auras independently
+- Added 1-Click Combat Scenarios harness to developer console for rapid testing (Sword vs Dummy, Axe vs Brutes, Mace vs Bubbler, Fire Swarm, Bow Longshot, Ultimate Unleash)
+- Added automated Mechanics Benchmark tool validating all 57 draft cards, all 4 armour sets, live dash fire trail spawning, weapon hitboxes, and bubble shield absorption
+- Added automated behavioral mechanic tests for Life Steal healing, Backstab angle damage, Executioner low-HP bonus, Second Wind death revival, Greed/War Chest gold scaling, and ShieldBreaker damage amplification
+
+### Fixes
+
+### Balance Changes
+
+### General Changes
+- Removed deprecated class definitions and legacy skill tree data in favor of the unified Hero loadout and draft upgrade systems
+
 ## [0.1.20] - 2026-09-08
 
 ### New Features
@@ -275,3 +296,7 @@
 ### General Changes
 - Added hit sparks, screen shake, and impact sounds
 - Added Berserker and Mage skill tree preview panels
+
+
+
+

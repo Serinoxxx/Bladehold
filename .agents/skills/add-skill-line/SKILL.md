@@ -3,20 +3,16 @@ name: add-skill-line
 description: Use when adding a new skill line, upgrade node, or player mechanic to Bladehold's gold or Reincarnate skill trees — new StatTypes, passive components, buffs, procs, or CSV-only stat nodes.
 ---
 
-# Add a skill line / player mechanic
+# Add a skill / player mechanic
 
-You are adding nodes to `Assets/Bladehold/Config/SkillTree.csv` (gold tree) or `Config/Reincarnate.csv` (Reincarnate tree), usually backed by a new `StatType` and sometimes a new player component. **Reuse the existing patterns below — do not invent a parallel system.**
+You are adding draft skills to `Assets/Bladehold/Resources/DraftUpgrades.csv` or permanent meta perks (`MetaPerkDefinitionSO`), backed by `StatType` and player components. **Reuse the existing patterns below — do not invent a parallel system.**
 
 ## Ground truth first (do these before writing anything)
 
-1. Read the header row of the target CSV. Do NOT trust older docs — the current format is 18 columns:
-   `id,displayName,description,upgradeText,cost,growth,maxLevel,stat,kind,amount,prereqs,x,y,icon,root,isMeta,isCard,isActiveWeapon`
-   Read `SkillTreeSO.cs` for current column definitions.
-2. **MANDATORY HUMAN REQUIREMENT — Skill Placement**:
-   Before adding any new skill, verify with the user (or confirm design intent) how the skill must be configured across the 3 classification flags:
-   - `isMeta` (`1` or `0`): Does this skill appear in the Main Menu Meta-Progression Grid to be purchased permanently with persistent Gold? (Stat modifiers / persistent upgrades).
-   - `isCard` (`1` or `0`): Does this skill appear in the in-run 3-card level-up draft pool? (Resets every run, paid via run XP).
-   - `isActiveWeapon` (`1` or `0`): Is this an active weapon/ability that occupies one of the player's 4 active weapon slots? (e.g., Bow, Axe, Horse, Imbuements, Fort Defenses = `1`; Passives, stat modifiers, Parry, Counterstrike = `0`).
+1. For in-run draft skills, read `Assets/Bladehold/Resources/DraftUpgrades.csv` and `Upgrades/DraftUpgradeDefinition.cs`. Columns:
+   `id,displayName,category,weapon,element,isUltimate,maxLevel,description,upgradeText,effects,iconName,targetSlot,isDuo,prerequisiteElements`
+   Categories are `Weapon`, `Fortress`, or `Elemental`.
+2. For permanent meta upgrades, see `MetaUpgradesUI.cs` and `MetaPerkDefinitionSO` (purchased via Goblin Blood and Orcish Metal in the Meta Area).
 3. Read your chosen exemplar file (table below) end to end before writing the new component.
 4. Grep `Assets/Bladehold/Bladehold Scripts/` before assuming a mechanic/helper doesn't exist — AGENTS.md is a map, not an inventory.
 
@@ -56,7 +52,7 @@ You are adding nodes to `Assets/Bladehold/Config/SkillTree.csv` (gold tree) or `
 
 - New scripts go in `Assets/Bladehold/Bladehold Scripts/Player/` (or `Economy/` for pickups). No `.asmdef`, no namespace changes — everything compiles into `Assembly-CSharp`.
 - `OnValidate` auto-wires sibling refs (`GetComponent<...>()`); `Start` null-checks each, `Debug.LogError`s, and sets an `anyError` flag; handlers early-return `if (anyError)`.
-- **Exception**: the melee `DamageTrigger` is always an explicit serialized assignment, never auto-wired — the player carries several triggers (nova hitbox etc.). The `VampiricBlade` precedent. Also note `PlayerClassController` re-points shared listeners at the active class's trigger via setters — if your component holds a melee-trigger ref, give it the same setter pattern (`VampiricBlade.SetSwordTrigger` / `ImpulseHitFeedback.SetDamageTrigger`, called from `Player/PlayerClassController.cs`) and add the call there.
+- **Exception**: the melee `DamageTrigger` is always an explicit serialized assignment, never auto-wired — the player carries several triggers (nova hitbox etc.). The `VampiricBlade` precedent. Also note `PlayerWeaponManager` re-points shared listeners at the active melee weapon's trigger via setters (`OnMeleeChanged` / `PlayerWeaponManager.Instance.ActiveMeleeDefinition`).
 - Always unsubscribe from events in `OnDestroy`.
 - Juice = optional serialized `MMF_Player` fields, null-safe. Any feedback that can play during the frozen intermission (`Time.timeScale = 0`) must use MMF Unscaled time mode — note it in the TODO entry.
 - Tunables that aren't upgradeable stats go on a `ScriptableObject` (`*SO`, `[CreateAssetMenu(menuName = "Scriptable Objects/...")]`); the TODO entry tells the user to create the asset instance.
@@ -65,6 +61,7 @@ You are adding nodes to `Assets/Bladehold/Config/SkillTree.csv` (gold tree) or `
 ## Finish protocol
 
 1. Run `/compile-check` (new files must be added to `Assembly-CSharp.csproj` first — that skill explains).
-2. If the node touches combat/economy stats, `/balance-sim` — prototype it with a `node.<id>=<level>` override to see the pacing effect, and re-run the baseline once the CSV lands.
-3. Write the wiring + manual-verification entry via `/editor-wiring-todo` (component additions to `Player.prefab`, SO assets, icons, balance pass); with the Editor open, `/editor-wire` executes the MCP-doable items.
-4. Commit directly to `main` and push (no branches/PRs — solo project rule in AGENTS.md).
+2. **Automated Behavioral Test (Mandatory)**: Use `/maintain-mechanic-tests` to append an automated behavioral assertion to `WeaponReachBenchmark.cs` (or Unity Test Runner) verifying that the new skill, perk, or stat modifier behaves as designed, and verify the test passes.
+3. If the node touches combat/economy stats, `/balance-sim` — prototype it with a `node.<id>=<level>` override to see the pacing effect, and re-run the baseline once the CSV lands.
+4. Write the wiring + manual-verification entry via `/editor-wiring-todo` (component additions to `Player.prefab`, SO assets, icons, balance pass); with the Editor open, `/editor-wire` executes the MCP-doable items.
+5. Commit directly to `main` and push (no branches/PRs — solo project rule in AGENTS.md).

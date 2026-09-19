@@ -521,6 +521,10 @@ PrefabInstance:
       propertyPath: managedReferences[7037627162564231507].BoundRenderer
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 8451620069487980483, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: headBone
+      value: 
+      objectReference: {fileID: 7577026683868623271}
     - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 
@@ -841,6 +845,11 @@ Animator:
 --- !u!4 &7576933395999540377 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4063878554536376, guid: c6817eb5530563147aad2cfd830512b9, type: 3}
+  m_PrefabInstance: {fileID: 7577549180285979937}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &7577026683868623271 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4465439905856646, guid: c6817eb5530563147aad2cfd830512b9, type: 3}
   m_PrefabInstance: {fileID: 7577549180285979937}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &7578166212153300323 stripped

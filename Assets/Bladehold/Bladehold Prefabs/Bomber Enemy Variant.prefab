@@ -1453,6 +1453,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 7755290536573135574}
   m_SourcePrefab: {fileID: 100100000, guid: 7ee713c854e6be5469a1372d66b7bc40, type: 3}
+--- !u!4 &7074763189282006839 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4946102864127780, guid: 7ee713c854e6be5469a1372d66b7bc40, type: 3}
+  m_PrefabInstance: {fileID: 7079387959867523091}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &7074894617360796303 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4533272818862748, guid: 7ee713c854e6be5469a1372d66b7bc40, type: 3}
@@ -2785,6 +2790,10 @@ PrefabInstance:
       propertyPath: ragdoll
       value: 
       objectReference: {fileID: 4880829540140647577}
+    - target: {fileID: 8451620069487980483, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: headBone
+      value: 
+      objectReference: {fileID: 7074763189282006839}
     - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 

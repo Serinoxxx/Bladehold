@@ -10292,6 +10292,8 @@ MonoBehaviour:
   - {fileID: 1336525721}
   - {fileID: 873554372}
   enableGameLoopManageStateDebug: 0
+  captainPrefab: {fileID: 0}
+  captainSpawnPoint: {fileID: 0}
   intermissionVirtualCamera: {fileID: 785014408}
   intermissionStatsPanel: {fileID: 522960825}
   spawner: {fileID: 1017313930}
@@ -26548,6 +26550,7 @@ GameObject:
   - component: {fileID: 926223868}
   - component: {fileID: 926223869}
   - component: {fileID: 926223870}
+  - component: {fileID: 926223871}
   m_Layer: 0
   m_Name: SurvivorsObjectives
   m_TagString: Untagged
@@ -26575,6 +26578,7 @@ MonoBehaviour:
   - {fileID: 926223868}
   - {fileID: 926223869}
   - {fileID: 926223870}
+  - {fileID: 926223871}
   goldXpRewardPerObjective: 50
   cleanupDuration: 30
   intermissionDuration: 30
@@ -26751,6 +26755,28 @@ MonoBehaviour:
   durationSeconds: 120
   allowedEnemyIds:
   - goblin
+--- !u!114 &926223871
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 926223861}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cbcd3ee823d34ab49452fababf3ee103, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StopBatteringRamObjective
+  objectiveId: stop_battering_ram
+  title: Stop the Battering Ram
+  description: Destroy the battering ram before it breaches the gate!
+  batteringRamPrefab: {fileID: 994022192464808381, guid: 70e6a39ad322d724aa58bbb69131708e, type: 3}
+  ramSpawnPoint: {fileID: 2070147967}
+  gateDestinationPoint: {fileID: 1112096977}
+  fallbackSpawnPosition: {x: 30, y: 4.1, z: -25}
+  fallbackDestinationPosition: {x: 0, y: 0, z: 0}
+  ramWaypointIcon: {fileID: 21300000, guid: c2c35eea2047bc64b880be3c543b5767, type: 3}
+  destinationWaypointIcon: {fileID: 21300000, guid: bf99f27e83c88bb45b08fc4daf9bda6e, type: 3}
 --- !u!1 &932310033
 GameObject:
   m_ObjectHideFlags: 0
@@ -31355,7 +31381,7 @@ Transform:
   m_GameObject: {fileID: 1112096976}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 50.337456, y: -5.9572215, z: 32.656204}
+  m_LocalPosition: {x: 53.5, y: -5.9572215, z: 36.42}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -43129,7 +43155,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 50.8
+  m_fontSize: 49.9
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1

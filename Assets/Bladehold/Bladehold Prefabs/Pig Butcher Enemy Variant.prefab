@@ -646,6 +646,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 9131597160151246777}
   m_SourcePrefab: {fileID: 100100000, guid: a744caf4676601646ab2385371d1d140, type: 3}
+--- !u!4 &2036203779587947613 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4247452274744244, guid: a744caf4676601646ab2385371d1d140, type: 3}
+  m_PrefabInstance: {fileID: 2039316466740553705}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2036212026944112881 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4239206973779736, guid: a744caf4676601646ab2385371d1d140, type: 3}
@@ -1983,6 +1988,10 @@ PrefabInstance:
       propertyPath: animator
       value: 
       objectReference: {fileID: 2096769884836235035}
+    - target: {fileID: 8451620069487980483, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: headBone
+      value: 
+      objectReference: {fileID: 2036203779587947613}
     - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 

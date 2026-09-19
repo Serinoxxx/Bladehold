@@ -33,12 +33,6 @@ public class SaveData
     /// </summary>
     public List<string> purchasedReincarnateNodeIds = new List<string>();
 
-    /// <summary>
-    ///     Id of the player's chosen class (matches a <see cref="ClassDefinitionSO.id" /> wired into
-    ///     <see cref="PlayerClassController" />'s slots). Chosen when reincarnating (or via the
-    ///     DevConsole cheat) and applied on the next scene load. Progress, not a setting.
-    /// </summary>
-    public string playerClassId = "swordsman";
 
     /// <summary>Permanent currency obtained from waves and drops, used to purchase permanent perks.</summary>
     public int goblinBlood;
@@ -72,6 +66,9 @@ public class SaveData
 
     /// <summary>The currently selected stage level in Level Select (default: 1).</summary>
     public int selectedStage = 1;
+
+    /// <summary>Total runs attempted across all sessions (default: 1). Used for difficulty tier unlocking.</summary>
+    public int runsAttempted = 1;
 
     /// <summary>Linear 0-1 volumes applied by <see cref="GameSettingsService" />.</summary>
     public float masterVolume = 0.5f;
@@ -140,7 +137,6 @@ public class SaveData
         reincarnatePoints = defaults.reincarnatePoints;
         purchasedNodeIds.Clear();
         purchasedReincarnateNodeIds.Clear();
-        playerClassId = defaults.playerClassId;
         highestUnlockedStage = defaults.highestUnlockedStage;
         selectedStage = defaults.selectedStage;
         goblinBlood = defaults.goblinBlood;

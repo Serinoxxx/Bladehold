@@ -251,6 +251,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4958464907473990, guid: 0d42bc61d684259409d481c6f5dd5d5c, type: 3}
   m_PrefabInstance: {fileID: 457350538098988992}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &456695531648137946 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4037195159334170, guid: 0d42bc61d684259409d481c6f5dd5d5c, type: 3}
+  m_PrefabInstance: {fileID: 457350538098988992}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &458041540012134590 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1020066509522814, guid: 0d42bc61d684259409d481c6f5dd5d5c, type: 3}
@@ -2833,6 +2838,10 @@ PrefabInstance:
       propertyPath: managedReferences[7037627162564231507].BoundRenderer
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 8451620069487980483, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: headBone
+      value: 
+      objectReference: {fileID: 456695531648137946}
     - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 

@@ -14,6 +14,8 @@ using UnityEngine.AI;
 [RequireComponent(typeof(Health))]
 public class TrainingDummy : MonoBehaviour
 {
+    public static readonly System.Collections.Generic.List<TrainingDummy> ActiveDummies = new System.Collections.Generic.List<TrainingDummy>();
+
     [Header("Configuration")]
     [SerializeField] private float maxHealth = 1000f;
     [SerializeField] private float resetIdleDelay = 10f;
@@ -78,11 +80,13 @@ public class TrainingDummy : MonoBehaviour
 
     private void Awake()
     {
+        ActiveDummies.Add(this);
         Initialize();
     }
 
     private void OnDestroy()
     {
+        ActiveDummies.Remove(this);
         if (health != null)
         {
             health.OnDamaged -= HandleDamaged;

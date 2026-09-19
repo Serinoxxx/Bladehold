@@ -5,13 +5,12 @@ description: Use when tuning Bladehold balance or checking pacing — run the Mo
 
 # Project pacing with the Balance Simulator
 
-`Editor/BalanceSim/` simulates whole runs (spawn pacing, engagement, damage, gold, between-wave shopping on the real skill tree) per **player profile** — no play-testing needed to ask "if I double player HP, does a bad player coast to wave 10?". It reads the live assets (`Enemies.csv`, `SkillTree.csv`, `WaveConfigSO`, `PlayerHealthSO`, `DamageSO`, …) and runs the *real* `PlayerStats`/`SkillTreeSO` code, so upgrade math can't drift; what-ifs go through in-memory overrides, never asset edits.
+`Editor/BalanceSim/` simulates whole runs (spawn pacing, engagement, damage, gold, between-wave progression) per **player profile** — no play-testing needed to ask "if I double player HP, does a bad player coast to wave 10?". It reads the live assets (`Enemies.csv`, `WaveConfigSO`, `PlayerHealthSO`, `DamageSO`, …) and runs player stat simulation, so math can't drift; what-ifs go through in-memory overrides, never asset edits.
 
 ## Ground truth first
 
 1. Profiles live in `Assets/Bladehold/Config/SimProfiles.csv` (bad / bad_noupgrades / average / good — avoidance, kiting, accuracy, target priority, upgrade policy…); the difficulty contract lives in `Assets/Bladehold/Config/SimPacingRules.csv`. Read both before interpreting verdicts.
 2. The sim is a **projection, not the game**: positions are timers, and a few spots are re-modeled from source with `// mirrors <file:line>` anchors (`SpawnModel.cs`, `CombatModel.cs`). If you changed `WaveSpawner.SelectSpawnType`, `DamageTrigger.BuildDamage`, or `CoinDropper.HandleDied`, update the mirror or the projection lies.
-3. v1 models the **Swordsman** only (the one fully authored class).
 
 ## Step 1 — Run it
 
@@ -49,7 +48,7 @@ Change the real CSV/SO value (or first prototype via override), re-run **with th
 ## Pitfalls
 
 - **Batchmode and the open Editor are exclusive** — headless runs fail if the project is open (and vice versa, MCP needs it open). Check before launching.
-- Overrides prototype, CSVs ship: a balance conclusion reached via `-simSet` isn't done until the real `Enemies.csv`/`SkillTree.csv`/SO value is edited and the baseline re-run clean.
+- Overrides prototype, CSVs ship: a balance conclusion reached via `-simSet` isn't done until the real `Enemies.csv`/configs/SO values are edited and the baseline re-run clean.
 - Don't compare runs across different seeds/trial counts and call a small delta a result — bands overlap; use the same seed.
 - The bomber one-shot dominates early deaths (25 dmg vs 10 HP); if deaths cluster at its `unlockWave`, that's the lever to reach for.
 

@@ -11,6 +11,7 @@ public class WarBannerController : MonoBehaviour
 
     public WarBannerClanSO Clan { get; private set; }
     public WarBannerRewardSO Reward { get; private set; }
+    public BannerDifficultyTier DifficultyTier { get; private set; } = BannerDifficultyTier.Standard;
 
     [Header("Core References")]
     [SerializeField] private Interactable interactable;
@@ -23,6 +24,12 @@ public class WarBannerController : MonoBehaviour
     [SerializeField] private MMF_Player slamFeedback;
     [SerializeField] private GameObject burnVfxPrefab;
     [SerializeField] private AudioClip burnSfx;
+
+    [Header("Difficulty Quick Facts UI")]
+    [Tooltip("Display text for skulls, e.g. '💀 💀'.")]
+    [SerializeField] private TMPro.TMP_Text difficultySkullsText;
+    [Tooltip("Display text for tier title and reward multiplier, e.g. 'ENRAGED [2x REWARD]'.")]
+    [SerializeField] private TMPro.TMP_Text difficultyTagText;
 
     [Header("Clan Quick Facts UI")]
     [SerializeField] private UnityEngine.UI.Image clanSigilImage;
@@ -100,13 +107,18 @@ public class WarBannerController : MonoBehaviour
     }
 
     /// <summary>
-    ///     Initializes the banner using modular ScriptableObjects.
-    ///     Displays clean quick facts: Clan Icon, 1-line Buff Fact, and Reward [Icon] x Qty.
+    ///     Initializes the banner using modular ScriptableObjects and difficulty tier.
+    ///     Displays clean quick facts: Clan Icon, 1-line Buff Fact, Reward [Icon] x Qty, and Difficulty Skulls/Multiplier.
     /// </summary>
-    public void Initialize(WarBannerClanSO clan, WarBannerRewardSO reward)
+    public void Initialize(WarBannerClanSO clan, WarBannerRewardSO reward, BannerDifficultyTier difficultyTier = BannerDifficultyTier.Standard)
     {
         Clan = clan;
         Reward = reward;
+        DifficultyTier = difficultyTier;
+
+        int multiplier = BannerDifficultyHelper.GetRewardMultiplier(difficultyTier);
+        string skulls = BannerDifficultyHelper.GetSkullString(difficultyTier);
+        string tierName = BannerDifficultyHelper.GetTierName(difficultyTier);
 
         // Populate backward-compatible structs
         Buff = new BannerBuffDef
@@ -124,6 +136,29 @@ public class WarBannerController : MonoBehaviour
             inGameDisplay = reward != null ? reward.rewardName : "",
             rewardDescription = reward != null ? reward.rewardDescription : ""
         };
+
+        // --- Difficulty Section ---
+        if (difficultySkullsText != null)
+        {
+            difficultySkullsText.text = skulls;
+            difficultySkullsText.gameObject.SetActive(true);
+        }
+
+        if (difficultyTagText != null)
+        {
+            if (difficultyTier > BannerDifficultyTier.Standard)
+            {
+                difficultyTagText.text = $"{tierName.ToUpper()} [{multiplier}x REWARDS]";
+                difficultyTagText.color = BannerDifficultyHelper.GetTierColor(difficultyTier);
+                difficultyTagText.gameObject.SetActive(true);
+            }
+            else
+            {
+                difficultyTagText.text = "STANDARD";
+                difficultyTagText.color = Color.white;
+                difficultyTagText.gameObject.SetActive(true);
+            }
+        }
 
         // --- Clan Section ---
         if (clanNameText != null && clan != null)
@@ -163,6 +198,11 @@ public class WarBannerController : MonoBehaviour
         }
 
         string qtyStr = reward != null ? reward.GetFormattedQuantity() : "x 1";
+        if (multiplier > 1)
+        {
+            qtyStr = $"{qtyStr} ({multiplier}x)";
+        }
+
         if (rewardQuantityText != null)
             rewardQuantityText.text = qtyStr;
 
@@ -174,7 +214,14 @@ public class WarBannerController : MonoBehaviour
 
         if (interactable != null)
         {
-            interactable.PromptText = $"Tear Down Banner\n{Buff.clanName}";
+            if (difficultyTier > BannerDifficultyTier.Standard)
+            {
+                interactable.PromptText = $"Tear Down Banner\n{Buff.clanName} - {skulls} {tierName.ToUpper()} ({multiplier}x)";
+            }
+            else
+            {
+                interactable.PromptText = $"Tear Down Banner\n{Buff.clanName}";
+            }
             interactable.CanInteract = true;
         }
 
@@ -184,21 +231,28 @@ public class WarBannerController : MonoBehaviour
             bannerRenderer.sharedMaterial = clan.bannerMaterial;
         }
         
-        ApplyClanGlow(Buff.buffType);
+        ApplyClanGlow(Buff.buffType, difficultyTier);
     }
     
-    private void ApplyClanGlow(BannerBuffType buffType)
+    private void ApplyClanGlow(BannerBuffType buffType, BannerDifficultyTier tier = BannerDifficultyTier.Standard)
     {
         if (highlightEffect == null) return;
         
         Color glowColor = Color.white;
-        switch (buffType)
+        if (tier > BannerDifficultyTier.Standard)
         {
-            case BannerBuffType.Berserk: glowColor = new Color(1f, 0.23f, 0.18f); break; // Crimson Red
-            case BannerBuffType.Shield: glowColor = new Color(0f, 0.47f, 1f); break; // Arcane Blue
-            case BannerBuffType.Haste: glowColor = new Color(1f, 0.8f, 0f); break; // Golden Amber
-            case BannerBuffType.Regen: glowColor = new Color(0.2f, 0.78f, 0.35f); break; // Emerald Green
-            case BannerBuffType.Armor: glowColor = new Color(0.68f, 0.32f, 0.87f); break; // Royal Violet
+            glowColor = BannerDifficultyHelper.GetTierColor(tier);
+        }
+        else
+        {
+            switch (buffType)
+            {
+                case BannerBuffType.Berserk: glowColor = new Color(1f, 0.23f, 0.18f); break; // Crimson Red
+                case BannerBuffType.Shield: glowColor = new Color(0f, 0.47f, 1f); break; // Arcane Blue
+                case BannerBuffType.Haste: glowColor = new Color(1f, 0.8f, 0f); break; // Golden Amber
+                case BannerBuffType.Regen: glowColor = new Color(0.2f, 0.78f, 0.35f); break; // Emerald Green
+                case BannerBuffType.Armor: glowColor = new Color(0.68f, 0.32f, 0.87f); break; // Royal Violet
+            }
         }
         
         highlightEffect.outlineColor = glowColor;

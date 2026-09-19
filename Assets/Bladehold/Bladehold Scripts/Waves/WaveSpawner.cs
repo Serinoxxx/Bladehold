@@ -55,6 +55,9 @@ public class WaveSpawner : MonoBehaviour
     [SerializeField] private EnemyPrefabMapSO prefabMap;
     [SerializeField] private WaveConfigSO config;
 
+    public EnemyPrefabMapSO PrefabMap => prefabMap;
+    public EnemyRosterSO Roster => roster;
+
     [Header("Where to spawn")]
     [Tooltip("Spawn points. Goblins spawn at a random one each time. If empty, they spawn around this object within Spawn Radius.")]
     [SerializeField] private Transform[] spawnPoints;
@@ -643,6 +646,9 @@ public class WaveSpawner : MonoBehaviour
             enemy.GetComponent<PinballCharge>()?.SetDamage(def.damage.Value);
             enemy.GetComponent<BubblerCaster>()?.SetDamage(def.damage.Value);
             enemy.GetComponent<AssassinAttack>()?.SetDamage(def.damage.Value);
+            enemy.GetComponent<PowderKegAttack>()?.SetDamage(def.damage.Value);
+            enemy.GetComponent<BannermanAura>()?.SetDamage(def.damage.Value);
+            enemy.GetComponent<BulwarkAttack>()?.SetDamage(def.damage.Value);
         }
         if (def.minGold.HasValue)
         {

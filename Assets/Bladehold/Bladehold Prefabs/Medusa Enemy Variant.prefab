@@ -819,6 +819,10 @@ PrefabInstance:
       propertyPath: animator
       value: 
       objectReference: {fileID: 8460896077519122016}
+    - target: {fileID: 8451620069487980483, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: headBone
+      value: 
+      objectReference: {fileID: 8371934235396679976}
     - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 

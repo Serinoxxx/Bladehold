@@ -27,9 +27,15 @@ public class GameLoopManager : MonoBehaviour
 
     public BannerBuffType CurrentWaveBuff { get; private set; } = BannerBuffType.None;
     public BannerBountyType CurrentWaveBounty { get; private set; } = BannerBountyType.None;
+    public BannerDifficultyTier CurrentWaveDifficultyTier { get; private set; } = BannerDifficultyTier.Standard;
     public WarBannerClanSO CurrentClanBuffSO { get; private set; }
     public WarBannerRewardSO CurrentBannerRewardSO { get; private set; }
     private List<WarBannerController> activeBanners = new List<WarBannerController>();
+
+    [Header("Captain Settings")]
+    [Tooltip("Optional prefab for Clan Captains (e.g. Captain Fraglob). If null, a scaled Brute is used as placeholder.")]
+    [SerializeField] private GameObject captainPrefab;
+    [SerializeField] private Transform captainSpawnPoint;
 
     [Header("Cinematic Intermission")]
     [SerializeField] private CinemachineCamera intermissionVirtualCamera;
@@ -251,6 +257,12 @@ public class GameLoopManager : MonoBehaviour
             SpawnEndgameBoss();
         }
 
+        // Spawn Enraged/Nightmare/Omega Clan Captain if triggered by War Banner
+        if (CurrentWaveDifficultyTier >= BannerDifficultyTier.Enraged)
+        {
+            SpawnCaptainForWave(CurrentWaveDifficultyTier);
+        }
+
         if (waveAnnouncementText != null)
         {
             waveAnnouncementText.text = $"WAVE {waveNumber} - ROUND {round}";
@@ -332,6 +344,17 @@ public class GameLoopManager : MonoBehaviour
             if (!isObjectiveComplete)
             {
                 // Wagon has not reached the destination yet; wave cannot end
+                cleanupTimer = 0f;
+                return;
+            }
+        }
+
+        // Battering ram special rule: enemies must keep spawning until the ram is destroyed!
+        if (currentObjective is StopBatteringRamObjective)
+        {
+            if (!isObjectiveComplete)
+            {
+                // Ram has not been destroyed yet; wave cannot end
                 cleanupTimer = 0f;
                 return;
             }
@@ -512,6 +535,7 @@ public class GameLoopManager : MonoBehaviour
             powerup.DestroyPowerup();
             CurrentWaveBuff = BannerBuffType.None;
             CurrentWaveBounty = BannerBountyType.None;
+            CurrentWaveDifficultyTier = BannerDifficultyTier.Standard;
             CurrentClanBuffSO = null;
             CurrentBannerRewardSO = null;
             StartCoroutine(TransitionToNextBannersRoutine());
@@ -522,11 +546,13 @@ public class GameLoopManager : MonoBehaviour
     {
         string rewardDesc = "Bounty Claimed";
         bool isDraft = false;
+        int multiplier = BannerDifficultyHelper.GetRewardMultiplier(CurrentWaveDifficultyTier);
 
         switch (bounty)
         {
             case BannerBountyType.WeaponDraft:
-                rewardDesc = "Weapon Upgrade Draft!";
+                rewardDesc = multiplier > 1 ? $"Weapon Upgrade Draft! ({multiplier}x)" : "Weapon Upgrade Draft!";
+                if (multiplier > 1) RunSession.DraftRerollsRemaining += (multiplier - 1);
                 if (SurvivorsCardSelectUI.Instance != null)
                 {
                     isDraft = true;
@@ -534,7 +560,8 @@ public class GameLoopManager : MonoBehaviour
                 }
                 break;
             case BannerBountyType.FortressDraft:
-                rewardDesc = "Fortress Upgrade Draft!";
+                rewardDesc = multiplier > 1 ? $"Fortress Upgrade Draft! ({multiplier}x)" : "Fortress Upgrade Draft!";
+                if (multiplier > 1) RunSession.DraftRerollsRemaining += (multiplier - 1);
                 if (SurvivorsCardSelectUI.Instance != null)
                 {
                     isDraft = true;
@@ -542,7 +569,8 @@ public class GameLoopManager : MonoBehaviour
                 }
                 break;
             case BannerBountyType.ElementDraft:
-                rewardDesc = "Elemental Upgrade Draft!";
+                rewardDesc = multiplier > 1 ? $"Elemental Upgrade Draft! ({multiplier}x)" : "Elemental Upgrade Draft!";
+                if (multiplier > 1) RunSession.DraftRerollsRemaining += (multiplier - 1);
                 if (SurvivorsCardSelectUI.Instance != null)
                 {
                     isDraft = true;
@@ -550,29 +578,30 @@ public class GameLoopManager : MonoBehaviour
                 }
                 break;
             case BannerBountyType.GoldCache:
-                int gold = UnityEngine.Random.Range(75, 126);
+                int gold = UnityEngine.Random.Range(75, 126) * multiplier;
                 RunSession.AddInRunGold(gold);
-                rewardDesc = $"+{gold} Gold";
+                rewardDesc = multiplier > 1 ? $"+{gold} Gold ({multiplier}x)" : $"+{gold} Gold";
                 break;
             case BannerBountyType.OrcishMetal:
-                int metal = UnityEngine.Random.Range(2, 4);
+                int metal = UnityEngine.Random.Range(2, 4) * multiplier;
                 RunSession.AddOrcishMetal(metal);
-                rewardDesc = $"+{metal} Orcish Metal";
+                rewardDesc = multiplier > 1 ? $"+{metal} Orcish Metal ({multiplier}x)" : $"+{metal} Orcish Metal";
                 break;
             case BannerBountyType.GoblinBlood:
-                int blood = UnityEngine.Random.Range(4, 7);
+                int blood = UnityEngine.Random.Range(4, 7) * multiplier;
                 RunSession.AddGoblinBlood(blood);
-                rewardDesc = $"+{blood} Goblin Blood";
+                rewardDesc = multiplier > 1 ? $"+{blood} Goblin Blood ({multiplier}x)" : $"+{blood} Goblin Blood";
                 break;
             case BannerBountyType.TrollHeart:
-                RunSession.PlayerBonusMaxHealth += 25f;
+                float bonusHp = 25f * (multiplier > 1 ? 1.5f : 1.0f);
+                RunSession.PlayerBonusMaxHealth += bonusHp;
                 if (Player.Instance != null && Player.Instance.Health != null)
                 {
                     float current = Player.Instance.Health.CurrentHealth;
-                    Player.Instance.Health.SetMaxHealth(Player.Instance.Health.MaxHealth + 25f);
-                    Player.Instance.Health.SetCurrentHealth(current + 25f);
+                    Player.Instance.Health.SetMaxHealth(Player.Instance.Health.MaxHealth + bonusHp);
+                    Player.Instance.Health.SetCurrentHealth(current + bonusHp);
                 }
-                rewardDesc = "Troll Heart (+25 Max HP)";
+                rewardDesc = $"Troll Heart (+{bonusHp} Max HP)";
                 break;
         }
 
@@ -709,13 +738,17 @@ public class GameLoopManager : MonoBehaviour
         for (int i = 0; i < availableClans.Count; i++) { WarBannerClanSO temp = availableClans[i]; int randomIndex = UnityEngine.Random.Range(i, availableClans.Count); availableClans[i] = availableClans[randomIndex]; availableClans[randomIndex] = temp; }
         for (int i = 0; i < availableRewards.Count; i++) { WarBannerRewardSO temp = availableRewards[i]; int randomIndex = UnityEngine.Random.Range(i, availableRewards.Count); availableRewards[i] = availableRewards[randomIndex]; availableRewards[randomIndex] = temp; }
 
+        SaveData saveData = SaveSystem.Load();
+        int runs = (saveData != null) ? saveData.runsAttempted : 1;
+
         for (int i = 0; i < 3; i++)
         {
             GameObject bannerGo = Instantiate(warBannerPrefab, bannerSpawnPoints[i].position, bannerSpawnPoints[i].rotation);
             WarBannerController controller = bannerGo.GetComponent<WarBannerController>();
             if (controller != null)
             {
-                controller.Initialize(availableClans[i % availableClans.Count], availableRewards[i % availableRewards.Count]);
+                BannerDifficultyTier tier = BannerDifficultyHelper.RollTierForBanner(runs, CurrentRound, i);
+                controller.Initialize(availableClans[i % availableClans.Count], availableRewards[i % availableRewards.Count], tier);
                 controller.OnBannerInteracted += HandleBannerInteracted;
                 controller.StageHighUp();
                 activeBanners.Add(controller);
@@ -771,6 +804,7 @@ public class GameLoopManager : MonoBehaviour
         CurrentBannerRewardSO = selectedBanner.Reward;
         CurrentWaveBuff = selectedBanner.Clan != null ? selectedBanner.Clan.buffType : selectedBanner.Buff.buffType;
         CurrentWaveBounty = selectedBanner.Reward != null ? selectedBanner.Reward.bountyType : selectedBanner.Bounty.bountyType;
+        CurrentWaveDifficultyTier = selectedBanner.DifficultyTier;
 
         StartCoroutine(BannerTeardownRoutine(selectedBanner));
     }
@@ -906,6 +940,53 @@ public class GameLoopManager : MonoBehaviour
         }
 
         Debug.Log("[GameLoopManager] Round 4 Endgame Boss Spawned!");
+    }
+
+    /// <summary>
+    ///     Spawns the Clan Captain (Captain Fraglob) for Enraged, Nightmare, or Omega difficulty tiers,
+    ///     plays the cinematic EnemyIntroUI with difficulty skulls, and initializes the captain controller.
+    /// </summary>
+    public GameObject SpawnCaptainForWave(BannerDifficultyTier tier)
+    {
+        Vector3 spawnPos = captainSpawnPoint != null ? captainSpawnPoint.position : 
+                           (bossSpawnPoint != null ? bossSpawnPoint.position : (transform.position + new Vector3(0f, 0f, 25f)));
+        Quaternion spawnRot = captainSpawnPoint != null ? captainSpawnPoint.rotation : 
+                             (bossSpawnPoint != null ? bossSpawnPoint.rotation : Quaternion.identity);
+
+        GameObject captainGo = null;
+        if (captainPrefab != null)
+        {
+            captainGo = Instantiate(captainPrefab, spawnPos, spawnRot);
+        }
+        else if (spawner != null)
+        {
+            captainGo = spawner.DebugSpawnEnemyType("goblin_brute");
+            if (captainGo != null)
+            {
+                captainGo.name = "Captain_Fraglob_Placeholder";
+                captainGo.transform.localScale *= 1.35f;
+            }
+        }
+
+        if (captainGo != null)
+        {
+            CaptainEnemyController captainComp = captainGo.GetComponent<CaptainEnemyController>();
+            if (captainComp == null)
+            {
+                captainComp = captainGo.AddComponent<CaptainEnemyController>();
+            }
+            captainComp.Initialize(tier, "Captain Fraglob");
+
+            // Play the enemy intro announcement with difficulty skulls
+            if (EnemyIntroUI.Instance != null)
+            {
+                string subtitle = $"{BannerDifficultyHelper.GetTierName(tier).ToUpper()} - {BannerDifficultyHelper.GetRewardMultiplier(tier)}X REWARDS";
+                EnemyIntroUI.Instance.ShowIntro("Captain Fraglob has arrived!", (int)tier, subtitle, 3.5f);
+            }
+        }
+
+        Debug.Log($"[GameLoopManager] Spawned Captain Fraglob at Tier {tier} ({BannerDifficultyHelper.GetRewardMultiplier(tier)}x rewards)!");
+        return captainGo;
     }
 
     private void TriggerVictory()

@@ -152,7 +152,7 @@ public class AITargetSelector : MonoBehaviour
             var currentObj = SurvivorsObjectiveManager.Instance.CurrentObjective;
             if (currentObj.IsActive)
             {
-                if (currentObj is KillEnemiesObjective) return true;
+                if (currentObj is KillEnemiesObjective || currentObj is StopBatteringRamObjective) return true;
                 if (!string.IsNullOrEmpty(currentObj.Title) && currentObj.Title.IndexOf("Hold the Gate", StringComparison.OrdinalIgnoreCase) >= 0) return true;
             }
         }

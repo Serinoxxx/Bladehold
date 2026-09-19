@@ -1,4 +1,5 @@
 using System;
+using HighlightPlus;
 using UnityEditor;
 using UnityEngine;
 
@@ -183,6 +184,131 @@ internal static class EnemyManifest
                         EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
                         EnemyPrefabGenerator.SetReference(so, "movement", ctx.Movement);
                         EnemyPrefabGenerator.SetReference(so, "explosionVfxPrefab", LoadPrefab("Assets/Synty/PolygonParticleFX/Prefabs/FX_Explosion_01.prefab"));
+                    },
+                },
+            },
+        },
+
+        // Powder Keg: slow moving unit carrying an explosive barrel above head.
+        new EnemySpec
+        {
+            id = "powder_keg",
+            soFolder = "PowderKeg",
+            prefabName = "Powder Keg Enemy Variant",
+            animatorOverridePath = "Assets/Bladehold/Bladehold Animations/PowderKeg.controller",
+            disableBaseAIAttack = true,
+            removeComponents = new[] { typeof(GoldenGoblin), typeof(ImpulseGoblin) },
+            children = new[] {
+                new ChildSpec { name = "PowderKegBarrel", localPosition = new Vector3(0f, 1.75f, 0.1f) }
+            },
+            assets = new[]
+            {
+                new SoSpec { soType = typeof(PowderKegAttackSO), assetName = "PowderKegAttackSO" },
+            },
+            components = new[]
+            {
+                new ComponentSpec
+                {
+                    type = typeof(PowderKegAttack),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "attackData", ctx.LoadedAsset("PowderKegAttackSO"));
+                        EnemyPrefabGenerator.SetReference(so, "animator", ctx.ChildAnimator);
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                        EnemyPrefabGenerator.SetReference(so, "movement", ctx.Movement);
+                        EnemyPrefabGenerator.SetReference(so, "explosionVfxPrefab", LoadPrefab("Assets/Synty/PolygonParticleFX/Prefabs/FX_Explosion_01.prefab"));
+
+                        GameObject barrelChild = ctx.FindOrCreateChild("PowderKegBarrel", new Vector3(0f, 1.75f, 0.1f));
+                        EnemyPrefabGenerator.SetReference(so, "barrelVisual", barrelChild);
+
+                        var barrelComp = barrelChild.GetComponent<PowderKegBarrel>();
+                        if (barrelComp == null) barrelChild.AddComponent<PowderKegBarrel>();
+
+                        var col = barrelChild.GetComponent<Collider>();
+                        if (col == null)
+                        {
+                            var cap = barrelChild.AddComponent<CapsuleCollider>();
+                            cap.radius = 0.45f;
+                            cap.height = 1.0f;
+                            cap.center = new Vector3(0f, 0.1f, 0f);
+                        }
+
+                        if (barrelChild.transform.childCount == 0)
+                        {
+                            var barrelPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Synty/PolygonDungeon/Prefabs/Props/SM_Prop_Barrel_01.prefab");
+                            if (barrelPrefab != null)
+                            {
+                                var spawned = (GameObject)PrefabUtility.InstantiatePrefab(barrelPrefab, barrelChild.transform);
+                                spawned.transform.localPosition = Vector3.zero;
+                                spawned.transform.localRotation = Quaternion.identity;
+                                spawned.transform.localScale = Vector3.one * 0.9f;
+                            }
+                        }
+                    },
+                },
+            },
+        },
+
+        // Bannerman: carries a large banner above head, buffing nearby enemies based on banner selection.
+        new EnemySpec
+        {
+            id = "bannerman",
+            soFolder = "Bannerman",
+            prefabName = "Bannerman Enemy Variant",
+            animatorOverridePath = "Assets/Bladehold/Bladehold Animations/Bannerman.controller",
+            children = new[] {
+                new ChildSpec { name = "BannermanBanner", localPosition = new Vector3(0f, 1.8f, 0f) }
+            },
+            assets = new[]
+            {
+                new SoSpec
+                {
+                    soType = typeof(BannermanAuraSO),
+                    assetName = "BannermanAuraSO",
+                    initDefaults = so =>
+                    {
+                        var aura = (BannermanAuraSO)so;
+                        aura.damageBuffProfile = AssetDatabase.LoadAssetAtPath<HighlightProfile>("Assets/Bladehold/Bladehold Highlight Profiles/Banner Damage Buff HPP.asset");
+                        aura.healingBuffProfile = AssetDatabase.LoadAssetAtPath<HighlightProfile>("Assets/Bladehold/Bladehold Highlight Profiles/Banner Healing Buff HPP.asset");
+                        aura.shieldBuffProfile = AssetDatabase.LoadAssetAtPath<HighlightProfile>("Assets/Bladehold/Bladehold Highlight Profiles/Banner Shield Buff HPP.asset");
+                    }
+                },
+            },
+            components = new[]
+            {
+                new ComponentSpec
+                {
+                    type = typeof(BannermanAura),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "auraData", ctx.LoadedAsset("BannermanAuraSO"));
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+
+                        GameObject bannerChild = ctx.FindOrCreateChild("BannermanBanner", new Vector3(0f, 1.8f, 0f));
+                        var destBanner = bannerChild.GetComponent<DestructibleBanner>();
+                        if (destBanner == null) destBanner = bannerChild.AddComponent<DestructibleBanner>();
+
+                        var col = bannerChild.GetComponent<Collider>();
+                        if (col == null)
+                        {
+                            var box = bannerChild.AddComponent<BoxCollider>();
+                            box.size = new Vector3(1.2f, 1.8f, 0.4f);
+                            box.center = new Vector3(0f, 0.8f, 0f);
+                        }
+
+                        if (bannerChild.transform.childCount == 0)
+                        {
+                            var bannerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Synty/PolygonDungeon/Prefabs/Weapons/SM_Wep_Banner_05.prefab");
+                            if (bannerPrefab != null)
+                            {
+                                var spawned = (GameObject)PrefabUtility.InstantiatePrefab(bannerPrefab, bannerChild.transform);
+                                spawned.transform.localPosition = Vector3.zero;
+                                spawned.transform.localRotation = Quaternion.identity;
+                                spawned.transform.localScale = Vector3.one * 1.4f;
+                            }
+                        }
+
+                        EnemyPrefabGenerator.SetReference(so, "banner", destBanner);
                     },
                 },
             },

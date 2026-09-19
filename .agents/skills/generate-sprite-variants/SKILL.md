@@ -23,7 +23,7 @@ flowchart TD
     D --> D5[_Sunken.png: Carved / Inset Shadow]
     D --> D6[.svg: Scalable Vector Path]
     D1 & D2 & D3 & D4 & D5 --> E[Step 3: Import to Assets/ and Configure Sprites]
-    E --> F[Step 4: Wire to SkillTree.csv / SkillTreeIcons]
+    E --> F[Step 4: Wire to DraftUpgrades.csv / SkillTreeIcons]
 ```
 
 ---
@@ -113,9 +113,9 @@ When copying generated `.png` files into `Assets/Bladehold/Art/Icons/`:
 
 ---
 
-## Step 5 — Wiring to Skill Tree Configuration
+## Step 5 — Wiring to Skill / Draft Configuration
 
 1. Place the generated sprite assets in `Assets/Bladehold/Art/Icons/` or `Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/Icons_Status/`.
-2. Add the sprite reference to the `SkillTreeIcons.asset` dictionary mapping (or `SkillTree.csv` icon column).
-3. If referenced in `SkillTree.csv`, assign the sprite filename (without extension) to the `icon` column of the corresponding skill row.
+2. Add the sprite reference to the `SkillTreeIcons.asset` dictionary mapping.
+3. If referenced in `DraftUpgrades.csv`, assign the sprite filename (without extension) to the `iconName` column of the corresponding row.
 4. Run `refresh_unity` to compile and update asset database caches.

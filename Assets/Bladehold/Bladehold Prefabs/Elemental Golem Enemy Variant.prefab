@@ -1521,6 +1521,11 @@ CharacterJoint:
   m_EnablePreprocessing: 1
   m_MassScale: 1
   m_ConnectedMassScale: 1
+--- !u!4 &3106568754487775171 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4036344799513174, guid: 93c0dd75ddc1c9f4dabe9f061ef19748, type: 3}
+  m_PrefabInstance: {fileID: 3103799117963658645}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &7120399194076778252
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1605,6 +1610,10 @@ PrefabInstance:
       propertyPath: animator
       value: 
       objectReference: {fileID: 3045343620860839209}
+    - target: {fileID: 8451620069487980483, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+      propertyPath: headBone
+      value: 
+      objectReference: {fileID: 3106568754487775171}
     - target: {fileID: 8743446565083701594, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: animator
       value: 
