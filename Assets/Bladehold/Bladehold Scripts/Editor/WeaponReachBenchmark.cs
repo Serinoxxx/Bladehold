@@ -1010,6 +1010,167 @@ public static class WeaponReachBenchmark
             failedCount++;
         }
 
+        // -------------------------------------------------------------
+        // 10: Battlefield Defenses Revamp Benchmark
+        // -------------------------------------------------------------
+        sb.AppendLine("\n[10] Battlefield Defenses Revamp Benchmark:");
+        try
+        {
+            // 10A: Supply Currency & Death Reset Test
+            RunSession.StartNewRun();
+            int freshSupply = RunSession.InRunSupply;
+            RunSession.AddInRunSupply(40);
+            int addedSupply = RunSession.InRunSupply;
+            bool spendSuccess = RunSession.TrySpendInRunSupply(30);
+            int spentSupply = RunSession.InRunSupply;
+
+            RunSession.ClearRun();
+            int resetSupply = RunSession.InRunSupply;
+            int resetSavedDefenses = RunSession.SavedDefenses.Count;
+
+            if (freshSupply == 60 && addedSupply == 100 && spendSuccess && spentSupply == 70 && resetSupply == 60 && resetSavedDefenses == 0)
+            {
+                sb.AppendLine("  - Supply Currency & Death Reset: Initial 60, add +40 -> 100, spend 30 -> 70, reset on death -> 60. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Supply Currency test failed (fresh={freshSupply}, added={addedSupply}, spent={spentSupply}, reset={resetSupply}, savedDefenses={resetSavedDefenses})!");
+                failedCount++;
+            }
+
+            // 10B: Tower Plot Construction & Instant Deployment Test
+            GameObject testPlotObj = new GameObject("Benchmark_TestTowerPlot");
+            TowerPlot testPlot = testPlotObj.AddComponent<TowerPlot>();
+            testPlot.PlotIndex = 99;
+
+            GameObject arrowPrefabObj = new GameObject("TestArrowTower");
+            ArrowTowerDefense arrowComp = arrowPrefabObj.AddComponent<ArrowTowerDefense>();
+            testPlot.SetPrefabs(arrowPrefabObj, null, null, null, null, null);
+
+            testPlot.BuildDefense(FortDefenseType.ArrowSlits, level: 1, supply: 50, instant: true);
+            bool plotOccupied = testPlot.IsOccupied && testPlot.CurrentDefense != null;
+            DefenseStructure def = testPlot.CurrentDefense;
+
+            if (plotOccupied && def.DefenseType == FortDefenseType.ArrowSlits && def.CurrentSupply == 50 && def.Level == 1)
+            {
+                sb.AppendLine("  - Tower Plot Construction: Instant deployment sets occupancy, type, initial level 1, and 50 supply. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Tower Plot Construction failed (occupied={plotOccupied}, type={def?.DefenseType}, supply={def?.CurrentSupply}, level={def?.Level})!");
+                failedCount++;
+            }
+
+            // 10C: Supply Consumption & Resupply Mechanic Test
+            def.ConsumeSupply(15);
+            bool consumedCorrectly = def.CurrentSupply == 35;
+
+            RunSession.InRunSupply = 50;
+            def.Interact(null); // Resupplies missing 15 from RunSession (50 -> 35 remaining in player wallet)
+            bool resuppliedCorrectly = def.CurrentSupply == 50 && RunSession.InRunSupply == 35;
+
+            if (consumedCorrectly && resuppliedCorrectly)
+            {
+                sb.AppendLine("  - Defense Supply Consumption & Resupply: Firing consumes supply (35/50), player interaction resupplies to 50/50. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Supply consumption/resupply failed (consumed={consumedCorrectly}, defSupply={def.CurrentSupply}, playerSupply={RunSession.InRunSupply})!");
+                failedCount++;
+            }
+
+            // 10D: Defense Upgrading Mechanic Test
+            RunSession.InRunSupply = 100;
+            int upgradeCost = def.GetUpgradeCost(); // 40 for Lv 1 -> 2
+            def.Interact(null); // Fully supplied, so interacts to upgrade!
+            bool upgradedLevel = def.Level == 2;
+            bool upgradedMaxSupply = def.MaxSupply == 75 && def.CurrentSupply == 75;
+            bool deductedPlayerSupply = RunSession.InRunSupply == (100 - upgradeCost);
+
+            if (upgradedLevel && upgradedMaxSupply && deductedPlayerSupply)
+            {
+                sb.AppendLine("  - Defense Upgrading: Fully supplied defense upgrades to Lv 2, expands max supply to 75, deducts player supply. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Defense upgrade failed (level={def.Level}, maxSupply={def.MaxSupply}, curSupply={def.CurrentSupply}, playerSupply={RunSession.InRunSupply})!");
+                failedCount++;
+            }
+
+            // 10E: Supply Depletion & Destruction Test
+            def.ConsumeSupply(100); // Exceeds 75, triggers destruction
+            bool destroyedOnZero = testPlot.CurrentDefense == null && !testPlot.IsOccupied;
+
+            if (destroyedOnZero)
+            {
+                sb.AppendLine("  - Supply Depletion Destruction: Reaching 0 supply destroys structure and frees plot for rebuild. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Supply depletion did not free plot (occupied={testPlot.IsOccupied})!");
+                failedCount++;
+            }
+
+            // Cleanup test plot
+            UnityEngine.Object.DestroyImmediate(testPlotObj);
+            UnityEngine.Object.DestroyImmediate(arrowPrefabObj);
+
+            // 10F: Net Thrower Root Status Mechanic Test
+            GameObject dummyTarget = new GameObject("Benchmark_NetDummy");
+            dummyTarget.AddComponent<UnityEngine.AI.NavMeshAgent>();
+            Health dummyHealth = dummyTarget.AddComponent<Health>();
+            dummyHealth.SetMaxHealth(100f);
+
+            NetRootStatus rootStatus = NetRootStatus.GetOrAdd(dummyHealth);
+            rootStatus.ApplyRoot(3.5f);
+            bool isRooted = rootStatus != null && rootStatus.IsRooted;
+
+            if (isRooted)
+            {
+                sb.AppendLine("  - Net Thrower Root Mechanic: Successfully applies NetRootStatus to target NavMeshAgent. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] NetRootStatus was not applied (isRooted={isRooted})!");
+                failedCount++;
+            }
+
+            UnityEngine.Object.DestroyImmediate(dummyTarget);
+
+            // 10G: Draft Upgrades Filtering (Zero Fortress Cards in Random Draft)
+            if (DraftUpgradeService.Instance != null)
+            {
+                List<DraftUpgradeDefinition> eligible = DraftUpgradeService.Instance.GetCandidateUpgrades(DraftCategory.Fortress, 50);
+                int fortressInDraft = eligible != null ? eligible.Count : 0;
+
+                if (fortressInDraft == 0)
+                {
+                    sb.AppendLine("  - Fortress Draft Exclusion: 0 Fortress cards returned by GetCandidateUpgrades (re-routed to battlefield plots). [PASSED]");
+                    passedCount++;
+                }
+                else
+                {
+                    sb.AppendLine($"  - [FAIL] Found {fortressInDraft} Fortress cards returned by GetCandidateUpgrades!");
+                    failedCount++;
+                }
+            }
+            else
+            {
+                sb.AppendLine("  - DraftUpgradeService Instance not found, skipped draft pool query assertion.");
+            }
+        }
+        catch (Exception ex)
+        {
+            sb.AppendLine($"  - Battlefield Defenses Revamp benchmark exception: {ex.Message} [FAILED]");
+            failedCount++;
+        }
+
         sb.AppendLine("\n=================================================");
         sb.AppendLine($"BENCHMARK COMPLETE: {passedCount} PASSED | {failedCount} FAILED");
         sb.AppendLine("=================================================");

@@ -2,7 +2,10 @@ public enum FortDefenseType
 {
     ArrowSlits,
     BurningOil,
-    Spikes
+    Spikes,
+    Catapult,
+    Ballista,
+    NetThrower
 }
 
 public enum FortSocketType

@@ -52,6 +52,20 @@ public static class RunSession
     public static int CurrentRound => Mathf.Clamp((CurrentWave - 1) / 3 + 1, 1, 4);
 
     public static event Action<int> OnInRunGoldChanged;
+    public static int InRunSupply { get; set; } = 60;
+    public static event Action<int> OnInRunSupplyChanged;
+
+    [System.Serializable]
+    public class SavedDefenseData
+    {
+        public int plotIndex;
+        public FortDefenseType defenseType;
+        public int level;
+        public int currentSupply;
+        public int maxSupply;
+    }
+
+    public static readonly List<SavedDefenseData> SavedDefenses = new List<SavedDefenseData>();
 
     /// <summary>
     ///     Checks if a permanent meta-progression perk is owned in SaveData.
@@ -116,6 +130,10 @@ public static class RunSession
         // War Chest perk grants 75 starting gold
         InRunGold = HasMetaPerk("war_chest") ? 75 : 0;
         OnInRunGoldChanged?.Invoke(InRunGold);
+
+        InRunSupply = 60;
+        SavedDefenses.Clear();
+        OnInRunSupplyChanged?.Invoke(InRunSupply);
     }
 
     /// <summary>
@@ -235,6 +253,23 @@ public static class RunSession
 
         InRunGold -= amount;
         OnInRunGoldChanged?.Invoke(InRunGold);
+        return true;
+    }
+
+    public static void AddInRunSupply(int amount)
+    {
+        if (amount <= 0) return;
+        InRunSupply += amount;
+        OnInRunSupplyChanged?.Invoke(InRunSupply);
+    }
+
+    public static bool TrySpendInRunSupply(int amount)
+    {
+        if (amount <= 0) return true;
+        if (InRunSupply < amount) return false;
+
+        InRunSupply -= amount;
+        OnInRunSupplyChanged?.Invoke(InRunSupply);
         return true;
     }
 

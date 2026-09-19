@@ -88,6 +88,7 @@ public class GameLoopManager : MonoBehaviour
     public ISurvivorsObjective CurrentObjective => objectiveManager != null ? objectiveManager.CurrentObjective : currentObjective;
     public bool IsWaveActive => isWaveActive;
     public bool IsIntermission => isIntermission;
+    public bool IsPrepPhase => isIntermission || !isWaveActive;
     public float IntermissionTimeRemaining => intermissionTimeRemaining;
     public bool IsRestGateOpen => isRestGateOpen;
     public Transform CastleGateTransform => castleGateInteractable != null ? castleGateInteractable.transform : null;
@@ -212,6 +213,17 @@ public class GameLoopManager : MonoBehaviour
 
         // Roll gold drop into in-run purse
         RunSession.AddInRunGold(UnityEngine.Random.Range(2, 6));
+
+        // Defense Supply roll
+        int supplyDrop = UnityEngine.Random.value < 0.35f ? UnityEngine.Random.Range(1, 4) : 0;
+        if (enemyHealth != null && enemyHealth.MaxHealth >= 150f)
+        {
+            supplyDrop += UnityEngine.Random.Range(4, 8); // Brute / elite bonus supply
+        }
+        if (supplyDrop > 0)
+        {
+            RunSession.AddInRunSupply(supplyDrop);
+        }
 
         OnEnemyKilledEvent?.Invoke(enemyHealth);
         CheckWaveCompletionConditions();
@@ -433,6 +445,9 @@ public class GameLoopManager : MonoBehaviour
         // Decrement temporary buff durations from rest shop
         RunSession.OnWaveCompleted();
 
+        // Award wave clear defense supply
+        RunSession.AddInRunSupply(30);
+
         if (isRestWave)
         {
             isRestGateOpen = true;
@@ -560,13 +575,10 @@ public class GameLoopManager : MonoBehaviour
                 }
                 break;
             case BannerBountyType.FortressDraft:
-                rewardDesc = multiplier > 1 ? $"Fortress Upgrade Draft! ({multiplier}x)" : "Fortress Upgrade Draft!";
-                if (multiplier > 1) RunSession.DraftRerollsRemaining += (multiplier - 1);
-                if (SurvivorsCardSelectUI.Instance != null)
-                {
-                    isDraft = true;
-                    SurvivorsCardSelectUI.Instance.OpenDraft(DraftCategory.Fortress, onComplete);
-                }
+                int supplyBonus = 50 * multiplier;
+                rewardDesc = $"Supply Cache! (+{supplyBonus} Supply)";
+                RunSession.AddInRunSupply(supplyBonus);
+                onComplete?.Invoke();
                 break;
             case BannerBountyType.ElementDraft:
                 rewardDesc = multiplier > 1 ? $"Elemental Upgrade Draft! ({multiplier}x)" : "Elemental Upgrade Draft!";

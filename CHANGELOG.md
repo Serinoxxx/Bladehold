@@ -4,6 +4,12 @@
 
 ### New Features
 
+- Added battlefield defences system with static Tower Plots placed across the battlefield, allowing players to build defenses during preparation phases via an interactive Build Wheel
+- Added 6 upgradable defense types: Arrow Tower (rapid light piercing), Catapult (lobbed fire splash damage), Ballista (heavy line-piercing bolts), Net Thrower (area root and immobilization), Spike Trap (high damage impale triggers), and Oil Vat (boiling oil slowing and scalding)
+- Added dynamic assembly drop sequence where defenses drop from the sky piece-by-piece with holy light rays and wood impact slamming
+- Added Supply currency system used to construct, maintain, and upgrade battlefield structures; defenses consume supply as they fire and break if depleted
+- Added in-field resupply and tier upgrading mechanics on active defenses using Supply
+- Added HUD Supply currency counter in the top-left resource bar
 - Updated Bulwark with directional blocking allowing backstab strikes to bypass the shield and stagger, separated block animations onto an upper body layer for continuous locomotion, and added distinct full-body stagger flinch reactions
 - Added Bulwark enemy carrying a destructible physical shield that stops player melee attacks, mitigates projectile damage, and retaliates with a telegraphed counter-slam
 - Added Stop the Battering Ram objective where enemies push a siege ram toward the castle gate requiring the player to destroy it before it breaches the defenses
@@ -19,6 +25,8 @@
 ### Balance Changes
 
 ### General Changes
+- Removed fortress defense cards from the random draft pool in favor of dedicated static battlefield plots and the Build Wheel system
+- Replaced banner bounty fortress draft rewards with Supply Cache payouts
 - Removed deprecated class definitions and legacy skill tree data in favor of the unified Hero loadout and draft upgrade systems
 
 ## [0.1.20] - 2026-09-08
