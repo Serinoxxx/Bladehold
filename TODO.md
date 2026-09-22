@@ -1,5 +1,29 @@
 # Unity Editor Wiring TODOs
 
+## Battering Ram Improvements: AI Escort Pathing, Overhead Health Bar & Hit Feedbacks
+
+The AI pathing, overhead health bar (`MMHealthBar` + `HealthBarUI`), and multi-feedback hit reactions (`MMF_Player` with red mesh flicker, shield bash audio, and wood splinter particles) for the Battering Ram objective are implemented in C#:
+- **AI Escort & Pathing** (`Assets/Bladehold/Bladehold Scripts/Objectives/BatteringRam.cs`, `Assets/Bladehold/Bladehold Scripts/Objectives/StopBatteringRamObjective.cs`, `Assets/Bladehold/Bladehold Scripts/Enemies/AITargetSelector.cs`):
+  - Added `GetEscortTargetPosition(Vector3 fromPosition, int agentId)` providing lead formation coordinates 2.5–4.0m ahead with deterministic lateral spread.
+  - Resolved `IsDefendingGate()` in `AITargetSelector.cs` which previously caused all enemies to skip the ram and charge the gate directly.
+  - Added `TryGetRamEscortTarget()` so enemies escort and push the ram forward while maintaining peeling behavior when the player enters engagement range (8m).
+- **Overhead Health Bar & Hit Feedbacks** (`BatteringRam.cs`, `BatteringRamSetup.cs`, `BatteringRamTest.cs`):
+  - Configured `MMHealthBar` in drawn mode (`Size: (2.5, 0.35)`, billboarded, always visible) and `HealthBarUI`.
+  - Configured `MMF_Player` hit feedback containing red material flicker on mesh renderers (`_BaseColor`), shield bash SFX (`shield_hit_001.wav`), and wood splinter particles (`FX_Impact_Wood_01`).
+- **Automated Behavioral Tests** (`BatteringRamTest.cs`, `WeaponReachBenchmark.cs`):
+  - Section 18 added to `WeaponReachBenchmark.cs` asserting escort formation distance, pusher lateral spacing, and player damage vulnerability.
+
+### Wiring & Asset Checklist
+- [ ] In Unity Editor, execute the top menu item: `Bladehold > Setup Battering Ram Objective` (runs `BatteringRamSetup.Execute()`) to update and serialize `BatteringRam.prefab` with the `HealthBar` and `HitFeedback` child objects.
+- [ ] Execute `Bladehold > Run Battering Ram Integration Test` (runs `BatteringRamTest.RunIntegrationTest()`) to verify all prefab components, gate damage delivery, and destruction events pass.
+
+### Manual Verification
+- [ ] Play `Bladehold Survivors Scene.unity` and trigger the "Stop the Battering Ram" objective.
+- [ ] Observe that enemies spawn and path to lead and escort the Battering Ram toward the gate rather than rushing past it.
+- [ ] Observe the overhead health bar floating above the Battering Ram displaying remaining health.
+- [ ] Attack the Battering Ram with player weapons; verify red flash on meshes, shield bash sound effect, and wood splinter particles play upon impact.
+- [ ] Verify that approaching enemies within 8m causes them to engage the player, stalling the ram until enemies return to its proximity radius.
+
 ## Castle Campaign Part 1: Campaign Progression, Node Graph & Overview Map UI
 
 The core data structures, state management, UI controllers, and scene transition hooks for Part 1 of the Castle Campaign overhaul are implemented:

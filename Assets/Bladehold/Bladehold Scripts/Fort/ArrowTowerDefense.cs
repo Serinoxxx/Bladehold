@@ -13,6 +13,13 @@ public class ArrowTowerDefense : DefenseStructure
     [SerializeField] private GameObject arrowPrefab;
     [SerializeField] private Transform firePoint;
     [SerializeField] private AudioClip fireSfx;
+    [SerializeField] private LayerMask enemyLayers = ~0;
+
+    [Header("Prediction & Intercept")]
+    [Tooltip("Predicts enemy movement and shoots ahead to collide with moving targets.")]
+    [SerializeField] private bool leadTarget = true;
+    [Tooltip("Maximum future prediction time in seconds to avoid over-leading erratic targets.")]
+    [SerializeField] private float maxPredictionTime = 2.0f;
 
     private float nextFireTime = 0f;
 
@@ -21,6 +28,12 @@ public class ArrowTowerDefense : DefenseStructure
         defenseType = FortDefenseType.ArrowSlits;
         supplyPerAction = 1;
         base.Awake();
+
+        if (enemyLayers == ~0 || enemyLayers == 0)
+        {
+            int mask = LayerMask.GetMask("Enemy");
+            enemyLayers = mask != 0 ? mask : (1 << 7);
+        }
     }
 
     protected override void ApplyLevelStats(int level)
@@ -84,13 +97,18 @@ public class ArrowTowerDefense : DefenseStructure
 
     private void Update()
     {
-        if (Time.time < nextFireTime) return;
+        if (IsDepleted || currentSupply <= 0) return;
 
         Health target = FindClosestEnemy();
         if (target != null)
         {
-            ShootAt(target);
-            nextFireTime = Time.time + GetEffectiveFireInterval();
+            RotateTowardsTarget(target.transform.position);
+
+            if (Time.time >= nextFireTime)
+            {
+                ShootAt(target);
+                nextFireTime = Time.time + GetEffectiveFireInterval();
+            }
         }
     }
 
@@ -99,8 +117,21 @@ public class ArrowTowerDefense : DefenseStructure
         if (!ConsumeSupply()) return;
 
         Vector3 spawnPos = firePoint != null ? firePoint.position : transform.position + Vector3.up * 2.5f;
-        Vector3 targetPos = target.transform.position + Vector3.up * 0.8f;
-        Vector3 dir = (targetPos - spawnPos).normalized;
+        Vector3 targetCenter = ArrowSlitDefense.GetTargetAimPosition(target);
+        Vector3 aimPoint = targetCenter;
+
+        if (leadTarget)
+        {
+            Vector3 targetVelocity = ArrowSlitDefense.GetTargetVelocity(target);
+            if (ArrowSlitDefense.TryCalculateIntercept(spawnPos, arrowSpeed, targetCenter, targetVelocity, maxPredictionTime, out Vector3 predictedPoint))
+            {
+                aimPoint = predictedPoint;
+            }
+        }
+
+        aimPoint.y = Mathf.Max(aimPoint.y, target.transform.position.y + 0.3f);
+        Vector3 dir = (aimPoint - spawnPos).normalized;
+        if (dir == Vector3.zero) dir = transform.forward;
 
         bool isFrost = Player.Instance != null && Player.Instance.Stats != null && Player.Instance.Stats.GetValue(StatType.TowerFrostArrows) > 0f;
         bool isLightning = Player.Instance != null && Player.Instance.Stats != null && Player.Instance.Stats.GetValue(StatType.TowerLightningArrows) > 0f;
@@ -145,7 +176,14 @@ public class ArrowTowerDefense : DefenseStructure
 
     private Health FindClosestEnemy()
     {
-        Collider[] hits = Physics.OverlapSphere(transform.position, range);
+        int mask = enemyLayers.value;
+        if (mask == ~0 || mask == 0)
+        {
+            mask = LayerMask.GetMask("Enemy");
+            if (mask == 0) mask = 1 << 7;
+        }
+
+        Collider[] hits = Physics.OverlapSphere(transform.position, range, mask, QueryTriggerInteraction.Collide);
         Health bestTarget = null;
         float bestDistSqr = float.MaxValue;
 
@@ -154,7 +192,9 @@ public class ArrowTowerDefense : DefenseStructure
             if (hit == null) continue;
             Health h = hit.GetComponentInParent<Health>();
             if (h == null || h.IsDead) continue;
+            if (h.ImmuneToPlayerDamage) continue;
             if (Player.Instance != null && h.transform.root == Player.Instance.transform.root) continue;
+            if (h.GetComponentInParent<Gate>() != null) continue;
 
             float distSqr = (h.transform.position - transform.position).sqrMagnitude;
             if (distSqr < bestDistSqr)

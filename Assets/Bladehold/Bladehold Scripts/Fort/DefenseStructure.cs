@@ -19,11 +19,19 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
     [SerializeField] protected int maxSupply = 50;
     [SerializeField] protected int supplyPerAction = 2;
 
+    [Header("Targeting & Rotation")]
+    [Tooltip("When true, the tower rotates horizontally to face its current target.")]
+    [SerializeField] protected bool rotateToTarget = false;
+    [Tooltip("Speed in degrees per second at which the tower rotates towards the target.")]
+    [SerializeField] protected float rotationSpeed = 160f;
+
     [Header("Audio & Feedback")]
     [SerializeField] protected AudioClip repairSfx;
     [SerializeField] protected AudioClip upgradeSfx;
     [SerializeField] protected AudioClip breakSfx;
     [SerializeField] protected GameObject breakVfxPrefab;
+    [SerializeField] protected DamageNumbersPro.DamageNumber supplyPopupPrefab;
+    [SerializeField] protected float interactionRadius = 3.5f;
 
     public FortDefenseType DefenseType => defenseType;
     public int Level => currentLevel;
@@ -31,6 +39,20 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
     public int CurrentSupply => currentSupply;
     public int MaxSupply => maxSupply;
     public int SupplyPerAction => supplyPerAction;
+    public bool IsDepleted => currentSupply <= 0;
+    public bool RotateToTarget
+    {
+        get => rotateToTarget;
+        set => rotateToTarget = value;
+    }
+    public float RotationSpeed
+    {
+        get => rotationSpeed;
+        set => rotationSpeed = value;
+    }
+
+    private static readonly System.Collections.Generic.List<DefenseStructure> allActive = new System.Collections.Generic.List<DefenseStructure>();
+    public static System.Collections.Generic.IReadOnlyList<DefenseStructure> AllActive => allActive;
 
     public TowerPlot OwnerPlot { get; set; }
     public int PlotIndex { get; set; } = -1;
@@ -38,6 +60,7 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
     public string PromptText { get; protected set; } = "Interact";
     public virtual bool CanInteract => true;
     public Vector3 InteractionPosition => transform.position;
+    public virtual float InteractionRadius => interactionRadius;
 
     public event Action<int, int> OnSupplyChanged; // current, max
     public event Action<int> OnLevelChanged; // newLevel
@@ -47,17 +70,54 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
         UpdatePrompt();
     }
 
+    protected virtual void OnEnable()
+    {
+        if (!allActive.Contains(this))
+        {
+            allActive.Add(this);
+        }
+        InteractableRegistry.Register(this);
+    }
+
+    protected virtual void OnDisable()
+    {
+        allActive.Remove(this);
+        InteractableRegistry.Unregister(this);
+    }
+
     protected virtual void Start()
     {
+        ResolveFallbacks();
+        if (maxSupply <= 0) maxSupply = CalculateMaxSupplyForLevel(currentLevel);
+        if (currentSupply <= 0) currentSupply = maxSupply;
         UpdatePrompt();
         OnSupplyChanged?.Invoke(currentSupply, maxSupply);
+    }
+
+    private void ResolveFallbacks()
+    {
+#if UNITY_EDITOR
+        if (supplyPopupPrefab == null)
+        {
+            var goldGo = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Third Party/DamageNumbersPro/Demo/Prefabs/3D/Gold.prefab");
+            if (goldGo != null) supplyPopupPrefab = goldGo.GetComponent<DamageNumbersPro.DamageNumber>();
+        }
+        if (repairSfx == null)
+        {
+            repairSfx = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Impacts/HAMMER_Hit_Wood_Shield_stereo.wav");
+        }
+        if (breakVfxPrefab == null)
+        {
+            breakVfxPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Synty/PolygonParticleFX/Prefabs/FX_Impact_Wood_01.prefab");
+        }
+#endif
     }
 
     public virtual void InitState(int level, int supply, int maxSup)
     {
         currentLevel = Mathf.Clamp(level, 1, maxLevel);
         maxSupply = maxSup > 0 ? maxSup : CalculateMaxSupplyForLevel(currentLevel);
-        currentSupply = Mathf.Clamp(supply, 0, maxSupply);
+        currentSupply = supply >= 0 ? Mathf.Clamp(supply, 0, maxSupply) : maxSupply;
         ApplyLevelStats(currentLevel);
         UpdatePrompt();
         OnSupplyChanged?.Invoke(currentSupply, maxSupply);
@@ -96,6 +156,11 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
 
     public virtual bool ConsumeSupply(int amount = -1)
     {
+        if (currentSupply <= 0)
+        {
+            return false;
+        }
+
         int cost = amount > 0 ? amount : supplyPerAction;
         currentSupply = Mathf.Max(0, currentSupply - cost);
         OnSupplyChanged?.Invoke(currentSupply, maxSupply);
@@ -112,7 +177,7 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
 
     protected virtual void OnSupplyDepleted()
     {
-        Debug.Log($"[DefenseStructure] {defenseType} ran out of Supply and broke!");
+        Debug.Log($"[DefenseStructure] {defenseType} ran out of Supply and stopped firing!");
 
         if (breakSfx != null)
         {
@@ -123,13 +188,6 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
         {
             Instantiate(breakVfxPrefab, transform.position, Quaternion.identity);
         }
-
-        if (OwnerPlot != null)
-        {
-            OwnerPlot.OnDefenseDestroyed(this);
-        }
-
-        Destroy(gameObject);
     }
 
     public virtual void Interact(Player player)
@@ -148,6 +206,18 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
                 {
                     AudioSource.PlayClipAtPoint(repairSfx, transform.position);
                 }
+
+                if (breakVfxPrefab != null)
+                {
+                    GameObject vfx = Instantiate(breakVfxPrefab, transform.position + Vector3.up * 0.8f, Quaternion.identity);
+                    Destroy(vfx, 2.5f);
+                }
+
+                if (supplyPopupPrefab != null)
+                {
+                    supplyPopupPrefab.Spawn(transform.position + Vector3.up * 2.2f, $"-{toProvide} Supply");
+                }
+
                 UpdatePrompt();
                 OnSupplyChanged?.Invoke(currentSupply, maxSupply);
                 Debug.Log($"[DefenseStructure] Resupplied {toProvide} Supply. Current: {currentSupply}/{maxSupply}");
@@ -160,6 +230,17 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
             if (RunSession.InRunSupply >= upgradeCost && RunSession.TrySpendInRunSupply(upgradeCost))
             {
                 Upgrade();
+
+                if (breakVfxPrefab != null)
+                {
+                    GameObject vfx = Instantiate(breakVfxPrefab, transform.position + Vector3.up * 1.0f, Quaternion.identity);
+                    Destroy(vfx, 2.5f);
+                }
+
+                if (supplyPopupPrefab != null)
+                {
+                    supplyPopupPrefab.Spawn(transform.position + Vector3.up * 2.5f, $"-{upgradeCost} Supply");
+                }
             }
             else
             {
@@ -180,7 +261,11 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
 
     public virtual void UpdatePrompt()
     {
-        if (currentSupply < maxSupply)
+        if (currentSupply <= 0)
+        {
+            PromptText = $"[NO SUPPLY] Resupply ({maxSupply} Supply)";
+        }
+        else if (currentSupply < maxSupply)
         {
             int cost = maxSupply - currentSupply;
             PromptText = $"Resupply ({cost} Supply)";
@@ -193,6 +278,19 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
         else
         {
             PromptText = $"Lv {currentLevel} Max";
+        }
+    }
+
+    public virtual void RotateTowardsTarget(Vector3 worldTargetPos, float speedMultiplier = 1f)
+    {
+        if (!rotateToTarget) return;
+
+        Vector3 toTarget = worldTargetPos - transform.position;
+        toTarget.y = 0f;
+        if (toTarget.sqrMagnitude > 0.01f)
+        {
+            Quaternion targetRot = Quaternion.LookRotation(toTarget.normalized, Vector3.up);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, rotationSpeed * speedMultiplier * Time.deltaTime);
         }
     }
 

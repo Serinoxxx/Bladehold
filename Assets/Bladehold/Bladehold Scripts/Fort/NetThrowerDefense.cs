@@ -11,17 +11,70 @@ public class NetThrowerDefense : DefenseStructure
     [SerializeField] private float fireInterval = 4.5f;
     [SerializeField] private float netRadius = 4.0f;
     [SerializeField] private float rootDuration = 3.5f;
+    [SerializeField] private GameObject netProjectilePrefab;
+    [SerializeField] private Transform launchPoint;
     [SerializeField] private GameObject netVfxPrefab;
     [SerializeField] private AudioClip fireSfx;
     [SerializeField] private AudioClip netImpactSfx;
+    [SerializeField] private LayerMask enemyLayers = ~0;
+
+    [Header("Aim & Animation")]
+    [SerializeField] private float windUpDuration = 0.35f;
 
     private float nextFireTime = 0f;
+    private bool isFiring = false;
+    private Transform barrelTransform;
+    private Quaternion barrelInitialLocalRot;
+    private Vector3 barrelInitialLocalPos;
 
     protected override void Awake()
     {
         defenseType = FortDefenseType.NetThrower;
         supplyPerAction = 3;
+        rotateToTarget = true;
+        rotationSpeed = 140f;
         base.Awake();
+
+        if (enemyLayers == ~0 || enemyLayers == 0)
+        {
+            int mask = LayerMask.GetMask("Enemy");
+            enemyLayers = mask != 0 ? mask : (1 << 7);
+        }
+
+        CacheBarrel();
+        ResolveFallbacks();
+    }
+
+    private void ResolveFallbacks()
+    {
+#if UNITY_EDITOR
+        if (netProjectilePrefab == null)
+        {
+            netProjectilePrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/Defenses/NetProjectile.prefab");
+        }
+        if (fireSfx == null)
+        {
+            fireSfx = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Bow/Arrow_Shot_1.wav");
+        }
+        if (netImpactSfx == null)
+        {
+            netImpactSfx = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Impacts/Generic Wood Item Break A.wav");
+        }
+#endif
+    }
+
+    private void CacheBarrel()
+    {
+        foreach (Transform child in GetComponentsInChildren<Transform>(true))
+        {
+            if (child.name.Contains("Barrel"))
+            {
+                barrelTransform = child;
+                barrelInitialLocalRot = child.localRotation;
+                barrelInitialLocalPos = child.localPosition;
+                break;
+            }
+        }
     }
 
     protected override void ApplyLevelStats(int level)
@@ -48,25 +101,116 @@ public class NetThrowerDefense : DefenseStructure
 
     private void Update()
     {
-        if (Time.time < nextFireTime) return;
+        if (IsDepleted || currentSupply <= 0) return;
 
         Health target = FindUnrootedEnemy();
         if (target != null)
         {
-            LaunchNetAt(target.transform.position);
-            nextFireTime = Time.time + fireInterval;
+            RotateTowardsTarget(target.transform.position);
+
+            if (!isFiring && Time.time >= nextFireTime)
+            {
+                StartCoroutine(FireSequenceRoutine(target));
+            }
         }
+    }
+
+    private System.Collections.IEnumerator FireSequenceRoutine(Health target)
+    {
+        isFiring = true;
+
+        // 1. Wind-up anticipation: barrel compresses back / charges
+        float elapsed = 0f;
+        while (elapsed < windUpDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / windUpDuration);
+
+            // Keep facing moving target while winding up
+            if (target != null && !target.IsDead)
+            {
+                Vector3 toTarget = target.transform.position - transform.position;
+                toTarget.y = 0f;
+                if (toTarget.sqrMagnitude > 0.01f)
+                {
+                    Quaternion targetRot = Quaternion.LookRotation(toTarget.normalized, Vector3.up);
+                    transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, rotationSpeed * 1.5f * Time.deltaTime);
+                }
+            }
+
+            if (barrelTransform != null)
+            {
+                barrelTransform.localRotation = barrelInitialLocalRot * Quaternion.Euler(20f * t, 0f, 0f);
+                barrelTransform.localPosition = barrelInitialLocalPos - Vector3.up * (0.12f * t);
+            }
+
+            yield return null;
+        }
+
+        // 2. Launch net at target position with recoil kick
+        if (target != null && !target.IsDead && ConsumeSupply())
+        {
+            if (barrelTransform != null)
+            {
+                barrelTransform.localRotation = barrelInitialLocalRot * Quaternion.Euler(-25f, 0f, 0f);
+                barrelTransform.localPosition = barrelInitialLocalPos + Vector3.up * 0.08f;
+            }
+
+            LaunchNetAt(target.transform.position);
+        }
+
+        // 3. Settle back to resting pose
+        float recoverDuration = 0.22f;
+        elapsed = 0f;
+        while (elapsed < recoverDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / recoverDuration);
+            if (barrelTransform != null)
+            {
+                barrelTransform.localRotation = Quaternion.Slerp(barrelInitialLocalRot * Quaternion.Euler(-25f, 0f, 0f), barrelInitialLocalRot, t);
+                barrelTransform.localPosition = Vector3.Lerp(barrelInitialLocalPos + Vector3.up * 0.08f, barrelInitialLocalPos, t);
+            }
+            yield return null;
+        }
+
+        if (barrelTransform != null)
+        {
+            barrelTransform.localRotation = barrelInitialLocalRot;
+            barrelTransform.localPosition = barrelInitialLocalPos;
+        }
+
+        isFiring = false;
+        nextFireTime = Time.time + fireInterval;
     }
 
     private void LaunchNetAt(Vector3 targetPos)
     {
-        if (!ConsumeSupply()) return;
+        Vector3 spawnPos = launchPoint != null ? launchPoint.position
+            : (barrelTransform != null ? barrelTransform.position + barrelTransform.forward * 0.75f : transform.position + Vector3.up * 1.5f);
 
         if (fireSfx != null)
         {
-            AudioSource.PlayClipAtPoint(fireSfx, transform.position);
+            AudioSource.PlayClipAtPoint(fireSfx, spawnPos);
         }
 
+        if (netProjectilePrefab != null)
+        {
+            GameObject projObj = Instantiate(netProjectilePrefab, spawnPos, Quaternion.identity);
+            NetProjectile proj = projObj.GetComponent<NetProjectile>();
+            if (proj != null)
+            {
+                proj.Launch(spawnPos, targetPos, 0.65f, (hitPos) => ApplyNetImpact(hitPos));
+                return;
+            }
+        }
+
+        // Fallback instant impact if projectile prefab not present
+        ApplyNetImpact(targetPos);
+    }
+
+    public void ApplyNetImpact(Vector3 targetPos)
+    {
         if (netImpactSfx != null)
         {
             AudioSource.PlayClipAtPoint(netImpactSfx, targetPos);
@@ -111,7 +255,14 @@ public class NetThrowerDefense : DefenseStructure
 
     private Health FindUnrootedEnemy()
     {
-        Collider[] hits = Physics.OverlapSphere(transform.position, range);
+        int mask = enemyLayers.value;
+        if (mask == ~0 || mask == 0)
+        {
+            mask = LayerMask.GetMask("Enemy");
+            if (mask == 0) mask = 1 << 7;
+        }
+
+        Collider[] hits = Physics.OverlapSphere(transform.position, range, mask, QueryTriggerInteraction.Collide);
         Health bestTarget = null;
         float closestDistSqr = float.MaxValue;
 
@@ -120,7 +271,9 @@ public class NetThrowerDefense : DefenseStructure
             if (hit == null) continue;
             Health h = hit.GetComponentInParent<Health>();
             if (h == null || h.IsDead) continue;
+            if (h.ImmuneToPlayerDamage) continue;
             if (Player.Instance != null && h.transform.root == Player.Instance.transform.root) continue;
+            if (h.GetComponentInParent<Gate>() != null) continue;
 
             NetRootStatus existingRoot = h.GetComponent<NetRootStatus>();
             if (existingRoot != null && existingRoot.IsRooted) continue; // Skip already rooted enemies

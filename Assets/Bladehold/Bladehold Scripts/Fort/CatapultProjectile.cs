@@ -77,7 +77,8 @@ public class CatapultProjectile : MonoBehaviour
         // Visual and Sound effects
         if (explosionVfxPrefab != null)
         {
-            Instantiate(explosionVfxPrefab, impactPos, Quaternion.identity);
+            GameObject vfx = Instantiate(explosionVfxPrefab, impactPos, Quaternion.identity);
+            Destroy(vfx, 4.0f);
         }
         else if (ElementalEffectsManager.Instance != null && ElementalEffectsManager.Instance.fireStatusVfx != null)
         {
@@ -88,6 +89,8 @@ public class CatapultProjectile : MonoBehaviour
         {
             AudioSource.PlayClipAtPoint(explosionSfx, impactPos);
         }
+
+        MoreMountains.Feedbacks.MMCameraShakeEvent.Trigger(0.32f, 0.45f, 35f, 0.35f, 0.35f, 0.35f);
 
         // Damage & Ignite in splash radius
         Collider[] hits = Physics.OverlapSphere(impactPos, splashRadius);

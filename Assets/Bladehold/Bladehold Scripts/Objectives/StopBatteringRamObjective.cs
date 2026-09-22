@@ -47,6 +47,7 @@ public class StopBatteringRamObjective : MonoBehaviour, ISurvivorsObjective
     public string ObjectiveId => objectiveId;
     public string Title => title;
     public string Description => description;
+    public BatteringRam CurrentRam => currentRam;
 
     public string ProgressText
     {
@@ -192,7 +193,7 @@ public class StopBatteringRamObjective : MonoBehaviour, ISurvivorsObjective
     {
         if (isActive && !isComplete && currentRam != null && !currentRam.IsDestroyed)
         {
-            return currentRam.transform.position;
+            return currentRam.GetEscortTargetPosition(searchFromPosition);
         }
         return null;
     }

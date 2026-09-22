@@ -476,10 +476,14 @@ MonoBehaviour:
   currentSupply: 50
   maxSupply: 50
   supplyPerAction: 2
+  rotateToTarget: 0
+  rotationSpeed: 160
   repairSfx: {fileID: 8300000, guid: 7c0d04dc6db69374e83216718d12c785, type: 3}
   upgradeSfx: {fileID: 8300000, guid: 2eb2b26c140f51f43b51e8413af8b9b7, type: 3}
   breakSfx: {fileID: 8300000, guid: 97a7660e1c5b7564eb36da5458270186, type: 3}
   breakVfxPrefab: {fileID: 0}
+  supplyPopupPrefab: {fileID: 5445448510257546009, guid: 0c337af341cc6e840986619c86ca00fb, type: 3}
+  interactionRadius: 3.5
   minRange: 6
   maxRange: 24
   fireInterval: 3.8
@@ -488,6 +492,10 @@ MonoBehaviour:
   projectilePrefab: {fileID: 3244241999456470636, guid: b08de3dc4888549498796441d4a4afa9, type: 3}
   launchPoint: {fileID: 0}
   fireSfx: {fileID: 0}
+  enemyLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  windUpDuration: 0.45
 --- !u!1 &6998671811205014725
 GameObject:
   m_ObjectHideFlags: 0

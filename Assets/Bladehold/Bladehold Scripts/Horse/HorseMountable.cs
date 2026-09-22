@@ -8,10 +8,22 @@ public class HorseMountable : MonoBehaviour, IInteractable
 {
     [SerializeField] private Health health;
     [SerializeField] private HorseMotor horseMotor;
+    [SerializeField] private float interactionRadius = 3.5f;
 
     public string PromptText => "Mount Horse";
     public bool CanInteract => !IsOccupied && health != null && !health.IsDead;
     public Vector3 InteractionPosition => transform.position;
+    public float InteractionRadius => interactionRadius;
+
+    private void OnEnable()
+    {
+        InteractableRegistry.Register(this);
+    }
+
+    private void OnDisable()
+    {
+        InteractableRegistry.Unregister(this);
+    }
 
     /// <summary>True while anyone (knight or player) sits in the saddle; the trigger ignores the player until it clears.</summary>
     public bool IsOccupied { get; private set; }

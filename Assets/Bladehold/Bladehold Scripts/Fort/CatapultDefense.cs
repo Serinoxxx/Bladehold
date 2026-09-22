@@ -15,14 +15,44 @@ public class CatapultDefense : DefenseStructure
     [SerializeField] private GameObject projectilePrefab;
     [SerializeField] private Transform launchPoint;
     [SerializeField] private AudioClip fireSfx;
+    [SerializeField] private LayerMask enemyLayers = ~0;
+
+    [Header("Aim & Animation")]
+    [SerializeField] private float windUpDuration = 0.45f;
 
     private float nextFireTime = 0f;
+    private bool isFiring = false;
+    private Transform armTransform;
+    private Quaternion armInitialLocalRot;
 
     protected override void Awake()
     {
         defenseType = FortDefenseType.Catapult;
         supplyPerAction = 3;
+        rotateToTarget = true;
+        rotationSpeed = 120f;
         base.Awake();
+
+        if (enemyLayers == ~0 || enemyLayers == 0)
+        {
+            int mask = LayerMask.GetMask("Enemy");
+            enemyLayers = mask != 0 ? mask : (1 << 7);
+        }
+
+        CacheArm();
+    }
+
+    private void CacheArm()
+    {
+        foreach (Transform child in GetComponentsInChildren<Transform>(true))
+        {
+            if (child.name.Contains("Arm"))
+            {
+                armTransform = child;
+                armInitialLocalRot = child.localRotation;
+                break;
+            }
+        }
     }
 
     protected override void ApplyLevelStats(int level)
@@ -49,19 +79,94 @@ public class CatapultDefense : DefenseStructure
 
     private void Update()
     {
-        if (Time.time < nextFireTime) return;
+        if (IsDepleted || currentSupply <= 0) return;
 
         Vector3 targetPoint = FindTargetPoint();
         if (targetPoint != Vector3.zero)
         {
-            FireCatapult(targetPoint);
-            nextFireTime = Time.time + fireInterval;
+            RotateTowardsTarget(targetPoint);
+
+            if (!isFiring && Time.time >= nextFireTime)
+            {
+                StartCoroutine(FireSequenceRoutine(targetPoint));
+            }
         }
     }
 
-    private void FireCatapult(Vector3 targetPos)
+    private System.Collections.IEnumerator FireSequenceRoutine(Vector3 targetPos)
     {
-        if (!ConsumeSupply()) return;
+        isFiring = true;
+
+        // 1. Wind-up anticipation: Crank arm backward
+        float elapsed = 0f;
+        while (elapsed < windUpDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / windUpDuration);
+
+            // Rotate toward target while winding up
+            Vector3 toTarget = targetPos - transform.position;
+            toTarget.y = 0f;
+            if (toTarget.sqrMagnitude > 0.01f)
+            {
+                Quaternion targetRot = Quaternion.LookRotation(toTarget.normalized, Vector3.up);
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, rotationSpeed * 1.5f * Time.deltaTime);
+            }
+
+            if (armTransform != null)
+            {
+                // Crank backward ~35 degrees
+                armTransform.localRotation = armInitialLocalRot * Quaternion.Euler(-35f * t, 0f, 0f);
+            }
+
+            yield return null;
+        }
+
+        // 2. Rapid forward swing and launch
+        float swingDuration = 0.14f;
+        elapsed = 0f;
+        while (elapsed < swingDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / swingDuration);
+            if (armTransform != null)
+            {
+                // Swing vigorously forward to +40 degrees
+                float angle = Mathf.Lerp(-35f, 40f, t * t);
+                armTransform.localRotation = armInitialLocalRot * Quaternion.Euler(angle, 0f, 0f);
+            }
+            yield return null;
+        }
+
+        // Fire at the apex of swing
+        if (ConsumeSupply())
+        {
+            ExecuteFire(targetPos);
+        }
+
+        // 3. Smooth recovery back to resting pose
+        float recoverDuration = 0.28f;
+        elapsed = 0f;
+        while (elapsed < recoverDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / recoverDuration);
+            if (armTransform != null)
+            {
+                float angle = Mathf.Lerp(40f, 0f, t);
+                armTransform.localRotation = armInitialLocalRot * Quaternion.Euler(angle, 0f, 0f);
+            }
+            yield return null;
+        }
+
+        if (armTransform != null) armTransform.localRotation = armInitialLocalRot;
+
+        isFiring = false;
+        nextFireTime = Time.time + fireInterval;
+    }
+
+    private void ExecuteFire(Vector3 targetPos)
+    {
 
         Vector3 spawnPos = launchPoint != null ? launchPoint.position : transform.position + Vector3.up * 2f;
 
@@ -127,7 +232,14 @@ public class CatapultDefense : DefenseStructure
 
     private Vector3 FindTargetPoint()
     {
-        Collider[] hits = Physics.OverlapSphere(transform.position, maxRange);
+        int mask = enemyLayers.value;
+        if (mask == ~0 || mask == 0)
+        {
+            mask = LayerMask.GetMask("Enemy");
+            if (mask == 0) mask = 1 << 7;
+        }
+
+        Collider[] hits = Physics.OverlapSphere(transform.position, maxRange, mask, QueryTriggerInteraction.Collide);
         List<Health> enemiesInRange = new List<Health>();
 
         foreach (Collider hit in hits)
@@ -135,7 +247,9 @@ public class CatapultDefense : DefenseStructure
             if (hit == null) continue;
             Health h = hit.GetComponentInParent<Health>();
             if (h == null || h.IsDead || enemiesInRange.Contains(h)) continue;
+            if (h.ImmuneToPlayerDamage) continue;
             if (Player.Instance != null && h.transform.root == Player.Instance.transform.root) continue;
+            if (h.GetComponentInParent<Gate>() != null) continue;
 
             float dist = Vector3.Distance(transform.position, h.transform.position);
             if (dist >= minRange && dist <= maxRange)

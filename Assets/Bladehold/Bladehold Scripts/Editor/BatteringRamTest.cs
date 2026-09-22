@@ -105,7 +105,33 @@ public static class BatteringRamTest
             return;
         }
 
-        Debug.Log("[BatteringRamTest] Prefab verification PASSED!");
+        MMF_Player hitMmf = ramSo.FindProperty("hitFeedback").objectReferenceValue as MMF_Player;
+        if (hitMmf == null)
+        {
+            Debug.LogError("[BatteringRamTest] FAILED: hitFeedback (MMF_Player) is null!");
+            return;
+        }
+        if (hitMmf.FeedbacksList == null || hitMmf.FeedbacksList.Count < 3)
+        {
+            Debug.LogError($"[BatteringRamTest] FAILED: hitFeedback should have at least 3 feedbacks (flicker, sfx, splinters), found {hitMmf.FeedbacksList?.Count ?? 0}!");
+            return;
+        }
+
+        HealthBarUI healthBarUI = prefab.GetComponentInChildren<HealthBarUI>();
+        if (healthBarUI == null)
+        {
+            Debug.LogError("[BatteringRamTest] FAILED: HealthBarUI is missing on prefab!");
+            return;
+        }
+
+        MoreMountains.Tools.MMHealthBar mmHealthBar = prefab.GetComponentInChildren<MoreMountains.Tools.MMHealthBar>();
+        if (mmHealthBar == null)
+        {
+            Debug.LogError("[BatteringRamTest] FAILED: MMHealthBar is missing on prefab!");
+            return;
+        }
+
+        Debug.Log("[BatteringRamTest] Prefab verification (including HealthBar and HitFeedback) PASSED!");
 
         // 2. Functional Verification: instantiate in memory and test gate damage delivery
         GameObject testGo = Object.Instantiate(prefab, Vector3.zero, Quaternion.identity);
@@ -143,6 +169,18 @@ public static class BatteringRamTest
             {
                 Debug.LogError($"[BatteringRamTest] FAILED: Expected 50 damage to gate, but dealt {damageDealt}!");
             }
+        }
+
+        // Test escort target position computation
+        Vector3 escortPos = liveRam.GetEscortTargetPosition(testGo.transform.position + Vector3.back * 5f, 42);
+        float distToRam = Vector3.Distance(escortPos, testGo.transform.position);
+        if (distToRam >= 2.0f && distToRam <= 5.5f)
+        {
+            Debug.Log($"[BatteringRamTest] Escort target test PASSED: lead escort point is {distToRam:F2}m ahead (within pushRadius)!");
+        }
+        else
+        {
+            Debug.LogError($"[BatteringRamTest] FAILED: Escort target distance {distToRam:F2}m out of expected bounds (2.0 - 5.5m)!");
         }
 
         // Test destruction event

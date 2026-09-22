@@ -10,6 +10,7 @@ public class TowerPlot : MonoBehaviour, IInteractable
 {
     [Header("Plot Settings")]
     [SerializeField] private int plotIndex = 0;
+    [SerializeField] private float interactionRadius = 4.0f;
     [SerializeField] private Transform buildAnchor;
     [SerializeField] private GameObject holyLightVfxPrefab;
     [SerializeField] private AudioClip woodImpactSfx;
@@ -34,6 +35,7 @@ public class TowerPlot : MonoBehaviour, IInteractable
 
     public Vector3 BuildPosition => buildAnchor != null ? buildAnchor.position : transform.position;
     public Vector3 InteractionPosition => BuildPosition;
+    public float InteractionRadius => interactionRadius > 0f ? interactionRadius : 4.5f;
 
     public string PromptText
     {
@@ -66,6 +68,16 @@ public class TowerPlot : MonoBehaviour, IInteractable
         if (buildAnchor == null) buildAnchor = transform;
     }
 
+    private void OnEnable()
+    {
+        InteractableRegistry.Register(this);
+    }
+
+    private void OnDisable()
+    {
+        InteractableRegistry.Unregister(this);
+    }
+
     private void Start()
     {
         if (TowerPlotManager.Instance != null)
@@ -86,9 +98,10 @@ public class TowerPlot : MonoBehaviour, IInteractable
     {
         if (!CanInteract) return;
 
-        if (BuildWheelUI.Instance != null)
+        BuildWheelUI wheel = BuildWheelUI.Instance ?? FindAnyObjectByType<BuildWheelUI>(FindObjectsInactive.Include);
+        if (wheel != null)
         {
-            BuildWheelUI.Instance.Open(this);
+            wheel.Open(this);
         }
         else
         {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Synty.AnimationBaseLocomotion.Samples.InputSystem;
 using TMPro;
 using UnityEngine;
@@ -116,11 +117,11 @@ public class PlayerInteraction : MonoBehaviour
         float bestDistanceSqr = maxInteractionDistance * maxInteractionDistance;
         Vector3 playerPos = PlayerPosition;
 
-        // Query all active Interactable components in the scene
-        Interactable[] interactables = FindObjectsByType<Interactable>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-        for (int i = 0; i < interactables.Length; i++)
+        InteractableRegistry.CleanUp();
+        IReadOnlyList<IInteractable> interactables = InteractableRegistry.Active;
+        for (int i = 0; i < interactables.Count; i++)
         {
-            Interactable candidate = interactables[i];
+            IInteractable candidate = interactables[i];
             if (candidate == null || !candidate.CanInteract) continue;
 
             float maxDist = Mathf.Min(candidate.InteractionRadius, maxInteractionDistance);
@@ -137,11 +138,29 @@ public class PlayerInteraction : MonoBehaviour
             currentTarget = bestTarget;
             if (currentTarget != null)
             {
-                ShowPrompt($"[E] {currentTarget.PromptText}");
+                string prompt = currentTarget.PromptText;
+                ShowPrompt(prompt.StartsWith("[") ? prompt : $"[E] {prompt}");
             }
             else
             {
                 HidePrompt();
+            }
+        }
+        else if (currentTarget != null)
+        {
+            if (!currentTarget.CanInteract)
+            {
+                currentTarget = null;
+                HidePrompt();
+            }
+            else
+            {
+                string prompt = currentTarget.PromptText;
+                string formatted = prompt.StartsWith("[") ? prompt : $"[E] {prompt}";
+                if (promptLabel != null && promptLabel.text != formatted)
+                {
+                    ShowPrompt(formatted);
+                }
             }
         }
     }

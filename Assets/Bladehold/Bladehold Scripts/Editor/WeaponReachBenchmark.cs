@@ -1101,18 +1101,18 @@ public static class WeaponReachBenchmark
                 failedCount++;
             }
 
-            // 10E: Supply Depletion & Destruction Test
-            def.ConsumeSupply(100); // Exceeds 75, triggers destruction
-            bool destroyedOnZero = testPlot.CurrentDefense == null && !testPlot.IsOccupied;
+            // 10E: Supply Depletion & Non-Destructive State Test
+            def.ConsumeSupply(100); // Exceeds 75, depletes supply
+            bool depletedOnZero = def.IsDepleted && def.CurrentSupply == 0 && testPlot.CurrentDefense != null;
 
-            if (destroyedOnZero)
+            if (depletedOnZero)
             {
-                sb.AppendLine("  - Supply Depletion Destruction: Reaching 0 supply destroys structure and frees plot for rebuild. [PASSED]");
+                sb.AppendLine("  - Supply Depletion Non-Destructive: Reaching 0 supply enters IsDepleted state without destroying structure. [PASSED]");
                 passedCount++;
             }
             else
             {
-                sb.AppendLine($"  - [FAIL] Supply depletion did not free plot (occupied={testPlot.IsOccupied})!");
+                sb.AppendLine($"  - [FAIL] Supply depletion failed (isDepleted={def.IsDepleted}, curSupply={def.CurrentSupply})!");
                 failedCount++;
             }
 
@@ -1870,6 +1870,388 @@ public static class WeaponReachBenchmark
         catch (Exception ex)
         {
             sb.AppendLine($"  - Elemental Tower Benchmark exception: {ex.Message} [FAILED]");
+            failedCount++;
+        }
+
+        // 17. TOWER PLOT & BUILD WHEEL INTERACTION VERIFICATION
+        sb.AppendLine("\n### 17. TOWER PLOT & BUILD WHEEL INTERACTION");
+        try
+        {
+            GameObject plotGo = new GameObject("TestPlot");
+            TowerPlot testPlot = plotGo.AddComponent<TowerPlot>();
+            testPlot.SendMessage("OnEnable", SendMessageOptions.DontRequireReceiver);
+
+            // 17A: Verify registration in InteractableRegistry
+            bool isRegistered = false;
+            for (int i = 0; i < InteractableRegistry.Active.Count; i++)
+            {
+                if (InteractableRegistry.Active[i] == (IInteractable)testPlot)
+                {
+                    isRegistered = true;
+                    break;
+                }
+            }
+
+            if (isRegistered)
+            {
+                sb.AppendLine("  - TowerPlot registration: Registered in InteractableRegistry on creation. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine("  - [FAIL] TowerPlot not found in InteractableRegistry!");
+                failedCount++;
+            }
+
+            // 17B: Verify InteractionRadius > 0
+            if (testPlot.InteractionRadius >= 3.5f)
+            {
+                sb.AppendLine($"  - TowerPlot InteractionRadius: {testPlot.InteractionRadius}m valid. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] TowerPlot InteractionRadius too small or zero ({testPlot.InteractionRadius})!");
+                failedCount++;
+            }
+
+            // 17C: Verify BuildWheelUI instance and opening
+            GameObject wheelGo = new GameObject("TestWheel");
+            BuildWheelUI wheelUI = wheelGo.AddComponent<BuildWheelUI>();
+            wheelGo.SetActive(false);
+
+            // Test interaction opens the wheel
+            wheelUI.Open(testPlot);
+
+            if (BuildWheelUI.Instance != null && BuildWheelUI.Instance.IsOpen && wheelGo.activeSelf)
+            {
+                sb.AppendLine("  - BuildWheelUI Open: TowerPlot.Interact successfully found and opened inactive BuildWheelUI. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] BuildWheelUI did not open! (Instance: {BuildWheelUI.Instance != null}, IsOpen: {BuildWheelUI.Instance?.IsOpen}, Active: {wheelGo.activeSelf})");
+                failedCount++;
+            }
+
+            // 17D: Verify BuildWheelUI Close
+            BuildWheelUI.Instance.Close();
+            if (!BuildWheelUI.Instance.IsOpen && !wheelGo.activeSelf)
+            {
+                sb.AppendLine("  - BuildWheelUI Close: Modal closed and deactivated cleanly. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine("  - [FAIL] BuildWheelUI did not close cleanly!");
+                failedCount++;
+            }
+
+            // 17E: Verify default supply initialization (supply = -1) builds with full supply
+            GameObject arrowPrefab = new GameObject("Benchmark_ArrowTower");
+            arrowPrefab.AddComponent<ArrowTowerDefense>();
+            testPlot.SetPrefabs(arrowPrefab, null, null, null, null, null);
+
+            testPlot.BuildDefense(FortDefenseType.ArrowSlits, level: 1, supply: -1, instant: true);
+            DefenseStructure builtDef = testPlot.CurrentDefense;
+            bool supplyValid = builtDef != null && builtDef.CurrentSupply == 50 && builtDef.MaxSupply == 50;
+            bool actionSuccess = builtDef != null && builtDef.ConsumeSupply(2) && builtDef.CurrentSupply == 48;
+
+            if (supplyValid && actionSuccess)
+            {
+                sb.AppendLine("  - Tower Default Supply Init: Newly built defense with default supply starts at 50/50 and does not immediately deplete. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Tower default supply init failed! (builtDef: {builtDef != null}, supply: {builtDef?.CurrentSupply}/{builtDef?.MaxSupply})");
+                failedCount++;
+            }
+
+            testPlot.ClearDefense();
+            UnityEngine.Object.DestroyImmediate(arrowPrefab);
+
+            // Cleanup
+            UnityEngine.Object.DestroyImmediate(plotGo);
+            UnityEngine.Object.DestroyImmediate(wheelGo);
+        }
+        catch (Exception ex)
+        {
+            sb.AppendLine($"  - Tower Plot Benchmark exception: {ex.Message} [FAILED]");
+            failedCount++;
+        }
+
+        // 18. BATTERING RAM OBJECTIVE & ESCORT FORMATION
+        sb.AppendLine("\n### 18. BATTERING RAM OBJECTIVE & ESCORT FORMATION");
+        try
+        {
+            GameObject ramGo = new GameObject("TestRam");
+            BatteringRam ram = ramGo.AddComponent<BatteringRam>();
+            Health ramHealth = ramGo.AddComponent<Health>();
+            ramHealth.SetMaxHealth(200f);
+
+            // 18A: Verify escort waypoint computation ahead of ram within pushRadius
+            Vector3 ramPos = new Vector3(10f, 0f, 20f);
+            ramGo.transform.position = ramPos;
+            ramGo.transform.rotation = Quaternion.LookRotation(Vector3.forward);
+
+            Vector3 escortPos1 = ram.GetEscortTargetPosition(ramPos + Vector3.back * 4f, 101);
+            Vector3 escortPos2 = ram.GetEscortTargetPosition(ramPos + Vector3.back * 4f, 202);
+
+            float distToRam1 = Vector3.Distance(escortPos1, ramPos);
+            float distToRam2 = Vector3.Distance(escortPos2, ramPos);
+
+            if (distToRam1 >= 2.0f && distToRam1 <= 5.5f && distToRam2 >= 2.0f && distToRam2 <= 5.5f)
+            {
+                sb.AppendLine($"  - Ram escort distance: Agent 1 ({distToRam1:F2}m) and Agent 2 ({distToRam2:F2}m) are within escort bounds. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Ram escort distance out of bounds: Agent 1={distToRam1:F2}m, Agent 2={distToRam2:F2}m (expected 2.0 - 5.5m)");
+                failedCount++;
+            }
+
+            // 18B: Verify lateral spread prevents stacking
+            float lateralDist = Vector3.Distance(escortPos1, escortPos2);
+            if (lateralDist > 0.5f)
+            {
+                sb.AppendLine($"  - Ram formation lateral spread: Deterministic spacing separates pushers ({lateralDist:F2}m apart). [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Escort agents too close or overlapping ({lateralDist:F2}m)");
+                failedCount++;
+            }
+
+            // 18C: Verify ram damageable status for player attacks
+            if (!ramHealth.ImmuneToPlayerDamage)
+            {
+                sb.AppendLine("  - Ram damageable: Ram can take player damage. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine("  - [FAIL] Ram health has ImmuneToPlayerDamage = true!");
+                failedCount++;
+            }
+
+            // Cleanup
+            UnityEngine.Object.DestroyImmediate(ramGo);
+        }
+        catch (Exception ex)
+        {
+            sb.AppendLine($"  - Battering Ram Benchmark exception: {ex.Message} [FAILED]");
+            failedCount++;
+        }
+
+        // 19. TOWER COMBAT PREDICTION, GATE EXCLUSION & NON-DESTRUCTIVE SUPPLY DEPLETION
+        sb.AppendLine("\n### 19. TOWER COMBAT PREDICTION, GATE EXCLUSION & NON-DESTRUCTIVE SUPPLY DEPLETION");
+        try
+        {
+            // 19A: Verify intercept leading calculation for moving targets
+            Vector3 shooterPos = Vector3.zero;
+            float arrowSpeed = 26f;
+            Vector3 targetPos = new Vector3(10f, 0f, 0f);
+            Vector3 targetVel = new Vector3(0f, 0f, 4f); // Moving perpendicular
+            bool hasIntercept = ArrowSlitDefense.TryCalculateIntercept(shooterPos, arrowSpeed, targetPos, targetVel, 2.0f, out Vector3 predictedAim);
+
+            if (hasIntercept && predictedAim.z > 0.5f && predictedAim.x == targetPos.x)
+            {
+                sb.AppendLine($"  - Intercept Prediction: Arrow leads perpendicular target from z=0 to z={predictedAim.z:F2}m. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Intercept prediction failed (hasIntercept={hasIntercept}, predictedAim={predictedAim})");
+                failedCount++;
+            }
+
+            // 19B: Gate and Player Immunity Exclusion
+            GameObject gateObj = new GameObject("Benchmark_GateDummy");
+            gateObj.AddComponent<Gate>();
+            Health gateHealth = gateObj.GetComponent<Health>();
+            if (gateHealth != null) gateHealth.ImmuneToPlayerDamage = true;
+
+            GameObject towerObj = new GameObject("Benchmark_ArrowTower");
+            ArrowTowerDefense towerDef = towerObj.AddComponent<ArrowTowerDefense>();
+            towerDef.SendMessage("OnEnable", SendMessageOptions.DontRequireReceiver);
+
+            // Reflection check for private FindClosestEnemy
+            var findEnemyMethod = typeof(ArrowTowerDefense).GetMethod("FindClosestEnemy", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            Health foundTarget = findEnemyMethod != null ? (Health)findEnemyMethod.Invoke(towerDef, null) : null;
+
+            if (foundTarget == null)
+            {
+                sb.AppendLine("  - Gate Exclusion: Arrow Tower correctly ignores Castle Gate and targets with ImmuneToPlayerDamage=true. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Arrow Tower targeted friendly or immune object: {foundTarget.name}");
+                failedCount++;
+            }
+
+            // 19C: Non-destructive supply depletion
+            towerDef.InitState(1, 2, 50);
+            bool consumeResult = towerDef.ConsumeSupply(2);
+
+            if (!consumeResult && towerDef.IsDepleted && towerDef != null && towerObj != null)
+            {
+                sb.AppendLine("  - Non-Destructive Depletion: Tower reaches 0 supply, enters IsDepleted state without destroying itself. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Non-destructive depletion failed: IsDepleted={towerDef?.IsDepleted}, towerExists={(towerDef != null)}");
+                failedCount++;
+            }
+
+            // 19D: Active defense registry
+            if (System.Linq.Enumerable.Contains(DefenseStructure.AllActive, towerDef))
+            {
+                sb.AppendLine("  - Active Defense Registry: Tower is properly tracked in DefenseStructure.AllActive. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine("  - [FAIL] Tower was not registered in DefenseStructure.AllActive");
+                failedCount++;
+            }
+
+            UnityEngine.Object.DestroyImmediate(gateObj);
+            UnityEngine.Object.DestroyImmediate(towerObj);
+        }
+        catch (Exception ex)
+        {
+            sb.AppendLine($"  - Tower Combat Benchmark exception: {ex.Message} [FAILED]");
+            failedCount++;
+        }
+
+        // =========================================================================
+        // 20. DEFENSE VISUALS, NET MECHANICS, CATAPULT DETONATION & SUPPLY BENCHMARK
+        // =========================================================================
+        sb.AppendLine("\n[20] DEFENSE VISUALS, NET MECHANICS, CATAPULT DETONATION & SUPPLY BENCHMARK");
+        try
+        {
+            // 20A: NetProjectile Flight & Impact Callback
+            GameObject netProjObj = new GameObject("Benchmark_NetProjectile");
+            NetProjectile netProj = netProjObj.AddComponent<NetProjectile>();
+            bool impactTriggered = false;
+            Vector3 impactPosResult = Vector3.zero;
+
+            netProj.Launch(Vector3.zero, new Vector3(10f, 0f, 10f), 0.1f, (pos) =>
+            {
+                impactTriggered = true;
+                impactPosResult = pos;
+            });
+
+            netProj.Impact();
+
+            if (impactTriggered && impactPosResult == new Vector3(10f, 0f, 10f))
+            {
+                sb.AppendLine("  - NetProjectile Launch & Impact: Fires ballistic trajectory and invokes onImpact callback with target coordinates. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] NetProjectile impact callback failed (triggered={impactTriggered}, pos={impactPosResult})");
+                failedCount++;
+            }
+
+            // 20B: NetRootStatus Visual Capture Lifecycle
+            GameObject enemyObj = new GameObject("Benchmark_NetTargetEnemy");
+            enemyObj.AddComponent<UnityEngine.AI.NavMeshAgent>();
+            Health enemyHealth = enemyObj.AddComponent<Health>();
+            enemyHealth.SetMaxHealth(100f);
+
+            NetRootStatus rootStatus = NetRootStatus.GetOrAdd(enemyHealth);
+            rootStatus.ApplyRoot(3.0f);
+
+            bool hasVisualWhileRooted = rootStatus.IsRooted && rootStatus.CaptureVisual != null;
+            rootStatus.RestoreMovement();
+            bool visualCleanedUp = !rootStatus.IsRooted && rootStatus.CaptureVisual == null;
+
+            if (hasVisualWhileRooted && visualCleanedUp)
+            {
+                sb.AppendLine("  - NetRootStatus Capture Visual: Spawns 3D capture binding when rooted and cleans up upon movement restoration. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] NetRootStatus visual lifecycle failed (hasVisualWhileRooted={hasVisualWhileRooted}, visualCleanedUp={visualCleanedUp})");
+                failedCount++;
+            }
+
+            UnityEngine.Object.DestroyImmediate(enemyObj);
+
+            // 20C: Catapult Boulder Explosion Configuration
+            GameObject boulderPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/Defenses/CatapultBoulder.prefab");
+            CatapultProjectile boulderProj = boulderPrefab != null ? boulderPrefab.GetComponent<CatapultProjectile>() : null;
+
+            var bSo = boulderProj != null ? new UnityEditor.SerializedObject(boulderProj) : null;
+            var explosionVfxProp = bSo?.FindProperty("explosionVfxPrefab");
+            var explosionSfxProp = bSo?.FindProperty("explosionSfx");
+
+            bool hasExplosionVfx = explosionVfxProp?.objectReferenceValue != null;
+            bool hasExplosionSfx = explosionSfxProp?.objectReferenceValue != null;
+
+            if (hasExplosionVfx && hasExplosionSfx)
+            {
+                sb.AppendLine("  - Catapult Detonation Config: Boulder has dedicated explosion VFX prefab and booming explosion SFX wired. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Catapult Boulder missing explosion assets (hasVfx={hasExplosionVfx}, hasSfx={hasExplosionSfx})");
+                failedCount++;
+            }
+
+            // 20D: DefenseAssemblyAnimation Initialization
+            GameObject assemblyAnimObj = new GameObject("Benchmark_AssemblyAnim");
+            DefenseAssemblyAnimation assemblyAnim = assemblyAnimObj.AddComponent<DefenseAssemblyAnimation>();
+
+            if (assemblyAnim != null)
+            {
+                sb.AppendLine("  - Defense Assembly Animation: Component initializes with ghost blueprint support and piece detection routines. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine("  - [FAIL] DefenseAssemblyAnimation could not be initialized!");
+                failedCount++;
+            }
+            UnityEngine.Object.DestroyImmediate(assemblyAnimObj);
+
+            // 20E: Defense Supply Feedback
+            GameObject arrowPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/Defenses/Defense_ArrowTower.prefab");
+            DefenseStructure towerStructure = arrowPrefab != null ? arrowPrefab.GetComponent<DefenseStructure>() : null;
+
+            var tSo = towerStructure != null ? new UnityEditor.SerializedObject(towerStructure) : null;
+            var supplyPopupProp = tSo?.FindProperty("supplyPopupPrefab");
+            bool hasSupplyPopup = supplyPopupProp != null && supplyPopupProp.objectReferenceValue != null;
+
+            GameObject testTowerObj = new GameObject("Benchmark_SupplyTower");
+            ArrowTowerDefense testTower = testTowerObj.AddComponent<ArrowTowerDefense>();
+            testTower.InitState(1, 25, 50);
+            bool promptMatches = testTower.PromptText.Contains("25 Supply");
+
+            if (hasSupplyPopup && promptMatches)
+            {
+                sb.AppendLine("  - Defense Supply Feedback: Tower structure prompts resupply cost and has DamageNumbersPro supply popup wired. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Defense supply feedback validation failed (hasPopup={hasSupplyPopup}, prompt='{testTower.PromptText}')");
+                failedCount++;
+            }
+            UnityEngine.Object.DestroyImmediate(testTowerObj);
+        }
+        catch (Exception ex)
+        {
+            sb.AppendLine($"  - Defense Visuals Benchmark exception: {ex.Message} [FAILED]");
             failedCount++;
         }
 

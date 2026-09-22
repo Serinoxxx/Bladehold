@@ -48,6 +48,9 @@ public class BatteringRam : MonoBehaviour
     [Tooltip("MMF_Player played at point of impact (camera impulse, screen shake, rumble).")]
     [SerializeField] private MMF_Player impactFeedback;
 
+    [Tooltip("MMF_Player played when taking damage (red flicker, shield bash sfx, wood splinters).")]
+    [SerializeField] private MMF_Player hitFeedback;
+
     [Tooltip("Audio clip played at impact (heavy wood/iron boom).")]
     [SerializeField] private AudioClip impactSound;
 
@@ -117,6 +120,21 @@ public class BatteringRam : MonoBehaviour
             float remaining = agent.hasPath ? agent.remainingDistance : Vector3.Distance(transform.position, destinationPoint);
             return Mathf.Clamp01(1f - (remaining / totalPathDistance));
         }
+    }
+
+    /// <summary>
+    /// Computes a destination for pusher/escort enemies just ahead of and around the ram.
+    /// Distributes agents laterally across the front and flanks so they don't bottleneck.
+    /// </summary>
+    public Vector3 GetEscortTargetPosition(Vector3 fromPosition, int agentId = 0)
+    {
+        // Deterministic spread based on agent ID (-1.5m to +1.5m lateral offset)
+        float lateralFactor = Mathf.Sin(agentId);
+        float forwardFactor = 2.5f + Mathf.Abs(Mathf.Cos(agentId)) * 1.5f; // 2.5m to 4.0m ahead
+
+        Vector3 leadPosition = transform.position + (transform.forward * forwardFactor) + (transform.right * (lateralFactor * 1.5f));
+        leadPosition.y = transform.position.y;
+        return leadPosition;
     }
 
     private void Awake()
@@ -510,7 +528,11 @@ public class BatteringRam : MonoBehaviour
     private void HandleDamaged(Damage damage)
     {
         if (isDestroyed) return;
-        // Reactive listeners handle floating damage numbers and hit feedback automatically
+        if (hitFeedback != null)
+        {
+            Vector3 hitPos = damage != null && damage.sourcePosition != Vector3.zero ? damage.sourcePosition : transform.position;
+            hitFeedback.PlayFeedbacks(hitPos);
+        }
     }
 
     private void HandleDied()

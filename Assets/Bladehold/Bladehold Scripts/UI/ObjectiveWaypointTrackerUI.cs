@@ -28,6 +28,7 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
     [SerializeField] private Sprite destinationGateIcon;
     [SerializeField] private Sprite slayerBossIcon;
     [SerializeField] private Sprite siegeEngineIcon;
+    [SerializeField] private Sprite noSupplyIcon;
     [SerializeField] private Sprite arrowIcon;
     [SerializeField] private Sprite iconBackground;
 
@@ -176,6 +177,21 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
             }
         }
 
+        // Check for depleted defenses (NO SUPPLY)
+        foreach (var def in DefenseStructure.AllActive)
+        {
+            if (def != null && def.IsDepleted)
+            {
+                targetBuffer.Add(new ObjectiveWaypointTarget(
+                    def.transform,
+                    worldOffset: new Vector3(0f, 3.2f, 0f),
+                    customIcon: noSupplyIcon != null ? noSupplyIcon : defaultObjectiveIcon,
+                    tintColor: new Color(1.0f, 0.45f, 0.1f, 1f),
+                    label: "NO SUPPLY"
+                ));
+            }
+        }
+
         // 2. Adjust pool size
         while (markerPool.Count < targetBuffer.Count)
         {
@@ -301,6 +317,10 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
         {
             return siegeEngineIcon != null ? siegeEngineIcon : defaultObjectiveIcon;
         }
+        if (label.Contains("supply") || label.Contains("ammo"))
+        {
+            return noSupplyIcon != null ? noSupplyIcon : defaultObjectiveIcon;
+        }
 
         return defaultObjectiveIcon;
     }
@@ -392,6 +412,8 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
             slayerBossIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/Icons_Map/ICON_FantasyWarrior_Map_Skull_01_Clean.png");
         if (siegeEngineIcon == null)
             siegeEngineIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/Icons_Map/ICON_FantasyWarrior_Map_Target_01_Clean.png");
+        if (noSupplyIcon == null)
+            noSupplyIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/Icons_Resources/ICON_SM_Item_Hammer_01.png");
         if (arrowIcon == null)
             arrowIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/HUD/SPR_HUD_FantasyWarrior_Arrow_01_Clean.png");
         if (iconBackground == null)

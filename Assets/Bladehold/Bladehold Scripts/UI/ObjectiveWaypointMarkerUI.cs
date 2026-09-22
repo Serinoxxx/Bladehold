@@ -26,6 +26,7 @@ public class ObjectiveWaypointMarkerUI : MonoBehaviour
     private Transform targetTransform;
     private Vector3 worldOffset;
     private float targetAlpha = 0f;
+    private string currentLabel;
 
     public Transform TargetTransform => targetTransform;
     public bool IsActive => targetTransform != null;
@@ -79,6 +80,7 @@ public class ObjectiveWaypointMarkerUI : MonoBehaviour
         targetTransform = target;
         worldOffset = offset;
         targetAlpha = 1f;
+        currentLabel = label;
 
         if (iconImage == null || iconBackground == null)
         {
@@ -122,6 +124,7 @@ public class ObjectiveWaypointMarkerUI : MonoBehaviour
     {
         targetTransform = null;
         targetAlpha = 0f;
+        currentLabel = null;
     }
 
     public void UpdatePosition(Vector2 canvasLocalPos, bool isOffScreen, float arrowAngle, float distanceMeters)
@@ -144,7 +147,12 @@ public class ObjectiveWaypointMarkerUI : MonoBehaviour
 
         if (distanceText != null && showDistance)
         {
-            if (distanceMeters >= 3f)
+            if (!string.IsNullOrEmpty(currentLabel))
+            {
+                distanceText.text = distanceMeters >= 3f ? $"{currentLabel}\n{Mathf.RoundToInt(distanceMeters)}m" : currentLabel;
+                distanceText.gameObject.SetActive(true);
+            }
+            else if (distanceMeters >= 3f)
             {
                 distanceText.text = $"{Mathf.RoundToInt(distanceMeters)}m";
                 distanceText.gameObject.SetActive(true);

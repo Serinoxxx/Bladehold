@@ -10,7 +10,19 @@ using UnityEngine.UI;
 /// </summary>
 public class BuildWheelUI : MonoBehaviour
 {
-    public static BuildWheelUI Instance { get; private set; }
+    private static BuildWheelUI instance;
+    public static BuildWheelUI Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                instance = FindAnyObjectByType<BuildWheelUI>(FindObjectsInactive.Include);
+            }
+            return instance;
+        }
+        private set => instance = value;
+    }
 
     [System.Serializable]
     public class DefenseOption
@@ -28,6 +40,11 @@ public class BuildWheelUI : MonoBehaviour
     [SerializeField] private TMP_Text supplyLabel;
     [SerializeField] private TMP_Text descriptionLabel;
     [SerializeField] private Button closeButton;
+
+    [Header("Build Feedback")]
+    [SerializeField] private DamageNumbersPro.DamageNumber supplyPopupPrefab;
+    [SerializeField] private AudioClip buildSfx;
+    [SerializeField] private GameObject buildVfxPrefab;
 
     [Header("Defense Slices / Buttons")]
     [SerializeField] private List<Button> sliceButtons = new List<Button>();
@@ -84,22 +101,48 @@ public class BuildWheelUI : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null)
+        if (instance == null)
         {
-            Instance = this;
+            instance = this;
         }
-        else
+        else if (instance != this)
         {
             Destroy(gameObject);
             return;
         }
 
-        if (wheelPanel != null) wheelPanel.SetActive(false);
-
         if (closeButton != null)
         {
+            closeButton.onClick.RemoveListener(Close);
             closeButton.onClick.AddListener(Close);
         }
+
+        if (!isOpen)
+        {
+            if (wheelPanel != null && wheelPanel != gameObject) wheelPanel.SetActive(false);
+            gameObject.SetActive(false);
+        }
+
+        ResolveFallbacks();
+    }
+
+    private void ResolveFallbacks()
+    {
+#if UNITY_EDITOR
+        if (supplyPopupPrefab == null)
+        {
+            var goldGo = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Third Party/DamageNumbersPro/Demo/Prefabs/3D/Gold.prefab");
+            if (goldGo != null) supplyPopupPrefab = goldGo.GetComponent<DamageNumbersPro.DamageNumber>();
+        }
+        if (buildSfx == null)
+        {
+            buildSfx = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Impacts/HAMMER_Hit_Wood_Shield_stereo.wav");
+        }
+        if (buildVfxPrefab == null)
+        {
+            buildVfxPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Synty/PolygonParticleFX/Prefabs/FX_Impact_Wood_01.prefab");
+        }
+#endif
     }
 
     private void Start()
@@ -109,7 +152,7 @@ public class BuildWheelUI : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (Instance == this) Instance = null;
+        if (instance == this) instance = null;
         CursorLockManager.SetUnlock("BuildWheel", false);
     }
 
@@ -129,10 +172,12 @@ public class BuildWheelUI : MonoBehaviour
         activePlot = plot;
         isOpen = true;
 
-        if (wheelPanel != null) wheelPanel.SetActive(true);
+        gameObject.SetActive(true);
+        if (wheelPanel != null && wheelPanel != gameObject) wheelPanel.SetActive(true);
 
         CursorLockManager.SetUnlock("BuildWheel", true);
 
+        SetupButtons();
         RefreshUI();
     }
 
@@ -141,7 +186,8 @@ public class BuildWheelUI : MonoBehaviour
         isOpen = false;
         activePlot = null;
 
-        if (wheelPanel != null) wheelPanel.SetActive(false);
+        if (wheelPanel != null && wheelPanel != gameObject) wheelPanel.SetActive(false);
+        gameObject.SetActive(false);
 
         CursorLockManager.SetUnlock("BuildWheel", false);
     }
@@ -219,7 +265,24 @@ public class BuildWheelUI : MonoBehaviour
         if (RunSession.TrySpendInRunSupply(opt.supplyCost))
         {
             TowerPlot targetPlot = activePlot;
+            Vector3 plotPos = targetPlot != null ? targetPlot.BuildPosition : transform.position;
             Close();
+
+            if (buildSfx != null)
+            {
+                AudioSource.PlayClipAtPoint(buildSfx, plotPos, 1.0f);
+            }
+
+            if (buildVfxPrefab != null)
+            {
+                GameObject vfx = Instantiate(buildVfxPrefab, plotPos + Vector3.up * 0.2f, Quaternion.identity);
+                Destroy(vfx, 2.5f);
+            }
+
+            if (supplyPopupPrefab != null)
+            {
+                supplyPopupPrefab.Spawn(plotPos + Vector3.up * 1.8f, $"-{opt.supplyCost} Supply");
+            }
 
             targetPlot.BuildDefense(opt.defenseType);
             Debug.Log($"[BuildWheelUI] Constructed {opt.displayName} on plot {targetPlot.PlotIndex}!");

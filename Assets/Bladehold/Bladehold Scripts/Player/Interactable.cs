@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -10,7 +11,39 @@ public interface IInteractable
     string PromptText { get; }
     bool CanInteract { get; }
     Vector3 InteractionPosition { get; }
+    float InteractionRadius { get; }
     void Interact(Player player);
+}
+
+/// <summary>
+///     Central registry of all currently active in-world IInteractable objects.
+///     Eliminates expensive per-frame scene-wide searches and allocations in PlayerInteraction.
+/// </summary>
+public static class InteractableRegistry
+{
+    private static readonly List<IInteractable> activeInteractables = new List<IInteractable>();
+    public static IReadOnlyList<IInteractable> Active => activeInteractables;
+
+    public static void Register(IInteractable interactable)
+    {
+        if (interactable != null && !activeInteractables.Contains(interactable))
+        {
+            activeInteractables.Add(interactable);
+        }
+    }
+
+    public static void Unregister(IInteractable interactable)
+    {
+        if (interactable != null)
+        {
+            activeInteractables.Remove(interactable);
+        }
+    }
+
+    public static void CleanUp()
+    {
+        activeInteractables.RemoveAll(x => x == null || (x is UnityEngine.Object obj && obj == null));
+    }
 }
 
 /// <summary>
@@ -50,6 +83,16 @@ public class Interactable : MonoBehaviour, IInteractable
 
     public Vector3 InteractionPosition => interactionAnchor != null ? interactionAnchor.position : transform.position;
     public float InteractionRadius => interactionRadius;
+
+    private void OnEnable()
+    {
+        InteractableRegistry.Register(this);
+    }
+
+    private void OnDisable()
+    {
+        InteractableRegistry.Unregister(this);
+    }
 
     public void Interact(Player player)
     {

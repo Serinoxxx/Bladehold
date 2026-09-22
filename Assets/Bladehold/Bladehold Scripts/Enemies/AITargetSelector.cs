@@ -54,6 +54,7 @@ public class AITargetSelector : MonoBehaviour
         get
         {
             if (ShouldTargetPlayer()) return true;
+            if (TryGetRamEscortTarget(out _)) return false;
             if (IsDefendingGate())
             {
                 return ResolveGate() == null;
@@ -73,6 +74,12 @@ public class AITargetSelector : MonoBehaviour
             {
                 Player player = Player.Instance;
                 return player != null ? player.transform.position : transform.position;
+            }
+
+            // Path to / ahead of the Battering Ram to escort & push it toward the gate
+            if (TryGetRamEscortTarget(out Vector3 ramEscortPos))
+            {
+                return ramEscortPos;
             }
 
             // When the objective is to defend the gate (or assigned a gate), path to the gate
@@ -115,6 +122,12 @@ public class AITargetSelector : MonoBehaviour
                 return player != null ? player.Damageable : null;
             }
 
+            // While pushing/escorting the ram, enemies have no damage target until player engages or they reach gate
+            if (TryGetRamEscortTarget(out _))
+            {
+                return null;
+            }
+
             if (IsDefendingGate())
             {
                 Gate gate = ResolveGate();
@@ -152,11 +165,34 @@ public class AITargetSelector : MonoBehaviour
             var currentObj = SurvivorsObjectiveManager.Instance.CurrentObjective;
             if (currentObj.IsActive)
             {
-                if (currentObj is KillEnemiesObjective || currentObj is StopBatteringRamObjective) return true;
+                if (currentObj is KillEnemiesObjective) return true;
                 if (!string.IsNullOrEmpty(currentObj.Title) && currentObj.Title.IndexOf("Hold the Gate", StringComparison.OrdinalIgnoreCase) >= 0) return true;
             }
         }
 
+        return false;
+    }
+
+    /// <summary>
+    /// Checks if there is an active Battering Ram objective with an alive ram that hasn't reached the gate yet.
+    /// Returns the escort/push formation position just ahead of the ram.
+    /// </summary>
+    private bool TryGetRamEscortTarget(out Vector3 escortTarget)
+    {
+        escortTarget = Vector3.zero;
+        if (SurvivorsObjectiveManager.Instance != null && SurvivorsObjectiveManager.Instance.CurrentObjective != null)
+        {
+            var currentObj = SurvivorsObjectiveManager.Instance.CurrentObjective;
+            if (currentObj.IsActive && currentObj is StopBatteringRamObjective ramObj)
+            {
+                BatteringRam ram = ramObj.CurrentRam;
+                if (ram != null && !ram.IsDestroyed && !ram.HasReachedGate)
+                {
+                    escortTarget = ram.GetEscortTargetPosition(transform.position, GetInstanceID());
+                    return true;
+                }
+            }
+        }
         return false;
     }
 

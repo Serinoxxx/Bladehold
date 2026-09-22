@@ -4,6 +4,18 @@
 
 ### New Features
 
+- Added transparent ghost preview and modular piece-drop construction animations for multi-part defense structures with ground dust puffs and screenshake
+- Added rising ground emergence animations with rumble tremors, dust, and heavy lock-in slam for compact defenses
+- Added physical arcing net projectiles with spinning net meshes and ground impact effects for Net Thrower defenses
+- Added 3D rope and mesh capture visuals bound to enemies while immobilized by Net Throwers
+- Added booming impact explosion and fiery debris VFX to catapult boulder detonations
+- Added sensory feedback for tower construction, repairs, and upgrades with wood impact sounds, dust puffs, and floating supply cost popups
+
+- Added active towers HUD panel displaying deployed defense types, upgrade levels, and real-time supply sliders
+- Added 'NO SUPPLY' objective marker overlay pointing to depleted battlefield defenses
+- Added non-destructive supply depletion keeping towers standing on plots when reaching 0 supply
+- Added target tracking rotation and visual pre-fire anticipation animations for Ballista, Catapult, and Net Thrower defenses
+- Added target movement prediction and leading trajectory calculations to Arrow Towers
 - Added visual Balance Tree Editor window (`Bladehold > Balance Tree Editor` or `F1`) displaying an interactive node graph of Weapons, Draft Upgrades, Armour Sets, Mounts, Meta Perks, and Tower Defenses
 - Added in-place balance tweaking and inspector panel for graph nodes with live mid-game apply and disk persistence for ScriptableObjects and DraftUpgrades.csv
 - Added Add Node menu and TODO node specification tracking writing pending mechanics and dependencies to `UPGRADE_TODOS.md` for AI implementation
@@ -69,8 +81,13 @@
 - Added automated Mechanics Benchmark tool validating all 57 draft cards, all 4 armour sets, live dash fire trail spawning, weapon hitboxes, and bubble shield absorption
 - Added automated behavioral mechanic tests for Life Steal healing, Backstab angle damage, Executioner low-HP bonus, Second Wind death revival, Greed/War Chest gold scaling, and ShieldBreaker damage amplification
 
+- Added overhead health bar and hit reactions (red flash, shield bash impact audio, and wood splinter particles) to the Battering Ram
+- Added automated behavioral benchmark tests verifying Battering Ram escort formation spacing and lead waypoint calculations
+
 ### Fixes
 
+- Fixed Arrow Tower and other defense structures continuously firing at friendly Castle Gates
+- Fixed Battering Ram remaining stalled during the siege objective by ensuring enemies path to lead and escort the ram forward
 - Fixed boss controller component initialization in test mode ensuring damage block event listeners are hooked immediately upon combat activation
 
 ### Balance Changes
@@ -359,6 +376,12 @@
 ### General Changes
 - Added hit sparks, screen shake, and impact sounds
 - Added Berserker and Mage skill tree preview panels
+
+
+
+
+
+
 
 
 

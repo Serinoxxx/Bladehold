@@ -8,6 +8,7 @@ using UnityEngine.AI;
 using UnityEngine.SceneManagement;
 using MoreMountains.Feedbacks;
 using MoreMountains.FeedbacksForThirdParty;
+using MoreMountains.Tools;
 
 public static class BatteringRamSetup
 {
@@ -212,13 +213,135 @@ public static class BatteringRamSetup
         shakeFeedback.Owner = mmf;
         mmf.FeedbacksList.Add(shakeFeedback);
 
-        // 10. Load sound & VFX assets
+        // 10. Health Bar setup (MMHealthBar + HealthBarUI)
+        Transform healthBarTrans = instance.transform.Find("HealthBar");
+        if (healthBarTrans == null)
+        {
+            GameObject hbGo = new GameObject("HealthBar");
+            hbGo.transform.SetParent(instance.transform, false);
+            hbGo.transform.localPosition = new Vector3(0f, 3.5f, 0f);
+            healthBarTrans = hbGo.transform;
+        }
+
+        MMHealthBar mmHealthBar = healthBarTrans.GetComponent<MMHealthBar>();
+        if (mmHealthBar == null) mmHealthBar = healthBarTrans.gameObject.AddComponent<MMHealthBar>();
+        mmHealthBar.HealthBarType = MMHealthBar.HealthBarTypes.Drawn;
+        mmHealthBar.Size = new Vector2(2.5f, 0.35f);
+        mmHealthBar.BackgroundPadding = new Vector2(0.02f, 0.02f);
+        mmHealthBar.Billboard = true;
+        mmHealthBar.AlwaysVisible = true;
+        mmHealthBar.HideBarAtZero = true;
+        mmHealthBar.HideBarAtZeroDelay = 0.2f;
+        mmHealthBar.LerpFrontBar = true;
+        mmHealthBar.LerpFrontBarSpeed = 15f;
+        mmHealthBar.LerpDelayedBar = true;
+        mmHealthBar.LerpDelayedBarSpeed = 15f;
+
+        HealthBarUI healthBarUI = healthBarTrans.GetComponent<HealthBarUI>();
+        if (healthBarUI == null) healthBarUI = healthBarTrans.gameObject.AddComponent<HealthBarUI>();
+        SerializedObject hbSo = new SerializedObject(healthBarUI);
+        hbSo.FindProperty("health").objectReferenceValue = health;
+        hbSo.FindProperty("healthBar").objectReferenceValue = mmHealthBar;
+        hbSo.FindProperty("followHead").boolValue = false;
+        hbSo.ApplyModifiedPropertiesWithoutUndo();
+
+        // 11. MMF_Player for hit feedback (flicker red, shield bash sfx, wood splinters)
+        Transform hitFeedbackTrans = instance.transform.Find("HitFeedback");
+        if (hitFeedbackTrans == null)
+        {
+            GameObject hitGo = new GameObject("HitFeedback");
+            hitGo.transform.SetParent(instance.transform, false);
+            hitFeedbackTrans = hitGo.transform;
+        }
+
+        MMF_Player hitMmf = hitFeedbackTrans.GetComponent<MMF_Player>();
+        if (hitMmf == null) hitMmf = hitFeedbackTrans.gameObject.AddComponent<MMF_Player>();
+
+        if (hitMmf.FeedbacksList == null)
+        {
+            hitMmf.FeedbacksList = new List<MMF_Feedback>();
+        }
+        else
+        {
+            hitMmf.FeedbacksList.Clear();
+        }
+
+        // 11a. Red Mesh Flicker
+        Renderer mainRenderer = instance.GetComponentInChildren<MeshRenderer>();
+        var flickerFeedback = new MMF_Flicker();
+        flickerFeedback.Label = "Hit Red Flicker";
+        flickerFeedback.Timing = new MMFeedbackTiming();
+        flickerFeedback.BoundRenderer = mainRenderer;
+        flickerFeedback.Mode = MMF_Flicker.Modes.PropertyName;
+        flickerFeedback.PropertyName = "_BaseColor";
+        flickerFeedback.FlickerDuration = 0.18f;
+        flickerFeedback.FlickerPeriod = 0.04f;
+        flickerFeedback.FlickerColor = new Color(1f, 0.1f, 0.1f, 1f);
+        flickerFeedback.Owner = hitMmf;
+
+        List<Renderer> extraRenderers = new List<Renderer>();
+        foreach (var r in instance.GetComponentsInChildren<MeshRenderer>())
+        {
+            if (r != mainRenderer && r.gameObject.name != "RangeCircle")
+            {
+                extraRenderers.Add(r);
+            }
+        }
+        flickerFeedback.ExtraBoundRenderers = extraRenderers;
+        hitMmf.FeedbacksList.Add(flickerFeedback);
+
+        // 11b. Shield Bash SFX
+        AudioClip shieldHitSfx = AssetDatabase.LoadAssetAtPath<AudioClip>(AssetDatabase.GUIDToAssetPath("9bfa76be563d5e244926ba2641b4a5d7")); // shield_hit_001.wav
+        if (shieldHitSfx == null)
+        {
+            shieldHitSfx = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Impacts/shield_hit_001.wav");
+        }
+        if (shieldHitSfx != null)
+        {
+            var soundFeedback = new MMF_MMSoundManagerSound();
+            soundFeedback.Label = "Shield Bash Sound";
+            soundFeedback.Timing = new MMFeedbackTiming();
+            soundFeedback.Sfx = shieldHitSfx;
+            soundFeedback.MmSoundManagerTrack = MMSoundManager.MMSoundManagerTracks.Sfx;
+            soundFeedback.MinVolume = 0.9f;
+            soundFeedback.MaxVolume = 1.0f;
+            soundFeedback.MinPitch = 0.92f;
+            soundFeedback.MaxPitch = 1.08f;
+            soundFeedback.Owner = hitMmf;
+            hitMmf.FeedbacksList.Add(soundFeedback);
+        }
+
+        // 11c. Wood Splinter VFX
+        GameObject woodVfxPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath("2b28f2fdc5a65964f96ea4d2b9d6ca63")); // FX_Impact_Wood_01
+        if (woodVfxPrefab != null)
+        {
+            var particlesFeedback = new MMF_ParticlesInstantiation();
+            particlesFeedback.Label = "Wood Splinter VFX";
+            particlesFeedback.Timing = new MMFeedbackTiming();
+            particlesFeedback.Mode = MMF_ParticlesInstantiation.Modes.Cached;
+            particlesFeedback.PositionMode = MMF_ParticlesInstantiation.PositionModes.Script;
+            particlesFeedback.ParticlesPrefab = woodVfxPrefab.GetComponent<ParticleSystem>() ?? woodVfxPrefab.GetComponentInChildren<ParticleSystem>();
+            particlesFeedback.NestParticles = false;
+            particlesFeedback.Owner = hitMmf;
+            hitMmf.FeedbacksList.Add(particlesFeedback);
+        }
+
+        // Wire damageFeedback on Health
+        SerializedObject healthSo = new SerializedObject(health);
+        SerializedProperty dmgFeedbackProp = healthSo.FindProperty("damageFeedback");
+        if (dmgFeedbackProp != null)
+        {
+            dmgFeedbackProp.objectReferenceValue = hitMmf;
+            healthSo.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        // 12. Load sound & VFX assets
         AudioClip impactSfx = AssetDatabase.LoadAssetAtPath<AudioClip>(AssetDatabase.GUIDToAssetPath("886dd441091c1974ead974fbbefa1324")); // cinematic_deep_boom_impact_01
         GameObject impactVfx = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath("2b28f2fdc5a65964f96ea4d2b9d6ca63")); // FX_Impact_Wood_01
         AudioClip deathSfx = AssetDatabase.LoadAssetAtPath<AudioClip>(AssetDatabase.GUIDToAssetPath("456c4d2a40621f847ac0204e9ab2d521")); // Wood Break Large A
         GameObject deathVfx = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath("101d62f0a3e4fef4eab61adb79c845df")); // FX_Impact_Large_01
 
-        // 11. BatteringRam component
+        // 13. BatteringRam component
         BatteringRam ramComp = instance.GetComponent<BatteringRam>();
         if (ramComp == null) ramComp = instance.AddComponent<BatteringRam>();
 
@@ -232,6 +355,7 @@ public static class BatteringRamSetup
         so.FindProperty("ramLogTransform").objectReferenceValue = logTransform;
         so.FindProperty("impactPoint").objectReferenceValue = impactPoint;
         so.FindProperty("impactFeedback").objectReferenceValue = mmf;
+        so.FindProperty("hitFeedback").objectReferenceValue = hitMmf;
         so.FindProperty("impactSound").objectReferenceValue = impactSfx;
         so.FindProperty("impactVfxPrefab").objectReferenceValue = impactVfx;
         so.FindProperty("rangeCircleTransform").objectReferenceValue = rangeCircle;

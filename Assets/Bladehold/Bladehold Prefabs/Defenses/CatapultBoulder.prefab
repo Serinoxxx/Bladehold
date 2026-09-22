@@ -128,5 +128,5 @@ MonoBehaviour:
   arcHeight: 6
   flightDuration: 1.2
   splashRadius: 4.5
-  explosionVfxPrefab: {fileID: 0}
-  explosionSfx: {fileID: 0}
+  explosionVfxPrefab: {fileID: 1748061420571399569, guid: 53a5bac6d6897274384288d420f90ecd, type: 3}
+  explosionSfx: {fileID: 8300000, guid: 886dd441091c1974ead974fbbefa1324, type: 3}
