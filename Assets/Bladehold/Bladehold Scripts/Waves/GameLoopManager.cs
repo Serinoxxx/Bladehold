@@ -35,6 +35,8 @@ public class GameLoopManager : MonoBehaviour
     [Header("Captain Settings")]
     [Tooltip("Optional prefab for Clan Captains (e.g. Captain Fraglob). If null, a scaled Brute is used as placeholder.")]
     [SerializeField] private GameObject captainPrefab;
+    [Tooltip("Optional dedicated prefab for Captain Kombusta. If null, spawner will attempt to spawn 'captain_kombusta'.")]
+    [SerializeField] private GameObject captainKombustaPrefab;
     [SerializeField] private Transform captainSpawnPoint;
 
     [Header("Cinematic Intermission")]
@@ -165,6 +167,15 @@ public class GameLoopManager : MonoBehaviour
         // Initialize first wave
         int initialWave = RunSession.CurrentWave > 0 ? RunSession.CurrentWave : 1;
         RunSession.CurrentWave = initialWave;
+
+        if (CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive && CampaignManager.Instance.CurrentNode != null)
+        {
+            var node = CampaignManager.Instance.CurrentNode;
+            CurrentWaveBounty = node.bountyType;
+            CurrentWaveDifficultyTier = node.difficultyTier;
+            Debug.Log($"[GameLoopManager] Campaign Active: Sector '{node.nodeTitle}' configured (Tier {CurrentWaveDifficultyTier}, Bounty {CurrentWaveBounty}).");
+        }
+
         CheckAndSpawnBanners(initialWave);
     }
 
@@ -269,10 +280,15 @@ public class GameLoopManager : MonoBehaviour
             SpawnEndgameBoss();
         }
 
-        // Spawn Enraged/Nightmare/Omega Clan Captain if triggered by War Banner
+        // Spawn Enraged/Nightmare/Omega Clan Captain if triggered by War Banner or Campaign Node
         if (CurrentWaveDifficultyTier >= BannerDifficultyTier.Enraged)
         {
-            SpawnCaptainForWave(CurrentWaveDifficultyTier);
+            string preferredCaptain = null;
+            if (CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive && CampaignManager.Instance.CurrentNode != null)
+            {
+                preferredCaptain = CampaignManager.Instance.CurrentNode.captainName;
+            }
+            SpawnCaptainForWave(CurrentWaveDifficultyTier, preferredCaptain);
         }
 
         if (waveAnnouncementText != null)
@@ -469,12 +485,16 @@ public class GameLoopManager : MonoBehaviour
             if (castleGateInteractable != null)
             {
                 castleGateInteractable.CanInteract = true;
-                castleGateInteractable.PromptText = "Return to Fortress";
+                castleGateInteractable.PromptText = (CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive)
+                    ? "View Campaign Map"
+                    : "Return to Fortress";
             }
 
             if (waveAnnouncementText != null)
             {
-                waveAnnouncementText.text = "ROUND COMPLETE! RETURN TO THE FORTRESS VIA GATE";
+                waveAnnouncementText.text = (CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive)
+                    ? "SECTOR LIBERATED! PROCEED TO CAMPAIGN MAP"
+                    : "ROUND COMPLETE! RETURN TO THE FORTRESS VIA GATE";
             }
 
             OnRestGateOpened?.Invoke();
@@ -495,7 +515,7 @@ public class GameLoopManager : MonoBehaviour
 
         // Check for stage victory: survived all 4 rounds (Wave 12)
         int totalRounds = pacingConfig != null ? pacingConfig.totalRounds : 4;
-        if (clearedWave >= totalRounds * wavesPerRound)
+        if (clearedWave >= totalRounds * wavesPerRound && (CampaignManager.Instance == null || !CampaignManager.Instance.IsCampaignActive))
         {
             TriggerVictory();
         }
@@ -928,6 +948,14 @@ public class GameLoopManager : MonoBehaviour
             }
         }
 
+        // If Castle Campaign is active, completing wave 3 advances campaign node and transitions to Campaign Overview Map
+        if (CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive)
+        {
+            Debug.Log("[GameLoopManager] Castle Campaign active: completing sector node and opening Campaign Overview Map...");
+            CampaignManager.Instance.CompleteCurrentNodeAndOpenMap();
+            return;
+        }
+
         // Load Rest Area Scene
         if (Application.isPlaying)
         {
@@ -955,17 +983,59 @@ public class GameLoopManager : MonoBehaviour
     }
 
     /// <summary>
-    ///     Spawns the Clan Captain (Captain Fraglob) for Enraged, Nightmare, or Omega difficulty tiers,
+    /// <summary>
+    ///     Spawns a Clan Captain (e.g. Captain Kombusta or Captain Fraglob) for Enraged, Nightmare, or Omega difficulty tiers,
     ///     plays the cinematic EnemyIntroUI with difficulty skulls, and initializes the captain controller.
     /// </summary>
-    public GameObject SpawnCaptainForWave(BannerDifficultyTier tier)
+    public GameObject SpawnCaptainForWave(BannerDifficultyTier tier, string preferredCaptainName = null)
     {
         Vector3 spawnPos = captainSpawnPoint != null ? captainSpawnPoint.position : 
                            (bossSpawnPoint != null ? bossSpawnPoint.position : (transform.position + new Vector3(0f, 0f, 25f)));
         Quaternion spawnRot = captainSpawnPoint != null ? captainSpawnPoint.rotation : 
                              (bossSpawnPoint != null ? bossSpawnPoint.rotation : Quaternion.identity);
 
+        bool pickKombusta;
+        if (!string.IsNullOrEmpty(preferredCaptainName))
+        {
+            pickKombusta = preferredCaptainName.IndexOf("Kombusta", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+        else
+        {
+            pickKombusta = UnityEngine.Random.value < 0.5f;
+        }
         GameObject captainGo = null;
+
+        if (pickKombusta)
+        {
+            if (captainKombustaPrefab != null)
+            {
+                captainGo = Instantiate(captainKombustaPrefab, spawnPos, spawnRot);
+            }
+            else if (spawner != null)
+            {
+                captainGo = spawner.DebugSpawnEnemyType("captain_kombusta");
+            }
+
+            if (captainGo != null)
+            {
+                CaptainKombustaController kombustaComp = captainGo.GetComponent<CaptainKombustaController>();
+                if (kombustaComp == null)
+                {
+                    kombustaComp = captainGo.AddComponent<CaptainKombustaController>();
+                }
+                kombustaComp.Initialize(tier, "Captain Kombusta");
+
+                if (EnemyIntroUI.Instance != null)
+                {
+                    string subtitle = $"{BannerDifficultyHelper.GetTierName(tier).ToUpper()} - {BannerDifficultyHelper.GetRewardMultiplier(tier)}X REWARDS";
+                    EnemyIntroUI.Instance.ShowIntro("Captain Kombusta has arrived!", (int)tier, subtitle, 3.5f);
+                }
+
+                Debug.Log($"[GameLoopManager] Spawned Captain Kombusta at Tier {tier} ({BannerDifficultyHelper.GetRewardMultiplier(tier)}x rewards)!");
+                return captainGo;
+            }
+        }
+
         if (captainPrefab != null)
         {
             captainGo = Instantiate(captainPrefab, spawnPos, spawnRot);
@@ -1006,6 +1076,13 @@ public class GameLoopManager : MonoBehaviour
         Debug.Log("[GameLoopManager] STAGE VICTORY! All 4 rounds cleared!");
         isWaveActive = false;
         isIntermission = false;
+
+        if (CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive)
+        {
+            Debug.Log("[GameLoopManager] Castle Campaign active: completing sector node on victory...");
+            CampaignManager.Instance.CompleteCurrentNodeAndOpenMap();
+            return;
+        }
 
         SaveData data = SaveSystem.Load();
         if (data != null)

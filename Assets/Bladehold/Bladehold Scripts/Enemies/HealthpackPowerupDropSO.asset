@@ -15,3 +15,5 @@ MonoBehaviour:
   entries:
   - prefab: {fileID: 5845664704562408726, guid: 92f143bba9ad8ab4994355f284767f9f, type: 3}
     chance: 0.05
+  - prefab: {fileID: 1000000000000001, guid: 6731624ca926492595036b3c9c0cf0a0, type: 3}
+    chance: 0.1

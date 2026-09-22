@@ -58,6 +58,11 @@ public class HorseChargeDamage : MonoBehaviour
         }
     }
 
+    public void SetHorseData(HorseSO data)
+    {
+        horseData = data;
+    }
+
     private void Start()
     {
         if (horseData == null)

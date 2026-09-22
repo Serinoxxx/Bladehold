@@ -58,6 +58,14 @@ public class RestAreaGate : MonoBehaviour
         Debug.Log("[RestAreaGate] Returning to battle scene...");
         Time.timeScale = 1f;
 
+        // If Castle Campaign is active, completing the Rest Area / Supply Room returns to Campaign Map
+        if (CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive)
+        {
+            Debug.Log("[RestAreaGate] Castle Campaign active: completing stop scene and opening Campaign Overview Map...");
+            CampaignManager.Instance.CompleteCurrentNodeAndOpenMap();
+            return;
+        }
+
         // Preserve player health ratio when leaving the Rest Area (e.g. from shop healing or Troll Hearts)
         if (player != null && player.Health != null)
         {

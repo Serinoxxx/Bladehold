@@ -12,4 +12,5 @@ public class MetaPerkDefinitionSO : ScriptableObject
     public int tier = 1;
     public int goblinBloodCost = 10;
     public Sprite icon;
+    public MetaPerkDefinitionSO[] prerequisites;
 }

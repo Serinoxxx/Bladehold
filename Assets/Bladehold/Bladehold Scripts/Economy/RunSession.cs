@@ -49,11 +49,20 @@ public static class RunSession
     public static float PlayerHealthRatio { get; set; } = 1f;
     public static int DraftRerollsRemaining { get; set; } = 0;
 
-    public static int CurrentRound => Mathf.Clamp((CurrentWave - 1) / 3 + 1, 1, 4);
+    public static int CurrentRound => Mathf.Clamp((CurrentWave - 1) / 3 + 1, 1, 5);
 
     public static event Action<int> OnInRunGoldChanged;
     public static int InRunSupply { get; set; } = 60;
     public static event Action<int> OnInRunSupplyChanged;
+
+    public static int CurrentAmmo { get; set; } = 20;
+    public static event Action<int, int> OnAmmoChanged;
+
+    // Castle Campaign Progression State
+    public static bool IsCampaignRun { get; set; } = false;
+    public static string CampaignCurrentNodeId { get; set; } = null;
+    public static List<string> CampaignCompletedNodeIds { get; } = new List<string>();
+    public static List<string> CampaignAvailableNodeIds { get; } = new List<string>();
 
     [System.Serializable]
     public class SavedDefenseData
@@ -134,6 +143,15 @@ public static class RunSession
         InRunSupply = 60;
         SavedDefenses.Clear();
         OnInRunSupplyChanged?.Invoke(InRunSupply);
+
+        CurrentAmmo = HasMetaPerk("deep_quiver") ? 25 : 20;
+        OnAmmoChanged?.Invoke(CurrentAmmo, CurrentAmmo);
+
+        // Reset Castle Campaign State
+        IsCampaignRun = false;
+        CampaignCurrentNodeId = null;
+        CampaignCompletedNodeIds.Clear();
+        CampaignAvailableNodeIds.Clear();
     }
 
     /// <summary>
@@ -176,6 +194,12 @@ public static class RunSession
         if (HasMetaPerk("agility") && player.Stats != null)
         {
             player.Stats.AddModifier(StatType.DodgeMaxCharges, ModifierKind.Flat, 1f);
+        }
+
+        // 3b. Reapply Deep Quiver permanent meta perk (+5 max ammo)
+        if (HasMetaPerk("deep_quiver") && player.Stats != null)
+        {
+            player.Stats.AddModifier(StatType.MaxAmmo, ModifierKind.Flat, 5f);
         }
 
         // 4. Reapply all drafted mid-run upgrades from InRunUpgradeLevels
@@ -270,6 +294,45 @@ public static class RunSession
 
         InRunSupply -= amount;
         OnInRunSupplyChanged?.Invoke(InRunSupply);
+        return true;
+    }
+
+    public static void AddInRunAmmo(int amount)
+    {
+        if (amount <= 0) return;
+        int max = 20;
+        if (Player.Instance != null && Player.Instance.Stats != null)
+        {
+            float maxStat = Player.Instance.Stats.GetValue(StatType.MaxAmmo);
+            if (maxStat > 0f) max = Mathf.RoundToInt(maxStat);
+        }
+        else if (HasMetaPerk("deep_quiver"))
+        {
+            max = 25;
+        }
+
+        CurrentAmmo = Mathf.Clamp(CurrentAmmo + amount, 0, max);
+        OnAmmoChanged?.Invoke(CurrentAmmo, max);
+    }
+
+    public static bool TrySpendInRunAmmo(int amount = 1)
+    {
+        if (amount <= 0) return true;
+        if (CurrentAmmo < amount) return false;
+
+        CurrentAmmo -= amount;
+        int max = 20;
+        if (Player.Instance != null && Player.Instance.Stats != null)
+        {
+            float maxStat = Player.Instance.Stats.GetValue(StatType.MaxAmmo);
+            if (maxStat > 0f) max = Mathf.RoundToInt(maxStat);
+        }
+        else if (HasMetaPerk("deep_quiver"))
+        {
+            max = 25;
+        }
+
+        OnAmmoChanged?.Invoke(CurrentAmmo, max);
         return true;
     }
 

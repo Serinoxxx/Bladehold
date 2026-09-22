@@ -3,7 +3,7 @@ sword_lunge_mastery,Lunge Mastery,Weapon,sword,,0,1,Lunge deals +200% damage and
 sword_nimble_strike,Nimble Strike,Weapon,sword,,0,1,Dashing performs an automatic attack along the movement path.,,SwordNimbleStrike,Flat,1,dodge_damage,,,
 sword_shieldbreaker,ShieldBreaker,Weapon,sword,,0,1,Sword attacks deal +200% damage to shielded targets.,,SwordShieldBreakerBonus,Percent,2,sword_dmg,,,
 sword_vampire_blade,Vampire Blade,Weapon,sword,,0,1,Heals 2 HP per hit but player takes 50% extra elemental damage.,,SwordVampireBladeHeal;SwordVampireExtraElementalDamage,Flat;Percent,2;0.50,vamp,,,
-sword_mount_ult,Warhorse Mount,Weapon,sword,,1,1,Unleash the Warhorse! Mount up with trample damage and horse armor. Press Q at 100% charge.,,UltimateUnlocked;UltimateSwordMountUnlocked,Flat;Flat,1;1,horse_unlock,,,
+sword_blade_tempest,Blade Tempest,Weapon,sword,,1,1,Unleash an empowered tempest of spinning blade slashes and damage reduction. Press Q at 100% charge.,,UltimateUnlocked,Flat,1,sword_dmg,,,
 bow_auto_shot,Auto-Shot,Weapon,bow,,0,1,Dashing automatically fires a fully charged shot at the nearest enemy.,,BowAutoShotOnDash,Flat,1,bow_unlock,,,
 bow_desperate_volley,Desperate Volley,Weapon,bow,,0,4,Fires radial arrows when dropping below 50% HP.,Fires more arrows when dropping below 50% HP,BowDesperateVolleyArrows,Flat,8|12|16|20,multishot,,,
 bow_piercer,Piercer,Weapon,bow,,0,4,Arrows pierce through additional enemies.,Arrows pierce through even more enemies,BowPierceCount,Flat,1|2|3|4,swiftarrow,,,
@@ -56,3 +56,9 @@ duo_plasma_overload,Plasma Overload,Element,,,0,1,Fire and Lightning cause explo
 duo_superconductor,Superconductor,Element,,,0,1,Ice and Lightning create larger chain lightning.,,DuoSuperconductor,Flat,1,imbue_lightning,,TRUE,Ice|Lightning
 fort_electrified_oil,Electrified Oil,Fortress,,,0,1,Boiling Oil combined with Lightning electrifies the oil.,,FortElectrifiedOil,Flat,1,fort_burning_oil,,TRUE,Lightning
 fort_permafrost_spikes,Permafrost Spikes,Fortress,,,0,1,Spiked Barricades combined with Ice chill enemies.,,FortPermafrostSpikes,Flat,1,fort_spikes,,TRUE,Ice
+elem_frost_arrows,Frost Arrows,Elemental,,Ice,0,1,Arrow Towers fire frost arrows that chill and slow enemies.,,TowerFrostArrows,Flat,1,freezedraw,,,
+elem_glacial_catapult,Glacial Catapult,Elemental,,Ice,0,1,Catapults create slippery ground that makes enemies slip over. Players slide with boosted speed and agility.,,TowerSlipperyGround,Flat,1,icebreaker,,,
+elem_lightning_arrows,Lightning Arrows,Elemental,,Lightning,0,1,Lightning arrows make Arrow Towers fire 50% faster.,,TowerLightningArrows;TowerArrowFireRateBonus,Flat;Percent,1;0.50,swiftarrow,,,
+elem_tempest_catapult,Tempest Catapult,Elemental,,Lightning,0,1,Catapult impacts summon a swirling storm cloud that strikes enemies with lightning bolts.,,TowerStormCloud,Flat,1,imbue_lightning,,,
+elem_fire_arrows,Fire Arrows,Elemental,,Fire,0,1,Fire arrows deal 40% more damage and ignite enemies on hit.,,TowerFireArrows;TowerArrowDamageBonus,Flat;Percent,1;0.40,flamearrow,,,
+elem_pyroclast_catapult,Rolling Fireball,Elemental,,Fire,0,1,Catapults launch a rolling fireball that leaves a blazing trail. Player melee attacks can redirect the ball and boost its speed.,,TowerRollingFireball,Flat,1,explodeheads,,,

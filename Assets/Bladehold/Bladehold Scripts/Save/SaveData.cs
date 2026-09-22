@@ -55,6 +55,12 @@ public class SaveData
     /// <summary>Permanently unlocked armour sets. 'default_armour' is unlocked by default.</summary>
     public List<string> unlockedArmourSets = new List<string> { "default_armour" };
 
+    /// <summary>Currently equipped mount id (e.g. 'basic_horse').</summary>
+    public string equippedMount = "basic_horse";
+
+    /// <summary>Permanently unlocked mounts. 'basic_horse' is unlocked by default.</summary>
+    public List<string> unlockedMounts = new List<string> { "basic_horse" };
+
     /// <summary>Highest unlocked meta-progression tier (1 = default, 2 = costs 5 Orcish Metal, 3 = costs 10 Orcish Metal).</summary>
     public int unlockedMetaTier = 1;
 
@@ -146,6 +152,8 @@ public class SaveData
         equippedRangedWeapon = defaults.equippedRangedWeapon;
         equippedArmourSet = defaults.equippedArmourSet;
         unlockedArmourSets = new List<string>(defaults.unlockedArmourSets);
+        equippedMount = defaults.equippedMount;
+        unlockedMounts = new List<string>(defaults.unlockedMounts);
         unlockedMetaTier = defaults.unlockedMetaTier;
         purchasedMetaPerks.Clear();
     }

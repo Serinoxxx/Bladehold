@@ -70,11 +70,31 @@ public class PlayerMount : MonoBehaviour
     [Tooltip("Optional: played the moment the player dismounts.")]
     [SerializeField] private MMF_Player dismountFeedback;
 
+    [Header("Summon / Mount Configuration")]
+    [SerializeField] private GameObject horsePrefab;
+
     /// <summary>Raised with true on mount, false on dismount — for cosmetic listeners (camera, UI).</summary>
     public event Action<bool> OnMountedChanged;
+    public event Action<float> OnMountCastStarted;
+    public event Action OnMountCastCancelled;
+    public event Action OnMountCastCompleted;
+    public event Action<float, float> OnMountDurationChanged;
+    public event Action<float, float> OnMountCooldownChanged;
 
     /// <summary>True while seated on a horse.</summary>
     public bool IsMounted => currentHorse != null;
+
+    /// <summary>True while channeling to summon the mount.</summary>
+    public bool IsCastingMount => isCasting;
+
+    /// <summary>0..1 cast progress fraction.</summary>
+    public float CastProgress => castDuration > 0f ? Mathf.Clamp01(castProgress / castDuration) : 0f;
+
+    public float MountRemainingDuration => mountRemainingDuration;
+    public float MaxMountDuration => maxMountDuration;
+    public float MountRemainingCooldown => mountRemainingCooldown;
+    public float MaxMountCooldown => maxMountCooldown;
+    public MountDefinitionSO EquippedMount => GetEquippedMountDefinition();
 
     /// <summary>The horse being ridden, or null.</summary>
     public HorseMotor CurrentHorse => currentHorse;
@@ -97,6 +117,17 @@ public class PlayerMount : MonoBehaviour
 
     private Transform originalParent;
     private Vector3 originalLocalScale;
+
+    private bool isCasting;
+    private Vector3 castStartPosition;
+    private float castProgress;
+    private float castDuration = 1.5f;
+    private float mountRemainingDuration;
+    private float maxMountDuration = 30f;
+    private float mountRemainingCooldown;
+    private float maxMountCooldown = 90f;
+    private GameObject summonedHorseInstance;
+    private MountDefinitionSO equippedMountDef;
 
     /// <summary>Horses whose max health already got the Barded Steed multiplier — applied once per horse, not per mount.</summary>
     private readonly HashSet<Health> scaledHorses = new HashSet<Health>();
@@ -249,6 +280,7 @@ public class PlayerMount : MonoBehaviour
         }
 
         health.OnDied += HandlePlayerDied;
+        health.OnDamaged += HandleDamageWhileCasting;
         inputReader.onDismountPerformed += HandleDismountPressed;
     }
 
@@ -258,6 +290,7 @@ public class PlayerMount : MonoBehaviour
         {
             health.TryBlockDamage -= HandleIncomingDamage;
             health.OnDied -= HandlePlayerDied;
+            health.OnDamaged -= HandleDamageWhileCasting;
         }
         if (inputReader != null)
         {
@@ -290,26 +323,84 @@ public class PlayerMount : MonoBehaviour
 
     private void Update()
     {
-        if (anyError || !IsMounted) return;
+        if (anyError) return;
 
         // Keyboard fallback until the regenerated Controls class routes the Dismount action
         // through InputReader (see FindDismountAction).
         if (!hasDismountAction && Keyboard.current != null && Keyboard.current.xKey.wasPressedThisFrame)
         {
-            Dismount();
+            HandleDismountPressed();
             return;
         }
 
-        if (hasHorseSpeedParam && currentHorse != null)
+        if (isCasting)
         {
-            animator.SetFloat(horseSpeedHash, currentHorse.NormalizedSpeed);
+            // Moving during cast cancels the summon
+            if ((characterController != null && characterController.velocity.sqrMagnitude > 0.5f) ||
+                (transform.position - castStartPosition).sqrMagnitude > 0.25f)
+            {
+                CancelMountCast();
+            }
+            else
+            {
+                castProgress += Time.deltaTime;
+                if (castProgress >= castDuration)
+                {
+                    CompleteMountCast();
+                }
+            }
+        }
+
+        if (IsMounted)
+        {
+            if (mountRemainingDuration > 0f)
+            {
+                mountRemainingDuration = Mathf.Max(0f, mountRemainingDuration - Time.deltaTime);
+                OnMountDurationChanged?.Invoke(mountRemainingDuration, maxMountDuration);
+                if (mountRemainingDuration <= 0f)
+                {
+                    Dismount();
+                }
+            }
+
+            if (hasHorseSpeedParam && currentHorse != null)
+            {
+                animator.SetFloat(horseSpeedHash, currentHorse.NormalizedSpeed);
+            }
+        }
+        else
+        {
+            if (mountRemainingCooldown > 0f)
+            {
+                mountRemainingCooldown = Mathf.Max(0f, mountRemainingCooldown - Time.deltaTime);
+                OnMountCooldownChanged?.Invoke(mountRemainingCooldown, maxMountCooldown);
+            }
         }
     }
 
     private void HandleDismountPressed()
     {
-        if (anyError || !IsMounted) return;
-        Dismount();
+        if (anyError) return;
+        if (IsMounted)
+        {
+            Dismount();
+        }
+        else if (isCasting)
+        {
+            CancelMountCast();
+        }
+        else
+        {
+            TryStartMountCast();
+        }
+    }
+
+    private void HandleDamageWhileCasting(Damage damage)
+    {
+        if (isCasting)
+        {
+            CancelMountCast();
+        }
     }
 
     /// <summary>
@@ -523,6 +614,17 @@ public class PlayerMount : MonoBehaviour
         currentMountable = null;
         currentProxy = null;
 
+        if (summonedHorseInstance != null)
+        {
+            Destroy(summonedHorseInstance, 0.5f);
+            summonedHorseInstance = null;
+        }
+
+        MountDefinitionSO def = GetEquippedMountDefinition();
+        maxMountCooldown = def != null && def.mountCooldown > 0f ? def.mountCooldown : 90f;
+        mountRemainingCooldown = maxMountCooldown;
+        mountRemainingDuration = 0f;
+
         if (dismountFeedback != null)
         {
             dismountFeedback.PlayFeedbacks();
@@ -572,9 +674,112 @@ public class PlayerMount : MonoBehaviour
 
     private void HandlePlayerDied()
     {
+        CancelMountCast();
         if (IsMounted)
         {
             Dismount();
         }
+    }
+
+    public bool TryStartMountCast()
+    {
+        if (anyError || IsMounted || isCasting) return false;
+
+        if (mountRemainingCooldown > 0f)
+        {
+            Debug.Log($"[PlayerMount] Mount is on cooldown! ({mountRemainingCooldown:F1}s remaining)");
+            return false;
+        }
+
+        MountDefinitionSO def = GetEquippedMountDefinition();
+        castDuration = def != null && def.castTime > 0f ? def.castTime : 1.5f;
+        castProgress = 0f;
+        castStartPosition = transform.position;
+        isCasting = true;
+
+        OnMountCastStarted?.Invoke(castDuration);
+        Debug.Log($"[PlayerMount] Starting mount summon cast ({castDuration:F1}s)...");
+        return true;
+    }
+
+    public void CancelMountCast()
+    {
+        if (!isCasting) return;
+        isCasting = false;
+        castProgress = 0f;
+        OnMountCastCancelled?.Invoke();
+        Debug.Log("[PlayerMount] Mount cast cancelled.");
+    }
+
+    public void CompleteMountCast()
+    {
+        isCasting = false;
+        castProgress = 0f;
+
+        if (horsePrefab == null)
+        {
+            horsePrefab = Resources.Load<GameObject>("Horse") ??
+                          Resources.Load<GameObject>("Prefabs/Horse/Horse");
+        }
+
+        if (horsePrefab == null)
+        {
+            Debug.LogError("[PlayerMount] No horse prefab found to summon!");
+            return;
+        }
+
+        Vector3 spawnPos = transform.position;
+        Quaternion spawnRot = transform.rotation;
+
+        GameObject spawned = Instantiate(horsePrefab, spawnPos, spawnRot);
+        summonedHorseInstance = spawned;
+
+        HorseMotor motor = spawned.GetComponentInChildren<HorseMotor>();
+        MountDefinitionSO def = GetEquippedMountDefinition();
+        if (motor != null && def != null)
+        {
+            motor.ApplyMountDefinition(def);
+        }
+
+        if (motor != null && TryMount(motor))
+        {
+            maxMountDuration = def != null && def.mountDuration > 0f ? def.mountDuration : 30f;
+            mountRemainingDuration = maxMountDuration;
+            OnMountCastCompleted?.Invoke();
+            Debug.Log($"[PlayerMount] Summoned and mounted {def?.displayName ?? "Warhorse"}!");
+        }
+        else
+        {
+            Destroy(spawned);
+            summonedHorseInstance = null;
+        }
+    }
+
+    public MountDefinitionSO GetEquippedMountDefinition()
+    {
+        SaveData save = SaveSystem.Load();
+        string mountId = save != null && !string.IsNullOrEmpty(save.equippedMount) ? save.equippedMount : "basic_horse";
+
+        if (equippedMountDef != null && string.Equals(equippedMountDef.id, mountId, StringComparison.OrdinalIgnoreCase))
+        {
+            return equippedMountDef;
+        }
+
+        MountDefinitionSO[] allMounts = Resources.LoadAll<MountDefinitionSO>("Mounts");
+        if (allMounts != null && allMounts.Length > 0)
+        {
+            foreach (var m in allMounts)
+            {
+                if (string.Equals(m.id, mountId, StringComparison.OrdinalIgnoreCase))
+                {
+                    equippedMountDef = m;
+                    return m;
+                }
+            }
+            equippedMountDef = allMounts[0];
+            return equippedMountDef;
+        }
+
+        return null;
     }
 }

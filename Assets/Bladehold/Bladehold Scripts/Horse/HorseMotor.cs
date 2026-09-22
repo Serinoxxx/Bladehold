@@ -108,6 +108,48 @@ public class HorseMotor : MonoBehaviour
         }
     }
 
+    /// <summary>
+    ///     Applies the custom stats, materials, and scale from a MountDefinitionSO.
+    /// </summary>
+    public void ApplyMountDefinition(MountDefinitionSO mountDef)
+    {
+        if (mountDef == null) return;
+
+        if (horseData != null)
+        {
+            horseData = Instantiate(horseData);
+            horseData.maxSpeed = mountDef.maxSpeed;
+            horseData.chargeSpeed = mountDef.chargeSpeed;
+            horseData.chargeDamage = mountDef.chargeDamage;
+            horseData.knockbackForce = mountDef.knockbackForce;
+
+            if (chargeDamage != null)
+            {
+                chargeDamage.SetHorseData(horseData);
+            }
+        }
+
+        if (mountDef.scaleMultiplier > 0f)
+        {
+            transform.localScale = Vector3.one * mountDef.scaleMultiplier;
+        }
+
+        if (mountDef.material != null)
+        {
+            var renderers = GetComponentsInChildren<Renderer>(true);
+            foreach (var r in renderers)
+            {
+                if (r is ParticleSystemRenderer || r is TrailRenderer) continue;
+                Material[] mats = new Material[r.sharedMaterials.Length];
+                for (int i = 0; i < mats.Length; i++)
+                {
+                    mats[i] = mountDef.material;
+                }
+                r.materials = mats;
+            }
+        }
+    }
+
     private void Awake()
     {
         if (health == null)

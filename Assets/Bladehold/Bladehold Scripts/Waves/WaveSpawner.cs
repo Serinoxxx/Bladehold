@@ -649,6 +649,7 @@ public class WaveSpawner : MonoBehaviour
             enemy.GetComponent<PowderKegAttack>()?.SetDamage(def.damage.Value);
             enemy.GetComponent<BannermanAura>()?.SetDamage(def.damage.Value);
             enemy.GetComponent<BulwarkAttack>()?.SetDamage(def.damage.Value);
+            enemy.GetComponent<CaptainKombustaController>()?.SetDamage(def.damage.Value);
         }
         if (def.minGold.HasValue)
         {

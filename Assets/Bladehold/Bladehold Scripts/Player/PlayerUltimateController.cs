@@ -371,7 +371,7 @@ public class PlayerUltimateController : MonoBehaviour
         if (meleeId.Contains("mace")) return "mace_earthshaker_ult";
         if (meleeId.Contains("axe")) return "axe_bladestorm_ult";
         if (meleeId.Contains("staff")) return "mage_skyfall_ult";
-        if (meleeId.Contains("sword")) return "sword_mount_ult";
+        if (meleeId.Contains("sword")) return "sword_blade_tempest";
 
         // 2. Check ranged weapon
         string rangedId = PlayerWeaponManager.Instance != null ? PlayerWeaponManager.Instance.CurrentRangedId : "bow";

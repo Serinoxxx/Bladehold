@@ -4,6 +4,55 @@
 
 ### New Features
 
+- Added visual Balance Tree Editor window (`Bladehold > Balance Tree Editor` or `F1`) displaying an interactive node graph of Weapons, Draft Upgrades, Armour Sets, Mounts, Meta Perks, and Tower Defenses
+- Added in-place balance tweaking and inspector panel for graph nodes with live mid-game apply and disk persistence for ScriptableObjects and DraftUpgrades.csv
+- Added Add Node menu and TODO node specification tracking writing pending mechanics and dependencies to `UPGRADE_TODOS.md` for AI implementation
+- Added 6 Elemental Draft Cards for battlefield defenses in the draft pool: Frost Arrows, Glacial Catapult, Lightning Arrows, Tempest Catapult, Fire Arrows, and Pyroclast Catapult
+- Added Frost Arrows imbuing Arrow Tower volleys with chill status that slows target movement speed by 40%
+- Added Glacial Catapult creating slippery frozen ground upon rock impact that trips incoming enemies and makes them slip over
+- Added player ice sliding allowing heroes to slide smoothly across frozen ice zones with +35% move speed and reduced movement friction while retaining responsive steering and rotation
+- Added Lightning Arrows accelerating Arrow Tower fire rate by +50% and imbuing projectiles with electric shock damage
+- Added Tempest Catapult generating a lingering overhead storm cloud on impact that repeatedly calls down lightning strikes on enemies below
+- Added Fire Arrows enhancing Arrow Tower arrow damage by +40% and igniting struck foes for burning damage over time
+- Added Pyroclast Catapult launching an impact rock that breaks out into a rolling fireball, blazing across the battlefield, leaving fiery trails, and damaging enemies in its path
+- Added melee fireball redirection allowing the player to strike rolling fireballs with melee weapons to steer their trajectory and grant a speed boost
+- Added automated behavioral benchmark tests verifying elemental draft upgrades, tower fire rates, ice zone mechanics, player sliding, storm clouds, and melee fireball redirection
+
+- Added Princess Katherine boss encounter in the Royal Sanctuary with fleeing AI and holy revival mechanics
+- Added Armored Knight AI enemies with sword combat, downed states at 0 HP, and golden soul beacons
+- Added dynamic revival spell channeling where attacking Princess Katherine delays her 5-second cast by +1.5 seconds per hit
+- Added regal Royal Throne Annex arena scene (`Bladehold Princess Sanctuary.unity`) with throne dais, crimson carpets, colonnades, and baked NavMesh
+- Added Dark Campaign Victory awarding 500 Gold, 30 Goblin Blood, and 10 Orcish Metal upon defeating the Princess
+- Added automated behavioral benchmark tests validating Armored Knight downed state, 5.0-second spell channeling, player hit delay penalties, and revival restoration
+- Added Necromancer Revelation encounter with dialogue choice system ([Obey] Slay Princess Katherine vs [Defy] Slay the Necromancer)
+- Added two-phase Necromancer boss battle featuring an invulnerable Bubble Shield, skeleton army summoning, and Phase 2 direct scythe combat with 180-degree telegraphed sweeping slashes
+- Added Crypt Skeleton AI minions with NavMesh tracking, melee attacks, and automatic shield shatter death callbacks
+- Added colossal indoor crypt arena scene (`Bladehold Necromancer Crypt.unity`) with vaulted colonnades, stone tombs, ritual altar, braziers, and baked NavMesh
+- Added automated behavioral benchmark tests validating Necromancer bubble shield invulnerability, skeleton death shield shatter, Phase 2 melee vulnerability, and campaign node routing
+
+- Added 7 Castle Campaign level scenes with distinctive architecture and atmospheric lighting: Castle Courtyard (Tier 1 Center), Castle Ramparts (Tier 2A), Castle Armory (Tier 2B), Great Hall (Tier 4), Castle Dungeons (Tier 5A), Castle Conservatory (Tier 5B), and Throne Antechamber (Tier 7)
+- Added automated Castle Campaign level generator editor tool (`BuildCastleLevels.cs`) constructing greybox geometry, perimeter battlements, lighting, connected prefabs, choke point tower defense plots, exit gates, and baked NavMesh
+- Added 4 to 6 strategic Tower Plots (`TowerPlot.prefab`) in each castle level wired to `TowerPlotManager` and `FortDefenseManager` with full Build Wheel UI support
+- Added Castle Gate extraction exits unlocking `[E] View Campaign Map` upon completing the 3rd wave of each sector, returning players directly to the overview war room map
+- Added tier-scaled wave progression advancing wave numbers and difficulty across campaign tiers (Tier 1: Waves 1-3, Tier 2: Waves 4-6, Tier 4: Waves 7-9, Tier 5: Waves 10-12, Tier 7: Waves 13-15)
+- Added smashable Supply Room sector in the Castle Campaign featuring destructible wooden crates, barrels, and reinforced lockboxes
+- Added SupplyBox destructible component rewarding in-run Gold, Fort Supply, permanent Goblin Blood, and Orcish Metal when broken by weapons
+- Added non-hostile Supply Room safe area with player upgrade rehydration and return gate to the Campaign Map
+- Added Castle Campaign 8-tier branching node progression graph, Campaign Overview Map UI, and sector hover tooltips
+- Added Clan Captain Captain Kombusta with a 10-dynamite barrage special attack at range (>=5m) dealing 20 damage in a 2m telegraphed radius, and a close-quarters self-immolation fire aura after 3 seconds in melee range
+- Added automated behavioral benchmark tests for Captain Kombusta dynamite explosions, distance qualification, and melee self-immolation
+- Added Deep Quiver Tier 1 meta upgrade increasing maximum ammo capacity by +5
+- Added ammunition bundle purchasable at the Rest Area shop
+- Added battlefield ammunition drops from defeated enemies
+- Added center-screen warning when aiming without ammunition
+- Added contextual aiming HUD showing current ammo under crosshairs only while aiming
+- Added universal ammunition pool for ranged weapons (bow, thrown axe, wand) starting with 20 base capacity
+- Added dedicated mount system triggered at any time using [X] with an interruptible summon cast time
+- Added 5 unlockable mount variations in the Meta Area purchasable with Orcish Metal (Frost Strider, Infernal Steed, Abyssal Behemoth, Phantom Charger, Celestial Dreadnought) with distinct speeds, charge damage, knockback, durations, and cooldowns
+- Added diegetic 3D mount pedestals in the Meta Area for inspecting, unlocking, and equipping mounts
+- Added Blade Tempest as the signature sword melee ultimate ability, replacing the old mount ultimate
+- Unlocked horse archery from the get-go across all loadouts
+- Added HUD cast bar, active duration timer, and cooldown tracker for mounts
 - Added battlefield defences system with static Tower Plots placed across the battlefield, allowing players to build defenses during preparation phases via an interactive Build Wheel
 - Added 6 upgradable defense types: Arrow Tower (rapid light piercing), Catapult (lobbed fire splash damage), Ballista (heavy line-piercing bolts), Net Thrower (area root and immobilization), Spike Trap (high damage impale triggers), and Oil Vat (boiling oil slowing and scalding)
 - Added dynamic assembly drop sequence where defenses drop from the sky piece-by-piece with holy light rays and wood impact slamming
@@ -22,9 +71,15 @@
 
 ### Fixes
 
+- Fixed boss controller component initialization in test mode ensuring damage block event listeners are hooked immediately upon combat activation
+
 ### Balance Changes
 
+- Standardized basic warhorse to 30-second duration and 90-second cooldown with a 1.5-second summon cast time
+
 ### General Changes
+
+- Registered Necromancer's Crypt and Princess Sanctuary in AreaDatabase and linked Tier 8 campaign node branches
 - Removed fortress defense cards from the random draft pool in favor of dedicated static battlefield plots and the Build Wheel system
 - Replaced banner bounty fortress draft rewards with Supply Cache payouts
 - Removed deprecated class definitions and legacy skill tree data in favor of the unified Hero loadout and draft upgrade systems
@@ -304,6 +359,12 @@
 ### General Changes
 - Added hit sparks, screen shake, and impact sounds
 - Added Berserker and Mage skill tree preview panels
+
+
+
+
+
+
 
 
 

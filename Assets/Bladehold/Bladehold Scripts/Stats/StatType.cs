@@ -97,6 +97,8 @@ public enum StatType
     BowPrecisionDamageBonus,
     /// <summary>Arrow flight speed in metres per second (base from BowSO.baseArrowSpeed). Faster arrows spend less time falling, so the "Swift Arrows" line flattens the drop arc too.</summary>
     BowArrowSpeed,
+    /// <summary>Maximum ammunition capacity for ranged weapons (base 20).</summary>
+    MaxAmmo,
 
     /// <summary>Fraction (0-1) enemies near the player are slowed while the bow is drawn (the "Freezing Draw" line). 0 = locked.</summary>
     FreezingDrawSlowPercent,
@@ -383,6 +385,16 @@ public enum StatType
     WeaponFireExplosionRadius,
     WeaponLightningBounces,
     WeaponLightningDamagePercent,
+
+    // --- Elemental Tower & Defense Draft Upgrades ---
+    TowerFrostArrows,
+    TowerSlipperyGround,
+    TowerLightningArrows,
+    TowerArrowFireRateBonus,
+    TowerStormCloud,
+    TowerFireArrows,
+    TowerArrowDamageBonus,
+    TowerRollingFireball,
 }
 
 /// <summary>

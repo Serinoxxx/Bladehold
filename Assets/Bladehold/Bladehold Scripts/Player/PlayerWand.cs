@@ -443,6 +443,12 @@ public class PlayerWand : MonoBehaviour, IChargedAimWeapon
             return;
         }
 
+        PlayerAmmo ammo = PlayerAmmo.Instance != null ? PlayerAmmo.Instance : (Player.Instance != null ? Player.Instance.Ammo : null);
+        if (ammo != null && !ammo.TryConsumeAmmo(1))
+        {
+            return;
+        }
+
         lastShotTime = Time.time;
         Fire();
 

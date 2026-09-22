@@ -131,6 +131,8 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
     [SerializeField] private PlayerMount mount;
     [Tooltip("The player's Health component. Auto-wired from parents or Player.Instance.")]
     [SerializeField] private Health playerHealth;
+    [Tooltip("The player's Ammo component. Auto-wired from parents or Player.Instance.")]
+    [SerializeField] private PlayerAmmo playerAmmo;
 
     /// <summary>Fired once per arrow (or bounce) that actually damaged a target, with the world hit point — the <see cref="DamageTrigger.OnHit" /> shape, so feedback listeners can treat bow and sword alike.</summary>
     public event Action<IDamageable, Damage, Vector3> OnHit;
@@ -257,6 +259,10 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         {
             playerHealth = GetComponentInParent<Health>();
         }
+        if (playerAmmo == null)
+        {
+            playerAmmo = GetComponentInParent<PlayerAmmo>() ?? GetComponentInChildren<PlayerAmmo>();
+        }
     }
 
     private void Start()
@@ -363,9 +369,8 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         stats.SetBase(StatType.BowUnstableOrbs, 0f);
         stats.SetBase(StatType.FlamingArrowsDamagePercent, 0f);
         stats.SetBase(StatType.FlamingArrowsBomberDetonateChance, 0f);
-        // The BowUnlocked gate, mounted edition: base 0 = the bow can't be drawn from horseback
-        // until the "Horse Archer" node is bought.
-        stats.SetBase(StatType.HorseArcheryUnlocked, 0f);
+        // Horse archery is unlocked from the get-go:
+        stats.SetBase(StatType.HorseArcheryUnlocked, 1f);
         stats.SetBase(StatType.BowAutoShotOnDash, 0f);
         stats.SetBase(StatType.BowPierceCount, 0f);
         stats.SetBase(StatType.BowDesperateVolleyArrows, 0f);
@@ -393,6 +398,15 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         if (playerHealth != null)
         {
             playerHealth.OnDamaged += HandlePlayerDamaged;
+        }
+
+        if (playerAmmo == null && Player.Instance != null)
+        {
+            playerAmmo = Player.Instance.Ammo;
+        }
+        if (playerAmmo == null)
+        {
+            playerAmmo = GetComponentInParent<PlayerAmmo>() ?? GetComponentInChildren<PlayerAmmo>();
         }
 
         Subscribe();
@@ -573,6 +587,12 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
             return;
         }
         if (Time.time - lastFireTime < config.fireCooldownSeconds)
+        {
+            return;
+        }
+
+        PlayerAmmo ammo = playerAmmo != null ? playerAmmo : (Player.Instance != null ? Player.Instance.Ammo : null);
+        if (ammo != null && !ammo.TryConsumeAmmo(1))
         {
             return;
         }

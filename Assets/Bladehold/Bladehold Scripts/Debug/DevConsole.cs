@@ -40,7 +40,7 @@ public class DevConsole : MonoBehaviour
 
     private static readonly UltimateOption[] AvailableUltimates = new[]
     {
-        new UltimateOption { id = "sword_mount_ult", displayName = "Warhorse Mount" },
+        new UltimateOption { id = "sword_blade_tempest", displayName = "Blade Tempest" },
         new UltimateOption { id = "axe_bladestorm_ult", displayName = "Bladestorm" },
         new UltimateOption { id = "bow_stream_ult", displayName = "Arrow Stream" },
         new UltimateOption { id = "taxe_vortex_ult", displayName = "Axe Vortex" },

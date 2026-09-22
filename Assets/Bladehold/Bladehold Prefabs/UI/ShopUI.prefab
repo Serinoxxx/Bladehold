@@ -1236,6 +1236,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: a5ee3e6c3fec676478fb3b5e1fca4285, type: 2}
   - {fileID: 11400000, guid: 0d106c316b7f0464182a396cd5f01305, type: 2}
   - {fileID: 11400000, guid: 81efd18f7a0909a40a2722e6b287d14a, type: 2}
+  - {fileID: 11400000, guid: 91a214eabddd4557b9a605bfd0e0b6a8, type: 2}
   shopPanel: {fileID: 2469670472168727604}
   goldLabel: {fileID: 2246940765165224931}
   closeButton: {fileID: 2509999035455932394}

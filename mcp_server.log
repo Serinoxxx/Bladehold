@@ -1,0 +1,66 @@
+
+
++-----------------------------------------------------------------------------+
+|                                                                             |
+|                                                                             |
+|                        \u2584\u2580\u2580 \u2584\u2580\u2588 \u2588\u2580\u2580 \u2580\u2588\u2580 \u2588\u2580\u2584\u2580\u2588 \u2588\u2580\u2580 \u2588\u2580\u2588                        |
+|                        \u2588\u2580  \u2588\u2580\u2588 \u2584\u2584\u2588  \u2588  \u2588 \u2580 \u2588 \u2588\u2584\u2584 \u2588\u2580\u2580                        |
+|                                                                             |
+|                                                                             |
+|                                                                             |
+|                                FastMCP 3.4.7                                |
+|                            https://gofastmcp.com                            |
+|                                                                             |
+|                 \U0001f5a5  Server:      mcp-for-unity-server, 3.4.7                 |
+|                 \U0001f680 Deploy free: https://horizon.prefect.io                  |
+|                                                                             |
++-----------------------------------------------------------------------------+
++-----------------------------------------------------------------------------+
+|                         \U0001f389 Update available: 4.0.5                          |
+|                     Run: pip install --upgrade fastmcp                      |
++-----------------------------------------------------------------------------+
+
+
+[09/20/26 23:34:46] INFO     Starting MCP server               transport.py:361
+                             'mcp-for-unity-server' with                       
+                             transport 'http' on                               
+                             http://127.0.0.1:8080/mcp                         
+INFO:     Started server process [46072]
+INFO:     Waiting for application startup.
+2026-09-20 23:34:46,588 - mcp.server.streamable_http_manager - INFO - StreamableHTTP session manager started
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8080 (Press CTRL+C to quit)
+2026-09-20 23:37:06,926 - mcp.server.streamable_http_manager - INFO - Created new transport with session ID: 7f22e2cf033c4d448bbdbef422e72f2c
+INFO:     127.0.0.1:51224 - "POST /mcp HTTP/1.1" 400 Bad Request
+2026-09-20 23:37:06,930 - mcp.server.streamable_http - INFO - Terminating session: 7f22e2cf033c4d448bbdbef422e72f2c
+2026-09-20 23:37:06,931 - mcp.server.streamable_http_manager - INFO - Created new transport with session ID: 438a15eb7c0a4678906449ca8cc5cbd7
+INFO:     127.0.0.1:51224 - "POST /mcp HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51224 - "GET /mcp HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51225 - "POST /mcp HTTP/1.1" 202 Accepted
+INFO:     127.0.0.1:51225 - "GET /.well-known/oauth-protected-resource/mcp HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51225 - "GET /.well-known/oauth-protected-resource HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51225 - "POST /mcp HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51510 - "POST /mcp HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65498 - "POST /mcp HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49427 - "POST /mcp HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49427 - "POST /mcp HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49999 - "POST /mcp HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49999 - "POST /mcp HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50374 - "POST /mcp HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50568 - "POST /mcp HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50662 - "POST /mcp HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50878 - "POST /mcp HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50945 - "POST /mcp HTTP/1.1" 200 OK
+2026-09-21 19:34:15,617 - transport.plugin_hub - WARNING - No Unity plugin reconnected within 0.00s (instance=default)
+2026-09-21 19:34:35,646 - transport.plugin_hub - WARNING - No Unity plugin reconnected within 20.00s (instance=default)
+2026-09-21 19:34:55,924 - transport.plugin_hub - WARNING - No Unity plugin reconnected within 20.00s (instance=default)
+2026-09-21 19:35:16,166 - transport.plugin_hub - WARNING - No Unity plugin reconnected within 20.00s (instance=default)
+2026-09-21 19:35:16,425 - services.tools.refresh_unity - WARNING - refresh_unity: Timed out after 60s waiting for editor to become ready
+INFO:     127.0.0.1:50990 - "POST /mcp HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50990 - "POST /mcp HTTP/1.1" 200 OK
+2026-09-21 19:35:40,799 - transport.plugin_hub - WARNING - No Unity plugin reconnected within 20.00s (instance=default)
+INFO:     127.0.0.1:51319 - "POST /mcp HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51319 - "POST /mcp HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51629 - "POST /mcp HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53908 - "POST /mcp HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53908 - "POST /mcp HTTP/1.1" 200 OK

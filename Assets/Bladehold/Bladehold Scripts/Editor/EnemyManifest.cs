@@ -1004,6 +1004,80 @@ internal static class EnemyManifest
                 }
             }
         },
+
+        // Captain Kombusta: Clan Captain specializing in a 10-dynamite barrage at distance (>=5m) and self-immolation up close.
+        new EnemySpec
+        {
+            id = "captain_kombusta",
+            soFolder = "Captain",
+            prefabName = "Captain Kombusta Enemy Variant",
+            rootScale = 1.35f,
+            disableBaseAIAttack = false,
+            removeComponents = new[] { typeof(GoldenGoblin), typeof(ImpulseGoblin) },
+            children = new[]
+            {
+                new ChildSpec { name = "Dynamite Fire Point", localPosition = new Vector3(0f, 1.4f, 0.5f) }
+            },
+            assets = new[]
+            {
+                new SoSpec
+                {
+                    soType = typeof(CaptainKombustaSO),
+                    assetName = "CaptainKombustaSO",
+                    initDefaults = so =>
+                    {
+                        var data = (CaptainKombustaSO)so;
+                        data.baseMaxHealth = 350f;
+                        data.baseMeleeDamage = 20f;
+                        data.baseMoveSpeed = 3.8f;
+                        data.dynamiteTriggerDistance = 5.0f;
+                        data.dynamiteCount = 10;
+                        data.dynamiteInterval = 1.0f;
+                        data.dynamiteDamage = 20.0f;
+                        data.dynamiteExplosionRadius = 2.0f;
+                        data.dynamiteFlightTime = 0.8f;
+                        data.dynamiteArcHeight = 2.5f;
+                        data.meleeRangeThreshold = 3.5f;
+                        data.meleeIgniteDelay = 3.0f;
+                        data.burnAuraRadius = 4.0f;
+                        data.burnDamagePerSecond = 10.0f;
+                        data.burnTickInterval = 0.5f;
+                        data.burnDuration = 8.0f;
+                        data.telegraphPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/SlamTelegraph.prefab");
+                        data.explosionVfxPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Synty/PolygonParticleFX/Prefabs/FX_Explosion_01.prefab");
+                        data.fireAuraVfxPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Synty/PolygonParticleFX/Prefabs/FX_Fire_01.prefab");
+                        data.explosionSfx = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Audio/Enemies/Bomber/explosion_large_01.wav");
+                        data.fuseSfx = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Audio/Enemies/Bomber/fuse_burning_bomb_dynamite_loop_01.wav");
+                    }
+                }
+            },
+            components = new[]
+            {
+                new ComponentSpec
+                {
+                    type = typeof(CaptainKombustaController),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "attackData", ctx.LoadedAsset("CaptainKombustaSO"));
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                        EnemyPrefabGenerator.SetReference(so, "movement", ctx.Movement);
+                        var attackComp = ctx.Root.GetComponent<AIAttack>();
+                        if (attackComp != null)
+                        {
+                            EnemyPrefabGenerator.SetReference(so, "attack", attackComp);
+                        }
+                        EnemyPrefabGenerator.SetReference(so, "animator", ctx.ChildAnimator);
+                        var hl = ctx.Root.GetComponentInChildren<HighlightEffect>();
+                        if (hl != null)
+                        {
+                            EnemyPrefabGenerator.SetReference(so, "highlightEffect", hl);
+                        }
+                        GameObject firePointChild = ctx.FindOrCreateChild("Dynamite Fire Point", new Vector3(0f, 1.4f, 0.5f));
+                        EnemyPrefabGenerator.SetReference(so, "firePoint", firePointChild.transform);
+                    }
+                }
+            }
+        },
     };
 
     /// <summary>Loads a projectile prefab's component for wiring, throwing when the prefab is

@@ -300,30 +300,58 @@ public class KnockbackReceiver : MonoBehaviour
         routine = null;
     }
 
-    private IEnumerator KnockdownRoutine()
+    /// <summary>
+    ///     Directly triggers a slip / knockdown incapacitation on this enemy (e.g. from slippery ice hazards).
+    /// </summary>
+    public void TriggerKnockdown(float customDuration = -1f)
+    {
+        if (anyError || health == null || health.IsDead || State == KnockbackState.KnockedDown || State == KnockbackState.Airborne || State == KnockbackState.Corpse)
+        {
+            return;
+        }
+
+        if (routine != null)
+        {
+            StopCoroutine(routine);
+            routine = null;
+        }
+
+        PlayKnockdownFeedback();
+        routine = StartCoroutine(KnockdownRoutine(customDuration));
+    }
+
+    private IEnumerator KnockdownRoutine(float customDuration = -1f)
     {
         State = KnockbackState.KnockedDown;
 
-        if (agent.enabled && agent.isOnNavMesh)
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
         {
             agent.isStopped = true;
             agent.ResetPath();
         }
         SetAiEnabled(false);
-        animator.ResetTrigger("Stagger");
-        animator.SetTrigger(knockdownTriggerHash);
+        if (animator != null)
+        {
+            animator.ResetTrigger("Stagger");
+            animator.SetTrigger(knockdownTriggerHash);
+        }
 
+        float duration = customDuration > 0f ? customDuration : (config != null ? config.knockdownSeconds : 1.5f);
         var randomVariance = Random.Range(-.1f, .1f);
 
-        for (float elapsed = 0f; elapsed < config.knockdownSeconds + randomVariance; elapsed += Time.deltaTime)
+        for (float elapsed = 0f; elapsed < duration + randomVariance; elapsed += Time.deltaTime)
         {
             if (State == KnockbackState.Corpse || health.IsDead) yield break;
             yield return null;
         }
 
-        animator.CrossFadeInFixedTime(getUpStateHash, 0.2f, 0);
+        if (animator != null)
+        {
+            animator.CrossFadeInFixedTime(getUpStateHash, 0.2f, 0);
+        }
 
-        for (float elapsed = 0f; elapsed < config.getUpSeconds; elapsed += Time.deltaTime)
+        float getUpTime = config != null ? config.getUpSeconds : 1.0f;
+        for (float elapsed = 0f; elapsed < getUpTime; elapsed += Time.deltaTime)
         {
             if (State == KnockbackState.Corpse || health.IsDead) yield break;
             yield return null;

@@ -19,6 +19,17 @@ public class CatapultProjectile : MonoBehaviour
     private float elapsedTime = 0f;
     private bool hasExploded = false;
 
+    private bool isSlipperyGround = false;
+    private bool isStormCloud = false;
+    private bool isRollingFireball = false;
+
+    public void SetElementalUpgrades(bool slipperyGround, bool stormCloud, bool rollingFireball)
+    {
+        isSlipperyGround = slipperyGround;
+        isStormCloud = stormCloud;
+        isRollingFireball = rollingFireball;
+    }
+
     public void Launch(Vector3 start, Vector3 target, float damage, float duration = 1.2f, float radius = 4.5f)
     {
         startPoint = start;
@@ -103,6 +114,27 @@ public class CatapultProjectile : MonoBehaviour
 
             h.ReceiveDamage(dmg);
             EnemyStatusManager.GetOrAdd(h)?.ApplyStatus("Fire");
+        }
+
+        // 1. Frost Catapult: Spawn Slippery Ice Ground
+        if (isSlipperyGround)
+        {
+            SlipperyIceZone.Spawn(impactPos, splashRadius * 1.25f, 10f);
+        }
+
+        // 2. Lightning Catapult: Spawn Storm Cloud
+        if (isStormCloud)
+        {
+            CatapultStormCloud.Spawn(impactPos, splashRadius * 1.35f, 8f, damageAmount * 0.45f);
+        }
+
+        // 3. Fire Catapult: Spawn Rolling Fireball that carries on along the ground
+        if (isRollingFireball)
+        {
+            Vector3 rollDir = (targetPoint - startPoint);
+            rollDir.y = 0f;
+            if (rollDir.sqrMagnitude < 0.001f) rollDir = transform.forward;
+            RollingFireball.Spawn(impactPos, rollDir.normalized, 9.5f, damageAmount * 0.8f, 10f);
         }
 
         Destroy(gameObject);

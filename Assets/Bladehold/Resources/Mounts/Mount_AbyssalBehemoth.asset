@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d0a6558a5bb47af83e1a4519cb8c2bc, type: 3}
+  m_Name: Mount_AbyssalBehemoth
+  m_EditorClassIdentifier: Assembly-CSharp::MountDefinitionSO
+  id: abyssal_behemoth
+  displayName: Abyssal Behemoth
+  description: A hulking demonic charger of massive stature. Features colossal knockback and endurance.
+  icon: {fileID: 0}
+  orcishMetalUnlockCost: 10
+  material: {fileID: 2100000, guid: a71f075367d14954889e364b553a8476, type: 2}
+  scaleMultiplier: 1.1
+  maxSpeed: 7.5
+  chargeSpeed: 11
+  chargeDamage: 22
+  knockbackForce: 24
+  castTime: 1.8
+  mountDuration: 40
+  mountCooldown: 100

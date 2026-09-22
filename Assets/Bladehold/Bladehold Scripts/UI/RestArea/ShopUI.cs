@@ -239,6 +239,14 @@ public class ShopUI : MonoBehaviour
             case ShopItemEffectType.WaveEndHealTemporary:
                 RunSession.SpecialHerbsWavesRemaining = item.durationWaves;
                 break;
+
+            case ShopItemEffectType.AmmoRefill:
+                RunSession.AddInRunAmmo(Mathf.RoundToInt(item.effectValue));
+                if (p != null && p.Ammo != null)
+                {
+                    p.Ammo.AddAmmo(Mathf.RoundToInt(item.effectValue));
+                }
+                break;
         }
     }
 }

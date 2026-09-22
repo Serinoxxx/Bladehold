@@ -5,7 +5,8 @@ public enum ShopItemEffectType
     HealInstant,
     MaxHealthRun,
     MoveSpeedTemporary,
-    WaveEndHealTemporary
+    WaveEndHealTemporary,
+    AmmoRefill
 }
 
 /// <summary>

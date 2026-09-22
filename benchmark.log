@@ -1,0 +1,1130 @@
+[Licensing::Module] Trying to connect to existing licensing client channel...
+Built from '6000.3/staging' branch; Version is '6000.3.10f1 (e35f0c77bd8e) revision 14901004'; Using compiler version '194234433'; Build Type 'Release'
+OS: 'Windows 11  (10.0.22000) Core' Language: 'en' Physical Memory: 32698 MB
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-lance" at "2026-09-20T11:43:27.524911Z"
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
+System  architecture: x64
+Process architecture: x64
+Date: 2026-09-20T11:43:27Z
+[Licensing::Client] Code 10 while verifying Licensing Client signature (process Id: 17372, path: "C:/Program Files/Unity Hub/UnityLicensingClient_V1/Unity.Licensing.Client.exe")
+[Licensing::Module] LicensingClient has failed validation; ignoring
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.18.3+d7ffd15
+  Session Id:              cabdc4747e1a496aab84b2bd7d6402c4
+  Correlation Id:          2179558688f5038ed81e3ff4f196d146
+  External correlation Id: 3348420899634362306
+  Machine Id:              wY2fj3CJxMtzt7EI9s4LSZIFFyM=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-lance" (connect: 0.00s, validation: 0.00s, handshake: 0.03s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-lance-notifications" at "2026-09-20T11:43:27.5603578Z"
+[Licensing::Module] Error: Access token is unavailable; failed to update
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] License group:
+  Id: 2259282-UnityPersXXXX
+  Product: Unity Personal
+  Type: Assigned
+  Expiration: Unlimited
+[Licensing::Client] Successfully updated license, isAsync: True, time: 0.01
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] Licensing Background thread has ended after 0.05s
+
+COMMAND LINE ARGUMENTS:
+C:\Program Files\Unity\Hub\Editor\6000.3.10f1\Editor\Unity.exe
+-batchmode
+-quit
+-nographics
+-projectPath
+C:\Users\lance\source\repos\My project
+-executeMethod
+WeaponReachBenchmark.RunBenchmarkMenuItem
+-logFile
+C:\Users\lance\source\repos\My project\benchmark.log
+Successfully changed project path to: C:\Users\lance\source\repos\My project
+C:/Users/lance/source/repos/My project
+[UnityMemory] Configuration Parameters - Can be set up in boot.config
+    "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+    "memorysetup-temp-allocator-size-audio-worker=65536"
+    "memorysetup-temp-allocator-size-gfx=262144"
+    "memorysetup-allocator-temp-initial-block-size-main=262144"
+    "memorysetup-allocator-temp-initial-block-size-worker=262144"
+    "memorysetup-temp-allocator-size-background-worker=32768"
+    "memorysetup-temp-allocator-size-job-worker=262144"
+    "memorysetup-temp-allocator-size-preload-manager=33554432"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-bucket-allocator-granularity=16"
+    "memorysetup-bucket-allocator-bucket-count=8"
+    "memorysetup-bucket-allocator-block-size=33554432"
+    "memorysetup-bucket-allocator-block-count=8"
+    "memorysetup-main-allocator-block-size=16777216"
+    "memorysetup-thread-allocator-block-size=16777216"
+    "memorysetup-gfx-main-allocator-block-size=16777216"
+    "memorysetup-gfx-thread-allocator-block-size=16777216"
+    "memorysetup-cache-allocator-block-size=4194304"
+    "memorysetup-typetree-allocator-block-size=2097152"
+    "memorysetup-profiler-bucket-allocator-granularity=16"
+    "memorysetup-profiler-bucket-allocator-bucket-count=8"
+    "memorysetup-profiler-bucket-allocator-block-size=33554432"
+    "memorysetup-profiler-bucket-allocator-block-count=8"
+    "memorysetup-profiler-allocator-block-size=16777216"
+    "memorysetup-profiler-editor-allocator-block-size=1048576"
+    "memorysetup-temp-allocator-size-main=16777216"
+    "memorysetup-job-temp-allocator-block-size=2097152"
+    "memorysetup-job-temp-allocator-block-size-background=1048576"
+    "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+    "memorysetup-temp-allocator-size-cloud-worker=32768"
+Player connection [51996]  Target information:
+
+Player connection [51996]  * "[IP] 192.168.50.219 [Port] 55504 [Flags] 2 [Guid] 2276381669 [EditorId] 2276381669 [Version] 1048832 [Id] WindowsEditor(7,LANCE-COMPUTER) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [51996]  * "[IP] 169.254.83.107 [Port] 55504 [Flags] 2 [Guid] 2276381669 [EditorId] 2276381669 [Version] 1048832 [Id] WindowsEditor(7,LANCE-COMPUTER) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [51996] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [51996] Host joined alternative multi-casting on [225.0.0.222:34997]...
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+[Package Manager] Connected to IPC stream "Upm-46764" after 0.3 seconds.
+[Licensing::Client] Successfully resolved entitlement details
+Library Redirect Path: Library/
+[Physics::Module] Selected backend.
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+Refreshing native plugins compatible for Editor in 9.35 ms, found 5 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Initialize engine version: 6000.3.10f1 (e35f0c77bd8e)
+[Subsystems] Discovering subsystems at path C:/Program Files/Unity/Hub/Editor/6000.3.10f1/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path C:/Users/lance/source/repos/My project/Assets
+Forcing GfxDevice: Null
+GfxDevice: creating device client; kGfxThreadingModeNonThreaded
+NullGfxDevice:
+    Version:  NULL 1.0 [1.0]
+    Renderer: Null Device
+    Vendor:   Unity Technologies
+Shader 'MoreMountains/MMRipple': fallback shader 'Particle/AlphaBlended' not found
+Initialize mono
+Mono path[0] = 'C:/Program Files/Unity/Hub/Editor/6000.3.10f1/Editor/Data/Managed'
+Mono path[1] = 'C:/Program Files/Unity/Hub/Editor/6000.3.10f1/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
+Mono config path = 'C:/Program Files/Unity/Hub/Editor/6000.3.10f1/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56764
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+ImportWorker Server TCP listen port: 0
+AcceleratorClientConnectionCallback - disconnected - :0
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.3.10f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Registered in 0.002092 seconds.
+- Loaded All Assemblies, in  0.486 seconds
+Native extension for WindowsStandalone target not found
+ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.470 seconds
+Domain Reload Profiling: 953ms
+	BeginReloadAssembly (162ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (0ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (17ms)
+	RebuildCommonClasses (74ms)
+	RebuildNativeTypeToScriptingClass (16ms)
+	initialDomainReloadingComplete (53ms)
+	LoadAllAssembliesAndSetupDomain (178ms)
+		LoadAssemblies (141ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (175ms)
+			TypeCache.Refresh (173ms)
+				TypeCache.ScanAssembly (160ms)
+			BuildScriptInfoCaches (0ms)
+			ResolveRequiredComponents (1ms)
+	FinalizeReload (471ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (429ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (52ms)
+			SetLoadedEditorAssemblies (5ms)
+			BeforeProcessingInitializeOnLoad (104ms)
+			ProcessInitializeOnLoadAttributes (186ms)
+			ProcessInitializeOnLoadMethodAttributes (82ms)
+			AfterProcessingInitializeOnLoad (0ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (0ms)
+[Licensing::Client] Successfully resolved entitlement details
+Application.AssetDatabase Initial Refresh Start
+Package Manager log level set to [2]
+[Package Manager] Restoring resolved packages state from cache
+[Licensing::Client] Successfully resolved entitlement details
+[Package Manager] Registered 75 packages:
+  Packages from [https://package.openupm.com]:
+    com.google.external-dependency-manager@1.2.188 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.google.external-dependency-manager@99b9e5db7e03)
+    com.gameanalytics.sdk@8.0.1 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.gameanalytics.sdk@770dff7b5a42)
+  Packages from [https://packages.unity.com]:
+    com.unity.ai.navigation@2.0.10 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.ai.navigation@c33a115e9883)
+    com.unity.cinemachine@3.1.7 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.cinemachine@f3f96bcb59af)
+    com.unity.collab-proxy@2.11.3 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.collab-proxy@e566cd3e7623)
+    com.unity.editorcoroutines@1.0.1 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.editorcoroutines@54394ed3283c)
+    com.unity.formats.fbx@5.1.6 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.formats.fbx@9f10493e557a)
+    com.unity.ide.rider@3.0.39 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.ide.rider@4504839d03f7)
+    com.unity.ide.visualstudio@2.0.26 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.ide.visualstudio@a99d56dec63f)
+    com.unity.inputsystem@1.18.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.inputsystem@57d0e36f6123)
+    com.unity.localization@1.5.12 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.localization@b0a588a05f2a)
+    com.unity.nuget.newtonsoft-json@3.2.2 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.nuget.newtonsoft-json@4dfd81071c64)
+    com.unity.postprocessing@3.5.4 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.postprocessing@141166b789e3)
+    com.unity.sharp-zip-lib@1.4.1 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.sharp-zip-lib@f6e4ef34e4d8)
+    com.unity.timeline@1.8.10 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.timeline@7f8b2fb101b6)
+    com.unity.visualscripting@1.9.9 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.visualscripting@191c0d7e3b69)
+    com.unity.searcher@4.9.4 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.searcher@d45a78918735)
+    com.unity.addressables@2.9.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.addressables@de8760a788ae)
+    com.autodesk.fbx@5.1.3 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.autodesk.fbx@90432ec06ab5)
+    com.unity.splines@2.8.3 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.splines@56b2023b4b9f)
+    com.unity.burst@1.8.28 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.burst@07790c2d06d9)
+    com.unity.mathematics@1.3.3 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.mathematics@19a9377c4ffa)
+    com.unity.collections@2.6.2 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.collections@aea9d3bd5e19)
+    com.unity.profiling.core@1.0.3 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.profiling.core@8a49f7027d06)
+    com.unity.scriptablebuildpipeline@2.6.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.scriptablebuildpipeline@a633a2d168ec)
+    com.unity.settings-manager@2.1.1 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.settings-manager@0b8638c5ce86)
+    com.unity.nuget.mono-cecil@1.11.6 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.nuget.mono-cecil@ecb9724e46ff)
+    com.unity.test-framework.performance@3.2.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.test-framework.performance@0840f58e4562)
+  Built-in packages:
+    com.unity.2d.sprite@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.2d.sprite@d14b9d497a24)
+    com.unity.multiplayer.center@1.0.1 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.multiplayer.center@f01f4ba8d00a)
+    com.unity.render-pipelines.universal@17.3.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.render-pipelines.universal@37e0d4fc2503)
+    com.unity.shadergraph@17.3.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.shadergraph@c8830f61858d)
+    com.unity.test-framework@1.6.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.test-framework@0b7a23ab2e1d)
+    com.unity.ugui@2.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.ugui@bb329a87fcdc)
+    com.unity.visualeffectgraph@17.3.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.visualeffectgraph@ec7b0e7f250a)
+    com.unity.modules.accessibility@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.accessibility)
+    com.unity.modules.adaptiveperformance@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.adaptiveperformance)
+    com.unity.modules.ai@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.ai)
+    com.unity.modules.androidjni@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.androidjni)
+    com.unity.modules.animation@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.animation)
+    com.unity.modules.assetbundle@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.assetbundle)
+    com.unity.modules.audio@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.audio)
+    com.unity.modules.cloth@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.cloth)
+    com.unity.modules.director@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.director)
+    com.unity.modules.imageconversion@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.imageconversion)
+    com.unity.modules.imgui@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.imgui)
+    com.unity.modules.jsonserialize@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.jsonserialize)
+    com.unity.modules.particlesystem@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.particlesystem)
+    com.unity.modules.physics@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.physics)
+    com.unity.modules.physics2d@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.physics2d)
+    com.unity.modules.screencapture@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.screencapture)
+    com.unity.modules.terrain@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.terrain)
+    com.unity.modules.terrainphysics@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.terrainphysics)
+    com.unity.modules.tilemap@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.tilemap)
+    com.unity.modules.ui@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.ui)
+    com.unity.modules.uielements@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.uielements)
+    com.unity.modules.umbra@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.umbra)
+    com.unity.modules.unityanalytics@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.unityanalytics)
+    com.unity.modules.unitywebrequest@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.unitywebrequest)
+    com.unity.modules.unitywebrequestassetbundle@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.unitywebrequestassetbundle)
+    com.unity.modules.unitywebrequestaudio@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.unitywebrequestaudio)
+    com.unity.modules.unitywebrequesttexture@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.unitywebrequesttexture)
+    com.unity.modules.unitywebrequestwww@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.unitywebrequestwww)
+    com.unity.modules.vectorgraphics@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.vectorgraphics)
+    com.unity.modules.vehicles@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.vehicles)
+    com.unity.modules.video@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.video)
+    com.unity.modules.vr@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.vr)
+    com.unity.modules.wind@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.wind)
+    com.unity.modules.xr@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.xr)
+    com.unity.modules.subsystems@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.subsystems)
+    com.unity.modules.hierarchycore@1.0.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.modules.hierarchycore)
+    com.unity.render-pipelines.core@17.3.0 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.render-pipelines.core@04ab0eefa0c3)
+    com.unity.ext.nunit@2.0.5 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.ext.nunit@d8c07649098d)
+    com.unity.render-pipelines.universal-config@17.0.3 (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.unity.render-pipelines.universal-config@8dc1aab4af1d)
+  Git packages:
+    com.coplaydev.unity-mcp@https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#main (location: C:\Users\lance\source\repos\My project\Library\PackageCache\com.coplaydev.unity-mcp@a4c2d0a84573)
+[Subsystems] No new subsystems found in resolved package list.
+[Package Manager] Done registering packages in 0.02 seconds
+GUID [739aba3c85e94d3f8129d1d0cf1577f0] for asset 'Packages/com.google.external-dependency-manager/ExternalDependencyManager/Editor/1.2.188/Google.IOSResolver.dll' conflicts with:
+  'Assets/ExternalDependencyManager/Editor/1.2.188/Google.IOSResolver.dll' (current owner)
+We can't assign a new GUID because the asset is in an immutable folder. The asset will be ignored.
+GUID [ffd499abcc9844148684ce0e3b1c6dbe] for asset 'Packages/com.google.external-dependency-manager/ExternalDependencyManager/Editor/1.2.188/Google.IOSResolver.pdb' conflicts with:
+  'Assets/ExternalDependencyManager/Editor/1.2.188/Google.IOSResolver.pdb' (current owner)
+We can't assign a new GUID because the asset is in an immutable folder. The asset will be ignored.
+GUID [c45899ebe8c74e899b01db48612530ab] for asset 'Packages/com.google.external-dependency-manager/ExternalDependencyManager/Editor/1.2.188/Google.JarResolver.dll' conflicts with:
+  'Assets/ExternalDependencyManager/Editor/1.2.188/Google.JarResolver.dll' (current owner)
+We can't assign a new GUID because the asset is in an immutable folder. The asset will be ignored.
+GUID [2540d4575eb345e49656440d2b171a04] for asset 'Packages/com.google.external-dependency-manager/ExternalDependencyManager/Editor/1.2.188/Google.JarResolver.pdb' conflicts with:
+  'Assets/ExternalDependencyManager/Editor/1.2.188/Google.JarResolver.pdb' (current owner)
+We can't assign a new GUID because the asset is in an immutable folder. The asset will be ignored.
+GUID [b7778556e8bc46f28e11b7a43a0925d0] for asset 'Packages/com.google.external-dependency-manager/ExternalDependencyManager/Editor/1.2.188/Google.PackageManagerResolver.dll' conflicts with:
+  'Assets/ExternalDependencyManager/Editor/1.2.188/Google.PackageManagerResolver.dll' (current owner)
+We can't assign a new GUID because the asset is in an immutable folder. The asset will be ignored.
+GUID [d95eb524298348f89f6671187c12892c] for asset 'Packages/com.google.external-dependency-manager/ExternalDependencyManager/Editor/1.2.188/Google.PackageManagerResolver.pdb' conflicts with:
+  'Assets/ExternalDependencyManager/Editor/1.2.188/Google.PackageManagerResolver.pdb' (current owner)
+We can't assign a new GUID because the asset is in an immutable folder. The asset will be ignored.
+GUID [f4184fc5e57343b2a1b32e0eb18c3e75] for asset 'Packages/com.google.external-dependency-manager/ExternalDependencyManager/Editor/1.2.188/Google.VersionHandlerImpl.dll' conflicts with:
+  'Assets/ExternalDependencyManager/Editor/1.2.188/Google.VersionHandlerImpl.dll' (current owner)
+We can't assign a new GUID because the asset is in an immutable folder. The asset will be ignored.
+GUID [17414cd556f842239fa5728687967cfa] for asset 'Packages/com.google.external-dependency-manager/ExternalDependencyManager/Editor/1.2.188/Google.VersionHandlerImpl.pdb' conflicts with:
+  'Assets/ExternalDependencyManager/Editor/1.2.188/Google.VersionHandlerImpl.pdb' (current owner)
+We can't assign a new GUID because the asset is in an immutable folder. The asset will be ignored.
+GUID [0c7e8f57d2d845cdb4f86f2b6643cf8b] for asset 'Packages/com.google.external-dependency-manager/ExternalDependencyManager/Editor/external-dependency-manager_version-1.2.188_manifest.txt' conflicts with:
+  'Assets/ExternalDependencyManager/Editor/external-dependency-manager_version-1.2.188_manifest.txt' (current owner)
+We can't assign a new GUID because the asset is in an immutable folder. The asset will be ignored.
+GUID [759559faddc84bb99c9a9ceba91f58f1] for asset 'Packages/com.google.external-dependency-manager/ExternalDependencyManager/Editor/Google.VersionHandler.dll' conflicts with:
+  'Assets/ExternalDependencyManager/Editor/Google.VersionHandler.dll' (current owner)
+We can't assign a new GUID because the asset is in an immutable folder. The asset will be ignored.
+GUID [8a529042701647f3afa9e76ebbb531fc] for asset 'Packages/com.google.external-dependency-manager/ExternalDependencyManager/Editor/Google.VersionHandler.pdb' conflicts with:
+  'Assets/ExternalDependencyManager/Editor/Google.VersionHandler.pdb' (current owner)
+We can't assign a new GUID because the asset is in an immutable folder. The asset will be ignored.
+Assembly reference Packages/com.unity.cinemachine/Editor/Samples/ExposeHDRPInternals/HDRP-Editor-ref.asmref has no target assembly definition
+Assembly reference Packages/com.unity.cinemachine/Editor/Samples/ExposeHDRPInternals/HDRP-Editor-ref.asmref has no target assembly definition
+[ScriptCompilation] Requested script compilation because: Assetdatabase observed changes in script compilation related files
+Duplicate assembly 'System.Runtime.CompilerServices.Unsafe.dll' with different versions detected, using 'Packages/com.unity.collections/Unity.Collections.Tests/System.Runtime.CompilerServices.Unsafe/System.Runtime.CompilerServices.Unsafe.dll, AssemblyName=System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' and ignoring 'Assets/AssetInventory/Editor/ThirdParty/Microsoft AI/System.Runtime.CompilerServices.Unsafe.dll, AssemblyName=System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:80
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Production
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\Users\lance\source\repos\My project\
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/Ping application/grpc -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'gRPC - /UnityILPP.PostProcessing/Ping'
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'gRPC - /UnityILPP.PostProcessing/Ping'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/Ping application/grpc - - 200 - application/grpc 36.8073ms
+Starting: C:\Program Files\Unity\Hub\Editor\6000.3.10f1\Editor\Data\Tools\BuildPipeline\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1900b0aEDbg.dag" --continue-on-failure --profile="Library/Bee/backend1.traceevents" ScriptAssemblies
+WorkingDir: C:/Users/lance/source/repos/My project
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/ConfigurePostProcessors application/grpc -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'gRPC - /UnityILPP.PostProcessing/ConfigurePostProcessors'
+warn: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Assembly system.runtime.interopservices.windowsruntime has duplicate hint path. Ignoring "C:\Program Files\Unity\Hub\Editor\6000.3.10f1\Editor\Data\UnityReferenceAssemblies\unity-4.8-api\Facades\System.Runtime.InteropServices.WindowsRuntime.dll" in favor of "C:\Program Files\Unity\Hub\Editor\6000.3.10f1\Editor\Data\NetStandard\Extensions\2.0.0\System.Runtime.InteropServices.WindowsRuntime.dll"
+warn: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Assembly system.componentmodel.composition has duplicate hint path. Ignoring "C:\Program Files\Unity\Hub\Editor\6000.3.10f1\Editor\Data\UnityReferenceAssemblies\unity-4.8-api\System.ComponentModel.Composition.dll" in favor of "C:\Program Files\Unity\Hub\Editor\6000.3.10f1\Editor\Data\NetStandard\compat\2.1.0\shims\netfx\System.ComponentModel.Composition.dll"
+info: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Resolved Unity.Burst.Cecil, Version=0.11.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e with Library\PackageCache\com.unity.burst@07790c2d06d9\Unity.Burst.CodeGen\Unity.Burst.Cecil.dll
+info: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Resolved Mono.Cecil, Version=0.11.5.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e with Library\PackageCache\com.unity.nuget.mono-cecil@ecb9724e46ff\Mono.Cecil.dll
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'gRPC - /UnityILPP.PostProcessing/ConfigurePostProcessors'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/ConfigurePostProcessors application/grpc - - 200 - application/grpc 55.3937ms
+DisplayProgressbar: Compiling Scripts
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/PostProcessAssembly application/grpc -
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/PostProcessAssembly application/grpc -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'gRPC - /UnityILPP.PostProcessing/PostProcessAssembly'
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'gRPC - /UnityILPP.PostProcessing/PostProcessAssembly'
+info: Unity.ILPP.Runner.PostProcessingPipeline[0]
+      Processing assembly Library/Bee/artifacts/1900b0aEDbg.dag/Assembly-CSharp-Editor.dll, with 138 defines and 397 references
+info: Unity.ILPP.Runner.PostProcessingPipeline[0]
+      Processing assembly Library/Bee/artifacts/1900b0aEDbg.dag/Assembly-CSharp.dll, with 140 defines and 364 references
+info: Unity.ILPP.Runner.PostProcessingPipeline[0]
+      processors: Unity.Jobs.CodeGen.JobsILPostProcessor, zzzUnity.Burst.CodeGen.BurstILPostProcessor
+info: Unity.ILPP.Runner.PostProcessingPipeline[0]
+      processors: Unity.Jobs.CodeGen.JobsILPostProcessor, zzzUnity.Burst.CodeGen.BurstILPostProcessor
+info: Unity.ILPP.Runner.PostProcessingPipeline[0]
+      running Unity.Jobs.CodeGen.JobsILPostProcessor
+info: Unity.ILPP.Runner.PostProcessingPipeline[0]
+      running Unity.Jobs.CodeGen.JobsILPostProcessor
+info: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Resolved Unity.Collections, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null with Library\Bee\artifacts\1900b0aEDbg.dag\Unity.Collections.dll
+info: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Resolved UnityEditor.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null with C:\Program Files\Unity\Hub\Editor\6000.3.10f1\Editor\Data\Managed\UnityEngine\UnityEditor.CoreModule.dll
+info: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Resolved UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null with C:\Program Files\Unity\Hub\Editor\6000.3.10f1\Editor\Data\Managed\UnityEngine\UnityEngine.CoreModule.dll
+info: Unity.ILPP.Runner.PostProcessingPipeline[0]
+      running zzzUnity.Burst.CodeGen.BurstILPostProcessor
+info: Unity.ILPP.Runner.PostProcessingPipeline[0]
+      running zzzUnity.Burst.CodeGen.BurstILPostProcessor
+info: Unity.ILPP.Runner.PostProcessingAssemblyLoadContext[0]
+      Resolved Unity.Burst.Cecil.Rocks, Version=0.11.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e with Library\PackageCache\com.unity.burst@07790c2d06d9\Unity.Burst.CodeGen\Unity.Burst.Cecil.Rocks.dll
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'gRPC - /UnityILPP.PostProcessing/PostProcessAssembly'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/PostProcessAssembly application/grpc - - 200 - application/grpc 519.4662ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'gRPC - /UnityILPP.PostProcessing/PostProcessAssembly'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/PostProcessAssembly application/grpc - - 200 - application/grpc 664.1783ms
+ExitCode: 0 Duration: 4s425ms
+[1095/1446  0s] ILPP-Configuration Library/ilpp-configuration.nevergeneratedoutput
+[1438/1446  2s] Csc Library/Bee/artifacts/1900b0aEDbg.dag/Assembly-CSharp.dll (+2 others)
+Assets\Bladehold\Bladehold Scripts\Chests\ChestSpawner.cs(48,23): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+
+Assets\Bladehold\Bladehold Scripts\UI\Transitions\LoadingScreenManager.cs(182,13): warning CS0618: 'TMP_Text.enableWordWrapping' is obsolete: 'The enabledWordWrapping property is now obsolete. Please use the textWrappingMode property instead.'
+
+Assets\Bladehold\Bladehold Scripts\UI\MainMenu\UILevelCarousel.cs(44,35): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+
+Assets\Bladehold\Bladehold Scripts\UI\MainMenu\LevelSelectScreenUI.cs(104,78): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+
+Assets\Bladehold\Bladehold Scripts\UI\MainMenu\LevelSelectScreenUI.cs(119,29): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+
+Assets\Bladehold\Bladehold Scripts\UI\MainMenu\KeySkillBadgeUI.cs(61,27): warning CS0618: 'Object.FindObjectOfType<T>(bool)' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+
+Assets\Bladehold\Bladehold Scripts\Objectives\DestroySiegeEnginesObjective.cs(207,59): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+
+Assets\Bladehold\Bladehold Scripts\Player\ArrowProjectile.cs(272,85): warning CS0252: Possible unintended reference comparison; to get a value comparison, cast the left hand side to type 'Object'
+
+Assets\Bladehold\Bladehold Scripts\Player\AxeProjectile.cs(383,85): warning CS0252: Possible unintended reference comparison; to get a value comparison, cast the left hand side to type 'Object'
+
+Assets\Bladehold\Bladehold Scripts\Player\FlameZone.cs(62,135): warning CS0252: Possible unintended reference comparison; to get a value comparison, cast the left hand side to type 'Object'
+
+Assets\Bladehold\Bladehold Scripts\Player\DraftWeaponElementEffects.cs(96,35): warning CS0253: Possible unintended reference comparison; to get a value comparison, cast the right hand side to type 'Object'
+
+Assets\Bladehold\Bladehold Scripts\Player\MagicMissileProjectile.cs(240,85): warning CS0252: Possible unintended reference comparison; to get a value comparison, cast the left hand side to type 'Object'
+
+Assets\Bladehold\Bladehold Scripts\Player\MageImbuement.cs(506,61): warning CS0252: Possible unintended reference comparison; to get a value comparison, cast the left hand side to type 'Object'
+
+Assets\Bladehold\Bladehold Scripts\Player\PeriodicImbuementController.cs(316,61): warning CS0252: Possible unintended reference comparison; to get a value comparison, cast the left hand side to type 'Object'
+
+Assets\Bladehold\Bladehold Scripts\UI\DamageDirectionUI.cs(58,24): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+
+Assets\Bladehold\Bladehold Scripts\UI\HorseBarGroupUI.cs(42,21): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+
+Assets\Bladehold\Bladehold Scripts\UI\EnemyIntroUI.cs(144,9): warning CS0618: 'TMP_Text.enableWordWrapping' is obsolete: 'The enabledWordWrapping property is now obsolete. Please use the textWrappingMode property instead.'
+
+Assets\Bladehold\Bladehold Scripts\UI\HorseHealthBarUI.cs(27,21): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+
+Assets\Bladehold\Bladehold Scripts\UI\HorseStaminaUI.cs(37,21): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+
+Assets\Bladehold\Bladehold Scripts\UI\ObjectiveTrackerUI.cs(33,23): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+
+Assets\Bladehold\Bladehold Scripts\UI\ObjectiveTrackerUI.cs(37,32): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+
+Assets\Bladehold\Bladehold Scripts\UI\ObjectiveTrackerUI.cs(45,23): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+
+Assets\Bladehold\Bladehold Scripts\UI\ObjectiveTrackerUI.cs(49,70): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+
+Assets\Bladehold\Bladehold Scripts\UI\ObjectiveTrackerUI.cs(168,82): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+
+Assets\Bladehold\Bladehold Scripts\UI\ObjectiveTrackerUI.cs(180,52): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+
+Assets\Bladehold\Bladehold Scripts\UI\ObjectiveTrackerUI.cs(182,96): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+
+Assets\Bladehold\Bladehold Scripts\UI\PlayerHealthBarUI.cs(29,24): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+
+Assets\Bladehold\Bladehold Scripts\UI\WaveStatsPanel.cs(70,23): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+
+Assets\Bladehold\Bladehold Scripts\UI\WaveClearedBannerUI.cs(57,23): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+
+Assets\Bladehold\Bladehold Scripts\UI\WaveClearedBannerUI.cs(61,32): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+
+Assets\Bladehold\Bladehold Scripts\UI\WaveClearedBannerUI.cs(118,47): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+
+Assets\Bladehold\Bladehold Scripts\UI\WaveClearedBannerUI.cs(122,70): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+
+Assets\Bladehold\Bladehold Scripts\Waves\ElementNodeSpawner.cs(46,23): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+
+Assets\Bladehold\Bladehold Scripts\Waves\WaveIntermissionUI.cs(57,30): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+
+Assets\Bladehold\Bladehold Scripts\Waves\WaveUI.cs(31,23): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+
+Assets\Bladehold\Bladehold Scripts\Waves\WaveIntermissionUI.cs(88,23): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+
+Assets\Bladehold\Bladehold Scripts\Waves\WaveIntermissionUI.cs(92,32): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+
+Assets\Bladehold\Bladehold Scripts\Waves\WaveIntermissionUI.cs(207,30): warning CS0618: 'Object.FindObjectsOfType<T>()' is obsolete: 'Object.FindObjectsOfType has been deprecated. Use Object.FindObjectsByType instead which lets you decide whether you need the results sorted or not.  FindObjectsOfType sorts the results by InstanceID but if you do not need this using FindObjectSortMode.None is considerably faster.'
+
+Assets\Bladehold\Bladehold Scripts\Waves\WaveIntermissionUI.cs(208,28): warning CS0618: 'Object.FindObjectsOfType<T>()' is obsolete: 'Object.FindObjectsOfType has been deprecated. Use Object.FindObjectsByType instead which lets you decide whether you need the results sorted or not.  FindObjectsOfType sorts the results by InstanceID but if you do not need this using FindObjectSortMode.None is considerably faster.'
+
+Assets\Bladehold\Bladehold Scripts\Waves\WaveIntermissionUI.cs(209,33): warning CS0618: 'Object.FindObjectsOfType<T>()' is obsolete: 'Object.FindObjectsOfType has been deprecated. Use Object.FindObjectsByType instead which lets you decide whether you need the results sorted or not.  FindObjectsOfType sorts the results by InstanceID but if you do not need this using FindObjectSortMode.None is considerably faster.'
+
+Assets\Bladehold\Bladehold Scripts\Waves\WaveIntermissionUI.cs(210,35): warning CS0618: 'Object.FindObjectsOfType<T>()' is obsolete: 'Object.FindObjectsOfType has been deprecated. Use Object.FindObjectsByType instead which lets you decide whether you need the results sorted or not.  FindObjectsOfType sorts the results by InstanceID but if you do not need this using FindObjectSortMode.None is considerably faster.'
+
+Assets\Bladehold\Bladehold Scripts\Waves\WaveIntermissionUI.cs(211,30): warning CS0618: 'Object.FindObjectsOfType<T>()' is obsolete: 'Object.FindObjectsOfType has been deprecated. Use Object.FindObjectsByType instead which lets you decide whether you need the results sorted or not.  FindObjectsOfType sorts the results by InstanceID but if you do not need this using FindObjectSortMode.None is considerably faster.'
+
+Assets\Third Party\LeanTween\Examples\Scripts\TestingUnitTests.cs(526,35): warning CS0618: 'Object.FindObjectsOfType(Type)' is obsolete: 'Object.FindObjectsOfType has been deprecated. Use Object.FindObjectsByType instead which lets you decide whether you need the results sorted or not.  FindObjectsOfType sorts the results by InstanceID, but if you do not need this using FindObjectSortMode.None is considerably faster.'
+
+Assets\Bladehold\Bladehold Scripts\Objectives\DefeatSlayerObjective.cs(61,46): warning CS0067: The event 'DefeatSlayerObjective.OnFailed' is never used
+
+Assets\Bladehold\Bladehold Scripts\Objectives\ProtectWagonObjective.cs(59,46): warning CS0067: The event 'ProtectWagonObjective.OnFailed' is never used
+
+Assets\Bladehold\Bladehold Scripts\Upgrades\SurvivorsGameManager.cs(48,25): warning CS0067: The event 'SurvivorsGameManager.OnVictory' is never used
+
+Assets\Bladehold\Bladehold Scripts\Objectives\KillEnemiesObjective.cs(31,46): warning CS0067: The event 'KillEnemiesObjective.OnFailed' is never used
+
+Assets\Bladehold\Bladehold Scripts\Objectives\StopBatteringRamObjective.cs(92,46): warning CS0067: The event 'StopBatteringRamObjective.OnFailed' is never used
+
+Assets\Bladehold\Bladehold Scripts\Objectives\SurvivorsObjectiveManager.cs(67,57): warning CS0067: The event 'SurvivorsObjectiveManager.OnPhaseTimeTick' is never used
+
+Assets\Bladehold\Bladehold Scripts\Waves\GameLoopManager.cs(102,32): warning CS0067: The event 'GameLoopManager.OnIntermissionTick' is never used
+
+Assets\Bladehold\Bladehold Scripts\Objectives\GoblinRushObjective.cs(48,46): warning CS0067: The event 'GoblinRushObjective.OnFailed' is never used
+
+Assets\Bladehold\Bladehold Scripts\Objectives\GoldenGoblinObjective.cs(47,46): warning CS0067: The event 'GoldenGoblinObjective.OnFailed' is never used
+
+Assets\Bladehold\Bladehold Scripts\Upgrades\SurvivorsLevelSystem.cs(30,17): warning CS0414: The field 'SurvivorsLevelSystem.totalRunGoldTracked' is assigned but its value is never used
+
+Assets\Bladehold\Bladehold Scripts\Bosses\PrincessBossController.cs(37,37): warning CS0414: The field 'PrincessBossController.bossTitle' is assigned but its value is never used
+
+Assets\Bladehold\Bladehold Scripts\UI\MountStatusUI.cs(35,18): warning CS0414: The field 'MountStatusUI.anyError' is assigned but its value is never used
+
+Assets\Bladehold\Bladehold Scripts\UI\GoblinBloodUI.cs(7,18): warning CS0414: The field 'GoblinBloodUI.anyError' is assigned but its value is never used
+
+Assets\Bladehold\Bladehold Scripts\UI\OrcishMetalUI.cs(7,18): warning CS0414: The field 'OrcishMetalUI.anyError' is assigned but its value is never used
+
+Assets\Bladehold\Bladehold Scripts\Bosses\NecromancerBossController.cs(19,37): warning CS0414: The field 'NecromancerBossController.bossTitle' is assigned but its value is never used
+
+Assets\Bladehold\Bladehold Scripts\Upgrades\SurvivorsLevelSystem.cs(31,17): warning CS0414: The field 'SurvivorsLevelSystem.lastKnownWalletCoins' is assigned but its value is never used
+
+Assets\Bladehold\Bladehold Scripts\UI\SurvivorsHUDUI.cs(24,18): warning CS0414: The field 'SurvivorsHUDUI.anyError' is assigned but its value is never used
+
+Assets\Bladehold\Bladehold Scripts\UI\WaveClearedBannerUI.cs(51,18): warning CS0414: The field 'WaveClearedBannerUI.anyError' is assigned but its value is never used
+
+Assets\Third Party\Synty\AnimationBaseLocomotion\Samples\Scripts\SamplePlayerAnimationController.cs(312,22): warning CS0414: The field 'SamplePlayerAnimationController._isSliding' is assigned but its value is never used
+
+Assets\Bladehold\Bladehold Scripts\Player\MaceUltimate.cs(30,18): warning CS0414: The field 'MaceUltimate.isRunning' is assigned but its value is never used
+[1440/1446  0s] ILPostProcess Library/Bee/artifacts/1900b0aEDbg.dag/post-processed/Assembly-CSharp-Editor.dll (+pdb)
+Processing assembly Library/Bee/artifacts/1900b0aEDbg.dag/Assembly-CSharp-Editor.dll, with 138 defines and 397 references
+
+processors: Unity.Jobs.CodeGen.JobsILPostProcessor, zzzUnity.Burst.CodeGen.BurstILPostProcessor
+
+running Unity.Jobs.CodeGen.JobsILPostProcessor
+
+running zzzUnity.Burst.CodeGen.BurstILPostProcessor
+[1442/1446  0s] ILPostProcess Library/Bee/artifacts/1900b0aEDbg.dag/post-processed/Assembly-CSharp.dll (+pdb)
+Processing assembly Library/Bee/artifacts/1900b0aEDbg.dag/Assembly-CSharp.dll, with 140 defines and 364 references
+
+processors: Unity.Jobs.CodeGen.JobsILPostProcessor, zzzUnity.Burst.CodeGen.BurstILPostProcessor
+
+running Unity.Jobs.CodeGen.JobsILPostProcessor
+
+running zzzUnity.Burst.CodeGen.BurstILPostProcessor
+[1443/1446  0s] CopyFiles Library/ScriptAssemblies/Assembly-CSharp.pdb
+[1444/1446  0s] CopyFiles Library/ScriptAssemblies/Assembly-CSharp.dll
+*** Tundra build success (4.39 seconds), 6 items updated, 1446 evaluated
+Assets\Bladehold\Bladehold Scripts\Chests\ChestSpawner.cs(48,23): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+Assets\Bladehold\Bladehold Scripts\UI\Transitions\LoadingScreenManager.cs(182,13): warning CS0618: 'TMP_Text.enableWordWrapping' is obsolete: 'The enabledWordWrapping property is now obsolete. Please use the textWrappingMode property instead.'
+Assets\Bladehold\Bladehold Scripts\UI\MainMenu\UILevelCarousel.cs(44,35): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+Assets\Bladehold\Bladehold Scripts\UI\MainMenu\LevelSelectScreenUI.cs(104,78): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+Assets\Bladehold\Bladehold Scripts\UI\MainMenu\LevelSelectScreenUI.cs(119,29): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+Assets\Bladehold\Bladehold Scripts\UI\MainMenu\KeySkillBadgeUI.cs(61,27): warning CS0618: 'Object.FindObjectOfType<T>(bool)' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+Assets\Bladehold\Bladehold Scripts\Objectives\DestroySiegeEnginesObjective.cs(207,59): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+Assets\Bladehold\Bladehold Scripts\Player\ArrowProjectile.cs(272,85): warning CS0252: Possible unintended reference comparison; to get a value comparison, cast the left hand side to type 'Object'
+Assets\Bladehold\Bladehold Scripts\Player\AxeProjectile.cs(383,85): warning CS0252: Possible unintended reference comparison; to get a value comparison, cast the left hand side to type 'Object'
+Assets\Bladehold\Bladehold Scripts\Player\FlameZone.cs(62,135): warning CS0252: Possible unintended reference comparison; to get a value comparison, cast the left hand side to type 'Object'
+Assets\Bladehold\Bladehold Scripts\Player\DraftWeaponElementEffects.cs(96,35): warning CS0253: Possible unintended reference comparison; to get a value comparison, cast the right hand side to type 'Object'
+Assets\Bladehold\Bladehold Scripts\Player\MagicMissileProjectile.cs(240,85): warning CS0252: Possible unintended reference comparison; to get a value comparison, cast the left hand side to type 'Object'
+Assets\Bladehold\Bladehold Scripts\Player\MageImbuement.cs(506,61): warning CS0252: Possible unintended reference comparison; to get a value comparison, cast the left hand side to type 'Object'
+Assets\Bladehold\Bladehold Scripts\Player\PeriodicImbuementController.cs(316,61): warning CS0252: Possible unintended reference comparison; to get a value comparison, cast the left hand side to type 'Object'
+Assets\Bladehold\Bladehold Scripts\UI\DamageDirectionUI.cs(58,24): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+Assets\Bladehold\Bladehold Scripts\UI\HorseBarGroupUI.cs(42,21): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+Assets\Bladehold\Bladehold Scripts\UI\EnemyIntroUI.cs(144,9): warning CS0618: 'TMP_Text.enableWordWrapping' is obsolete: 'The enabledWordWrapping property is now obsolete. Please use the textWrappingMode property instead.'
+Assets\Bladehold\Bladehold Scripts\UI\HorseHealthBarUI.cs(27,21): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+Assets\Bladehold\Bladehold Scripts\UI\HorseStaminaUI.cs(37,21): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+Assets\Bladehold\Bladehold Scripts\UI\ObjectiveTrackerUI.cs(33,23): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+Assets\Bladehold\Bladehold Scripts\UI\ObjectiveTrackerUI.cs(37,32): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+Assets\Bladehold\Bladehold Scripts\UI\ObjectiveTrackerUI.cs(45,23): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+Assets\Bladehold\Bladehold Scripts\UI\ObjectiveTrackerUI.cs(49,70): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+Assets\Bladehold\Bladehold Scripts\UI\ObjectiveTrackerUI.cs(168,82): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+Assets\Bladehold\Bladehold Scripts\UI\ObjectiveTrackerUI.cs(180,52): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+Assets\Bladehold\Bladehold Scripts\UI\ObjectiveTrackerUI.cs(182,96): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+Assets\Bladehold\Bladehold Scripts\UI\PlayerHealthBarUI.cs(29,24): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+Assets\Bladehold\Bladehold Scripts\UI\WaveStatsPanel.cs(70,23): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+Assets\Bladehold\Bladehold Scripts\UI\WaveClearedBannerUI.cs(57,23): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+Assets\Bladehold\Bladehold Scripts\UI\WaveClearedBannerUI.cs(61,32): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+Assets\Bladehold\Bladehold Scripts\UI\WaveClearedBannerUI.cs(118,47): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+Assets\Bladehold\Bladehold Scripts\UI\WaveClearedBannerUI.cs(122,70): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+Assets\Bladehold\Bladehold Scripts\Waves\ElementNodeSpawner.cs(46,23): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+Assets\Bladehold\Bladehold Scripts\Waves\WaveIntermissionUI.cs(57,30): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+Assets\Bladehold\Bladehold Scripts\Waves\WaveUI.cs(31,23): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+Assets\Bladehold\Bladehold Scripts\Waves\WaveIntermissionUI.cs(88,23): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+Assets\Bladehold\Bladehold Scripts\Waves\WaveIntermissionUI.cs(92,32): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindFirstObjectByType instead or if finding any instance is acceptable the faster Object.FindAnyObjectByType'
+Assets\Bladehold\Bladehold Scripts\Waves\WaveIntermissionUI.cs(207,30): warning CS0618: 'Object.FindObjectsOfType<T>()' is obsolete: 'Object.FindObjectsOfType has been deprecated. Use Object.FindObjectsByType instead which lets you decide whether you need the results sorted or not.  FindObjectsOfType sorts the results by InstanceID but if you do not need this using FindObjectSortMode.None is considerably faster.'
+Assets\Bladehold\Bladehold Scripts\Waves\WaveIntermissionUI.cs(208,28): warning CS0618: 'Object.FindObjectsOfType<T>()' is obsolete: 'Object.FindObjectsOfType has been deprecated. Use Object.FindObjectsByType instead which lets you decide whether you need the results sorted or not.  FindObjectsOfType sorts the results by InstanceID but if you do not need this using FindObjectSortMode.None is considerably faster.'
+Assets\Bladehold\Bladehold Scripts\Waves\WaveIntermissionUI.cs(209,33): warning CS0618: 'Object.FindObjectsOfType<T>()' is obsolete: 'Object.FindObjectsOfType has been deprecated. Use Object.FindObjectsByType instead which lets you decide whether you need the results sorted or not.  FindObjectsOfType sorts the results by InstanceID but if you do not need this using FindObjectSortMode.None is considerably faster.'
+Assets\Bladehold\Bladehold Scripts\Waves\WaveIntermissionUI.cs(210,35): warning CS0618: 'Object.FindObjectsOfType<T>()' is obsolete: 'Object.FindObjectsOfType has been deprecated. Use Object.FindObjectsByType instead which lets you decide whether you need the results sorted or not.  FindObjectsOfType sorts the results by InstanceID but if you do not need this using FindObjectSortMode.None is considerably faster.'
+Assets\Bladehold\Bladehold Scripts\Waves\WaveIntermissionUI.cs(211,30): warning CS0618: 'Object.FindObjectsOfType<T>()' is obsolete: 'Object.FindObjectsOfType has been deprecated. Use Object.FindObjectsByType instead which lets you decide whether you need the results sorted or not.  FindObjectsOfType sorts the results by InstanceID but if you do not need this using FindObjectSortMode.None is considerably faster.'
+Assets\Third Party\LeanTween\Examples\Scripts\TestingUnitTests.cs(526,35): warning CS0618: 'Object.FindObjectsOfType(Type)' is obsolete: 'Object.FindObjectsOfType has been deprecated. Use Object.FindObjectsByType instead which lets you decide whether you need the results sorted or not.  FindObjectsOfType sorts the results by InstanceID, but if you do not need this using FindObjectSortMode.None is considerably faster.'
+Assets\Bladehold\Bladehold Scripts\Objectives\DefeatSlayerObjective.cs(61,46): warning CS0067: The event 'DefeatSlayerObjective.OnFailed' is never used
+Assets\Bladehold\Bladehold Scripts\Objectives\ProtectWagonObjective.cs(59,46): warning CS0067: The event 'ProtectWagonObjective.OnFailed' is never used
+Assets\Bladehold\Bladehold Scripts\Upgrades\SurvivorsGameManager.cs(48,25): warning CS0067: The event 'SurvivorsGameManager.OnVictory' is never used
+Assets\Bladehold\Bladehold Scripts\Objectives\KillEnemiesObjective.cs(31,46): warning CS0067: The event 'KillEnemiesObjective.OnFailed' is never used
+Assets\Bladehold\Bladehold Scripts\Objectives\StopBatteringRamObjective.cs(92,46): warning CS0067: The event 'StopBatteringRamObjective.OnFailed' is never used
+Assets\Bladehold\Bladehold Scripts\Objectives\SurvivorsObjectiveManager.cs(67,57): warning CS0067: The event 'SurvivorsObjectiveManager.OnPhaseTimeTick' is never used
+Assets\Bladehold\Bladehold Scripts\Waves\GameLoopManager.cs(102,32): warning CS0067: The event 'GameLoopManager.OnIntermissionTick' is never used
+Assets\Bladehold\Bladehold Scripts\Objectives\GoblinRushObjective.cs(48,46): warning CS0067: The event 'GoblinRushObjective.OnFailed' is never used
+Assets\Bladehold\Bladehold Scripts\Objectives\GoldenGoblinObjective.cs(47,46): warning CS0067: The event 'GoldenGoblinObjective.OnFailed' is never used
+Assets\Bladehold\Bladehold Scripts\Upgrades\SurvivorsLevelSystem.cs(30,17): warning CS0414: The field 'SurvivorsLevelSystem.totalRunGoldTracked' is assigned but its value is never used
+Assets\Bladehold\Bladehold Scripts\Bosses\PrincessBossController.cs(37,37): warning CS0414: The field 'PrincessBossController.bossTitle' is assigned but its value is never used
+Assets\Bladehold\Bladehold Scripts\UI\MountStatusUI.cs(35,18): warning CS0414: The field 'MountStatusUI.anyError' is assigned but its value is never used
+Assets\Bladehold\Bladehold Scripts\UI\GoblinBloodUI.cs(7,18): warning CS0414: The field 'GoblinBloodUI.anyError' is assigned but its value is never used
+Assets\Bladehold\Bladehold Scripts\UI\OrcishMetalUI.cs(7,18): warning CS0414: The field 'OrcishMetalUI.anyError' is assigned but its value is never used
+Assets\Bladehold\Bladehold Scripts\Bosses\NecromancerBossController.cs(19,37): warning CS0414: The field 'NecromancerBossController.bossTitle' is assigned but its value is never used
+Assets\Bladehold\Bladehold Scripts\Upgrades\SurvivorsLevelSystem.cs(31,17): warning CS0414: The field 'SurvivorsLevelSystem.lastKnownWalletCoins' is assigned but its value is never used
+Assets\Bladehold\Bladehold Scripts\UI\SurvivorsHUDUI.cs(24,18): warning CS0414: The field 'SurvivorsHUDUI.anyError' is assigned but its value is never used
+Assets\Bladehold\Bladehold Scripts\UI\WaveClearedBannerUI.cs(51,18): warning CS0414: The field 'WaveClearedBannerUI.anyError' is assigned but its value is never used
+Assets\Third Party\Synty\AnimationBaseLocomotion\Samples\Scripts\SamplePlayerAnimationController.cs(312,22): warning CS0414: The field 'SamplePlayerAnimationController._isSliding' is assigned but its value is never used
+Assets\Bladehold\Bladehold Scripts\Player\MaceUltimate.cs(30,18): warning CS0414: The field 'MaceUltimate.isRunning' is assigned but its value is never used
+AssetDatabase: script compilation time: 5.033875s
+Begin MonoManager ReloadAssembly
+Duplicate assembly 'System.Runtime.CompilerServices.Unsafe.dll' with different versions detected, using 'Packages/com.unity.collections/Unity.Collections.Tests/System.Runtime.CompilerServices.Unsafe/System.Runtime.CompilerServices.Unsafe.dll, AssemblyName=System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' and ignoring 'Assets/AssetInventory/Editor/ThirdParty/Microsoft AI/System.Runtime.CompilerServices.Unsafe.dll, AssemblyName=System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.Symbol file LoadedFromMemory is not a mono symbol file
+Symbol file LoadedFromMemory is not a mono symbol file
+- Loaded All Assemblies, in  1.607 seconds
+'Packages/com.unity.cinemachine/Editor/Editors/CinemachineVirtualCameraBaseEditor.cs' contains partial class of Unity.Object, exactly 1 of the partial classes needs to be in a file with the same filename. This is to know the one that can be referenced from ie. GameObjects
+'Packages/com.unity.cinemachine/Editor/Obsolete/CinemachineVirtualCameraBaseEditor.cs' contains partial class of Unity.Object, exactly 1 of the partial classes needs to be in a file with the same filename. This is to know the one that can be referenced from ie. GameObjects
+Refreshing native plugins compatible for Editor in 10.85 ms, found 9 plugins.
+Native extension for WindowsStandalone target not found
+Assembly reference Packages/com.unity.cinemachine/Editor/Samples/ExposeHDRPInternals/HDRP-Editor-ref.asmref has no target assembly definition
+Refreshing native plugins compatible for Editor in 10.10 ms, found 9 plugins.
+Duplicate assembly 'System.Runtime.CompilerServices.Unsafe.dll' with different versions detected, using 'Packages/com.unity.collections/Unity.Collections.Tests/System.Runtime.CompilerServices.Unsafe/System.Runtime.CompilerServices.Unsafe.dll, AssemblyName=System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' and ignoring 'Assets/AssetInventory/Editor/ThirdParty/Microsoft AI/System.Runtime.CompilerServices.Unsafe.dll, AssemblyName=System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.ScheduleIndexationOnStartup MainProcess:True IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  9.500 seconds
+Domain Reload Profiling: 11098ms
+	BeginReloadAssembly (361ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (13ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (152ms)
+	RebuildCommonClasses (42ms)
+	RebuildNativeTypeToScriptingClass (15ms)
+	initialDomainReloadingComplete (65ms)
+	LoadAllAssembliesAndSetupDomain (1114ms)
+		LoadAssemblies (666ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (556ms)
+			TypeCache.Refresh (400ms)
+				TypeCache.ScanAssembly (380ms)
+			BuildScriptInfoCaches (119ms)
+			ResolveRequiredComponents (31ms)
+	FinalizeReload (9501ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (9176ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (30ms)
+			SetLoadedEditorAssemblies (7ms)
+			BeforeProcessingInitializeOnLoad (416ms)
+			ProcessInitializeOnLoadAttributes (8596ms)
+			ProcessInitializeOnLoadMethodAttributes (119ms)
+			AfterProcessingInitializeOnLoad (7ms)
+			EditorAssembliesLoaded (1ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (7ms)
+Start importing ProjectSettings/ProjectSettings.asset using Guid(00000000000000004000000000000000) (LibraryAssetImporter) -> (artifact id: '83ac4fe87e88db157da56f2b83fe2185') in 0.0090263 seconds
+Refreshing native plugins compatible for Editor in 14.99 ms, found 9 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=6945693412553a246baed556303fdd32): Total: 18.685 seconds - Initiated by InitialRefreshV2(ForceSynchronousImport)
+	Summary:
+		Imports: total=0 (actual=0, local cache=0, cache server=0)
+		Asset DB Process Time: managed=2 ms, native=10923 ms
+		Asset DB Callback time: managed=851 ms, native=48 ms
+		Scripting: domain reloads=1, domain reload time=1608 ms, compile time=5036 ms, other=215 ms
+		Project Asset Count: scripts=4467, non-scripts=30433
+		Asset File Changes: new=0, changed=1, moved=0, deleted=0
+		Scan Filter Count: 0
+	InvokeCustomDependenciesCallbacks: 0.001ms
+	InvokePackagesCallback: 28.016ms
+	ApplyChangesToAssetFolders: 0.702ms
+	Scan: 347.623ms
+	OnSourceAssetsModified: 0.715ms
+	CategorizeAssetsWithTransientArtifact: 86.816ms
+	ProcessAssetsWithTransientArtifactChanges: 180.300ms
+	CategorizeAssets: 391.884ms
+	ImportOutOfDateAssets: 9586.573ms (4502.202ms without children)
+		ImportManagerImport: 10.756ms (1.354ms without children)
+			ImportInProcess: 9.402ms
+		CompileScripts: 5035.545ms
+		ReloadNativeAssets: 0.834ms
+		UnloadImportedAssets: 28.152ms
+		ReloadImportedAssets: 0.000ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 6.500ms
+		InitializingProgressBar: 0.001ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.001ms
+		OnDemandSchedulerStart: 2.582ms
+	PostProcessAllAssets: 853.954ms
+	Hotreload: 18.814ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.003ms
+	UnloadStreamsBegin: 4.339ms
+	PersistCurrentRevisions: 1.362ms
+	UnloadStreamsEnd: 0.001ms
+	GenerateScriptTypeHashes: 19.009ms
+	Untracked: 7183.858ms
+
+Application.AssetDatabase Initial Refresh End
+Scanning for USB devices : 5.249ms
+Initializing Unity extensions:
+[MODES] ModeService[none].Initialize
+[MODES] ModeService[none].LoadModes
+[MODES] Loading mode Default (0) for mode-current-id-Bladehold
+Unloading 39 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 17276 unused Assets / (9.5 MB). Loaded Objects now: 12059.
+Memory consumption went from 0.71 GB to 0.70 GB.
+Total: 31.923000 ms (FindLiveObjects: 1.707200 ms CreateObjectMapping: 3.162300 ms MarkObjects: 8.289600 ms  DeleteObjects: 18.762700 ms)
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.AudioSource:PlayClipAtPoint (UnityEngine.AudioClip,UnityEngine.Vector3,single)
+BubbleShield:HandleTryBlockDamage (Damage) (at Assets/Bladehold/Bladehold Scripts/Enemies/BubbleShield.cs:123)
+Health:BlockDamage (Damage) (at Assets/Bladehold/Bladehold Scripts/DamageSystem/Health.cs:259)
+Health:ReceiveDamage (Damage) (at Assets/Bladehold/Bladehold Scripts/DamageSystem/Health.cs:184)
+WeaponReachBenchmark:RunBenchmark () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:114)
+WeaponReachBenchmark:RunBenchmarkMenuItem () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:16)
+
+[Assets/Bladehold/Bladehold Scripts/Enemies/BubbleShield.cs line 123]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.AudioSource:PlayClipAtPoint (UnityEngine.AudioClip,UnityEngine.Vector3,single)
+BubbleShield:HandleTryBlockDamage (Damage) (at Assets/Bladehold/Bladehold Scripts/Enemies/BubbleShield.cs:107)
+Health:BlockDamage (Damage) (at Assets/Bladehold/Bladehold Scripts/DamageSystem/Health.cs:259)
+Health:ReceiveDamage (Damage) (at Assets/Bladehold/Bladehold Scripts/DamageSystem/Health.cs:184)
+WeaponReachBenchmark:RunBenchmark () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:129)
+WeaponReachBenchmark:RunBenchmarkMenuItem () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:16)
+
+[Assets/Bladehold/Bladehold Scripts/Enemies/BubbleShield.cs line 107]
+
+[DraftUpgradeService] Successfully loaded 63 draft upgrades from CSV.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+DraftUpgradeService:ParseCsv () (at Assets/Bladehold/Bladehold Scripts/Upgrades/DraftUpgradeService.cs:105)
+DraftUpgradeService:EnsureInitialized () (at Assets/Bladehold/Bladehold Scripts/Upgrades/DraftUpgradeService.cs:68)
+DraftUpgradeService:GetOrCreateInstance () (at Assets/Bladehold/Bladehold Scripts/Upgrades/DraftUpgradeService.cs:56)
+WeaponReachBenchmark:RunBenchmark () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:190)
+WeaponReachBenchmark:RunBenchmarkMenuItem () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:16)
+
+(Filename: Assets/Bladehold/Bladehold Scripts/Upgrades/DraftUpgradeService.cs Line: 105)
+
+[CaptainEnemyController] Captain Fraglob activated Bulwark Shield (300 HP)!
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+CaptainEnemyController:ActivateBulwarkShield () (at Assets/Bladehold/Bladehold Scripts/Enemies/Captain/CaptainEnemyController.cs:190)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+WeaponReachBenchmark:RunBenchmark () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:800)
+WeaponReachBenchmark:RunBenchmarkMenuItem () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:16)
+
+(Filename: Assets/Bladehold/Bladehold Scripts/Enemies/Captain/CaptainEnemyController.cs Line: 190)
+
+[DefenseStructure] Resupplied 15 Supply. Current: 50/50
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+DefenseStructure:Interact (Player) (at Assets/Bladehold/Bladehold Scripts/Fort/DefenseStructure.cs:153)
+WeaponReachBenchmark:RunBenchmark () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:1071)
+WeaponReachBenchmark:RunBenchmarkMenuItem () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:16)
+
+(Filename: Assets/Bladehold/Bladehold Scripts/Fort/DefenseStructure.cs Line: 153)
+
+[DefenseStructure] Upgraded ArrowSlits to Level 2!
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+DefenseStructure:Upgrade () (at Assets/Bladehold/Bladehold Scripts/Fort/DefenseStructure.cs:94)
+DefenseStructure:Interact (Player) (at Assets/Bladehold/Bladehold Scripts/Fort/DefenseStructure.cs:162)
+WeaponReachBenchmark:RunBenchmark () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:1088)
+WeaponReachBenchmark:RunBenchmarkMenuItem () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:16)
+
+(Filename: Assets/Bladehold/Bladehold Scripts/Fort/DefenseStructure.cs Line: 94)
+
+[DefenseStructure] ArrowSlits ran out of Supply and broke!
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+DefenseStructure:OnSupplyDepleted () (at Assets/Bladehold/Bladehold Scripts/Fort/DefenseStructure.cs:115)
+DefenseStructure:ConsumeSupply (int) (at Assets/Bladehold/Bladehold Scripts/Fort/DefenseStructure.cs:106)
+WeaponReachBenchmark:RunBenchmark () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:1105)
+WeaponReachBenchmark:RunBenchmarkMenuItem () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:16)
+
+(Filename: Assets/Bladehold/Bladehold Scripts/Fort/DefenseStructure.cs Line: 115)
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object)
+DefenseStructure:OnSupplyDepleted () (at Assets/Bladehold/Bladehold Scripts/Fort/DefenseStructure.cs:132)
+DefenseStructure:ConsumeSupply (int) (at Assets/Bladehold/Bladehold Scripts/Fort/DefenseStructure.cs:106)
+WeaponReachBenchmark:RunBenchmark () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:1105)
+WeaponReachBenchmark:RunBenchmarkMenuItem () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:16)
+
+[Assets/Bladehold/Bladehold Scripts/Fort/DefenseStructure.cs line 132]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object)
+DynamiteProjectile:EnsureVisualStick () (at Assets/Bladehold/Bladehold Scripts/Enemies/Captain/DynamiteProjectile.cs:176)
+DynamiteProjectile:Launch (UnityEngine.Vector3,UnityEngine.Vector3,single,single,single,single,single,IDamageable,UnityEngine.GameObject,UnityEngine.GameObject,UnityEngine.AudioClip,UnityEngine.AudioClip) (at Assets/Bladehold/Bladehold Scripts/Enemies/Captain/DynamiteProjectile.cs:76)
+WeaponReachBenchmark:RunBenchmark () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:1411)
+WeaponReachBenchmark:RunBenchmarkMenuItem () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:16)
+
+[Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs line 1411]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object)
+DynamiteProjectile:Detonate () (at Assets/Bladehold/Bladehold Scripts/Enemies/Captain/DynamiteProjectile.cs:112)
+WeaponReachBenchmark:RunBenchmark () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:1426)
+WeaponReachBenchmark:RunBenchmarkMenuItem () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:16)
+
+[Assets/Bladehold/Bladehold Scripts/Enemies/Captain/DynamiteProjectile.cs line 112]
+
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.Object:Destroy (UnityEngine.Object,single)
+UnityEngine.Object:Destroy (UnityEngine.Object)
+DynamiteProjectile:Detonate () (at Assets/Bladehold/Bladehold Scripts/Enemies/Captain/DynamiteProjectile.cs:162)
+WeaponReachBenchmark:RunBenchmark () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:1426)
+WeaponReachBenchmark:RunBenchmarkMenuItem () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:16)
+
+[Assets/Bladehold/Bladehold Scripts/Enemies/Captain/DynamiteProjectile.cs line 162]
+
+[CaptainKombustaController] Captain Kombusta IGNITED HIMSELF ON FIRE!
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+CaptainKombustaController:IgniteSelf () (at Assets/Bladehold/Bladehold Scripts/Enemies/Captain/CaptainKombustaController.cs:355)
+WeaponReachBenchmark:RunBenchmark () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:1461)
+WeaponReachBenchmark:RunBenchmarkMenuItem () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:16)
+
+(Filename: Assets/Bladehold/Bladehold Scripts/Enemies/Captain/CaptainKombustaController.cs Line: 355)
+
+[CaptainKombustaController] Captain Kombusta's fire extinguished.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+CaptainKombustaController:ExtinguishFire () (at Assets/Bladehold/Bladehold Scripts/Enemies/Captain/CaptainKombustaController.cs:401)
+WeaponReachBenchmark:RunBenchmark () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:1463)
+WeaponReachBenchmark:RunBenchmarkMenuItem () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:16)
+
+(Filename: Assets/Bladehold/Bladehold Scripts/Enemies/Captain/CaptainKombustaController.cs Line: 401)
+
+[NecromancerBossController] Boss Fight Started! Phase 1: Bubble Shield & Skeleton Army.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+NecromancerBossController:StartBossFight () (at Assets/Bladehold/Bladehold Scripts/Bosses/NecromancerBossController.cs:229)
+WeaponReachBenchmark:RunBenchmark () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:1497)
+WeaponReachBenchmark:RunBenchmarkMenuItem () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:16)
+
+(Filename: Assets/Bladehold/Bladehold Scripts/Bosses/NecromancerBossController.cs Line: 229)
+
+[NecromancerBossController] Skeleton died! Remaining: 0
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+NecromancerBossController:OnSkeletonDied (CryptSkeletonAI) (at Assets/Bladehold/Bladehold Scripts/Bosses/NecromancerBossController.cs:346)
+WeaponReachBenchmark:RunBenchmark () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:1530)
+WeaponReachBenchmark:RunBenchmarkMenuItem () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:16)
+
+(Filename: Assets/Bladehold/Bladehold Scripts/Bosses/NecromancerBossController.cs Line: 346)
+
+[NecromancerBossController] ALL SKELETONS SLAIN! Bubble Shield shattered! Entering Phase 2: Direct Scythe Combat!
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+NecromancerBossController:TransitionToPhaseTwo () (at Assets/Bladehold/Bladehold Scripts/Bosses/NecromancerBossController.cs:363)
+NecromancerBossController:OnSkeletonDied (CryptSkeletonAI) (at Assets/Bladehold/Bladehold Scripts/Bosses/NecromancerBossController.cs:352)
+WeaponReachBenchmark:RunBenchmark () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:1530)
+WeaponReachBenchmark:RunBenchmarkMenuItem () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:16)
+
+(Filename: Assets/Bladehold/Bladehold Scripts/Bosses/NecromancerBossController.cs Line: 363)
+
+[CampaignGraphSO] Built default Castle Campaign Graph: 8 Tiers, 14 Nodes.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+CampaignGraphSO:BuildDefaultGraph () (at Assets/Bladehold/Bladehold Scripts/Campaign/CampaignGraphSO.cs:466)
+CampaignGraphSO:CreateDefaultCampaignGraph () (at Assets/Bladehold/Bladehold Scripts/Campaign/CampaignGraphSO.cs:83)
+WeaponReachBenchmark:RunBenchmark () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:1569)
+WeaponReachBenchmark:RunBenchmarkMenuItem () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:16)
+
+(Filename: Assets/Bladehold/Bladehold Scripts/Campaign/CampaignGraphSO.cs Line: 466)
+
+[ArmoredKnightAI] Benchmark_Knight has been DOWNED! Emitting soul beacon for Princess revival.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ArmoredKnightAI:EnterDownedState () (at Assets/Bladehold/Bladehold Scripts/Bosses/ArmoredKnightAI.cs:330)
+ArmoredKnightAI:HandleTryPreventDeath () (at Assets/Bladehold/Bladehold Scripts/Bosses/ArmoredKnightAI.cs:277)
+Health:PreventDeath () (at Assets/Bladehold/Bladehold Scripts/DamageSystem/Health.cs:291)
+Health:ReceiveDamage (Damage) (at Assets/Bladehold/Bladehold Scripts/DamageSystem/Health.cs:205)
+WeaponReachBenchmark:RunBenchmark () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:1611)
+WeaponReachBenchmark:RunBenchmarkMenuItem () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:16)
+
+(Filename: Assets/Bladehold/Bladehold Scripts/Bosses/ArmoredKnightAI.cs Line: 330)
+
+[PrincessBossController] Princess Katherine started channeling revival on Benchmark_Knight (5.0s)!
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+PrincessBossController:StartRevivalChannel (ArmoredKnightAI) (at Assets/Bladehold/Bladehold Scripts/Bosses/PrincessBossController.cs:506)
+WeaponReachBenchmark:RunBenchmark () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:1631)
+WeaponReachBenchmark:RunBenchmarkMenuItem () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:16)
+
+(Filename: Assets/Bladehold/Bladehold Scripts/Bosses/PrincessBossController.cs Line: 506)
+
+[PrincessBossController] Princess struck while channeling! +1.5s delay added (Remaining: 6.5s)
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+PrincessBossController:HandlePrincessDamaged (Damage) (at Assets/Bladehold/Bladehold Scripts/Bosses/PrincessBossController.cs:558)
+Health:ReceiveDamage (Damage) (at Assets/Bladehold/Bladehold Scripts/DamageSystem/Health.cs:200)
+WeaponReachBenchmark:RunBenchmark () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:1651)
+WeaponReachBenchmark:RunBenchmarkMenuItem () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:16)
+
+(Filename: Assets/Bladehold/Bladehold Scripts/Bosses/PrincessBossController.cs Line: 558)
+
+[PrincessBossController] Princess struck while channeling! +1.5s delay added (Remaining: 8.0s)
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+PrincessBossController:HandlePrincessDamaged (Damage) (at Assets/Bladehold/Bladehold Scripts/Bosses/PrincessBossController.cs:558)
+Health:ReceiveDamage (Damage) (at Assets/Bladehold/Bladehold Scripts/DamageSystem/Health.cs:200)
+WeaponReachBenchmark:RunBenchmark () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:1665)
+WeaponReachBenchmark:RunBenchmarkMenuItem () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:16)
+
+(Filename: Assets/Bladehold/Bladehold Scripts/Bosses/PrincessBossController.cs Line: 558)
+
+[ArmoredKnightAI] Benchmark_Knight has been REVIVED by Princess Katherine! Returning to combat with 180 HP.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+ArmoredKnightAI:Revive (single) (at Assets/Bladehold/Bladehold Scripts/Bosses/ArmoredKnightAI.cs:380)
+PrincessBossController:CompleteRevivalSpell () (at Assets/Bladehold/Bladehold Scripts/Bosses/PrincessBossController.cs:606)
+PrincessBossController:TickChannel (single) (at Assets/Bladehold/Bladehold Scripts/Bosses/PrincessBossController.cs:523)
+WeaponReachBenchmark:RunBenchmark () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:1678)
+WeaponReachBenchmark:RunBenchmarkMenuItem () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:16)
+
+(Filename: Assets/Bladehold/Bladehold Scripts/Bosses/ArmoredKnightAI.cs Line: 380)
+
+[PrincessBossController] Revival Spell Completed! Knight restored.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+PrincessBossController:CompleteRevivalSpell () (at Assets/Bladehold/Bladehold Scripts/Bosses/PrincessBossController.cs:622)
+PrincessBossController:TickChannel (single) (at Assets/Bladehold/Bladehold Scripts/Bosses/PrincessBossController.cs:523)
+WeaponReachBenchmark:RunBenchmark () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:1678)
+WeaponReachBenchmark:RunBenchmarkMenuItem () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:16)
+
+(Filename: Assets/Bladehold/Bladehold Scripts/Bosses/PrincessBossController.cs Line: 622)
+
+[CampaignGraphSO] Built default Castle Campaign Graph: 8 Tiers, 14 Nodes.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+CampaignGraphSO:BuildDefaultGraph () (at Assets/Bladehold/Bladehold Scripts/Campaign/CampaignGraphSO.cs:466)
+CampaignGraphSO:CreateDefaultCampaignGraph () (at Assets/Bladehold/Bladehold Scripts/Campaign/CampaignGraphSO.cs:83)
+WeaponReachBenchmark:RunBenchmark () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:1704)
+WeaponReachBenchmark:RunBenchmarkMenuItem () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:16)
+
+(Filename: Assets/Bladehold/Bladehold Scripts/Campaign/CampaignGraphSO.cs Line: 466)
+
+=================================================
+       BLADEHOLD AUTOMATED MECHANICS BENCHMARK   
+=================================================
+
+### 1. WEAPON LOADOUT REACH & HITBOXES
+  - Hero's Blade (BladeSweep): Reach ≈ 1.11m | Status: PASSED
+  - Dwarven Axe (BladeSweep): Reach ≈ 0.75m | Status: PASSED
+  - Winged Mace (BladeSweep): Reach ≈ 1.10m | Status: PASSED
+
+### 2. BUBBLE SHIELD DAMAGE INTERCEPTION MATH
+  - Partial Hit (25 dmg vs 40 HP shield): Blocked successfully (HP remains 100). [PASSED]
+  - Lethal Shield Hit (excess damage): Shield broke as expected. [PASSED]
+
+### 3. DRAFT UPGRADES CATALOG INTEGRITY
+  - DraftUpgrades.csv: Loaded 63 upgrade definitions successfully. [PASSED]
+
+### 4. ALL DRAFT UPGRADES DEFINITION & STAT LINKAGE
+  - Verified 63 / 63 Draft Upgrades have valid StatType linkages & progression curves. [PASSED]
+
+### 5. ALL ARMOUR SETS & STAT MODIFIERS
+  - Dread Champion (dread_champion): 3 modifiers verified. [PASSED]
+  - Hero's Plate (default_armour): 2 modifiers verified. [PASSED]
+  - Iron Vanguard (iron_vanguard): 3 modifiers verified. [PASSED]
+  - Windrunner Mail (windrunner_mail): 3 modifiers verified. [PASSED]
+
+### 6. LIVE DASH FIRE TRAIL SPAWN SIMULATION
+  - Dashing 3m with Blazing Trail spawned 6 FireTrailSegment objects along the path. [PASSED]
+
+### 7. DEEP MECHANICS & PERK BEHAVIOR TESTS
+  - Life Steal Mechanics: 50 dmg with 20% LifeSteal healed player from 50 to 60 HP. [PASSED]
+  - Backstab Meta Perk: 100 base dmg behind target amplified to 120 dmg (+20%). [PASSED]
+  - Executioner Meta Perk: 100 base dmg against enemy at 40% HP amplified to 150 dmg (+50%). [PASSED]
+  - Second Wind Meta Perk: Prevented lethal blow & revived player with 100/200 HP (50%). [PASSED]
+  - Greed & War Chest Perks: Started with 75g, added 100g (+10% bonus) -> Total 185g. [PASSED]
+  - ShieldBreaker Upgrade: 30 base dmg amplified to 90 dmg (+200%) against shielded target. [PASSED]
+
+### 8. WAR BANNER DIFFICULTY TIERS & ENRAGED CAPTAINS
+  - Reward Multipliers: Standard=1x, Enraged=2x, Nightmare=4x, Omega=8x. [PASSED]
+  - UI Skulls: 1 through 4 skulls formatted correctly. [PASSED]
+  - Progression Rolling: Run 1 locked to Standard; Run 2+ offers Enraged/Nightmare/Omega. [PASSED]
+  - Captain Fraglob: Enraged HP=312.5, Omega HP=500, Bulwark Shield absorbed 100 dmg -> 200 remaining. [PASSED]
+
+### 9. BULWARK ENEMY PHYSICAL SHIELD & MECHANICS
+  - Bulwark Shield: 10% projectile mitigation, full melee damage, and break lockout. [PASSED]
+  - Bulwark Prefab: Components, BoxCollider, and EnemyPrefabMap registration verified. [PASSED]
+  - Weapon Cut-Through: Striking shield triggers OnBlocked and stops weapon activation. [PASSED]
+  - Directional Blocking & Backstab: Front hits damage shield; back hits bypass shield & damage Bulwark health. [PASSED]
+  - Animator Controller: 2 layers (Base + Upper Body Mask), Stagger & BlockHit parameters verified. [PASSED]
+
+[10] Battlefield Defenses Revamp Benchmark:
+  - Supply Currency & Death Reset: Initial 60, add +40 -> 100, spend 30 -> 70, reset on death -> 60. [PASSED]
+  - Tower Plot Construction: Instant deployment sets occupancy, type, initial level 1, and 50 supply. [PASSED]
+  - Defense Supply Consumption & Resupply: Firing consumes supply (35/50), player interaction resupplies to 50/50. [PASSED]
+  - Defense Upgrading: Fully supplied defense upgrades to Lv 2, expands max supply to 75, deducts player supply. [PASSED]
+  - Supply Depletion Destruction: Reaching 0 supply destroys structure and frees plot for rebuild. [PASSED]
+  - Net Thrower Root Mechanic: Successfully applies NetRootStatus to target NavMeshAgent. [PASSED]
+  - Fortress Draft Exclusion: 0 Fortress cards returned by GetCandidateUpgrades (re-routed to battlefield plots). [PASSED]
+
+### 11. MOUNT SYSTEM & SWORD BLADE TEMPEST ULTIMATE VERIFICATION
+  - Mount Definitions: Found 6 mount definitions in Resources/Mounts. [PASSED]
+  - SaveData Starting Mount: Correctly defaults to 'basic_horse' in equipped and unlocked lists. [PASSED]
+  - Horse Archery Default: StatType.HorseArcheryUnlocked is 1.0 (unlocked from get-go). [PASSED]
+  - PlayerMount Tunables: Duration=30.0s, Cooldown=90.0s. [PASSED]
+  - Sword Blade Tempest Ultimate: Implements IUltimateHandler with BaseDuration=6.0s. [PASSED]
+
+### 12. RANGED WEAPON AMMO SYSTEM & PICKUP VERIFICATION
+  - PlayerAmmo Initialization: MaxAmmo=20, CurrentAmmo=20. [PASSED]
+  - PlayerAmmo Consumption: Spent all ammo down to 0, subsequent TryConsume rejected correctly. [PASSED]
+  - PlayerAmmo Gathering: Added 5 ammo, current equals 5. [PASSED]
+  - PlayerAmmo Refill: Restored to full maximum capacity. [PASSED]
+  - Deep Quiver Stat Modifier: MaxAmmo scales from 20 to 25 with Flat modifier. [PASSED]
+  - Enemy Drop Table: HealthpackPowerupDropSO contains AmmoPickup entry. [PASSED]
+  - Shop Item: ammo_bundle.asset configured with AmmoRefill effect (10 ammo). [PASSED]
+
+[SECTION 13] Clan Captain - Captain Kombusta Mechanics Benchmark
+  - Dynamite Projectile: 2m radius detonation deals 20 elemental damage to target. [PASSED]
+  - Captain Kombusta: Initialized with name, tier, and idle fire state. [PASSED]
+  - Captain Kombusta: IgniteSelf sets IsOnFire=true and ExtinguishFire cleans up. [PASSED]
+
+### 14. NECROMANCER BOSS & REVELATION ENCOUNTER
+  - Necromancer Phase 1: Bubble Shield invulnerability blocks incoming player damage. [PASSED]
+  - Necromancer Phase 2: Killing skeletons shatters Bubble Shield and unlocks vulnerability. [PASSED]
+  - Necromancer Phase 2: Vulnerable to player attacks after shield shatter. [PASSED]
+  - AreaDatabase: 'Bladehold Necromancer Crypt' registered with title 'Necromancer's Crypt'. [PASSED]
+  - CampaignGraph: 'tier8_crypt_sanctum' points to 'Bladehold Necromancer Crypt' with 2 branches. [PASSED]
+
+--- 15. Princess Boss & Armored Knight Revival (Part 5 Castle Campaign) ---
+  - Armored Knight: Intercepts lethal damage and enters Downed state with soul beacon. [PASSED]
+  - Princess Boss: Starts revival spell channeling with 5.0s timer. [PASSED]
+  - Princess Boss: Taking player damage increases revival cast time by +1.5s (5.0s -> 6.5s). [PASSED]
+  - Princess Boss: Consecutive player damage stacks +1.5s delay (6.5s -> 8.0s). [PASSED]
+  - Downed Knight: Successfully revives to full HP (180/180) when spell timer reaches 0. [PASSED]
+  - AreaDatabase: 'Bladehold Princess Sanctuary' registered with title 'Princess Sanctuary' and subtitle 'The Royal Throne Annex'. [PASSED]
+  - CampaignGraph: 'tier8_princess_boss' points to 'Bladehold Princess Sanctuary' with 500 gold reward. [PASSED]
+
+### 16. ELEMENTAL TOWER & DEFENSE UPGRADES BENCHMARK
+  - Draft Catalog: All 6 elemental defense cards loaded successfully. [PASSED]
+  - Arrow Tower Stats: Attack interval reduced (0.80s -> 0.80s) & Damage boosted (18 -> 18). [PASSED]
+  - Slippery Ice Zone & Player Slide: Player gains +35% move speed on ice and cleanly restores on exit. [PASSED]
+  - Catapult Storm Cloud: Successfully spawned with 6m radius and 8s duration. [PASSED]
+  - Rolling Fireball: Melee strike redirected fireball from (0.00, 0.00, 1.00) to (1.00, 0.00, 0.00) and boosted speed (9.0 -> 12.2). [PASSED]
+
+=================================================
+BENCHMARK COMPLETE: 66 PASSED | 0 FAILED
+=================================================
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+WeaponReachBenchmark:RunBenchmarkMenuItem () (at Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs:17)
+
+(Filename: Assets/Bladehold/Bladehold Scripts/Editor/WeaponReachBenchmark.cs Line: 17)
+
+Batchmode quit successfully invoked - shutting down!
+Leftover web requests after shut down
+[Physics::Module] Cleanup current backend.
+[Physics::Module] Id: 0xf2b8ea05
+Input System module state changed to: ShutdownInProgress.
+Input System polling thread exited.
+Input System module state changed to: Shutdown.
+[Licensing::IpcConnector] LicenseClient-lance-notifications channel disconnected successfully.
+[Licensing::IpcConnector] LicenseClient-lance channel disconnected successfully.
+AcceleratorClientConnectionCallback - disconnected - :0
+Cleanup mono
+abort_threads: Failed aborting id: 000000000000ADE8, mono_thread_manage will ignore it
+
+abort_threads: Failed aborting id: 0000000000007A6C, mono_thread_manage will ignore it
+
+abort_threads: Failed aborting id: 000000000000ADE8, mono_thread_manage will ignore it
+
+abort_threads: Failed aborting id: 0000000000007A6C, mono_thread_manage will ignore it
+
+debugger-agent: Unable to listen on 3196
+Exiting batchmode successfully now!
+Exiting without the bug reporter. Application will terminate with return code 0

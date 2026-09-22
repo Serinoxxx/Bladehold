@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d0a6558a5bb47af83e1a4519cb8c2bc, type: 3}
+  m_Name: Mount_CelestialDreadnought
+  m_EditorClassIdentifier: Assembly-CSharp::MountDefinitionSO
+  id: celestial_dreadnought
+  displayName: Celestial Dreadnought
+  description: An ornate gilded champion warhorse. Possesses heavy trample damage, formidable knockback, and prolonged stamina.
+  icon: {fileID: 0}
+  orcishMetalUnlockCost: 15
+  material: {fileID: 2100000, guid: 95eb7fdfd31f0ca468e635512b2749f6, type: 2}
+  scaleMultiplier: 1.08
+  maxSpeed: 8.5
+  chargeSpeed: 13
+  chargeDamage: 28
+  knockbackForce: 20
+  castTime: 1.5
+  mountDuration: 35
+  mountCooldown: 80

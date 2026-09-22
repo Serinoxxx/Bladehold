@@ -45,6 +45,43 @@ public class ArrowTowerDefense : DefenseStructure
         }
     }
 
+    public float GetEffectiveFireInterval()
+    {
+        float interval = fireInterval;
+        if (Player.Instance != null && Player.Instance.Stats != null)
+        {
+            float rateBonus = Player.Instance.Stats.GetValue(StatType.TowerArrowFireRateBonus);
+            if (Player.Instance.Stats.GetValue(StatType.TowerLightningArrows) > 0f && rateBonus <= 0f)
+            {
+                rateBonus = 0.50f;
+            }
+            if (rateBonus > 0f)
+            {
+                interval /= (1f + rateBonus);
+            }
+        }
+        return Mathf.Max(0.12f, interval);
+    }
+
+    public float GetEffectiveArrowDamage()
+    {
+        float dmg = arrowDamage;
+        if (Player.Instance != null && Player.Instance.Stats != null)
+        {
+            float dmgBonus = Player.Instance.Stats.GetValue(StatType.TowerArrowDamageBonus);
+            if (Player.Instance.Stats.GetValue(StatType.TowerFireArrows) > 0f && dmgBonus <= 0f)
+            {
+                dmgBonus = 0.40f;
+            }
+            if (dmgBonus > 0f)
+            {
+                dmg *= (1f + dmgBonus);
+            }
+            dmg *= Player.Instance.Stats.GetValue(StatType.AllDamageMultiplier);
+        }
+        return dmg;
+    }
+
     private void Update()
     {
         if (Time.time < nextFireTime) return;
@@ -53,7 +90,7 @@ public class ArrowTowerDefense : DefenseStructure
         if (target != null)
         {
             ShootAt(target);
-            nextFireTime = Time.time + fireInterval;
+            nextFireTime = Time.time + GetEffectiveFireInterval();
         }
     }
 
@@ -65,13 +102,20 @@ public class ArrowTowerDefense : DefenseStructure
         Vector3 targetPos = target.transform.position + Vector3.up * 0.8f;
         Vector3 dir = (targetPos - spawnPos).normalized;
 
+        bool isFrost = Player.Instance != null && Player.Instance.Stats != null && Player.Instance.Stats.GetValue(StatType.TowerFrostArrows) > 0f;
+        bool isLightning = Player.Instance != null && Player.Instance.Stats != null && Player.Instance.Stats.GetValue(StatType.TowerLightningArrows) > 0f;
+        bool isFire = Player.Instance != null && Player.Instance.Stats != null && Player.Instance.Stats.GetValue(StatType.TowerFireArrows) > 0f;
+
+        float finalDamage = GetEffectiveArrowDamage();
+
         if (arrowPrefab != null)
         {
             GameObject arrowObj = Instantiate(arrowPrefab, spawnPos, Quaternion.LookRotation(dir));
             FortArrowProjectile proj = arrowObj.GetComponent<FortArrowProjectile>();
             if (proj != null)
             {
-                proj.Init(dir, arrowSpeed, arrowDamage);
+                proj.Init(dir, arrowSpeed, finalDamage);
+                proj.SetElementalInfusion(isFrost, isLightning, isFire);
             }
         }
         else
@@ -79,13 +123,18 @@ public class ArrowTowerDefense : DefenseStructure
             // Fallback direct ray / damage
             Damage dmg = new Damage
             {
-                value = arrowDamage,
-                type = DamageType.sharp,
+                value = finalDamage,
+                type = (isFrost || isLightning || isFire) ? DamageType.elemental : DamageType.sharp,
+                elementId = isFire ? "Fire" : (isLightning ? "Lightning" : (isFrost ? "Ice" : "")),
                 isPlayerDamage = true,
                 sourcePosition = spawnPos,
                 source = Player.Instance != null ? Player.Instance.Damageable : null
             };
             target.ReceiveDamage(dmg);
+
+            if (isFire) EnemyStatusManager.GetOrAdd(target)?.ApplyStatus("Fire");
+            if (isFrost) EnemyStatusManager.GetOrAdd(target)?.ApplyStatus("Ice", 0.5f);
+            if (isLightning) EnemyStatusManager.GetOrAdd(target)?.ApplyStatus("Lightning");
         }
 
         if (fireSfx != null)

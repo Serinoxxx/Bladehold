@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d0a6558a5bb47af83e1a4519cb8c2bc, type: 3}
+  m_Name: Mount_FrostStrider
+  m_EditorClassIdentifier: Assembly-CSharp::MountDefinitionSO
+  id: frost_strider
+  displayName: Frost Strider
+  description: An agile glacial steed with icy hooves. Slightly lighter and moves with swift acceleration.
+  icon: {fileID: 0}
+  orcishMetalUnlockCost: 5
+  material: {fileID: 2100000, guid: eaec2e89f91da8f4cbccb36102a6cf89, type: 2}
+  scaleMultiplier: 0.95
+  maxSpeed: 9.5
+  chargeSpeed: 14
+  chargeDamage: 12
+  knockbackForce: 12
+  castTime: 1.2
+  mountDuration: 25
+  mountCooldown: 75

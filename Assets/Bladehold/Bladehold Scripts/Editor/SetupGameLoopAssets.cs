@@ -470,6 +470,14 @@ public static class SetupGameLoopAssets
         CreateArmourPedestal("Pedestal_Armour_Windrunner", new Vector3(2f, 0f, 5f), "Assets/Bladehold/Config/Armour Sets/WindrunnerMailArmourSet.asset");
         CreateArmourPedestal("Pedestal_Armour_DreadChampion", new Vector3(6f, 0f, 5f), "Assets/Bladehold/Config/Armour Sets/DreadChampionArmourSet.asset");
 
+        // 4c. Mount Pedestals (Basic Warhorse + 5 Purchasable Variations)
+        CreateMountPedestal("Pedestal_Mount_Basic", new Vector3(-10f, 0f, -5f), "Assets/Bladehold/Resources/Mounts/Mount_BasicWarhorse.asset");
+        CreateMountPedestal("Pedestal_Mount_FrostStrider", new Vector3(-6f, 0f, -5f), "Assets/Bladehold/Resources/Mounts/Mount_FrostStrider.asset");
+        CreateMountPedestal("Pedestal_Mount_InfernalSteed", new Vector3(-2f, 0f, -5f), "Assets/Bladehold/Resources/Mounts/Mount_InfernalSteed.asset");
+        CreateMountPedestal("Pedestal_Mount_AbyssalBehemoth", new Vector3(2f, 0f, -5f), "Assets/Bladehold/Resources/Mounts/Mount_AbyssalBehemoth.asset");
+        CreateMountPedestal("Pedestal_Mount_PhantomCharger", new Vector3(6f, 0f, -5f), "Assets/Bladehold/Resources/Mounts/Mount_PhantomCharger.asset");
+        CreateMountPedestal("Pedestal_Mount_CelestialDreadnought", new Vector3(10f, 0f, -5f), "Assets/Bladehold/Resources/Mounts/Mount_CelestialDreadnought.asset");
+
         // 5. Battle Portal
         GameObject portalGo = new GameObject("Battle_Portal");
         portalGo.transform.position = new Vector3(0f, 0f, 18f);
@@ -668,6 +676,122 @@ public static class SetupGameLoopAssets
         so.FindProperty("costLabel").objectReferenceValue = costTxt;
         so.FindProperty("statusLabel").objectReferenceValue = statusTxt;
         so.FindProperty("perksLabel").objectReferenceValue = perksTxt;
+        so.FindProperty("descriptionLabel").objectReferenceValue = descTxt;
+        so.ApplyModifiedProperties();
+    }
+
+    public static void CreateMountPedestal(string name, Vector3 pos, string mountAssetPath)
+    {
+        GameObject pedGo = new GameObject(name);
+        pedGo.transform.position = pos;
+
+        // Plinth stone
+        GameObject plinth = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        plinth.name = "Plinth";
+        plinth.transform.SetParent(pedGo.transform, false);
+        plinth.transform.localScale = new Vector3(2.4f, 0.4f, 2.4f);
+        plinth.transform.localPosition = new Vector3(0f, 0.2f, 0f);
+
+        // Mount point for 3D horse preview
+        GameObject mount = new GameObject("ModelMountPoint");
+        mount.transform.SetParent(pedGo.transform, false);
+        mount.transform.localPosition = new Vector3(0f, 0.4f, 0f);
+
+        // World-space canvas for info panel (billboard)
+        GameObject worldCanvasGo = new GameObject("WorldUI", typeof(RectTransform));
+        worldCanvasGo.transform.SetParent(pedGo.transform, false);
+        worldCanvasGo.transform.localPosition = new Vector3(0f, 2.7f, 0f);
+        Canvas wc = worldCanvasGo.AddComponent<Canvas>();
+        wc.renderMode = RenderMode.WorldSpace;
+        CanvasGroup cg = worldCanvasGo.AddComponent<CanvasGroup>();
+        cg.alpha = 0f;
+
+        RectTransform wcRect = worldCanvasGo.GetComponent<RectTransform>();
+        wcRect.sizeDelta = new Vector2(340f, 260f);
+        wcRect.localScale = Vector3.one * 0.008f;
+
+        // Background panel
+        GameObject panelGo = new GameObject("PanelBackground", typeof(RectTransform));
+        panelGo.transform.SetParent(worldCanvasGo.transform, false);
+        var panelImg = panelGo.AddComponent<UnityEngine.UI.Image>();
+        panelImg.color = new Color(0.06f, 0.08f, 0.12f, 0.92f);
+        RectTransform panelRect = panelGo.GetComponent<RectTransform>();
+        panelRect.anchorMin = Vector2.zero;
+        panelRect.anchorMax = Vector2.one;
+        panelRect.offsetMin = Vector2.zero;
+        panelRect.offsetMax = Vector2.zero;
+
+        // Name Label
+        GameObject nameGo = new GameObject("NameLabel", typeof(RectTransform));
+        nameGo.transform.SetParent(panelGo.transform, false);
+        TMPro.TextMeshProUGUI nameTxt = nameGo.AddComponent<TMPro.TextMeshProUGUI>();
+        nameTxt.text = "Mount";
+        nameTxt.fontSize = 24;
+        nameTxt.fontStyle = TMPro.FontStyles.Bold;
+        nameTxt.alignment = TMPro.TextAlignmentOptions.Center;
+        RectTransform nameRect = nameGo.GetComponent<RectTransform>();
+        nameRect.anchoredPosition = new Vector2(0f, 100f);
+        nameRect.sizeDelta = new Vector2(320f, 32f);
+
+        // Status & Cost
+        GameObject statusGo = new GameObject("StatusLabel", typeof(RectTransform));
+        statusGo.transform.SetParent(panelGo.transform, false);
+        TMPro.TextMeshProUGUI statusTxt = statusGo.AddComponent<TMPro.TextMeshProUGUI>();
+        statusTxt.text = "UNLOCKED";
+        statusTxt.fontSize = 18;
+        statusTxt.fontStyle = TMPro.FontStyles.Bold;
+        statusTxt.alignment = TMPro.TextAlignmentOptions.Center;
+        RectTransform statusRect = statusGo.GetComponent<RectTransform>();
+        statusRect.anchoredPosition = new Vector2(0f, 72f);
+        statusRect.sizeDelta = new Vector2(320f, 26f);
+
+        GameObject costGo = new GameObject("CostLabel", typeof(RectTransform));
+        costGo.transform.SetParent(panelGo.transform, false);
+        TMPro.TextMeshProUGUI costTxt = costGo.AddComponent<TMPro.TextMeshProUGUI>();
+        costTxt.text = "";
+        costTxt.fontSize = 17;
+        costTxt.alignment = TMPro.TextAlignmentOptions.Center;
+        RectTransform costRect = costGo.GetComponent<RectTransform>();
+        costRect.anchoredPosition = new Vector2(0f, 50f);
+        costRect.sizeDelta = new Vector2(320f, 24f);
+
+        // Stats Label
+        GameObject statsGo = new GameObject("StatsLabel", typeof(RectTransform));
+        statsGo.transform.SetParent(panelGo.transform, false);
+        TMPro.TextMeshProUGUI statsTxt = statsGo.AddComponent<TMPro.TextMeshProUGUI>();
+        statsTxt.text = "Stats";
+        statsTxt.fontSize = 15;
+        statsTxt.color = new Color(0.85f, 0.95f, 1f);
+        statsTxt.alignment = TMPro.TextAlignmentOptions.TopLeft;
+        RectTransform statsRect = statsGo.GetComponent<RectTransform>();
+        statsRect.anchoredPosition = new Vector2(10f, -5f);
+        statsRect.sizeDelta = new Vector2(300f, 85f);
+
+        // Description / Lore
+        GameObject descGo = new GameObject("DescriptionLabel", typeof(RectTransform));
+        descGo.transform.SetParent(panelGo.transform, false);
+        TMPro.TextMeshProUGUI descTxt = descGo.AddComponent<TMPro.TextMeshProUGUI>();
+        descTxt.text = "";
+        descTxt.fontSize = 13;
+        descTxt.fontStyle = TMPro.FontStyles.Italic;
+        descTxt.color = new Color(0.7f, 0.7f, 0.75f);
+        descTxt.alignment = TMPro.TextAlignmentOptions.TopLeft;
+        RectTransform descRect = descGo.GetComponent<RectTransform>();
+        descRect.anchoredPosition = new Vector2(10f, -85f);
+        descRect.sizeDelta = new Vector2(300f, 45f);
+
+        Interactable interactable = pedGo.AddComponent<Interactable>();
+        MountPedestal ped = pedGo.AddComponent<MountPedestal>();
+
+        var so = new SerializedObject(ped);
+        so.FindProperty("mountData").objectReferenceValue = AssetDatabase.LoadAssetAtPath<MountDefinitionSO>(mountAssetPath);
+        so.FindProperty("modelMountPoint").objectReferenceValue = mount.transform;
+        so.FindProperty("worldCanvas").objectReferenceValue = wc;
+        so.FindProperty("panelCanvasGroup").objectReferenceValue = cg;
+        so.FindProperty("nameLabel").objectReferenceValue = nameTxt;
+        so.FindProperty("costLabel").objectReferenceValue = costTxt;
+        so.FindProperty("statusLabel").objectReferenceValue = statusTxt;
+        so.FindProperty("statsLabel").objectReferenceValue = statsTxt;
         so.FindProperty("descriptionLabel").objectReferenceValue = descTxt;
         so.ApplyModifiedProperties();
     }

@@ -123,6 +123,106 @@ namespace Bladehold.UI
                 "Ancestral Stronghold",
                 "Honor the fallen, unlock ancestral weapons, and channel goblin blood into permanent strength."
             ));
+
+            // Campaign Overview Map
+            Register(new AreaMetadata(
+                "Bladehold Campaign Map Scene",
+                0,
+                "Castle Campaign",
+                "War Room Map",
+                "Survey the fortress battlements, choose your tactical route through the sectors, and confront the clan captains."
+            ));
+
+            // Supply Room
+            Register(new AreaMetadata(
+                "Bladehold Supply Room",
+                0,
+                "Supply Room",
+                "Castle Storehouse",
+                "An abandoned underground storage depot packed with smashable crates and barrels. Plunder free resources with zero enemy resistance."
+            ));
+
+            // Castle Campaign Levels
+            // Tier 1: Castle Courtyard
+            Register(new AreaMetadata(
+                "Bladehold Castle Courtyard",
+                1,
+                "Castle Courtyard",
+                "Courtyard Gate",
+                "Defend the courtyard gates against the initial goblin assault. Fortify tower defense slots and secure the entryway."
+            ));
+
+            // Tier 2A: Castle Ramparts
+            Register(new AreaMetadata(
+                "Bladehold Castle Ramparts",
+                2,
+                "Castle Ramparts",
+                "High Battlements",
+                "Hold the elevated stone battlements against Captain Fraglob and his vanguard. High elevation, windy battlements."
+            ));
+
+            // Tier 2B: Castle Armory
+            Register(new AreaMetadata(
+                "Bladehold Castle Armory",
+                2,
+                "Castle Armory",
+                "Weapons Depot",
+                "Clear out Captain Kombusta's incendiary sappers before they ignite the castle's fortified armory storehouse."
+            ));
+
+            // Tier 4: Great Hall
+            Register(new AreaMetadata(
+                "Bladehold Great Hall",
+                4,
+                "Great Hall",
+                "Grand Banquet Hall",
+                "Fight through high-density enemy hordes among long banquet tables, chandeliers, and fallen tapestries."
+            ));
+
+            // Tier 5A: Castle Dungeons
+            Register(new AreaMetadata(
+                "Bladehold Castle Dungeons",
+                5,
+                "Castle Dungeons",
+                "Prison Oubliette",
+                "Delve into the castle depths where brute wardens guard heaps of harvested goblin blood."
+            ));
+
+            // Tier 5B: Castle Conservatory
+            Register(new AreaMetadata(
+                "Bladehold Castle Conservatory",
+                5,
+                "Castle Conservatory",
+                "Royal Greenhouse",
+                "Battle through shattered glass greenhouses and overgrown flora guarded by Captain Kombusta's firebrands."
+            ));
+
+            // Tier 7: Throne Antechamber
+            Register(new AreaMetadata(
+                "Bladehold Throne Antechamber",
+                7,
+                "Throne Antechamber",
+                "The Obsidian Portico",
+                "Intense frontline defense outside the throne room doors. Waves of armored elites attempt to halt your advance."
+            ));
+
+            // Tier 8: Necromancer's Crypt
+            Register(new AreaMetadata(
+                "Bladehold Necromancer Crypt",
+                8,
+                "Necromancer's Crypt",
+                "Catacombs of the Fallen",
+                "The subterranean tomb where Malakor orchestrated the siege. Face the dark architect and his legion of reanimated dead."
+            ));
+
+            // Tier 8: Princess Sanctuary (Alternate Branch)
+            Register(new AreaMetadata(
+                "Bladehold Princess Sanctuary",
+                8,
+                "Princess Sanctuary",
+                "The Royal Throne Annex",
+                "The regal inner sanctuary where Princess Katherine commands her devoted elite guard. Strike down her armored knights and prevent her holy revivals to claim dark dominion over Bladehold."
+            ));
         }
 
         public static void Register(AreaMetadata metadata)

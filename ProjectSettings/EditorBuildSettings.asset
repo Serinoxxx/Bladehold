@@ -20,6 +20,39 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Bladehold/Bladehold Scenes/Bladehold Frozen Pass Scene.unity
     guid: 5f5e4ea40dc3d034188be3dcd799c66c
+  - enabled: 1
+    path: Assets/Bladehold/Bladehold Scenes/Bladehold Campaign Map Scene.unity
+    guid: a52b15f993c04e53aaa6e515cfe90ebb
+  - enabled: 1
+    path: Assets/Bladehold/Bladehold Scenes/Bladehold Supply Room.unity
+    guid: e50f7201f2c50b24e9fa1334e3a03f85
+  - enabled: 1
+    path: Assets/Bladehold/Bladehold Scenes/Bladehold Castle Courtyard.unity
+    guid: 74f2c2ef2afb2674ca744996348e158d
+  - enabled: 1
+    path: Assets/Bladehold/Bladehold Scenes/Bladehold Castle Ramparts.unity
+    guid: 42837d35e3411bd47852d759f065cdf3
+  - enabled: 1
+    path: Assets/Bladehold/Bladehold Scenes/Bladehold Castle Armory.unity
+    guid: 64844705db4b7b549897b16184005148
+  - enabled: 1
+    path: Assets/Bladehold/Bladehold Scenes/Bladehold Great Hall.unity
+    guid: 3f99515810b95e04f891cc3fd3d6f519
+  - enabled: 1
+    path: Assets/Bladehold/Bladehold Scenes/Bladehold Castle Dungeons.unity
+    guid: 71c36d78d31206745bee186acf6ffa19
+  - enabled: 1
+    path: Assets/Bladehold/Bladehold Scenes/Bladehold Castle Conservatory.unity
+    guid: a0eb5c13ee45acc4eaf6f4744110bfc1
+  - enabled: 1
+    path: Assets/Bladehold/Bladehold Scenes/Bladehold Throne Antechamber.unity
+    guid: 541df582c8d7dda4e974e01eb5f1d7ad
+  - enabled: 1
+    path: Assets/Bladehold/Bladehold Scenes/Bladehold Necromancer Crypt.unity
+    guid: 69d731f80fdd54f47b5845e3c0b74aab
+  - enabled: 1
+    path: Assets/Bladehold/Bladehold Scenes/Bladehold Princess Sanctuary.unity
+    guid: 00000000000000000000000000000000
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: 38f78d68449feb14783c9753605fe827, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

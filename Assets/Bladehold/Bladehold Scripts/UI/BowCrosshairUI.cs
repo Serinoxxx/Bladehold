@@ -40,6 +40,14 @@ public class BowCrosshairUI : MonoBehaviour
         }
     }
 
+    private void Awake()
+    {
+        if (GetComponent<BowAmmoUI>() == null)
+        {
+            gameObject.AddComponent<BowAmmoUI>();
+        }
+    }
+
     private void Start()
     {
         // The weapon lives on the player prefab, the crosshair on the HUD canvas — reach it through

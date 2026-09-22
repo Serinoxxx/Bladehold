@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d0a6558a5bb47af83e1a4519cb8c2bc, type: 3}
+  m_Name: Mount_InfernalSteed
+  m_EditorClassIdentifier: Assembly-CSharp::MountDefinitionSO
+  id: infernal_steed
+  displayName: Infernal Steed
+  description: A blazing warhorse infused with fire. Tramples enemies with searing devastating force.
+  icon: {fileID: 0}
+  orcishMetalUnlockCost: 10
+  material: {fileID: 2100000, guid: 1bb6f69b055271e46a2faf9f5b5f1464, type: 2}
+  scaleMultiplier: 1.05
+  maxSpeed: 8
+  chargeSpeed: 12
+  chargeDamage: 25
+  knockbackForce: 16
+  castTime: 1.5
+  mountDuration: 30
+  mountCooldown: 90

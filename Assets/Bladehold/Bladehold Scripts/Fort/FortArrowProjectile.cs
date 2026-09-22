@@ -17,6 +17,12 @@ public class FortArrowProjectile : MonoBehaviour
     private bool hasHit = false;
     private float aliveTime = 0f;
 
+    private bool isFrost = false;
+    private bool isLightning = false;
+    private bool isFire = false;
+    private string infusedElement = "";
+    private GameObject visualFxInstance;
+
     public void Init(Vector3 dir, float spd, float dmg, AudioClip hitSfx = null)
     {
         direction = dir.normalized;
@@ -24,6 +30,59 @@ public class FortArrowProjectile : MonoBehaviour
         damageAmount = dmg;
         hitSound = hitSfx;
         transform.forward = direction;
+    }
+
+    public void SetElementalInfusion(bool frost, bool lightning, bool fire)
+    {
+        isFrost = frost;
+        isLightning = lightning;
+        isFire = fire;
+
+        if (fire) infusedElement = "Fire";
+        else if (lightning) infusedElement = "Lightning";
+        else if (frost) infusedElement = "Ice";
+
+        ApplyElementalVisuals();
+    }
+
+    private void ApplyElementalVisuals()
+    {
+        if (visualFxInstance != null) return;
+
+        Color tint = Color.white;
+        GameObject fxPrefab = null;
+
+        if (isFire)
+        {
+            tint = new Color(1f, 0.4f, 0.1f);
+            if (ElementalEffectsManager.Instance != null) fxPrefab = ElementalEffectsManager.Instance.fireStatusVfx;
+        }
+        else if (isLightning)
+        {
+            tint = new Color(1f, 0.95f, 0.2f);
+            if (ElementalEffectsManager.Instance != null) fxPrefab = ElementalEffectsManager.Instance.superconductorVfx;
+        }
+        else if (isFrost)
+        {
+            tint = new Color(0.4f, 0.8f, 1f);
+            if (ElementalEffectsManager.Instance != null) fxPrefab = ElementalEffectsManager.Instance.iceStatusVfx;
+        }
+
+        if (fxPrefab != null)
+        {
+            visualFxInstance = Instantiate(fxPrefab, transform.position, transform.rotation, transform);
+            visualFxInstance.transform.localScale = Vector3.one * 0.4f;
+        }
+
+        // Tint renderers
+        Renderer[] rends = GetComponentsInChildren<Renderer>();
+        foreach (var r in rends)
+        {
+            if (r != null && r.material != null)
+            {
+                r.material.color = tint;
+            }
+        }
     }
 
     private void Update()
@@ -63,13 +122,13 @@ public class FortArrowProjectile : MonoBehaviour
                 Damage damage = new Damage
                 {
                     value = damageAmount,
-                    type = DamageType.sharp,
+                    type = (!string.IsNullOrEmpty(infusedElement)) ? DamageType.elemental : DamageType.sharp,
                     isProjectile = true,
                     direction = direction,
                     sourcePosition = currentPos,
                     hitCollider = hit.collider,
                     isPlayerDamage = true,
-                    elementId = RunSession.GetElementInSlot("SLOT_FORTRESS")
+                    elementId = !string.IsNullOrEmpty(infusedElement) ? infusedElement : RunSession.GetElementInSlot("SLOT_FORTRESS")
                 };
 
                 if (Player.Instance != null && Player.Instance.Stats != null)
@@ -94,6 +153,19 @@ public class FortArrowProjectile : MonoBehaviour
                 }
 
                 targetHealth.ReceiveDamage(damage);
+
+                if (isFire)
+                {
+                    EnemyStatusManager.GetOrAdd(targetHealth)?.ApplyStatus("Fire");
+                }
+                if (isFrost)
+                {
+                    EnemyStatusManager.GetOrAdd(targetHealth)?.ApplyStatus("Ice", 0.5f);
+                }
+                if (isLightning)
+                {
+                    EnemyStatusManager.GetOrAdd(targetHealth)?.ApplyStatus("Lightning");
+                }
 
                 if (hitSound != null)
                 {

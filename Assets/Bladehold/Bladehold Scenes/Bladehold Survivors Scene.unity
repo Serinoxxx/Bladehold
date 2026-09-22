@@ -11737,6 +11737,7 @@ MonoBehaviour:
   - {fileID: 873554372}
   enableGameLoopManageStateDebug: 0
   captainPrefab: {fileID: 0}
+  captainKombustaPrefab: {fileID: 0}
   captainSpawnPoint: {fileID: 0}
   intermissionVirtualCamera: {fileID: 785014408}
   intermissionStatsPanel: {fileID: 522960825}

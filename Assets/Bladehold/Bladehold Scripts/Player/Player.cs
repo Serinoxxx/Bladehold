@@ -37,6 +37,9 @@ public class Player : MonoBehaviour
     /// <summary>The player's periodic elemental imbuement controller.</summary>
     public PeriodicImbuementController Imbuements { get; private set; }
 
+    private PlayerAmmo ammo;
+    public PlayerAmmo Ammo => ammo != null ? ammo : (ammo = GetComponent<PlayerAmmo>() ?? GetComponentInChildren<PlayerAmmo>() ?? GetComponentInParent<PlayerAmmo>());
+
     private void Awake()
     {
         if (Instance == null)
@@ -52,6 +55,11 @@ public class Player : MonoBehaviour
             if (Imbuements == null)
             {
                 Imbuements = gameObject.AddComponent<PeriodicImbuementController>();
+            }
+            ammo = GetComponent<PlayerAmmo>() ?? GetComponentInChildren<PlayerAmmo>() ?? GetComponentInParent<PlayerAmmo>();
+            if (ammo == null)
+            {
+                ammo = gameObject.AddComponent<PlayerAmmo>();
             }
         }
         else if (Instance != this)

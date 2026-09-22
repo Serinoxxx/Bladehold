@@ -65,13 +65,24 @@ public class CatapultDefense : DefenseStructure
 
         Vector3 spawnPos = launchPoint != null ? launchPoint.position : transform.position + Vector3.up * 2f;
 
+        bool hasIce = Player.Instance != null && Player.Instance.Stats != null && Player.Instance.Stats.GetValue(StatType.TowerSlipperyGround) > 0f;
+        bool hasLightning = Player.Instance != null && Player.Instance.Stats != null && Player.Instance.Stats.GetValue(StatType.TowerStormCloud) > 0f;
+        bool hasFire = Player.Instance != null && Player.Instance.Stats != null && Player.Instance.Stats.GetValue(StatType.TowerRollingFireball) > 0f;
+
+        float effectiveSplashDamage = splashDamage;
+        if (Player.Instance != null && Player.Instance.Stats != null)
+        {
+            effectiveSplashDamage *= Player.Instance.Stats.GetValue(StatType.AllDamageMultiplier);
+        }
+
         if (projectilePrefab != null)
         {
             GameObject projObj = Instantiate(projectilePrefab, spawnPos, Quaternion.identity);
             CatapultProjectile proj = projObj.GetComponent<CatapultProjectile>();
             if (proj != null)
             {
-                proj.Launch(spawnPos, targetPos, splashDamage, 1.2f, splashRadius);
+                proj.SetElementalUpgrades(hasIce, hasLightning, hasFire);
+                proj.Launch(spawnPos, targetPos, effectiveSplashDamage, 1.2f, splashRadius);
             }
         }
         else
@@ -86,7 +97,7 @@ public class CatapultDefense : DefenseStructure
                 {
                     Damage dmg = new Damage
                     {
-                        value = splashDamage,
+                        value = effectiveSplashDamage,
                         type = DamageType.elemental,
                         elementId = "Fire",
                         isPlayerDamage = true,
@@ -96,6 +107,15 @@ public class CatapultDefense : DefenseStructure
                     h.ReceiveDamage(dmg);
                     EnemyStatusManager.GetOrAdd(h)?.ApplyStatus("Fire");
                 }
+            }
+
+            if (hasIce) SlipperyIceZone.Spawn(targetPos, splashRadius * 1.25f, 10f);
+            if (hasLightning) CatapultStormCloud.Spawn(targetPos, splashRadius * 1.35f, 8f, effectiveSplashDamage * 0.45f);
+            if (hasFire)
+            {
+                Vector3 rollDir = (targetPos - spawnPos);
+                rollDir.y = 0f;
+                RollingFireball.Spawn(targetPos, rollDir.normalized, 9.5f, effectiveSplashDamage * 0.8f, 10f);
             }
         }
 

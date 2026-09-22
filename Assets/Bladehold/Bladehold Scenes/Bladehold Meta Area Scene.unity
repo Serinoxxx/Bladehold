@@ -31575,6 +31575,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 7f20eb59abe6199489deca443f84219b, type: 2}
   - {fileID: 11400000, guid: 0ac9ee235fdffae48ab26e9c383895e4, type: 2}
   - {fileID: 11400000, guid: c94c217373af8be4785d3bdddb6eadd2, type: 2}
+  - {fileID: 11400000, guid: 83a14b725ae64fd5ad9313ae89caf012, type: 2}
   windowRoot: {fileID: 379243961}
   closeButton: {fileID: 269008744}
   goblinBloodText: {fileID: 2126342111}

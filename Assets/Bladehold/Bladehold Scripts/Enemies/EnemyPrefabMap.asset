@@ -75,3 +75,5 @@ MonoBehaviour:
     prefab: {fileID: 4179199600163991995, guid: 562a8d8060b703f44b43b04ad5731ba9, type: 3}
   - id: bulwark
     prefab: {fileID: 6748165462985918841, guid: 80461029e18c1dd47ba102ebb4f316d4, type: 3}
+  - id: captain_kombusta
+    prefab: {fileID: 6445429257768947908, guid: bdd45613c9bb1584d8316eeb304c9fb1, type: 3}

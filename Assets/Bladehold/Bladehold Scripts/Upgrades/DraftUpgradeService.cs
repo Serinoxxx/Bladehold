@@ -274,6 +274,7 @@ public class DraftUpgradeService : MonoBehaviour
         {
             if (def == null) continue;
             if (def.category != category) continue;
+
             if (banishedIds != null && banishedIds.Contains(def.id)) continue;
 
             int currentLevel = RunSession.GetUpgradeLevel(def.id);
@@ -315,7 +316,7 @@ public class DraftUpgradeService : MonoBehaviour
                 if (hasUltimate) continue;
             }
 
-            // Fortress upgrades are now built via battlefield Tower Plots, not random draft cards
+            // Fortress upgrades are built via battlefield Tower Plots, not random draft cards
             if (def.category == DraftCategory.Fortress)
             {
                 continue;
@@ -530,7 +531,7 @@ public class DraftUpgradeService : MonoBehaviour
             string meleeId = PlayerWeaponManager.Instance != null ? PlayerWeaponManager.Instance.CurrentMeleeId : "sword";
             if (meleeId.Contains("mace")) ultId = "mace_earthshaker_ult";
             else if (meleeId.Contains("axe")) ultId = "axe_bladestorm_ult";
-            else ultId = "sword_mount_ult";
+            else ultId = "sword_blade_tempest";
         }
 
         DraftUpgradeDefinition ultDef = GetById(ultId);
@@ -575,7 +576,13 @@ public class DraftUpgradeService : MonoBehaviour
         PlayerUltimateController controller = rootTr.GetComponentInChildren<PlayerUltimateController>();
         GameObject targetGo = controller != null ? controller.gameObject : player.gameObject;
 
-        if (ultimateId.StartsWith("sword_mount", StringComparison.OrdinalIgnoreCase))
+        if (ultimateId.StartsWith("sword_blade", StringComparison.OrdinalIgnoreCase))
+        {
+            SwordBladeTempestUltimate swordUlt = rootTr.GetComponentInChildren<SwordBladeTempestUltimate>(true);
+            if (swordUlt == null) swordUlt = targetGo.AddComponent<SwordBladeTempestUltimate>();
+            swordUlt.enabled = true;
+        }
+        else if (ultimateId.StartsWith("sword_mount", StringComparison.OrdinalIgnoreCase))
         {
             SwordMountUltimate mountUlt = rootTr.GetComponentInChildren<SwordMountUltimate>(true);
             if (mountUlt == null) mountUlt = targetGo.AddComponent<SwordMountUltimate>();
