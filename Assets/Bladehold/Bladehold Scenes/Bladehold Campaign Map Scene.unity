@@ -698,6 +698,39 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 58547732}
   m_CullTransparentMesh: 1
+--- !u!114 &62869963
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
+  m_Name: Node_tier3_castle_rest_area
+  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
+  nodeId: tier3_castle_rest_area
+  nodeTitle: Castle Rest Area
+  subtitle: Sanctuary Courtyard
+  description: Safe sanctuary within the fortress. Visit the shopkeeper, drink from
+    the well, and draft defensive abilities.
+  sceneName: Bladehold Rest Area Scene
+  nodeType: 1
+  tierIndex: 3
+  mapPosition: {x: 500, y: 90}
+  captainName: 
+  difficultyTier: 1
+  clanBuff: {fileID: 0}
+  captainIcon: {fileID: 0}
+  bountyType: 0
+  rewardsDescription: Shop, Healing Well, Ability Drafts
+  goldReward: 0
+  bloodReward: 0
+  metalReward: 0
+  rewardIcon: {fileID: 0}
+  nextNodes:
+  - {fileID: 1360585365}
 --- !u!1 &67973602
 GameObject:
   m_ObjectHideFlags: 0
@@ -773,7 +806,9 @@ MonoBehaviour:
   combatNodeColor: {r: 0.55, g: 0.18, b: 0.18, a: 1}
   restNodeColor: {r: 0.18, g: 0.45, b: 0.32, a: 1}
   supplyNodeColor: {r: 0.18, g: 0.35, b: 0.55, a: 1}
+  fishingNodeColor: {r: 0.12, g: 0.52, b: 0.58, a: 1}
   bossNodeColor: {r: 0.45, g: 0.15, b: 0.55, a: 1}
+  fishingIcon: {fileID: 0}
 --- !u!114 &67973605
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -993,6 +1028,40 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 69950441}
   m_CullTransparentMesh: 1
+--- !u!114 &71592732
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
+  m_Name: Node_tier5_dungeon_oubliette
+  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
+  nodeId: tier5_dungeon_oubliette
+  nodeTitle: Dungeon Oubliette
+  subtitle: Dark Subterranean Cells
+  description: Delve into the castle depths where brute wardens guard heaps of harvested
+    goblin blood.
+  sceneName: Bladehold Castle Dungeons
+  nodeType: 0
+  tierIndex: 5
+  mapPosition: {x: 900, y: 130}
+  captainName: Captain Fraglob
+  difficultyTier: 3
+  clanBuff: {fileID: 0}
+  captainIcon: {fileID: 0}
+  bountyType: 6
+  rewardsDescription: +25 Goblin Blood, Dungeon Spoils
+  goldReward: 50
+  bloodReward: 25
+  metalReward: 0
+  rewardIcon: {fileID: 0}
+  nextNodes:
+  - {fileID: 1691703325}
+  - {fileID: 1424677006}
 --- !u!1 &71924491
 GameObject:
   m_ObjectHideFlags: 0
@@ -1454,6 +1523,40 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 109580502}
   m_CullTransparentMesh: 1
+--- !u!114 &115928551
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
+  m_Name: Node_tier5_royal_conservatory
+  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
+  nodeId: tier5_royal_conservatory
+  nodeTitle: Royal Conservatory
+  subtitle: Overgrown Glass Arches
+  description: Battle through shattered glass greenhouses and toxic fungal blooms
+    guarded by Captain Kombusta's firebrands.
+  sceneName: Bladehold Castle Conservatory
+  nodeType: 0
+  tierIndex: 5
+  mapPosition: {x: 900, y: -100}
+  captainName: Captain Kombusta
+  difficultyTier: 3
+  clanBuff: {fileID: 0}
+  captainIcon: {fileID: 0}
+  bountyType: 3
+  rewardsDescription: Elemental Upgrade Draft, +150 Gold
+  goldReward: 150
+  bloodReward: 0
+  metalReward: 0
+  rewardIcon: {fileID: 0}
+  nextNodes:
+  - {fileID: 1691703325}
+  - {fileID: 1424677006}
 --- !u!1 &119274325
 GameObject:
   m_ObjectHideFlags: 0
@@ -1529,7 +1632,9 @@ MonoBehaviour:
   combatNodeColor: {r: 0.55, g: 0.18, b: 0.18, a: 1}
   restNodeColor: {r: 0.18, g: 0.45, b: 0.32, a: 1}
   supplyNodeColor: {r: 0.18, g: 0.35, b: 0.55, a: 1}
+  fishingNodeColor: {r: 0.12, g: 0.52, b: 0.58, a: 1}
   bossNodeColor: {r: 0.45, g: 0.15, b: 0.55, a: 1}
+  fishingIcon: {fileID: 0}
 --- !u!114 &119274328
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2335,61 +2440,71 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36dea8a895a130041a5c3de284f0eda1, type: 3}
   m_Name: CastleCampaignGraph_Runtime
   m_EditorClassIdentifier: Assembly-CSharp::CampaignGraphSO
-  rootNode: {fileID: 663562069}
+  rootNode: {fileID: 385965244}
   tiers:
   - tierNumber: 1
     tierName: Outer Gate
     nodes:
-    - {fileID: 663562069}
+    - {fileID: 385965244}
   - tierNumber: 2
     tierName: Battlements & Barracks
     nodes:
-    - {fileID: 1487163116}
-    - {fileID: 991537042}
+    - {fileID: 1850309047}
+    - {fileID: 1883903449}
+    - {fileID: 363136867}
   - tierNumber: 3
     tierName: Fortress Recovery
     nodes:
-    - {fileID: 655161200}
-    - {fileID: 1219947529}
+    - {fileID: 62869963}
+    - {fileID: 929378056}
+    - {fileID: 283028100}
   - tierNumber: 4
     tierName: Great Hall
     nodes:
-    - {fileID: 1033623725}
+    - {fileID: 1360585365}
+    - {fileID: 1251991097}
   - tierNumber: 5
     tierName: Subterranean & Grounds
     nodes:
-    - {fileID: 560446926}
-    - {fileID: 258737960}
+    - {fileID: 71592732}
+    - {fileID: 115928551}
+    - {fileID: 265460182}
   - tierNumber: 6
     tierName: Inner Sanctum Recovery
     nodes:
-    - {fileID: 1761839996}
-    - {fileID: 1265295710}
+    - {fileID: 1691703325}
+    - {fileID: 1424677006}
   - tierNumber: 7
     tierName: Throne Antechamber
     nodes:
-    - {fileID: 588359301}
+    - {fileID: 809971341}
+    - {fileID: 1919099376}
   - tierNumber: 8
     tierName: Crypt of Revelation
     nodes:
-    - {fileID: 835381372}
-    - {fileID: 1120665847}
-    - {fileID: 1280608505}
+    - {fileID: 250072347}
+    - {fileID: 1157900722}
+    - {fileID: 618452822}
   allNodes:
-  - {fileID: 663562069}
-  - {fileID: 1487163116}
-  - {fileID: 991537042}
-  - {fileID: 655161200}
-  - {fileID: 1219947529}
-  - {fileID: 1033623725}
-  - {fileID: 560446926}
-  - {fileID: 258737960}
-  - {fileID: 1761839996}
-  - {fileID: 1265295710}
-  - {fileID: 588359301}
-  - {fileID: 835381372}
-  - {fileID: 1120665847}
-  - {fileID: 1280608505}
+  - {fileID: 385965244}
+  - {fileID: 1850309047}
+  - {fileID: 1883903449}
+  - {fileID: 363136867}
+  - {fileID: 62869963}
+  - {fileID: 929378056}
+  - {fileID: 283028100}
+  - {fileID: 1360585365}
+  - {fileID: 1251991097}
+  - {fileID: 71592732}
+  - {fileID: 115928551}
+  - {fileID: 265460182}
+  - {fileID: 1691703325}
+  - {fileID: 1424677006}
+  - {fileID: 809971341}
+  - {fileID: 1919099376}
+  - {fileID: 250072347}
+  - {fileID: 1157900722}
+  - {fileID: 618452822}
 --- !u!1 &178208087
 GameObject:
   m_ObjectHideFlags: 0
@@ -2994,7 +3109,9 @@ MonoBehaviour:
   combatNodeColor: {r: 0.55, g: 0.18, b: 0.18, a: 1}
   restNodeColor: {r: 0.18, g: 0.45, b: 0.32, a: 1}
   supplyNodeColor: {r: 0.18, g: 0.35, b: 0.55, a: 1}
+  fishingNodeColor: {r: 0.12, g: 0.52, b: 0.58, a: 1}
   bossNodeColor: {r: 0.45, g: 0.15, b: 0.55, a: 1}
+  fishingIcon: {fileID: 0}
 --- !u!114 &205806524
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3612,6 +3729,40 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &250072347
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
+  m_Name: Node_tier8_crypt_sanctum
+  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
+  nodeId: tier8_crypt_sanctum
+  nodeTitle: Crypt Sanctum
+  subtitle: Crypt of the Necromancer
+  description: You breach the inner crypt to rescue Princess Katherine, only to discover
+    the grim truth behind the horde's summoning.
+  sceneName: Bladehold Necromancer Crypt
+  nodeType: 5
+  tierIndex: 8
+  mapPosition: {x: 1500, y: 0}
+  captainName: 
+  difficultyTier: 1
+  clanBuff: {fileID: 0}
+  captainIcon: {fileID: 0}
+  bountyType: 0
+  rewardsDescription: 'The Revelation: Story Dialogue & Boss Choice'
+  goldReward: 0
+  bloodReward: 0
+  metalReward: 0
+  rewardIcon: {fileID: 0}
+  nextNodes:
+  - {fileID: 1157900722}
+  - {fileID: 618452822}
 --- !u!1 &250576598
 GameObject:
   m_ObjectHideFlags: 0
@@ -3837,7 +3988,9 @@ MonoBehaviour:
   combatNodeColor: {r: 0.55, g: 0.18, b: 0.18, a: 1}
   restNodeColor: {r: 0.18, g: 0.45, b: 0.32, a: 1}
   supplyNodeColor: {r: 0.18, g: 0.35, b: 0.55, a: 1}
+  fishingNodeColor: {r: 0.12, g: 0.52, b: 0.58, a: 1}
   bossNodeColor: {r: 0.45, g: 0.15, b: 0.55, a: 1}
+  fishingIcon: {fileID: 0}
 --- !u!114 &252907217
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3920,7 +4073,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 252907214}
   m_CullTransparentMesh: 1
---- !u!114 &258737960
+--- !u!114 &265460182
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3930,30 +4083,29 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
-  m_Name: Node_tier5_royal_conservatory
+  m_Name: Node_tier5_fishing_pond
   m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
-  nodeId: tier5_royal_conservatory
-  nodeTitle: Royal Conservatory
-  subtitle: Overgrown Glass Arches
-  description: Battle through shattered glass greenhouses and toxic fungal blooms
-    guarded by Captain Kombusta's firebrands.
-  sceneName: Bladehold Castle Conservatory
-  nodeType: 0
+  nodeId: tier5_fishing_pond
+  nodeTitle: Sunken Grotto Pond
+  subtitle: Flooded Cellars
+  description: A flooded grotto deep in the castle cellars. 60-second fishing frenzy
+    for precious resources and buff fish.
+  sceneName: Bladehold Fishing Pond
+  nodeType: 3
   tierIndex: 5
-  mapPosition: {x: 900, y: -130}
-  captainName: Captain Kombusta
-  difficultyTier: 3
+  mapPosition: {x: 900, y: -240}
+  captainName: 
+  difficultyTier: 1
   clanBuff: {fileID: 0}
   captainIcon: {fileID: 0}
-  bountyType: 3
-  rewardsDescription: Elemental Upgrade Draft, +150 Gold
-  goldReward: 150
+  bountyType: 0
+  rewardsDescription: '60s Fishing Frenzy: Gold, Metal, Blood, Buff Fish'
+  goldReward: 0
   bloodReward: 0
   metalReward: 0
   rewardIcon: {fileID: 0}
   nextNodes:
-  - {fileID: 1761839996}
-  - {fileID: 1265295710}
+  - {fileID: 1424677006}
 --- !u!1 &280344906
 GameObject:
   m_ObjectHideFlags: 0
@@ -4029,6 +4181,39 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 280344906}
   m_CullTransparentMesh: 1
+--- !u!114 &283028100
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
+  m_Name: Node_tier3_whispering_basin
+  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
+  nodeId: tier3_whispering_basin
+  nodeTitle: Whispering Basin
+  subtitle: Forgotten Grotto
+  description: A secluded pond teeming with ancient subterranean fish. 60-second
+    fishing frenzy for precious resources.
+  sceneName: Bladehold Fishing Pond
+  nodeType: 3
+  tierIndex: 3
+  mapPosition: {x: 500, y: -240}
+  captainName: 
+  difficultyTier: 1
+  clanBuff: {fileID: 0}
+  captainIcon: {fileID: 0}
+  bountyType: 0
+  rewardsDescription: '60s Fishing Frenzy: Gold, Metal, Blood, Buff Fish'
+  goldReward: 0
+  bloodReward: 0
+  metalReward: 0
+  rewardIcon: {fileID: 0}
+  nextNodes:
+  - {fileID: 1251991097}
 --- !u!1 &285564773
 GameObject:
   m_ObjectHideFlags: 0
@@ -4391,7 +4576,9 @@ MonoBehaviour:
   combatNodeColor: {r: 0.55, g: 0.18, b: 0.18, a: 1}
   restNodeColor: {r: 0.18, g: 0.45, b: 0.32, a: 1}
   supplyNodeColor: {r: 0.18, g: 0.35, b: 0.55, a: 1}
+  fishingNodeColor: {r: 0.12, g: 0.52, b: 0.58, a: 1}
   bossNodeColor: {r: 0.45, g: 0.15, b: 0.55, a: 1}
+  fishingIcon: {fileID: 0}
 --- !u!114 &335131913
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4474,6 +4661,40 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 335131910}
   m_CullTransparentMesh: 1
+--- !u!114 &363136867
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
+  m_Name: Node_tier2_fishing_pond
+  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
+  nodeId: tier2_fishing_pond
+  nodeTitle: Outer Moat Pond
+  subtitle: Castle Waterway
+  description: Take a peaceful diversion along the outer moat. 60-second fishing
+    frenzy for gold, metal, blood, and rare buff fish.
+  sceneName: Bladehold Fishing Pond
+  nodeType: 3
+  tierIndex: 2
+  mapPosition: {x: 300, y: -240}
+  captainName: 
+  difficultyTier: 1
+  clanBuff: {fileID: 0}
+  captainIcon: {fileID: 0}
+  bountyType: 0
+  rewardsDescription: '60s Fishing Frenzy: Gold, Metal, Blood, Buff Fish'
+  goldReward: 0
+  bloodReward: 0
+  metalReward: 0
+  rewardIcon: {fileID: 0}
+  nextNodes:
+  - {fileID: 929378056}
+  - {fileID: 283028100}
 --- !u!1 &371511196
 GameObject:
   m_ObjectHideFlags: 0
@@ -4774,6 +4995,41 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 385956311}
   m_CullTransparentMesh: 1
+--- !u!114 &385965244
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
+  m_Name: Node_tier1_courtyard_entrance
+  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
+  nodeId: tier1_courtyard_entrance
+  nodeTitle: Courtyard Entrance
+  subtitle: Outer Castle Courtyard
+  description: Defend the courtyard gates against the initial goblin assault. Fortify
+    tower defense slots and secure the entryway.
+  sceneName: Bladehold Castle Courtyard
+  nodeType: 0
+  tierIndex: 1
+  mapPosition: {x: 100, y: 0}
+  captainName: 
+  difficultyTier: 1
+  clanBuff: {fileID: 0}
+  captainIcon: {fileID: 0}
+  bountyType: 1
+  rewardsDescription: +100 Gold, Weapon Upgrade Draft
+  goldReward: 100
+  bloodReward: 0
+  metalReward: 0
+  rewardIcon: {fileID: 0}
+  nextNodes:
+  - {fileID: 1850309047}
+  - {fileID: 1883903449}
+  - {fileID: 363136867}
 --- !u!1 &397178255
 GameObject:
   m_ObjectHideFlags: 0
@@ -6222,40 +6478,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 543904895}
   m_CullTransparentMesh: 1
---- !u!114 &560446926
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
-  m_Name: Node_tier5_dungeon_oubliette
-  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
-  nodeId: tier5_dungeon_oubliette
-  nodeTitle: Dungeon Oubliette
-  subtitle: Dark Subterranean Cells
-  description: Delve into the castle depths where brute wardens guard heaps of harvested
-    goblin blood.
-  sceneName: Bladehold Castle Dungeons
-  nodeType: 0
-  tierIndex: 5
-  mapPosition: {x: 900, y: 130}
-  captainName: Captain Fraglob
-  difficultyTier: 3
-  clanBuff: {fileID: 0}
-  captainIcon: {fileID: 0}
-  bountyType: 6
-  rewardsDescription: +25 Goblin Blood, Dungeon Spoils
-  goldReward: 50
-  bloodReward: 25
-  metalReward: 0
-  rewardIcon: {fileID: 0}
-  nextNodes:
-  - {fileID: 1761839996}
-  - {fileID: 1265295710}
 --- !u!1 &562046941
 GameObject:
   m_ObjectHideFlags: 0
@@ -6680,39 +6902,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 585755207}
   m_CullTransparentMesh: 1
---- !u!114 &588359301
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
-  m_Name: Node_tier7_throne_antechamber
-  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
-  nodeId: tier7_throne_antechamber
-  nodeTitle: Throne Antechamber
-  subtitle: The Obsidian Portico
-  description: Intense frontline defense outside the throne room doors. Waves of
-    armored elites and siege beasts attempt to halt your advance.
-  sceneName: Bladehold Throne Antechamber
-  nodeType: 3
-  tierIndex: 7
-  mapPosition: {x: 1300, y: 0}
-  captainName: Captain Kombusta
-  difficultyTier: 4
-  clanBuff: {fileID: 0}
-  captainIcon: {fileID: 0}
-  bountyType: 7
-  rewardsDescription: 'Omega Bounty: +350 Gold, +20 Blood, +5 Metal'
-  goldReward: 350
-  bloodReward: 20
-  metalReward: 5
-  rewardIcon: {fileID: 0}
-  nextNodes:
-  - {fileID: 835381372}
 --- !u!1 &589030316
 GameObject:
   m_ObjectHideFlags: 0
@@ -7075,6 +7264,37 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 608841215}
   m_CullTransparentMesh: 1
+--- !u!114 &618452822
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
+  m_Name: Node_tier8_necromancer_boss
+  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
+  nodeId: tier8_necromancer_boss
+  nodeTitle: Necromancer's Crypt
+  subtitle: Catacombs of the Fallen
+  description: Defy Malakor the Defiler and shatter his dark legion of skeletons.
+  sceneName: Bladehold Necromancer Crypt
+  nodeType: 7
+  tierIndex: 8
+  mapPosition: {x: 1750, y: -150}
+  captainName: Malakor the Defiler
+  difficultyTier: 4
+  clanBuff: {fileID: 0}
+  captainIcon: {fileID: 0}
+  bountyType: 4
+  rewardsDescription: 'Crypt Liberator: +500 Gold, +30 Blood, +10 Metal'
+  goldReward: 500
+  bloodReward: 30
+  metalReward: 10
+  rewardIcon: {fileID: 0}
+  nextNodes: []
 --- !u!1 &621249427
 GameObject:
   m_ObjectHideFlags: 0
@@ -7561,73 +7781,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 649254510}
   m_CullTransparentMesh: 1
---- !u!114 &655161200
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
-  m_Name: Node_tier3_castle_rest_area
-  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
-  nodeId: tier3_castle_rest_area
-  nodeTitle: Castle Rest Area
-  subtitle: Sanctuary Courtyard
-  description: Safe sanctuary within the fortress. Visit the shopkeeper, drink from
-    the well, and draft defensive abilities.
-  sceneName: Bladehold Rest Area Scene
-  nodeType: 1
-  tierIndex: 3
-  mapPosition: {x: 500, y: 90}
-  captainName: 
-  difficultyTier: 1
-  clanBuff: {fileID: 0}
-  captainIcon: {fileID: 0}
-  bountyType: 0
-  rewardsDescription: Shop, Healing Well, Ability Drafts
-  goldReward: 0
-  bloodReward: 0
-  metalReward: 0
-  rewardIcon: {fileID: 0}
-  nextNodes:
-  - {fileID: 1033623725}
---- !u!114 &663562069
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
-  m_Name: Node_tier1_courtyard_entrance
-  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
-  nodeId: tier1_courtyard_entrance
-  nodeTitle: Courtyard Entrance
-  subtitle: Outer Castle Courtyard
-  description: Defend the courtyard gates against the initial goblin assault. Fortify
-    tower defense slots and secure the entryway.
-  sceneName: Bladehold Castle Courtyard
-  nodeType: 0
-  tierIndex: 1
-  mapPosition: {x: 100, y: 0}
-  captainName: 
-  difficultyTier: 1
-  clanBuff: {fileID: 0}
-  captainIcon: {fileID: 0}
-  bountyType: 1
-  rewardsDescription: +100 Gold, Weapon Upgrade Draft
-  goldReward: 100
-  bloodReward: 0
-  metalReward: 0
-  rewardIcon: {fileID: 0}
-  nextNodes:
-  - {fileID: 1487163116}
-  - {fileID: 991537042}
 --- !u!1 &676253870
 GameObject:
   m_ObjectHideFlags: 0
@@ -8303,7 +8456,9 @@ MonoBehaviour:
   combatNodeColor: {r: 0.55, g: 0.18, b: 0.18, a: 1}
   restNodeColor: {r: 0.18, g: 0.45, b: 0.32, a: 1}
   supplyNodeColor: {r: 0.18, g: 0.35, b: 0.55, a: 1}
+  fishingNodeColor: {r: 0.12, g: 0.52, b: 0.58, a: 1}
   bossNodeColor: {r: 0.45, g: 0.15, b: 0.55, a: 1}
+  fishingIcon: {fileID: 0}
 --- !u!114 &723003078
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9423,6 +9578,39 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 805677172}
   m_CullTransparentMesh: 1
+--- !u!114 &809971341
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
+  m_Name: Node_tier7_throne_antechamber
+  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
+  nodeId: tier7_throne_antechamber
+  nodeTitle: Throne Antechamber
+  subtitle: The Obsidian Portico
+  description: Intense frontline defense outside the throne room doors. Waves of
+    armored elites and siege beasts attempt to halt your advance.
+  sceneName: Bladehold Throne Antechamber
+  nodeType: 4
+  tierIndex: 7
+  mapPosition: {x: 1300, y: 0}
+  captainName: Captain Kombusta
+  difficultyTier: 4
+  clanBuff: {fileID: 0}
+  captainIcon: {fileID: 0}
+  bountyType: 7
+  rewardsDescription: 'Omega Bounty: +350 Gold, +20 Blood, +5 Metal'
+  goldReward: 350
+  bloodReward: 20
+  metalReward: 5
+  rewardIcon: {fileID: 0}
+  nextNodes:
+  - {fileID: 250072347}
 --- !u!1 &810551067
 GameObject:
   m_ObjectHideFlags: 0
@@ -9648,40 +9836,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 833948314}
   m_CullTransparentMesh: 1
---- !u!114 &835381372
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
-  m_Name: Node_tier8_crypt_sanctum
-  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
-  nodeId: tier8_crypt_sanctum
-  nodeTitle: Crypt Sanctum
-  subtitle: Crypt of the Necromancer
-  description: You breach the inner crypt to rescue Princess Katherine, only to discover
-    the grim truth behind the horde's summoning.
-  sceneName: Bladehold Necromancer Crypt
-  nodeType: 4
-  tierIndex: 8
-  mapPosition: {x: 1500, y: 0}
-  captainName: 
-  difficultyTier: 1
-  clanBuff: {fileID: 0}
-  captainIcon: {fileID: 0}
-  bountyType: 0
-  rewardsDescription: 'The Revelation: Story Dialogue & Boss Choice'
-  goldReward: 0
-  bloodReward: 0
-  metalReward: 0
-  rewardIcon: {fileID: 0}
-  nextNodes:
-  - {fileID: 1120665847}
-  - {fileID: 1280608505}
 --- !u!1 &839560088
 GameObject:
   m_ObjectHideFlags: 0
@@ -10817,6 +10971,40 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &929378056
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
+  m_Name: Node_tier3_fishing_pond
+  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
+  nodeId: tier3_fishing_pond
+  nodeTitle: Sanctuary Fishing Pond
+  subtitle: Inner Courtyard Springs
+  description: A serene spring inside the sanctuary. Use your bow to hunt fish for
+    1 minute to collect resources and eat buff fish.
+  sceneName: Bladehold Fishing Pond
+  nodeType: 3
+  tierIndex: 3
+  mapPosition: {x: 500, y: -90}
+  captainName: 
+  difficultyTier: 1
+  clanBuff: {fileID: 0}
+  captainIcon: {fileID: 0}
+  bountyType: 0
+  rewardsDescription: '60s Fishing Frenzy: Gold, Metal, Blood, Buff Fish'
+  goldReward: 0
+  bloodReward: 0
+  metalReward: 0
+  rewardIcon: {fileID: 0}
+  nextNodes:
+  - {fileID: 1360585365}
+  - {fileID: 1251991097}
 --- !u!1 &930858727
 GameObject:
   m_ObjectHideFlags: 0
@@ -11316,7 +11504,9 @@ MonoBehaviour:
   combatNodeColor: {r: 0.55, g: 0.18, b: 0.18, a: 1}
   restNodeColor: {r: 0.18, g: 0.45, b: 0.32, a: 1}
   supplyNodeColor: {r: 0.18, g: 0.35, b: 0.55, a: 1}
+  fishingNodeColor: {r: 0.12, g: 0.52, b: 0.58, a: 1}
   bossNodeColor: {r: 0.45, g: 0.15, b: 0.55, a: 1}
+  fishingIcon: {fileID: 0}
 --- !u!114 &956820593
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11699,7 +11889,9 @@ MonoBehaviour:
   combatNodeColor: {r: 0.55, g: 0.18, b: 0.18, a: 1}
   restNodeColor: {r: 0.18, g: 0.45, b: 0.32, a: 1}
   supplyNodeColor: {r: 0.18, g: 0.35, b: 0.55, a: 1}
+  fishingNodeColor: {r: 0.12, g: 0.52, b: 0.58, a: 1}
   bossNodeColor: {r: 0.45, g: 0.15, b: 0.55, a: 1}
+  fishingIcon: {fileID: 0}
 --- !u!114 &978496880
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11916,40 +12108,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 982278944}
   m_CullTransparentMesh: 1
---- !u!114 &991537042
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
-  m_Name: Node_tier2_armory_barracks
-  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
-  nodeId: tier2_armory_barracks
-  nodeTitle: Armory Barracks
-  subtitle: Fortified Guardhouse
-  description: Clear out Captain Kombusta's incendiary sappers before they ignite
-    the castle's armory storehouse.
-  sceneName: Bladehold Castle Armory
-  nodeType: 0
-  tierIndex: 2
-  mapPosition: {x: 300, y: -130}
-  captainName: Captain Kombusta
-  difficultyTier: 2
-  clanBuff: {fileID: 0}
-  captainIcon: {fileID: 0}
-  bountyType: 5
-  rewardsDescription: +5 Orcish Metal, Iron Armaments
-  goldReward: 50
-  bloodReward: 0
-  metalReward: 5
-  rewardIcon: {fileID: 0}
-  nextNodes:
-  - {fileID: 655161200}
-  - {fileID: 1219947529}
 --- !u!1 &1002480644
 GameObject:
   m_ObjectHideFlags: 0
@@ -12100,7 +12258,9 @@ MonoBehaviour:
   combatNodeColor: {r: 0.55, g: 0.18, b: 0.18, a: 1}
   restNodeColor: {r: 0.18, g: 0.45, b: 0.32, a: 1}
   supplyNodeColor: {r: 0.18, g: 0.35, b: 0.55, a: 1}
+  fishingNodeColor: {r: 0.12, g: 0.52, b: 0.58, a: 1}
   bossNodeColor: {r: 0.45, g: 0.15, b: 0.55, a: 1}
+  fishingIcon: {fileID: 0}
 --- !u!114 &1003695001
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12545,40 +12705,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1024848965}
   m_CullTransparentMesh: 1
---- !u!114 &1033623725
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
-  m_Name: Node_tier4_great_banqueting_hall
-  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
-  nodeId: tier4_great_banqueting_hall
-  nodeTitle: Great Banqueting Hall
-  subtitle: Ruined Grand Feast Hall
-  description: Fight through high-density enemy hordes among long banquet tables,
-    chandeliers, and fallen tapestries.
-  sceneName: Bladehold Great Hall
-  nodeType: 0
-  tierIndex: 4
-  mapPosition: {x: 700, y: 0}
-  captainName: Captain Fraglob
-  difficultyTier: 3
-  clanBuff: {fileID: 0}
-  captainIcon: {fileID: 0}
-  bountyType: 2
-  rewardsDescription: +200 Gold, +10 Goblin Blood, Fortress Draft
-  goldReward: 200
-  bloodReward: 10
-  metalReward: 0
-  rewardIcon: {fileID: 0}
-  nextNodes:
-  - {fileID: 560446926}
-  - {fileID: 258737960}
 --- !u!1 &1045940604
 GameObject:
   m_ObjectHideFlags: 0
@@ -13701,38 +13827,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1108196951}
   m_CullTransparentMesh: 1
---- !u!114 &1120665847
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
-  m_Name: Node_tier8_princess_boss
-  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
-  nodeId: tier8_princess_boss
-  nodeTitle: Princess Sanctuary
-  subtitle: The Royal Throne Annex
-  description: Execute Princess Katherine to fulfill the dark covenant and claim
-    the throne.
-  sceneName: Bladehold Princess Sanctuary
-  nodeType: 5
-  tierIndex: 8
-  mapPosition: {x: 1750, y: 150}
-  captainName: Princess Katherine
-  difficultyTier: 4
-  clanBuff: {fileID: 0}
-  captainIcon: {fileID: 0}
-  bountyType: 4
-  rewardsDescription: 'Royal Usurper: +500 Gold, +30 Blood, +10 Metal'
-  goldReward: 500
-  bloodReward: 30
-  metalReward: 10
-  rewardIcon: {fileID: 0}
-  nextNodes: []
 --- !u!1 &1130674711
 GameObject:
   m_ObjectHideFlags: 0
@@ -14056,6 +14150,38 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1157900722
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
+  m_Name: Node_tier8_princess_boss
+  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
+  nodeId: tier8_princess_boss
+  nodeTitle: Princess Sanctuary
+  subtitle: The Royal Throne Annex
+  description: Execute Princess Katherine to fulfill the dark covenant and claim
+    the throne.
+  sceneName: Bladehold Princess Sanctuary
+  nodeType: 6
+  tierIndex: 8
+  mapPosition: {x: 1750, y: 150}
+  captainName: Princess Katherine
+  difficultyTier: 4
+  clanBuff: {fileID: 0}
+  captainIcon: {fileID: 0}
+  bountyType: 4
+  rewardsDescription: 'Royal Usurper: +500 Gold, +30 Blood, +10 Metal'
+  goldReward: 500
+  bloodReward: 30
+  metalReward: 10
+  rewardIcon: {fileID: 0}
+  nextNodes: []
 --- !u!1 &1180952531
 GameObject:
   m_ObjectHideFlags: 0
@@ -14380,39 +14506,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1210902064}
   m_CullTransparentMesh: 1
---- !u!114 &1219947529
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
-  m_Name: Node_tier3_supply_room
-  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
-  nodeId: tier3_supply_room
-  nodeTitle: Supply Room
-  subtitle: Abandoned Depot
-  description: Abandoned storage depot packed with smashable crates and chests. Plunder
-    free resources with zero enemy resistance.
-  sceneName: Bladehold Supply Room
-  nodeType: 2
-  tierIndex: 3
-  mapPosition: {x: 500, y: -90}
-  captainName: 
-  difficultyTier: 1
-  clanBuff: {fileID: 0}
-  captainIcon: {fileID: 0}
-  bountyType: 0
-  rewardsDescription: 'Free Crates: +150 Gold, +3 Metal'
-  goldReward: 150
-  bloodReward: 0
-  metalReward: 3
-  rewardIcon: {fileID: 0}
-  nextNodes:
-  - {fileID: 1033623725}
 --- !u!1 &1242283872
 GameObject:
   m_ObjectHideFlags: 0
@@ -14790,7 +14883,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1248271633}
   m_CullTransparentMesh: 1
---- !u!114 &1265295710
+--- !u!114 &1251991097
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -14800,29 +14893,30 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
-  m_Name: Node_tier6_royal_supply_vault
+  m_Name: Node_tier4_fishing_pond
   m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
-  nodeId: tier6_royal_supply_vault
-  nodeTitle: Royal Supply Vault
-  subtitle: Secure Treasury
-  description: The fortress treasury containing intact royal caches and untouched
-    armament containers. Free resources.
-  sceneName: Bladehold Rest Area Scene
-  nodeType: 2
-  tierIndex: 6
-  mapPosition: {x: 1100, y: -90}
+  nodeId: tier4_fishing_pond
+  nodeTitle: Cistern Fishing Pond
+  subtitle: Subterranean Waterway
+  description: A dark fortress cistern where cavern fish breed undisturbed. 60-second
+    fishing frenzy for resources.
+  sceneName: Bladehold Fishing Pond
+  nodeType: 3
+  tierIndex: 4
+  mapPosition: {x: 700, y: -150}
   captainName: 
   difficultyTier: 1
   clanBuff: {fileID: 0}
   captainIcon: {fileID: 0}
   bountyType: 0
-  rewardsDescription: 'Free Vault: +300 Gold, +6 Orcish Metal'
-  goldReward: 300
+  rewardsDescription: '60s Fishing Frenzy: Gold, Metal, Blood, Buff Fish'
+  goldReward: 0
   bloodReward: 0
-  metalReward: 6
+  metalReward: 0
   rewardIcon: {fileID: 0}
   nextNodes:
-  - {fileID: 588359301}
+  - {fileID: 115928551}
+  - {fileID: 265460182}
 --- !u!1 &1274697204
 GameObject:
   m_ObjectHideFlags: 0
@@ -14898,7 +14992,9 @@ MonoBehaviour:
   combatNodeColor: {r: 0.55, g: 0.18, b: 0.18, a: 1}
   restNodeColor: {r: 0.18, g: 0.45, b: 0.32, a: 1}
   supplyNodeColor: {r: 0.18, g: 0.35, b: 0.55, a: 1}
+  fishingNodeColor: {r: 0.12, g: 0.52, b: 0.58, a: 1}
   bossNodeColor: {r: 0.45, g: 0.15, b: 0.55, a: 1}
+  fishingIcon: {fileID: 0}
 --- !u!114 &1274697207
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15056,37 +15152,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1277107980}
   m_CullTransparentMesh: 1
---- !u!114 &1280608505
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
-  m_Name: Node_tier8_necromancer_boss
-  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
-  nodeId: tier8_necromancer_boss
-  nodeTitle: Necromancer's Crypt
-  subtitle: Catacombs of the Fallen
-  description: Defy Malakor the Defiler and shatter his dark legion of skeletons.
-  sceneName: Bladehold Necromancer Crypt
-  nodeType: 6
-  tierIndex: 8
-  mapPosition: {x: 1750, y: -150}
-  captainName: Malakor the Defiler
-  difficultyTier: 4
-  clanBuff: {fileID: 0}
-  captainIcon: {fileID: 0}
-  bountyType: 4
-  rewardsDescription: 'Crypt Liberator: +500 Gold, +30 Blood, +10 Metal'
-  goldReward: 500
-  bloodReward: 30
-  metalReward: 10
-  rewardIcon: {fileID: 0}
-  nextNodes: []
 --- !u!1 &1301809656
 GameObject:
   m_ObjectHideFlags: 0
@@ -15723,7 +15788,9 @@ MonoBehaviour:
   combatNodeColor: {r: 0.55, g: 0.18, b: 0.18, a: 1}
   restNodeColor: {r: 0.18, g: 0.45, b: 0.32, a: 1}
   supplyNodeColor: {r: 0.18, g: 0.35, b: 0.55, a: 1}
+  fishingNodeColor: {r: 0.12, g: 0.52, b: 0.58, a: 1}
   bossNodeColor: {r: 0.45, g: 0.15, b: 0.55, a: 1}
+  fishingIcon: {fileID: 0}
 --- !u!114 &1328220670
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16018,6 +16085,40 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1349559219}
   m_CullTransparentMesh: 1
+--- !u!114 &1360585365
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
+  m_Name: Node_tier4_great_banqueting_hall
+  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
+  nodeId: tier4_great_banqueting_hall
+  nodeTitle: Great Banqueting Hall
+  subtitle: Ruined Grand Feast Hall
+  description: Fight through high-density enemy hordes among long banquet tables,
+    chandeliers, and fallen tapestries.
+  sceneName: Bladehold Great Hall
+  nodeType: 0
+  tierIndex: 4
+  mapPosition: {x: 700, y: 0}
+  captainName: Captain Fraglob
+  difficultyTier: 3
+  clanBuff: {fileID: 0}
+  captainIcon: {fileID: 0}
+  bountyType: 2
+  rewardsDescription: +200 Gold, +10 Goblin Blood, Fortress Draft
+  goldReward: 200
+  bloodReward: 10
+  metalReward: 0
+  rewardIcon: {fileID: 0}
+  nextNodes:
+  - {fileID: 71592732}
+  - {fileID: 115928551}
 --- !u!1 &1366955911
 GameObject:
   m_ObjectHideFlags: 0
@@ -16830,6 +16931,40 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1412901713}
   m_CullTransparentMesh: 1
+--- !u!114 &1424677006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
+  m_Name: Node_tier6_fishing_pond
+  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
+  nodeId: tier6_fishing_pond
+  nodeTitle: Royal Reflection Pond
+  subtitle: High Chapel Gardens
+  description: The serene ornamental pond of the High Chapel. 60-second fishing frenzy
+    before the final ascent.
+  sceneName: Bladehold Fishing Pond
+  nodeType: 3
+  tierIndex: 6
+  mapPosition: {x: 1100, y: -90}
+  captainName: 
+  difficultyTier: 1
+  clanBuff: {fileID: 0}
+  captainIcon: {fileID: 0}
+  bountyType: 0
+  rewardsDescription: '60s Fishing Frenzy: Gold, Metal, Blood, Buff Fish'
+  goldReward: 0
+  bloodReward: 0
+  metalReward: 0
+  rewardIcon: {fileID: 0}
+  nextNodes:
+  - {fileID: 809971341}
+  - {fileID: 1919099376}
 --- !u!1 &1431470993
 GameObject:
   m_ObjectHideFlags: 0
@@ -17778,40 +17913,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1486902106}
   m_CullTransparentMesh: 1
---- !u!114 &1487163116
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
-  m_Name: Node_tier2_north_ramparts
-  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
-  nodeId: tier2_north_ramparts
-  nodeTitle: North Ramparts
-  subtitle: Windy Battlements
-  description: Hold the elevated stone battlements against Captain Fraglob and his
-    vanguard. High elevation, windy gusts.
-  sceneName: Bladehold Castle Ramparts
-  nodeType: 0
-  tierIndex: 2
-  mapPosition: {x: 300, y: 130}
-  captainName: Captain Fraglob
-  difficultyTier: 2
-  clanBuff: {fileID: 0}
-  captainIcon: {fileID: 0}
-  bountyType: 4
-  rewardsDescription: +250 Gold Cache, Captain Fraglob Bounty
-  goldReward: 250
-  bloodReward: 0
-  metalReward: 0
-  rewardIcon: {fileID: 0}
-  nextNodes:
-  - {fileID: 655161200}
-  - {fileID: 1219947529}
 --- !u!1 &1495276653
 GameObject:
   m_ObjectHideFlags: 0
@@ -19626,7 +19727,9 @@ MonoBehaviour:
   combatNodeColor: {r: 0.55, g: 0.18, b: 0.18, a: 1}
   restNodeColor: {r: 0.18, g: 0.45, b: 0.32, a: 1}
   supplyNodeColor: {r: 0.18, g: 0.35, b: 0.55, a: 1}
+  fishingNodeColor: {r: 0.12, g: 0.52, b: 0.58, a: 1}
   bossNodeColor: {r: 0.45, g: 0.15, b: 0.55, a: 1}
+  fishingIcon: {fileID: 0}
 --- !u!114 &1648009590
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19784,7 +19887,9 @@ MonoBehaviour:
   combatNodeColor: {r: 0.55, g: 0.18, b: 0.18, a: 1}
   restNodeColor: {r: 0.18, g: 0.45, b: 0.32, a: 1}
   supplyNodeColor: {r: 0.18, g: 0.35, b: 0.55, a: 1}
+  fishingNodeColor: {r: 0.12, g: 0.52, b: 0.58, a: 1}
   bossNodeColor: {r: 0.45, g: 0.15, b: 0.55, a: 1}
+  fishingIcon: {fileID: 0}
 --- !u!114 &1662642971
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20004,6 +20109,40 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &1691703325
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
+  m_Name: Node_tier6_inner_rest_sanctuary
+  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
+  nodeId: tier6_inner_rest_sanctuary
+  nodeTitle: Inner Rest Sanctuary
+  subtitle: High Chapel Sanctuary
+  description: A secluded chapel near the keep. Tend to mortal wounds, purchase divine
+    gear, and prepare for the final ascent.
+  sceneName: Bladehold Rest Area Scene
+  nodeType: 1
+  tierIndex: 6
+  mapPosition: {x: 1100, y: 90}
+  captainName: 
+  difficultyTier: 1
+  clanBuff: {fileID: 0}
+  captainIcon: {fileID: 0}
+  bountyType: 0
+  rewardsDescription: Shop, Healing Well, Ability Drafts
+  goldReward: 0
+  bloodReward: 0
+  metalReward: 0
+  rewardIcon: {fileID: 0}
+  nextNodes:
+  - {fileID: 809971341}
+  - {fileID: 1919099376}
 --- !u!1 &1697708190
 GameObject:
   m_ObjectHideFlags: 0
@@ -20627,39 +20766,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1747348262}
   m_CullTransparentMesh: 1
---- !u!114 &1761839996
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
-  m_Name: Node_tier6_inner_rest_sanctuary
-  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
-  nodeId: tier6_inner_rest_sanctuary
-  nodeTitle: Inner Rest Sanctuary
-  subtitle: High Chapel Sanctuary
-  description: A secluded chapel near the keep. Tend to mortal wounds, purchase divine
-    gear, and prepare for the final ascent.
-  sceneName: Bladehold Rest Area Scene
-  nodeType: 1
-  tierIndex: 6
-  mapPosition: {x: 1100, y: 90}
-  captainName: 
-  difficultyTier: 1
-  clanBuff: {fileID: 0}
-  captainIcon: {fileID: 0}
-  bountyType: 0
-  rewardsDescription: Shop, Healing Well, Ability Drafts
-  goldReward: 0
-  bloodReward: 0
-  metalReward: 0
-  rewardIcon: {fileID: 0}
-  nextNodes:
-  - {fileID: 588359301}
 --- !u!1 &1774281667
 GameObject:
   m_ObjectHideFlags: 0
@@ -20947,7 +21053,9 @@ MonoBehaviour:
   combatNodeColor: {r: 0.55, g: 0.18, b: 0.18, a: 1}
   restNodeColor: {r: 0.18, g: 0.45, b: 0.32, a: 1}
   supplyNodeColor: {r: 0.18, g: 0.35, b: 0.55, a: 1}
+  fishingNodeColor: {r: 0.12, g: 0.52, b: 0.58, a: 1}
   bossNodeColor: {r: 0.45, g: 0.15, b: 0.55, a: 1}
+  fishingIcon: {fileID: 0}
 --- !u!114 &1786447335
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -22090,6 +22198,40 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1849353872}
   m_CullTransparentMesh: 1
+--- !u!114 &1850309047
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
+  m_Name: Node_tier2_north_ramparts
+  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
+  nodeId: tier2_north_ramparts
+  nodeTitle: North Ramparts
+  subtitle: Windy Battlements
+  description: Hold the elevated stone battlements against Captain Fraglob and his
+    vanguard. High elevation, windy gusts.
+  sceneName: Bladehold Castle Ramparts
+  nodeType: 0
+  tierIndex: 2
+  mapPosition: {x: 300, y: 130}
+  captainName: Captain Fraglob
+  difficultyTier: 2
+  clanBuff: {fileID: 0}
+  captainIcon: {fileID: 0}
+  bountyType: 4
+  rewardsDescription: +250 Gold Cache, Captain Fraglob Bounty
+  goldReward: 250
+  bloodReward: 0
+  metalReward: 0
+  rewardIcon: {fileID: 0}
+  nextNodes:
+  - {fileID: 62869963}
+  - {fileID: 929378056}
 --- !u!1 &1858354985
 GameObject:
   m_ObjectHideFlags: 0
@@ -22240,6 +22382,41 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1873282241}
   m_CullTransparentMesh: 1
+--- !u!114 &1883903449
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
+  m_Name: Node_tier2_armory_barracks
+  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
+  nodeId: tier2_armory_barracks
+  nodeTitle: Armory Barracks
+  subtitle: Fortified Guardhouse
+  description: Clear out Captain Kombusta's incendiary sappers before they ignite
+    the castle's armory storehouse.
+  sceneName: Bladehold Castle Armory
+  nodeType: 0
+  tierIndex: 2
+  mapPosition: {x: 300, y: -130}
+  captainName: Captain Kombusta
+  difficultyTier: 2
+  clanBuff: {fileID: 0}
+  captainIcon: {fileID: 0}
+  bountyType: 5
+  rewardsDescription: +5 Orcish Metal, Iron Armaments
+  goldReward: 50
+  bloodReward: 0
+  metalReward: 5
+  rewardIcon: {fileID: 0}
+  nextNodes:
+  - {fileID: 62869963}
+  - {fileID: 929378056}
+  - {fileID: 283028100}
 --- !u!1 &1892120056
 GameObject:
   m_ObjectHideFlags: 0
@@ -22737,6 +22914,38 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1917875542}
   m_CullTransparentMesh: 1
+--- !u!114 &1919099376
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
+  m_Name: Node_tier7_fishing_pond
+  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
+  nodeId: tier7_fishing_pond
+  nodeTitle: Keep Aqueduct Pond
+  subtitle: Throne Waterway
+  description: The fortified aqueduct supplying the upper keep. 60-second fishing
+    frenzy to gain final buffs before the throne.
+  sceneName: Bladehold Fishing Pond
+  nodeType: 3
+  tierIndex: 7
+  mapPosition: {x: 1300, y: -140}
+  captainName: 
+  difficultyTier: 1
+  clanBuff: {fileID: 0}
+  captainIcon: {fileID: 0}
+  bountyType: 0
+  rewardsDescription: '60s Fishing Frenzy: Gold, Metal, Blood, Buff Fish'
+  goldReward: 0
+  bloodReward: 0
+  metalReward: 0
+  rewardIcon: {fileID: 0}
+  nextNodes: []
 --- !u!1 &1922661442
 GameObject:
   m_ObjectHideFlags: 0

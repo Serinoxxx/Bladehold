@@ -52,7 +52,10 @@ EditorBuildSettings:
     guid: 69d731f80fdd54f47b5845e3c0b74aab
   - enabled: 1
     path: Assets/Bladehold/Bladehold Scenes/Bladehold Princess Sanctuary.unity
-    guid: 00000000000000000000000000000000
+    guid: c6633094b0e0aff408b6610e2fb102d5
+  - enabled: 1
+    path: Assets/Bladehold/Bladehold Scenes/Bladehold Fishing Pond.unity
+    guid: 49a02343e8d11844bb00bad5b22a6076
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: 38f78d68449feb14783c9753605fe827, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

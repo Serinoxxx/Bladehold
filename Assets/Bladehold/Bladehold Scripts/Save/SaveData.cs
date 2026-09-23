@@ -40,6 +40,9 @@ public class SaveData
     /// <summary>Permanent currency obtained from special enemies and drops, used to unlock weapons & tiers.</summary>
     public int orcishMetal;
 
+    /// <summary>Permanent currency obtained from killing Diamond Fish in the Fishing Minigame, used for Fisherman gear.</summary>
+    public int diamondFishBones;
+
     /// <summary>Permanently unlocked weapons. Sword and Bow are unlocked by default.</summary>
     public List<string> unlockedWeapons = new List<string> { "sword", "bow" };
 
@@ -147,6 +150,7 @@ public class SaveData
         selectedStage = defaults.selectedStage;
         goblinBlood = defaults.goblinBlood;
         orcishMetal = defaults.orcishMetal;
+        diamondFishBones = defaults.diamondFishBones;
         unlockedWeapons = new List<string>(defaults.unlockedWeapons);
         equippedMeleeWeapon = defaults.equippedMeleeWeapon;
         equippedRangedWeapon = defaults.equippedRangedWeapon;

@@ -1,6 +1,55 @@
 # Unity Editor Wiring TODOs
 
-## Battering Ram Improvements: AI Escort Pathing, Overhead Health Bar & Hit Feedbacks
+## Fishing Minigame: 7 Campaign Nodes, 60s Fishing Frenzy, Draft Upgrades & Buff Fish Feasts
+
+The complete core architecture, campaign map nodes, dedicated fishing bow, orbital fish movement AI, draft card leveling, buff fish feast economy, and dedicated scene for the Fishing Minigame are implemented in C#:
+- **Campaign Graph Integration** (`Assets/Bladehold/Bladehold Scripts/Campaign/CampaignNodeType.cs`, `CampaignGraphSO.cs`, `CampaignNodeButtonUI.cs`):
+  - Added `CampaignNodeType.FishingPond` to node classifications.
+  - Added 7 dedicated Fishing Pond nodes across the campaign path:
+    - Tier 2 Side-Route: `tier2_fishing_pond` ("Outer Moat Pond")
+    - Tier 3 Replaced Supply Room: `tier3_fishing_pond` ("Sanctuary Fishing Pond")
+    - Tier 3 Side-Route: `tier3_whispering_basin` ("Whispering Basin")
+    - Tier 4 Side-Route: `tier4_fishing_pond` ("Cistern Fishing Pond")
+    - Tier 5 Side-Route: `tier5_fishing_pond` ("Sunken Grotto Pond")
+    - Tier 6 Replaced Supply Vault: `tier6_fishing_pond` ("Royal Reflection Pond")
+    - Tier 7 Side-Route: `tier7_fishing_pond` ("Keep Aqueduct Pond")
+  - `CampaignNodeButtonUI`: Added custom teal/cyan palette and fishing icon rendering.
+- **Persistence & Run Economy** (`Assets/Bladehold/Bladehold Scripts/Save/SaveData.cs`, `Assets/Bladehold/Bladehold Scripts/Economy/RunSession.cs`, `Assets/Bladehold/Bladehold Scripts/Player/Player.cs`):
+  - `SaveData.diamondFishBones`: Permanent currency banked across runs, awarded when defeating the Diamond Fish. Included in `ResetProgress()`.
+  - `RunSession.ConsumedBuffFish`: Enforces strict maximum of 3 Buff Fish consumed per run (1 per pond visit).
+  - Permanent in-run stat modifiers applied per consumed Buff Fish: Speedy (+10% Move Speed), Armored (+10 Max HP), Fire (+10% Fire Damage), Frost (+10% Frost Damage), Spark (+10% Lightning Damage), Savage (+5% All Damage). Rehydrated across scene loads in `Player.cs`.
+- **Fishing Minigame Mechanics & Spawner** (`Assets/Bladehold/Bladehold Scripts/Fishing/`):
+  - `FishingManager.cs`: Coordinates the 60-second frenzy lifecycle (WaitingToStart -> 3-2-1 Countdown -> 60s FrenzyActive -> Finished Tally). Maintains <= 30 active fish, rolls Diamond Fish (2.5x scale, 20x HP) after 30s, and pauses time during draft level ups.
+  - `FishController.cs`: Low-poly orbital swimming AI (radiuses 4m–13m, variable depth/speed, tangent facing). Implements `IDamageable`, hit flash, bleed ticks, and death explosion (`Fishsploshion`).
+  - `FishingBowController.cs` & `FishingBowArrow.cs`: Overrides weapon loadout with dedicated fishing bow, unlimited ammo, raycast water targeting, and minigame pierce (`Fish Skewer`) and bounce (`Bounce Shot`) physics.
+  - `FishingUpgradeManager.cs`: Tracks the 6 minigame draft cards (Bounce Shot, Fishsploshion, Icey Water, Fish Skewer, Bleed, Fat Fish) scaling from Tier 1 to 4.
+- **UI & Presentation** (`Assets/Bladehold/Bladehold Scripts/Fishing/UI/`):
+  - `FishingHUDUI.cs`: "Press [T] to begin Fishing Frenzy" prompt, 3-2-1 countdown with deep thump audio & scale punch animation, top-center 60s timer (`mm:ss`), fish counter (`Fish: 28/30`), and XP bar.
+  - `FishingDraftUI.cs`: 3-card level-up modal popup with time pause (`Time.timeScale = 0f`).
+  - `FishingTallyUI.cs`: End-of-session summary of fish caught and currencies earned, with Buff Fish Feast selection panel.
+- **Scene & Build Registration**:
+  - `Assets/Bladehold/Bladehold Scenes/Bladehold Fishing Pond.unity` generated and saved with water pond, shoreline barrier colliders, player spawn point, managers, and canvas. Registered in `EditorBuildSettings.scenes`.
+- **Automated Behavioral Test Suite** (`WeaponReachBenchmark.cs`):
+  - Section 21 added to `WeaponReachBenchmark.cs` verifying 7 campaign nodes, draft card scaling formulas, 3-buff fish run cap, and Diamond Fish Bones persistence. 87 PASSED | 0 FAILED.
+
+### Wiring & Asset Checklist
+- [x] Create Fishing Minigame C# scripts and UI under `Assets/Bladehold/Bladehold Scripts/Fishing/`.
+- [x] Register `Bladehold Fishing Pond.unity` in `EditorBuildSettings.scenes`.
+- [x] Add 7 Fishing Pond nodes in `CampaignGraphSO.cs` and refresh `CampaignMapScene.unity`.
+- [ ] (Optional) In Unity Editor, assign custom Synty fish model prefabs (`Assets/Synty/PolygonFantasyKingdom/Models/SM_Item_Meat_Fish_01.fbx` through `07.fbx`) to `FishingManager.fishBasePrefab` in `Bladehold Fishing Pond.unity`.
+- [ ] (Optional) Customize water shader materials or particle splashes in `Bladehold Fishing Pond.unity`.
+
+### Manual Verification
+- [ ] Open `Bladehold Campaign Map Scene.unity` in Play mode; verify 7 Fishing Pond nodes appear across the campaign route with teal buttons and fishing icons.
+- [ ] Deploy to a Fishing Pond node; verify player spawns on the shore bank with the Fishing Bow equipped and infinite ammo.
+- [ ] Verify player can freely walk around the edge of the pond but cannot enter the water.
+- [ ] Observe "Press [T] to begin Fishing Frenzy" prompt; press [T], verify 3, 2, 1 countdown with deep thumps and punch animation, followed by horn and "FISHING FRENZY!".
+- [ ] Shoot swimming fish; verify fish take damage, yield resources, and grant fishing XP.
+- [ ] On fishing level up, verify draft modal appears and minigame time pauses. Select an upgrade and verify it takes effect immediately.
+- [ ] At 30s remaining, verify the glowing blue Diamond Fish emerges with 20x HP.
+- [ ] At 0s, verify frenzy halts and Results Tally modal opens. If eligible, consume 1 Buff Fish and verify the permanent in-run buff applies.
+- [ ] Click "Return to Campaign Map", verify rewards are committed and forward campaign nodes unlock.
+
 
 The AI pathing, overhead health bar (`MMHealthBar` + `HealthBarUI`), and multi-feedback hit reactions (`MMF_Player` with red mesh flicker, shield bash audio, and wood splinter particles) for the Battering Ram objective are implemented in C#:
 - **AI Escort & Pathing** (`Assets/Bladehold/Bladehold Scripts/Objectives/BatteringRam.cs`, `Assets/Bladehold/Bladehold Scripts/Objectives/StopBatteringRamObjective.cs`, `Assets/Bladehold/Bladehold Scripts/Enemies/AITargetSelector.cs`):

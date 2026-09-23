@@ -6,6 +6,7 @@ public enum CampaignNodeType
     Combat,
     RestArea,
     SupplyRoom,
+    FishingPond,
     PreBoss,
     NecromancerEncounter,
     PrincessBoss,

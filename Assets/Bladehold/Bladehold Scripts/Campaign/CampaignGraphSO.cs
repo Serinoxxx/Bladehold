@@ -155,12 +155,32 @@ public class CampaignGraphSO : ScriptableObject
             metal: 5
         );
 
-        // Tier 1 branches to Tier 2
+        // Tier 2 Side-Route: Outer Moat Fishing Pond
+        CampaignNodeSO nodeTier2Fishing = CreateNode(
+            "tier2_fishing_pond",
+            "Outer Moat Pond",
+            "Castle Waterway",
+            "Take a peaceful diversion along the outer moat. 60-second fishing frenzy for gold, metal, blood, and rare buff fish.",
+            "Bladehold Fishing Pond",
+            CampaignNodeType.FishingPond,
+            2,
+            new Vector2(300f, -240f),
+            captainName: "",
+            difficultyTier: BannerDifficultyTier.Standard,
+            bountyType: BannerBountyType.None,
+            rewardsDesc: "60s Fishing Frenzy: Gold, Metal, Blood, Buff Fish",
+            gold: 0,
+            blood: 0,
+            metal: 0
+        );
+
+        // Tier 1 branches to Tier 2 (Combat choices + Fishing side route)
         nodeTier1.nextNodes.Add(nodeTier2A);
         nodeTier1.nextNodes.Add(nodeTier2B);
+        nodeTier1.nextNodes.Add(nodeTier2Fishing);
 
         // -------------------------------------------------------------
-        // TIER 3: Linear stop scene choice (Castle Rest Area / Supply Room)
+        // TIER 3: Rest Area & Fishing Pond Choices
         // -------------------------------------------------------------
         CampaignNodeSO nodeTier3A = CreateNode(
             "tier3_castle_rest_area",
@@ -180,32 +200,55 @@ public class CampaignGraphSO : ScriptableObject
             metal: 0
         );
 
-        CampaignNodeSO nodeTier3B = CreateNode(
-            "tier3_supply_room",
-            "Supply Room",
-            "Abandoned Depot",
-            "Abandoned storage depot packed with smashable crates and chests. Plunder free resources with zero enemy resistance.",
-            "Bladehold Supply Room",
-            CampaignNodeType.SupplyRoom,
+        // Ponds replace supply rooms: Sanctuary Fishing Pond
+        CampaignNodeSO nodeTier3Fishing = CreateNode(
+            "tier3_fishing_pond",
+            "Sanctuary Fishing Pond",
+            "Inner Courtyard Springs",
+            "A serene spring inside the sanctuary. Use your bow to hunt fish for 1 minute to collect resources and eat buff fish.",
+            "Bladehold Fishing Pond",
+            CampaignNodeType.FishingPond,
             3,
             new Vector2(500f, -90f),
             captainName: "",
             difficultyTier: BannerDifficultyTier.Standard,
             bountyType: BannerBountyType.None,
-            rewardsDesc: "Free Crates: +150 Gold, +3 Metal",
-            gold: 150,
+            rewardsDesc: "60s Fishing Frenzy: Gold, Metal, Blood, Buff Fish",
+            gold: 0,
             blood: 0,
-            metal: 3
+            metal: 0
         );
 
-        // Both Tier 2 choices lead to either Rest Area or Supply Room
+        // Additional Tier 3 Side-Route: Whispering Basin
+        CampaignNodeSO nodeTier3Basin = CreateNode(
+            "tier3_whispering_basin",
+            "Whispering Basin",
+            "Forgotten Grotto",
+            "A secluded pond teeming with ancient subterranean fish. 60-second fishing frenzy for precious resources.",
+            "Bladehold Fishing Pond",
+            CampaignNodeType.FishingPond,
+            3,
+            new Vector2(500f, -240f),
+            captainName: "",
+            difficultyTier: BannerDifficultyTier.Standard,
+            bountyType: BannerBountyType.None,
+            rewardsDesc: "60s Fishing Frenzy: Gold, Metal, Blood, Buff Fish",
+            gold: 0,
+            blood: 0,
+            metal: 0
+        );
+
+        // Tier 2 choices lead forward to Tier 3 options
         nodeTier2A.nextNodes.Add(nodeTier3A);
-        nodeTier2A.nextNodes.Add(nodeTier3B);
+        nodeTier2A.nextNodes.Add(nodeTier3Fishing);
         nodeTier2B.nextNodes.Add(nodeTier3A);
-        nodeTier2B.nextNodes.Add(nodeTier3B);
+        nodeTier2B.nextNodes.Add(nodeTier3Fishing);
+        nodeTier2B.nextNodes.Add(nodeTier3Basin);
+        nodeTier2Fishing.nextNodes.Add(nodeTier3Fishing);
+        nodeTier2Fishing.nextNodes.Add(nodeTier3Basin);
 
         // -------------------------------------------------------------
-        // TIER 4: Merge back at Center (Great Banqueting Hall)
+        // TIER 4: Great Banqueting Hall + Cistern Fishing Pond Side-Route
         // -------------------------------------------------------------
         CampaignNodeSO nodeTier4 = CreateNode(
             "tier4_great_banqueting_hall",
@@ -225,12 +268,33 @@ public class CampaignGraphSO : ScriptableObject
             metal: 0
         );
 
+        // Tier 4 Side-Route: Cistern Fishing Pond
+        CampaignNodeSO nodeTier4Fishing = CreateNode(
+            "tier4_fishing_pond",
+            "Cistern Fishing Pond",
+            "Subterranean Waterway",
+            "A dark fortress cistern where cavern fish breed undisturbed. 60-second fishing frenzy for resources.",
+            "Bladehold Fishing Pond",
+            CampaignNodeType.FishingPond,
+            4,
+            new Vector2(700f, -150f),
+            captainName: "",
+            difficultyTier: BannerDifficultyTier.Standard,
+            bountyType: BannerBountyType.None,
+            rewardsDesc: "60s Fishing Frenzy: Gold, Metal, Blood, Buff Fish",
+            gold: 0,
+            blood: 0,
+            metal: 0
+        );
+
         // Tier 3 options merge into Tier 4
         nodeTier3A.nextNodes.Add(nodeTier4);
-        nodeTier3B.nextNodes.Add(nodeTier4);
+        nodeTier3Fishing.nextNodes.Add(nodeTier4);
+        nodeTier3Fishing.nextNodes.Add(nodeTier4Fishing);
+        nodeTier3Basin.nextNodes.Add(nodeTier4Fishing);
 
         // -------------------------------------------------------------
-        // TIER 5: Split again into 2 options (Dungeon Oubliette / Royal Conservatory)
+        // TIER 5: Split into 2 options + Sunken Grotto Fishing Pond Side-Route
         // -------------------------------------------------------------
         CampaignNodeSO nodeTier5A = CreateNode(
             "tier5_dungeon_oubliette",
@@ -258,7 +322,7 @@ public class CampaignGraphSO : ScriptableObject
             "Bladehold Castle Conservatory",
             CampaignNodeType.Combat,
             5,
-            new Vector2(900f, -130f),
+            new Vector2(900f, -100f),
             captainName: "Captain Kombusta",
             difficultyTier: BannerDifficultyTier.Nightmare,
             bountyType: BannerBountyType.ElementDraft,
@@ -268,12 +332,33 @@ public class CampaignGraphSO : ScriptableObject
             metal: 0
         );
 
+        // Tier 5 Side-Route: Sunken Grotto Fishing Pond
+        CampaignNodeSO nodeTier5Fishing = CreateNode(
+            "tier5_fishing_pond",
+            "Sunken Grotto Pond",
+            "Flooded Cellars",
+            "A flooded grotto deep in the castle cellars. 60-second fishing frenzy for precious resources and buff fish.",
+            "Bladehold Fishing Pond",
+            CampaignNodeType.FishingPond,
+            5,
+            new Vector2(900f, -240f),
+            captainName: "",
+            difficultyTier: BannerDifficultyTier.Standard,
+            bountyType: BannerBountyType.None,
+            rewardsDesc: "60s Fishing Frenzy: Gold, Metal, Blood, Buff Fish",
+            gold: 0,
+            blood: 0,
+            metal: 0
+        );
+
         // Tier 4 branches to Tier 5
         nodeTier4.nextNodes.Add(nodeTier5A);
         nodeTier4.nextNodes.Add(nodeTier5B);
+        nodeTier4Fishing.nextNodes.Add(nodeTier5B);
+        nodeTier4Fishing.nextNodes.Add(nodeTier5Fishing);
 
         // -------------------------------------------------------------
-        // TIER 6: Linear stop scene choice (Inner Rest Sanctuary / Royal Supply Vault)
+        // TIER 6: Stop scene choice (Inner Rest Sanctuary / Royal Reflection Pond)
         // -------------------------------------------------------------
         CampaignNodeSO nodeTier6A = CreateNode(
             "tier6_inner_rest_sanctuary",
@@ -293,32 +378,34 @@ public class CampaignGraphSO : ScriptableObject
             metal: 0
         );
 
-        CampaignNodeSO nodeTier6B = CreateNode(
-            "tier6_royal_supply_vault",
-            "Royal Supply Vault",
-            "Secure Treasury",
-            "The fortress treasury containing intact royal caches and untouched armament containers. Free resources.",
-            "Bladehold Rest Area Scene",
-            CampaignNodeType.SupplyRoom,
+        // Ponds replace supply rooms: Royal Reflection Pond
+        CampaignNodeSO nodeTier6Fishing = CreateNode(
+            "tier6_fishing_pond",
+            "Royal Reflection Pond",
+            "High Chapel Gardens",
+            "The serene ornamental pond of the High Chapel. 60-second fishing frenzy before the final ascent.",
+            "Bladehold Fishing Pond",
+            CampaignNodeType.FishingPond,
             6,
             new Vector2(1100f, -90f),
             captainName: "",
             difficultyTier: BannerDifficultyTier.Standard,
             bountyType: BannerBountyType.None,
-            rewardsDesc: "Free Vault: +300 Gold, +6 Orcish Metal",
-            gold: 300,
+            rewardsDesc: "60s Fishing Frenzy: Gold, Metal, Blood, Buff Fish",
+            gold: 0,
             blood: 0,
-            metal: 6
+            metal: 0
         );
 
-        // Both Tier 5 choices lead to Tier 6
+        // Tier 5 choices lead to Tier 6
         nodeTier5A.nextNodes.Add(nodeTier6A);
-        nodeTier5A.nextNodes.Add(nodeTier6B);
+        nodeTier5A.nextNodes.Add(nodeTier6Fishing);
         nodeTier5B.nextNodes.Add(nodeTier6A);
-        nodeTier5B.nextNodes.Add(nodeTier6B);
+        nodeTier5B.nextNodes.Add(nodeTier6Fishing);
+        nodeTier5Fishing.nextNodes.Add(nodeTier6Fishing);
 
         // -------------------------------------------------------------
-        // TIER 7: Pre-final battle / Inner Keep (Throne Antechamber)
+        // TIER 7: Pre-final battle / Inner Keep + Keep Aqueduct Pond Side-Route
         // -------------------------------------------------------------
         CampaignNodeSO nodeTier7 = CreateNode(
             "tier7_throne_antechamber",
@@ -338,9 +425,30 @@ public class CampaignGraphSO : ScriptableObject
             metal: 5
         );
 
+        // Tier 7 Side-Route: Keep Aqueduct Fishing Pond
+        CampaignNodeSO nodeTier7Fishing = CreateNode(
+            "tier7_fishing_pond",
+            "Keep Aqueduct Pond",
+            "Throne Waterway",
+            "The fortified aqueduct supplying the upper keep. 60-second fishing frenzy to gain final buffs before the throne.",
+            "Bladehold Fishing Pond",
+            CampaignNodeType.FishingPond,
+            7,
+            new Vector2(1300f, -140f),
+            captainName: "",
+            difficultyTier: BannerDifficultyTier.Standard,
+            bountyType: BannerBountyType.None,
+            rewardsDesc: "60s Fishing Frenzy: Gold, Metal, Blood, Buff Fish",
+            gold: 0,
+            blood: 0,
+            metal: 0
+        );
+
         // Tier 6 options merge into Tier 7
         nodeTier6A.nextNodes.Add(nodeTier7);
-        nodeTier6B.nextNodes.Add(nodeTier7);
+        nodeTier6A.nextNodes.Add(nodeTier7Fishing);
+        nodeTier6Fishing.nextNodes.Add(nodeTier7);
+        nodeTier6Fishing.nextNodes.Add(nodeTier7Fishing);
 
         // -------------------------------------------------------------
         // TIER 8: The Revelation / Necromancer Encounter (Crypt Sanctum)
@@ -414,29 +522,34 @@ public class CampaignGraphSO : ScriptableObject
         CampaignTier tier2 = new CampaignTier(2, "Battlements & Barracks");
         tier2.nodes.Add(nodeTier2A);
         tier2.nodes.Add(nodeTier2B);
+        tier2.nodes.Add(nodeTier2Fishing);
         tiers.Add(tier2);
 
         CampaignTier tier3 = new CampaignTier(3, "Fortress Recovery");
         tier3.nodes.Add(nodeTier3A);
-        tier3.nodes.Add(nodeTier3B);
+        tier3.nodes.Add(nodeTier3Fishing);
+        tier3.nodes.Add(nodeTier3Basin);
         tiers.Add(tier3);
 
         CampaignTier tier4 = new CampaignTier(4, "Great Hall");
         tier4.nodes.Add(nodeTier4);
+        tier4.nodes.Add(nodeTier4Fishing);
         tiers.Add(tier4);
 
         CampaignTier tier5 = new CampaignTier(5, "Subterranean & Grounds");
         tier5.nodes.Add(nodeTier5A);
         tier5.nodes.Add(nodeTier5B);
+        tier5.nodes.Add(nodeTier5Fishing);
         tiers.Add(tier5);
 
         CampaignTier tier6 = new CampaignTier(6, "Inner Sanctum Recovery");
         tier6.nodes.Add(nodeTier6A);
-        tier6.nodes.Add(nodeTier6B);
+        tier6.nodes.Add(nodeTier6Fishing);
         tiers.Add(tier6);
 
         CampaignTier tier7 = new CampaignTier(7, "Throne Antechamber");
         tier7.nodes.Add(nodeTier7);
+        tier7.nodes.Add(nodeTier7Fishing);
         tiers.Add(tier7);
 
         CampaignTier tier8 = new CampaignTier(8, "Crypt of Revelation");
@@ -451,19 +564,24 @@ public class CampaignGraphSO : ScriptableObject
         allNodes.Add(nodeTier1);
         allNodes.Add(nodeTier2A);
         allNodes.Add(nodeTier2B);
+        allNodes.Add(nodeTier2Fishing);
         allNodes.Add(nodeTier3A);
-        allNodes.Add(nodeTier3B);
+        allNodes.Add(nodeTier3Fishing);
+        allNodes.Add(nodeTier3Basin);
         allNodes.Add(nodeTier4);
+        allNodes.Add(nodeTier4Fishing);
         allNodes.Add(nodeTier5A);
         allNodes.Add(nodeTier5B);
+        allNodes.Add(nodeTier5Fishing);
         allNodes.Add(nodeTier6A);
-        allNodes.Add(nodeTier6B);
+        allNodes.Add(nodeTier6Fishing);
         allNodes.Add(nodeTier7);
+        allNodes.Add(nodeTier7Fishing);
         allNodes.Add(nodeTier8);
         allNodes.Add(nodeTier8Princess);
         allNodes.Add(nodeTier8NecroBoss);
 
-        Debug.Log($"[CampaignGraphSO] Built default Castle Campaign Graph: 8 Tiers, {allNodes.Count} Nodes.");
+        Debug.Log($"[CampaignGraphSO] Built default Castle Campaign Graph: 8 Tiers, {allNodes.Count} Nodes (including 7 Fishing Ponds).");
     }
 
     private static CampaignNodeSO CreateNode(

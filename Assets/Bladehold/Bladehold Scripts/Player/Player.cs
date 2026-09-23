@@ -220,6 +220,7 @@ public class Player : MonoBehaviour
 
             // Restore in-run upgrades across scene transitions
             RunSession.RestoreInRunUpgrades(this);
+            RunSession.ReapplyBuffFishBonuses(this);
         }
     }
 

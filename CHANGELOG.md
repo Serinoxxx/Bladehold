@@ -4,6 +4,16 @@
 
 ### New Features
 
+- Added Fishing Minigame with 7 tactical nodes along the campaign path replacing supply rooms and adding side routes
+- Added 60-second Fishing Frenzy minigame featuring a dedicated fishing bow with infinite ammo and fish circling a pond
+- Added 6 minigame draft upgrade cards (Bounce Shot, Fishsploshion, Icey Water, Fish Skewer, Bleed, Fat Fish) offered on fishing level-up
+- Added 6 rare Buff Fish variants granting permanent in-run stat bonuses with a maximum cap of 3 consumed buff fish per run
+- Added glowing Diamond Fish spawning after 30 seconds with 20x health, awarding permanent Diamond Fish Bones
+- Added start prompt, 3-2-1 countdown with thump audio and punch animation, and horn signal for frenzy start
+- Added end-of-session results tally modal displaying fish caught, currencies earned, and Buff Fish feast selection
+- Added dedicated Fishing Pond arena scene with water perimeter barriers preventing players from entering the pond
+- Added automated behavioral benchmark tests verifying campaign fishing nodes, draft upgrade formulas, buff fish cap, and currency persistence
+
 - Added transparent ghost preview and modular piece-drop construction animations for multi-part defense structures with ground dust puffs and screenshake
 - Added rising ground emergence animations with rumble tremors, dust, and heavy lock-in slam for compact defenses
 - Added physical arcing net projectiles with spinning net meshes and ground impact effects for Net Thrower defenses

@@ -1,0 +1,383 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public enum FishingState
+{
+    WaitingToStart,
+    Countdown,
+    FrenzyActive,
+    Finished
+}
+
+/// <summary>
+///     Master state machine and spawner for the 60-second Fishing Minigame.
+/// </summary>
+public class FishingManager : MonoBehaviour
+{
+    public static FishingManager Instance { get; private set; }
+
+    [Header("State")]
+    [SerializeField] private FishingState currentState = FishingState.WaitingToStart;
+    [SerializeField] private float totalFrenzyDuration = 60f;
+    private float frenzyTimeRemaining;
+
+    [Header("Pond Geometry")]
+    [SerializeField] private Vector3 pondCenter = Vector3.zero;
+    [SerializeField] private float minOrbitRadius = 4f;
+    [SerializeField] private float maxOrbitRadius = 13f;
+    [SerializeField] private float maxFishCount = 30;
+
+    [Header("Prefabs & Materials")]
+    [SerializeField] private GameObject fishBasePrefab;
+    [SerializeField] private Material goldFishMat;
+    [SerializeField] private Material orcMetalFishMat;
+    [SerializeField] private Material goblinBloodFishMat;
+    [SerializeField] private Material diamondFishMat;
+    [SerializeField] private Material speedyFishMat;
+    [SerializeField] private Material armoredFishMat;
+    [SerializeField] private Material fireFishMat;
+    [SerializeField] private Material frostFishMat;
+    [SerializeField] private Material sparkFishMat;
+    [SerializeField] private Material savageFishMat;
+
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip countdownThumpSfx;
+    [SerializeField] private AudioClip frenzyStartHornSfx;
+    [SerializeField] private AudioClip timeUpSfx;
+    [SerializeField] private AudioClip catchFishSfx;
+
+    [Header("UI Controllers")]
+    [SerializeField] private FishingHUDUI hudUI;
+    [SerializeField] private FishingDraftUI draftUI;
+    [SerializeField] private FishingTallyUI tallyUI;
+
+    // Tracking
+    private readonly List<FishController> activeFish = new List<FishController>();
+    private readonly HashSet<BuffFishType> killedBuffFishThisSession = new HashSet<BuffFishType>();
+    private bool diamondFishSpawned = false;
+
+    // Progression / Stats this session
+    private int totalFishCaught = 0;
+    private int sessionGold = 0;
+    private int sessionBlood = 0;
+    private int sessionMetal = 0;
+    private int sessionDiamondBones = 0;
+
+    // Fishing Leveling
+    private int currentFishingXp = 0;
+    private int currentFishingLevel = 1;
+    private int xpToNextLevel = 40;
+
+    public FishingState CurrentState => currentState;
+    public bool IsFrenzyActive => currentState == FishingState.FrenzyActive;
+    public float FrenzyTimeRemaining => frenzyTimeRemaining;
+    public float TotalFrenzyDuration => totalFrenzyDuration;
+    public int ActiveFishCount => activeFish.Count;
+    public int MaxFishCount => (int)maxFishCount;
+    public int TotalFishCaught => totalFishCaught;
+    public int CurrentFishingLevel => currentFishingLevel;
+    public int CurrentFishingXp => currentFishingXp;
+    public int XpToNextLevel => xpToNextLevel;
+    public int SessionGold => sessionGold;
+    public int SessionBlood => sessionBlood;
+    public int SessionMetal => sessionMetal;
+    public int SessionDiamondBones => sessionDiamondBones;
+    public IReadOnlyCollection<BuffFishType> KilledBuffFish => killedBuffFishThisSession;
+
+    public event Action OnStateChanged;
+    public event Action<int> OnCountdownTick;
+
+    private void Awake()
+    {
+        if (Instance == null) Instance = this;
+        else if (Instance != this) { Destroy(gameObject); return; }
+
+        if (audioSource == null) audioSource = GetComponent<AudioSource>();
+        if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
+    }
+
+    private void Start()
+    {
+        frenzyTimeRemaining = totalFrenzyDuration;
+        SetupPlayerFishingBow();
+        SetState(FishingState.WaitingToStart);
+
+        if (countdownThumpSfx == null)
+        {
+            countdownThumpSfx = Resources.Load<AudioClip>("Audio/SFX/Impacts/cinematic_deep_boom_impact_01");
+        }
+        if (frenzyStartHornSfx == null)
+        {
+            frenzyStartHornSfx = Resources.Load<AudioClip>("Audio/battle_viking_horn_call_far_03");
+        }
+    }
+
+    private void SetupPlayerFishingBow()
+    {
+        Player player = Player.Instance ?? FindAnyObjectByType<Player>();
+        if (player != null)
+        {
+            FishingBowController bow = player.GetComponentInChildren<FishingBowController>(true);
+            if (bow == null)
+            {
+                bow = player.gameObject.AddComponent<FishingBowController>();
+            }
+            bow.enabled = true;
+        }
+    }
+
+    private void Update()
+    {
+        if (currentState == FishingState.WaitingToStart)
+        {
+            if (Input.GetKeyDown(KeyCode.T))
+            {
+                StartCountdown();
+            }
+        }
+        else if (currentState == FishingState.FrenzyActive)
+        {
+            frenzyTimeRemaining -= Time.deltaTime;
+
+            // Clean dead fish references
+            activeFish.RemoveAll(f => f == null || f.IsDead);
+
+            // Maintain fish population up to maxFishCount
+            if (activeFish.Count < maxFishCount)
+            {
+                SpawnRandomFish();
+            }
+
+            // Check Diamond fish spawn condition (after 30s elapsed, 1 attempt)
+            if (!diamondFishSpawned && (totalFrenzyDuration - frenzyTimeRemaining >= 30f))
+            {
+                diamondFishSpawned = true;
+                SpawnDiamondFish();
+            }
+
+            if (frenzyTimeRemaining <= 0f)
+            {
+                frenzyTimeRemaining = 0f;
+                FinishFrenzy();
+            }
+        }
+    }
+
+    public void StartCountdown()
+    {
+        if (currentState != FishingState.WaitingToStart) return;
+        StartCoroutine(CountdownRoutine());
+    }
+
+    private IEnumerator CountdownRoutine()
+    {
+        SetState(FishingState.Countdown);
+
+        for (int i = 3; i >= 1; i--)
+        {
+            OnCountdownTick?.Invoke(i);
+            PlaySfx(countdownThumpSfx);
+            yield return new WaitForSeconds(1f);
+        }
+
+        OnCountdownTick?.Invoke(0); // 0 = "FISHING FRENZY!"
+        PlaySfx(frenzyStartHornSfx);
+        yield return new WaitForSeconds(0.6f);
+
+        // Pre-populate pond
+        while (activeFish.Count < maxFishCount)
+        {
+            SpawnRandomFish();
+        }
+
+        SetState(FishingState.FrenzyActive);
+    }
+
+    private void FinishFrenzy()
+    {
+        SetState(FishingState.Finished);
+        PlaySfx(timeUpSfx);
+
+        if (tallyUI != null)
+        {
+            tallyUI.OpenTally(sessionGold, sessionBlood, sessionMetal, sessionDiamondBones, totalFishCaught, killedBuffFishThisSession);
+        }
+    }
+
+    public void OnFishKilled(FishController fish)
+    {
+        if (fish == null) return;
+        totalFishCaught++;
+
+        float fatMultiplier = 1f + (FishingUpgradeManager.Instance != null ? FishingUpgradeManager.Instance.FatFishBonusPercent : 0f);
+
+        if (fish.isBuffFish)
+        {
+            killedBuffFishThisSession.Add(fish.buffType);
+            AddXp(25);
+            sessionGold += Mathf.RoundToInt(15 * fatMultiplier);
+        }
+        else
+        {
+            switch (fish.resourceType)
+            {
+                case ResourceFishType.Gold:
+                    int goldEarned = Mathf.RoundToInt(UnityEngine.Random.Range(8, 16) * fatMultiplier);
+                    sessionGold += goldEarned;
+                    AddXp(10);
+                    break;
+                case ResourceFishType.OrcMetal:
+                    sessionMetal += Mathf.Max(1, Mathf.RoundToInt(1 * fatMultiplier));
+                    AddXp(15);
+                    break;
+                case ResourceFishType.GoblinBlood:
+                    sessionBlood += Mathf.Max(1, Mathf.RoundToInt(UnityEngine.Random.Range(1, 3) * fatMultiplier));
+                    AddXp(15);
+                    break;
+                case ResourceFishType.Diamond:
+                    sessionDiamondBones += 1;
+                    sessionGold += Mathf.RoundToInt(100 * fatMultiplier);
+                    AddXp(100);
+                    break;
+            }
+        }
+
+        PlaySfx(catchFishSfx);
+    }
+
+    private void AddXp(int amount)
+    {
+        currentFishingXp += amount;
+        while (currentFishingXp >= xpToNextLevel)
+        {
+            currentFishingXp -= xpToNextLevel;
+            currentFishingLevel++;
+            xpToNextLevel = Mathf.RoundToInt(xpToNextLevel * 1.5f);
+            TriggerLevelUpDraft();
+        }
+    }
+
+    private void TriggerLevelUpDraft()
+    {
+        if (draftUI != null)
+        {
+            draftUI.OpenDraft();
+        }
+    }
+
+    private void SpawnRandomFish()
+    {
+        float roll = UnityEngine.Random.value;
+        if (roll < 0.55f)
+        {
+            SpawnFish(false, ResourceFishType.Gold, BuffFishType.Speedy, goldFishMat, 1f);
+        }
+        else if (roll < 0.73f)
+        {
+            SpawnFish(false, ResourceFishType.OrcMetal, BuffFishType.Speedy, orcMetalFishMat, 1f);
+        }
+        else if (roll < 0.88f)
+        {
+            SpawnFish(false, ResourceFishType.GoblinBlood, BuffFishType.Speedy, goblinBloodFishMat, 1f);
+        }
+        else
+        {
+            // Buff fish roll
+            BuffFishType[] buffs = (BuffFishType[])Enum.GetValues(typeof(BuffFishType));
+            BuffFishType chosenBuff = buffs[UnityEngine.Random.Range(0, buffs.Length)];
+            Material mat = chosenBuff switch
+            {
+                BuffFishType.Speedy => speedyFishMat,
+                BuffFishType.Armored => armoredFishMat,
+                BuffFishType.Fire => fireFishMat,
+                BuffFishType.Frost => frostFishMat,
+                BuffFishType.Spark => sparkFishMat,
+                BuffFishType.Savage => savageFishMat,
+                _ => speedyFishMat
+            };
+            float hpMult = (chosenBuff == BuffFishType.Armored) ? 5f : 1f;
+            SpawnFish(true, ResourceFishType.Gold, chosenBuff, mat, hpMult);
+        }
+    }
+
+    private void SpawnDiamondFish()
+    {
+        SpawnFish(false, ResourceFishType.Diamond, BuffFishType.Speedy, diamondFishMat, 20f);
+        Debug.Log("[FishingManager] The legendary Diamond Fish has emerged!");
+    }
+
+    private void SpawnFish(bool isBuff, ResourceFishType resType, BuffFishType bType, Material mat, float hpMult)
+    {
+        GameObject fishObj;
+        if (fishBasePrefab != null)
+        {
+            fishObj = Instantiate(fishBasePrefab);
+        }
+        else
+        {
+            // Procedural primitive fallback
+            fishObj = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            fishObj.transform.localScale = new Vector3(0.35f, 0.2f, 0.7f);
+        }
+
+        FishController controller = fishObj.GetComponent<FishController>();
+        if (controller == null) controller = fishObj.AddComponent<FishController>();
+
+        Renderer rend = fishObj.GetComponentInChildren<Renderer>();
+        if (rend != null && mat != null)
+        {
+            rend.material = mat;
+        }
+
+        float radius = UnityEngine.Random.Range(minOrbitRadius, maxOrbitRadius);
+        float speed = UnityEngine.Random.Range(20f, 35f);
+        if (isBuff && bType == BuffFishType.Speedy) speed *= 2f;
+        float angle = UnityEngine.Random.Range(0f, 360f);
+        float depth = UnityEngine.Random.Range(-0.4f, 0.2f);
+        bool cw = UnityEngine.Random.value > 0.5f;
+
+        controller.Setup(pondCenter, radius, speed, angle, depth, cw, isBuff, resType, bType, hpMult);
+        activeFish.Add(controller);
+    }
+
+    public void CommitRewardsAndReturnToCampaign()
+    {
+        // 1. Commit in-run gold
+        if (sessionGold > 0)
+        {
+            RunSession.AddInRunGold(sessionGold);
+        }
+
+        // 2. Commit permanent currencies
+        if (sessionBlood > 0) RunSession.AddGoblinBlood(sessionBlood);
+        if (sessionMetal > 0) RunSession.AddOrcishMetal(sessionMetal);
+        if (sessionDiamondBones > 0) RunSession.AddDiamondFishBones(sessionDiamondBones);
+
+        // 3. Complete campaign node
+        if (CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive)
+        {
+            CampaignManager.Instance.CompleteCurrentNode();
+        }
+
+        // 4. Load Campaign Map scene
+        SceneManager.LoadScene("Bladehold Campaign Map Scene");
+    }
+
+    private void SetState(FishingState state)
+    {
+        currentState = state;
+        OnStateChanged?.Invoke();
+    }
+
+    private void PlaySfx(AudioClip clip)
+    {
+        if (audioSource != null && clip != null)
+        {
+            audioSource.PlayOneShot(clip);
+        }
+    }
+}

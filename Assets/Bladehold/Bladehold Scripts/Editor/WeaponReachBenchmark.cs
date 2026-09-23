@@ -2255,6 +2255,131 @@ public static class WeaponReachBenchmark
             failedCount++;
         }
 
+        // =========================================================================
+        // SECTION 21: Fishing Minigame & Campaign Nodes Benchmark
+        // =========================================================================
+        sb.AppendLine("\n[SECTION 21] Fishing Minigame & Campaign Nodes Benchmark");
+        try
+        {
+            // 21A: Campaign Graph 7 Fishing Nodes
+            CampaignGraphSO graph = CampaignGraphSO.CreateDefaultCampaignGraph();
+            int fishingNodesCount = 0;
+            bool allFishingNodesHaveScene = true;
+
+            if (graph != null && graph.allNodes != null)
+            {
+                foreach (var node in graph.allNodes)
+                {
+                    if (node != null && node.nodeType == CampaignNodeType.FishingPond)
+                    {
+                        fishingNodesCount++;
+                        if (node.sceneName != "Bladehold Fishing Pond")
+                        {
+                            allFishingNodesHaveScene = false;
+                        }
+                    }
+                }
+            }
+
+            if (fishingNodesCount == 7 && allFishingNodesHaveScene)
+            {
+                sb.AppendLine($"  - Campaign Graph: Exactly 7 Fishing Pond nodes present across campaign path with correct scene target. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Fishing Pond nodes validation failed (count={fishingNodesCount}, expected 7, allHaveScene={allFishingNodesHaveScene})");
+                failedCount++;
+            }
+
+            // 21B: FishingUpgradeManager Stat Scaling
+            GameObject upgradeMgrObj = new GameObject("Benchmark_FishingUpgradeManager");
+            FishingUpgradeManager fum = upgradeMgrObj.AddComponent<FishingUpgradeManager>();
+            fum.ResetUpgrades();
+
+            bool baselineZero = (fum.BounceCount == 0 && fum.FishsploshionDamage == 0 && fum.IceyWaterSlowRatio == 0f && fum.PierceCount == 0 && fum.BleedMaxStacks == 0 && fum.FatFishBonusPercent == 0f);
+
+            // Apply 4 upgrades to all types
+            for (int i = 0; i < 4; i++)
+            {
+                fum.ApplyUpgrade(FishingUpgradeType.BounceShot);
+                fum.ApplyUpgrade(FishingUpgradeType.Fishsploshion);
+                fum.ApplyUpgrade(FishingUpgradeType.IceyWater);
+                fum.ApplyUpgrade(FishingUpgradeType.FishSkewer);
+                fum.ApplyUpgrade(FishingUpgradeType.Bleed);
+                fum.ApplyUpgrade(FishingUpgradeType.FatFish);
+            }
+
+            bool maxedStats = (fum.BounceCount == 4 && fum.FishsploshionDamage == 4 && Mathf.Approximately(fum.IceyWaterSlowRatio, 0.50f) && fum.PierceCount == 999 && fum.BleedMaxStacks == 5 && Mathf.Approximately(fum.FatFishBonusPercent, 0.10f));
+
+            var emptyChoices = fum.RollDraftChoices(3); // Should be empty since all are level 4
+            bool noMoreChoicesWhenMaxed = (emptyChoices.Count == 0);
+
+            if (baselineZero && maxedStats && noMoreChoicesWhenMaxed)
+            {
+                sb.AppendLine("  - Fishing Upgrade Manager: 6 draft cards correctly scale from tier 1 to 4 with proper stat equations and pool exhaustion. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Fishing upgrade manager scaling failed (baselineZero={baselineZero}, maxedStats={maxedStats}, emptyChoicesCount={emptyChoices.Count})");
+                failedCount++;
+            }
+            UnityEngine.Object.DestroyImmediate(upgradeMgrObj);
+
+            // 21C: RunSession Buff Fish System (Max 3 per run)
+            RunSession.StartNewRun();
+            bool canConsumeInitial = RunSession.CanConsumeBuffFish;
+            bool c1 = RunSession.TryConsumeBuffFish(BuffFishType.Speedy);
+            bool c2 = RunSession.TryConsumeBuffFish(BuffFishType.Armored);
+            bool c3 = RunSession.TryConsumeBuffFish(BuffFishType.Fire);
+            bool c4 = RunSession.TryConsumeBuffFish(BuffFishType.Frost); // 4th should be rejected
+
+            bool buffFishEnforced = canConsumeInitial && c1 && c2 && c3 && !c4 && (RunSession.ConsumedBuffFish.Count == 3) && !RunSession.CanConsumeBuffFish;
+
+            if (buffFishEnforced)
+            {
+                sb.AppendLine("  - Buff Fish System: ConsumedBuffFish accurately enforces 3-fish maximum cap per run and rejects excess feasts. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Buff fish cap failed (c1={c1}, c2={c2}, c3={c3}, c4={c4}, count={RunSession.ConsumedBuffFish.Count})");
+                failedCount++;
+            }
+
+            // 21D: Diamond Fish Bones Currency Persistence
+            SaveData testSave = SaveSystem.Load() ?? new SaveData();
+            int initialBones = testSave.diamondFishBones;
+            RunSession.AddDiamondFishBones(3);
+            SaveData reloadedSave = SaveSystem.Load();
+            bool bonesAdded = (reloadedSave != null && reloadedSave.diamondFishBones == initialBones + 3);
+
+            // Test ResetProgress
+            reloadedSave.ResetProgress();
+            bool bonesReset = (reloadedSave.diamondFishBones == 0);
+
+            // Restore original
+            reloadedSave.diamondFishBones = initialBones;
+            SaveSystem.Save(reloadedSave);
+
+            if (bonesAdded && bonesReset)
+            {
+                sb.AppendLine("  - Diamond Fish Bones: Permanent currency saves, loads, increments, and resets properly. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Diamond fish bones persistence failed (bonesAdded={bonesAdded}, bonesReset={bonesReset})");
+                failedCount++;
+            }
+        }
+        catch (Exception ex)
+        {
+            sb.AppendLine($"  - Fishing Minigame Benchmark exception: {ex.Message} [FAILED]");
+            failedCount++;
+        }
+
         sb.AppendLine("\n=================================================");
         sb.AppendLine($"BENCHMARK COMPLETE: {passedCount} PASSED | {failedCount} FAILED");
         sb.AppendLine("=================================================");

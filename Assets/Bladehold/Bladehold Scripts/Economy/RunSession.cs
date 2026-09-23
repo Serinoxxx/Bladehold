@@ -135,6 +135,7 @@ public static class RunSession
         SecondWindUsed = false;
         InRunUpgradeLevels.Clear();
         ActiveUltimateId = null;
+        ConsumedBuffFish.Clear();
 
         // War Chest perk grants 75 starting gold
         InRunGold = HasMetaPerk("war_chest") ? 75 : 0;
@@ -355,6 +356,74 @@ public static class RunSession
         data.orcishMetal += amount;
         SaveSystem.Save(data);
         OnOrcishMetalChanged?.Invoke(data.orcishMetal);
+    }
+
+    public static event Action<int> OnDiamondFishBonesChanged;
+
+    public static void AddDiamondFishBones(int amount)
+    {
+        if (amount <= 0) return;
+        SaveData data = SaveSystem.Load();
+        if (data != null)
+        {
+            data.diamondFishBones += amount;
+            SaveSystem.Save(data);
+            OnDiamondFishBonesChanged?.Invoke(data.diamondFishBones);
+        }
+    }
+
+    // Buff Fish tracking (Max 3 consumed per run)
+    public static readonly List<BuffFishType> ConsumedBuffFish = new List<BuffFishType>();
+    public static bool CanConsumeBuffFish => ConsumedBuffFish.Count < 3;
+
+    public static bool TryConsumeBuffFish(BuffFishType type, Player player = null)
+    {
+        if (ConsumedBuffFish.Count >= 3) return false;
+        ConsumedBuffFish.Add(type);
+        ApplyBuffFishBonus(type, player);
+        return true;
+    }
+
+    public static void ApplyBuffFishBonus(BuffFishType type, Player player = null)
+    {
+        player = (player != null) ? player : Player.Instance;
+        if (player == null || player.Stats == null) return;
+        var stats = player.Stats;
+
+        switch (type)
+        {
+            case BuffFishType.Speedy:
+                stats.AddModifier(StatType.MoveSpeed, ModifierKind.Percent, 0.10f);
+                break;
+            case BuffFishType.Armored:
+                PlayerBonusMaxHealth += 10f;
+                if (player.Health != null)
+                {
+                    player.Health.Heal(10f);
+                }
+                break;
+            case BuffFishType.Fire:
+                stats.AddModifier(StatType.MageFireDamagePercent, ModifierKind.Percent, 0.10f);
+                break;
+            case BuffFishType.Frost:
+                stats.AddModifier(StatType.IceBreakerDamageBonus, ModifierKind.Percent, 0.10f);
+                break;
+            case BuffFishType.Spark:
+                stats.AddModifier(StatType.ChainLightningDamagePercent, ModifierKind.Percent, 0.10f);
+                break;
+            case BuffFishType.Savage:
+                stats.AddModifier(StatType.AllDamageMultiplier, ModifierKind.Percent, 0.05f);
+                break;
+        }
+    }
+
+    public static void ReapplyBuffFishBonuses(Player player)
+    {
+        if (player == null || player.Stats == null) return;
+        for (int i = 0; i < ConsumedBuffFish.Count; i++)
+        {
+            ApplyBuffFishBonus(ConsumedBuffFish[i], player);
+        }
     }
 
     public static string GetElementInSlot(string slotName)
