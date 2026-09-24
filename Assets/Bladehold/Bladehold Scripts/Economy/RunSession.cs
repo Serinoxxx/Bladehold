@@ -49,7 +49,7 @@ public static class RunSession
     public static float PlayerHealthRatio { get; set; } = 1f;
     public static int DraftRerollsRemaining { get; set; } = 0;
 
-    public static int CurrentRound => Mathf.Clamp((CurrentWave - 1) / 3 + 1, 1, 5);
+    public static int CurrentRound => Mathf.Clamp((CurrentWave - 1) / 5 + 1, 1, 5);
 
     public static event Action<int> OnInRunGoldChanged;
     public static int InRunSupply { get; set; } = 60;

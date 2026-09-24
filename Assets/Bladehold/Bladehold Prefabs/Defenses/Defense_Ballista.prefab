@@ -715,9 +715,9 @@ MonoBehaviour:
   boltDamage: 110
   pierceCount: 3
   boltPrefab: {fileID: 6982911407296869732, guid: 133f45768a0e3d94f9ff5f4e28ae0d74, type: 3}
-  firePoint: {fileID: 0}
-  fireSfx: {fileID: 0}
+  firePoint: {fileID: 1901220915121987290}
+  fireSfx: {fileID: 8300000, guid: e817e2e3262f94de08ad58d65c7a413e, type: 3}
   enemyLayers:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 128
   windUpDuration: 0.35

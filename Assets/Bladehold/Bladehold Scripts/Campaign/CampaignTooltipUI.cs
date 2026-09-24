@@ -283,7 +283,7 @@ public class CampaignTooltipUI : MonoBehaviour
     {
         switch (type)
         {
-            case CampaignNodeType.Combat: return "Combat Sector - 3 Waves";
+            case CampaignNodeType.Combat: return "Combat Sector - 5 Waves";
             case CampaignNodeType.RestArea: return "Sanctuary Rest Area";
             case CampaignNodeType.SupplyRoom: return "Supply Depot - Zero Enemies";
             case CampaignNodeType.PreBoss: return "Inner Portico - Elite Horde";

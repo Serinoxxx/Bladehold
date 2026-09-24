@@ -160,41 +160,49 @@ public class BowAmmoUI : MonoBehaviour
             }
         }
 
+        // If all essential visual components are already wired via Inspector/Prefab, skip re-creating them
+        if (ammoCountText != null && arrowIcon != null && outOfAmmoText != null)
+        {
+            return;
+        }
+
         // 1. Build or locate Ammo Counter container directly under crosshairs
+        Transform existingCounter = transform.Find("AmmoCounter");
+        GameObject counterObj;
+        if (existingCounter != null)
+        {
+            counterObj = existingCounter.gameObject;
+        }
+        else
+        {
+            counterObj = new GameObject("AmmoCounter", typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(ContentSizeFitter));
+            counterObj.transform.SetParent(transform, false);
+        }
+
+        RectTransform rt = counterObj.GetComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0.5f, 0.5f);
+        rt.anchorMax = new Vector2(0.5f, 0.5f);
+        rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.anchoredPosition = new Vector2(0f, -95f);
+        rt.sizeDelta = new Vector2(240f, 60f);
+
+        HorizontalLayoutGroup hlg = counterObj.GetComponent<HorizontalLayoutGroup>();
+        if (hlg == null) hlg = counterObj.AddComponent<HorizontalLayoutGroup>();
+        hlg.childAlignment = TextAnchor.MiddleCenter;
+        hlg.spacing = 10f;
+        hlg.childControlWidth = false;
+        hlg.childControlHeight = false;
+        hlg.childForceExpandWidth = false;
+        hlg.childForceExpandHeight = false;
+
+        ContentSizeFitter csf = counterObj.GetComponent<ContentSizeFitter>();
+        if (csf == null) csf = counterObj.AddComponent<ContentSizeFitter>();
+        csf.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+        csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        // Ammo Text
         if (ammoCountText == null)
         {
-            Transform existingCounter = transform.Find("AmmoCounter");
-            GameObject counterObj;
-            if (existingCounter != null)
-            {
-                counterObj = existingCounter.gameObject;
-            }
-            else
-            {
-                counterObj = new GameObject("AmmoCounter", typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(ContentSizeFitter));
-                counterObj.transform.SetParent(transform, false);
-            }
-
-            RectTransform rt = counterObj.GetComponent<RectTransform>();
-            rt.anchorMin = new Vector2(0.5f, 0.5f);
-            rt.anchorMax = new Vector2(0.5f, 0.5f);
-            rt.pivot = new Vector2(0.5f, 0.5f);
-            rt.anchoredPosition = new Vector2(0f, -48f);
-            rt.sizeDelta = new Vector2(100f, 26f);
-
-            HorizontalLayoutGroup hlg = counterObj.GetComponent<HorizontalLayoutGroup>();
-            hlg.childAlignment = TextAnchor.MiddleCenter;
-            hlg.spacing = 6f;
-            hlg.childControlWidth = false;
-            hlg.childControlHeight = false;
-            hlg.childForceExpandWidth = false;
-            hlg.childForceExpandHeight = false;
-
-            ContentSizeFitter csf = counterObj.GetComponent<ContentSizeFitter>();
-            csf.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-            csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-            // Ammo Text
             Transform textChild = counterObj.transform.Find("AmmoText");
             GameObject textObj;
             if (textChild != null)
@@ -208,14 +216,19 @@ public class BowAmmoUI : MonoBehaviour
             }
 
             TextMeshProUGUI tmp = textObj.GetComponent<TextMeshProUGUI>();
-            tmp.fontSize = 20f;
+            if (tmp == null) tmp = textObj.AddComponent<TextMeshProUGUI>();
+            tmp.fontSize = 46f;
             tmp.fontStyle = FontStyles.Bold;
             tmp.alignment = TextAlignmentOptions.Center;
             tmp.color = normalAmmoColor;
             tmp.raycastTarget = false;
+            ApplySafeOutline(tmp, 0.25f, Color.black);
             ammoCountText = tmp;
+        }
 
-            // Arrow Icon
+        // Arrow Icon
+        if (arrowIcon == null)
+        {
             Transform iconChild = counterObj.transform.Find("ArrowIcon");
             GameObject iconObj;
             if (iconChild != null)
@@ -229,14 +242,16 @@ public class BowAmmoUI : MonoBehaviour
             }
 
             RectTransform iconRt = iconObj.GetComponent<RectTransform>();
-            iconRt.sizeDelta = new Vector2(20f, 20f);
+            iconRt.sizeDelta = new Vector2(52f, 52f);
 
             Image img = iconObj.GetComponent<Image>();
+            if (img == null) img = iconObj.AddComponent<Image>();
             img.raycastTarget = false;
 #if UNITY_EDITOR
             if (img.sprite == null)
             {
-                img.sprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Bladehold/Art/Icons/Skills/Base/swiftarrow.png");
+                img.sprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/Icons_Weapons/ICON_SM_Prop_Arrow_01.png")
+                    ?? UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Bladehold/Art/Icons/Skills/Base/swiftarrow.png");
             }
 #endif
             arrowIcon = img;
@@ -261,20 +276,43 @@ public class BowAmmoUI : MonoBehaviour
             wrt.anchorMin = new Vector2(0.5f, 0.5f);
             wrt.anchorMax = new Vector2(0.5f, 0.5f);
             wrt.pivot = new Vector2(0.5f, 0.5f);
-            wrt.anchoredPosition = new Vector2(0f, 40f);
-            wrt.sizeDelta = new Vector2(300f, 40f);
+            wrt.anchoredPosition = new Vector2(0f, 90f);
+            wrt.sizeDelta = new Vector2(500f, 80f);
 
             TextMeshProUGUI wTmp = warnObj.GetComponent<TextMeshProUGUI>();
+            if (wTmp == null) wTmp = warnObj.AddComponent<TextMeshProUGUI>();
             wTmp.text = "OUT OF AMMO";
-            wTmp.fontSize = 28f;
+            wTmp.fontSize = 64f;
             wTmp.fontStyle = FontStyles.Bold;
             wTmp.alignment = TextAlignmentOptions.Center;
             wTmp.color = outOfAmmoColor;
             wTmp.raycastTarget = false;
-            wTmp.outlineWidth = 0.25f;
-            wTmp.outlineColor = Color.black;
+            ApplySafeOutline(wTmp, 0.3f, Color.black);
             outOfAmmoText = wTmp;
             warnObj.SetActive(false);
+        }
+    }
+
+    private static void ApplySafeOutline(TextMeshProUGUI tmp, float width, Color color)
+    {
+        if (tmp == null) return;
+        try
+        {
+            if (tmp.fontSharedMaterial != null)
+            {
+                tmp.outlineWidth = width;
+                tmp.outlineColor = color;
+            }
+            else if (tmp.font != null && tmp.font.material != null)
+            {
+                tmp.fontSharedMaterial = tmp.font.material;
+                tmp.outlineWidth = width;
+                tmp.outlineColor = color;
+            }
+        }
+        catch (System.Exception)
+        {
+            // Silently fall back if material cannot be instanced on uninitialized or inactive TMP
         }
     }
 }

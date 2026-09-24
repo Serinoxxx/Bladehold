@@ -34,31 +34,6 @@ public class NetProjectile : MonoBehaviour
         transform.position = start;
         elapsedTime = 0f;
         hasImpacted = false;
-
-        ResolveFallbacks();
-    }
-
-    private void Awake()
-    {
-        ResolveFallbacks();
-    }
-
-    private void ResolveFallbacks()
-    {
-#if UNITY_EDITOR
-        if (impactVfxPrefab == null)
-        {
-            impactVfxPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Synty/PolygonParticleFX/Prefabs/FX_Impact_Wood_01.prefab");
-            if (impactVfxPrefab == null)
-            {
-                impactVfxPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Synty/PolygonParticleFX/Prefabs/FX_Dust_Small_01.prefab");
-            }
-        }
-        if (impactSfx == null)
-        {
-            impactSfx = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Impacts/Generic Wood Item Break A.wav");
-        }
-#endif
     }
 
     private void Update()

@@ -100,64 +100,42 @@ public class NetRootStatus : MonoBehaviour
         }
     }
 
+    [SerializeField] private NetRootConfigSO config;
+    private static NetRootConfigSO cachedConfig;
+
+    private static NetRootConfigSO GetConfig()
+    {
+        if (cachedConfig == null)
+        {
+            cachedConfig = Resources.Load<NetRootConfigSO>("NetRootConfigSO");
+        }
+        return cachedConfig;
+    }
+
     private void EnsureCaptureVisual()
     {
         if (captureVisual != null) return;
 
-        captureVisual = new GameObject("NetCaptureVisual");
-        captureVisual.transform.SetParent(transform, false);
+        NetRootConfigSO activeConfig = config != null ? config : GetConfig();
+        if (activeConfig == null || activeConfig.captureVisualPrefab == null)
+        {
+            Debug.LogWarning("[NetRootStatus] No captureVisualPrefab configured in NetRootConfigSO!");
+            return;
+        }
+
+        captureVisual = Instantiate(activeConfig.captureVisualPrefab, transform);
         captureVisual.transform.localPosition = Vector3.zero;
         captureVisual.transform.localRotation = Quaternion.identity;
 
-        float scale = 1.0f;
-        Collider col = GetComponentInChildren<Collider>();
-        if (col != null)
+        if (activeConfig.scaleWithTargetCollider)
         {
-            scale = Mathf.Max(0.8f, col.bounds.size.magnitude * 0.45f);
-        }
-
-        // 1. Ground rope ring at feet
-        GameObject ropePrefab = null;
-#if UNITY_EDITOR
-        ropePrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Synty/PolygonGeneric/Models/SM_Gen_Prop_Rope_02.fbx");
-#endif
-        if (ropePrefab != null)
-        {
-            GameObject feetRing = new GameObject("RopeFeetRing");
-            feetRing.transform.SetParent(captureVisual.transform, false);
-            feetRing.transform.localPosition = new Vector3(0f, 0.05f, 0f);
-            feetRing.transform.localScale = Vector3.one * (scale * 0.85f);
-
-            var mf = feetRing.AddComponent<MeshFilter>();
-            mf.sharedMesh = ropePrefab.GetComponentInChildren<MeshFilter>()?.sharedMesh;
-
-            var mr = feetRing.AddComponent<MeshRenderer>();
-#if UNITY_EDITOR
-            mr.sharedMaterial = UnityEditor.AssetDatabase.LoadAssetAtPath<Material>("Assets/Bladehold/Materials/MAT_RopeNet.mat");
-#endif
-            mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-        }
-
-        // 2. Draped Net Dome lattice over enemy body
-        Mesh netMesh = null;
-#if UNITY_EDITOR
-        netMesh = UnityEditor.AssetDatabase.LoadAssetAtPath<Mesh>("Assets/Bladehold/Models/NetDomeMesh.asset");
-#endif
-        if (netMesh != null)
-        {
-            GameObject netDome = new GameObject("DrapedNetDome");
-            netDome.transform.SetParent(captureVisual.transform, false);
-            netDome.transform.localPosition = new Vector3(0f, scale * 1.1f, 0f);
-            netDome.transform.localScale = new Vector3(scale * 1.1f, -scale * 1.05f, scale * 1.1f);
-
-            var mf = netDome.AddComponent<MeshFilter>();
-            mf.sharedMesh = netMesh;
-
-            var mr = netDome.AddComponent<MeshRenderer>();
-#if UNITY_EDITOR
-            mr.sharedMaterial = UnityEditor.AssetDatabase.LoadAssetAtPath<Material>("Assets/Bladehold/Materials/MAT_RopeNet.mat");
-#endif
-            mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            float scale = activeConfig.scaleMultiplier;
+            Collider col = GetComponentInChildren<Collider>();
+            if (col != null)
+            {
+                scale *= Mathf.Max(activeConfig.minScale, col.bounds.size.magnitude * 0.45f);
+            }
+            captureVisual.transform.localScale = Vector3.one * scale;
         }
     }
 

@@ -42,25 +42,6 @@ public class NetThrowerDefense : DefenseStructure
         }
 
         CacheBarrel();
-        ResolveFallbacks();
-    }
-
-    private void ResolveFallbacks()
-    {
-#if UNITY_EDITOR
-        if (netProjectilePrefab == null)
-        {
-            netProjectilePrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/Defenses/NetProjectile.prefab");
-        }
-        if (fireSfx == null)
-        {
-            fireSfx = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Bow/Arrow_Shot_1.wav");
-        }
-        if (netImpactSfx == null)
-        {
-            netImpactSfx = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Impacts/Generic Wood Item Break A.wav");
-        }
-#endif
     }
 
     private void CacheBarrel()

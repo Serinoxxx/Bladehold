@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 /// <summary>
@@ -47,6 +48,8 @@ public class BuildWheelUI : MonoBehaviour
     [SerializeField] private GameObject buildVfxPrefab;
 
     [Header("Defense Slices / Buttons")]
+    [SerializeField] private GameObject sliceButtonPrefab;
+    [SerializeField] private List<BuildWheelButton> wheelButtons = new List<BuildWheelButton>();
     [SerializeField] private List<Button> sliceButtons = new List<Button>();
     [SerializeField] private List<DefenseOption> defenseOptions = new List<DefenseOption>
     {
@@ -142,6 +145,10 @@ public class BuildWheelUI : MonoBehaviour
         {
             buildVfxPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Synty/PolygonParticleFX/Prefabs/FX_Impact_Wood_01.prefab");
         }
+        if (sliceButtonPrefab == null)
+        {
+            sliceButtonPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/UI/BuildWheelSliceButton.prefab");
+        }
 #endif
     }
 
@@ -154,14 +161,28 @@ public class BuildWheelUI : MonoBehaviour
     {
         if (instance == this) instance = null;
         CursorLockManager.SetUnlock("BuildWheel", false);
+        PauseMenuController.Instance?.SetToggleEnabled(true);
     }
 
     private void Update()
     {
         if (!isOpen) return;
 
-        // Cancel on Escape or B
-        if (Input.GetKeyDown(KeyCode.Escape))
+        // Cancel on Escape or B (Keyboard or Gamepad)
+        bool cancelPressed = false;
+        Keyboard keyboard = Keyboard.current;
+        if (keyboard != null && (keyboard.escapeKey.wasPressedThisFrame || keyboard.bKey.wasPressedThisFrame))
+        {
+            cancelPressed = true;
+        }
+
+        Gamepad gamepad = Gamepad.current;
+        if (gamepad != null && gamepad.buttonEast.wasPressedThisFrame)
+        {
+            cancelPressed = true;
+        }
+
+        if (cancelPressed)
         {
             Close();
         }
@@ -176,6 +197,7 @@ public class BuildWheelUI : MonoBehaviour
         if (wheelPanel != null && wheelPanel != gameObject) wheelPanel.SetActive(true);
 
         CursorLockManager.SetUnlock("BuildWheel", true);
+        PauseMenuController.Instance?.SetToggleEnabled(false);
 
         SetupButtons();
         RefreshUI();
@@ -190,6 +212,7 @@ public class BuildWheelUI : MonoBehaviour
         gameObject.SetActive(false);
 
         CursorLockManager.SetUnlock("BuildWheel", false);
+        PauseMenuController.Instance?.SetToggleEnabled(true);
     }
 
     public void RefreshUI()
@@ -211,42 +234,102 @@ public class BuildWheelUI : MonoBehaviour
             descriptionLabel.text = "Choose a structure to build at this plot.";
         }
 
-        for (int i = 0; i < defenseOptions.Count; i++)
+        // 1. If dedicated BuildWheelButtons are present, configure them
+        if (wheelButtons != null && wheelButtons.Count > 0)
         {
-            if (i >= sliceButtons.Count) break;
-
-            Button btn = sliceButtons[i];
-            if (btn == null) continue;
-
-            DefenseOption opt = defenseOptions[i];
-            bool canAfford = playerSupply >= opt.supplyCost;
-
-            btn.interactable = canAfford;
-
-            TMP_Text txt = btn.GetComponentInChildren<TMP_Text>();
-            if (txt != null)
+            for (int i = 0; i < defenseOptions.Count && i < wheelButtons.Count; i++)
             {
-                string costColor = canAfford ? "#FFD700" : "#FF4444";
-                txt.text = $"{opt.displayName}\n<color={costColor}>{opt.supplyCost} Supply</color>";
-            }
+                BuildWheelButton btn = wheelButtons[i];
+                if (btn == null) continue;
 
-            int index = i;
-            btn.onClick.RemoveAllListeners();
-            btn.onClick.AddListener(() => OnSelectSlice(index));
+                DefenseOption opt = defenseOptions[i];
+                bool canAfford = playerSupply >= opt.supplyCost;
+                int index = i;
+
+                btn.Setup(
+                    opt.displayName,
+                    opt.supplyCost,
+                    opt.icon,
+                    canAfford,
+                    () => OnSelectSlice(index),
+                    () => OnHoverSlice(index),
+                    () => OnUnhoverSlice()
+                );
+            }
+        }
+
+        // 2. Also refresh legacy sliceButtons if wired
+        if (sliceButtons != null && sliceButtons.Count > 0)
+        {
+            for (int i = 0; i < defenseOptions.Count && i < sliceButtons.Count; i++)
+            {
+                Button btn = sliceButtons[i];
+                if (btn == null) continue;
+
+                DefenseOption opt = defenseOptions[i];
+                bool canAfford = playerSupply >= opt.supplyCost;
+
+                btn.interactable = canAfford;
+
+                TMP_Text txt = btn.GetComponentInChildren<TMP_Text>();
+                if (txt != null)
+                {
+                    string costColor = canAfford ? "#FFD700" : "#FF4444";
+                    txt.text = $"{opt.displayName}\n<color={costColor}>{opt.supplyCost} Supply</color>";
+                }
+
+                int index = i;
+                btn.onClick.RemoveAllListeners();
+                btn.onClick.AddListener(() => OnSelectSlice(index));
+            }
         }
     }
 
     private void SetupButtons()
     {
-        for (int i = 0; i < defenseOptions.Count && i < sliceButtons.Count; i++)
+        if (wheelButtons != null && wheelButtons.Count > 0)
         {
-            int index = i;
-            Button btn = sliceButtons[i];
-            if (btn != null)
+            for (int i = 0; i < defenseOptions.Count && i < wheelButtons.Count; i++)
             {
-                btn.onClick.RemoveAllListeners();
-                btn.onClick.AddListener(() => OnSelectSlice(index));
+                int index = i;
+                BuildWheelButton btn = wheelButtons[i];
+                if (btn != null)
+                {
+                    DefenseOption opt = defenseOptions[i];
+                    bool canAfford = RunSession.InRunSupply >= opt.supplyCost;
+                    btn.Setup(
+                        opt.displayName,
+                        opt.supplyCost,
+                        opt.icon,
+                        canAfford,
+                        () => OnSelectSlice(index),
+                        () => OnHoverSlice(index),
+                        () => OnUnhoverSlice()
+                    );
+                }
             }
+        }
+
+        if (sliceButtons != null && sliceButtons.Count > 0)
+        {
+            for (int i = 0; i < defenseOptions.Count && i < sliceButtons.Count; i++)
+            {
+                int index = i;
+                Button btn = sliceButtons[i];
+                if (btn != null)
+                {
+                    btn.onClick.RemoveAllListeners();
+                    btn.onClick.AddListener(() => OnSelectSlice(index));
+                }
+            }
+        }
+    }
+
+    public void OnUnhoverSlice()
+    {
+        if (descriptionLabel != null)
+        {
+            descriptionLabel.text = "Choose a defense structure to protect the gates.";
         }
     }
 

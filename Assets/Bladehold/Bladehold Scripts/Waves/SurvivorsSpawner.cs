@@ -241,9 +241,8 @@ public class SurvivorsSpawner : MonoBehaviour
         }
         else if (pacingConfig != null)
         {
-            int round = RunSession.CurrentRound > 0 ? RunSession.CurrentRound : 1;
-            RoundPacingConfigSO.RoundDefinition roundDef = pacingConfig.GetRound(round);
-            totalToSpawnThisWave = roundDef != null ? roundDef.requiredKillsPerWave : (15 + (round - 1) * 5);
+            RoundPacingConfigSO.RoundDefinition roundDef = pacingConfig.GetRound(currentWave);
+            totalToSpawnThisWave = roundDef != null ? roundDef.requiredKillsPerWave : (15 + (currentWave - 1) * 5);
         }
         else
         {
@@ -585,8 +584,7 @@ public class SurvivorsSpawner : MonoBehaviour
     {
         List<SpawnType> eligible = new List<SpawnType>();
 
-        int currentRound = RunSession.CurrentRound;
-        RoundPacingConfigSO.RoundDefinition roundDef = pacingConfig != null ? pacingConfig.GetRound(currentRound) : null;
+        RoundPacingConfigSO.RoundDefinition roundDef = pacingConfig != null ? pacingConfig.GetRound(waveNumber) : null;
         string[] allowed = roundDef != null ? roundDef.allowedEnemyIds : null;
 
         if (GameLoopManager.Instance != null && GameLoopManager.Instance.CurrentObjective is IOverrideEnemySpawns overrideObj)

@@ -59,6 +59,38 @@ public static class EnemyPrefabGenerator
             return child;
         }
 
+        /// <summary>Finds or creates a child attached to a specific rig bone (e.g. Spine_02), or root if bone not found.</summary>
+        public GameObject FindOrCreateBoneChild(string name, string boneName, Vector3 localPosition, Quaternion localRotation)
+        {
+            Transform bone = null;
+            Transform[] allTransforms = Root.GetComponentsInChildren<Transform>(true);
+            if (!string.IsNullOrEmpty(boneName))
+            {
+                bone = Array.Find(allTransforms, t => t.name.Equals(boneName, StringComparison.OrdinalIgnoreCase))
+                    ?? Array.Find(allTransforms, t => t.name.StartsWith(boneName, StringComparison.OrdinalIgnoreCase));
+            }
+
+            Transform targetParent = bone != null ? bone : Root.transform;
+
+            Transform existing = Array.Find(allTransforms, t => t.name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            if (existing != null)
+            {
+                if (existing.parent != targetParent)
+                {
+                    existing.SetParent(targetParent, false);
+                }
+                existing.localPosition = localPosition;
+                existing.localRotation = localRotation;
+                return existing.gameObject;
+            }
+
+            var child = new GameObject(name) { layer = Root.layer };
+            child.transform.SetParent(targetParent, false);
+            child.transform.localPosition = localPosition;
+            child.transform.localRotation = localRotation;
+            return child;
+        }
+
         /// <summary>An SO asset declared in this spec's <c>assets</c> list, by asset name.</summary>
         public ScriptableObject LoadedAsset(string assetName)
         {
@@ -117,11 +149,33 @@ public static class EnemyPrefabGenerator
         string variantPath = $"{PrefabFolder}/{spec.prefabName}.prefab";
         bool isNew = AssetDatabase.LoadAssetAtPath<GameObject>(variantPath) == null;
 
+        string effectiveBasePath = !string.IsNullOrEmpty(spec.basePrefabPath) ? spec.basePrefabPath : BasePrefabPath;
+        var effectiveBasePrefab = !string.IsNullOrEmpty(spec.basePrefabPath)
+            ? AssetDatabase.LoadAssetAtPath<GameObject>(effectiveBasePath)
+            : basePrefab;
+        if (effectiveBasePrefab == null)
+        {
+            throw new InvalidOperationException($"Base prefab not found at '{effectiveBasePath}'.");
+        }
+
+        bool needsRebase = false;
+        if (!isNew && !string.IsNullOrEmpty(spec.basePrefabPath))
+        {
+            var loadedObj = PrefabUtility.LoadPrefabContents(variantPath);
+            GameObject parentPrefab = PrefabUtility.GetCorrespondingObjectFromSource(loadedObj);
+            string currentBase = parentPrefab != null ? AssetDatabase.GetAssetPath(parentPrefab) : null;
+            PrefabUtility.UnloadPrefabContents(loadedObj);
+            if (currentBase != effectiveBasePath)
+            {
+                needsRebase = true;
+            }
+        }
+
         // A fresh variant comes from instantiating the base as a prefab *instance* (that link is what
         // makes SaveAsPrefabAsset produce a variant). An existing variant is edited in isolation via
         // LoadPrefabContents, which preserves its parent linkage on save.
-        GameObject root = isNew
-            ? (GameObject)PrefabUtility.InstantiatePrefab(basePrefab)
+        GameObject root = (isNew || needsRebase)
+            ? (GameObject)PrefabUtility.InstantiatePrefab(effectiveBasePrefab)
             : PrefabUtility.LoadPrefabContents(variantPath);
         try
         {
@@ -134,7 +188,7 @@ public static class EnemyPrefabGenerator
         }
         finally
         {
-            if (isNew)
+            if (isNew || needsRebase)
             {
                 Object.DestroyImmediate(root);
             }

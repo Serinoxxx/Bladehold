@@ -25,8 +25,8 @@ public class CaptainKombustaSO : ScriptableObject
     [Tooltip("Total number of dynamite sticks thrown per volley (default: 10).")]
     public int dynamiteCount = 10;
 
-    [Tooltip("Interval in seconds between each thrown dynamite (default: 1.0s).")]
-    public float dynamiteInterval = 1.0f;
+    [Tooltip("Interval in seconds between each thrown dynamite (default: 3.0s: 2s telegraph + 1s gap).")]
+    public float dynamiteInterval = 3.0f;
 
     [Tooltip("Explosion damage dealt by each dynamite stick (default: 20).")]
     public float dynamiteDamage = 20.0f;
@@ -34,8 +34,8 @@ public class CaptainKombustaSO : ScriptableObject
     [Tooltip("Radius of the ground telegraph and explosion area (default: 2.0m).")]
     public float dynamiteExplosionRadius = 2.0f;
 
-    [Tooltip("Flight travel time in seconds for each thrown dynamite to target position (default: 0.8s).")]
-    public float dynamiteFlightTime = 0.8f;
+    [Tooltip("Flight travel time in seconds for each thrown dynamite to target position / telegraph duration (default: 2.0s).")]
+    public float dynamiteFlightTime = 2.0f;
 
     [Tooltip("Arc height of the thrown dynamite trajectory.")]
     public float dynamiteArcHeight = 2.5f;

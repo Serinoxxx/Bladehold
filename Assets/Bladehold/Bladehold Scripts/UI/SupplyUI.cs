@@ -20,7 +20,7 @@ public class SupplyUI : MonoBehaviour
     {
         if (label == null)
         {
-            label = GetComponent<TMP_Text>();
+            label = GetComponentInChildren<TMP_Text>();
         }
     }
 
@@ -28,7 +28,7 @@ public class SupplyUI : MonoBehaviour
     {
         if (label == null)
         {
-            label = GetComponent<TMP_Text>();
+            label = GetComponentInChildren<TMP_Text>();
         }
 
         if (label == null)

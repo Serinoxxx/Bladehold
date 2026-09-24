@@ -227,14 +227,15 @@ public static class DefensesRevampSetup
     private static void SetupSceneObjects(GameObject arrowTower, GameObject catapult, GameObject ballista, GameObject netThrower, GameObject spikeTrap, GameObject oilVat, GameObject plotPrefab, System.Text.StringBuilder sb)
     {
         // 10A. Setup SupplyUI in HUD
-        GameObject currenciesRoot = GameObject.Find("Bladehold HUD/Screen_HUD_Adventure_01/ScreenSpace/Top Left/Currencies");
+        CoinUI coinUI = Object.FindAnyObjectByType<CoinUI>(FindObjectsInactive.Include);
+        Transform currenciesRoot = coinUI != null ? coinUI.transform.parent : GameObject.Find("Bladehold HUD/Screen_HUD_Adventure_01/ScreenSpace/Top Left/Currencies")?.transform;
         if (currenciesRoot != null)
         {
-            Transform existingSupply = currenciesRoot.transform.Find("SupplyUI");
+            Transform existingSupply = currenciesRoot.Find("SupplyUI");
             if (existingSupply == null)
             {
-                Transform metalUI = currenciesRoot.transform.Find("MetalUI");
-                GameObject supplyObj = metalUI != null ? Object.Instantiate(metalUI.gameObject, currenciesRoot.transform) : new GameObject("SupplyUI");
+                Transform metalUI = currenciesRoot.Find("MetalUI") ?? coinUI.transform;
+                GameObject supplyObj = metalUI != null ? Object.Instantiate(metalUI.gameObject, currenciesRoot) : new GameObject("SupplyUI");
                 supplyObj.name = "SupplyUI";
 
                 // Remove OrcishMetalUI or other currency scripts
@@ -251,7 +252,8 @@ public static class DefensesRevampSetup
                     iconImg.sprite = hammerSprite;
                 }
 
-                TMP_Text label = supplyObj.transform.Find("Label_CurrencyValue")?.GetComponent<TMP_Text>();
+                TMP_Text label = supplyObj.transform.Find("Label_CurrencyValue")?.GetComponent<TMP_Text>()
+                    ?? supplyObj.GetComponentInChildren<TMP_Text>(true);
                 SetSerializedField(sui, "label", label);
 
                 EditorUtility.SetDirty(supplyObj);

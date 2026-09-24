@@ -252,10 +252,13 @@ public class CaptainKombustaController : MonoBehaviour
         if (movement != null) movement.SetMovementPaused(true);
 
         int count = attackData != null ? attackData.dynamiteCount : 10;
-        float interval = attackData != null ? attackData.dynamiteInterval : 1.0f;
+        float flightTime = attackData != null ? attackData.dynamiteFlightTime : 2.0f;
+        float interval = attackData != null ? attackData.dynamiteInterval : 3.0f;
+        // Enforce at least 1.0s gap after telegraph finishes before next bomb
+        interval = Mathf.Max(interval, flightTime + 1.0f);
+
         float damage = damageOverride ?? (attackData != null ? attackData.dynamiteDamage : 20.0f);
         float radius = attackData != null ? attackData.dynamiteExplosionRadius : 2.0f;
-        float flightTime = attackData != null ? attackData.dynamiteFlightTime : 0.8f;
         float arcHeight = attackData != null ? attackData.dynamiteArcHeight : 2.5f;
         float knockback = attackData != null ? attackData.explosionKnockback : 8.0f;
 
@@ -263,7 +266,7 @@ public class CaptainKombustaController : MonoBehaviour
         float mult = BannerDifficultyHelper.GetStatMultiplier(difficultyTier);
         float scaledDamage = damage * mult;
 
-        Debug.Log($"[CaptainKombustaController] {captainName} unleashes DYNAMITE VOLLEY ({count} dynamite sticks)!");
+        Debug.Log($"[CaptainKombustaController] {captainName} unleashes DYNAMITE VOLLEY ({count} dynamite sticks, {flightTime}s telegraph + {interval - flightTime}s cooldown)!");
 
         for (int i = 0; i < count; i++)
         {
@@ -285,11 +288,22 @@ public class CaptainKombustaController : MonoBehaviour
                 animator.SetTrigger("Attack");
             }
 
-            // Target ground position at player's location
+            // Target ground position at player's location, ignoring player/enemies so we hit the actual terrain/ground
             Vector3 targetGround = playerTransform.position;
-            if (Physics.Raycast(targetGround + Vector3.up * 2f, Vector3.down, out RaycastHit hit, 5f))
+            Vector3 groundNormal = Vector3.up;
+
+            int characterMask = LayerMask.GetMask("Player", "Enemy", "Ignore Raycast");
+            int groundMask = ~characterMask;
+
+            if (Physics.Raycast(targetGround + Vector3.up * 5f, Vector3.down, out RaycastHit hit, 20f, groundMask, QueryTriggerInteraction.Ignore))
             {
                 targetGround = hit.point;
+                groundNormal = hit.normal;
+            }
+            else if (Physics.Raycast(targetGround + Vector3.up * 0.5f, Vector3.down, out RaycastHit hitClose, 5f, groundMask, QueryTriggerInteraction.Ignore))
+            {
+                targetGround = hitClose.point;
+                groundNormal = hitClose.normal;
             }
 
             Vector3 spawnPos = firePoint != null ? firePoint.position : (transform.position + Vector3.up * 1.5f + transform.forward * 0.5f);
@@ -328,7 +342,8 @@ public class CaptainKombustaController : MonoBehaviour
                 telegraphPrefab,
                 vfxPrefab,
                 sfxExplosion,
-                sfxFuse
+                sfxFuse,
+                groundNormal
             );
 
             yield return new WaitForSeconds(interval);

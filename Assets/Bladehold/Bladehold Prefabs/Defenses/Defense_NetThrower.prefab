@@ -420,8 +420,8 @@ MonoBehaviour:
   netProjectilePrefab: {fileID: 51453717169611396, guid: 75fed857fa4da3847be3520989ed002f, type: 3}
   launchPoint: {fileID: 890507880364800778}
   netVfxPrefab: {fileID: 0}
-  fireSfx: {fileID: 0}
-  netImpactSfx: {fileID: 0}
+  fireSfx: {fileID: 8300000, guid: e817e2e3262f94de08ad58d65c7a413e, type: 3}
+  netImpactSfx: {fileID: 8300000, guid: 11180b07038e8f541bb6c3634801eabd, type: 3}
   enemyLayers:
     serializedVersion: 2
     m_Bits: 4294967295

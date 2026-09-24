@@ -74,15 +74,12 @@ public class DefenseAssemblyAnimation : MonoBehaviour
             yield break;
         }
 
-        // 1. Create transparent ghost preview
-        GameObject ghost = CreateGhost(defensePrefab, plotPos, rotation);
-
-        // 2. Instantiate final structure (initially inactive while assembly animates)
+        // 1. Instantiate final structure (initially inactive while assembly animates)
         GameObject finalStructureObj = Instantiate(defensePrefab, plotPos, rotation);
         finalStructureObj.SetActive(false);
         DefenseStructure structure = finalStructureObj.GetComponent<DefenseStructure>();
 
-        // 3. Inspect mesh renderers on the prefab to determine assembly mode
+        // 2. Inspect mesh renderers on the prefab to determine assembly mode
         MeshRenderer[] renderers = defensePrefab.GetComponentsInChildren<MeshRenderer>(true);
 
         if (renderers.Length <= 2)
@@ -96,14 +93,8 @@ public class DefenseAssemblyAnimation : MonoBehaviour
             yield return StartCoroutine(DropPiecesRoutine(defensePrefab, plotPos, rotation));
         }
 
-        // 4. Reveal & activate final operational structure
+        // 3. Reveal & activate final operational structure
         finalStructureObj.SetActive(true);
-
-        // 5. Clean up ghost preview
-        if (ghost != null)
-        {
-            Destroy(ghost);
-        }
 
         // Brief settle delay
         yield return new WaitForSeconds(0.15f);

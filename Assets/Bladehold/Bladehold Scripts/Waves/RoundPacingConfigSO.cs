@@ -24,7 +24,8 @@ public class RoundPacingConfigSO : ScriptableObject
         new RoundDefinition { roundNumber = 1, allowedEnemyIds = new string[] { "goblin", "goblin_brute" }, requiredKillsPerWave = 15 },
         new RoundDefinition { roundNumber = 2, allowedEnemyIds = new string[] { "goblin", "goblin_brute", "big_ork" }, requiredKillsPerWave = 20 },
         new RoundDefinition { roundNumber = 3, allowedEnemyIds = new string[] { "goblin", "goblin_brute", "big_ork", "bubbler" }, requiredKillsPerWave = 25 },
-        new RoundDefinition { roundNumber = 4, allowedEnemyIds = new string[] { "goblin", "goblin_brute", "big_ork", "bomber" }, requiredKillsPerWave = 30 }
+        new RoundDefinition { roundNumber = 4, allowedEnemyIds = new string[] { "goblin", "goblin_brute", "big_ork", "bubbler", "bomber" }, requiredKillsPerWave = 30 },
+        new RoundDefinition { roundNumber = 5, allowedEnemyIds = new string[] { "goblin", "goblin_brute", "big_ork", "bubbler", "bomber" }, requiredKillsPerWave = 35 }
     };
 
     [Header("Wave Pacing & Spawner Caps")]
@@ -40,18 +41,18 @@ public class RoundPacingConfigSO : ScriptableObject
     [Tooltip("Intermission countdown duration between non-rest waves in seconds.")]
     public float intermissionDuration = 30.0f;
 
-    [Tooltip("Waves per round before a rest break occurs.")]
-    public int wavesPerRound = 3;
+    [Tooltip("Waves per defence level node before victory.")]
+    public int wavesPerRound = 5;
 
-    [Tooltip("Total rounds in a level to achieve victory.")]
-    public int totalRounds = 4;
+    [Tooltip("Total defense rounds in a level node.")]
+    public int totalRounds = 1;
 
     [Header("Endgame Boss")]
-    [Tooltip("The boss enemy roster id or prefab to spawn in Round 4.")]
+    [Tooltip("The boss enemy roster id or prefab to spawn in Wave 5.")]
     public string bossEnemyId = "slayer";
 
-    [Tooltip("Wave number where the Slayer / Siegebreaker boss appears (default: Wave 10, start of Round 4).")]
-    public int bossSpawnWave = 10;
+    [Tooltip("Wave number where the Slayer / Clan Captain appears (default: Wave 5).")]
+    public int bossSpawnWave = 5;
 
     [Header("Spawn Indicator Visuals")]
     [Tooltip("Prefab spawned as the ground telegraph indicator.")]

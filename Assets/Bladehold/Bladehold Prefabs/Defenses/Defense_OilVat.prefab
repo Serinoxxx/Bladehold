@@ -238,7 +238,7 @@ MonoBehaviour:
   poolDuration: 4.5
   damagePerSecond: 20
   oilPoolVfxPrefab: {fileID: 1847000953338612391, guid: 25ba4fde3159049458eda7f07801b901, type: 3}
-  spillSfx: {fileID: 0}
+  spillSfx: {fileID: 8300000, guid: 88edf6fc4481d0a4ea0e6da66931da11, type: 3}
 --- !u!1 &2589474553005057632
 GameObject:
   m_ObjectHideFlags: 0

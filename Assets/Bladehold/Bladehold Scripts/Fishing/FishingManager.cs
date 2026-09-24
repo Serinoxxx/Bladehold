@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 public enum FishingState
@@ -134,7 +135,8 @@ public class FishingManager : MonoBehaviour
     {
         if (currentState == FishingState.WaitingToStart)
         {
-            if (Input.GetKeyDown(KeyCode.T))
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard != null && keyboard.tKey.wasPressedThisFrame)
             {
                 StartCountdown();
             }

@@ -40,7 +40,8 @@ public class DynamiteProjectile : MonoBehaviour
         GameObject telegraphPrefab,
         GameObject vfxPrefab,
         AudioClip sfxExplosion,
-        AudioClip sfxFuse = null)
+        AudioClip sfxFuse = null,
+        Vector3 groundNormal = default)
     {
         startPosition = start;
         targetPosition = target;
@@ -53,19 +54,22 @@ public class DynamiteProjectile : MonoBehaviour
         explosionVfxPrefab = vfxPrefab;
         explosionSfx = sfxExplosion;
 
+        if (groundNormal == Vector3.zero) groundNormal = Vector3.up;
+
         transform.position = startPosition;
 
-        // Visual telegraph on the ground marking the 2m radius blast zone
+        // Visual telegraph on the ground marking the 2m radius blast zone, aligned with ground normal
         if (telegraphPrefab != null)
         {
-            telegraphInstance = Instantiate(telegraphPrefab, targetPosition + Vector3.up * 0.05f, Quaternion.identity);
+            Quaternion groundRot = Quaternion.FromToRotation(Vector3.up, groundNormal);
+            telegraphInstance = Instantiate(telegraphPrefab, targetPosition + groundNormal * 0.05f, groundRot);
             Vector3 currentScale = telegraphInstance.transform.localScale;
             telegraphInstance.transform.localScale = new Vector3(explosionRadius * 2f, currentScale.y, explosionRadius * 2f);
         }
         else
         {
             // Fallback ground indicator if no prefab assigned
-            telegraphInstance = CreateFallbackTelegraph(targetPosition, explosionRadius);
+            telegraphInstance = CreateFallbackTelegraph(targetPosition, explosionRadius, groundNormal);
         }
 
         if (sfxFuse != null)
@@ -185,10 +189,11 @@ public class DynamiteProjectile : MonoBehaviour
         }
     }
 
-    private GameObject CreateFallbackTelegraph(Vector3 center, float radius)
+    private GameObject CreateFallbackTelegraph(Vector3 center, float radius, Vector3 normal)
     {
         GameObject go = new GameObject("DynamiteFallbackTelegraph");
-        go.transform.position = center + Vector3.up * 0.05f;
+        go.transform.position = center + normal * 0.05f;
+        go.transform.rotation = Quaternion.FromToRotation(Vector3.up, normal);
 
         LineRenderer lr = go.AddComponent<LineRenderer>();
         lr.useWorldSpace = false;

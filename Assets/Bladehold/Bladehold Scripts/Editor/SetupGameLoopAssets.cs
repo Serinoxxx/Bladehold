@@ -41,9 +41,9 @@ public static class SetupGameLoopAssets
         pacing.spawnTelegraphDuration = 3.0f;
         pacing.spawnStaggerInterval = 0.35f;
         pacing.intermissionDuration = 30.0f;
-        pacing.wavesPerRound = 3;
-        pacing.totalRounds = 4;
-        pacing.bossSpawnWave = 10;
+        pacing.wavesPerRound = 5;
+        pacing.totalRounds = 1;
+        pacing.bossSpawnWave = 5;
         pacing.bossEnemyId = "slayer";
 
         string[] vfxGuids = AssetDatabase.FindAssets("vfx_RoundMarker02_Red");
@@ -912,15 +912,28 @@ public static class SetupGameLoopAssets
             for (int k = 0; k < glm.TargetKillsThisWave; k++) glm.OnEnemyKilled(null);
             sb.AppendLine($"- Wave 2 Cleared. CurrentWave={glm.CurrentWave}, Round={glm.CurrentRound}");
 
-            // Wave 3 (Round 1 Rest Wave)
+            // Wave 3 (Intermediate)
             glm.StartWave(3);
+            glm.DebugCompleteObjective();
+            for (int k = 0; k < glm.TargetKillsThisWave; k++) glm.OnEnemyKilled(null);
+            sb.AppendLine($"- Wave 3 Cleared. CurrentWave={glm.CurrentWave}, GateInteractable={gateInteractable.CanInteract} (Expected: False)");
+
+            // Wave 4 (Intermediate)
+            glm.StartWave(4);
+            glm.DebugCompleteObjective();
+            for (int k = 0; k < glm.TargetKillsThisWave; k++) glm.OnEnemyKilled(null);
+            sb.AppendLine($"- Wave 4 Cleared. CurrentWave={glm.CurrentWave}");
+
+            // Wave 5 (Defense Victory Wave)
+            bool victoryTriggered = false;
+            glm.OnVictory += () => victoryTriggered = true;
+            glm.StartWave(5);
             glm.DebugCompleteObjective();
             var spawner = Object.FindAnyObjectByType<SurvivorsSpawner>();
             if (spawner != null) spawner.DespawnAllAliveEnemies();
             for (int k = 0; k < glm.TargetKillsThisWave; k++) glm.OnEnemyKilled(null);
-            bool isRestGateOpen = gateInteractable.CanInteract;
-            sb.AppendLine($"- Wave 3 (Round 1 Finale) Cleared. Rest Gate Interactable: {isRestGateOpen} (Expected: True)");
-            if (!isRestGateOpen) throw new System.Exception("Castle Gate was not unlocked on Rest Wave 3!");
+            sb.AppendLine($"- Wave 5 Cleared. Victory Triggered: {victoryTriggered} (Expected: True)");
+            if (!victoryTriggered) throw new System.Exception("Victory was not triggered upon clearing Wave 5!");
 
             // -------------------------------------------------------------
             // PHASE 2: Area Transition & Rest Area Stations

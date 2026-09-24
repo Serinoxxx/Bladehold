@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using Synty.AnimationBaseLocomotion.Samples.InputSystem;
 
 /// <summary>
@@ -51,12 +52,16 @@ public class FishingBowController : MonoBehaviour
     private void Update()
     {
         // Standalone fallback: mouse right click for aim, left click for shoot
-        if (Input.GetMouseButtonDown(1)) isAiming = true;
-        if (Input.GetMouseButtonUp(1)) isAiming = false;
-
-        if (Input.GetMouseButtonDown(0))
+        Mouse mouse = Mouse.current;
+        if (mouse != null)
         {
-            TryShoot();
+            if (mouse.rightButton.wasPressedThisFrame) isAiming = true;
+            if (mouse.rightButton.wasReleasedThisFrame) isAiming = false;
+
+            if (mouse.leftButton.wasPressedThisFrame)
+            {
+                TryShoot();
+            }
         }
     }
 

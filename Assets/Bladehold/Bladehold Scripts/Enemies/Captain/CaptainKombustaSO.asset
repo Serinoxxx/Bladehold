@@ -17,10 +17,10 @@ MonoBehaviour:
   baseMoveSpeed: 3.8
   dynamiteTriggerDistance: 5
   dynamiteCount: 10
-  dynamiteInterval: 1
+  dynamiteInterval: 3
   dynamiteDamage: 20
   dynamiteExplosionRadius: 2
-  dynamiteFlightTime: 0.8
+  dynamiteFlightTime: 2
   dynamiteArcHeight: 2.5
   explosionKnockback: 8
   dynamiteSpecialCooldown: 12

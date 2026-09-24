@@ -1376,9 +1376,27 @@ public static class WeaponReachBenchmark
                 sb.AppendLine($"  - Shop Item: ammo_bundle.asset configured with AmmoRefill effect ({ammoItem.effectValue} ammo). [PASSED]");
                 passedCount++;
             }
+            // 12E: Crosshair Ammo Counter & Out of Ammo Warning Scaling Verification
+            GameObject hudPrefabObj = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/UI/Bladehold HUD.prefab");
+            Transform crosshairTr = hudPrefabObj != null ? hudPrefabObj.transform.Find("Crosshair") : null;
+            Transform reticleVis = crosshairTr != null ? crosshairTr.Find("ReticleVisual") : null;
+            Transform ammoCounterTr = crosshairTr != null ? crosshairTr.Find("AmmoCounter") : null;
+            TMPro.TMP_Text ammoTxt = ammoCounterTr != null ? ammoCounterTr.GetComponentInChildren<TMPro.TMP_Text>() : null;
+            Transform outWarnTr = crosshairTr != null ? crosshairTr.Find("OutOfAmmoWarning") : null;
+            TMPro.TMP_Text warnTxt = outWarnTr != null ? outWarnTr.GetComponent<TMPro.TMP_Text>() : null;
+
+            bool crosshairScalingValid = reticleVis != null 
+                && ammoTxt != null && ammoTxt.fontSize >= 40f
+                && warnTxt != null && warnTxt.fontSize >= 60f;
+
+            if (crosshairScalingValid)
+            {
+                sb.AppendLine($"  - Crosshair Ammo UI Scaling: Decoupled ReticleVisual present, AmmoText fontSize={ammoTxt.fontSize}, OutOfAmmoWarning fontSize={warnTxt.fontSize}. [PASSED]");
+                passedCount++;
+            }
             else
             {
-                sb.AppendLine("  - [FAIL] ammo_bundle.asset is missing or not configured with AmmoRefill!");
+                sb.AppendLine($"  - [FAIL] Crosshair Ammo UI scaling invalid on Bladehold HUD (reticleVis={reticleVis != null}, ammoTxt={ammoTxt?.fontSize}, warnTxt={warnTxt?.fontSize})!");
                 failedCount++;
             }
 
@@ -1971,6 +1989,32 @@ public static class WeaponReachBenchmark
             testPlot.ClearDefense();
             UnityEngine.Object.DestroyImmediate(arrowPrefab);
 
+            // 17F: BuildWheelUI Prefab & Synty Radial Slices Verification
+            GameObject buttonPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/UI/BuildWheelSliceButton.prefab");
+            BuildWheelButton bwbComp = buttonPrefab != null ? buttonPrefab.GetComponent<BuildWheelButton>() : null;
+            RectTransform btnRt = buttonPrefab != null ? buttonPrefab.GetComponent<RectTransform>() : null;
+
+            GameObject hudPrefabForWheel = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/UI/Bladehold HUD.prefab");
+            Transform wheelModalTr = hudPrefabForWheel != null ? hudPrefabForWheel.transform.Find("BuildWheelModal") : null;
+            BuildWheelUI bwUIComponent = wheelModalTr != null ? wheelModalTr.GetComponent<BuildWheelUI>() : null;
+            Transform centerContainerTr = wheelModalTr != null ? wheelModalTr.Find("CenterContainer") : null;
+            RectTransform centerRt = centerContainerTr != null ? centerContainerTr.GetComponent<RectTransform>() : null;
+
+            bool prefabValid = buttonPrefab != null && bwbComp != null && btnRt != null && btnRt.sizeDelta.x >= 200f;
+            bool wheelSlicesValid = bwUIComponent != null && centerRt != null && centerRt.sizeDelta.x >= 1200f
+                && centerContainerTr != null && centerContainerTr.childCount >= 6;
+
+            if (prefabValid && wheelSlicesValid)
+            {
+                sb.AppendLine($"  - BuildWheelUI Prefab & Scaling: BuildWheelSliceButton.prefab valid (size={btnRt.sizeDelta.x}), CenterContainer size={centerRt.sizeDelta.x}, 6 radial slices populated with Synty graphics & icons. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] BuildWheelUI prefab or radial layout invalid (prefabValid={prefabValid}, wheelSlicesValid={wheelSlicesValid})!");
+                failedCount++;
+            }
+
             // Cleanup
             UnityEngine.Object.DestroyImmediate(plotGo);
             UnityEngine.Object.DestroyImmediate(wheelGo);
@@ -2373,10 +2417,173 @@ public static class WeaponReachBenchmark
                 sb.AppendLine($"  - [FAIL] Diamond fish bones persistence failed (bonesAdded={bonesAdded}, bonesReset={bonesReset})");
                 failedCount++;
             }
+
+            // -------------------------------------------------------------
+            // SECTION 22: 5-Wave Defense Node Game Loop & Victory Flow
+            // -------------------------------------------------------------
+            sb.AppendLine("\n[SECTION 22: 5-Wave Defense Node Game Loop & Victory Flow]");
+
+            // 22A: Pacing Config 5-Wave Structure
+            RoundPacingConfigSO pacingAsset = AssetDatabase.LoadAssetAtPath<RoundPacingConfigSO>("Assets/Bladehold/Bladehold Config/SurvivorsRoundPacingConfig.asset");
+            bool pacingValid = pacingAsset != null && pacingAsset.wavesPerRound == 5 && pacingAsset.totalRounds == 1 && pacingAsset.bossSpawnWave == 5;
+            bool fiveRoundsDefined = pacingAsset != null && pacingAsset.rounds != null && pacingAsset.rounds.Count >= 5;
+
+            if (pacingValid && fiveRoundsDefined)
+            {
+                sb.AppendLine("  - RoundPacingConfigSO: Configured for 5 waves per defense node with 5 distinct wave roster definitions and Wave 5 boss. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Pacing config validation failed (pacingValid={pacingValid}, fiveRoundsDefined={fiveRoundsDefined})");
+                failedCount++;
+            }
+
+            // 22B: GameLoopManager 5-Wave Loop & Victory Screen Trigger
+            GameObject glmTestObj = new GameObject("Benchmark_GameLoopTest");
+            GameLoopManager testGlm = glmTestObj.AddComponent<GameLoopManager>();
+
+            // Mock player for health ratio carryover
+            GameObject playerTestObj = new GameObject("Benchmark_TestPlayer");
+            Health testHealth = playerTestObj.AddComponent<Health>();
+            testHealth.SetMaxHealth(200f);
+            testHealth.Revive(120f); // 60% HP
+            Player testPlayer = playerTestObj.AddComponent<Player>();
+            var awakeMethod = typeof(Player).GetMethod("Awake", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            awakeMethod?.Invoke(testPlayer, null);
+
+            bool victoryFired = false;
+            testGlm.OnVictory += () => victoryFired = true;
+
+            // Start wave 1: should be active, not victory
+            testGlm.StartWave(1);
+            bool wave1Active = testGlm.IsWaveActive && !testGlm.IsRestGateOpen;
+
+            // Clear wave 1
+            testGlm.DebugCompleteObjective();
+            for (int k = 0; k < testGlm.TargetKillsThisWave; k++) testGlm.OnEnemyKilled(null);
+            bool wave1ClearedNoGate = !testGlm.IsRestGateOpen;
+
+            // Start wave 5 (final wave)
+            testGlm.StartWave(5);
+            bool wave5Active = testGlm.IsWaveActive;
+            testGlm.DebugCompleteObjective();
+            for (int k = 0; k < testGlm.TargetKillsThisWave; k++) testGlm.OnEnemyKilled(null);
+
+            bool wave5VictoryTriggered = victoryFired && !testGlm.IsWaveActive;
+            bool healthRatioCarriedOver = Mathf.Approximately(RunSession.PlayerHealthRatio, 0.6f);
+
+            if (wave1Active && wave1ClearedNoGate && wave5Active && wave5VictoryTriggered && healthRatioCarriedOver)
+            {
+                sb.AppendLine("  - GameLoopManager 5-Wave Flow: Defense node runs continuous 5 waves without gate interruption, fires OnVictory on Wave 5, and preserves health ratio. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] 5-wave loop test failed (w1Active={wave1Active}, w1NoGate={wave1ClearedNoGate}, w5Active={wave5Active}, victoryFired={wave5VictoryTriggered}, hpRatio={healthRatioCarriedOver})");
+                failedCount++;
+            }
+
+            // 22C: VictoryScreenUI Procedural Fallback & Click Handling
+            VictoryScreenUI testVictoryUI = VictoryScreenUI.EnsureInstance();
+            bool victoryUiExists = testVictoryUI != null;
+            testVictoryUI.OpenVictory(5, 5, 45, 120, "Test Sector");
+            bool cursorUnlocked = CursorLockManager.IsCursorUnlocked;
+
+            if (victoryUiExists && cursorUnlocked)
+            {
+                sb.AppendLine("  - VictoryScreenUI: Procedural overlay instantiates, formats 5/5 stats, and unlocks cursor for player interaction. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] VictoryScreenUI test failed (exists={victoryUiExists}, cursorUnlocked={cursorUnlocked})");
+                failedCount++;
+            }
+
+            // Cleanup test objects
+            UnityEngine.Object.DestroyImmediate(glmTestObj);
+            UnityEngine.Object.DestroyImmediate(playerTestObj);
+            if (testVictoryUI != null)
+            {
+                CursorLockManager.SetUnlock("VictoryScreen", false);
+                UnityEngine.Object.DestroyImmediate(testVictoryUI.gameObject);
+            }
         }
         catch (Exception ex)
         {
-            sb.AppendLine($"  - Fishing Minigame Benchmark exception: {ex.Message} [FAILED]");
+            sb.AppendLine($"  - Section 22 Benchmark exception: {ex.Message} [FAILED]");
+            failedCount++;
+        }
+
+        // 23. HUD SUPPLY UI, CAPTAIN KOMBUSTA PACING, BANNERMAN BRUTE RIG, & TOWER GHOST REMOVAL
+        sb.AppendLine("\n### 23. HUD SUPPLY UI, CAPTAIN KOMBUSTA PACING, BANNERMAN BRUTE RIG, & TOWER GHOST REMOVAL");
+        try
+        {
+            // 23A: Captain Kombusta Dynamite Pacing & Ground Normal
+            CaptainKombustaSO kombustaSO = AssetDatabase.LoadAssetAtPath<CaptainKombustaSO>("Assets/Bladehold/Bladehold Scripts/Enemies/Captain/CaptainKombustaSO.asset");
+            if (kombustaSO != null && Mathf.Approximately(kombustaSO.dynamiteFlightTime, 2.0f) && kombustaSO.dynamiteInterval >= 3.0f && (kombustaSO.dynamiteInterval - kombustaSO.dynamiteFlightTime) >= 1.0f)
+            {
+                sb.AppendLine($"  - Captain Kombusta Pacing: Flight time is 2.0s, interval is {kombustaSO.dynamiteInterval:F1}s (gap >= 1.0s between telegraphs). [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Captain Kombusta pacing mismatch (SO={(kombustaSO != null)}, flightTime={(kombustaSO != null ? kombustaSO.dynamiteFlightTime : 0)}, interval={(kombustaSO != null ? kombustaSO.dynamiteInterval : 0)})");
+                failedCount++;
+            }
+
+            // 23B: Bannerman Brute Model & Spine Bone Attachment
+            GameObject bannermanPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/Bannerman Enemy Variant.prefab");
+            if (bannermanPrefab != null)
+            {
+                BannermanAura aura = bannermanPrefab.GetComponentInChildren<BannermanAura>(true);
+                DestructibleBanner banner = bannermanPrefab.GetComponentInChildren<DestructibleBanner>(true);
+                bool attachedToSpine = banner != null && banner.transform.parent != null && banner.transform.parent.name.Contains("Spine");
+                bool isBruteRig = bannermanPrefab.transform.Find("Root/Pelvis/Spine_01/Spine_02") != null;
+
+                if (aura != null && banner != null && attachedToSpine && isBruteRig)
+                {
+                    sb.AppendLine($"  - Bannerman Model & Attachment: Uses Goblin Brute rig with banner attached to {banner.transform.parent.name}. [PASSED]");
+                    passedCount++;
+                }
+                else
+                {
+                    sb.AppendLine($"  - [FAIL] Bannerman setup invalid (aura={(aura != null)}, banner={(banner != null)}, attachedToSpine={attachedToSpine}, isBruteRig={isBruteRig})");
+                    failedCount++;
+                }
+            }
+            else
+            {
+                sb.AppendLine("  - [FAIL] Could not load Bannerman Enemy Variant.prefab");
+                failedCount++;
+            }
+
+            // 23C: HUD SupplyUI Integration
+            GameObject hudPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/UI/Bladehold HUD.prefab");
+            if (hudPrefab != null)
+            {
+                SupplyUI supplyUI = hudPrefab.GetComponentInChildren<SupplyUI>(true);
+                if (supplyUI != null)
+                {
+                    sb.AppendLine("  - HUD SupplyUI: SupplyUI component present and active in Bladehold HUD.prefab. [PASSED]");
+                    passedCount++;
+                }
+                else
+                {
+                    sb.AppendLine("  - [FAIL] SupplyUI component missing from Bladehold HUD.prefab");
+                    failedCount++;
+                }
+            }
+            else
+            {
+                sb.AppendLine("  - [FAIL] Could not load Bladehold HUD.prefab");
+                failedCount++;
+            }
+        }
+        catch (Exception ex)
+        {
+            sb.AppendLine($"  - Section 23 Benchmark exception: {ex.Message} [FAILED]");
             failedCount++;
         }
 

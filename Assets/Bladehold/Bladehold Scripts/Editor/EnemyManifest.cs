@@ -68,6 +68,9 @@ internal static class EnemyManifest
         /// <summary>Optional path to an *existing* AnimatorOverrideController to apply to the rig's Animator.</summary>
         public string animatorOverridePath;
 
+        /// <summary>Optional path to a custom base prefab (e.g. Goblin Brute Enemy Variant). Defaults to Goblin Enemy (Base).</summary>
+        public string basePrefabPath;
+
         /// <summary>Disable the base goblin's melee <see cref="AIAttack" /> (disabled, never removed —
         /// matches the Storm Witch/Troll variants). Set when the enemy has its own attack component.</summary>
         public bool disableBaseAIAttack;
@@ -249,16 +252,14 @@ internal static class EnemyManifest
             },
         },
 
-        // Bannerman: carries a large banner above head, buffing nearby enemies based on banner selection.
+        // Bannerman: carries a war banner attached to its spine, buffing nearby enemies based on banner selection.
+        // Uses the Goblin Brute model as the standard heavy bearer.
         new EnemySpec
         {
             id = "bannerman",
             soFolder = "Bannerman",
             prefabName = "Bannerman Enemy Variant",
-            animatorOverridePath = "Assets/Bladehold/Bladehold Animations/Bannerman.controller",
-            children = new[] {
-                new ChildSpec { name = "BannermanBanner", localPosition = new Vector3(0f, 1.8f, 0f) }
-            },
+            basePrefabPath = "Assets/Bladehold/Bladehold Prefabs/Goblin Brute Enemy Variant.prefab",
             assets = new[]
             {
                 new SoSpec
@@ -284,17 +285,18 @@ internal static class EnemyManifest
                         EnemyPrefabGenerator.SetReference(so, "auraData", ctx.LoadedAsset("BannermanAuraSO"));
                         EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
 
-                        GameObject bannerChild = ctx.FindOrCreateChild("BannermanBanner", new Vector3(0f, 1.8f, 0f));
+                        // Attach the banner directly to the spine (Spine_02)
+                        Vector3 bannerOffset = new Vector3(0f, 0.05f, -0.15f);
+                        Quaternion bannerRot = Quaternion.Euler(-15f, 0f, 0f);
+                        GameObject bannerChild = ctx.FindOrCreateBoneChild("BannermanBanner", "Spine_02", bannerOffset, bannerRot);
+
                         var destBanner = bannerChild.GetComponent<DestructibleBanner>();
                         if (destBanner == null) destBanner = bannerChild.AddComponent<DestructibleBanner>();
 
-                        var col = bannerChild.GetComponent<Collider>();
-                        if (col == null)
-                        {
-                            var box = bannerChild.AddComponent<BoxCollider>();
-                            box.size = new Vector3(1.2f, 1.8f, 0.4f);
-                            box.center = new Vector3(0f, 0.8f, 0f);
-                        }
+                        var col = bannerChild.GetComponent<BoxCollider>();
+                        if (col == null) col = bannerChild.AddComponent<BoxCollider>();
+                        col.size = new Vector3(0.8f, 2.0f, 0.4f);
+                        col.center = new Vector3(0f, 1.0f, 0f);
 
                         if (bannerChild.transform.childCount == 0)
                         {
@@ -304,7 +306,7 @@ internal static class EnemyManifest
                                 var spawned = (GameObject)PrefabUtility.InstantiatePrefab(bannerPrefab, bannerChild.transform);
                                 spawned.transform.localPosition = Vector3.zero;
                                 spawned.transform.localRotation = Quaternion.identity;
-                                spawned.transform.localScale = Vector3.one * 1.4f;
+                                spawned.transform.localScale = Vector3.one * 1.3f;
                             }
                         }
 

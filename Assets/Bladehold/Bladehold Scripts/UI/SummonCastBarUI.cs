@@ -38,21 +38,52 @@ public class SummonCastBarUI : MonoBehaviour
             castLabel.text = "Summoning Mount";
         }
 
+        if (playerSummonMount == null)
+        {
+            TryResolvePlayerSummonMount();
+        }
+
         StartCoroutine(InitRoutine());
+    }
+
+    private void TryResolvePlayerSummonMount()
+    {
+        if (Player.Instance != null)
+        {
+            playerSummonMount = Player.Instance.transform.root.GetComponentInChildren<PlayerSummonMount>(true);
+        }
+
+        if (playerSummonMount == null)
+        {
+            playerSummonMount = FindFirstObjectByType<PlayerSummonMount>();
+        }
     }
 
     private IEnumerator InitRoutine()
     {
-        yield return null;
+        int retries = 10;
+        while (playerSummonMount == null && retries > 0)
+        {
+            TryResolvePlayerSummonMount();
+            if (playerSummonMount != null) break;
+            retries--;
+            yield return null;
+        }
 
-                playerSummonMount.OnCastStarted += HandleCastStarted;
-                playerSummonMount.OnCastUpdated += HandleCastUpdated;
-                playerSummonMount.OnCastFinished += HandleCastFinished;
-                playerSummonMount.OnCastCancelled += HandleCastCancelled;
-                
-                playerSummonMount.OnDurationUpdated += HandleDurationUpdated;
-                playerSummonMount.OnCooldownUpdated += HandleCooldownUpdated;
-            }
+        if (playerSummonMount == null)
+        {
+            Debug.LogWarning("[SummonCastBarUI] PlayerSummonMount not found in scene. Mount cast bar will remain inactive.", this);
+            yield break;
+        }
+
+        playerSummonMount.OnCastStarted += HandleCastStarted;
+        playerSummonMount.OnCastUpdated += HandleCastUpdated;
+        playerSummonMount.OnCastFinished += HandleCastFinished;
+        playerSummonMount.OnCastCancelled += HandleCastCancelled;
+        
+        playerSummonMount.OnDurationUpdated += HandleDurationUpdated;
+        playerSummonMount.OnCooldownUpdated += HandleCooldownUpdated;
+    }
 
     private void OnDestroy()
     {

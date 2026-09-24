@@ -132,15 +132,7 @@ public class PrisonerCage : MonoBehaviour
             healthBar.ShowBar(false);
         }
 
-        if (cageVisualRoots != null && cageVisualRoots.Length > 0)
-        {
-            foreach (GameObject visual in cageVisualRoots)
-            {
-                if (visual != null) visual.SetActive(false);
-            }
-        }
-
-        // Release the prisoner
+        // Release the prisoner before modifying cage visuals
         if (prisoner != null)
         {
             // Unparent prisoner so cage destruction doesn't kill prisoner
@@ -148,13 +140,28 @@ public class PrisonerCage : MonoBehaviour
             prisoner.Release();
         }
 
-        OnCageBroken?.Invoke(this);
-        StartCoroutine(CleanupCageRoutine());
-    }
+        if (cageVisualRoots != null && cageVisualRoots.Length > 0)
+        {
+            foreach (GameObject visual in cageVisualRoots)
+            {
+                if (visual == null) continue;
+                if (visual == gameObject)
+                {
+                    // If root object is passed as visual, disable cage renderers rather than deactivating the root GameObject
+                    foreach (Renderer r in visual.GetComponentsInChildren<Renderer>())
+                    {
+                        if (prisoner != null && r.transform.IsChildOf(prisoner.transform)) continue;
+                        r.enabled = false;
+                    }
+                }
+                else
+                {
+                    visual.SetActive(false);
+                }
+            }
+        }
 
-    private IEnumerator CleanupCageRoutine()
-    {
-        yield return new WaitForSeconds(1.0f);
-        Destroy(gameObject);
+        OnCageBroken?.Invoke(this);
+        Destroy(gameObject, 1.0f);
     }
 }

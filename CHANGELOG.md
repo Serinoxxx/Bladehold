@@ -4,6 +4,10 @@
 
 ### New Features
 
+- Added 5-wave defense sector loop replacing periodic 3-wave rest area breaks with continuous wave combat
+- Added Victory Screen overlay celebrating defense node completion with wave stats, kills, currencies secured, and triumphant audio fanfare
+- Added Wave 5 Clan Captain climax encounter to defense sectors
+- Added automated behavioral benchmark tests verifying 5-wave defense loop, victory trigger, and health ratio persistence
 - Added Fishing Minigame with 7 tactical nodes along the campaign path replacing supply rooms and adding side routes
 - Added 60-second Fishing Frenzy minigame featuring a dedicated fishing bow with infinite ammo and fish circling a pond
 - Added 6 minigame draft upgrade cards (Bounce Shot, Fishsploshion, Icey Water, Fish Skewer, Bleed, Fat Fish) offered on fishing level-up
@@ -94,22 +98,43 @@
 - Added overhead health bar and hit reactions (red flash, shield bash impact audio, and wood splinter particles) to the Battering Ram
 - Added automated behavioral benchmark tests verifying Battering Ram escort formation spacing and lead waypoint calculations
 
+- Added customizable BuildWheelSliceButton prefab asset styled with authentic Synty circular tracery, gold border rings, defense icons, and supply cost badges
+- Added defense icons to the defensive build wheel for Arrow Tower, Catapult, Ballista, Net Thrower, Spike Trap, and Oil Vat
+- Added automated behavioral benchmark tests verifying decoupled reticle visual scaling, ammo counter font size, and build wheel button prefab dimensions
+
 ### Fixes
 
+- Fixed missing Supply currency counter on the player HUD
+- Fixed Captain Kombusta bomb telegraphs floating or misaligned with terrain slopes
+- Fixed Captain Kombusta bomb pacing and flight duration to give a 1.0-second delay between telegraph indicators
+- Removed blueprint ghost visual during tower defense construction
+- Fixed arrow ammo count and out of ammo warning appearing too small on 1080p and different resolutions by scaling them for the 4K reference canvas with high-contrast outlines
+- Fixed arrow ammo count shrinking when charging bow draws by decoupling the crosshair reticle tightening scale from child HUD counters
+- Fixed build wheel UI appearing cramped by expanding the wheel to a 1400px Synty radial layout with 240px slice buttons and scaled typography
+- Fixed victory screen being bypassed when completing defense sectors in campaign mode
 - Fixed Arrow Tower and other defense structures continuously firing at friendly Castle Gates
 - Fixed Battering Ram remaining stalled during the siege objective by ensuring enemies path to lead and escort the ram forward
 - Fixed boss controller component initialization in test mode ensuring damage block event listeners are hooked immediately upon combat activation
 
 ### Balance Changes
 
+- Increased Captain Kombusta bomb flight time to 2.0 seconds and bomb throw interval to 3.0 seconds
+- Adjusted defense level pacing to 5 waves per combat node with staged enemy roster progression from goblins to heavy siege units
+- Configured hero health ratio to persist across campaign nodes
 - Standardized basic warhorse to 30-second duration and 90-second cooldown with a 1.5-second summon cast time
 
 ### General Changes
 
+- Updated Bannerman enemy variant to use the Goblin Brute model with war banner mounted to the upper spine
+- Updated campaign combat sector tooltip labels to reflect 5-wave defense structure
+- Added click-to-proceed button on Victory Screen routing directly to the Campaign Map
 - Registered Necromancer's Crypt and Princess Sanctuary in AreaDatabase and linked Tier 8 campaign node branches
 - Removed fortress defense cards from the random draft pool in favor of dedicated static battlefield plots and the Build Wheel system
 - Replaced banner bounty fortress draft rewards with Supply Cache payouts
 - Removed deprecated class definitions and legacy skill tree data in favor of the unified Hero loadout and draft upgrade systems
+- Migrated net captured status visuals from procedural runtime code to an authored Editor prefab configured via NetRootConfigSO
+- Removed runtime asset-path fallbacks from Net Thrower defense and Net projectile scripts
+- Added project rule prohibiting procedural visual creation in code and runtime asset-path fallbacks
 
 ## [0.1.20] - 2026-09-08
 

@@ -233,8 +233,8 @@ MonoBehaviour:
   triggerRadius: 2.6
   impaleDamage: 85
   triggerCooldown: 1.2
-  impaleSfx: {fileID: 8300000, guid: 983ecbfb126aeb746b6c37b1b95ddbc6, type: 3}
-  impaleVfxPrefab: {fileID: 0}
+  impaleSfx: {fileID: 8300000, guid: 5de35d095a26a5042a71af599850b917, type: 3}
+  impaleVfxPrefab: {fileID: 1489431029902184, guid: 4430919f14c50f84085d287cbcb2c30e, type: 3}
 --- !u!1 &2433615986990556796
 GameObject:
   m_ObjectHideFlags: 0

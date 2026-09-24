@@ -180,16 +180,8 @@ public class CampaignManager : MonoBehaviour
 
         if (node.nodeType == CampaignNodeType.Combat || node.nodeType == CampaignNodeType.PreBoss)
         {
-            int startingWave = node.tierIndex switch
-            {
-                1 => 1,
-                2 => 4,
-                4 => 7,
-                5 => 10,
-                7 => 13,
-                _ => Mathf.Max(1, (node.tierIndex - 1) * 3 + 1)
-            };
-            RunSession.CurrentWave = startingWave;
+            // Each defence level node is 5 waves (Wave 1 to 5)
+            RunSession.CurrentWave = 1;
         }
 
         SyncToRunSession();

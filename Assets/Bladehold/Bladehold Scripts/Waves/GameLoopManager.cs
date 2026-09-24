@@ -243,10 +243,10 @@ public class GameLoopManager : MonoBehaviour
     public void StartWave(int waveNumber)
     {
         RunSession.CurrentWave = waveNumber;
-        int round = RunSession.CurrentRound;
+        int totalWaves = pacingConfig != null ? pacingConfig.wavesPerRound : 5;
 
-        RoundPacingConfigSO.RoundDefinition roundDef = pacingConfig != null ? pacingConfig.GetRound(round) : null;
-        targetKillsThisWave = roundDef != null ? roundDef.requiredKillsPerWave : (15 + (round - 1) * 5);
+        RoundPacingConfigSO.RoundDefinition roundDef = pacingConfig != null ? pacingConfig.GetRound(waveNumber) : null;
+        targetKillsThisWave = roundDef != null ? roundDef.requiredKillsPerWave : (15 + (waveNumber - 1) * 5);
         killsThisWave = 0;
         isObjectiveComplete = false;
         isWaveActive = true;
@@ -268,20 +268,26 @@ public class GameLoopManager : MonoBehaviour
             targetKillsThisWave = 999999;
         }
 
-        // Start Spawner with round-specific settings & quota
+        // Start Spawner with wave-specific settings & quota
         if (spawner != null)
         {
             spawner.StartWave(waveNumber, targetKillsThisWave);
         }
 
-        // Round 4 Boss: Slayer / Siegebreaker
-        if (pacingConfig != null && waveNumber == pacingConfig.bossSpawnWave)
+        // Wave 5 Climax: Spawn Clan Captain
+        if (waveNumber >= totalWaves)
         {
-            SpawnEndgameBoss();
+            string preferredCaptain = null;
+            if (CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive && CampaignManager.Instance.CurrentNode != null)
+            {
+                preferredCaptain = CampaignManager.Instance.CurrentNode.captainName;
+            }
+            BannerDifficultyTier captainTier = CurrentWaveDifficultyTier >= BannerDifficultyTier.Enraged
+                ? CurrentWaveDifficultyTier
+                : BannerDifficultyTier.Enraged;
+            SpawnCaptainForWave(captainTier, preferredCaptain);
         }
-
-        // Spawn Enraged/Nightmare/Omega Clan Captain if triggered by War Banner or Campaign Node
-        if (CurrentWaveDifficultyTier >= BannerDifficultyTier.Enraged)
+        else if (CurrentWaveDifficultyTier >= BannerDifficultyTier.Enraged)
         {
             string preferredCaptain = null;
             if (CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive && CampaignManager.Instance.CurrentNode != null)
@@ -293,11 +299,11 @@ public class GameLoopManager : MonoBehaviour
 
         if (waveAnnouncementText != null)
         {
-            waveAnnouncementText.text = $"WAVE {waveNumber} - ROUND {round}";
+            waveAnnouncementText.text = $"WAVE {waveNumber} / {totalWaves}";
         }
 
         OnWaveStarted?.Invoke(waveNumber);
-        Debug.Log($"[GameLoopManager] Started Wave {waveNumber} (Round {round}). Target kills: {targetKillsThisWave}");
+        Debug.Log($"[GameLoopManager] Started Wave {waveNumber} / {totalWaves}. Target kills: {targetKillsThisWave}");
     }
 
     private void StartWaveObjective(int waveNumber)
@@ -453,10 +459,9 @@ public class GameLoopManager : MonoBehaviour
         isWaveActive = false;
         cleanupTimer = 0f;
         int clearedWave = CurrentWave;
-        int wavesPerRound = pacingConfig != null ? pacingConfig.wavesPerRound : 3;
-        bool isRestWave = (clearedWave % wavesPerRound == 0);
+        int totalWaves = pacingConfig != null ? pacingConfig.wavesPerRound : 5;
 
-        Debug.Log($"[GameLoopManager] Wave {clearedWave} Cleared! (RestWave: {isRestWave})");
+        Debug.Log($"[GameLoopManager] Wave {clearedWave} / {totalWaves} Cleared!");
 
         // Decrement temporary buff durations from rest shop
         RunSession.OnWaveCompleted();
@@ -464,45 +469,21 @@ public class GameLoopManager : MonoBehaviour
         // Award wave clear defense supply
         RunSession.AddInRunSupply(30);
 
-        if (isRestWave)
+        if (clearedWave >= totalWaves)
         {
-            isRestGateOpen = true;
-
-            // Stop spawns and despawn lingering enemies
+            // All 5 waves cleared! Stop spawns, despawn lingering enemies, and trigger Victory Screen
             if (spawner != null)
             {
                 spawner.StopSpawning();
                 spawner.DespawnAllAliveEnemies();
             }
 
-            // Open Castle Gate for Rest Break
-            if (castleGateInteractable == null)
-            {
-                Gate gate = FindAnyObjectByType<Gate>();
-                if (gate != null) castleGateInteractable = gate.GetComponent<Interactable>();
-            }
-
-            if (castleGateInteractable != null)
-            {
-                castleGateInteractable.CanInteract = true;
-                castleGateInteractable.PromptText = (CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive)
-                    ? "View Campaign Map"
-                    : "Return to Fortress";
-            }
-
-            if (waveAnnouncementText != null)
-            {
-                waveAnnouncementText.text = (CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive)
-                    ? "SECTOR LIBERATED! PROCEED TO CAMPAIGN MAP"
-                    : "ROUND COMPLETE! RETURN TO THE FORTRESS VIA GATE";
-            }
-
-            OnRestGateOpened?.Invoke();
-            OnWaveCleared?.Invoke(clearedWave, "Return to the Fortress");
+            OnWaveCleared?.Invoke(clearedWave, "Sector Defended");
+            TriggerVictory();
         }
         else
         {
-            // Intermediate wave: Stop enemy spawns, spawn powerup for the bounty
+            // Intermediate wave (1 to 4): Stop enemy spawns, spawn powerup for the bounty
             if (spawner != null)
             {
                 spawner.StopSpawning();
@@ -511,13 +492,6 @@ public class GameLoopManager : MonoBehaviour
             OnWaveCleared?.Invoke(clearedWave, "Wave Cleared");
             
             SpawnPowerupForCurrentBounty();
-        }
-
-        // Check for stage victory: survived all 4 rounds (Wave 12)
-        int totalRounds = pacingConfig != null ? pacingConfig.totalRounds : 4;
-        if (clearedWave >= totalRounds * wavesPerRound && (CampaignManager.Instance == null || !CampaignManager.Instance.IsCampaignActive))
-        {
-            TriggerVictory();
         }
     }
 
@@ -716,23 +690,8 @@ public class GameLoopManager : MonoBehaviour
     private void CheckAndSpawnBanners(int nextWave)
     {
         upcomingWave = nextWave;
-        int wavesPerRound = pacingConfig != null ? pacingConfig.wavesPerRound : 3;
-        bool isRestWave = (nextWave % wavesPerRound == 0);
-
-        if (isRestWave || bannerConfig == null || warBannerPrefab == null)
-        {
-            // Banners do not spawn preceding a Rest Area. We just start the wave (which will open the gate) or wait?
-            // Wait, if nextWave is a rest wave, it's just a regular wave where at the end the gate opens.
-            // Oh, wait. The spec says: "Banners do not spawn preceding a Rest Area; they spawn only before standard combat waves."
-            // So if wave 3 is a rest wave... wait, is Wave 3 played, or is Wave 3 the Rest Area itself?
-            // "Retain: Fixed Rest Areas occurring strictly every 3 waves (Waves 3, 6, 9, etc.)... Banners do not spawn preceding a Rest Area; they spawn only before standard combat waves."
-            // Let's assume standard waves are 1, 2, 4, 5. Wait, earlier code said `clearedWave % 3 == 0` opens the gate AT THE END of wave 3.
-            // So Wave 3 IS a combat wave, and at the end of it, the gate opens.
-            // But if "Banners do not spawn preceding a Rest Area", maybe Wave 3 itself doesn't have banners?
-            // "Route player to the Rest Area. Do not spawn banners." This happens on OnWaveCompleted if `waveIndex + 1 % 3 == 0` (which means after wave 2 completes, wave 3 is next? No, waveIndex is zero-based in the spec, but here it's 1-based: `clearedWave % 3 == 0`.)
-            // Let's just always spawn banners unless we just finished a wave that opened the gate.
-            // If the gate is open, we don't spawn banners.
-        }
+        int totalWaves = pacingConfig != null ? pacingConfig.wavesPerRound : 5;
+        if (nextWave > totalWaves) return;
 
         SpawnWarBanners();
     }
@@ -1073,15 +1032,15 @@ public class GameLoopManager : MonoBehaviour
 
     private void TriggerVictory()
     {
-        Debug.Log("[GameLoopManager] STAGE VICTORY! All 4 rounds cleared!");
+        int totalWaves = pacingConfig != null ? pacingConfig.wavesPerRound : 5;
+        Debug.Log($"[GameLoopManager] DEFENSE VICTORY! All {totalWaves} waves cleared!");
         isWaveActive = false;
         isIntermission = false;
 
-        if (CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive)
+        // Preserve player health ratio so it carries over to the next node
+        if (Player.Instance != null && Player.Instance.Health != null)
         {
-            Debug.Log("[GameLoopManager] Castle Campaign active: completing sector node on victory...");
-            CampaignManager.Instance.CompleteCurrentNodeAndOpenMap();
-            return;
+            RunSession.PlayerHealthRatio = Mathf.Clamp01(Player.Instance.Health.CurrentHealth / Player.Instance.Health.MaxHealth);
         }
 
         SaveData data = SaveSystem.Load();
@@ -1091,9 +1050,27 @@ public class GameLoopManager : MonoBehaviour
             SaveSystem.Save(data);
         }
 
-        if (victoryScreen != null)
+        string nodeTitle = "Fortress Defense";
+        if (CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive && CampaignManager.Instance.CurrentNode != null)
+        {
+            nodeTitle = CampaignManager.Instance.CurrentNode.nodeTitle;
+        }
+
+        VictoryScreenUI screen = VictoryScreenUI.Instance != null ? VictoryScreenUI.Instance : VictoryScreenUI.EnsureInstance();
+        if (screen != null)
+        {
+            screen.OpenVictory(
+                CurrentWave,
+                totalWaves,
+                killsThisWave,
+                RunSession.InRunGold,
+                nodeTitle
+            );
+        }
+        else if (victoryScreen != null)
         {
             victoryScreen.SetActive(true);
+            CursorLockManager.SetUnlock("VictoryScreen", true);
         }
 
         OnVictory?.Invoke();

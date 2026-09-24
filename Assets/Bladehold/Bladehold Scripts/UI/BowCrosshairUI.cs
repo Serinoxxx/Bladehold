@@ -59,6 +59,40 @@ public class BowCrosshairUI : MonoBehaviour
             Debug.LogError("No aim weapon found: assign the bow, or ensure the class controller's active class carries an IChargedAimWeapon.");
             anyError = true;
         }
+        if (reticle == null || reticle == (RectTransform)transform)
+        {
+            Transform existingVisual = transform.Find("ReticleVisual");
+            if (existingVisual != null)
+            {
+                reticle = existingVisual as RectTransform;
+            }
+            else
+            {
+                var img = GetComponent<UnityEngine.UI.Image>();
+                if (img != null)
+                {
+                    GameObject visualObj = new GameObject("ReticleVisual", typeof(RectTransform), typeof(UnityEngine.UI.Image));
+                    visualObj.transform.SetParent(transform, false);
+                    visualObj.transform.SetAsFirstSibling();
+                    var vRt = visualObj.GetComponent<RectTransform>();
+                    vRt.anchorMin = new Vector2(0.5f, 0.5f);
+                    vRt.anchorMax = new Vector2(0.5f, 0.5f);
+                    vRt.pivot = new Vector2(0.5f, 0.5f);
+                    vRt.anchoredPosition = Vector2.zero;
+                    vRt.sizeDelta = ((RectTransform)transform).sizeDelta;
+
+                    var vImg = visualObj.GetComponent<UnityEngine.UI.Image>();
+                    vImg.sprite = img.sprite;
+                    vImg.color = img.color;
+                    vImg.raycastTarget = false;
+                    vImg.material = img.material;
+
+                    Destroy(img);
+                    reticle = vRt;
+                }
+            }
+        }
+
         if (canvasGroup == null)
         {
             Debug.LogError("CanvasGroup is not assigned or found on the GameObject.");

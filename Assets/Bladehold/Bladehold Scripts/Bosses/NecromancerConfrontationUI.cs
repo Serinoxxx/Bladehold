@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
@@ -148,8 +149,27 @@ public class NecromancerConfrontationUI : MonoBehaviour
     {
         if (dialogueCanvasGroup == null || dialogueCanvasGroup.alpha < 0.5f) return;
 
-        // Press Space or Left Click or E to advance monologue
-        if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.E) || Input.GetMouseButtonDown(0))
+        // Press Space or Left Click or E (or Gamepad A/X) to advance monologue
+        bool advancePressed = false;
+        Keyboard keyboard = Keyboard.current;
+        if (keyboard != null && (keyboard.spaceKey.wasPressedThisFrame || keyboard.eKey.wasPressedThisFrame))
+        {
+            advancePressed = true;
+        }
+
+        Mouse mouse = Mouse.current;
+        if (mouse != null && mouse.leftButton.wasPressedThisFrame)
+        {
+            advancePressed = true;
+        }
+
+        Gamepad gamepad = Gamepad.current;
+        if (gamepad != null && (gamepad.buttonSouth.wasPressedThisFrame || gamepad.buttonWest.wasPressedThisFrame))
+        {
+            advancePressed = true;
+        }
+
+        if (advancePressed)
         {
             if (isTyping)
             {
