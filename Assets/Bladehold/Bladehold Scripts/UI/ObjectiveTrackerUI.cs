@@ -200,11 +200,14 @@ public class ObjectiveTrackerUI : MonoBehaviour
             }
             else if (objectiveManager != null)
             {
-                if (objectiveManager.Phase == SurvivorsObjectivePhase.Cleanup)
+                if (objectiveManager.Phase == SurvivorsObjectivePhase.Cleanup || objectiveManager.CurrentObjective is KillRemainingEnemiesObjective)
                 {
-                    int remSec = Mathf.CeilToInt(objectiveManager.PhaseTimeRemaining);
+                    if (objectiveHeaderText != null)
+                    {
+                        objectiveHeaderText.text = "KILL ALL REMAINING ENEMIES";
+                    }
                     int alive = SurvivorsSpawner.Instance != null ? SurvivorsSpawner.Instance.AliveCount : 0;
-                    objectiveProgressText.text = $"[Objective Completed!]\nClean up remaining enemies: {remSec}s ({alive} left)";
+                    objectiveProgressText.text = $"Kill all remaining enemies: {alive} left";
                 }
                 else if (objectiveManager.Phase == SurvivorsObjectivePhase.Intermission)
                 {

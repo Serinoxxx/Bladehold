@@ -71,10 +71,32 @@ public class DeathScreen : MonoBehaviour
     [Tooltip("Seconds to fade the screen in.")]
     [SerializeField] private float fadeDuration = 1f;
 
+    [Header("Victory Settings")]
+    [Tooltip("Default headline label when all waves are cleared in victory.")]
+    [SerializeField] private string victoryTitle = "VICTORY!";
+    [Tooltip("Label for the button when proceeding to campaign map upon victory.")]
+    [SerializeField] private string victoryButtonText = "PROCEED TO CAMPAIGN MAP";
+    [Tooltip("Label for the button when returning to meta scene upon defeat.")]
+    [SerializeField] private string defeatButtonText = "RETURN TO META AREA";
+
+    public static DeathScreen Instance { get; private set; }
+
     private Health playerHealth;
     private bool reincarnateBanked = false;
     private bool shown = false;   // latch: the run only ends once, whichever signal fires first
     private bool anyError = false;
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else if (Instance != this)
+        {
+            Destroy(this);
+        }
+    }
 
     private void OnValidate()
     {
@@ -109,7 +131,7 @@ public class DeathScreen : MonoBehaviour
             return;
         }
 
-        // Hidden and non-interactive until the player dies.
+        // Hidden and non-interactive until the player dies or wins.
         canvasGroup.alpha = 0f;
         canvasGroup.interactable = false;
         canvasGroup.blocksRaycasts = false;
@@ -124,11 +146,11 @@ public class DeathScreen : MonoBehaviour
         tryAgainButton.onClick.AddListener(RestartFromLevelOne);
         if (nextStageButton != null)
         {
-            nextStageButton.onClick.AddListener(ProceedToNextLevel);
+            nextStageButton.onClick.AddListener(ProceedToCampaignMap);
         }
         if (returnToMetaButton != null)
         {
-            returnToMetaButton.onClick.AddListener(ReturnToMetaProgression);
+            returnToMetaButton.onClick.AddListener(ReturnToMetaScene);
         }
         if (restartCurrentWaveButton != null)
         {
@@ -146,6 +168,11 @@ public class DeathScreen : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+
         if (playerHealth != null)
         {
             playerHealth.OnDied -= HandlePlayerDied;
@@ -157,11 +184,11 @@ public class DeathScreen : MonoBehaviour
         }
         if (nextStageButton != null)
         {
-            nextStageButton.onClick.RemoveListener(ProceedToNextLevel);
+            nextStageButton.onClick.RemoveListener(ProceedToCampaignMap);
         }
         if (returnToMetaButton != null)
         {
-            returnToMetaButton.onClick.RemoveListener(ReturnToMetaProgression);
+            returnToMetaButton.onClick.RemoveListener(ReturnToMetaScene);
         }
         if (restartCurrentWaveButton != null)
         {
@@ -171,6 +198,25 @@ public class DeathScreen : MonoBehaviour
         {
             reincarnateButton.onClick.RemoveListener(HandleReincarnate);
         }
+    }
+
+    /// <summary>
+    ///     Public entrypoint to display the victory screen when all waves are cleared.
+    /// </summary>
+    public void ShowVictory(string title = null)
+    {
+        string t = !string.IsNullOrEmpty(title) ? title : victoryTitle;
+        ShowRunOver(t, null, isVictory: true);
+    }
+
+    /// <summary>
+    ///     Public entrypoint to display the defeat screen.
+    /// </summary>
+    public void ShowDefeat(string title = null, string failureReason = null)
+    {
+        string t = !string.IsNullOrEmpty(title) ? title : Loc.Get(playerDiedTitleKey);
+        string r = !string.IsNullOrEmpty(failureReason) ? failureReason : Loc.Get(playerDiedReasonKey);
+        ShowRunOver(t, r, isVictory: false);
     }
 
     private void HandlePlayerDied()
@@ -206,7 +252,7 @@ public class DeathScreen : MonoBehaviour
         }
     }
 
-    private void ShowRunOver(string title, string failureReason)
+    private void ShowRunOver(string title, string failureReason, bool isVictory = false)
     {
         if (shown)
         {
@@ -234,6 +280,8 @@ public class DeathScreen : MonoBehaviour
         {
             titleText.text = title;
         }
+
+        RefreshCurrencies();
 
         int killed = GameStats.Instance != null ? GameStats.Instance.GoblinsKilled : 0;
         int earned = GameStats.Instance != null ? GameStats.Instance.GoldEarnedThisRun : 0;
@@ -263,10 +311,55 @@ public class DeathScreen : MonoBehaviour
         int dmgTaken = 0;
         int crits = 0;
 
+        if (isVictory)
+        {
+            // Victory: proceed directly to Campaign Map
+            if (tryAgainButton != null)
+            {
+                tryAgainButton.gameObject.SetActive(false);
+            }
+            if (returnToMetaButton != null)
+            {
+                returnToMetaButton.gameObject.SetActive(false);
+            }
+            if (nextStageButton != null)
+            {
+                nextStageButton.gameObject.SetActive(true);
+                TMP_Text lbl = nextStageButton.GetComponentInChildren<TMP_Text>();
+                if (lbl != null) lbl.text = victoryButtonText;
+            }
+            if (restartCurrentWaveButton != null)
+            {
+                restartCurrentWaveButton.gameObject.SetActive(false);
+            }
+            if (reincarnateButton != null)
+            {
+                reincarnateButton.gameObject.SetActive(false);
+            }
+        }
+        else
+        {
+            // Defeat: return to Meta Scene
+            if (nextStageButton != null)
+            {
+                nextStageButton.gameObject.SetActive(false);
+            }
+            if (returnToMetaButton != null)
+            {
+                returnToMetaButton.gameObject.SetActive(true);
+                TMP_Text lbl = returnToMetaButton.GetComponentInChildren<TMP_Text>();
+                if (lbl != null) lbl.text = defeatButtonText;
+            }
+            if (tryAgainButton != null)
+            {
+                tryAgainButton.gameObject.SetActive(true);
+                TMP_Text lbl = tryAgainButton.GetComponentInChildren<TMP_Text>();
+                if (lbl != null) lbl.text = "Retry Level";
+            }
+        }
+
         if (isSurvivorsMode)
         {
-            bool hasSurvived = SurvivorsGameManager.Instance != null && SurvivorsGameManager.Instance.HasSurvivedSiege;
-
             if (goldTreePanel != null)
             {
                 goldTreePanel.SetActive(false);
@@ -282,27 +375,6 @@ public class DeathScreen : MonoBehaviour
             if (restartCurrentWaveButton != null)
             {
                 restartCurrentWaveButton.gameObject.SetActive(false);
-            }
-
-            if (tryAgainButton != null)
-            {
-                tryAgainButton.gameObject.SetActive(true);
-                TMP_Text lbl = tryAgainButton.GetComponentInChildren<TMP_Text>();
-                if (lbl != null) lbl.text = "Retry Level";
-            }
-
-            if (nextStageButton != null)
-            {
-                nextStageButton.gameObject.SetActive(hasSurvived);
-                TMP_Text lbl = nextStageButton.GetComponentInChildren<TMP_Text>();
-                if (lbl != null) lbl.text = "Next Stage";
-            }
-
-            if (returnToMetaButton != null)
-            {
-                returnToMetaButton.gameObject.SetActive(true);
-                TMP_Text lbl = returnToMetaButton.GetComponentInChildren<TMP_Text>();
-                if (lbl != null) lbl.text = "Upgrades";
             }
 
             // Survivors run telemetry & stats
@@ -345,9 +417,9 @@ public class DeathScreen : MonoBehaviour
                 survivorsSidebar.RefreshSidebar();
             }
         }
-        else
+        else if (!isVictory)
         {
-            // Only offer "restart from current wave" if there's a wave in progress to return to.
+            // Non-survivors mode extra buttons on defeat
             if (restartCurrentWaveButton != null)
             {
                 bool hasWave = WaveSpawner.Instance != null;
@@ -367,29 +439,20 @@ public class DeathScreen : MonoBehaviour
                     reincarnatePreviewLabel.text = Loc.Format("death.reincarnate", ReincarnateService.Instance.PreviewPointsForReincarnate());
                 }
             }
-
-            if (returnToMetaButton != null)
-            {
-                returnToMetaButton.gameObject.SetActive(true);
-                TMP_Text lbl = returnToMetaButton.GetComponentInChildren<TMP_Text>();
-                if (lbl != null) lbl.text = "Upgrades";
-            }
         }
 
-        StartCoroutine(RunOverSequence(failureReason, isSurvivorsMode, runSeconds, lvl, killed, earned, dmgDealt, dmgTaken, crits));
+        StartCoroutine(RunOverSequence(failureReason, isSurvivorsMode, isVictory, runSeconds, lvl, killed, earned, dmgDealt, dmgTaken, crits));
     }
 
-    private IEnumerator RunOverSequence(string failureReason, bool isSurvivorsMode = false, float runSeconds = 0f, int lvl = 1, int killed = 0, int earned = 0, int dmgDealt = 0, int dmgTaken = 0, int crits = 0)
+    private IEnumerator RunOverSequence(string failureReason, bool isSurvivorsMode = false, bool isVictory = false, float runSeconds = 0f, int lvl = 1, int killed = 0, int earned = 0, int dmgDealt = 0, int dmgTaken = 0, int crits = 0)
     {
-        // The failure-reason banner plays fully (fade in, hold, fade out) before the screen appears.
-        if (failureBanner != null)
+        // The failure-reason banner only plays on defeat, not on victory.
+        if (!isVictory && failureBanner != null && !string.IsNullOrEmpty(failureReason))
         {
             yield return failureBanner.PlayRoutine(failureReason);
         }
 
-        // PlayerCameraPivot locks/hides the cursor for gameplay look; the skill tree needs it
-        // free to click buttons. Freed only now so no cursor floats over the banner. Reload()
-        // re-locks it before restarting.
+        // PlayerCameraPivot locks/hides the cursor for gameplay look; the buttons need it free.
         CursorLockManager.SetUnlock("DeathScreen", true);
 
         yield return FadeIn();
@@ -423,26 +486,104 @@ public class DeathScreen : MonoBehaviour
         Reload();
     }
 
-    private void ProceedToNextLevel()
-    {
-        SaveData data = SaveSystem.Load();
-        if (data != null)
-        {
-            int currentStage = data.selectedStage;
-            data.selectedStage = Mathf.Min(currentStage + 1, data.highestUnlockedStage);
-            SaveSystem.Save(data);
-        }
-        RunState.StartingWave = 1;
-        Reload();
-    }
-
-    private void ReturnToMetaProgression()
+    private void ProceedToCampaignMap()
     {
         Time.timeScale = 1f;
         MMTimeScaleEvent.Reset();
         CursorLockManager.SetUnlock("DeathScreen", false);
-        Bladehold.UI.MainMenuManager.OpenUpgradesOnLoad = true;
-        SceneManager.LoadScene("MainMenu");
+
+        // Preserve player health ratio so it carries over
+        if (Player.Instance != null && Player.Instance.Health != null)
+        {
+            RunSession.PlayerHealthRatio = Mathf.Clamp01(Player.Instance.Health.CurrentHealth / Player.Instance.Health.MaxHealth);
+        }
+
+        // Preserve player ultimate charge
+        if (Player.Instance != null)
+        {
+            var ult = Player.Instance.GetComponent<PlayerUltimateController>();
+            if (ult != null)
+            {
+                RunSession.PlayerUltimateCharge = ult.CurrentCharge;
+            }
+        }
+
+        SaveData data = SaveSystem.Load();
+        if (data != null)
+        {
+            int currentStage = data.selectedStage;
+            data.highestUnlockedStage = Mathf.Max(data.highestUnlockedStage, currentStage + 1);
+            SaveSystem.Save(data);
+        }
+
+        if (CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive)
+        {
+            CampaignManager.Instance.CompleteCurrentNodeAndOpenMap();
+        }
+        else if (Bladehold.UI.LoadingScreenManager.Instance != null)
+        {
+            Bladehold.UI.LoadingScreenManager.Instance.LoadScene(
+                "Bladehold Campaign Map Scene",
+                "Castle Campaign",
+                "War Room Map",
+                "Select your tactical route through the fortress battlements and inner halls."
+            );
+        }
+        else
+        {
+            SceneManager.LoadScene("Bladehold Campaign Map Scene");
+        }
+    }
+
+    private void ReturnToMetaScene()
+    {
+        Time.timeScale = 1f;
+        MMTimeScaleEvent.Reset();
+        CursorLockManager.SetUnlock("DeathScreen", false);
+        RunSession.ClearRun();
+        if (Bladehold.UI.LoadingScreenManager.Instance != null)
+        {
+            Bladehold.UI.LoadingScreenManager.Instance.LoadScene(
+                "Bladehold Meta Area Scene",
+                "Sanctuary",
+                "Safe Haven",
+                "Prepare upgrades, forge weapons, and plan your next assault."
+            );
+        }
+        else
+        {
+            SceneManager.LoadScene("Bladehold Meta Area Scene");
+        }
+    }
+
+    public void RefreshCurrencies()
+    {
+        foreach (var blood in GetComponentsInChildren<GoblinBloodUI>(true))
+        {
+            blood.Refresh();
+        }
+        foreach (var metal in GetComponentsInChildren<OrcishMetalUI>(true))
+        {
+            metal.Refresh();
+        }
+        foreach (var coin in GetComponentsInChildren<CoinUI>(true))
+        {
+            coin.Refresh();
+        }
+        foreach (var supply in GetComponentsInChildren<SupplyUI>(true))
+        {
+            supply.Refresh();
+        }
+    }
+
+    private void ProceedToNextLevel()
+    {
+        ProceedToCampaignMap();
+    }
+
+    private void ReturnToMetaProgression()
+    {
+        ReturnToMetaScene();
     }
 
     private void RestartFromCurrentWave()

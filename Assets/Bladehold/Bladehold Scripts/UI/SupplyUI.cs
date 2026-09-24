@@ -50,6 +50,11 @@ public class SupplyUI : MonoBehaviour
         RunSession.OnInRunSupplyChanged -= UpdateLabel;
     }
 
+    public void Refresh()
+    {
+        UpdateLabel(RunSession.InRunSupply);
+    }
+
     private void UpdateLabel(int supply)
     {
         if (label != null)

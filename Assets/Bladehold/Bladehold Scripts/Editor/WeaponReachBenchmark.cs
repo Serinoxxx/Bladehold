@@ -1003,6 +1003,51 @@ public static class WeaponReachBenchmark
                 sb.AppendLine($"  - [FAIL] Bulwark Animator Controller verification failed (acValid={acValid}, baseValid={baseValid}, upperValid={upperValid}, stagger={hasStaggerTrigger}, blockHit={hasBlockHitTrigger})!");
                 failedCount++;
             }
+
+            // 9F: Bulwark Normal Attack Behavior (AIAttack active, Standard Axe Attack motion, no slam)
+            bool hasAIAttack = prefabLoaded && bulwarkPrefab.GetComponent<AIAttack>() != null && bulwarkPrefab.GetComponent<AIAttack>().enabled;
+            bool baseAttackValid = false;
+            bool upperAttackValid = false;
+            bool hasSlamTriggerCondition = false;
+
+            if (acValid)
+            {
+                foreach (var s in bulwarkAC.layers[0].stateMachine.states)
+                {
+                    if (s.state.name == "Attack" && s.state.motion != null && s.state.motion.name == "Standard Axe Attack")
+                    {
+                        baseAttackValid = true;
+                    }
+                }
+                foreach (var s in bulwarkAC.layers[1].stateMachine.states)
+                {
+                    if ((s.state.name == "AttackUpper" || s.state.name == "SlamUpper") && s.state.motion != null && s.state.motion.name == "Standard Axe Attack")
+                    {
+                        upperAttackValid = true;
+                    }
+                }
+                foreach (var l in bulwarkAC.layers)
+                {
+                    foreach (var t in l.stateMachine.anyStateTransitions)
+                    {
+                        foreach (var c in t.conditions)
+                        {
+                            if (c.parameter == "Slam") hasSlamTriggerCondition = true;
+                        }
+                    }
+                }
+            }
+
+            if (hasAIAttack && baseAttackValid && upperAttackValid && !hasSlamTriggerCondition)
+            {
+                sb.AppendLine("  - Bulwark Normal Attack: AIAttack enabled on prefab, Standard Axe Attack on Base and Upper layers, slam transitions removed. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Bulwark normal attack verification failed (hasAIAttack={hasAIAttack}, baseAttack={baseAttackValid}, upperAttack={upperAttackValid}, hasSlam={hasSlamTriggerCondition})!");
+                failedCount++;
+            }
         }
         catch (Exception ex)
         {
@@ -2584,6 +2629,226 @@ public static class WeaponReachBenchmark
         catch (Exception ex)
         {
             sb.AppendLine($"  - Section 23 Benchmark exception: {ex.Message} [FAILED]");
+            failedCount++;
+        }
+
+        // =========================================================================
+        // SECTION 24: Remaining Enemies Cleanup & Skull Waypoints Benchmark
+        // =========================================================================
+        sb.AppendLine("\n[SECTION 24] Remaining Enemies Cleanup & Skull Waypoints Benchmark");
+        try
+        {
+            // 24A: Component & Prefab Wiring
+            GameObject survivorsObjPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/Objectives/SurvivorsObjectives.prefab");
+            KillRemainingEnemiesObjective prefabCleanup = survivorsObjPrefab != null ? survivorsObjPrefab.GetComponentInChildren<KillRemainingEnemiesObjective>(true) : null;
+            SurvivorsObjectiveManager prefabMgr = survivorsObjPrefab != null ? survivorsObjPrefab.GetComponentInChildren<SurvivorsObjectiveManager>(true) : null;
+
+            if (prefabCleanup != null && prefabMgr != null)
+            {
+                sb.AppendLine("  - SurvivorsObjectives Prefab: Contains KillRemainingEnemiesObjective component. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] SurvivorsObjectives Prefab missing KillRemainingEnemiesObjective (cleanup={(prefabCleanup != null)}, mgr={(prefabMgr != null)})");
+                failedCount++;
+            }
+
+            // 24B: Objective Lifecycle, Progress Text & Skull Waypoint Generation
+            GameObject cleanupTestGo = new GameObject("Test_CleanupManager");
+            KillRemainingEnemiesObjective testCleanup = cleanupTestGo.AddComponent<KillRemainingEnemiesObjective>();
+
+            GameObject enemy1 = new GameObject("Test_RemainingEnemy_1");
+            Health h1 = enemy1.AddComponent<Health>();
+            h1.SetMaxHealth(100f);
+            h1.Revive(100f);
+
+            GameObject enemy2 = new GameObject("Test_RemainingEnemy_2");
+            Health h2 = enemy2.AddComponent<Health>();
+            h2.SetMaxHealth(100f);
+            h2.Revive(100f);
+
+            // Start cleanup objective
+            testCleanup.StartObjective();
+
+            // Progress text check
+            bool textValid = testCleanup.Title == "Kill All Remaining Enemies" &&
+                             testCleanup.ProgressText.Contains("Kill all remaining enemies") &&
+                             testCleanup.RemainingCount >= 2;
+
+            if (textValid)
+            {
+                sb.AppendLine($"  - Objective Contract: Title='{testCleanup.Title}', ProgressText='{testCleanup.ProgressText}'. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Objective Contract invalid: Title='{testCleanup.Title}', ProgressText='{testCleanup.ProgressText}', Count={testCleanup.RemainingCount}");
+                failedCount++;
+            }
+
+            // Waypoints check
+            var waypoints = new List<ObjectiveWaypointTarget>();
+            testCleanup.GetActiveWaypointTargets(waypoints);
+
+            bool waypointsValid = waypoints.Count >= 2 &&
+                                  waypoints.Exists(w => w.Transform == enemy1.transform && w.CustomIcon != null) &&
+                                  waypoints.Exists(w => w.Transform == enemy2.transform && w.CustomIcon != null);
+
+            if (waypointsValid)
+            {
+                sb.AppendLine($"  - Skull Waypoint Generation: Generated {waypoints.Count} skull HUD waypoints targeting living enemies. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Skull waypoints invalid: count={waypoints.Count} (expected >= 2 with custom skull icon)");
+                failedCount++;
+            }
+
+            // 24C: Elimination and Objective Completion
+            bool completedEventFired = false;
+            testCleanup.OnCompleted += (obj) => completedEventFired = true;
+
+            // Kill enemy 1
+            h1.ReceiveDamage(new Damage { value = 9999f });
+            waypoints.Clear();
+            testCleanup.GetActiveWaypointTargets(waypoints);
+
+            bool singleRemainingValid = !waypoints.Exists(w => w.Transform == enemy1.transform) &&
+                                        waypoints.Exists(w => w.Transform == enemy2.transform);
+
+            if (singleRemainingValid)
+            {
+                sb.AppendLine("  - Enemy Elimination: Waypoint removed immediately when enemy dies. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine("  - [FAIL] Waypoint for dead enemy was not removed!");
+                failedCount++;
+            }
+
+            // Kill enemy 2 -> completes objective
+            h2.ReceiveDamage(new Damage { value = 9999f });
+
+            if (testCleanup.IsComplete && completedEventFired)
+            {
+                sb.AppendLine("  - Wave Cleanup Completion: Objective completed and OnCompleted fired when all enemies eliminated. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Objective did not complete on last kill: isComplete={testCleanup.IsComplete}, eventFired={completedEventFired}");
+                failedCount++;
+            }
+
+            // Teardown test objects
+            UnityEngine.Object.DestroyImmediate(enemy1);
+            UnityEngine.Object.DestroyImmediate(enemy2);
+            UnityEngine.Object.DestroyImmediate(cleanupTestGo);
+        }
+        catch (Exception ex)
+        {
+            sb.AppendLine($"  - Section 24 Benchmark exception: {ex.Message} [FAILED]");
+            failedCount++;
+        }
+
+        // [SECTION 25] DeathScreen Victory & Currency Wiring Benchmark
+        sb.AppendLine("\n[SECTION 25] DeathScreen Victory & Currency Wiring Benchmark");
+        try
+        {
+            // 25A: DeathScreen Prefab Currency Components & Icons
+            GameObject dsPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/UI/DeathScreen.prefab");
+            bool prefabLoaded = dsPrefab != null;
+            var dsComp = prefabLoaded ? dsPrefab.GetComponentInChildren<DeathScreen>(true) : null;
+            var bloodUI = prefabLoaded ? dsPrefab.GetComponentInChildren<GoblinBloodUI>(true) : null;
+            var metalUI = prefabLoaded ? dsPrefab.GetComponentInChildren<OrcishMetalUI>(true) : null;
+            var supplyUI = prefabLoaded ? dsPrefab.GetComponentInChildren<SupplyUI>(true) : null;
+            var coinUI = prefabLoaded ? dsPrefab.GetComponentInChildren<CoinUI>(true) : null;
+
+            bool bloodWired = bloodUI != null && bloodUI.label != null;
+            bool metalWired = metalUI != null && metalUI.label != null;
+            bool supplyWired = supplyUI != null && supplyUI.GetComponentInChildren<TMPro.TMP_Text>(true) != null;
+            bool coinWired = coinUI != null && coinUI.GetComponentInChildren<TMPro.TMP_Text>(true) != null;
+
+            if (prefabLoaded && bloodWired && metalWired && supplyWired && coinWired)
+            {
+                sb.AppendLine("  - DeathScreen Prefab Currencies: GoblinBloodUI, OrcishMetalUI, SupplyUI, and CoinUI labels properly wired without null fallbacks. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] DeathScreen currency wiring mismatch: blood={bloodWired}, metal={metalWired}, supply={supplyWired}, coin={coinWired}");
+                failedCount++;
+            }
+
+            // 25B: Victory Mode Display & Button Routing
+            GameObject dsTestInstance = UnityEngine.Object.Instantiate(dsPrefab);
+            DeathScreen testDs = dsTestInstance.GetComponentInChildren<DeathScreen>(true);
+
+            // Trigger Victory
+            testDs.ShowVictory("VICTORY!");
+
+            var dsSo = new SerializedObject(testDs);
+            var titleText = dsSo.FindProperty("titleText").objectReferenceValue as TMPro.TMP_Text;
+            var nextBtn = dsSo.FindProperty("nextStageButton").objectReferenceValue as UnityEngine.UI.Button;
+            var metaBtn = dsSo.FindProperty("returnToMetaButton").objectReferenceValue as UnityEngine.UI.Button;
+            var tryAgainBtn = dsSo.FindProperty("tryAgainButton").objectReferenceValue as UnityEngine.UI.Button;
+
+            bool titleCorrect = titleText != null && titleText.text == "VICTORY!";
+            bool nextActive = nextBtn != null && nextBtn.gameObject.activeSelf;
+            bool nextLabelValid = nextBtn != null && nextBtn.GetComponentInChildren<TMPro.TMP_Text>() != null && nextBtn.GetComponentInChildren<TMPro.TMP_Text>().text.Contains("CAMPAIGN");
+            bool metaHidden = metaBtn != null && !metaBtn.gameObject.activeSelf;
+            bool tryAgainHidden = tryAgainBtn != null && !tryAgainBtn.gameObject.activeSelf;
+
+            if (titleCorrect && nextActive && nextLabelValid && metaHidden && tryAgainHidden)
+            {
+                sb.AppendLine("  - DeathScreen Victory Mode: Sets headline to 'VICTORY!', displays 'PROCEED TO CAMPAIGN MAP' button, and hides defeat buttons. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Victory mode mismatch: titleCorrect={titleCorrect}, nextActive={nextActive}, nextLabelValid={nextLabelValid}, metaHidden={metaHidden}, tryAgainHidden={tryAgainHidden}");
+                failedCount++;
+            }
+
+            // 25C: Currency Value Live Refresh
+            RunSession.InRunGold = 350;
+            RunSession.InRunSupply = 75;
+            SaveData testSave = SaveSystem.Load() ?? new SaveData();
+            testSave.goblinBlood = 14;
+            testSave.orcishMetal = 9;
+            SaveSystem.Save(testSave);
+
+            testDs.RefreshCurrencies();
+
+            var instBloodUI = testDs.GetComponentInChildren<GoblinBloodUI>(true);
+            var instMetalUI = testDs.GetComponentInChildren<OrcishMetalUI>(true);
+            var bloodVal = instBloodUI != null && instBloodUI.label != null ? instBloodUI.label.text : "";
+            var metalVal = instMetalUI != null && instMetalUI.label != null ? instMetalUI.label.text : "";
+
+            bool bloodRefreshed = bloodVal == "14";
+            bool metalRefreshed = metalVal == "9";
+
+            if (bloodRefreshed && metalRefreshed)
+            {
+                sb.AppendLine($"  - Currency Refresh: Blood ({bloodVal}) and Metal ({metalVal}) values properly pull live amounts on screen show. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Currency refresh mismatch: blood='{bloodVal}' (expected '14'), metal='{metalVal}' (expected '9')");
+                failedCount++;
+            }
+
+            // Cleanup
+            CursorLockManager.SetUnlock("DeathScreen", false);
+            UnityEngine.Object.DestroyImmediate(dsTestInstance);
+        }
+        catch (Exception ex)
+        {
+            sb.AppendLine($"  - Section 25 Benchmark exception: {ex.Message} [FAILED]");
             failedCount++;
         }
 

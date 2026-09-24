@@ -50,6 +50,11 @@ public class CoinUI : MonoBehaviour
         RunSession.OnInRunGoldChanged -= UpdateLabel;
     }
 
+    public void Refresh()
+    {
+        UpdateLabel(RunSession.InRunGold);
+    }
+
     private void UpdateLabel(int coins)
     {
         label.text = coins.ToString();

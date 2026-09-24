@@ -4,6 +4,10 @@
 
 ### New Features
 
+- Unified victory and defeat presentation using the customizable End Game Screen prefab, displaying triumphant victory titling upon clearing all sector waves
+- Added automated behavioral benchmark tests verifying end game screen victory mode, defeat routing, and live currency updates
+- Added automatic post-objective cleanup phase transitioning the objective to "Kill all remaining enemies" whenever stragglers remain on the battlefield
+- Added red skull HUD waypoint indicators hovering over all remaining enemies with screen-edge clamping and distance meters directing players to stragglers
 - Added 5-wave defense sector loop replacing periodic 3-wave rest area breaks with continuous wave combat
 - Added Victory Screen overlay celebrating defense node completion with wave stats, kills, currencies secured, and triumphant audio fanfare
 - Added Wave 5 Clan Captain climax encounter to defense sectors
@@ -104,6 +108,13 @@
 
 ### Fixes
 
+- Fixed Goblin Blood and Orcish Metal counters displaying placeholder values instead of current save quantities on the end game screen
+- Fixed defeat screen forcibly transitioning to the meta area after two seconds, allowing players to view combat stats and choose when to return
+- Fixed end game screen navigation routing to the Campaign Map upon victory and returning to the Meta Area upon defeat
+- Added missing Defensive Supply currency row and icon to the end game screen
+- Removed procedural fallback victory UI to ensure end-of-run presentation uses authorable UI assets
+- Fixed enemy spawner continuing to spawn new enemy waves after main wave objectives had already been completed
+- Fixed objective HUD text prematurely falling back to incoming objective prompts while enemies remained after an objective completed
 - Fixed missing Supply currency counter on the player HUD
 - Fixed Captain Kombusta bomb telegraphs floating or misaligned with terrain slopes
 - Fixed Captain Kombusta bomb pacing and flight duration to give a 1.0-second delay between telegraph indicators
@@ -118,6 +129,7 @@
 
 ### Balance Changes
 
+- Replaced Bulwark enemy telegraphed slam attacks with standard melee strikes when close to the player, removing the slam entirely
 - Increased Captain Kombusta bomb flight time to 2.0 seconds and bomb throw interval to 3.0 seconds
 - Adjusted defense level pacing to 5 waves per combat node with staged enemy roster progression from goblins to heavy siege units
 - Configured hero health ratio to persist across campaign nodes
@@ -411,6 +423,8 @@
 ### General Changes
 - Added hit sparks, screen shake, and impact sounds
 - Added Berserker and Mage skill tree preview panels
+
+
 
 
 

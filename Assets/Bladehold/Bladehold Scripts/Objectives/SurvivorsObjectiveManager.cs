@@ -30,6 +30,9 @@ public class SurvivorsObjectiveManager : MonoBehaviour
     [Tooltip("Pool of repeating objectives drawn randomly after the introductory wave.")]
     [SerializeField] private List<MonoBehaviour> repeatingObjectiveComponents = new List<MonoBehaviour>();
 
+    [Tooltip("Objective component triggered when wave objective completes and enemies remain.")]
+    [SerializeField] private KillRemainingEnemiesObjective cleanupObjective;
+
     [Header("Rewards & Pacing")]
     [Tooltip("Bonus gold XP granted to level progression when an objective is cleared.")]
     [SerializeField] private int goldXpRewardPerObjective = 100;
@@ -150,7 +153,7 @@ public class SurvivorsObjectiveManager : MonoBehaviour
             MonoBehaviour[] allScripts = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
             foreach (MonoBehaviour mb in allScripts)
             {
-                if (mb is ISurvivorsObjective && mb != introductoryObjective && mb != (MonoBehaviour)(object)this)
+                if (mb is ISurvivorsObjective && mb != introductoryObjective && mb != cleanupObjective && !(mb is KillRemainingEnemiesObjective) && mb != (MonoBehaviour)(object)this)
                 {
                     if (repeatingObjectiveComponents == null) repeatingObjectiveComponents = new List<MonoBehaviour>();
                     repeatingObjectiveComponents.Add(mb);
@@ -162,7 +165,7 @@ public class SurvivorsObjectiveManager : MonoBehaviour
         {
             foreach (MonoBehaviour mb in repeatingObjectiveComponents)
             {
-                if (mb is ISurvivorsObjective obj && !objectivePool.Contains(obj))
+                if (mb is ISurvivorsObjective obj && !(obj is KillRemainingEnemiesObjective) && !objectivePool.Contains(obj))
                 {
                     objectivePool.Add(obj);
                 }
@@ -237,6 +240,22 @@ public class SurvivorsObjectiveManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Starts the cleanup objective ("Kill all remaining enemies") when a wave objective completes and enemies remain.
+    /// </summary>
+    public void StartCleanupObjective()
+    {
+        if (cleanupObjective == null)
+        {
+            cleanupObjective = GetComponentInChildren<KillRemainingEnemiesObjective>() ?? gameObject.AddComponent<KillRemainingEnemiesObjective>();
+        }
+
+        currentPhase = SurvivorsObjectivePhase.Cleanup;
+        phaseTimer = cleanupDuration;
+        OnPhaseChanged?.Invoke(currentPhase);
+        SetActiveObjective(cleanupObjective);
+    }
+
+    /// <summary>
     /// Stops and cleans up the active objective.
     /// </summary>
     public void StopActiveObjective()
@@ -255,7 +274,7 @@ public class SurvivorsObjectiveManager : MonoBehaviour
     {
         if (!isRunning) return;
 
-        if (currentPhase == SurvivorsObjectivePhase.Active && currentObjective != null)
+        if ((currentPhase == SurvivorsObjectivePhase.Active || currentPhase == SurvivorsObjectivePhase.Cleanup) && currentObjective != null)
         {
             currentObjective.UpdateObjective(Time.deltaTime);
         }
@@ -305,6 +324,13 @@ public class SurvivorsObjectiveManager : MonoBehaviour
 
     private void HandleObjectiveCompleted(ISurvivorsObjective obj)
     {
+        if (obj is KillRemainingEnemiesObjective)
+        {
+            Debug.Log($"[SurvivorsObjectiveManager] Cleanup Objective '{obj.Title}' Completed!");
+            OnObjectiveCompleted?.Invoke(obj);
+            return;
+        }
+
         completedObjectiveCount++;
         Debug.Log($"[SurvivorsObjectiveManager] Objective '{obj.Title}' Completed! (Total: {completedObjectiveCount})");
 
@@ -315,7 +341,6 @@ public class SurvivorsObjectiveManager : MonoBehaviour
         }
 
         OnObjectiveCompleted?.Invoke(obj);
-        OnWaveCleared?.Invoke(currentWave);
     }
 
     private void HandleObjectiveFailed(ISurvivorsObjective obj)

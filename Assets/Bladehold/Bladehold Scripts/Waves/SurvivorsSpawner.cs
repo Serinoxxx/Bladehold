@@ -123,6 +123,29 @@ public class SurvivorsSpawner : MonoBehaviour
     public bool IsSpawningActive => isSpawningActive;
     public int MaxConcurrentShielders => maxConcurrentShielders;
 
+    /// <summary>
+    /// Returns all currently alive tracked enemies with destroyed or dead instances pruned.
+    /// </summary>
+    public IReadOnlyCollection<Health> AliveEnemies
+    {
+        get
+        {
+            aliveEnemies.RemoveWhere(h => h == null || h.IsDead);
+            return aliveEnemies;
+        }
+    }
+
+    /// <summary>
+    /// Fills the provided list with all currently alive tracked enemies.
+    /// </summary>
+    public void GetAliveEnemies(List<Health> results)
+    {
+        if (results == null) return;
+        results.Clear();
+        aliveEnemies.RemoveWhere(h => h == null || h.IsDead);
+        results.AddRange(aliveEnemies);
+    }
+
     private void Awake()
     {
         if (Instance == null)

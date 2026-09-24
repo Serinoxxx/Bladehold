@@ -1777,15 +1777,15 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2924539313515317279}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.5, y: 0.5, z: 0.5, w: 0.5}
-  m_LocalPosition: {x: 0.05, y: 0.12, z: 0.05}
+  m_LocalRotation: {x: -0.25101697, y: 0.6809607, z: 0.5555087, w: 0.405824}
+  m_LocalPosition: {x: -0.108, y: -0.057, z: -0.113}
   m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4757391975161002744}
   - {fileID: 7027592313037237303}
   m_Father: {fileID: 3985707222803520550}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -73.801, y: 101.042, z: 23.001}
 --- !u!33 &54555147963473833
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -5257,11 +5257,11 @@ MonoBehaviour:
   movement: {fileID: 5823367551733069344}
   attackData: {fileID: 11400000, guid: 5a4b3c2d1e0f9876543210abcedf0123, type: 2}
   shield: {fileID: 1732114646215747715}
-  telegraphPrefab: {fileID: 5856850007466671987, guid: e5dd6852d515fe64487dfd3ccf2f43b4, type: 3}
-  windupFeedback: {fileID: 0}
-  slamFeedback: {fileID: 0}
-  slamTrigger: Slam
+  aiAttack: {fileID: 4121884362856687115}
   blockHitTrigger: BlockHit
+  staggerTrigger: Stagger
+  shieldBrokenTrigger: ShieldBroken
+  staggerDuration: 0.8
 --- !u!1 &6774616082276638828
 GameObject:
   m_ObjectHideFlags: 0

@@ -27,10 +27,13 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
     [SerializeField] private Sprite supplyWagonIcon;
     [SerializeField] private Sprite destinationGateIcon;
     [SerializeField] private Sprite slayerBossIcon;
+    [SerializeField] private Sprite cleanupEnemySkullIcon;
     [SerializeField] private Sprite siegeEngineIcon;
     [SerializeField] private Sprite noSupplyIcon;
     [SerializeField] private Sprite arrowIcon;
     [SerializeField] private Sprite iconBackground;
+
+    public Sprite CleanupEnemySkullIcon => cleanupEnemySkullIcon != null ? cleanupEnemySkullIcon : slayerBossIcon;
 
     [Header("Screen Clamping & Juice")]
     [Tooltip("Padding in pixels from screen edges when clamping offscreen waypoints.")]
@@ -192,6 +195,24 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
             }
         }
 
+        // Fallback for cleanup phase if buffer is empty
+        if (targetBuffer.Count == 0 && objectiveManager != null && objectiveManager.Phase == SurvivorsObjectivePhase.Cleanup && SurvivorsSpawner.Instance != null)
+        {
+            foreach (var h in SurvivorsSpawner.Instance.AliveEnemies)
+            {
+                if (h != null && !h.IsDead)
+                {
+                    targetBuffer.Add(new ObjectiveWaypointTarget(
+                        h.transform,
+                        worldOffset: new Vector3(0f, 1.8f, 0f),
+                        customIcon: CleanupEnemySkullIcon,
+                        tintColor: new Color(1f, 0.25f, 0.25f, 1f),
+                        label: null
+                    ));
+                }
+            }
+        }
+
         // 2. Adjust pool size
         while (markerPool.Count < targetBuffer.Count)
         {
@@ -313,6 +334,10 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
         {
             return slayerBossIcon != null ? slayerBossIcon : defaultObjectiveIcon;
         }
+        if (label.Contains("enemy") || label.Contains("skull") || label.Contains("straggler") || label.Contains("remaining"))
+        {
+            return CleanupEnemySkullIcon;
+        }
         if (label.Contains("catapult") || label.Contains("siege") || label.Contains("ram"))
         {
             return siegeEngineIcon != null ? siegeEngineIcon : defaultObjectiveIcon;
@@ -410,6 +435,8 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
             destinationGateIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/Icons_Map/ICON_FantasyWarrior_Map_Flag_01_Clean.png");
         if (slayerBossIcon == null)
             slayerBossIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/Icons_Map/ICON_FantasyWarrior_Map_Skull_01_Clean.png");
+        if (cleanupEnemySkullIcon == null)
+            cleanupEnemySkullIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/Icons_Map/ICON_FantasyWarrior_Map_Skull_01_Clean.png");
         if (siegeEngineIcon == null)
             siegeEngineIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/Icons_Map/ICON_FantasyWarrior_Map_Target_01_Clean.png");
         if (noSupplyIcon == null)

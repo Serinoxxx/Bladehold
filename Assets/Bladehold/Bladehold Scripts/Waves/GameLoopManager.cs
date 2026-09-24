@@ -236,6 +236,7 @@ public class GameLoopManager : MonoBehaviour
             RunSession.AddInRunSupply(supplyDrop);
         }
 
+        cleanupTimer = 0f;
         OnEnemyKilledEvent?.Invoke(enemyHealth);
         CheckWaveCompletionConditions();
     }
@@ -335,9 +336,36 @@ public class GameLoopManager : MonoBehaviour
 
     private void HandleObjectiveCompleted(ISurvivorsObjective obj)
     {
+        if (obj is KillRemainingEnemiesObjective)
+        {
+            Debug.Log("[GameLoopManager] All remaining enemies eliminated!");
+            ClearActiveWave();
+            return;
+        }
+
         isObjectiveComplete = true;
         Debug.Log($"[GameLoopManager] Objective Completed: {obj?.Title}");
-        CheckWaveCompletionConditions();
+
+        // Stop spawner from spawning any further enemies
+        if (spawner != null && spawner.IsSpawningActive)
+        {
+            spawner.StopSpawning();
+        }
+
+        int remainingAlive = spawner != null ? spawner.AliveCount : 0;
+        if (remainingAlive > 0)
+        {
+            Debug.Log($"[GameLoopManager] Objective '{obj?.Title}' completed. {remainingAlive} enemies remain. Starting cleanup phase.");
+            if (objectiveManager != null)
+            {
+                objectiveManager.StartCleanupObjective();
+            }
+        }
+        else
+        {
+            Debug.Log($"[GameLoopManager] Objective '{obj?.Title}' completed and no enemies remain. Clearing wave.");
+            ClearActiveWave();
+        }
     }
 
     private void HandleObjectiveFailed(ISurvivorsObjective obj)
@@ -363,6 +391,16 @@ public class GameLoopManager : MonoBehaviour
     private void CheckWaveCompletionConditions()
     {
         if (!isWaveActive) return;
+
+        // If in cleanup objective, wave completes once all remaining enemies are dead
+        if (objectiveManager != null && objectiveManager.CurrentObjective is KillRemainingEnemiesObjective)
+        {
+            if (spawner != null && spawner.AliveCount <= 0)
+            {
+                ClearActiveWave();
+            }
+            return;
+        }
 
         bool killQuotaMet = killsThisWave >= targetKillsThisWave;
 
@@ -403,7 +441,11 @@ public class GameLoopManager : MonoBehaviour
 
             if (spawner != null && spawner.AliveCount > 0)
             {
-                // Wait until all remaining enemies on the field are killed
+                // Transition to cleanup objective if not already in cleanup
+                if (objectiveManager != null && !(objectiveManager.CurrentObjective is KillRemainingEnemiesObjective))
+                {
+                    objectiveManager.StartCleanupObjective();
+                }
                 return;
             }
 
@@ -419,32 +461,21 @@ public class GameLoopManager : MonoBehaviour
     {
         if (isWaveActive && isObjectiveComplete)
         {
-            bool killQuotaMet = killsThisWave >= targetKillsThisWave;
-            if (currentObjective is GoblinRushObjective) killQuotaMet = true;
-            
-            bool spawnerExhausted = spawner != null && spawner.RemainingToSpawn <= 0;
-            
-            if (killQuotaMet || spawnerExhausted)
-            {
-                cleanupTimer += Time.deltaTime;
-                if (cleanupTimer >= 20f)
-                {
-                    cleanupTimer = 0f;
-                    Debug.LogWarning($"[GameLoopManager] Catch-all 20s cleanup timer expired! (QuotaMet: {killQuotaMet}, SpawnerExhausted: {spawnerExhausted}). Forcing wave clear.");
-                    if (spawner != null)
-                    {
-                        spawner.StopSpawning();
-                        spawner.StrikeAllAliveWithLightning(9999f);
-                    }
-                    if (isWaveActive)
-                    {
-                        ClearActiveWave();
-                    }
-                }
-            }
-            else
+            cleanupTimer += Time.deltaTime;
+            // Generous 45s fail-safe for unreachable/stuck enemies (reset by OnEnemyKilled)
+            if (cleanupTimer >= 45f)
             {
                 cleanupTimer = 0f;
+                Debug.LogWarning("[GameLoopManager] Catch-all 45s cleanup timer expired! Striking stragglers with lightning.");
+                if (spawner != null)
+                {
+                    spawner.StopSpawning();
+                    spawner.StrikeAllAliveWithLightning(9999f);
+                }
+                if (isWaveActive)
+                {
+                    ClearActiveWave();
+                }
             }
         }
         else
@@ -1050,22 +1081,11 @@ public class GameLoopManager : MonoBehaviour
             SaveSystem.Save(data);
         }
 
-        string nodeTitle = "Fortress Defense";
-        if (CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive && CampaignManager.Instance.CurrentNode != null)
+        // Trigger DeathScreen in victory mode (No procedural fallback UI)
+        DeathScreen endScreen = DeathScreen.Instance != null ? DeathScreen.Instance : FindAnyObjectByType<DeathScreen>();
+        if (endScreen != null)
         {
-            nodeTitle = CampaignManager.Instance.CurrentNode.nodeTitle;
-        }
-
-        VictoryScreenUI screen = VictoryScreenUI.Instance != null ? VictoryScreenUI.Instance : VictoryScreenUI.EnsureInstance();
-        if (screen != null)
-        {
-            screen.OpenVictory(
-                CurrentWave,
-                totalWaves,
-                killsThisWave,
-                RunSession.InRunGold,
-                nodeTitle
-            );
+            endScreen.ShowVictory("VICTORY!");
         }
         else if (victoryScreen != null)
         {
@@ -1085,25 +1105,7 @@ public class GameLoopManager : MonoBehaviour
             // If revive succeeds, heal 50%
         }
 
-        Debug.Log("[GameLoopManager] Player died. Transitioning to Meta Area Scene...");
-        RunSession.ClearRun();
-        if (Application.isPlaying)
-        {
-            StartCoroutine(TransitionToMetaSceneRoutine());
-        }
-    }
-
-    private IEnumerator TransitionToMetaSceneRoutine()
-    {
-        yield return new WaitForSeconds(2.0f);
-        // PlayerCameraPivot stops following while any cursor-unlock request is active.
-        // Clear death UI state before loading the playable Meta Area.
-        CursorLockManager.SetUnlock("DeathScreen", false);
-        CursorLockManager.SetUnlock("MetaArea", false);
-        if (Application.isPlaying)
-        {
-            SceneManager.LoadScene("Bladehold Meta Area Scene");
-        }
+        Debug.Log("[GameLoopManager] Player died. DeathScreen handles run conclusion and transition to Meta Area.");
     }
 
     private void OnGUI()
