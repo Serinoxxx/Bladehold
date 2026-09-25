@@ -101,7 +101,7 @@ re-applies structure/wiring, never overwrites existing SO assets, and refreshes 
    `64b407995d56642478ea2b02984a62f8` (the goblin base) — proof it's a true variant.
 2. Read `Enemies/EnemyPrefabMap.asset`: the id → prefab entry exists.
 3. Re-run the generator: `git status` shows no changes (idempotency).
-4. Play-mode behaviour checks go in the TODO.md manual-verification list (`/editor-wiring-todo`):
+4. Play-mode behaviour checks go in the plan's `plans/editor/` checklist (`/editor-wiring-todo`):
    DevConsole `DebugSetNextWave` to the unlock wave, or the EnemyZoo gallery.
 
 ## Finish protocol

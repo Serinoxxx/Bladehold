@@ -4,7 +4,7 @@
 
 ## Tasks
 
-- [ ] **Retire** `add-player-class` (class system deleted), plus `editor-wiring-todo` and `editor-wire` (both TODO.md-based; TODO.md is now Lance's own list). Fold any useful Unity MCP wiring know-how into `unity-editor-mcp`.
+- [ ] **Retire** `add-player-class` (class system deleted). (`editor-wiring-todo` and `editor-wire` were repointed to `plans/editor/` checklists on 2026-09-25, so keep them. Fold any useful Unity MCP wiring know-how into `unity-editor-mcp`.)
 - [ ] **Rewrite** `add-skill-line` → `add-draft-card`:
   - `DraftUpgrades.csv` columns, `;`/`|` syntax, categories, `targetSlot`, `isUltimate`/`isDuo`/`prerequisiteElements`.
   - `StatType` registration, where effects are applied.

@@ -5,7 +5,7 @@ description: Use when a Bladehold task needs the live Unity Editor — creating 
 
 # Drive the Unity Editor via MCP
 
-The `unityMCP` server (repo-root `.mcp.json`, HTTP on `localhost:8080/mcp`) bridges to the **running** Unity Editor through the `com.coplaydev.unity-mcp` package. It turns most of what used to be TODO.md "Editor wiring" into agent work: asset creation, component add/wire, scene edits, menu items, console reads, play-mode tests.
+The `unityMCP` server (repo-root `.mcp.json`, HTTP on `localhost:8080/mcp`) bridges to the **running** Unity Editor through the `com.coplaydev.unity-mcp` package. It turns most Editor wiring (the `plans/editor/` checklists) into agent work: asset creation, component add/wire, scene edits, menu items, console reads, play-mode tests.
 
 ## Ground truth first
 
@@ -22,11 +22,11 @@ The `unityMCP` server (repo-root `.mcp.json`, HTTP on `localhost:8080/mcp`) brid
 | SO asset instance, prefab component/ref wiring, scene object edits | MCP asset/GameObject/prefab tools |
 | Enemy prefab variants | **Never by hand** — `/generate-enemy-prefabs` (menu `Bladehold > Generate Enemy Prefabs`, runnable via MCP's menu-item tool) |
 | Balance projection | `/balance-sim` (menu `Bladehold > Balance Simulator`, or headless CLI) |
-| Animator/clip work, baked animation events, art/audio | **Human** — record in TODO.md via `/editor-wiring-todo` |
+| Animator/clip work, baked animation events, art/audio | **Human** — record in the plan's `plans/editor/` checklist via `/editor-wiring-todo` |
 
 ## Step 2 — Editor-wiring session pattern
 
-1. Read the relevant TODO.md checklist (or the feature's plan) for the exact assets/refs.
+1. Read the relevant `plans/editor/` checklist (or the feature's plan) for the exact assets/refs.
 2. Create SO assets with the create-menu path the checklist names (`Scriptable Objects/FooSO`), set serialized values, save.
 3. Wire refs: prefer objects whose `OnValidate` auto-wires siblings (the house convention) — only hand-assign what the checklist calls out as hand-assigned.
 4. Save the scene/prefab explicitly; verify by reading the modified asset back (a re-query that shows the ref stuck).

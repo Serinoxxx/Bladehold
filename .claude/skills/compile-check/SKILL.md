@@ -31,6 +31,6 @@ This temporary hand-edit is safe despite CLAUDE.md's "don't hand-edit generated 
 ## Interpreting results
 
 - Fix every **error**; ignore pre-existing warnings you didn't introduce.
-- A clean build proves syntax/API correctness only — behaviour still needs Play-mode verification, which belongs in the TODO.md manual-verification checklist (`/editor-wiring-todo`).
+- A clean build proves syntax/API correctness only — behaviour still needs Play-mode verification, which belongs in the plan's `plans/editor/` checklist (`/editor-wiring-todo`).
 
-Run this before writing the TODO entry and before every commit.
+Run this before writing the Editor checklist and before every commit.
