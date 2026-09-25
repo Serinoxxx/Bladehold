@@ -7,6 +7,7 @@ Things that need your hands, eyes or judgement in the Unity Editor. Items marked
 - [03: Elemental drafts](editor/03-elemental-draft.md)
 - [04: Fishing Pond](editor/04-fishing.md) (the pond has no exit until this is done)
 - [05: Balance Tree Editor](editor/05-balance-tree.md)
+- [06: Sector difficulty + roster](editor/06-sector-difficulty.md) (Fraglob captain has no prefab yet)
 
 ## A. Triage first (biggest win)
 
@@ -19,11 +20,9 @@ Things that need your hands, eyes or judgement in the Unity Editor. Items marked
 
 - [ ] **Re-serialize the binary scenes as text.** The project is set to Force Text, but the castle scenes, `Necromancer Crypt` and `Princess Sanctuary` are binary, so agents can't read or diff them. Select them → right-click → *Reserialize*, or use `AssetDatabase.ForceReserializeAssets`. *(MCP-able)*
 - [ ] **Verify each castle scene has a working sector loop.** Enter Play mode directly in each one: GameLoopManager, SurvivorsSpawner, objectives, TowerPlots, BuildWheelUI, DeathScreen, baked NavMesh. The agents couldn't inspect them.
-- [ ] **Captain prefabs:**
-  - `GameLoopManager`'s captain prefab slots are empty in `Bladehold Survivors Scene`, and probably in the castle scenes too. Assign the Kombusta and Fraglob prefabs.
-  - Fraglob has **no real prefab**; it's a scaled goblin_brute fallback. Decide whether it gets its own model/prefab (the `generate-enemy-prefabs` skill can build the variant).
+- [x] ~~**Captain prefabs**~~: moved to [`editor/06-sector-difficulty.md`](editor/06-sector-difficulty.md) (Fraglob needs a prefab; the empty slot now logs an error).
 - [ ] **Campaign Map scene**: the prefabs and graph asset are in (`fa185dc7e`). Give the node button and path line prefabs a UI review.
-- [ ] **Pacing asset** `Bladehold Config/SurvivorsRoundPacingConfig.asset`: after plan 06, review the per-wave enemy mixes it proposes.
+- [ ] **Pacing asset** `Bladehold Config/SurvivorsRoundPacingConfig.asset`: plan 06 moved the enemy mix into `Enemies.csv` (`minThreat` + `unlockWave`). Review that curve with the playtest in `editor/06-sector-difficulty.md`.
 - [ ] **Meta Area**: once plan 07 lands, place mount pedestals (shown, locked for the demo).
 - [ ] **Necromancer Crypt**: after plan 02 moves the confrontation trigger into runtime code, check that the trigger object and volume sit where you want in the crypt.
 

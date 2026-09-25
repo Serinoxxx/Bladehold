@@ -8,7 +8,7 @@ using UnityEngine;
 ///     Once it arrives at the gate, it pounds the doors every 5 seconds dealing 50 damage.
 ///     The player must destroy the battering ram before it breaches the gate.
 /// </summary>
-public class StopBatteringRamObjective : MonoBehaviour, ISurvivorsObjective
+public class StopBatteringRamObjective : MonoBehaviour, ISurvivorsObjective, IRequiresContinuousSpawns
 {
     [Header("Objective Configuration")]
     [SerializeField] private string objectiveId = "stop_battering_ram";

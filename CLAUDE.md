@@ -17,7 +17,7 @@ Unity 6 game, codenamed **Bladehold**. A 3D action roguelite: one hero, a melee 
    - **Orcish Metal** on weapon and armour pedestals (`UI/Meta/WeaponPedestal.cs`, `ArmourPedestal.cs`). Mount pedestals (`MountPedestal.cs`) are **not implemented yet**.
    - **Battle Portal** (`UI/Meta/BattlePortal.cs`) wipes run state, starts a fresh campaign run and opens the Campaign Map.
 2. **Campaign Map** (`Bladehold Campaign Map Scene`, `Campaign/`): an 8-tier branching node graph. Node types: Combat sectors (castle scenes, each with a difficulty tier + named captain), Fishing Ponds, Rest Areas, a PreBoss sector, then the Crypt (Necromancer choice: Obey → Princess boss, Defy → Necromancer boss). See `Campaign/CLAUDE.md`.
-3. **Combat sector** (any battle scene: the castle scenes and `Bladehold Survivors Scene`, which despite the name is just one of the battles). 5 waves, each preceded by a war-banner pick + tower-building prep phase. Clear wave 5 → towers are dismantled for supply (remaining supply + upgrade spend) → victory screen → back to the map. Towers never carry between sectors. See `Waves/CLAUDE.md` and `Fort/CLAUDE.md`.
+3. **Combat sector** (any battle scene: the castle scenes and `Bladehold Survivors Scene`, which despite the name is just one of the battles). 5 waves, each preceded by a war-banner pick + tower-building prep phase. Sectors deeper in the campaign (node `tierIndex` = threat level) unlock more enemy types via the roster's `minThreat` column and grow kill quotas, with goblins kept at 60%+ of every wave. Clear wave 5 → towers are dismantled for supply (remaining supply + upgrade spend) → victory screen → back to the map. Towers never carry between sectors. See `Waves/CLAUDE.md` and `Fort/CLAUDE.md`.
 4. **Between sectors**, run state rides in the static `Economy/RunSession.cs`: HP ratio, in-run gold, supply, ammo, draft levels, ultimate + charge, buff fish, campaign node state.
 5. **Death** → defeat screen (one button) → back to the Meta Area; the run is wiped (`RunSession.ClearRun()`). Permanent currencies are kept. No retry, and no voluntary exit from the map: the only ways home are death or campaign end.
 
@@ -49,8 +49,6 @@ Unity 6 game, codenamed **Bladehold**. A 3D action roguelite: one hero, a melee 
 
 Build towards these; don't "fix" code back to the old behaviour.
 
-- **Sectors get harder deeper into the campaign.** Stronger enemy types spawn in later sectors, but basic goblin fodder keeps spawning alongside them for the power fantasy. Today every sector resets to waves 1-5 with the same pacing asset.
-- **The newer enemies belong in sector waves**: Bulwark, Bannerman, Powder Keg and co. Today `SurvivorsSpawner` only admits goblin/brute/big_ork/bubbler/bomber via each wave's `allowedEnemyIds`.
 - **Mount summon is available from the start** on **X**, keeping the cast time, ride duration and cooldown. The *variants* (Frost Strider etc.) show on pedestals but are locked for the demo.
 - **Fishing Pond is just you and your bow:** no mount summon and no ultimate there.
 - **Demo scope (not final):** the full loop, but restricted to limited weapons/armours/mounts and **tier-1 meta perks only**, with the campaign cut off before the final battles (roughly halfway through the map). The aim is for players to die a few times and go round the meta loop.

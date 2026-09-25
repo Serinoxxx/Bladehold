@@ -47,7 +47,13 @@ namespace Bladehold.BalanceSim
             {
                 var record = new WaveRecord { wave = wave, minHpFraction = hp / world.playerMaxHealth };
                 spawner.BeginWave();
-                int total = world.GoblinsForWave(wave);
+                int threat = cfg.sectorMode ? world.ThreatForRunWave(wave, cfg.startTier) : 1;
+                int sectorWave = cfg.sectorMode ? world.SectorWaveForRunWave(wave) : wave;
+                int total = cfg.sectorMode ? world.SectorQuota(sectorWave, threat) : world.GoblinsForWave(wave);
+                int maxConcurrent = cfg.sectorMode ? world.sectorMaxConcurrent : world.maxConcurrent;
+                int batchSize = cfg.sectorMode ? world.sectorBatchSize : world.spawnBatchSize;
+                float batchInterval = cfg.sectorMode ? world.sectorBatchInterval : world.spawnBatchInterval;
+                float spawnInterval = cfg.sectorMode ? world.sectorSpawnInterval : world.spawnInterval;
                 int remainingToSpawn = total;
                 int killed = 0;
                 var alive = new List<EnemyState>();
@@ -59,15 +65,17 @@ namespace Bladehold.BalanceSim
                 while (killed < total && t < cfg.maxWaveSeconds)
                 {
                     // --- Spawning (mirrors WaveSpawner.SpawnLoop pacing: group periodic spawns) ---
-                    if (remainingToSpawn > 0 && alive.Count < world.maxConcurrent && (alive.Count == 0 || t >= nextSpawnAt))
+                    if (remainingToSpawn > 0 && alive.Count < maxConcurrent && (alive.Count == 0 || t >= nextSpawnAt))
                     {
-                        int effectiveBatchSize = world.spawnBatchSize > 0 ? world.spawnBatchSize : world.maxConcurrent;
-                        int batchTarget = Math.Min(effectiveBatchSize, world.maxConcurrent - alive.Count);
+                        int effectiveBatchSize = batchSize > 0 ? batchSize : maxConcurrent;
+                        int batchTarget = Math.Min(effectiveBatchSize, maxConcurrent - alive.Count);
                         batchTarget = Math.Min(batchTarget, remainingToSpawn);
 
                         for (int i = 0; i < batchTarget; i++)
                         {
-                            SpawnModel.TypeState type = spawner.Select(wave);
+                            SpawnModel.TypeState type = cfg.sectorMode
+                                ? spawner.SelectSector(world, sectorWave, threat)
+                                : spawner.Select(wave);
                             type.spawnedThisWave++;
                             type.alive++;
                             remainingToSpawn--;
@@ -80,11 +88,11 @@ namespace Bladehold.BalanceSim
                             {
                                 type = type,
                                 hp = type.def.health,
-                                engageAt = t + (i * world.spawnInterval) + approach,
+                                engageAt = t + (i * spawnInterval) + approach,
                                 arrivalOrder = arrivalCounter++,
                             });
                         }
-                        nextSpawnAt = t + (world.spawnBatchInterval > 0f ? world.spawnBatchInterval : world.spawnInterval);
+                        nextSpawnAt = t + (batchInterval > 0f ? batchInterval : spawnInterval);
                     }
 
                     // --- Engagement ---

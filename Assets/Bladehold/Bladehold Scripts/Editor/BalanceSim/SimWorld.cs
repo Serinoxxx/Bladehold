@@ -25,6 +25,9 @@ namespace Bladehold.BalanceSim
         public int maxGold;
         public float speed;
         public int unlockWave;
+        public bool enabled;
+        /// <summary>Sector mode: first campaign threat level this type spawns at (0 = never).</summary>
+        public int minThreat;
         /// <summary>0..1 (already divided by 100 by <see cref="EnemyRosterSO" />).</summary>
         public float spawnChance;
         public int minSpawn;
@@ -54,6 +57,8 @@ namespace Bladehold.BalanceSim
         private const string EnemyGoldPath = "Assets/Bladehold/Bladehold Scripts/Enemies/EnemySO.asset";
         private const string EnemyMovementPath = "Assets/Bladehold/Bladehold Scripts/Enemies/AIMovementSO.asset";
         private const string HealthPackDropPath = "Assets/Bladehold/Bladehold Scripts/Enemies/HealthpackPowerupDropSO.asset";
+        private const string SectorPacingPath = "Assets/Bladehold/Bladehold Config/SurvivorsRoundPacingConfig.asset";
+        private const string SectorSpawnerPrefabPath = "Assets/Bladehold/Bladehold Prefabs/Waves/EnemySpawner.prefab";
 
         // Player
         public float playerMaxHealth;
@@ -78,6 +83,18 @@ namespace Bladehold.BalanceSim
         public float spawnBatchInterval;
         public int spawnBatchSize;
 
+        // Sector mode (SurvivorsSpawner + RoundPacingConfigSO): 5-wave sectors, one per campaign tier.
+        public int[] sectorBaseQuotas = new int[0];
+        public int wavesPerSector = 5;
+        public float quotaGrowthPerThreat;
+        public string fodderId = "goblin";
+        public float fodderShare;
+        public int sectorMaxConcurrent;
+        public int sectorBatchSize;
+        public float sectorBatchInterval;
+        public float sectorSpawnInterval;
+        public int maxConcurrentShielders;
+
         // Sim-only abstractions
         public float spawnDistanceMeters = 20f;
         /// <summary>Seconds between a bomber engaging and detonating — its intercept window.</summary>
@@ -91,6 +108,21 @@ namespace Bladehold.BalanceSim
 
         /// <summary>Wave N kill total — mirrors WaveConfigSO.GoblinsForWave.</summary>
         public int GoblinsForWave(int wave) => baseGoblinCount + Math.Max(0, wave - 1) * goblinsAddedPerWave;
+
+        /// <summary>Sector mode: run wave N (1-based, across sectors) → campaign threat level (one sector per tier).</summary>
+        public int ThreatForRunWave(int runWave, int startTier = 1) => (runWave - 1) / Math.Max(1, wavesPerSector) + Math.Max(1, startTier);
+
+        /// <summary>Sector mode: run wave N → wave within its sector (1..wavesPerSector).</summary>
+        public int SectorWaveForRunWave(int runWave) => (runWave - 1) % Math.Max(1, wavesPerSector) + 1;
+
+        /// <summary>Mirrors RoundPacingConfigSO.GetKillQuota.</summary>
+        public int SectorQuota(int sectorWave, int threat)
+        {
+            int baseQuota = sectorBaseQuotas.Length > 0
+                ? sectorBaseQuotas[Math.Clamp(sectorWave, 1, sectorBaseQuotas.Length) - 1]
+                : 15 + (Math.Max(1, sectorWave) - 1) * 5;
+            return SectorSpawnRules.ScaledQuota(baseQuota, threat, quotaGrowthPerThreat);
+        }
 
         public static SimWorld Load()
         {
@@ -124,6 +156,8 @@ namespace Bladehold.BalanceSim
             w.spawnBatchInterval = wave.spawnBatchInterval;
             w.spawnBatchSize = wave.spawnBatchSize;
 
+            LoadSectorPacing(w);
+
             w.healthPackDropChance = 0f;
             if (packDrop != null)
             {
@@ -146,6 +180,8 @@ namespace Bladehold.BalanceSim
                     maxGold = def.maxGold ?? enemyGold.maxCoinDrop,
                     speed = def.speed ?? enemyMove.speed,
                     unlockWave = def.unlockWave,
+                    enabled = def.enabled,
+                    minThreat = def.minThreat,
                     spawnChance = def.spawnChance,
                     minSpawn = def.minSpawn,
                     maxConcurrent = def.maxConcurrent,
@@ -161,6 +197,43 @@ namespace Bladehold.BalanceSim
 
             w.profiles = PlayerProfile.LoadAll();
             return w;
+        }
+
+        /// <summary>Reads the sector pacing asset and the live spawner prefab's batch settings (private fields, via SerializedObject).</summary>
+        private static void LoadSectorPacing(SimWorld w)
+        {
+            RoundPacingConfigSO pacing = LoadAsset<RoundPacingConfigSO>(SectorPacingPath);
+            int count = pacing.rounds != null ? pacing.rounds.Count : 0;
+            w.sectorBaseQuotas = new int[count];
+            for (int i = 0; i < count; i++)
+            {
+                RoundPacingConfigSO.RoundDefinition round = pacing.GetRound(i + 1);
+                w.sectorBaseQuotas[i] = round != null ? round.requiredKillsPerWave : 15 + i * 5;
+            }
+            w.wavesPerSector = pacing.wavesPerRound;
+            w.quotaGrowthPerThreat = pacing.quotaGrowthPerThreat;
+            w.fodderId = pacing.fodderEnemyId;
+            w.fodderShare = pacing.fodderShare;
+            w.sectorMaxConcurrent = pacing.maxConcurrentEnemies;
+
+            // SurvivorsSpawner field defaults, used if the prefab can't be read.
+            w.sectorBatchSize = 10;
+            w.sectorBatchInterval = 8f;
+            w.sectorSpawnInterval = 0.2f;
+            w.maxConcurrentShielders = 2;
+
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(SectorSpawnerPrefabPath);
+            SurvivorsSpawner spawner = prefab != null ? prefab.GetComponentInChildren<SurvivorsSpawner>(true) : null;
+            if (spawner == null)
+            {
+                Debug.LogWarning($"BalanceSim: no SurvivorsSpawner at {SectorSpawnerPrefabPath}; using its script defaults for batch pacing.");
+                return;
+            }
+            var so = new SerializedObject(spawner);
+            w.sectorBatchSize = so.FindProperty("spawnBatchSize").intValue;
+            w.sectorBatchInterval = so.FindProperty("spawnBatchInterval").floatValue;
+            w.sectorSpawnInterval = so.FindProperty("spawnInterval").floatValue;
+            w.maxConcurrentShielders = so.FindProperty("maxConcurrentShielders").intValue;
         }
 
         /// <summary>

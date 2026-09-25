@@ -29,7 +29,8 @@ public class EnemyStatsTab
 
     private static readonly (int column, string label, string tooltip)[] SchedulingFields =
     {
-        (EnemyRow.ColUnlockWave, "Unlock Wave", "First wave (1-based) this type can appear on. Blank = 1."),
+        (EnemyRow.ColMinThreat, "Min Threat", "First campaign threat level (node map tier 1-8) this type joins sector waves at. Blank/0 = never in sector waves (objective/captain/debug only)."),
+        (EnemyRow.ColUnlockWave, "Unlock Wave", "First wave (1-5) within a sector this type can appear on, once its threat level is reached. Blank = 1."),
         (EnemyRow.ColSpawnChance, "Spawn Chance %", "Per-spawn roll once unlocked, authored as a percent (10 = 10%). Ignored for the fallback first row."),
         (EnemyRow.ColMinSpawn, "Min Spawn", "Per-wave spawn budget at the unlock wave (guarantee + per-wave cap, ramping +1 per wave). Blank/0 = chance-only."),
         (EnemyRow.ColMaxConcurrent, "Max Concurrent", "Max of this type alive at once. Blank/0 = unlimited."),

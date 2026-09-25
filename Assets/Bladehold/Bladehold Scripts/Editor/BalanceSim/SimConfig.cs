@@ -21,6 +21,16 @@ namespace Bladehold.BalanceSim
         public bool emitTrials = false;
 
         /// <summary>
+        ///     Sector mode: model the live campaign (SurvivorsSpawner) instead of the legacy endless
+        ///     WaveSpawner. Run waves are split into 5-wave sectors, one per campaign tier, so run wave
+        ///     11 is tier 3 wave 1. Verdicts come from SimSectorPacingRules.csv.
+        /// </summary>
+        public bool sectorMode = false;
+
+        /// <summary>Sector mode: campaign tier the run starts at (run wave 1 = this tier's wave 1). Pair with maxWaves 5 to sim one sector in isolation.</summary>
+        public int startTier = 1;
+
+        /// <summary>
         ///     Calibration mode: wave → node ids purchased in that wave's intermission, replayed verbatim
         ///     instead of the profile's upgrade policy — isolates the combat model from spending behaviour.
         ///     Null = use the policy (the normal path).

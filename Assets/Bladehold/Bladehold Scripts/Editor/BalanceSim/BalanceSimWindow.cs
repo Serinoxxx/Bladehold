@@ -22,6 +22,7 @@ namespace Bladehold.BalanceSim
         private int seed = 12345;
         private string overridesText = "";
         private bool emitTrials;
+        private bool sectorMode;
 
         private SimRunOutput output;
         private string error;
@@ -97,6 +98,8 @@ namespace Bladehold.BalanceSim
             seed = EditorGUILayout.IntField("Seed", seed);
             EditorGUILayout.EndHorizontal();
             emitTrials = EditorGUILayout.Toggle(new GUIContent("Emit trials.csv", "Raw per-trial rows (large)"), emitTrials);
+            sectorMode = EditorGUILayout.Toggle(new GUIContent("Sector mode",
+                "Model the live campaign: 5-wave sectors, one per tier (wave 11 = tier 3 wave 1). Set Max waves to 40 for all 8 tiers."), sectorMode);
 
             EditorGUILayout.LabelField(new GUIContent("What-if overrides",
                 "One key=value per line, e.g. player.maxHealth=20 or enemy.bomber.damage=15. '#' comments."));
@@ -133,6 +136,7 @@ namespace Bladehold.BalanceSim
                 maxWaves = Mathf.Max(1, maxWaves),
                 seed = seed,
                 emitTrials = emitTrials,
+                sectorMode = sectorMode,
                 overrides = overridesText
                     .Split('\n')
                     .Select(s => s.Trim())

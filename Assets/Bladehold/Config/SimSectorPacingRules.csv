@@ -1,0 +1,7 @@
+id,profile,policy,metric,waveMin,waveMax,min,max,severity,message
+good_clears_tier1,good,dpsGreedy,survival_rate,6,,0.95,,fail,"A good player should almost always clear the tier-1 sector (run waves 1-5)"
+average_clears_tier1,average,balanced,survival_rate,6,,0.8,,warn,"An average player should usually clear the tier-1 sector"
+good_reaches_demo_end,good,dpsGreedy,survival_rate,21,,0.5,,warn,"A good player should clear tier 4 (the demo cutoff, run wave 20) at least half the time"
+bad_no_upg_dies_in_demo,bad_noupgrades,none,death_wave_median,,,3,20,warn,"A no-upgrade bad player should die inside the demo half of the campaign"
+good_challenged_mid,good,dpsGreedy,min_hp_fraction_med,11,20,,0.6,warn,"Tiers 3-4 should push a good player below 60% HP somewhere"
+waves_not_sluggish,,,clear_seconds_med,1,40,15,120,warn,"Median wave clear should stay between 15s and 120s"

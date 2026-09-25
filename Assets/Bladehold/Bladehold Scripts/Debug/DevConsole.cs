@@ -279,6 +279,7 @@ public class DevConsole : MonoBehaviour
         DrawSceneControls();
 
         DrawWaveControls();
+        DrawThreatControls();
         DrawObjectiveControls();
         DrawEnemySpawnControls();
         DrawLanguageControls();
@@ -608,6 +609,36 @@ public class DevConsole : MonoBehaviour
             GUI.FocusControl(null);
         }
 
+        GUILayout.EndHorizontal();
+    }
+
+    /// <summary>
+    ///     Sector threat override (<see cref="SectorThreat.DebugOverride" />): ▲/▼ to pretend this sector
+    ///     sits deeper in the campaign, Clear to go back to the campaign node's tier. Takes effect on the
+    ///     next wave start (roster gating and kill quota).
+    /// </summary>
+    private void DrawThreatControls()
+    {
+        if (SurvivorsSpawner.Instance == null)
+        {
+            return;
+        }
+
+        string source = SectorThreat.DebugOverride > 0 ? "override" : "campaign";
+        GUILayout.Label($"Sector Threat {SectorThreat.Current} ({source}; this wave: {SurvivorsSpawner.Instance.CurrentThreat})");
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("▲", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
+        {
+            SectorThreat.DebugOverride = Mathf.Min(8, SectorThreat.Current + 1);
+        }
+        if (GUILayout.Button("▼", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
+        {
+            SectorThreat.DebugOverride = Mathf.Max(1, SectorThreat.Current - 1);
+        }
+        if (GUILayout.Button("Clear", GUILayout.Height(ButtonHeight)))
+        {
+            SectorThreat.DebugOverride = 0;
+        }
         GUILayout.EndHorizontal();
     }
 

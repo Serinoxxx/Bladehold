@@ -46,13 +46,16 @@ namespace Bladehold.BalanceSim
     public static class PacingRules
     {
         public const string CsvAssetPath = "Assets/Bladehold/Config/SimPacingRules.csv";
+        /// <summary>Sector-mode contract: run waves are 5-wave sectors, one per campaign tier (wave 11 = tier 3 wave 1).</summary>
+        public const string SectorCsvAssetPath = "Assets/Bladehold/Config/SimSectorPacingRules.csv";
 
-        public static List<PacingRule> Load()
+        public static List<PacingRule> Load(bool sectorMode = false)
         {
-            TextAsset csv = AssetDatabase.LoadAssetAtPath<TextAsset>(CsvAssetPath);
+            string path = sectorMode ? SectorCsvAssetPath : CsvAssetPath;
+            TextAsset csv = AssetDatabase.LoadAssetAtPath<TextAsset>(path);
             if (csv == null)
             {
-                Debug.LogWarning($"BalanceSim: no pacing rules at {CsvAssetPath}; skipping verdicts.");
+                Debug.LogWarning($"BalanceSim: no pacing rules at {path}; skipping verdicts.");
                 return new List<PacingRule>();
             }
 

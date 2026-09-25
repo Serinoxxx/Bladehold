@@ -39,11 +39,7 @@ public static class SetupGameLoopAssets
         }
         pacing.maxConcurrentEnemies = 20;
         pacing.spawnTelegraphDuration = 3.0f;
-        pacing.spawnStaggerInterval = 0.35f;
-        pacing.intermissionDuration = 30.0f;
         pacing.wavesPerRound = 5;
-        pacing.totalRounds = 1;
-        pacing.bossSpawnWave = 5;
         pacing.bossEnemyId = "slayer";
 
         string[] vfxGuids = AssetDatabase.FindAssets("vfx_RoundMarker02_Red");
@@ -995,11 +991,11 @@ public static class SetupGameLoopAssets
             glmRound2.StartWave(4);
             sb.AppendLine($"- Wave 4 Started. CurrentRound: {glmRound2.CurrentRound} (Expected: 2)");
 
-            RoundPacingConfigSO pacing = AssetDatabase.LoadAssetAtPath<RoundPacingConfigSO>("Assets/Bladehold/Bladehold Config/SurvivorsRoundPacingConfig.asset");
-            RoundPacingConfigSO.RoundDefinition round2Def = pacing != null ? pacing.GetRound(2) : null;
-            bool hasBigOrk = round2Def != null && System.Array.IndexOf(round2Def.allowedEnemyIds, "big_ork") >= 0;
-            sb.AppendLine($"- Round 2 Allowed Enemy Roster contains 'big_ork': {hasBigOrk} (Expected: True)");
-            if (!hasBigOrk) throw new System.Exception("Round 2 does not contain big_ork in allowed roster!");
+            EnemyRosterSO roster = AssetDatabase.LoadAssetAtPath<EnemyRosterSO>("Assets/Bladehold/Bladehold Scripts/Enemies/EnemyRosterSO.asset");
+            EnemyDefinition bigOrk = roster != null ? roster.Find("big_ork") : null;
+            bool hasBigOrk = bigOrk != null && SectorSpawnRules.IsUnlocked(bigOrk, 4, 1);
+            sb.AppendLine($"- 'big_ork' unlocked on wave 4 at threat 1: {hasBigOrk} (Expected: True)");
+            if (!hasBigOrk) throw new System.Exception("big_ork is not unlocked on wave 4 at threat 1!");
 
             // -------------------------------------------------------------
             // PHASE 4: Death Sequence & Run Clear

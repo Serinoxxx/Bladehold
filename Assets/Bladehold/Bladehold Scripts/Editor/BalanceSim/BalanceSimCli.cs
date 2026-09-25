@@ -115,6 +115,12 @@ namespace Bladehold.BalanceSim
                     case "-simEmitTrials":
                         cfg.emitTrials = true;
                         break;
+                    case "-simSectors":
+                        cfg.sectorMode = true;
+                        break;
+                    case "-simStartTier":
+                        cfg.startTier = int.Parse(Next(args, ref i), CultureInfo.InvariantCulture);
+                        break;
                     case "-simCalibrate":
                         cfg.calibrate = true;
                         break;

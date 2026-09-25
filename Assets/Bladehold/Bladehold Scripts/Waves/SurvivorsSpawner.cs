@@ -98,9 +98,6 @@ public class SurvivorsSpawner : MonoBehaviour
     [Tooltip("Optional override for the lightning strike SFX clip. If null, falls back to ElementalEffectsManager.superconductorSfx.")]
     [SerializeField] private AudioClip cleanupLightningSfx;
 
-    [Tooltip("Whether to ignore per-row maxConcurrent limits in CSV to allow horde spawning up to maxConcurrentEnemies.")]
-    [SerializeField] private bool ignoreRowMaxConcurrent = true;
-
     private readonly List<SpawnType> spawnTypes = new List<SpawnType>();
     private readonly HashSet<Health> aliveEnemies = new HashSet<Health>();
     private PlayerStats stats;
@@ -108,6 +105,9 @@ public class SurvivorsSpawner : MonoBehaviour
     private int currentWave = 1;
     private int totalToSpawnThisWave;
     private int remainingToSpawn;
+    private int spawnedThisWave;
+    private int fodderSpawnedThisWave;
+    private int currentThreat = 1;
     private bool isSpawningActive = false;
     private Coroutine spawnLoopCoroutine;
     private bool isInitialized = false;
@@ -119,6 +119,7 @@ public class SurvivorsSpawner : MonoBehaviour
     public int CurrentWave => currentWave;
     public int RemainingToSpawn => remainingToSpawn;
     public int TotalToSpawnThisWave => totalToSpawnThisWave;
+    public int CurrentThreat => currentThreat;
     public int MaxConcurrentEnemies => pacingConfig != null && pacingConfig.maxConcurrentEnemies > 0 ? pacingConfig.maxConcurrentEnemies : (config != null && config.maxConcurrent > 0 ? config.maxConcurrent : (maxConcurrentEnemies > 0 ? maxConcurrentEnemies : 20));
     public bool IsSpawningActive => isSpawningActive;
     public int MaxConcurrentShielders => maxConcurrentShielders;
@@ -257,6 +258,7 @@ public class SurvivorsSpawner : MonoBehaviour
         if (anyError) return;
 
         currentWave = Mathf.Max(1, waveNumber);
+        currentThreat = SectorThreat.Current;
 
         if (enemyCount > 0)
         {
@@ -264,8 +266,7 @@ public class SurvivorsSpawner : MonoBehaviour
         }
         else if (pacingConfig != null)
         {
-            RoundPacingConfigSO.RoundDefinition roundDef = pacingConfig.GetRound(currentWave);
-            totalToSpawnThisWave = roundDef != null ? roundDef.requiredKillsPerWave : (15 + (currentWave - 1) * 5);
+            totalToSpawnThisWave = pacingConfig.GetKillQuota(currentWave, currentThreat);
         }
         else
         {
@@ -273,6 +274,8 @@ public class SurvivorsSpawner : MonoBehaviour
         }
 
         remainingToSpawn = totalToSpawnThisWave;
+        spawnedThisWave = 0;
+        fodderSpawnedThisWave = 0;
         isSpawningActive = true;
 
         if (spawnLoopCoroutine != null)
@@ -280,7 +283,7 @@ public class SurvivorsSpawner : MonoBehaviour
             StopCoroutine(spawnLoopCoroutine);
         }
         spawnLoopCoroutine = StartCoroutine(SpawnLoop());
-        Debug.Log($"[SurvivorsSpawner] StartWave {currentWave} started. (quota={totalToSpawnThisWave}, spawnBatchSize={spawnBatchSize}, maxConcurrent={MaxConcurrentEnemies})");
+        Debug.Log($"[SurvivorsSpawner] StartWave {currentWave} started. (threat={currentThreat}, quota={totalToSpawnThisWave}, spawnBatchSize={spawnBatchSize}, maxConcurrent={MaxConcurrentEnemies})");
     }
 
     /// <summary>
@@ -386,13 +389,39 @@ public class SurvivorsSpawner : MonoBehaviour
         }
     }
 
+    /// <summary>
+    ///     True while the quota is out but the objective still needs enemies on the field (wagon escort,
+    ///     battering ram), so the spawner keeps a trickle going instead of letting the field empty.
+    /// </summary>
+    private bool KeepTrickling
+    {
+        get
+        {
+            if (!isSpawningActive || GameLoopManager.Instance == null) return false;
+            ISurvivorsObjective objective = GameLoopManager.Instance.CurrentObjective;
+            return objective is IRequiresContinuousSpawns && !objective.IsComplete && !objective.IsFailed;
+        }
+    }
+
     private IEnumerator SpawnLoop()
     {
-        while (isSpawningActive && remainingToSpawn > 0)
+        while (isSpawningActive && (remainingToSpawn > 0 || KeepTrickling))
         {
             if (SurvivorsGameManager.Instance != null && !SurvivorsGameManager.Instance.IsGameActive)
             {
                 yield return null;
+                continue;
+            }
+
+            if (remainingToSpawn <= 0)
+            {
+                int trickleMinAlive = pacingConfig != null ? pacingConfig.objectiveTrickleMinAlive : 6;
+                float trickleInterval = pacingConfig != null ? pacingConfig.objectiveTrickleInterval : 2f;
+                if (aliveCount < trickleMinAlive)
+                {
+                    SpawnEnemyForWave(currentWave);
+                }
+                yield return new WaitForSeconds(trickleInterval);
                 continue;
             }
 
@@ -429,7 +458,7 @@ public class SurvivorsSpawner : MonoBehaviour
                     }
                 }
 
-                if (!isSpawningActive || remainingToSpawn <= 0) yield break;
+                if (!isSpawningActive || remainingToSpawn <= 0) continue;
 
                 // Wait for batch interval
                 float timer = 0f;
@@ -557,7 +586,7 @@ public class SurvivorsSpawner : MonoBehaviour
 
                     GameLoopManager.Instance?.OnEnemyKilled(health);
 
-                    if (remainingToSpawn <= 0 && aliveCount <= 0 && isSpawningActive)
+                    if (remainingToSpawn <= 0 && aliveCount <= 0 && isSpawningActive && !KeepTrickling)
                     {
                         StopSpawning();
                         OnWaveWiped?.Invoke();
@@ -568,7 +597,7 @@ public class SurvivorsSpawner : MonoBehaviour
             else
             {
                 aliveCount = Mathf.Max(0, aliveCount - 1);
-                if (remainingToSpawn <= 0 && aliveCount <= 0 && isSpawningActive)
+                if (remainingToSpawn <= 0 && aliveCount <= 0 && isSpawningActive && !KeepTrickling)
                 {
                     StopSpawning();
                     OnWaveWiped?.Invoke();
@@ -605,80 +634,82 @@ public class SurvivorsSpawner : MonoBehaviour
 
     private SpawnType SelectSpawnTypeForWave(int waveNumber)
     {
-        List<SpawnType> eligible = new List<SpawnType>();
+        string fodderId = pacingConfig != null ? pacingConfig.fodderEnemyId : "goblin";
+        float fodderShare = pacingConfig != null ? pacingConfig.fodderShare : 0.6f;
 
-        RoundPacingConfigSO.RoundDefinition roundDef = pacingConfig != null ? pacingConfig.GetRound(waveNumber) : null;
-        string[] allowed = roundDef != null ? roundDef.allowedEnemyIds : null;
-
+        string[] allowed = null;
         if (GameLoopManager.Instance != null && GameLoopManager.Instance.CurrentObjective is IOverrideEnemySpawns overrideObj)
         {
             allowed = overrideObj.AllowedEnemyIds;
         }
 
+        SpawnType fodder = null;
+        List<SpawnType> eligible = new List<SpawnType>();
         foreach (SpawnType type in spawnTypes)
         {
-            if (type.def.enabled && waveNumber >= type.def.unlockWave)
+            if (string.Equals(type.def.id, fodderId, StringComparison.OrdinalIgnoreCase))
             {
-                if (allowed != null && allowed.Length > 0 && Array.IndexOf(allowed, type.def.id) < 0)
+                fodder = type;
+            }
+
+            if (allowed != null && allowed.Length > 0)
+            {
+                // Objective override (e.g. Goblin Rush): its list replaces the threat gating.
+                if (!type.def.enabled || Array.IndexOf(allowed, type.def.id) < 0) continue;
+            }
+            else if (!SectorSpawnRules.IsUnlocked(type.def, waveNumber, currentThreat))
+            {
+                continue;
+            }
+
+            int currentAlive = type.AliveCount;
+
+            // Shielders (bubblers) are strictly capped at maxConcurrentShielders
+            if (type.isShielder)
+            {
+                int cap = maxConcurrentShielders;
+                if (type.def.maxConcurrent > 0 && type.def.maxConcurrent < cap)
+                {
+                    cap = type.def.maxConcurrent;
+                }
+                if (currentAlive >= cap)
                 {
                     continue;
                 }
-
-                int currentAlive = type.AliveCount;
-
-                // Shielders (bubblers) are strictly capped at maxConcurrentShielders
-                if (type.isShielder)
-                {
-                    int cap = maxConcurrentShielders;
-                    if (type.def.maxConcurrent > 0 && type.def.maxConcurrent < cap)
-                    {
-                        cap = type.def.maxConcurrent;
-                    }
-                    if (currentAlive >= cap)
-                    {
-                        continue;
-                    }
-                }
-                else if (!ignoreRowMaxConcurrent && type.def.maxConcurrent > 0 && currentAlive >= type.def.maxConcurrent)
-                {
-                    continue;
-                }
-
-                eligible.Add(type);
             }
-        }
-
-        if (eligible.Count == 0)
-        {
-            SpawnType fallback = spawnTypes.Find(t => !t.isShielder) ?? spawnTypes[0];
-            return fallback;
-        }
-
-        // Weighted roll based on spawnChance
-        float totalWeight = 0f;
-        foreach (SpawnType type in eligible)
-        {
-            totalWeight += type.def.spawnChance;
-        }
-
-        if (totalWeight <= 0f)
-        {
-            return eligible[UnityEngine.Random.Range(0, eligible.Count)];
-        }
-
-        float roll = UnityEngine.Random.Range(0f, totalWeight);
-        float cumulative = 0f;
-
-        foreach (SpawnType type in eligible)
-        {
-            cumulative += type.def.spawnChance;
-            if (roll <= cumulative)
+            else if (type.def.maxConcurrent > 0 && currentAlive >= type.def.maxConcurrent)
             {
-                return type;
+                continue;
             }
+
+            eligible.Add(type);
         }
 
-        return eligible[0];
+        SpawnType picked;
+        if (fodder != null && SectorSpawnRules.MustSpawnFodder(fodderSpawnedThisWave, spawnedThisWave, fodderShare))
+        {
+            picked = fodder;
+        }
+        else if (eligible.Count == 0)
+        {
+            picked = fodder ?? spawnTypes.Find(t => !t.isShielder) ?? spawnTypes[0];
+        }
+        else
+        {
+            List<float> weights = new List<float>(eligible.Count);
+            foreach (SpawnType type in eligible)
+            {
+                weights.Add(type.def.spawnChance);
+            }
+            picked = eligible[SectorSpawnRules.PickWeighted(weights, UnityEngine.Random.value * 0.99999f)];
+        }
+
+        spawnedThisWave++;
+        if (picked == fodder)
+        {
+            fodderSpawnedThisWave++;
+        }
+        return picked;
     }
 
     private Vector3 ResolveSpawnPosition()

@@ -14,51 +14,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RoundPacingConfigSO
   rounds:
   - roundNumber: 1
-    allowedEnemyIds:
-    - goblin
-    - goblin_brute
     requiredKillsPerWave: 15
   - roundNumber: 2
-    allowedEnemyIds:
-    - goblin
-    - goblin_brute
-    - big_ork
     requiredKillsPerWave: 20
   - roundNumber: 3
-    allowedEnemyIds:
-    - goblin
-    - goblin_brute
-    - big_ork
-    - bubbler
     requiredKillsPerWave: 25
   - roundNumber: 4
-    allowedEnemyIds:
-    - goblin
-    - goblin_brute
-    - big_ork
-    - bubbler
-    - bomber
     requiredKillsPerWave: 30
   - roundNumber: 5
-    allowedEnemyIds:
-    - goblin
-    - goblin_brute
-    - big_ork
-    - bubbler
-    - bomber
     requiredKillsPerWave: 35
+  wavesPerRound: 5
+  quotaGrowthPerThreat: 0.1
+  fodderEnemyId: goblin
+  fodderShare: 0.6
   maxConcurrentEnemies: 20
   spawnTelegraphDuration: 3
-  spawnStaggerInterval: 0.35
-  intermissionDuration: 30
-  wavesPerRound: 5
-  totalRounds: 1
+  objectiveTrickleMinAlive: 6
+  objectiveTrickleInterval: 2
   bossEnemyId: slayer
-  bossSpawnWave: 5
   indicatorPrefab: {fileID: 8882073100815552345, guid: d9eaf0d0868984c45b4645b78509446f, type: 3}
   indicatorRadius: 0.2
-  weightTrollHeart: 15
-  weightOrcishMetal: 25
-  weightGoblinBlood: 30
-  weightGold: 20
-  weightInstantDraft: 10

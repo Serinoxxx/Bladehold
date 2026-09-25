@@ -2498,7 +2498,7 @@ public static class WeaponReachBenchmark
 
             // 22A: Pacing Config 5-Wave Structure
             RoundPacingConfigSO pacingAsset = AssetDatabase.LoadAssetAtPath<RoundPacingConfigSO>("Assets/Bladehold/Bladehold Config/SurvivorsRoundPacingConfig.asset");
-            bool pacingValid = pacingAsset != null && pacingAsset.wavesPerRound == 5 && pacingAsset.totalRounds == 1 && pacingAsset.bossSpawnWave == 5;
+            bool pacingValid = pacingAsset != null && pacingAsset.wavesPerRound == 5;
             bool fiveRoundsDefined = pacingAsset != null && pacingAsset.rounds != null && pacingAsset.rounds.Count >= 5;
 
             if (pacingValid && fiveRoundsDefined)

@@ -6,6 +6,15 @@ public interface IOverrideEnemySpawns
 }
 
 /// <summary>
+///     Marks an objective that needs enemies on the field until it resolves (wagon escort, battering
+///     ram): the wave can't end before the objective does, and once the kill quota has spawned the
+///     spawner keeps a trickle going instead of letting the field go empty.
+/// </summary>
+public interface IRequiresContinuousSpawns
+{
+}
+
+/// <summary>
 ///     Defines the contract for an objective in Survivors Mode (e.g. kill wave, destroy siege engines,
 ///     escort wagon, free prisoners).
 /// </summary>

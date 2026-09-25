@@ -33,8 +33,15 @@ public class EnemyDefinition
     /// <summary>Multiplier on the prefab's authored transform scale (and NavMeshAgent radius/height). Blank = 1.</summary>
     public float scale = 1f;
 
-    /// <summary>First wave (1-based) this type can appear on. Blank = 1.</summary>
+    /// <summary>First wave (1-based) within a sector this type can appear on. Blank = 1.</summary>
     public int unlockWave = 1;
+
+    /// <summary>
+    ///     First campaign threat level (the node's map tier, see <see cref="SectorThreat" />) this type
+    ///     joins sector waves at. 0 or blank = never spawns in sector waves (objectives, captains and
+    ///     debug spawns only).
+    /// </summary>
+    public int minThreat = 0;
 
     /// <summary>Per-spawn roll chance once unlocked, stored 0..1 (authored as a percent in the CSV: 10 = 10%). Ignored for the first (fallback) row, which spawns whenever no other type wins its roll.</summary>
     public float spawnChance = 0f;
@@ -64,7 +71,8 @@ public class EnemyDefinition
 ///     row's overrides to each spawned instance.
 ///
 ///     CSV columns (one type per row):
-///     <c>id, displayName, health, damage, minGold, maxGold, speed, scale, unlockWave, spawnChance, minSpawn, maxConcurrent, knockbackResistance, enabled</c>
+///     <c>id, displayName, health, damage, minGold, maxGold, speed, scale, unlockWave, spawnChance, minSpawn, maxConcurrent, knockbackResistance, enabled, minThreat</c>
+///     (<c>minThreat</c> is optional; a 14-column row reads it as blank.)
 ///     <list type="bullet">
 ///         <item>The <b>first row is the fallback type</b> (spawned when no other type wins its
 ///         spawn-chance roll or all are at their concurrent cap), so it is effectively unlimited and
@@ -196,6 +204,7 @@ public class EnemyRosterSO : ScriptableObject
             maxConcurrent = ParseOptionalInt(f[11], lineNumber, "maxConcurrent") ?? 0,
             knockbackResistance = ParseOptionalFloat(f[12], lineNumber, "knockbackResistance"),
             enabled = ParseOptionalBool(f[13], lineNumber, "enabled") ?? true,
+            minThreat = f.Count > 14 ? ParseOptionalInt(f[14], lineNumber, "minThreat") ?? 0 : 0,
         };
 
         // Filling only one of the gold columns means a fixed drop of that amount.
@@ -214,6 +223,7 @@ public class EnemyRosterSO : ScriptableObject
         def.unlockWave = Mathf.Max(1, def.unlockWave);
         def.minSpawn = Mathf.Max(0, def.minSpawn);
         def.maxConcurrent = Mathf.Max(0, def.maxConcurrent);
+        def.minThreat = Mathf.Max(0, def.minThreat);
         if (def.scale <= 0f)
         {
             Debug.LogError($"EnemyRosterSO '{name}': line {lineNumber} has non-positive scale. Using 1.");

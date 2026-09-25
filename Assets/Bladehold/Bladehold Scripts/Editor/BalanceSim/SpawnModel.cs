@@ -19,6 +19,8 @@ namespace Bladehold.BalanceSim
 
         public readonly List<TypeState> types = new List<TypeState>();
         private readonly Random rng;
+        private int sectorSpawned;
+        private int sectorFodderSpawned;
 
         public SpawnModel(SimWorld world, Random rng)
         {
@@ -35,6 +37,64 @@ namespace Bladehold.BalanceSim
             {
                 t.spawnedThisWave = 0;
             }
+            sectorSpawned = 0;
+            sectorFodderSpawned = 0;
+        }
+
+        /// <summary>
+        ///     Sector mode: mirrors SurvivorsSpawner.SelectSpawnTypeForWave — threat + wave gating, row
+        ///     and shielder caps, the fodder floor, then a weighted spawnChance roll, all through the
+        ///     shared <see cref="SectorSpawnRules" />.
+        /// </summary>
+        public TypeState SelectSector(SimWorld world, int sectorWave, int threat)
+        {
+            TypeState fodder = null;
+            var eligible = new List<TypeState>();
+            var weights = new List<float>();
+            foreach (TypeState type in types)
+            {
+                SimEnemyType d = type.def;
+                if (string.Equals(d.id, world.fodderId, StringComparison.OrdinalIgnoreCase))
+                {
+                    fodder = type;
+                }
+                if (!SectorSpawnRules.IsUnlocked(d.enabled, d.minThreat, d.unlockWave, sectorWave, threat))
+                {
+                    continue;
+                }
+                int cap = d.maxConcurrent;
+                if (SectorSpawnRules.IsShielderId(d.id))
+                {
+                    cap = cap > 0 ? Math.Min(cap, world.maxConcurrentShielders) : world.maxConcurrentShielders;
+                }
+                if (cap > 0 && type.alive >= cap)
+                {
+                    continue;
+                }
+                eligible.Add(type);
+                weights.Add(d.spawnChance);
+            }
+
+            TypeState picked;
+            if (fodder != null && SectorSpawnRules.MustSpawnFodder(sectorFodderSpawned, sectorSpawned, world.fodderShare))
+            {
+                picked = fodder;
+            }
+            else if (eligible.Count == 0)
+            {
+                picked = fodder ?? types[0];
+            }
+            else
+            {
+                picked = eligible[SectorSpawnRules.PickWeighted(weights, rng.NextDouble())];
+            }
+
+            sectorSpawned++;
+            if (picked == fodder)
+            {
+                sectorFodderSpawned++;
+            }
+            return picked;
         }
 
         /// <summary>Mirrors WaveSpawner.SelectSpawnType (WaveSpawner.cs:405-427).</summary>

@@ -27,6 +27,17 @@ Exit codes: **0** = all rules pass/warn, **2** = at least one `fail` verdict, **
 
 **In-Editor**: `Bladehold > Balance Simulator` (same engine; overrides textarea, per-wave table, tinted verdicts).
 
+## Sector mode (the live campaign)
+
+The default mode models the **legacy** endless `WaveSpawner`. For the live 5-wave sectors add `-simSectors` (or tick **Sector mode** in the window):
+- Run waves are split into 5-wave sectors, one per campaign tier: run wave 11 = tier 3 wave 1. `-simWaves 40` covers all 8 tiers.
+- Quotas and the fodder floor come from `SurvivorsRoundPacingConfig.asset`, batch pacing from `EnemySpawner.prefab`, and type selection goes through the same `SectorSpawnRules` the game uses.
+- Verdicts come from `Config/SimSectorPacingRules.csv`.
+- `-simStartTier N -simWaves 5` sims one tier's sector in isolation from full HP. Use it to read the *shape* of the difficulty curve tier by tier.
+- Extra overrides: `enemy.<id>.minThreat`, `sim.fodderShare`, `sim.quotaGrowthPerThreat`, `sim.sectorMaxConcurrent`.
+
+**Absolute numbers are pessimistic.** The sim still spends gold on the dead gold skill tree (its SO has no CSV, so nothing gets bought) and models no drafts, towers, bow, dash, armour, meta perks or between-sector healing. Compare configurations against each other (same seed), not against the rule bands.
+
 ## Step 2 — Author what-ifs (`key=value`, one per line, `#` comments)
 
 ```

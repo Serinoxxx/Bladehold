@@ -8,6 +8,7 @@
   - First move the static `ApplyDefinition` (used by `SurvivorsSpawner`) somewhere sensible.
   - Replace the ~20 `WaveSpawner.Instance` null-checks (DeathScreen, DevConsole, MinionSpawner, RunTelemetry, …) with `GameLoopManager`/`SurvivorsSpawner` equivalents or delete them.
 - [ ] **Gold skill tree + Reincarnate:** `SkillTreeService`, `SkillTreeView`, `SkillNodeView`, `SkillTreeSO` and assets, `ReincarnateService`, `Reincarnate/`, `SkillTreeCsvEditorWindow`, `DeathScreen` reincarnate bits. Mark the `SaveData` fields `[Obsolete]` or drop them; old saves tolerate missing fields.
+  - **The balance sim depends on it:** `Editor/BalanceSim/UpgradePolicy.cs`, `SimWorld` (`goldTree`, `prePurchasedNodes`) and the `node.<id>` override spend gold on `SkillTreeSO`. Swap in a stand-in for drafts/towers or strip the upgrade policy in the same change, or the sim stops compiling (noted by plan 06).
   - Check `Player/` components that were gold-tree lines (VampiricBlade, DamageBlocker, Parry, Counterstrike, DeathNova, GoldOnDeathCollector, GoldenGoblin stats): some may be reused by drafts or perks, so keep whatever `DraftUpgrades.csv`/perks reference.
 - [ ] **`HoldTheLineBonus`** (in every sector, inert).
 - [ ] **`GameLoopManager`:** rest-gate path (`HandleGateInteracted`, `OnRestGateOpened`, gate `CanInteract`), `SpawnEndgameBoss`, `siegebreakerBossPrefab`, the Second Wind stub. Note that Second Wind is a real meta perk: implement it via `Health.TryPreventDeath` if it isn't elsewhere, rather than just deleting it.

@@ -16,7 +16,10 @@ using UnityEngine;
 [Serializable]
 public class EnemyRow
 {
-    public const int ColumnCount = 14;
+    public const int ColumnCount = 15;
+
+    /// <summary>Rows written before the minThreat column existed have 14 cells; the missing one loads blank.</summary>
+    public const int MinColumnCount = 14;
 
     public const int ColId = 0;
     public const int ColDisplayName = 1;
@@ -32,6 +35,7 @@ public class EnemyRow
     public const int ColMaxConcurrent = 11;
     public const int ColKnockbackResistance = 12;
     public const int ColEnabled = 13;
+    public const int ColMinThreat = 14;
 
     public string[] cells = new string[ColumnCount];
 
@@ -97,6 +101,7 @@ public class EnemyRow
             maxConcurrent = OptionalInt(Get(ColMaxConcurrent)) ?? 0,
             knockbackResistance = OptionalFloat(Get(ColKnockbackResistance)),
             enabled = OptionalBool(Get(ColEnabled)) ?? true,
+            minThreat = OptionalInt(Get(ColMinThreat)) ?? 0,
         };
 
         if (def.minGold.HasValue != def.maxGold.HasValue)
@@ -112,6 +117,7 @@ public class EnemyRow
         def.unlockWave = Mathf.Max(1, def.unlockWave);
         def.minSpawn = Mathf.Max(0, def.minSpawn);
         def.maxConcurrent = Mathf.Max(0, def.maxConcurrent);
+        def.minThreat = Mathf.Max(0, def.minThreat);
         if (def.scale <= 0f)
         {
             def.scale = 1f;
@@ -156,7 +162,7 @@ public class EnemyRow
 /// </summary>
 public static class EnemyCsvIO
 {
-    public const string DefaultHeader = "id,displayName,health,damage,minGold,maxGold,speed,scale,unlockWave,spawnChance,minSpawn,maxConcurrent,knockbackResistance,enabled";
+    public const string DefaultHeader = "id,displayName,health,damage,minGold,maxGold,speed,scale,unlockWave,spawnChance,minSpawn,maxConcurrent,knockbackResistance,enabled,minThreat";
 
     /// <summary>
     ///     Parses the roster's CSV into editable raw rows. Returns an empty list (and a null csvAsset)
@@ -197,14 +203,14 @@ public static class EnemyCsvIO
             }
 
             List<string> f = CsvUtil.SplitLine(line);
-            if (f.Count < EnemyRow.ColumnCount)
+            if (f.Count < EnemyRow.MinColumnCount)
             {
                 Debug.LogWarning($"Enemy Manager: skipping line {i + 1} of '{csvAsset.name}' ({f.Count} columns, expected {EnemyRow.ColumnCount}).");
                 continue;
             }
 
             var row = new EnemyRow();
-            for (int c = 0; c < EnemyRow.ColumnCount; c++)
+            for (int c = 0; c < EnemyRow.ColumnCount && c < f.Count; c++)
             {
                 row.cells[c] = f[c];
             }

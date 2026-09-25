@@ -33,7 +33,7 @@ public class GameLoopManager : MonoBehaviour
     private List<WarBannerController> activeBanners = new List<WarBannerController>();
 
     [Header("Captain Settings")]
-    [Tooltip("Optional prefab for Clan Captains (e.g. Captain Fraglob). If null, a scaled Brute is used as placeholder.")]
+    [Tooltip("Captain Fraglob prefab. If null, an error is logged and Captain Kombusta spawns instead.")]
     [SerializeField] private GameObject captainPrefab;
     [Tooltip("Optional dedicated prefab for Captain Kombusta. If null, spawner will attempt to spawn 'captain_kombusta'.")]
     [SerializeField] private GameObject captainKombustaPrefab;
@@ -246,8 +246,9 @@ public class GameLoopManager : MonoBehaviour
         RunSession.CurrentWave = waveNumber;
         int totalWaves = pacingConfig != null ? pacingConfig.wavesPerRound : 5;
 
-        RoundPacingConfigSO.RoundDefinition roundDef = pacingConfig != null ? pacingConfig.GetRound(waveNumber) : null;
-        targetKillsThisWave = roundDef != null ? roundDef.requiredKillsPerWave : (15 + (waveNumber - 1) * 5);
+        targetKillsThisWave = pacingConfig != null
+            ? pacingConfig.GetKillQuota(waveNumber, SectorThreat.Current)
+            : 15 + (waveNumber - 1) * 5;
         killsThisWave = 0;
         isObjectiveComplete = false;
         isWaveActive = true;
@@ -410,26 +411,11 @@ public class GameLoopManager : MonoBehaviour
             killQuotaMet = true;
         }
 
-        // Escort wagon special rule: enemies must keep spawning until wagon arrives at the destination!
-        if (currentObjective is ProtectWagonObjective)
+        // Wagon/ram: the wave can't end before the objective resolves (the spawner trickles enemies meanwhile).
+        if (currentObjective is IRequiresContinuousSpawns && !isObjectiveComplete)
         {
-            if (!isObjectiveComplete)
-            {
-                // Wagon has not reached the destination yet; wave cannot end
-                cleanupTimer = 0f;
-                return;
-            }
-        }
-
-        // Battering ram special rule: enemies must keep spawning until the ram is destroyed!
-        if (currentObjective is StopBatteringRamObjective)
-        {
-            if (!isObjectiveComplete)
-            {
-                // Ram has not been destroyed yet; wave cannot end
-                cleanupTimer = 0f;
-                return;
-            }
+            cleanupTimer = 0f;
+            return;
         }
 
         if (killQuotaMet && isObjectiveComplete)
@@ -973,7 +959,6 @@ public class GameLoopManager : MonoBehaviour
     }
 
     /// <summary>
-    /// <summary>
     ///     Spawns a Clan Captain (e.g. Captain Kombusta or Captain Fraglob) for Enraged, Nightmare, or Omega difficulty tiers,
     ///     plays the cinematic EnemyIntroUI with difficulty skulls, and initializes the captain controller.
     /// </summary>
@@ -993,71 +978,60 @@ public class GameLoopManager : MonoBehaviour
         {
             pickKombusta = UnityEngine.Random.value < 0.5f;
         }
-        GameObject captainGo = null;
 
+        if (!pickKombusta && captainPrefab == null)
+        {
+            Debug.LogError("[GameLoopManager] Captain Fraglob has no prefab assigned (captainPrefab). Spawning Captain Kombusta instead. Needs Lance in the Editor.");
+            pickKombusta = true;
+        }
+
+        GameObject captainGo;
+        string captainName;
         if (pickKombusta)
         {
-            if (captainKombustaPrefab != null)
+            captainName = "Captain Kombusta";
+            // The roster's captain_kombusta row is the same authored prefab when the slot is empty.
+            captainGo = captainKombustaPrefab != null
+                ? Instantiate(captainKombustaPrefab, spawnPos, spawnRot)
+                : spawner != null && spawner.Roster != null && spawner.Roster.Find("captain_kombusta") != null
+                    ? spawner.DebugSpawnEnemyType("captain_kombusta")
+                    : null;
+            if (captainGo == null)
             {
-                captainGo = Instantiate(captainKombustaPrefab, spawnPos, spawnRot);
+                Debug.LogError("[GameLoopManager] Captain Kombusta has no prefab (captainKombustaPrefab empty and no captain_kombusta roster row). No captain spawned.");
+                return null;
             }
-            else if (spawner != null)
+
+            CaptainKombustaController kombusta = captainGo.GetComponent<CaptainKombustaController>();
+            if (kombusta == null)
             {
-                captainGo = spawner.DebugSpawnEnemyType("captain_kombusta");
-            }
-
-            if (captainGo != null)
-            {
-                CaptainKombustaController kombustaComp = captainGo.GetComponent<CaptainKombustaController>();
-                if (kombustaComp == null)
-                {
-                    kombustaComp = captainGo.AddComponent<CaptainKombustaController>();
-                }
-                kombustaComp.Initialize(tier, "Captain Kombusta");
-
-                if (EnemyIntroUI.Instance != null)
-                {
-                    string subtitle = $"{BannerDifficultyHelper.GetTierName(tier).ToUpper()} - {BannerDifficultyHelper.GetRewardMultiplier(tier)}X REWARDS";
-                    EnemyIntroUI.Instance.ShowIntro("Captain Kombusta has arrived!", (int)tier, subtitle, 3.5f);
-                }
-
-                Debug.Log($"[GameLoopManager] Spawned Captain Kombusta at Tier {tier} ({BannerDifficultyHelper.GetRewardMultiplier(tier)}x rewards)!");
+                Debug.LogError($"[GameLoopManager] Captain Kombusta prefab '{captainGo.name}' has no CaptainKombustaController.");
                 return captainGo;
             }
+            kombusta.Initialize(tier, captainName);
         }
-
-        if (captainPrefab != null)
+        else
         {
+            captainName = "Captain Fraglob";
             captainGo = Instantiate(captainPrefab, spawnPos, spawnRot);
+
+            CaptainEnemyController fraglob = captainGo.GetComponent<CaptainEnemyController>();
+            if (fraglob == null)
+            {
+                Debug.LogError($"[GameLoopManager] Captain Fraglob prefab '{captainGo.name}' has no CaptainEnemyController.");
+                return captainGo;
+            }
+            fraglob.Initialize(tier, captainName);
         }
-        else if (spawner != null)
+
+        // Play the enemy intro announcement with difficulty skulls
+        if (EnemyIntroUI.Instance != null)
         {
-            captainGo = spawner.DebugSpawnEnemyType("goblin_brute");
-            if (captainGo != null)
-            {
-                captainGo.name = "Captain_Fraglob_Placeholder";
-                captainGo.transform.localScale *= 1.35f;
-            }
+            string subtitle = $"{BannerDifficultyHelper.GetTierName(tier).ToUpper()} - {BannerDifficultyHelper.GetRewardMultiplier(tier)}X REWARDS";
+            EnemyIntroUI.Instance.ShowIntro($"{captainName} has arrived!", (int)tier, subtitle, 3.5f);
         }
 
-        if (captainGo != null)
-        {
-            CaptainEnemyController captainComp = captainGo.GetComponent<CaptainEnemyController>();
-            if (captainComp == null)
-            {
-                captainComp = captainGo.AddComponent<CaptainEnemyController>();
-            }
-            captainComp.Initialize(tier, "Captain Fraglob");
-
-            // Play the enemy intro announcement with difficulty skulls
-            if (EnemyIntroUI.Instance != null)
-            {
-                string subtitle = $"{BannerDifficultyHelper.GetTierName(tier).ToUpper()} - {BannerDifficultyHelper.GetRewardMultiplier(tier)}X REWARDS";
-                EnemyIntroUI.Instance.ShowIntro("Captain Fraglob has arrived!", (int)tier, subtitle, 3.5f);
-            }
-        }
-
-        Debug.Log($"[GameLoopManager] Spawned Captain Fraglob at Tier {tier} ({BannerDifficultyHelper.GetRewardMultiplier(tier)}x rewards)!");
+        Debug.Log($"[GameLoopManager] Spawned {captainName} at Tier {tier} ({BannerDifficultyHelper.GetRewardMultiplier(tier)}x rewards)!");
         return captainGo;
     }
 

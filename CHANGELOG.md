@@ -106,9 +106,11 @@
 - Added customizable BuildWheelSliceButton prefab asset styled with authentic Synty circular tracery, gold border rings, defense icons, and supply cost badges
 - Added defense icons to the defensive build wheel for Arrow Tower, Catapult, Ballista, Net Thrower, Spike Trap, and Oil Vat
 - Added automated behavioral benchmark tests verifying decoupled reticle visual scaling, ammo counter font size, and build wheel button prefab dimensions
+- Sectors now get harder the deeper you go into the campaign: new enemy types join the horde tier by tier (Bannermen and Powder Kegs, then Bulwarks and Assassins, then Storm Witches, then Trolls), while goblins still make up most of every wave
 
 ### Fixes
 
+- Fixed the field going empty during Supply Wagon and Battering Ram objectives: enemies now keep arriving until the objective is resolved
 - Fixed Rest Area healing and ultimate charge being lost when returning to the campaign map
 - Fixed ultimate charge not carrying over between sectors
 - Fixed Armored buff fish max health stacking again on every scene load
@@ -135,6 +137,8 @@
 
 ### Balance Changes
 
+- Kill quotas grow by 10% per campaign tier, and at least 60% of every wave is goblins
+- Heavier enemies are now limited to a few on the field at once
 - Replaced Bulwark enemy telegraphed slam attacks with standard melee strikes when close to the player, removing the slam entirely
 - Increased Captain Kombusta bomb flight time to 2.0 seconds and bomb throw interval to 3.0 seconds
 - Adjusted defense level pacing to 5 waves per combat node with staged enemy roster progression from goblins to heavy siege units

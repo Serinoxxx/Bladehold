@@ -6,7 +6,7 @@ using UnityEngine;
 ///     A slow moving cart rolls from a spawn point toward the gate along NavMesh only when the player
 ///     is inside its proximity circle.
 /// </summary>
-public class ProtectWagonObjective : MonoBehaviour, ISurvivorsObjective
+public class ProtectWagonObjective : MonoBehaviour, ISurvivorsObjective, IRequiresContinuousSpawns
 {
     [Header("Objective Configuration")]
     [SerializeField] private string objectiveId = "protect_supply_wagon";

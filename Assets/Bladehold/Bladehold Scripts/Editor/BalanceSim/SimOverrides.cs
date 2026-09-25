@@ -149,6 +149,7 @@ namespace Bladehold.BalanceSim
                 case "spawnchance": e.spawnChance = Math.Clamp(F(value, key) / 100f, 0f, 1f); break;
                 case "minspawn": e.minSpawn = (int)F(value, key); break;
                 case "maxconcurrent": e.maxConcurrent = (int)F(value, key); break;
+                case "minthreat": e.minThreat = (int)F(value, key); break;
                 default: throw new InvalidOperationException($"Unknown override key '{key}'.");
             }
         }
@@ -164,6 +165,9 @@ namespace Bladehold.BalanceSim
                 case "goldbagmultiplier": world.goldBagMultiplier = F(value, key); break;
                 case "basecritmultiplier": world.baseCritMultiplier = F(value, key); break;
                 case "chargetimeperlevel": world.chargeTimePerLevel = F(value, key); break;
+                case "foddershare": world.fodderShare = F(value, key); break;
+                case "quotagrowthperthreat": world.quotaGrowthPerThreat = F(value, key); break;
+                case "sectormaxconcurrent": world.sectorMaxConcurrent = (int)F(value, key); break;
                 default: throw new InvalidOperationException($"Unknown override key '{key}'.");
             }
         }

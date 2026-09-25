@@ -47,7 +47,7 @@ namespace Bladehold.BalanceSim
                 }
             }
 
-            output.findings = PacingRules.Evaluate(PacingRules.Load(), output.results, cfg, world.playerMaxHealth);
+            output.findings = PacingRules.Evaluate(PacingRules.Load(cfg.sectorMode), output.results, cfg, world.playerMaxHealth);
 
             output.outDir = string.IsNullOrEmpty(cfg.outDir)
                 ? Path.Combine("BalanceReports", $"run_{DateTime.Now:yyyyMMdd_HHmmss}")
