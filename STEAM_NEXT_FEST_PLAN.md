@@ -1,4 +1,6 @@
 # Steam Next Fest: October 2026 Roadmap & Milestone Deadlines
+
+> **OUTDATED (Sep 2026):** Target moved to **Next Fest Feb 27, 2027**. The dates below are for the abandoned October 2026 plan.
 **Project**: Bladehold  
 **Current Date**: July 25, 2026  
 **Target Event**: Steam Next Fest: October 2026 (October 19 – 26, 2026)  

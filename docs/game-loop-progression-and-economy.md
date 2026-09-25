@@ -36,7 +36,9 @@ Players equip exactly **1 Melee Weapon** and **1 Ranged Weapon** per run. Sword 
 
 ## **4\. Rest Area Loop & Wave Flow**
 
-Rest areas occur **every 3 waves** and feature three key stations:
+> **Outdated:** the every-3-waves rest cadence is gone. Rest Areas are now campaign map nodes, and sectors are 5 waves. See `/CLAUDE.md` for the current loop.
+
+Rest areas feature three key stations:
 
 > 1. **The Well:** Restores up to 20 HP (1 use per visit).  
 > 2. **The Shop:** Offers randomized items for purchase with Gold. Effects last for the run unless specified otherwise.  
