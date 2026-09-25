@@ -38,9 +38,6 @@ public class WeaponDefinitionSO : ScriptableObject
     [Tooltip("Permanent cost in Orcish Metal to unlock this weapon.")]
     public int orcishMetalUnlockCost = 10;
 
-    [Tooltip("Locked for demo flag.")]
-    public bool isLockedForDemo = false;
-
     [Tooltip("General weapon description.")]
     [TextArea(2, 4)]
     public string description;

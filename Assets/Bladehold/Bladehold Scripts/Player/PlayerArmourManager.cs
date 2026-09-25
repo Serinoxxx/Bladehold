@@ -71,6 +71,10 @@ public class PlayerArmourManager : MonoBehaviour
         SaveData data = SaveSystem.Load();
         string savedArmourId = data != null ? data.equippedArmourSet : "default_armour";
         activeArmourSet = FindArmourSet(savedArmourId);
+        if (DemoConfigSO.IsArmourLocked(activeArmourSet))
+        {
+            activeArmourSet = FindArmourSet("default_armour");
+        }
 
         // Fallback to first if not found
         if (activeArmourSet == null)

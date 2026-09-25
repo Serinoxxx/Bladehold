@@ -104,8 +104,8 @@ public class BalanceTreeModel
         {
             BalanceNode n = Add($"weapon:{w.id}", BalanceNodeKind.Weapon, w.displayName, w);
             n.Weapon = w.id;
-            n.DemoLocked = w.isLockedForDemo;
-            n.Subtitle = $"{w.category}{(w.isLockedForDemo ? " · demo-locked" : "")}";
+            n.DemoLocked = DemoConfigSO.IsWeaponLocked(w);
+            n.Subtitle = $"{w.category}{(DemoConfigSO.IsWeaponLocked(w) ? " · demo-locked" : "")}";
         }
 
         foreach (DraftCsvRow row in Csv.Rows)
@@ -184,7 +184,7 @@ public class BalanceTreeModel
         }
 
         WeaponDefinitionSO weapon = Weapons.FirstOrDefault(w => string.Equals(w.id, card.Weapon, StringComparison.OrdinalIgnoreCase));
-        card.DemoLocked = weapon != null && weapon.isLockedForDemo;
+        card.DemoLocked = DemoConfigSO.IsWeaponLocked(weapon);
 
         var tags = new List<string> { card.Category };
         if (card.Weapon.Length > 0) tags.Add(card.Weapon);

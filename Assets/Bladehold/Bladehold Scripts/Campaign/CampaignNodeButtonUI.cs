@@ -15,7 +15,8 @@ public class CampaignNodeButtonUI : MonoBehaviour, IPointerEnterHandler, IPointe
     {
         Locked,
         Available,
-        Completed
+        Completed,
+        DemoLocked // past the demo cutoff: shown, never playable
     }
 
     [Header("Core References")]
@@ -144,7 +145,7 @@ public class CampaignNodeButtonUI : MonoBehaviour, IPointerEnterHandler, IPointe
 
     private void ApplyStatusVisuals(NodeVisualStatus status)
     {
-        if (lockOverlay != null) lockOverlay.SetActive(status == NodeVisualStatus.Locked);
+        if (lockOverlay != null) lockOverlay.SetActive(status == NodeVisualStatus.Locked || status == NodeVisualStatus.DemoLocked);
         if (completedCheckmark != null) completedCheckmark.SetActive(status == NodeVisualStatus.Completed);
         if (activePulseGlow != null) activePulseGlow.SetActive(status == NodeVisualStatus.Available);
 
@@ -159,6 +160,7 @@ public class CampaignNodeButtonUI : MonoBehaviour, IPointerEnterHandler, IPointe
                     borderImage.color = completedBorderColor;
                     break;
                 case NodeVisualStatus.Locked:
+                case NodeVisualStatus.DemoLocked:
                 default:
                     borderImage.color = lockedBorderColor;
                     break;

@@ -17,7 +17,6 @@ MonoBehaviour:
   category: 1
   isUnlockedByDefault: 1
   orcishMetalUnlockCost: 0
-  isLockedForDemo: 0
   description: Fast firing bow with piercing arrows.
   chargeDescription: RMB Aim + LMB Fire.
   icon: {fileID: 21300000, guid: ae2a881ff27d7c443acbbc4692748aad, type: 3}

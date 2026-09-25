@@ -50,13 +50,13 @@ public static class SetupGameLoopAssets
         EditorUtility.SetDirty(pacing);
 
         // 2. WeaponDefinitionSO assets
-        CreateWeaponAsset(weaponsDir, "sword", "Iron Longsword", WeaponCategory.Melee, true, 0, false, "Balanced melee blade delivering rapid sweeps.", "Hold attack to charge a sweeping 3-stage slash.", 0, 0.33f, "1H_Sword");
-        CreateWeaponAsset(weaponsDir, "axe", "Battleaxe", WeaponCategory.Melee, false, 10, false, "Heavy two-handed axe that cleaves wide arcs.", "Hold attack to charge a crushing overhead cleave.", 1, 0.45f, "2H_Axe");
-        CreateWeaponAsset(weaponsDir, "bow", "Recurve Bow", WeaponCategory.Ranged, true, 0, false, "Fast firing bow with piercing arrows.", "RMB Aim + LMB Fire.", 0, 0.25f, "Wep_RecurveBow_01");
-        CreateWeaponAsset(weaponsDir, "throwing_axe", "Throwing Axe", WeaponCategory.Ranged, false, 10, false, "Heavy throwing axe with lethal velocity.", "RMB Aim + LMB to hurl spinning axe.", 0, 0.35f, "SM_Wep_Axe_01");
-        CreateWeaponAsset(weaponsDir, "mace", "Heavy War Mace", WeaponCategory.Melee, false, 10, false, "Colossal two-handed mace that crushes armor and staggers crowds with heavy blunt impact.", "Hold attack to charge a devastating overhead seismic strike that stuns foes.", 1, 0.42f, "SM_Wep_Mace_Blades_01");
-        CreateWeaponAsset(weaponsDir, "staff", "Arcane Staff", WeaponCategory.Ranged, false, 0, true, "Staff of primal magic.", "Locked for demo.", 0, 0.5f, "");
-        CreateWeaponAsset(weaponsDir, "wand", "Crystal Wand", WeaponCategory.Ranged, false, 0, true, "Focusing wand of raw arcana.", "Locked for demo.", 0, 0.2f, "");
+        CreateWeaponAsset(weaponsDir, "sword", "Iron Longsword", WeaponCategory.Melee, true, 0, "Balanced melee blade delivering rapid sweeps.", "Hold attack to charge a sweeping 3-stage slash.", 0, 0.33f, "1H_Sword");
+        CreateWeaponAsset(weaponsDir, "axe", "Battleaxe", WeaponCategory.Melee, false, 10, "Heavy two-handed axe that cleaves wide arcs.", "Hold attack to charge a crushing overhead cleave.", 1, 0.45f, "2H_Axe");
+        CreateWeaponAsset(weaponsDir, "bow", "Recurve Bow", WeaponCategory.Ranged, true, 0, "Fast firing bow with piercing arrows.", "RMB Aim + LMB Fire.", 0, 0.25f, "Wep_RecurveBow_01");
+        CreateWeaponAsset(weaponsDir, "throwing_axe", "Throwing Axe", WeaponCategory.Ranged, false, 10, "Heavy throwing axe with lethal velocity.", "RMB Aim + LMB to hurl spinning axe.", 0, 0.35f, "SM_Wep_Axe_01");
+        CreateWeaponAsset(weaponsDir, "mace", "Heavy War Mace", WeaponCategory.Melee, false, 10, "Colossal two-handed mace that crushes armor and staggers crowds with heavy blunt impact.", "Hold attack to charge a devastating overhead seismic strike that stuns foes.", 1, 0.42f, "SM_Wep_Mace_Blades_01");
+        CreateWeaponAsset(weaponsDir, "staff", "Arcane Staff", WeaponCategory.Ranged, false, 0, "Staff of primal magic.", "Locked for demo.", 0, 0.5f, "");
+        CreateWeaponAsset(weaponsDir, "wand", "Crystal Wand", WeaponCategory.Ranged, false, 0, "Focusing wand of raw arcana.", "Locked for demo.", 0, 0.2f, "");
 
         // 3. MetaPerkDefinitionSO assets
         CreatePerkAsset(metaDir, "backstab", "Backstab", 1, 10, "Deal +20% bonus damage when striking enemies from behind.");
@@ -78,7 +78,7 @@ public static class SetupGameLoopAssets
         AssetDatabase.SaveAssets();
     }
 
-    private static void CreateWeaponAsset(string dir, string id, string name, WeaponCategory cat, bool defaultUnlocked, int metalCost, bool demoLocked, string desc, string chargeDesc, int animType, float chargeTime, string modelSearch)
+    private static void CreateWeaponAsset(string dir, string id, string name, WeaponCategory cat, bool defaultUnlocked, int metalCost, string desc, string chargeDesc, int animType, float chargeTime, string modelSearch)
     {
         string path = $"{dir}/{id}.asset";
         WeaponDefinitionSO weapon = AssetDatabase.LoadAssetAtPath<WeaponDefinitionSO>(path);
@@ -92,7 +92,6 @@ public static class SetupGameLoopAssets
         weapon.category = cat;
         weapon.isUnlockedByDefault = defaultUnlocked;
         weapon.orcishMetalUnlockCost = metalCost;
-        weapon.isLockedForDemo = demoLocked;
         weapon.description = desc;
         weapon.chargeDescription = chargeDesc;
         weapon.animatorWeaponType = animType;

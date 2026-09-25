@@ -17,7 +17,6 @@ MonoBehaviour:
   category: 0
   isUnlockedByDefault: 0
   orcishMetalUnlockCost: 10
-  isLockedForDemo: 0
   description: Colossal two-handed mace that crushes armor and staggers crowds with
     heavy blunt impact.
   chargeDescription: Hold attack to charge a devastating overhead seismic strike
@@ -33,7 +32,7 @@ MonoBehaviour:
     description: 
   - name: 
     description: 
-  pedestalUltimateName: SIESMIC SMASH
+  pedestalUltimateName: SEISMIC QUAKE
   pedestalUltimateDescription: Instantly smash the ground causing a mini earthquake
     and devastating nearby enemies
   chargeTimePerLevel: 0.42

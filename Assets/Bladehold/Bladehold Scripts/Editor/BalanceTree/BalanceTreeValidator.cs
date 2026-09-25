@@ -74,7 +74,7 @@ public static class BalanceTreeValidator
                 Add(BalanceIssueSeverity.Warning, stat, $"StatType.{name} is written by a card or armour but no gameplay script references it, so it does nothing.");
         }
 
-        foreach (WeaponDefinitionSO w in model.Weapons.Where(w => !w.isLockedForDemo))
+        foreach (WeaponDefinitionSO w in model.Weapons.Where(w => !DemoConfigSO.IsWeaponLocked(w)))
         {
             if (!model.Cards.Any(c => c.Weapon.Equals(w.id, StringComparison.OrdinalIgnoreCase)))
                 Add(BalanceIssueSeverity.Warning, model.Find($"weapon:{w.id}"), $"Weapon '{w.id}' is playable but has no draft cards.");
@@ -171,7 +171,7 @@ public static class BalanceTreePacing
             return new WeaponRow
             {
                 Weapon = w.id,
-                DemoLocked = w.isLockedForDemo,
+                DemoLocked = DemoConfigSO.IsWeaponLocked(w),
                 Cards = cards.Count,
                 Ultimates = cards.Count(c => c.IsUltimate),
                 Picks = cards.Sum(MaxLevel)

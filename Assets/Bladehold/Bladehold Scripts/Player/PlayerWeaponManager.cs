@@ -314,6 +314,10 @@ public class PlayerWeaponManager : MonoBehaviour
         string meleeId = save != null && !string.IsNullOrEmpty(save.equippedMeleeWeapon) ? save.equippedMeleeWeapon.ToLower() : "sword";
         string rangedId = save != null && !string.IsNullOrEmpty(save.equippedRangedWeapon) ? save.equippedRangedWeapon.ToLower() : "bow";
 
+        // A save from the full game (or an older build) may have a weapon the demo doesn't allow.
+        if (DemoConfigSO.IsWeaponIdLocked(meleeId)) meleeId = "sword";
+        if (DemoConfigSO.IsWeaponIdLocked(rangedId)) rangedId = "bow";
+
         EquipMelee(meleeId);
         EquipRanged(rangedId);
 

@@ -329,6 +329,7 @@ public class DraftUpgradeService : MonoBehaviour
                     bool matchesEquipped = def.weapon.Equals(equippedMelee, StringComparison.OrdinalIgnoreCase) ||
                                           def.weapon.Equals(equippedRanged, StringComparison.OrdinalIgnoreCase);
                     if (!matchesEquipped) continue;
+                    if (DemoConfigSO.IsWeaponIdLocked(def.weapon)) continue;
                 }
             }
 

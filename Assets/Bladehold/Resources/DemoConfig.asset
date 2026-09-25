@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7303f68eb13b4205acff5d9c37334f31, type: 3}
+  m_Name: DemoConfig
+  m_EditorClassIdentifier: 
+  demoEnabled: 1
+  allowedWeapons:
+  - {fileID: 11400000, guid: d59b9ea41300f794f95184303532cb43, type: 2}
+  - {fileID: 11400000, guid: e31f1d101e4f3c148b0bb7560229cdea, type: 2}
+  - {fileID: 11400000, guid: 4effa2c38607a6344b7d1ce1da244913, type: 2}
+  allowedArmourSets:
+  - {fileID: 11400000, guid: ff937f56372ca0e4eba951b30ec61071, type: 2}
+  - {fileID: 11400000, guid: 8d5dc469aa98f3c488b6d6f287b80af1, type: 2}
+  allowedMounts:
+  - {fileID: 11400000, guid: 523761c2ff7540a4a944b925db9c2710, type: 2}
+  maxMetaPerkTier: 1
+  campaignCutoffTier: 4
+  steamStoreUrl: 
+  lockedLabel: LOCKED FOR DEMO
+  lockedPrompt: Not available in the demo

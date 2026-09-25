@@ -69,8 +69,25 @@ public class CampaignManager : MonoBehaviour
 
     public CampaignNodeSO CurrentNode => GetNode(CurrentNodeId);
 
-    /// <summary>True when clearing the current node ends the campaign (final boss or demo cutoff).</summary>
+    /// <summary>True when clearing the current node ends the campaign (final boss, or a node with <c>endsCampaign</c> ticked).</summary>
     public bool CurrentNodeEndsCampaign => IsCampaignActive && CurrentNode != null && CurrentNode.EndsCampaign;
+
+    /// <summary>
+    ///     True once a node on the demo's cutoff tier (<see cref="DemoConfigSO.campaignCutoffTier" />) is
+    ///     cleared. The Campaign Map then shows the demo end screen, whose button calls <see cref="EndCampaign" />.
+    /// </summary>
+    public bool IsDemoEndReached
+    {
+        get
+        {
+            if (!IsCampaignActive || !DemoConfigSO.IsDemo) return false;
+            foreach (string id in CompletedNodeIds)
+            {
+                if (DemoConfigSO.IsDemoCutoffNode(GetNode(id))) return true;
+            }
+            return false;
+        }
+    }
     public bool IsCampaignActive => RunSession.IsCampaignRun;
 
     public event Action<CampaignNodeSO> OnNodeSelected;
@@ -307,7 +324,8 @@ public class CampaignManager : MonoBehaviour
             for (int i = 0; i < completedNode.nextNodes.Count; i++)
             {
                 CampaignNodeSO next = completedNode.nextNodes[i];
-                if (next != null && !CompletedNodeIds.Contains(next.nodeId))
+                // Nodes past the demo cutoff stay on the map as locked, never available.
+                if (next != null && !CompletedNodeIds.Contains(next.nodeId) && !DemoConfigSO.IsCampaignNodeLocked(next))
                 {
                     AvailableNodeIds.Add(next.nodeId);
                 }
@@ -343,7 +361,9 @@ public class CampaignManager : MonoBehaviour
 
     /// <summary>
     ///     The one exit from every node: completes the current node, then either returns to the
-    ///     Campaign Map or, if that node ends the campaign (final boss, demo cutoff), ends the run.
+    ///     Campaign Map or, if that node ends the campaign (final boss), ends the run. Clearing the demo
+    ///     cutoff tier also returns to the map, which shows the demo end screen (<see cref="IsDemoEndReached" />),
+    ///     so every node type (combat, pond, rest) ends the demo the same way.
     /// </summary>
     public void CompleteCurrentNodeAndContinue()
     {

@@ -186,11 +186,15 @@ public class WeaponPedestal : MonoBehaviour
         if (nameLabel != null) nameLabel.text = weaponData.displayName;
         RefreshWeaponDetails();
 
-        if (weaponData.isLockedForDemo)
+        if (DemoConfigSO.IsWeaponLocked(weaponData))
         {
-            if (costLabel != null) costLabel.text = "LOCKED FOR DEMO";
             if (statusLabel != null) statusLabel.text = "";
-            interactable.PromptText = "Locked for Demo";
+            if (costLabel != null)
+            {
+                costLabel.text = DemoConfigSO.LockedLabel;
+                costLabel.color = Color.white;
+            }
+            interactable.PromptText = DemoConfigSO.LockedPrompt;
             interactable.CanInteract = false;
             return;
         }
@@ -277,7 +281,7 @@ public class WeaponPedestal : MonoBehaviour
 
     private void HandleInteract(Player player)
     {
-        if (weaponData == null || weaponData.isLockedForDemo) return;
+        if (weaponData == null || DemoConfigSO.IsWeaponLocked(weaponData)) return;
 
         SaveData data = SaveSystem.Load();
         bool isUnlocked = data != null && data.unlockedWeapons != null && data.unlockedWeapons.Contains(weaponData.id);

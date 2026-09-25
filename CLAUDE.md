@@ -33,7 +33,7 @@ Unity 6 game, codenamed **Bladehold**. A 3D action roguelite: one hero, a melee 
 
 ### Player kit
 
-- **Loadout** (`Player/PlayerWeaponManager.cs`, `WeaponDefinitionSO` assets in `Bladehold Config/Weapons/`): 1 melee (sword, axe, mace) + 1 ranged (bow, throwing axe). Sword + bow are free; the rest cost Orcish Metal. Wand/staff are `isLockedForDemo`.
+- **Loadout** (`Player/PlayerWeaponManager.cs`, `WeaponDefinitionSO` assets in `Bladehold Config/Weapons/`): 1 melee (sword, axe, mace) + 1 ranged (bow, throwing axe). Sword + bow are free; the rest cost Orcish Metal.
 - Hold-to-charge attacks (`PlayerAttack`), dash with charges (`PlayerDodge`), shared ranged ammo pool (`PlayerAmmo`, synced through `RunSession.CurrentAmmo`), armour sets (`PlayerArmourManager` + `ArmourSetSO`).
 - **Ultimates** (`PlayerUltimateController` + `IUltimateHandler` implementations): locked until the weapon's ultimate draft card is picked, one per run.
 - **Mounts** (`Player/PlayerSummonMount.cs`, `Horse/MountDefinitionSO`): summon is gated by `StatType.SummonMountUnlocked`, which nothing raises yet, and it's bound to the Synty `Dismount` action (Q / pad East), not X.
@@ -51,7 +51,7 @@ Build towards these; don't "fix" code back to the old behaviour.
 
 - **Mount summon is available from the start** on **X**, keeping the cast time, ride duration and cooldown. The *variants* (Frost Strider etc.) show on pedestals but are locked for the demo.
 - **Fishing Pond is just you and your bow:** no mount summon and no ultimate there.
-- **Demo scope (not final):** the full loop, but restricted to limited weapons/armours/mounts and **tier-1 meta perks only**, with the campaign cut off before the final battles (roughly halfway through the map). The aim is for players to die a few times and go round the meta loop.
+- **Demo scope:** the full loop, but restricted to limited weapons/armours/mounts and **tier-1 meta perks only**, with the campaign cut off after tier 4. The aim is for players to die a few times and go round the meta loop. All of it is driven by `Demo/DemoConfigSO` (`Resources/DemoConfig.asset`); untick `demoEnabled` for the full game. Gate new content through its static helpers, never with per-asset flags.
 
 ## Building, running, testing
 

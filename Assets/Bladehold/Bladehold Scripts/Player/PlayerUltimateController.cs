@@ -370,7 +370,6 @@ public class PlayerUltimateController : MonoBehaviour
 
         if (meleeId.Contains("mace")) return "mace_earthshaker_ult";
         if (meleeId.Contains("axe")) return "axe_bladestorm_ult";
-        if (meleeId.Contains("staff")) return "mage_skyfall_ult";
         if (meleeId.Contains("sword")) return "sword_blade_tempest";
 
         // 2. Check ranged weapon
@@ -381,7 +380,7 @@ public class PlayerUltimateController : MonoBehaviour
             rangedId = save != null && !string.IsNullOrEmpty(save.equippedRangedWeapon) ? save.equippedRangedWeapon.ToLower() : "bow";
         }
 
-        if (rangedId.Contains("wand")) return "mage_skyfall_ult";
+        if (rangedId.Contains("wand") || rangedId.Contains("staff")) return "mage_skyfall_ult";
         if (rangedId.Contains("throwing") || rangedId.Contains("taxe")) return "taxe_vortex_ult";
         return "bow_stream_ult";
     }

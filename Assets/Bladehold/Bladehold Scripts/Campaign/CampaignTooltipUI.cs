@@ -179,6 +179,9 @@ public class CampaignTooltipUI : MonoBehaviour
                 case CampaignNodeButtonUI.NodeVisualStatus.Completed:
                     actionPromptText.text = "<color=#55FF55>[Sector Liberated]</color>";
                     break;
+                case CampaignNodeButtonUI.NodeVisualStatus.DemoLocked:
+                    actionPromptText.text = $"<color=#AAAAAA>[{DemoConfigSO.LockedPrompt}]</color>";
+                    break;
                 case CampaignNodeButtonUI.NodeVisualStatus.Locked:
                 default:
                     actionPromptText.text = "<color=#AAAAAA>[Locked - Clear Prior Sector]</color>";

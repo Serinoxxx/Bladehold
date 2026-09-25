@@ -24,6 +24,10 @@ public class CampaignMapUI : MonoBehaviour
     [Header("Tooltip")]
     [SerializeField] private CampaignTooltipUI tooltipUI;
 
+    [Header("Demo")]
+    [Tooltip("Thanks for playing / Wishlist panel, shown once the demo's cutoff tier is cleared. Required while DemoConfig has the demo enabled.")]
+    [SerializeField] private DemoEndScreenUI demoEndScreen;
+
     [Header("Top Bar Currencies & Header")]
     [SerializeField] private TMP_Text screenTitleText;
     [SerializeField] private TMP_Text inRunGoldText;
@@ -93,6 +97,28 @@ public class CampaignMapUI : MonoBehaviour
 
         RefreshCurrencies();
         BuildMap();
+
+        if (CampaignManager.Instance.IsDemoEndReached)
+        {
+            ShowDemoEnd();
+        }
+    }
+
+    private void ShowDemoEnd()
+    {
+        if (demoEndScreen == null || !demoEndScreen.IsValid)
+        {
+            // Every node past the cutoff is locked, so without the panel the player would be stuck here.
+            Debug.LogError("[CampaignMapUI] Demo end reached but no valid DemoEndScreenUI is assigned. Ending the run without the end screen.");
+            CampaignManager.Instance.EndCampaign();
+            return;
+        }
+
+        if (tooltipUI != null)
+        {
+            tooltipUI.Hide();
+        }
+        demoEndScreen.Show();
     }
 
     private void OnDestroy()
@@ -199,6 +225,11 @@ public class CampaignMapUI : MonoBehaviour
         if (CampaignManager.Instance.CompletedNodeIds.Contains(node.nodeId))
         {
             return CampaignNodeButtonUI.NodeVisualStatus.Completed;
+        }
+
+        if (DemoConfigSO.IsCampaignNodeLocked(node))
+        {
+            return CampaignNodeButtonUI.NodeVisualStatus.DemoLocked;
         }
 
         if (CampaignManager.Instance.AvailableNodeIds.Contains(node.nodeId))

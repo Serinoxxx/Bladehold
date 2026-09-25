@@ -91,7 +91,11 @@ public class MetaUpgradesUI : MonoBehaviour
         // Configure Tier 2 unlock button
         if (unlockTier2Button != null)
         {
-            if (unlockedTier >= 2)
+            if (DemoConfigSO.IsMetaTierLocked(2))
+            {
+                ShowDemoLockedTierButton(unlockTier2Button, unlockTier2ButtonText);
+            }
+            else if (unlockedTier >= 2)
             {
                 unlockTier2Button.gameObject.SetActive(false);
             }
@@ -111,7 +115,11 @@ public class MetaUpgradesUI : MonoBehaviour
         // Configure Tier 3 unlock button
         if (unlockTier3Button != null)
         {
-            if (unlockedTier >= 3)
+            if (DemoConfigSO.IsMetaTierLocked(3))
+            {
+                ShowDemoLockedTierButton(unlockTier3Button, unlockTier3ButtonText);
+            }
+            else if (unlockedTier >= 3)
             {
                 unlockTier3Button.gameObject.SetActive(false);
             }
@@ -134,9 +142,24 @@ public class MetaUpgradesUI : MonoBehaviour
         RenderPerkRow(3, tier3RowContainer, unlockedTier >= 3, data, blood);
     }
 
+    // Tier is outside the demo: keep the button visible so players see there's more, but it can't be used.
+    private static void ShowDemoLockedTierButton(Button button, TMP_Text label)
+    {
+        button.gameObject.SetActive(true);
+        button.interactable = false;
+        if (label != null)
+        {
+            label.text = DemoConfigSO.LockedLabel;
+            label.color = new Color(0.48f, 0.42f, 0.36f, 1f);
+        }
+    }
+
     private void RenderPerkRow(int tier, Transform container, bool isTierUnlocked, SaveData data, int blood)
     {
         if (container == null) return;
+
+        bool isDemoLocked = DemoConfigSO.IsMetaTierLocked(tier);
+        if (isDemoLocked) isTierUnlocked = false;
 
         List<MetaPerkDefinitionSO> tierPerks = allPerks.FindAll(p => p.tier == tier);
 
@@ -154,12 +177,12 @@ public class MetaUpgradesUI : MonoBehaviour
             if (cardTransform != null)
             {
                 cardTransform.gameObject.SetActive(true);
-                ConfigurePerkCard(cardTransform, perk, isTierUnlocked, isOwned, blood);
+                ConfigurePerkCard(cardTransform, perk, isTierUnlocked, isDemoLocked, isOwned, blood);
             }
         }
     }
 
-    private void ConfigurePerkCard(Transform card, MetaPerkDefinitionSO perk, bool isTierUnlocked, bool isOwned, int blood)
+    private void ConfigurePerkCard(Transform card, MetaPerkDefinitionSO perk, bool isTierUnlocked, bool isDemoLocked, bool isOwned, int blood)
     {
         TMP_Text nameText = card.Find("PerkName")?.GetComponent<TMP_Text>();
         TMP_Text costText = card.Find("PerkCost")?.GetComponent<TMP_Text>();
@@ -190,7 +213,12 @@ public class MetaUpgradesUI : MonoBehaviour
 
         if (costText != null)
         {
-            if (isOwned)
+            if (isDemoLocked)
+            {
+                costText.text = DemoConfigSO.LockedLabel;
+                costText.color = new Color(0.48f, 0.42f, 0.36f, 1f);
+            }
+            else if (isOwned)
             {
                 costText.text = "OWNED";
                 costText.color = new Color(0.18f, 0.52f, 0.2f, 1f); // clean green
@@ -211,18 +239,21 @@ public class MetaUpgradesUI : MonoBehaviour
         if (buyBtn != null)
         {
             buyBtn.onClick.RemoveAllListeners();
-            buyBtn.interactable = isTierUnlocked && !isOwned && (blood >= perk.goblinBloodCost);
+            buyBtn.interactable = isTierUnlocked && !isDemoLocked && !isOwned && (blood >= perk.goblinBloodCost);
             buyBtn.onClick.AddListener(() => PurchasePerk(perk));
         }
 
         // Tooltip hover triggers
         EventTriggerListener listener = card.GetComponent<EventTriggerListener>() ?? card.gameObject.AddComponent<EventTriggerListener>();
-        listener.OnHoverEnter = () => ShowTooltip(perk.displayName, perk.description);
+        string tooltipBody = isDemoLocked ? $"{perk.description}\n\n<i>{DemoConfigSO.LockedPrompt}</i>" : perk.description;
+        listener.OnHoverEnter = () => ShowTooltip(perk.displayName, tooltipBody);
         listener.OnHoverExit = HideTooltip;
     }
 
     private void UnlockTier(int tier, int metalCost)
     {
+        if (DemoConfigSO.IsMetaTierLocked(tier)) return;
+
         SaveData data = SaveSystem.Load();
         if (data.orcishMetal >= metalCost)
         {
@@ -236,6 +267,8 @@ public class MetaUpgradesUI : MonoBehaviour
 
     private void PurchasePerk(MetaPerkDefinitionSO perk)
     {
+        if (DemoConfigSO.IsMetaTierLocked(perk.tier)) return;
+
         SaveData data = SaveSystem.Load();
         if (data.goblinBlood >= perk.goblinBloodCost && !data.purchasedMetaPerks.Contains(perk.id))
         {

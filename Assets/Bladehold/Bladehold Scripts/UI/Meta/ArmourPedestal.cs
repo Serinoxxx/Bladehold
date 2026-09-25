@@ -189,6 +189,19 @@ public class ArmourPedestal : MonoBehaviour
         if (descriptionLabel != null) descriptionLabel.text = armourData.description;
         if (perksLabel != null) perksLabel.text = armourData.GetFormattedModifiersText();
 
+        if (DemoConfigSO.IsArmourLocked(armourData))
+        {
+            if (statusLabel != null) statusLabel.text = "";
+            if (costLabel != null)
+            {
+                costLabel.text = DemoConfigSO.LockedLabel;
+                costLabel.color = Color.white;
+            }
+            interactable.PromptText = DemoConfigSO.LockedPrompt;
+            interactable.CanInteract = false;
+            return;
+        }
+
         if (isEquipped)
         {
             if (statusLabel != null)
@@ -234,7 +247,7 @@ public class ArmourPedestal : MonoBehaviour
 
     private void HandleInteract(Player player)
     {
-        if (armourData == null) return;
+        if (armourData == null || DemoConfigSO.IsArmourLocked(armourData)) return;
 
         SaveData data = SaveSystem.Load();
         bool isUnlocked = (armourData.orcishMetalUnlockCost == 0) || 

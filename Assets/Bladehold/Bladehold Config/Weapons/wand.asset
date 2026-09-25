@@ -17,7 +17,6 @@ MonoBehaviour:
   category: 1
   isUnlockedByDefault: 0
   orcishMetalUnlockCost: 0
-  isLockedForDemo: 1
   description: Focusing wand of raw arcana.
   chargeDescription: Locked for demo.
   icon: {fileID: 0}

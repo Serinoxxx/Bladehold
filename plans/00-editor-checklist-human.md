@@ -8,11 +8,12 @@ Things that need your hands, eyes or judgement in the Unity Editor. Items marked
 - [04: Fishing Pond](editor/04-fishing.md) (the pond has no exit until this is done)
 - [05: Balance Tree Editor](editor/05-balance-tree.md)
 - [06: Sector difficulty + roster](editor/06-sector-difficulty.md) (Fraglob captain has no prefab yet)
+- [07: Demo gating](editor/07-demo-gating.md) (demo end panel needed in the Campaign Map scene)
 
 ## A. Triage first (biggest win)
 
 - [x] ~~Triage `TODO.md`~~: scrapped Sep 2026 (old contents are in git history). `TODO.md` is now your own list, and agents don't write to it.
-- [ ] **Decide demo scope details for plan 07:**
+- [x] **Decide demo scope details for plan 07** (decided 2026-09-25, recorded in plan 07):
   - Which weapons (sword + bow only? + axe?), which armours, how many tier-1 perks.
   - Where the campaign cuts off: which tier, and what the player sees there (a "Thanks for playing / wishlist" screen?).
 
@@ -23,7 +24,7 @@ Things that need your hands, eyes or judgement in the Unity Editor. Items marked
 - [x] ~~**Captain prefabs**~~: moved to [`editor/06-sector-difficulty.md`](editor/06-sector-difficulty.md) (Fraglob needs a prefab; the empty slot now logs an error).
 - [ ] **Campaign Map scene**: the prefabs and graph asset are in (`fa185dc7e`). Give the node button and path line prefabs a UI review.
 - [ ] **Pacing asset** `Bladehold Config/SurvivorsRoundPacingConfig.asset`: plan 06 moved the enemy mix into `Enemies.csv` (`minThreat` + `unlockWave`). Review that curve with the playtest in `editor/06-sector-difficulty.md`.
-- [ ] **Meta Area**: once plan 07 lands, place mount pedestals (shown, locked for the demo).
+- [x] ~~**Meta Area** mount pedestals~~: moved to [`editor/07-demo-gating.md`](editor/07-demo-gating.md).
 - [ ] **Necromancer Crypt**: after plan 02 moves the confrontation trigger into runtime code, check that the trigger object and volume sit where you want in the crypt.
 
 ## C. Build sanity

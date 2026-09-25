@@ -215,6 +215,22 @@ public class MountPedestal : MonoBehaviour
             descriptionLabel.text = mountData.description;
         }
 
+        if (DemoConfigSO.IsMountLocked(mountData))
+        {
+            if (statusLabel != null) statusLabel.text = "";
+            if (costLabel != null)
+            {
+                costLabel.text = DemoConfigSO.LockedLabel;
+                costLabel.color = Color.white;
+            }
+            if (interactable != null)
+            {
+                interactable.PromptText = DemoConfigSO.LockedPrompt;
+                interactable.CanInteract = false;
+            }
+            return;
+        }
+
         if (isEquipped)
         {
             if (statusLabel != null)
@@ -273,7 +289,7 @@ public class MountPedestal : MonoBehaviour
 
     private void HandleInteract(Player player)
     {
-        if (mountData == null) return;
+        if (mountData == null || DemoConfigSO.IsMountLocked(mountData)) return;
 
         SaveData data = SaveSystem.Load();
         if (data == null) data = new SaveData();

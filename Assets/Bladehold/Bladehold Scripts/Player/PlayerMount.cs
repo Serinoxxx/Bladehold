@@ -770,7 +770,16 @@ public class PlayerMount : MonoBehaviour
         {
             foreach (var m in allMounts)
             {
-                if (string.Equals(m.id, mountId, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(m.id, mountId, StringComparison.OrdinalIgnoreCase) && !DemoConfigSO.IsMountLocked(m))
+                {
+                    equippedMountDef = m;
+                    return m;
+                }
+            }
+            // Saved mount missing or not in the demo: use the basic warhorse.
+            foreach (var m in allMounts)
+            {
+                if (string.Equals(m.id, "basic_horse", StringComparison.OrdinalIgnoreCase))
                 {
                     equippedMountDef = m;
                     return m;
