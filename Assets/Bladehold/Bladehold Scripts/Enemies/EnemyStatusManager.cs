@@ -118,10 +118,7 @@ public class EnemyStatusManager : MonoBehaviour
             if (discordRingVisual == null && ElementalEffectsManager.Instance != null && ElementalEffectsManager.Instance.discordRingVfx != null)
             {
                 discordRingVisual = Instantiate(ElementalEffectsManager.Instance.discordRingVfx, transform.position + Vector3.up * 1.5f, Quaternion.identity, transform);
-                if (ElementalEffectsManager.Instance.discordAppliedSfx != null)
-                {
-                    AudioSource.PlayClipAtPoint(ElementalEffectsManager.Instance.discordAppliedSfx, transform.position);
-                }
+                ElementalEffectsManager.Instance.PlayAt(ElementalEffectsManager.Instance.discordAppliedFeedback, transform.position);
             }
         }
         else if (discordRingVisual != null)
@@ -147,10 +144,7 @@ public class EnemyStatusManager : MonoBehaviour
                 if (frozenVisual == null && ElementalEffectsManager.Instance != null && ElementalEffectsManager.Instance.frozenStatusVfx != null)
                 {
                     frozenVisual = Instantiate(ElementalEffectsManager.Instance.frozenStatusVfx, transform.position, Quaternion.identity, transform);
-                    if (ElementalEffectsManager.Instance.frozenSfx != null)
-                    {
-                        AudioSource.PlayClipAtPoint(ElementalEffectsManager.Instance.frozenSfx, transform.position);
-                    }
+                    ElementalEffectsManager.Instance.PlayAt(ElementalEffectsManager.Instance.frozenFeedback, transform.position);
                 }
             }
             else
@@ -161,10 +155,7 @@ public class EnemyStatusManager : MonoBehaviour
                 if (iceVisual == null && ElementalEffectsManager.Instance != null && ElementalEffectsManager.Instance.iceStatusVfx != null)
                 {
                     iceVisual = Instantiate(ElementalEffectsManager.Instance.iceStatusVfx, transform.position, Quaternion.identity, transform);
-                    if (ElementalEffectsManager.Instance.statusAppliedSfx != null)
-                    {
-                        AudioSource.PlayClipAtPoint(ElementalEffectsManager.Instance.statusAppliedSfx, transform.position);
-                    }
+                    ElementalEffectsManager.Instance.PlayAt(ElementalEffectsManager.Instance.statusAppliedFeedback, transform.position);
                 }
             }
         }
@@ -175,10 +166,7 @@ public class EnemyStatusManager : MonoBehaviour
             if (fireVisual == null && ElementalEffectsManager.Instance != null && ElementalEffectsManager.Instance.fireStatusVfx != null)
             {
                 fireVisual = Instantiate(ElementalEffectsManager.Instance.fireStatusVfx, transform.position, Quaternion.identity, transform);
-                if (ElementalEffectsManager.Instance.statusAppliedSfx != null)
-                {
-                    AudioSource.PlayClipAtPoint(ElementalEffectsManager.Instance.statusAppliedSfx, transform.position);
-                }
+                ElementalEffectsManager.Instance.PlayAt(ElementalEffectsManager.Instance.statusAppliedFeedback, transform.position);
             }
         }
         else if (elementId.Equals("Lightning", System.StringComparison.OrdinalIgnoreCase))
@@ -291,10 +279,9 @@ public class EnemyStatusManager : MonoBehaviour
                     Damage burst = new Damage { value = burstDamage, type = DamageType.elemental, source = Player.Instance.Damageable, isPlayerDamage = true };
                     health.ReceiveDamage(burst);
                     
-                    if (ElementalEffectsManager.Instance != null && ElementalEffectsManager.Instance.thermalShockVfx != null)
+                    if (ElementalEffectsManager.Instance != null)
                     {
-                        Instantiate(ElementalEffectsManager.Instance.thermalShockVfx, transform.position, Quaternion.identity);
-                        if (ElementalEffectsManager.Instance.thermalShockSfx != null) AudioSource.PlayClipAtPoint(ElementalEffectsManager.Instance.thermalShockSfx, transform.position);
+                        ElementalEffectsManager.Instance.PlayAt(ElementalEffectsManager.Instance.thermalShockFeedback, transform.position);
                     }
                     
                     Collider[] hits = Physics.OverlapSphere(transform.position, 4f);
@@ -320,10 +307,9 @@ public class EnemyStatusManager : MonoBehaviour
                     
                     RemoveStatus("Fire");
                     
-                    if (ElementalEffectsManager.Instance != null && ElementalEffectsManager.Instance.plasmaOverloadVfx != null)
+                    if (ElementalEffectsManager.Instance != null)
                     {
-                        Instantiate(ElementalEffectsManager.Instance.plasmaOverloadVfx, transform.position, Quaternion.identity);
-                        if (ElementalEffectsManager.Instance.plasmaOverloadSfx != null) AudioSource.PlayClipAtPoint(ElementalEffectsManager.Instance.plasmaOverloadSfx, transform.position);
+                        ElementalEffectsManager.Instance.PlayAt(ElementalEffectsManager.Instance.plasmaOverloadFeedback, transform.position);
                     }
                     
                     Collider[] hits = Physics.OverlapSphere(transform.position, 4f);
@@ -347,10 +333,9 @@ public class EnemyStatusManager : MonoBehaviour
                 {
                     float clDamage = 40f; 
                     
-                    if (ElementalEffectsManager.Instance != null && ElementalEffectsManager.Instance.superconductorVfx != null)
+                    if (ElementalEffectsManager.Instance != null)
                     {
-                        Instantiate(ElementalEffectsManager.Instance.superconductorVfx, transform.position, Quaternion.identity);
-                        if (ElementalEffectsManager.Instance.superconductorSfx != null) AudioSource.PlayClipAtPoint(ElementalEffectsManager.Instance.superconductorSfx, transform.position);
+                        ElementalEffectsManager.Instance.PlayAt(ElementalEffectsManager.Instance.superconductorFeedback, transform.position);
                     }
                     
                     Collider[] hits = Physics.OverlapSphere(transform.position, 6f);

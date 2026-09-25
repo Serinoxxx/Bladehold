@@ -142,6 +142,9 @@
 - Fixed the mace ultimate's ground slam flashing your hero instead of shaking the screen; it now shakes the screen as intended
 - Fixed firing with an empty quiver making no sound; you now hear a dry click
 - Fixed the Earth Splitter smash having no screenshake
+- Fixed the light flash on Impulse hits never showing; it now pulses where the hit lands
+- Fixed Plasma Overload leaving a fireball burning forever where it went off
+- Fixed blood splashes from sword hits sometimes coming out the wrong size after a ragdoll had bled nearby
 
 ### Balance Changes
 

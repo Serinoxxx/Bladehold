@@ -118,6 +118,8 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
     [SerializeField] private MMF_Player drawFeedback;
     [Tooltip("Played on every shot.")]
     [SerializeField] private MMF_Player fireFeedback;
+    [Tooltip("Played at the Impulse blast centre for each enemy the blast hits (bloody burst).")]
+    [SerializeField] private MMF_Player impulseBlastHitFeedback;
 
     [Header("Skill integrations (optional)")]
     [Tooltip("The player's Impulse buff, for the Impulse Arrow skill. Defaults to Player.Instance's.")]
@@ -286,6 +288,10 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
         {
             Debug.LogError("Player Animator is not assigned or found; the bow can't suppress sword swings while aiming.");
             anyError = true;
+        }
+        if (impulseBlastHitFeedback == null)
+        {
+            Debug.LogError("PlayerBow: impulseBlastHitFeedback is not assigned.", this);
         }
 
         if (anyError)
@@ -1353,9 +1359,9 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
                 isPlayerDamage = true,
             });
 
-            if (config.headExplosionPrefab != null)
+            if (impulseBlastHitFeedback != null)
             {
-               Instantiate(config.headExplosionPrefab, center, Quaternion.identity);
+                impulseBlastHitFeedback.PlayFeedbacks(center);
             }
         }
     }

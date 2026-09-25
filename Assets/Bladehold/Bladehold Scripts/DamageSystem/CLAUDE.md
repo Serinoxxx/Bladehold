@@ -27,7 +27,8 @@
 
 ## Feedback and cleanup
 
-- `SwordHitFeedback` / `BowHitFeedback` / `ImpulseHitFeedback`: hit sounds and VFX from `DamageTrigger.OnHit`.
+- `SwordHitFeedback` / `BowHitFeedback` / `ImpulseHitFeedback`: play `MMF_Player`s from `DamageTrigger.OnHit` / `PlayerBow.OnArrowImpact`, with intensity = damage (or knockback) over a cap. `KnockbackReceiver` (knockdown/fling/wall pin) and `EnemyRagdoll` (bone impacts) do the same with players under the enemy prefab's `Feedbacks` child (on `Goblin Enemy (Base)`, so variants inherit them).
+- `MMF_PooledParticleBurst`: the house MMF feedback for blood and hit bursts. It takes the system from `ParticlePool`, and intensity (0-1) picks emit count, speed and scale from ranges. When a burst needs a direction (bow spray, wall normal, ragdoll contact), the caller rotates the MMF player's GameObject just before `PlayFeedbacks` and the burst uses the owner's rotation, so keep such players on their own GameObject.
 - `DamageNumberSpawner`: DamageNumbersPro popups from `OnDamaged`.
 - `BloodDecal*`.
 - `HitstopFeedback`: hitstop was removed from the sword feel; check before re-adding.

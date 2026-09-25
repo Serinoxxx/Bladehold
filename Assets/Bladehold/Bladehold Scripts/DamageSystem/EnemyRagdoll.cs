@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -24,8 +25,10 @@ public class EnemyRagdoll : MonoBehaviour
     public RagdollConfigSO Config => config;
     [Tooltip("Optional; lets an early corpse-cap despawn freeze a still-simulating ragdoll before the sink starts.")]
     [SerializeField] private CorpseDespawner corpseDespawner;
-    [Header("Impact Sound Juiciness")]
-    [SerializeField] private AudioClip[] impactSounds;
+    [Tooltip("Blood burst played where a ragdolled body part hits something. Intensity = impact strength; the player is turned to the contact normal before it plays.")]
+    [SerializeField] private MMF_Player bloodImpactFeedback;
+
+    public MMF_Player BloodImpactFeedback => bloodImpactFeedback;
 
     /// <summary>Ragdolls simulating right now, across all enemies. <see cref="ImpulseReceiver" /> caps this.</summary>
     public static int ActiveCount { get; private set; }
@@ -120,7 +123,7 @@ public class EnemyRagdoll : MonoBehaviour
             {
                 if (config != null)
                 {
-                    impact.Init(this, config, impact.BodyPartType, impactSounds);
+                    impact.Init(this, config, impact.BodyPartType);
                 }
             }
 
@@ -145,6 +148,10 @@ public class EnemyRagdoll : MonoBehaviour
         {
             Debug.LogError("RagdollConfigSO is not assigned in the inspector.");
             anyError = true;
+        }
+        if (bloodImpactFeedback == null)
+        {
+            Debug.LogError($"EnemyRagdoll on {name}: bloodImpactFeedback is not assigned.", this);
         }
 
         if (anyError)
@@ -452,7 +459,7 @@ public class EnemyRagdoll : MonoBehaviour
         bodies.Add(body);
 
         RagdollBloodImpact impact = bone.gameObject.AddComponent<RagdollBloodImpact>();
-        impact.Init(this, config, bodyPartType, impactSounds);
+        impact.Init(this, config, bodyPartType);
 
         return body;
     }

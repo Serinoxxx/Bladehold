@@ -14,7 +14,8 @@ This plan audits and migrates the existing violations. Split it into several ses
 | 2 | Code-built UI → prefab mockups | **Done 2026-09-26** (mockups await UI review) |
 | 3 | Code-built world visuals (primitives, telegraph LineRenderers, lights) | **Done 2026-09-26** (mockups await art review) |
 | 4 | Batch A: player weapons → MMF | **Done 2026-09-26** (feel awaits tuning) |
-| 5+ | Direct audio/VFX/shake → MMF, one batch per session (ranked list below) | Next: batch B |
+| 5 | Batch B: hit feedback → MMF | **Done 2026-09-26** (feel awaits tuning) |
+| 6+ | Direct audio/VFX/shake → MMF, one batch per session (ranked list below) | Next: batch C |
 
 **Session 1 done:**
 - Deleted the Editor-only duplicate pickup sounds from `AmmoPickup`, `Coin`, `HealthPack`, `ImpulseOrb`, `LightningOrb` and `PlayerSummonMount`. Their MMF players already carry the sound; AmmoPickup's player existed but wasn't wired, so it's wired now.
@@ -54,6 +55,19 @@ This plan audits and migrates the existing violations. Split it into several ses
 - Benchmark: 109 passed, 3 failed (Bulwark attack, Bannerman rig, skull waypoints, all pre-existing; BuildWheel open/close passes again).
 - Editor work: [`plans/editor/09-visuals-mmf.md`](editor/09-visuals-mmf.md) §6.
 
+**Session 5 done** (batch B, Unity MCP connected). No `PlayOneShot`, `PlayClipAtPoint`, `MMSoundManagerSoundPlayEvent` or one-shot `Instantiate(vfx)` is left in the batch-B scripts. Also covered: `ImpulseHitFeedback` (same family, live on the Player) and batch A's leftover `PlayerBow` head explosion.
+- **New house feedback `MMF_PooledParticleBurst`** (`DamageSystem/`). It takes a system from `ParticlePool` and plays it or emits into it. Intensity (0-1) picks emit count, speed multiplier (relative to the prefab's own) and scale from ranges. With `UseOwnerRotation`, the caller aims the burst by rotating the MMF player's GameObject just before `PlayFeedbacks`. Use it for any damage-scaled or directional burst in batches C-F.
+- **Player** (`Player.prefab`): each melee weapon has `WooshMMF`/`HitMMF`/`CritHitMMF`/`InanimateHitMMF` children, and `BowHitFeedback` has `HitMMF`/`CritHitMMF`/`VulnerableHitMMF`. Their AudioSources are gone. `SidekickSyntyCharacter` gained `ImpulseBlastHitMMF` (`PlayerBow.impulseBlastHitFeedback`, replacing `BowSO.headExplosionPrefab`), `ImpulseHitMMF` (an MMF Light on its own child light, moved to the hit point), plus `PlasmaOverloadMMF`, `StatusAppliedMMF`, `FrozenMMF` and `DiscordAppliedMMF` on `ElementalEffectsManager`.
+- **Enemies**: `Goblin Enemy (Base)` got a `Feedbacks` child with `KnockdownMMF`, `FlingMMF` (thud + `KnockbackFlashLight` via MMF Instantiate Object), `WallPinMMF` and `RagdollBloodMMF`, and every variant inherits them. The standalone `Bulwark Enemy Variant`, `Goblin Brute Enemy`, `Goblin Enemy Variant` and `Training Dummy Goblin` got their own. `Goblin Warrior` has its own `FlingScreamMMF` (its 8 screams) and overrides `flingFeedback` to point at it.
+- **Config moved out of SOs**: `KnockbackConfigSO` lost the knockdown/flying VFX and SFX, the light-flash settings and the wall-pin SFX/VFX. The flash colour, intensity, range and fade are now baked into `VFX/KnockbackFlashLight.prefab`, and `FlashLightDimmer` reads its own Light. `RagdollConfigSO.bloodParticlePrefab` is gone too.
+- **Deleted dead code**: `RagdollImpactAudio` (nothing added it) and `EnemyRagdoll.impactSounds` (empty on every prefab, so ragdoll impacts never made a sound). Also `KnockbackReceiver.landingVfxPrefab`/`landingSfx` (never wired anywhere) and `RagdollBloodImpact.TriggerDirectImpact` (no callers). `SwordHitFeedback` was removed from the Meta Area pedestal's display sword.
+- **`ElementalEffectsManager`**: `thermalShockVfx`/`Sfx`, `plasmaOverloadSfx`, `frozenSfx` and `discordAppliedSfx` deleted. Remaining legacy readers: `fireStatusVfx` (CatapultProjectile, FortArrowProjectile, RollingFireball, PlayerDodge), `iceStatusVfx` (FortArrowProjectile, SlipperyIceZone), `plasmaOverloadVfx` (RollingFireball), `superconductorVfx` (BurningOilZone, CatapultStormCloud, FortArrowProjectile, SurvivorsSpawner), and `statusAppliedSfx`/`superconductorSfx` (BurningOilZone, SurvivorsSpawner).
+- **Left in batch-B scripts on purpose:** `EnemyStatusManager`'s fire/ice/frozen/discord status visuals. They're parented to the enemy for as long as the status lasts, so they're state visuals rather than one-shot feedback (like the `PlayerDodge` dash trail). Revisit if a looping-VFX MMF pattern turns up.
+- **Bugs found on the way:** the Impulse light pulse never showed, because it cloned an *inactive* child light. Plasma Overload's `FX_Fireball_01` loops and was never destroyed. Pooled blood kept the scale and speed the ragdoll code left on it (shared `FX_BloodSplat_01` pool, and ragdoll speed compounded with `*=`). The burst now always sets both from the prefab.
+- **Sound spatialisation:** player-side hits are 2D (their AudioSources were 0.1 / 1 spatial, but on the hero). Enemy-side sounds (knockback, wall pin, status applied, frozen, discord, plasma) are fully 3D, matching `PlayClipAtPoint`. Old `PlayOneShot` volume scales above 1 (1.2-1.8) can't be reproduced, because MMSoundManager caps at 1.
+- Benchmark: 107 passed, 5 failed. It's the same 5 as session 3: Bulwark attack, Bannerman rig and skull waypoints, plus BuildWheel open/close, which flips between runs (the objective-completion check flipped once too). The console's `Destroy may not be called from edit mode` comes from `BubbleShield`'s `PlayClipAtPoint` during the edit-mode benchmark (batch C).
+- Editor work: [`plans/editor/09-visuals-mmf.md`](editor/09-visuals-mmf.md) §7.
+
 ## Refreshed audit (2026-09-26, after session 3)
 
 Sessions 2 (code-built UI) and 3 (code-built world visuals) are done; the visuals grep below now returns only the documented exceptions.
@@ -71,7 +85,7 @@ Highest traffic first. The counts come from a grep, so a few `.Play()` hits may 
 | Batch | Area | Scripts |
 |---|---|---|
 | ~~A~~ | Player (every second of play), **done session 4** | `PlayerAttack`, `PlayerBow`, `PlayerDodge`, `PlayerAmmo`, `AxeProjectile`, `MaceCombatController`, `MaceUltimate`, `PlayerUltimateController`, `FlameZone`, `PlayerArmourManager` |
-| B | Hit feedback | `SwordHitFeedback`, `BowHitFeedback`, `DamageTrigger`, `KnockbackReceiver`, `RagdollBloodImpact`, `RagdollImpactAudio`, `EnemyStatusManager` (7 calls) |
+| ~~B~~ | Hit feedback, **done session 5** | `SwordHitFeedback`, `BowHitFeedback`, `DamageTrigger`, `KnockbackReceiver`, `RagdollBloodImpact`, ~~`RagdollImpactAudio`~~ (deleted), `EnemyStatusManager`, + `ImpulseHitFeedback` |
 | C | Common enemies + spawner | `SurvivorsSpawner`, `GoldenGoblin`(+`Flee`), `ImpulseGoblin`, `AssassinAttack`, `HookProjectile`, `BoulderProjectile`, `LightningBall`, `LightningOrbDropper`, `LightningStormZone`, `ToxicPoolZone`, `HomingOrb`, `SlayerDashAttack`, `SlayerStompCrusher`, `EnemyIntroController`, `SpecialEnemyIntro`, `DestructibleBanner`, `CaptainKombustaController`, `DynamiteProjectile`, `ArrowBarrageZone`, `BubbleShield` |
 | D | Towers | `DefenseStructure`, `BuildWheelUI`, `ArrowTowerDefense`, `FortArrowProjectile`, `BallistaDefense`, `CatapultDefense`, `CatapultProjectile` (**direct shake**), `NetThrowerDefense`, `NetProjectile`, `OilVatDefense`, `BurningOilZone`, `SpikeTrapDefense`, `RollingFireball`, `SlipperyIceZone`, `CatapultStormCloud` |
 | E | Waves, objectives, hub UI | `GameLoopManager`, `WaveClearedBannerUI`, `WarBannerController`, `Gate`, `WaveUpgradePowerup`, `BatteringRam`, `DestructibleSiegeEngine`, `PrisonerCage`, `RescuedPrisoner`, `SupplyWagonEscort`, `SurvivorsStatsPanelUI`, `DraftStation`, `WellStation`, `HorseHoofbeatAudio`, `FishingBowController`, `FishingManager` |

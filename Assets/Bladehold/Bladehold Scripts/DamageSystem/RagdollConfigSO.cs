@@ -42,10 +42,7 @@ public class RagdollConfigSO : ScriptableObject
     [Tooltip("Caps how fast a body may be pushed out of an overlap — prevents physics explosions when a fling clips geometry.")]
     public float maxDepenetrationVelocity = 5f;
 
-    [Header("Ragdoll Blood Effects & Decals")]
-    [Tooltip("Particle system prefab spawned when a ragdoll body part impacts a surface.")]
-    public ParticleSystem bloodParticlePrefab;
-
+    [Header("Ragdoll Blood Decals (the splash is EnemyRagdoll.bloodImpactFeedback)")]
     [Tooltip("Materials used for blood decals projected onto hit surfaces.")]
     public Material[] bloodDecalMaterials;
 

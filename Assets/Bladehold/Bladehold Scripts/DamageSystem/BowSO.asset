@@ -38,4 +38,3 @@ MonoBehaviour:
   aimLookMaxPitchDegrees: 60
   impulseBlastRadius: 4
   knockbackBlastForce: 0.5
-  headExplosionPrefab: {fileID: 1277154925287174, guid: 3b517eddec185dd4a830743a742ad00b, type: 3}

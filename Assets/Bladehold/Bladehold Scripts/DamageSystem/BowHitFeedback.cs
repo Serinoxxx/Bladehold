@@ -1,45 +1,29 @@
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
 ///     Reactive impact feedback for the bow — the <see cref="SwordHitFeedback" /> sibling: subscribes
-///     to <see cref="PlayerBow.OnArrowImpact" /> and plays a hit sound plus a blood-particle burst at
-///     the hit point, with distinct variants for critical hits and <see cref="VulnerableSpot" />
-///     (headshot) hits. Vulnerable outranks crit when both apply — the headshot sting is the
-///     distinctive read; each variant falls back to the normal pool/prefab when unassigned. Blood
-///     sprays back along the arrow's flight path (unlike the sword's omnidirectional splash), and its
-///     burst size/speed scale with damage up to a cap, the SwordHitFeedback numbers.
+///     to <see cref="PlayerBow.OnArrowImpact" /> and plays an <see cref="MMF_Player" /> (hit sound +
+///     <see cref="MMF_PooledParticleBurst" /> blood) at the hit point, with distinct players for critical
+///     hits and <see cref="VulnerableSpot" /> (headshot) hits. Vulnerable outranks crit when both apply;
+///     each falls back to the normal player when unassigned. Blood sprays back along the arrow's flight
+///     path: the chosen player is turned to face back up the arrow before it plays (its burst uses the
+///     owner's rotation), and intensity = damage / <see cref="damageForMaxIntensity" />.
 /// </summary>
 public class BowHitFeedback : MonoBehaviour
 {
     [Tooltip("The PlayerBow whose impacts this reacts to. Auto-wired from this object or its parents.")]
     [SerializeField] private PlayerBow bow;
-    [SerializeField] private AudioSource audioSource;
 
-    [Header("Hit sounds")]
-    [SerializeField] private AudioClip[] hitSounds;
-    [Tooltip("Used instead of Hit Sounds on a critical hit, if any are assigned.")]
-    [SerializeField] private AudioClip[] critHitSounds;
-    [Tooltip("Used on a VulnerableSpot (headshot) hit, if any are assigned — outranks the crit pool when both apply.")]
-    [SerializeField] private AudioClip[] vulnerableHitSounds;
-
-    [Header("Volume Overrides")]
-    [Range(0f, 3f)] [SerializeField] private float hitVolume = 1.4f;
-    [Range(0f, 3f)] [SerializeField] private float critHitVolume = 1.6f;
-    [Range(0f, 3f)] [SerializeField] private float vulnerableHitVolume = 1.8f;
-
-    [Header("Blood particles")]
-    [SerializeField] private ParticleSystem bloodParticlePrefab;
-    [Tooltip("Used instead of Blood Particle Prefab on a critical hit, if assigned.")]
-    [SerializeField] private ParticleSystem critBloodParticlePrefab;
-    [Tooltip("Used on a VulnerableSpot (headshot) hit, if assigned — outranks the crit prefab when both apply.")]
-    [SerializeField] private ParticleSystem vulnerableBloodParticlePrefab;
-    [Tooltip("Particle burst size and speed both scale with damage up to this many points of damage, then cap.")]
-    [SerializeField] private float damageForMaxParticles = 20f;
-    [SerializeField] private int minParticles = 3;
-    [SerializeField] private int maxParticles = 40;
-    [SerializeField] private float minSpeedMultiplier = 0.5f;
-    [SerializeField] private float maxSpeedMultiplier = 2f;
-    [SerializeField] private float particleCleanupDelay = 3f;
+    [Header("Feedbacks (MMF)")]
+    [Tooltip("Normal arrow hit: sound + blood burst. Keep it on its own GameObject: it gets rotated to aim the spray.")]
+    [SerializeField] private MMF_Player hitFeedback;
+    [Tooltip("Optional: played instead of Hit Feedback on a critical hit.")]
+    [SerializeField] private MMF_Player critHitFeedback;
+    [Tooltip("Optional: played on a VulnerableSpot (headshot) hit; outranks the crit player when both apply.")]
+    [SerializeField] private MMF_Player vulnerableHitFeedback;
+    [Tooltip("Hit feedbacks play at full intensity from this much damage; the blood burst scales with intensity.")]
+    [SerializeField] private float damageForMaxIntensity = 20f;
 
     private bool anyError = false;
 
@@ -49,18 +33,18 @@ public class BowHitFeedback : MonoBehaviour
         {
             bow = GetComponentInParent<PlayerBow>();
         }
-        if (audioSource == null)
-        {
-            audioSource = GetComponent<AudioSource>();
-        }
     }
 
     private void Start()
     {
         if (bow == null)
         {
-            Debug.LogError("PlayerBow is not assigned or found in parents; arrow impacts will play no feedback.");
+            Debug.LogError("PlayerBow is not assigned or found in parents; arrow impacts will play no feedback.", this);
             anyError = true;
+        }
+        if (hitFeedback == null)
+        {
+            Debug.LogError("BowHitFeedback: hitFeedback is not assigned.", this);
         }
 
         if (anyError)
@@ -81,72 +65,27 @@ public class BowHitFeedback : MonoBehaviour
 
     private void HandleImpact(ArrowImpact impact)
     {
-        PlayRandomClip(PickSounds(impact), PickVolume(impact));
-        SpawnBlood(impact);
+        MMF_Player feedback = PickFeedback(impact);
+        if (feedback == null) return;
+
+        if (impact.direction.sqrMagnitude > 0.0001f)
+        {
+            feedback.transform.rotation = Quaternion.LookRotation(-impact.direction);
+        }
+        float intensity = damageForMaxIntensity > 0f ? Mathf.Clamp01(impact.damage.value / damageForMaxIntensity) : 1f;
+        feedback.PlayFeedbacks(impact.point, intensity);
     }
 
-    private AudioClip[] PickSounds(ArrowImpact impact)
+    private MMF_Player PickFeedback(ArrowImpact impact)
     {
-        if (impact.hitVulnerableSpot && vulnerableHitSounds != null && vulnerableHitSounds.Length > 0)
+        if (impact.hitVulnerableSpot && vulnerableHitFeedback != null)
         {
-            return vulnerableHitSounds;
+            return vulnerableHitFeedback;
         }
-        if (impact.damage.isCritical && critHitSounds != null && critHitSounds.Length > 0)
+        if (impact.damage.isCritical && critHitFeedback != null)
         {
-            return critHitSounds;
+            return critHitFeedback;
         }
-        return hitSounds;
-    }
-
-    private float PickVolume(ArrowImpact impact)
-    {
-        if (impact.hitVulnerableSpot && vulnerableHitSounds != null && vulnerableHitSounds.Length > 0)
-        {
-            return vulnerableHitVolume;
-        }
-        if (impact.damage.isCritical && critHitSounds != null && critHitSounds.Length > 0)
-        {
-            return critHitVolume;
-        }
-        return hitVolume;
-    }
-
-    private ParticleSystem PickBloodPrefab(ArrowImpact impact)
-    {
-        if (impact.hitVulnerableSpot && vulnerableBloodParticlePrefab != null)
-        {
-            return vulnerableBloodParticlePrefab;
-        }
-        if (impact.damage.isCritical && critBloodParticlePrefab != null)
-        {
-            return critBloodParticlePrefab;
-        }
-        return bloodParticlePrefab;
-    }
-
-    private void PlayRandomClip(AudioClip[] clips, float volumeScale = 1.0f)
-    {
-        if (audioSource == null || clips == null || clips.Length == 0) return;
-        audioSource.PlayOneShot(clips[Random.Range(0, clips.Length)], volumeScale);
-    }
-
-    private void SpawnBlood(ArrowImpact impact)
-    {
-        ParticleSystem prefab = PickBloodPrefab(impact);
-        if (prefab == null) return;
-
-        float damageFactor = damageForMaxParticles > 0f ? Mathf.Clamp01(impact.damage.value / damageForMaxParticles) : 1f;
-        int particleCount = Mathf.Clamp(Mathf.RoundToInt(Mathf.Lerp(minParticles, maxParticles, damageFactor)), minParticles, maxParticles);
-
-        // Spray back the way the arrow came, so exit-wound-style bursts read as the shot's doing.
-        ParticleSystem instance = ParticlePool.Get(prefab, impact.point, Quaternion.LookRotation(-impact.direction));
-        if (instance != null)
-        {
-            ParticleSystem.MainModule main = instance.main;
-            main.startSpeedMultiplier = Mathf.Lerp(minSpeedMultiplier, maxSpeedMultiplier, damageFactor);
-            instance.Emit(particleCount);
-
-            ParticlePool.Release(prefab, instance, particleCleanupDelay);
-        }
+        return hitFeedback;
     }
 }

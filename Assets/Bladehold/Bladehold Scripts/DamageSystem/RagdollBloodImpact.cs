@@ -1,27 +1,26 @@
-using MoreMountains.Tools;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
 ///     Attached to individual ragdoll bones by <see cref="EnemyRagdoll"/>.
-///     Listens to physical collisions while ragdolled, scaling particle splash effects, blood decals,
-///     and sound effects by the collision impact speed and <see cref="RagdollBodyPartType"/>.
+///     Listens to physical collisions while ragdolled and plays the ragdoll's
+///     <see cref="EnemyRagdoll.BloodImpactFeedback"/> (turned to face the contact normal) plus a blood decal,
+///     both scaled by the collision speed and <see cref="RagdollBodyPartType"/>.
 /// </summary>
 public class RagdollBloodImpact : MonoBehaviour
 {
     private EnemyRagdoll ownerRagdoll;
     private RagdollConfigSO config;
     [SerializeField] private RagdollBodyPartType bodyPartType;
-    private AudioClip[] impactSounds;
     private float nextImpactTime;
 
     public RagdollBodyPartType BodyPartType => bodyPartType;
 
-    public void Init(EnemyRagdoll ragdoll, RagdollConfigSO ragdollConfig, RagdollBodyPartType partType, AudioClip[] sounds)
+    public void Init(EnemyRagdoll ragdoll, RagdollConfigSO ragdollConfig, RagdollBodyPartType partType)
     {
         ownerRagdoll = ragdoll;
         config = ragdollConfig;
         bodyPartType = partType;
-        impactSounds = sounds;
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -45,72 +44,19 @@ public class RagdollBloodImpact : MonoBehaviour
         Vector3 point = collision.contacts.Length > 0 ? collision.contacts[0].point : transform.position;
         Vector3 normal = collision.contacts.Length > 0 ? collision.contacts[0].normal : Vector3.up;
 
-        // 1. Spawn Blood Particle Effect
-        if (config.bloodParticlePrefab != null)
+        // 1. Blood splash. Intensity 1 = a full-speed torso hit (the biggest body part); smaller parts
+        // and slower hits land further down the feedback's ranges.
+        MMF_Player feedback = ownerRagdoll != null ? ownerRagdoll.BloodImpactFeedback : null;
+        if (feedback != null)
         {
-            Quaternion particleRotation = Quaternion.LookRotation(normal);
-            ParticleSystem fx = ParticlePool.Get(config.bloodParticlePrefab, point, particleRotation);
-            if (fx != null)
-            {
-                // Scale particle system transform & emission speed by body part & speed
-                float fxScale = bodyPartMultiplier * Mathf.Lerp(0.6f, 1.5f, speedFactor);
-                fx.transform.localScale = Vector3.one * fxScale;
-
-                ParticleSystem.MainModule main = fx.main;
-                main.startSpeedMultiplier *= Mathf.Lerp(0.8f, 1.8f, speedFactor);
-
-                int particleCount = Mathf.RoundToInt(Mathf.Lerp(5, 30, speedFactor) * bodyPartMultiplier);
-                fx.Emit(particleCount);
-
-                ParticlePool.Release(config.bloodParticlePrefab, fx, 2.5f);
-            }
+            float maxMultiplier = Mathf.Max(0.01f, Mathf.Max(config.torsoBaseScale, config.headBaseScale, config.limbBaseScale));
+            feedback.transform.rotation = Quaternion.LookRotation(normal);
+            feedback.PlayFeedbacks(point, speedFactor * bodyPartMultiplier / maxMultiplier);
         }
 
         // 2. Spawn Blood Decal
         float decalSize = bodyPartMultiplier * Mathf.Lerp(config.minDecalSize, config.maxDecalSize, speedFactor);
         BloodDecalManager.SpawnDecal(point, normal, decalSize, config);
-
-        // 3. Play Impact Sound Effect
-        if (impactSounds != null && impactSounds.Length > 0)
-        {
-            AudioClip clipToPlay = impactSounds[Random.Range(0, impactSounds.Length)];
-            if (clipToPlay != null)
-            {
-                float volume = Mathf.Clamp01(impactSpeed / 15f) * 0.9f + 0.1f;
-                float pitch = Random.Range(0.85f, 1.15f);
-
-                MMSoundManagerSoundPlayEvent.Trigger(
-                    clipToPlay,
-                    MMSoundManager.MMSoundManagerTracks.Sfx,
-                    point,
-                    loop: false,
-                    volume: volume,
-                    pitch: pitch
-                );
-            }
-        }
-    }
-
-    /// <summary>
-    /// Triggers a direct blood impact/splash at the specified world position and normal.
-    /// </summary>
-    public void TriggerDirectImpact(Vector3 point, Vector3 normal, float impactSpeed)
-    {
-        if (config != null && config.bloodParticlePrefab != null)
-        {
-            Quaternion particleRotation = Quaternion.LookRotation(normal);
-            ParticleSystem fx = ParticlePool.Get(config.bloodParticlePrefab, point, particleRotation);
-            if (fx != null)
-            {
-                fx.transform.localScale = Vector3.one * 1.2f;
-                fx.Emit(20);
-                ParticlePool.Release(config.bloodParticlePrefab, fx, 2.5f);
-            }
-        }
-        if (config != null)
-        {
-            BloodDecalManager.SpawnDecal(point, normal, 1.2f, config);
-        }
     }
 
     private float GetBodyPartMultiplier(RagdollBodyPartType type)

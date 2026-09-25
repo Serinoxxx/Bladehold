@@ -1,47 +1,33 @@
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
-///     Reactive feedback for the sword: subscribes to <see cref="DamageTrigger.OnHit" />/
+///     Reactive feedback for a melee weapon: subscribes to <see cref="DamageTrigger.OnHit" />/
 ///     <see cref="DamageTrigger.OnBlocked" /> the same way <see cref="DamageNumberSpawner" /> reacts to
 ///     <see cref="Health.OnDamaged" /> - DamageTrigger stays unaware of what plays when it hits or blocks.
-///     Every field below is optional and degrades gracefully if unassigned; only <see cref="damageTrigger" />
-///     is required.
+///     Each event is an <see cref="MMF_Player" /> (sound + <see cref="MMF_PooledParticleBurst" /> blood)
+///     played at the hit point, with intensity = damage / <see cref="damageForMaxIntensity" /> so the burst
+///     grows with the hit. Only <see cref="damageTrigger" /> is required; missing feedbacks log in Start.
 /// </summary>
 public class SwordHitFeedback : MonoBehaviour
 {
     [SerializeField] private DamageTrigger damageTrigger;
-    [SerializeField] private AudioSource audioSource;
 
     [Header("Blocked reaction")]
     [Tooltip("The player rig's Animator. Set when a swing is blocked by the cut-through cap.")]
     [SerializeField] private Animator animator;
 
-    [Header("Hit sounds")]
-    [SerializeField] private AudioClip[] hitSounds;
-    [Tooltip("Used instead of Hit Sounds on a critical hit, if any are assigned.")]
-    [SerializeField] private AudioClip[] critHitSounds;
-
-    [Header("Swing sound")]
-    [SerializeField] private AudioClip[] wooshSounds;
-
-    [Header("Volume Overrides")]
-    [Range(0f, 3f)] [SerializeField] private float wooshVolume = 1.2f;
-    [Range(0f, 3f)] [SerializeField] private float hitVolume = 1.4f;
-    [Range(0f, 3f)] [SerializeField] private float critHitVolume = 1.6f;
-
-    [Header("Blood particles")]
-    [SerializeField] private ParticleSystem bloodParticlePrefab;
-    [Tooltip("Used instead of Blood Particle Prefab on a critical hit, if assigned.")]
-    [SerializeField] private ParticleSystem critBloodParticlePrefab;
-    [Tooltip("Used instead of Blood Particle Prefab when the target has no blood — e.g. a smashable Chest.")]
-    [SerializeField] private ParticleSystem inanimateHitParticlePrefab;
-    [Tooltip("Particle burst size and speed both scale with damage up to this many points of damage, then cap.")]
-    [SerializeField] private float damageForMaxParticles = 20f;
-    [SerializeField] private int minParticles = 3;
-    [SerializeField] private int maxParticles = 40;
-    [SerializeField] private float minSpeedMultiplier = 0.5f;
-    [SerializeField] private float maxSpeedMultiplier = 2f;
-    [SerializeField] private float particleCleanupDelay = 3f;
+    [Header("Feedbacks (MMF)")]
+    [Tooltip("Swing woosh, from an animation event earlier in the swing.")]
+    [SerializeField] private MMF_Player wooshFeedback;
+    [Tooltip("Normal hit: sound + blood burst at the hit point.")]
+    [SerializeField] private MMF_Player hitFeedback;
+    [Tooltip("Optional: played instead of Hit Feedback on a critical hit.")]
+    [SerializeField] private MMF_Player critHitFeedback;
+    [Tooltip("Optional: played instead of Hit Feedback when the target has no blood, e.g. a smashable Chest.")]
+    [SerializeField] private MMF_Player inanimateHitFeedback;
+    [Tooltip("Hit feedbacks play at full intensity from this much damage; the blood burst scales with intensity.")]
+    [SerializeField] private float damageForMaxIntensity = 20f;
 
     private int blockedTriggerHash;
     private bool anyError = false;
@@ -52,18 +38,22 @@ public class SwordHitFeedback : MonoBehaviour
         {
             damageTrigger = GetComponent<DamageTrigger>();
         }
-        if (audioSource == null)
-        {
-            audioSource = GetComponent<AudioSource>();
-        }
     }
 
     private void Start()
     {
         if (damageTrigger == null)
         {
-            Debug.LogError("DamageTrigger is not assigned or found on the GameObject.");
+            Debug.LogError("DamageTrigger is not assigned or found on the GameObject.", this);
             anyError = true;
+        }
+        if (wooshFeedback == null)
+        {
+            Debug.LogError($"SwordHitFeedback on {name}: wooshFeedback is not assigned.", this);
+        }
+        if (hitFeedback == null)
+        {
+            Debug.LogError($"SwordHitFeedback on {name}: hitFeedback is not assigned.", this);
         }
 
         if (anyError)
@@ -89,14 +79,33 @@ public class SwordHitFeedback : MonoBehaviour
     /// <summary>Called from an animation event earlier in the swing, before the hitbox activates.</summary>
     public void PlayWoosh()
     {
-        PlayRandomClip(wooshSounds, wooshVolume);
+        if (wooshFeedback != null)
+        {
+            wooshFeedback.PlayFeedbacks(transform.position);
+        }
     }
 
     private void HandleHit(IDamageable target, Damage damage, Vector3 point)
     {
-        float volume = damage.isCritical && critHitSounds != null && critHitSounds.Length > 0 ? critHitVolume : hitVolume;
-        PlayRandomClip(damage.isCritical && critHitSounds != null && critHitSounds.Length > 0 ? critHitSounds : hitSounds, volume);
-        SpawnHitParticles(target, point, damage.value, damage.isCritical);
+        MMF_Player feedback = PickHitFeedback(target, damage.isCritical);
+        if (feedback == null) return;
+
+        float intensity = damageForMaxIntensity > 0f ? Mathf.Clamp01(damage.value / damageForMaxIntensity) : 1f;
+        feedback.PlayFeedbacks(point, intensity);
+    }
+
+    private MMF_Player PickHitFeedback(IDamageable target, bool isCritical)
+    {
+        bool isInanimate = target is Component targetComponent && targetComponent.GetComponentInParent<Chest>() != null;
+        if (isInanimate && inanimateHitFeedback != null)
+        {
+            return inanimateHitFeedback;
+        }
+        if (isCritical && critHitFeedback != null)
+        {
+            return critHitFeedback;
+        }
+        return hitFeedback;
     }
 
     private void HandleBlocked()
@@ -104,34 +113,6 @@ public class SwordHitFeedback : MonoBehaviour
         if (animator != null)
         {
             animator.SetTrigger(blockedTriggerHash);
-        }
-    }
-
-    private void PlayRandomClip(AudioClip[] clips, float volumeScale = 1.0f)
-    {
-        if (audioSource == null || clips == null || clips.Length == 0) return;
-        audioSource.PlayOneShot(clips[Random.Range(0, clips.Length)], volumeScale);
-    }
-
-    private void SpawnHitParticles(IDamageable target, Vector3 point, float damageValue, bool isCritical)
-    {
-        bool isInanimate = target is Component targetComponent && targetComponent.GetComponentInParent<Chest>() != null;
-        ParticleSystem prefab = isInanimate
-            ? inanimateHitParticlePrefab
-            : (isCritical && critBloodParticlePrefab != null ? critBloodParticlePrefab : bloodParticlePrefab);
-        if (prefab == null) return;
-
-        float damageFactor = damageForMaxParticles > 0f ? Mathf.Clamp01(damageValue / damageForMaxParticles) : 1f;
-        int particleCount = Mathf.Clamp(Mathf.RoundToInt(Mathf.Lerp(minParticles, maxParticles, damageFactor)), minParticles, maxParticles);
-
-        ParticleSystem instance = ParticlePool.Get(prefab, point, Quaternion.identity);
-        if (instance != null)
-        {
-            ParticleSystem.MainModule main = instance.main;
-            main.startSpeedMultiplier = Mathf.Lerp(minSpeedMultiplier, maxSpeedMultiplier, damageFactor);
-            instance.Emit(particleCount);
-
-            ParticlePool.Release(prefab, instance, particleCleanupDelay);
         }
     }
 }

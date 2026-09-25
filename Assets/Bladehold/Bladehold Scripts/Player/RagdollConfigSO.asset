@@ -25,7 +25,6 @@ MonoBehaviour:
   swing2Limit: 30
   enableProjection: 1
   maxDepenetrationVelocity: 5
-  bloodParticlePrefab: {fileID: 198104090543139058, guid: 4430919f14c50f84085d287cbcb2c30e, type: 3}
   bloodDecalMaterials:
   - {fileID: 2100000, guid: 0835ad18a905479458207d25e24b455d, type: 2}
   - {fileID: 2100000, guid: 402524746f2398e46977a6754ced79ad, type: 2}

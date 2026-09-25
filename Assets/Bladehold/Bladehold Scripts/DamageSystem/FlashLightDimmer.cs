@@ -1,36 +1,52 @@
 using UnityEngine;
 
 /// <summary>
-///     Lightly dims a <see cref="Light" /> from peak intensity to zero over a given duration,
-///     then destroys the GameObject. Used for bright flash lights when enemies are hit so hard they go flying.
+///     Dims a <see cref="Light" /> from its authored intensity to zero over <see cref="fadeDuration" />,
+///     then destroys the GameObject. Used for the bright flash when an enemy is hit so hard it goes flying
+///     (spawned by the enemy's fling MMF_Player). Colour, peak intensity and range are the Light's own.
 /// </summary>
 public class FlashLightDimmer : MonoBehaviour
 {
-    private float duration;
-    private float elapsed;
-    private Light lightComponent;
-    private float startIntensity;
+    [SerializeField] private Light lightComponent;
+    [Tooltip("Seconds from peak intensity to dark.")]
+    [SerializeField] private float fadeDuration = 0.2f;
 
-    public void Initialize(float peakIntensity, float fadeDuration)
+    private float elapsed;
+    private float startIntensity;
+    private bool anyError = false;
+
+    private void OnValidate()
     {
-        lightComponent = GetComponent<Light>();
-        startIntensity = peakIntensity;
-        duration = Mathf.Max(0.01f, fadeDuration);
+        if (lightComponent == null)
+        {
+            lightComponent = GetComponent<Light>();
+        }
+    }
+
+    private void Start()
+    {
+        if (lightComponent == null)
+        {
+            Debug.LogError($"FlashLightDimmer on {name}: lightComponent is not assigned.", this);
+            anyError = true;
+            Destroy(gameObject);
+            return;
+        }
+        startIntensity = lightComponent.intensity;
     }
 
     private void Update()
     {
+        if (anyError) return;
+
         elapsed += Time.deltaTime;
-        float t = elapsed / duration;
+        float t = elapsed / Mathf.Max(0.01f, fadeDuration);
         if (t >= 1f)
         {
             Destroy(gameObject);
             return;
         }
 
-        if (lightComponent != null)
-        {
-            lightComponent.intensity = Mathf.Lerp(startIntensity, 0f, t);
-        }
+        lightComponent.intensity = Mathf.Lerp(startIntensity, 0f, t);
     }
 }

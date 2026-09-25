@@ -533,17 +533,7 @@ public class DamageTrigger : MonoBehaviour
                     EnemyStatusManager.GetOrAdd(targetComponent)?.ApplyStatus("Lightning");
                     if (ElementalEffectsManager.Instance != null)
                     {
-                        if (ElementalEffectsManager.Instance.superconductorVfx != null)
-                        {
-                            Instantiate(ElementalEffectsManager.Instance.superconductorVfx, hitPoint, Quaternion.identity);
-                        }
-                        AudioClip zapClip = ElementalEffectsManager.Instance.superconductorSfx != null
-                            ? ElementalEffectsManager.Instance.superconductorSfx
-                            : ElementalEffectsManager.Instance.statusAppliedSfx;
-                        if (zapClip != null)
-                        {
-                            AudioSource.PlayClipAtPoint(zapClip, hitPoint);
-                        }
+                        ElementalEffectsManager.Instance.PlayAt(ElementalEffectsManager.Instance.superconductorFeedback, hitPoint);
                     }
                 }
             }

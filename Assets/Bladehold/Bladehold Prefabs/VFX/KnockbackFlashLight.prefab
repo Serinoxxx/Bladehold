@@ -43,9 +43,9 @@ Light:
   m_Enabled: 1
   serializedVersion: 12
   m_Type: 2
-  m_Color: {r: 1, g: 0.95, b: 0.8, a: 1}
-  m_Intensity: 20
-  m_Range: 8
+  m_Color: {r: 0.8, g: 0.961, b: 1, a: 1}
+  m_Intensity: 2
+  m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize2D: {x: 0.5, y: 0.5}
@@ -110,3 +110,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 40a4e0171d7ade3488c83a6abd98ef65, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlashLightDimmer
+  lightComponent: {fileID: 2436223080175837723}
+  fadeDuration: 0.2

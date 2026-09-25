@@ -1,4 +1,5 @@
 using System.Collections;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -43,12 +44,13 @@ public class KnockbackReceiver : MonoBehaviour
     [SerializeField] private string getUpStateName = "GetUp";
     [SerializeField] private string cheerTrigger = "Cheer";
 
-    [SerializeField] private GameObject landingVfxPrefab;
-    [SerializeField] private AudioClip landingSfx;
-
-    [Header("Per-Variant Audio")]
-    [Tooltip("Per-variant list of flying screams/yells played when launched into a ragdoll fling. If empty, falls back to global KnockbackConfigSO.flyingSfx.")]
-    [SerializeField] private AudioClip[] flyingScreamSfx;
+    [Header("Feedbacks (MMF, played 1 m above the enemy / at the wall hit)")]
+    [Tooltip("Knocked down (force >= resistance - 1): thud.")]
+    [SerializeField] private MMF_Player knockdownFeedback;
+    [Tooltip("Launched into a ragdoll fling (force >= resistance): thud or scream + light flash. Variants can point this at their own player.")]
+    [SerializeField] private MMF_Player flingFeedback;
+    [Tooltip("Pinned to a wall by an arrow: splat + blood burst. The player is turned to the wall normal before it plays.")]
+    [SerializeField] private MMF_Player wallPinFeedback;
 
     [Header("Ragdoll Options")]
     [Tooltip("If true, this enemy always ragdolls on death regardless of the global ActiveCount capacity cap (e.g. for large/special enemies).")]
@@ -101,6 +103,9 @@ public class KnockbackReceiver : MonoBehaviour
             anyError = true;
             return;
         }
+        if (knockdownFeedback == null) Debug.LogError($"[KnockbackReceiver] knockdownFeedback is not assigned on {gameObject.name}.", this);
+        if (flingFeedback == null) Debug.LogError($"[KnockbackReceiver] flingFeedback is not assigned on {gameObject.name}.", this);
+        if (wallPinFeedback == null) Debug.LogError($"[KnockbackReceiver] wallPinFeedback is not assigned on {gameObject.name}.", this);
 
         knockdownTriggerHash = Animator.StringToHash(knockdownTrigger);
         getUpStateHash = Animator.StringToHash(getUpStateName);
@@ -465,9 +470,6 @@ public class KnockbackReceiver : MonoBehaviour
             yield break;
         }
 
-        Vector3 landingPoint = ragdoll.Pelvis != null ? ragdoll.Pelvis.position : transform.position;
-        PlayLandingFeedback(landingPoint);
-
         if (State == KnockbackState.Corpse || health.IsDead)
         {
             State = KnockbackState.Corpse;
@@ -613,12 +615,6 @@ public class KnockbackReceiver : MonoBehaviour
         return forward.sqrMagnitude > 0.0001f ? Quaternion.LookRotation(forward.normalized) : transform.rotation;
     }
 
-    private void PlayLandingFeedback(Vector3 position)
-    {
-        if (landingVfxPrefab != null) Instantiate(landingVfxPrefab, position, Quaternion.identity);
-        if (landingSfx != null) AudioSource.PlayClipAtPoint(landingSfx, position);
-    }
-
     private void PinLimbToWall(Rigidbody hitBone, RaycastHit wallHit, Vector3 trajDir)
     {
         State = KnockbackState.Corpse;
@@ -660,13 +656,10 @@ public class KnockbackReceiver : MonoBehaviour
             arrowProp.Embed(wallHit.point, pinDir, 0.25f, parent: null);
         }
 
-        if (config != null && config.wallPinSfx != null)
+        if (wallPinFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(config.wallPinSfx, wallHit.point);
-        }
-        if (config != null && config.wallPinVfxPrefab != null)
-        {
-            Instantiate(config.wallPinVfxPrefab, wallHit.point, Quaternion.LookRotation(wallHit.normal));
+            wallPinFeedback.transform.rotation = Quaternion.LookRotation(wallHit.normal);
+            wallPinFeedback.PlayFeedbacks(wallHit.point);
         }
 
         if (ragdoll != null && ragdoll.Config != null)
@@ -677,74 +670,17 @@ public class KnockbackReceiver : MonoBehaviour
 
     private void PlayKnockdownFeedback()
     {
-        if (config == null) return;
-        Vector3 spawnPos = transform.position + Vector3.up * 1f;
-
-        if (config.knockdownVfxPrefab != null)
+        if (knockdownFeedback != null)
         {
-            GameObject inst = Instantiate(config.knockdownVfxPrefab, spawnPos, Quaternion.identity);
-            Destroy(inst, 3f);
-        }
-
-        if (config.knockdownSfx != null && config.knockdownSfx.Length > 0)
-        {
-            AudioClip clip = config.knockdownSfx[Random.Range(0, config.knockdownSfx.Length)];
-            if (clip != null) AudioSource.PlayClipAtPoint(clip, spawnPos);
+            knockdownFeedback.PlayFeedbacks(transform.position + Vector3.up * 1f);
         }
     }
 
     private void PlayFlingHitFeedback()
     {
-        if (config == null) return;
-        Vector3 spawnPos = transform.position + Vector3.up * 1f;
-
-        if (config.flyingVfxPrefab != null)
+        if (flingFeedback != null)
         {
-            GameObject inst = Instantiate(config.flyingVfxPrefab, spawnPos, Quaternion.identity);
-            Destroy(inst, 3f);
-        }
-
-        AudioClip[] screamClips = (flyingScreamSfx != null && flyingScreamSfx.Length > 0)
-            ? flyingScreamSfx
-            : config.flyingSfx;
-
-        if (screamClips != null && screamClips.Length > 0)
-        {
-            AudioClip clip = screamClips[Random.Range(0, screamClips.Length)];
-            if (clip != null) AudioSource.PlayClipAtPoint(clip, spawnPos);
-        }
-
-        if (config.enableFlyingLightFlash)
-        {
-            SpawnFlashLight(spawnPos, config.flyingLightColor, config.flyingLightIntensity, config.flyingLightRange, config.flyingLightDuration);
-        }
-    }
-
-    private void SpawnFlashLight(Vector3 position, Color color, float peakIntensity, float range, float duration)
-    {
-        if (config.flyingLightFlashPrefab == null)
-        {
-            Debug.LogError("[KnockbackReceiver] KnockbackConfigSO.flyingLightFlashPrefab is not assigned (or untick enableFlyingLightFlash).", config);
-            return;
-        }
-
-        GameObject lightObj = Instantiate(config.flyingLightFlashPrefab, position, Quaternion.identity);
-        if (lightObj.TryGetComponent(out Light lightComp))
-        {
-            lightComp.color = color;
-            lightComp.intensity = peakIntensity;
-            lightComp.range = range;
-        }
-
-        if (lightObj.TryGetComponent(out FlashLightDimmer dimmer))
-        {
-            dimmer.Initialize(peakIntensity, duration);
-        }
-        else
-        {
-            Debug.LogError($"[KnockbackReceiver] flyingLightFlashPrefab '{config.flyingLightFlashPrefab.name}' has no FlashLightDimmer.", config);
-            Destroy(lightObj, duration);
+            flingFeedback.PlayFeedbacks(transform.position + Vector3.up * 1f);
         }
     }
 }
-
