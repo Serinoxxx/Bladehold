@@ -82,6 +82,9 @@ public class FishController : MonoBehaviour, IDamageable
     {
         if (isDead) return;
 
+        // Spec: fish freeze once the frenzy ends.
+        if (FishingManager.Instance != null && FishingManager.Instance.CurrentState == FishingState.Finished) return;
+
         // Icey Water slow modifier
         float slowModifier = 1f;
         if (FishingUpgradeManager.Instance != null)
@@ -164,6 +167,7 @@ public class FishController : MonoBehaviour, IDamageable
             yield return new WaitForSeconds(1f);
             elapsed += 1f;
             if (isDead) break;
+            if (FishingManager.Instance != null && FishingManager.Instance.CurrentState == FishingState.Finished) yield break;
 
             currentHp -= dps;
             if (currentHp <= 0f)

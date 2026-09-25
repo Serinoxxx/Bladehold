@@ -347,6 +347,8 @@ public class CampaignManager : MonoBehaviour
     /// </summary>
     public void CompleteCurrentNodeAndContinue()
     {
+        RunSession.CapturePlayerHealthRatio();
+
         CampaignNodeSO completed = CompleteCurrentNode();
         if (completed != null && completed.EndsCampaign)
         {

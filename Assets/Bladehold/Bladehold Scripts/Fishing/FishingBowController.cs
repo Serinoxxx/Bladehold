@@ -26,7 +26,6 @@ public class FishingBowController : MonoBehaviour
         if (aimCamera == null) aimCamera = Camera.main;
         if (inputReader == null) inputReader = GetComponentInParent<InputReader>();
         if (audioSource == null) audioSource = GetComponent<AudioSource>();
-        if (arrowSpawnPoint == null) arrowSpawnPoint = transform;
     }
 
     private void OnEnable()

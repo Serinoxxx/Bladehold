@@ -61,6 +61,17 @@ public static class RunSession
     public static float PlayerHealthRatio { get; set; } = 1f;
     public static int DraftRerollsRemaining { get; set; } = 0;
 
+    /// <summary>
+    ///     Stores the live player's HP ratio for the next scene. Ultimate charge and ammo already
+    ///     write through to RunSession as they change, so HP is the only thing to snapshot on exit.
+    /// </summary>
+    public static void CapturePlayerHealthRatio()
+    {
+        Player player = Player.Instance;
+        if (player == null || player.Health == null || player.Health.IsDead || player.Health.MaxHealth <= 0f) return;
+        PlayerHealthRatio = Mathf.Clamp01(player.Health.CurrentHealth / player.Health.MaxHealth);
+    }
+
     public static int CurrentRound => Mathf.Clamp((CurrentWave - 1) / 5 + 1, 1, 5);
 
     public static event Action<int> OnInRunGoldChanged;

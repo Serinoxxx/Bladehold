@@ -88,5 +88,4 @@ When the 60-second timer reaches zero:
      - Selecting one adds the buff to `RunSession.ActiveBuffFish` and immediately applies the stat bonus.
 4. **Return Gate / Continue**:
    - Commits currencies to `RunSession` and `SaveData`.
-   - Invokes `CampaignManager.Instance.CompleteCurrentNode()`.
-   - Loads `Bladehold Campaign Map Scene.unity`.
+   - Invokes `CampaignManager.Instance.CompleteCurrentNodeAndContinue()`, the one node exit: saves HP and returns to the map through the loading screen.

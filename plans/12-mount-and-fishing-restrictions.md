@@ -21,6 +21,7 @@
 - [ ] **Scene restrictions, done as data rather than scene-name checks.** Suggestion: a small per-scene rules component or SO (e.g. `SceneAbilityRules` with `allowMount`, `allowUltimate`, `allowMelee`) on the Fishing Pond scene, read by `PlayerSummonMount` and `PlayerUltimateController`.
   - Hide or grey the related HUD elements (mount cast bar/cooldown, ultimate meter) while blocked.
   - Keep the ultimate charge untouched, so it carries on in the next node.
+- [ ] **Normal weapons in the pond (from plan 04, finding 5):** `PlayerAttack`/`PlayerWeaponManager` stay live in the Fishing Pond, so clicks swing the sword and the real bow spends `RunSession.CurrentAmmo`. Add `allowNormalWeapons` (or `allowMelee` + `allowRanged`) to the rules component and have the attack/aim code respect it, so only `FishingBowController` fires there.
 - [ ] Check the fishing bow flow doesn't already disable these some other way (`Fishing/FishingBowController.cs`); unify on the rules component.
 - [ ] Update `/CLAUDE.md` (Player kit + Design direction) once it's done.
 

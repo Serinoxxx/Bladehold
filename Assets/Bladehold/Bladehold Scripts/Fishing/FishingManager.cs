@@ -60,6 +60,8 @@ public class FishingManager : MonoBehaviour
     private readonly List<FishController> activeFish = new List<FishController>();
     private readonly HashSet<BuffFishType> killedBuffFishThisSession = new HashSet<BuffFishType>();
     private bool diamondFishSpawned = false;
+    private bool rewardsCommitted = false;
+    private bool anyError = false;
 
     // Progression / Stats this session
     private int totalFishCaught = 0;
@@ -103,6 +105,12 @@ public class FishingManager : MonoBehaviour
 
     private void Start()
     {
+        // Missing HUD/draft UI degrades the pond; missing tally or CampaignManager would strand the player, so block.
+        if (hudUI == null) Debug.LogError("[FishingManager] hudUI is not assigned.", this);
+        if (draftUI == null) Debug.LogError("[FishingManager] draftUI is not assigned: level-ups give no cards.", this);
+        if (tallyUI == null) { Debug.LogError("[FishingManager] tallyUI is not assigned: the pond can't be left without it.", this); anyError = true; }
+        if (CampaignManager.Instance == null) { Debug.LogError("[FishingManager] No CampaignManager: can't return to the map.", this); anyError = true; }
+
         frenzyTimeRemaining = totalFrenzyDuration;
         SetupPlayerFishingBow();
         SetState(FishingState.WaitingToStart);
@@ -133,6 +141,8 @@ public class FishingManager : MonoBehaviour
 
     private void Update()
     {
+        if (anyError) return;
+
         if (currentState == FishingState.WaitingToStart)
         {
             Keyboard keyboard = Keyboard.current;
@@ -204,6 +214,8 @@ public class FishingManager : MonoBehaviour
         SetState(FishingState.Finished);
         PlaySfx(timeUpSfx);
 
+        if (draftUI != null) draftUI.CancelPendingDrafts();
+
         if (tallyUI != null)
         {
             tallyUI.OpenTally(sessionGold, sessionBlood, sessionMetal, sessionDiamondBones, totalFishCaught, killedBuffFishThisSession);
@@ -212,7 +224,8 @@ public class FishingManager : MonoBehaviour
 
     public void OnFishKilled(FishController fish)
     {
-        if (fish == null) return;
+        // Bleed ticks and Fishsploshion chains can kill fish after time's up: those don't count.
+        if (fish == null || currentState != FishingState.FrenzyActive) return;
         totalFishCaught++;
 
         float fatMultiplier = 1f + (FishingUpgradeManager.Instance != null ? FishingUpgradeManager.Instance.FatFishBonusPercent : 0f);
@@ -259,15 +272,8 @@ public class FishingManager : MonoBehaviour
             currentFishingXp -= xpToNextLevel;
             currentFishingLevel++;
             xpToNextLevel = Mathf.RoundToInt(xpToNextLevel * 1.5f);
-            TriggerLevelUpDraft();
-        }
-    }
-
-    private void TriggerLevelUpDraft()
-    {
-        if (draftUI != null)
-        {
-            draftUI.OpenDraft();
+            // Several level-ups in one frame (a Fishsploshion chain) each earn their own pick.
+            if (draftUI != null) draftUI.QueueDraft();
         }
     }
 
@@ -348,6 +354,10 @@ public class FishingManager : MonoBehaviour
 
     public void CommitRewardsAndReturnToCampaign()
     {
+        // Continue can be pressed more than once before the scene unloads: grant exactly once.
+        if (rewardsCommitted || currentState != FishingState.Finished) return;
+        rewardsCommitted = true;
+
         // 1. Commit in-run gold
         if (sessionGold > 0)
         {

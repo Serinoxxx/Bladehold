@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
@@ -29,6 +30,8 @@ public class FishingTallyUI : MonoBehaviour
     [Header("Navigation")]
     [SerializeField] private Button continueButton;
 
+    private const string CursorOwner = "FishingTally";
+
     private bool hasConsumedBuffFishThisVisit = false;
 
     private void Awake()
@@ -40,6 +43,19 @@ public class FishingTallyUI : MonoBehaviour
         }
     }
 
+    private void Start()
+    {
+        if (modalPanel == null) Debug.LogError("[FishingTallyUI] modalPanel is not assigned.", this);
+        if (continueButton == null) Debug.LogError("[FishingTallyUI] continueButton is not assigned: the pond can't be left.", this);
+        if (buffFishButtonContainer == null) Debug.LogError("[FishingTallyUI] buffFishButtonContainer is not assigned.", this);
+        if (buffFishButtonPrefab == null) Debug.LogError("[FishingTallyUI] buffFishButtonPrefab is not assigned: buff fish can't be eaten.", this);
+    }
+
+    private void OnDestroy()
+    {
+        CursorLockManager.SetUnlock(CursorOwner, false);
+    }
+
     public void OpenTally(
         int gold,
         int blood,
@@ -49,6 +65,7 @@ public class FishingTallyUI : MonoBehaviour
         IReadOnlyCollection<BuffFishType> killedBuffs)
     {
         if (modalPanel != null) modalPanel.SetActive(true);
+        CursorLockManager.SetUnlock(CursorOwner, true);
 
         if (totalFishText != null) totalFishText.text = $"Total Fish Caught: {totalFish}";
         if (goldRewardText != null) goldRewardText.text = $"+{gold} Gold";
@@ -57,6 +74,14 @@ public class FishingTallyUI : MonoBehaviour
         if (diamondBonesRewardText != null) diamondBonesRewardText.text = $"+{diamondBones} Diamond Fish Bones";
 
         SetupBuffFishFeast(killedBuffs);
+
+        // Gamepad: land on the first buff fish if there's a choice, else on Continue.
+        if (EventSystem.current != null)
+        {
+            Button first = buffFishButtonContainer != null ? buffFishButtonContainer.GetComponentInChildren<Button>() : null;
+            GameObject target = first != null ? first.gameObject : continueButton != null ? continueButton.gameObject : null;
+            EventSystem.current.SetSelectedGameObject(target);
+        }
     }
 
     private void SetupBuffFishFeast(IReadOnlyCollection<BuffFishType> killedBuffs)
@@ -81,8 +106,8 @@ public class FishingTallyUI : MonoBehaviour
             buffFishStatusText.text = $"CHOOSE A BUFF FISH TO EAT ({runBuffCount}/3 Eaten This Run - Choose 1):";
         }
 
-        // Populate buff fish choice buttons
-        if (buffFishButtonContainer != null)
+        // Populate buff fish choice buttons (one prefab per fish; logged in Start if unwired)
+        if (buffFishButtonContainer != null && buffFishButtonPrefab != null)
         {
             foreach (Transform child in buffFishButtonContainer)
             {
@@ -91,23 +116,7 @@ public class FishingTallyUI : MonoBehaviour
 
             foreach (BuffFishType buff in killedBuffs)
             {
-                GameObject btnObj;
-                if (buffFishButtonPrefab != null)
-                {
-                    btnObj = Instantiate(buffFishButtonPrefab, buffFishButtonContainer);
-                }
-                else
-                {
-                    btnObj = new GameObject($"BuffButton_{buff}");
-                    btnObj.transform.SetParent(buffFishButtonContainer, false);
-                    btnObj.AddComponent<Image>().color = new Color(0.2f, 0.4f, 0.5f, 0.9f);
-                    btnObj.AddComponent<Button>();
-                    var txtGo = new GameObject("Text");
-                    txtGo.transform.SetParent(btnObj.transform, false);
-                    var t = txtGo.AddComponent<TextMeshProUGUI>();
-                    t.fontSize = 18;
-                    t.alignment = TextAlignmentOptions.Center;
-                }
+                GameObject btnObj = Instantiate(buffFishButtonPrefab, buffFishButtonContainer);
 
                 TMP_Text btnText = btnObj.GetComponentInChildren<TMP_Text>();
                 if (btnText != null)
@@ -130,7 +139,7 @@ public class FishingTallyUI : MonoBehaviour
         if (hasConsumedBuffFishThisVisit) return;
         hasConsumedBuffFishThisVisit = true;
 
-        RunSession.TryConsumeBuffFish(type);
+        if (!RunSession.TryConsumeBuffFish(type)) return;
 
         if (buffFishStatusText != null)
         {
@@ -144,6 +153,11 @@ public class FishingTallyUI : MonoBehaviour
                 Button b = child.GetComponent<Button>();
                 if (b != null) b.interactable = false;
             }
+        }
+
+        if (EventSystem.current != null && continueButton != null)
+        {
+            EventSystem.current.SetSelectedGameObject(continueButton.gameObject);
         }
     }
 
@@ -160,6 +174,9 @@ public class FishingTallyUI : MonoBehaviour
 
     private void HandleContinueClicked()
     {
+        if (continueButton != null) continueButton.interactable = false;
+        CursorLockManager.SetUnlock(CursorOwner, false);
+
         if (FishingManager.Instance != null)
         {
             FishingManager.Instance.CommitRewardsAndReturnToCampaign();
