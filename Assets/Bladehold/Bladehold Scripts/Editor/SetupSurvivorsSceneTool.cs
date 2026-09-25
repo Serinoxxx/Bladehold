@@ -674,14 +674,6 @@ public class SetupSurvivorsSceneTool : EditorWindow
                 }
                 sgmSo.ApplyModifiedProperties();
             }
-
-            var sls = survivorsGameMgrGo.GetComponent<SurvivorsLevelSystem>();
-            if (sls != null && sidekickT != null)
-            {
-                var slsSo = new SerializedObject(sls);
-                slsSo.FindProperty("wallet").objectReferenceValue = sidekickT.GetComponent<Wallet>();
-                slsSo.ApplyModifiedProperties();
-            }
         }
 
         // 8. EnemyIntroController

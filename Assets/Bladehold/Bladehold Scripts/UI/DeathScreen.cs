@@ -333,7 +333,8 @@ public class DeathScreen : MonoBehaviour
 
             // Survivors run telemetry & stats
             runSeconds = SurvivorsGameManager.Instance != null ? SurvivorsGameManager.Instance.RunTimer : 0f;
-            lvl = SurvivorsLevelSystem.Instance != null ? SurvivorsLevelSystem.Instance.CurrentLevel : 1;
+            // The stats panel's "Level Reached" row now shows the wave reached (the XP level system is gone).
+            lvl = GameLoopManager.Instance != null ? GameLoopManager.Instance.CurrentWave : 1;
 
             if (RunTelemetry.Instance != null)
             {

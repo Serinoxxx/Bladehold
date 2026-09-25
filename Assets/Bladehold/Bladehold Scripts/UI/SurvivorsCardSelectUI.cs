@@ -125,29 +125,13 @@ public class SurvivorsCardSelectUI : MonoBehaviour
 
         if (headerText != null)
         {
-            if (category.HasValue)
+            string catName = category switch
             {
-                string catName = category.Value switch
-                {
-                    DraftCategory.Weapon => "WEAPON UPGRADE",
-                    DraftCategory.Elemental => "ELEMENTAL UPGRADE",
-                    _ => "UPGRADE DRAFT"
-                };
-                headerText.text = $"<color=#FFD700>{catName}</color>\n<size=20>Choose 1 of 3 upgrades</size>";
-            }
-            else
-            {
-                int currentLvl = SurvivorsLevelSystem.Instance != null ? SurvivorsLevelSystem.Instance.CurrentLevel : 1;
-                int pending = SurvivorsLevelSystem.Instance != null ? SurvivorsLevelSystem.Instance.PendingDrafts : 1;
-                if (pending > 1)
-                {
-                    headerText.text = $"LEVEL {currentLvl}\n<size=20><color=#FFD700>{pending} skill drafts remaining</color></size>";
-                }
-                else
-                {
-                    headerText.text = $"LEVEL {currentLvl}";
-                }
-            }
+                DraftCategory.Weapon => "WEAPON UPGRADE",
+                DraftCategory.Elemental => "ELEMENTAL UPGRADE",
+                _ => "UPGRADE DRAFT"
+            };
+            headerText.text = $"<color=#FFD700>{catName}</color>\n<size=20>Choose 1 of 3 upgrades</size>";
         }
 
         List<SkillNode> offered = SurvivorsCardSelector.Instance.GetRandomSkillCards(3, category: activeCategory);
@@ -319,24 +303,9 @@ public class SurvivorsCardSelectUI : MonoBehaviour
             Debug.Log($"[SurvivorsCardSelectUI] Selected skill: '{chosenNode.displayName}' (ID: {chosenNode.id}). Granted level {SkillTreeService.Instance.GetLevel(chosenNode)}.");
         }
 
-        // Consume one draft
-        if (SurvivorsLevelSystem.Instance != null)
-        {
-            SurvivorsLevelSystem.Instance.ConsumeDraft();
-        }
-
         if (sidebar != null)
         {
             sidebar.RefreshSidebar();
-        }
-
-        // Check if more drafts are queued (only for legacy multi-drafts, not category powerup drafts)
-        int remaining = (!activeCategory.HasValue && SurvivorsLevelSystem.Instance != null) ? SurvivorsLevelSystem.Instance.PendingDrafts : 0;
-        if (remaining > 0)
-        {
-            // Re-roll and present the next 3 cards instantly
-            OpenDraft();
-            return;
         }
 
         // All drafts complete: start slight delay and quick fade out before closing modal

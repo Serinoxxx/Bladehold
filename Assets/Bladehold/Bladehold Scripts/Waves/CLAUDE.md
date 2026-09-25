@@ -33,7 +33,7 @@ Every battle scene runs the same loop: `GameLoopManager` + `SurvivorsSpawner` + 
 
 - Per kill: in-run gold, plus a chance of supply (bigger enemies give more).
 - Wave clear: +30 supply.
-- Objective completion: level XP. The XP/level-up draft path is legacy with the prompt disabled.
+- Objective completion: just the quest banner. The XP level-up system was deleted in plan 08.
 
 ## Gotchas
 

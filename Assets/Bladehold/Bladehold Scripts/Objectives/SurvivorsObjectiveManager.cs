@@ -33,10 +33,7 @@ public class SurvivorsObjectiveManager : MonoBehaviour
     [Tooltip("Objective component triggered when wave objective completes and enemies remain.")]
     [SerializeField] private KillRemainingEnemiesObjective cleanupObjective;
 
-    [Header("Rewards & Pacing")]
-    [Tooltip("Bonus gold XP granted to level progression when an objective is cleared.")]
-    [SerializeField] private int goldXpRewardPerObjective = 100;
-
+    [Header("Pacing")]
     [Tooltip("Grace duration in seconds to kill remaining enemies before they disappear.")]
     [SerializeField] private float cleanupDuration = 30.0f;
 
@@ -59,7 +56,6 @@ public class SurvivorsObjectiveManager : MonoBehaviour
     public int CurrentWave => currentWave;
     public ISurvivorsObjective CurrentObjective => currentObjective;
     public int CompletedObjectiveCount => completedObjectiveCount;
-    public int GoldXpRewardPerObjective => goldXpRewardPerObjective;
     public IReadOnlyList<ISurvivorsObjective> ObjectivePool => objectivePool;
 
     public event Action<ISurvivorsObjective> OnObjectiveStarted;
@@ -333,12 +329,6 @@ public class SurvivorsObjectiveManager : MonoBehaviour
 
         completedObjectiveCount++;
         Debug.Log($"[SurvivorsObjectiveManager] Objective '{obj.Title}' Completed! (Total: {completedObjectiveCount})");
-
-        // Grant reward
-        if (goldXpRewardPerObjective > 0 && SurvivorsLevelSystem.Instance != null)
-        {
-            SurvivorsLevelSystem.Instance.AddXP(goldXpRewardPerObjective);
-        }
 
         OnObjectiveCompleted?.Invoke(obj);
     }

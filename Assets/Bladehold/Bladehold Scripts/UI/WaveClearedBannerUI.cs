@@ -151,8 +151,7 @@ public class WaveClearedBannerUI : MonoBehaviour
 
     private void HandleSurvivorsObjectiveCleared(ISurvivorsObjective obj)
     {
-        int rewardGold = objectiveManager != null ? objectiveManager.GoldXpRewardPerObjective : 100;
-        ShowBanner(questCompletedHeader, obj != null ? obj.Title : null, rewardGold, 0, isNewQuest: false);
+        ShowBanner(questCompletedHeader, obj != null ? obj.Title : null, 0, 0, isNewQuest: false);
     }
 
     private void HandleSurvivorsObjectiveFailed(ISurvivorsObjective obj)
