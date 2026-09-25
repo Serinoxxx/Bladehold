@@ -271,9 +271,8 @@ public class RunTelemetry : MonoBehaviour
     {
         yield return null;
 
-        Wallet wallet = Player.Instance != null ? Player.Instance.Wallet : null;
         string classId = SaveSystem.Load().equippedArmourSet;
-        string detail = Invariant($"startWave={RunSession.CurrentWave};class={classId};gold={(wallet != null ? wallet.Coins : 0)}");
+        string detail = Invariant($"startWave={RunSession.CurrentWave};class={classId};gold={RunSession.InRunGold}");
         AppendRow("run_start", wave: Invariant($"{RunSession.CurrentWave}"), runSeconds: "0", detail: detail);
     }
 

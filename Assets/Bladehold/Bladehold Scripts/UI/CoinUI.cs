@@ -3,8 +3,8 @@ using TMPro;
 using UnityEngine;
 
 /// <summary>
-///     Displays the player's current coin total. Binds to the player's <see cref="Wallet" /> through
-///     the <see cref="Player" /> singleton and refreshes whenever the total changes.
+///     Displays the run's gold (<see cref="RunSession.InRunGold" />, the only gold currency) and refreshes
+///     whenever it changes.
 /// </summary>
 public class CoinUI : MonoBehaviour
 {
@@ -12,7 +12,6 @@ public class CoinUI : MonoBehaviour
     [Tooltip("Optional: played (e.g. a label pop/scale) whenever the total increases.")]
     [SerializeField] private MMF_Player gainFeedback;
 
-    private Wallet wallet;
     private int previousCoins;
     private bool hasPreviousCoins;
     private bool anyError = false;

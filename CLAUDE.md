@@ -106,9 +106,9 @@ Build towards these; don't "fix" code back to the old behaviour.
 
 Plan 08 (2026-09-25) deleted the old WaveSpawner loop, the gold skill tree + Reincarnate, the socket fortress + Fortress cards, the XP level-up path, the siege timer, the rest-gate path, and the Supply Room. The MainMenu came back (2026-09-26) as the boot scene, minus its old character/level select and upgrades screens. What's left:
 - `Bladehold Demo Scene`, `Bladehold Test Scene` and `Assets/_Recovery/0.unity` aren't in the build and reference deleted scripts.
-- Dormant, stat-gated player mechanics nothing grants any more: `Parry`, `Counterstrike`, `DeathNova`, `GoldOnDeathCollector`, `StartMountedSpawner`. Fine to reuse for draft cards; don't treat them as live.
+- Dormant, stat-gated player mechanics nothing grants any more: `Parry`, `Counterstrike`, `DeathNova`, `StartMountedSpawner`. Fine to reuse for draft cards; don't treat them as live.
 - Unused enum values kept so serialized ints don't shift: `CampaignNodeType.SupplyRoom`, `StatType.HoldTheLineGoldPerWave`, and `BannerBountyType.FortressDraft` (which now pays a Supply Cache). **Never remove or reorder `StatType`/enum values that assets serialize.**
-- `SaveData.totalGold` (coin pickups bank into it through `Wallet`, nothing spends it) and `SaveData.runsAttempted` (banner difficulty reads it, nothing increments it): both pending a decision.
+- `SaveData.runsAttempted`: banner difficulty reads it, nothing increments it; pending a decision.
 
 ## Project skills
 

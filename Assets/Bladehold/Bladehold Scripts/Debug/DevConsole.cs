@@ -246,12 +246,7 @@ public class DevConsole : MonoBehaviour
 
         if (GUILayout.Button("+10,000 Gold", GUILayout.Height(ButtonHeight)))
         {
-            // Singletons are re-created on scene reload, so resolve them per click rather than caching.
-            Wallet wallet = Player.Instance != null ? Player.Instance.Wallet : null;
-            if (wallet != null)
-            {
-                wallet.Add(10000);
-            }
+            RunSession.AddInRunGold(10000);
         }
 
         if (GUILayout.Button("Die", GUILayout.Height(ButtonHeight)))
@@ -291,7 +286,7 @@ public class DevConsole : MonoBehaviour
         {
             // Wipe only the progress half of the save (currencies, unlocks, meta perks) —
             // settings survive, same as the settings menu's Delete Save. Save() also updates
-            // SaveSystem's in-memory cache, so the reloaded scene's Wallet Load()s the
+            // SaveSystem's in-memory cache, so the reloaded scene Load()s the
             // wiped-progress-but-same-settings data.
             SaveData data = SaveSystem.Load();
             data.ResetProgress();

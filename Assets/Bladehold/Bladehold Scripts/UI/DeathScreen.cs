@@ -11,7 +11,7 @@ using MoreMountains.Feedbacks;
 ///     <see cref="Gate" /> falling (<see cref="Gate.OnAnyGateDestroyed" />; time is frozen for that
 ///     one since the player is still alive behind the screen) — or, via <see cref="ShowVictory" />, when
 ///     the sector is won. Shows goblins killed and gold earned this run (from <see cref="GameStats" />)
-///     plus the player's total gold (from <see cref="Wallet" />). Defeat has one way out: back to the
+///     plus the run's gold (<see cref="RunSession.InRunGold" />). Defeat has one way out: back to the
 ///     Meta Area with the run wiped. Victory has one: on to the Campaign Map. When an optional
 ///     <see cref="FailureBanner" /> is assigned, it plays first with a per-condition failure reason
 ///     ("The hero has fallen…" / "The gate was destroyed…") and the screen only fades in after it
@@ -253,7 +253,7 @@ public class DeathScreen : MonoBehaviour
 
         int killed = GameStats.Instance != null ? GameStats.Instance.GoblinsKilled : 0;
         int earned = GameStats.Instance != null ? GameStats.Instance.GoldEarnedThisRun : 0;
-        int total = Player.Instance != null && Player.Instance.Wallet != null ? Player.Instance.Wallet.Coins : 0;
+        int total = RunSession.InRunGold;
 
         bool isSurvivorsMode = SurvivorsGameManager.Instance != null;
 

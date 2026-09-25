@@ -27,13 +27,18 @@ From [plan 08](../08-legacy-cleanup.md), 2026-09-25. Unity MCP wasn't connected,
 - [ ] **Empty panels left behind:** `DeathScreen.prefab` still has the old gold/Reincarnate skill-tree panel objects (now script-less and hidden), and `Bladehold HUD.prefab` still has the XP bar / level badge objects that `SurvivorsHUDUI` drove. Delete them if they're still visible or just dead weight.
 - [ ] **Sidebar tooltips** (pause-menu / death-screen acquired-skills list) now actually show on hover: name + card description. Check they read well.
 
+- [ ] **Main menu review** (`MainMenu`, now build index 0): Start → loading bar → Meta Area, Settings opens the settings panel, Quit quits. The old character rotunda (`CharacterRotundaRoot`) lost its script (the class system is gone), so no character model spawns behind the title. Keep the empty stage, place a static Sidekick model, or delete it. Synty art, Texturina headers / Grenze body, gamepad focus on Start.
+
 ## 4. Decisions
 
-- [ ] **Pause → Quit** loads a scene named `MainMenu` (`PauseMenuCanvas.prefab` → `PauseMenuView.mainMenuSceneName`). That scene was never in the build and is now deleted, so the button fails. Options: quit to desktop (`Application.Quit`), or go to `Bladehold Meta Area Scene` (which breaks "no voluntary exit" unless it wipes the run like death does).
+- [x] ~~**Pause → Quit**~~: decided 2026-09-26, the main menu is back as build index 0, so Quit returns there.
 - [ ] **Banner difficulty never escalates:** `SaveData.runsAttempted` gates Enraged/Nightmare/Omega banner rolls (`BannerDifficultyHelper.RollTierForBanner`) but nothing increments it, so every banner is Standard. Wire `runsAttempted++` on Battle Portal, or drop the gate?
-- [ ] **Enemy coin pickups pay into `Wallet` → `SaveData.totalGold`,** a permanent total nothing spends, not into `RunSession.InRunGold` (the Rest Area shop's gold). Intended?
+- [x] ~~**Enemy coin pickups pay into `Wallet`**~~: decided 2026-09-26, one gold currency. Coins now pay `RunSession.InRunGold`; `Wallet` and `SaveData.totalGold` are gone.
 
 ## 5. Playtest
+
+- [ ] **One gold:** kill enemies → the HUD gold counter rises (it didn't before: kills paid a hidden permanent total) → spend it in the Rest Area shop. Die → gold resets with the run.
+- [ ] **Boot a player build:** it starts on the main menu (it used to boot into the Rest Area).
 
 - [ ] **Full loop:** Meta → Battle Portal → map shows Frozen Pass at tier 3 and Ancient Garden at tier 6 → a castle sector → die → Meta. No missing-script warnings in the Console.
 - [ ] **Tesla Spire / Permafrost** (DevConsole draft cards `elem_light_tesla_spire`, `elem_ice_permafrost`): with no towers built, nothing happens. With a tower built, a bolt every 5 s from the tower nearest an enemy, and enemies near towers get slowed + Ice status.

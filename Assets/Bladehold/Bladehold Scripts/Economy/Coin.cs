@@ -4,7 +4,7 @@ using UnityEngine;
 
 /// <summary>
 ///     A coin pickup dropped by a dying enemy. When the player walks over it, the coins are added to
-///     the player's <see cref="Wallet" /> and the run's <see cref="GameStats" />, a DamageNumbersPro
+///     the run's gold (<see cref="RunSession.AddInRunGold" />) and <see cref="GameStats" />, a DamageNumbersPro
 ///     popup shows the amount, and the coin is consumed. Requires a trigger <see cref="Collider" />.
 /// </summary>
 [RequireComponent(typeof(Collider))]
@@ -44,10 +44,9 @@ public class Coin : MonoBehaviour
     }
 
     /// <summary>
-    ///     Collects this coin on behalf of <paramref name="collector" /> (anything holding a
-    ///     <see cref="Wallet" /> in its parents). Walk-over pickup routes through here; remote
-    ///     collectors (the bow's Pickup Arrows, Grave Robber) may call it directly. Returns false if
-    ///     already collected or the collector has no Wallet.
+    ///     Collects this coin on behalf of <paramref name="collector" /> (the player, or anything under
+    ///     it). Walk-over pickup routes through here; remote collectors (the bow's Pickup Arrows) may
+    ///     call it directly. Returns false if already collected or the collector isn't the player.
     /// </summary>
     public bool TryCollect(GameObject collector)
     {
@@ -57,23 +56,22 @@ public class Coin : MonoBehaviour
         }
 
         // A player-ridden horse collects on behalf of its rider (see HorsePickupProxy) — the coins
-        // go to the player's Wallet, never to the horse.
+        // go to the player, never to the horse.
         HorsePickupProxy proxy = collector.GetComponentInParent<HorsePickupProxy>();
         if (proxy != null && proxy.Target != null)
         {
             collector = proxy.Target;
         }
 
-        // Only the holder of a Wallet (the player) can pick the coin up.
-        Wallet wallet = collector.GetComponentInParent<Wallet>();
-        if (wallet == null)
+        // Only the player can pick the coin up.
+        if (collector.GetComponentInParent<Player>() == null)
         {
             return false;
         }
 
         collected = true;
 
-        wallet.Add(amount);
+        RunSession.AddInRunGold(amount);
 
         if (GameStats.Instance != null)
         {

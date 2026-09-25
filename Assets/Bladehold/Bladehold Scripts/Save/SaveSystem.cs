@@ -19,7 +19,7 @@ public static class SaveSystem
     /// <summary>True if the current save file exists on disk.</summary>
     public static bool SaveFileExists => File.Exists(FilePath);
 
-    // A single in-memory SaveData shared by every owner (Wallet, the Meta Area UIs, …). Without this each
+    // A single in-memory SaveData shared by every owner (the Meta Area UIs, GameSettingsService, …). Without this each
     // caller would hold its own copy and the last one to Save() would clobber the others' fields. Statics
     // persist across scene reloads within a play session and reset when play stops, mirroring how the
     // persisted progress should behave.
@@ -28,8 +28,7 @@ public static class SaveSystem
     /// <summary>
     ///     Redirects all loading/saving to a different file under <c>Application.persistentDataPath</c>,
     ///     dropping the in-memory cache so the next <see cref="Load" /> reads the new file. Must run before
-    ///     anything Loads — i.e. from an <c>Awake</c> that executes ahead of <see cref="Wallet" /> and the
-    ///     tree services (see <see cref="SkillTreePreview" />).
+    ///     anything Loads — i.e. from an <c>Awake</c> that executes ahead of every other save reader.
     /// </summary>
     public static void UseFile(string fileName)
     {

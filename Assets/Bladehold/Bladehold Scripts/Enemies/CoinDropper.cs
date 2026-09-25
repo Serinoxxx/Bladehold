@@ -110,10 +110,9 @@ public class CoinDropper : MonoBehaviour
             : enemyData.RollCoinDrop();
         int amount = Mathf.Max(1, Mathf.RoundToInt(rolled * multiplier));
 
-        Wallet wallet = Player.Instance != null ? Player.Instance.Wallet : null;
-        if (wallet != null)
+        if (Player.Instance != null)
         {
-            wallet.Add(amount);
+            RunSession.AddInRunGold(amount);
             if (GameStats.Instance != null)
             {
                 GameStats.Instance.AddGold(amount);
@@ -125,7 +124,7 @@ public class CoinDropper : MonoBehaviour
         }
         else
         {
-            // No wallet to pay into (player object gone mid-teardown) — fall back to a ground coin
+            // No player to pay (player object gone mid-teardown) — fall back to a ground coin
             // so the gold isn't silently lost.
             SpawnPickup(amount, 1f);
         }

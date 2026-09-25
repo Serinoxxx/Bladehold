@@ -11,10 +11,6 @@ using System.Collections.Generic;
 [Serializable]
 public class SaveData
 {
-    /// <summary>The player's accumulated total gold, persisted across runs.</summary>
-    public int totalGold;
-
-
     /// <summary>Permanent currency obtained from waves and drops, used to purchase permanent perks.</summary>
     public int goblinBlood;
 
@@ -121,7 +117,6 @@ public class SaveData
     public void ResetProgress()
     {
         SaveData defaults = new SaveData();
-        totalGold = defaults.totalGold;
         goblinBlood = defaults.goblinBlood;
         orcishMetal = defaults.orcishMetal;
         diamondFishBones = defaults.diamondFishBones;

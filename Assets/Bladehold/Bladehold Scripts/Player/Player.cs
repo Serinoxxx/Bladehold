@@ -15,8 +15,6 @@ public class Player : MonoBehaviour
     private IDamageable damageable;
     public IDamageable Damageable => damageable != null ? damageable : (damageable = GetComponent<IDamageable>());
 
-    private Wallet wallet;
-    public Wallet Wallet => wallet != null ? wallet : (wallet = GetComponent<Wallet>());
 
     private PlayerStats stats;
     public PlayerStats Stats => stats != null ? stats : (stats = GetComponent<PlayerStats>());
@@ -47,7 +45,6 @@ public class Player : MonoBehaviour
             Instance = this;
             health = GetComponent<Health>();
             damageable = GetComponent<IDamageable>();
-            wallet = GetComponent<Wallet>();
             stats = GetComponent<PlayerStats>();
             InputSettings = GetComponent<InputSettingsBinder>();
             AimCamera = GetComponent<BowAimCamera>();
