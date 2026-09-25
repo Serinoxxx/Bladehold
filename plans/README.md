@@ -2,7 +2,7 @@
 
 **One plan per agent session.** Open a fresh session, say "execute `plans/NN-*.md`", and let it finish, compile-check and update the plan's checkboxes. Review, playtest, commit, then move to the next one. Don't run two plans that touch the same files at once.
 
-Every plan follows `/CLAUDE.md` (source of truth). Key rules: no visuals or fallback UI built in code, MMF for all feedback, prefab-based data-driven UI mockups with Synty art + Texturina/Grenze, anything needing the Editor goes under "Needs Lance in the Editor" in the plan file and session summary (never `TODO.md`, which is Lance's own list).
+Every plan follows `/CLAUDE.md` (source of truth). Key rules: no visuals or fallback UI built in code, MMF for all feedback, prefab-based data-driven UI mockups with Synty art + Texturina/Grenze, anything needing the Editor goes in `plans/editor/NN-<topic>.md` (one checklist per plan, linked from the plan) and the session summary (never `TODO.md`, which is Lance's own list).
 
 ## The plans
 

@@ -74,7 +74,7 @@ Build towards these; don't "fix" code back to the old behaviour.
 
 ## Unity Editor wiring tasks
 
-**`TODO.md` is Lance's personal list. Agents never write to it.** When a change needs Editor-only work (SO assets, prefab/scene wiring, animator/clip work, art/audio, UI review), do it via Unity MCP if connected. Anything left over goes in a **"Needs Lance in the Editor"** section at the end of your session summary, and in the active `plans/` file if you're working from one. Keep it short: what, where, and how to verify.
+**`TODO.md` is Lance's personal list. Agents never write to it.** When a change needs Editor-only work (SO assets, prefab/scene wiring, animator/clip work, art/audio, UI review), do it via Unity MCP if connected. Anything left over goes in a **"Needs Lance in the Editor"** section at the end of your session summary, and in that plan's own checklist file **`plans/editor/NN-<topic>.md`** (one file per plan; the plan's "Needs Lance in the Editor" section just links to it). Keep it short: what, where, and how to verify. Lance ticks items off and deletes the file when it's empty.
 
 ## Code layout
 

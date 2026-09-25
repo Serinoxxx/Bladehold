@@ -2,6 +2,11 @@
 
 Things that need your hands, eyes or judgement in the Unity Editor. Items marked *(MCP-able)* could be done by an agent through Unity MCP if it's connected; your call.
 
+**Per-plan Editor work** lives in [`plans/editor/`](editor/), one checklist per plan. Open ones:
+- [02: Campaign Map](editor/02-campaign-map.md)
+- [03: Elemental drafts](editor/03-elemental-draft.md)
+- [04: Fishing Pond](editor/04-fishing.md) (the pond has no exit until this is done)
+
 ## A. Triage first (biggest win)
 
 - [x] ~~Triage `TODO.md`~~: scrapped Sep 2026 (old contents are in git history). `TODO.md` is now your own list, and agents don't write to it.
