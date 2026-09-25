@@ -981,7 +981,7 @@ public class GameLoopManager : MonoBehaviour
 
         GUILayout.BeginArea(new Rect(10, 10, 350, 250), GUI.skin.box);
         GUILayout.Label("<b>GameLoopManager State</b>");
-        GUILayout.Label($"Round: {CurrentRound} | Wave: {CurrentWave} (Rest Visits: {RunSession.RestVisitsCount})");
+        GUILayout.Label($"Round: {CurrentRound} | Wave: {CurrentWave}");
         GUILayout.Label($"Wave Active: {isWaveActive} | Intermission: {isIntermission}");
         GUILayout.Label($"Kills: {killsThisWave} / {targetKillsThisWave}");
         

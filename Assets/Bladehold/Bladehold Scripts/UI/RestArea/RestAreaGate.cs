@@ -82,24 +82,7 @@ public class RestAreaGate : MonoBehaviour
             return;
         }
 
-        // Preserve fortress gate health
-        if (Gate.All != null && Gate.All.Count > 0)
-        {
-            foreach (var g in Gate.All)
-            {
-                if (g != null && g.GetComponent<Health>() != null)
-                {
-                    var gh = g.GetComponent<Health>();
-                    RunSession.FortressGateCurrentHealth = gh.CurrentHealth;
-                    RunSession.FortressGateMaxHealth = gh.MaxHealth;
-                    break;
-                }
-            }
-        }
-
-        // Next wave is after the completed rest (e.g. wave 3 rest -> wave 4)
-        RunSession.CurrentWave = Mathf.Max(1, RunSession.RestVisitsCount * 3 + 1);
-
+        // No campaign (the Rest Area opened directly in the Editor): just load a battle.
         if (Application.isPlaying)
         {
             if (areaDefinition != null)

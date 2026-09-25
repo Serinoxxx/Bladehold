@@ -11,7 +11,6 @@ public static class RunSession
 {
     public static int InRunGold { get; set; }
     public static int CurrentWave { get; set; } = 1;
-    public static int RestVisitsCount { get; set; } = 0;
     
     // Elemental Ability Slots Mapping (SlotName -> ElementType). Gameplay writes go through
     // DraftUpgradeService.ImbueSlot/ClearSlot so drafted cards and slots stay in sync.
@@ -130,7 +129,6 @@ public static class RunSession
     public static void StartNewRun()
     {
         CurrentWave = 1;
-        RestVisitsCount = 0;
         foreach (string slot in new List<string>(ElementalSlots.Keys))
         {
             ClearElementalSlot(slot);

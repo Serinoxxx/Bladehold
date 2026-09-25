@@ -17,7 +17,8 @@
 - [x] **`HoldTheLineBonus`** (in every sector, inert).
 - [x] **`GameLoopManager`:** rest-gate path (`HandleGateInteracted`, `OnRestGateOpened`, gate `CanInteract`), `SpawnEndgameBoss`, `siegebreakerBossPrefab`, the Second Wind stub. Note that Second Wind is a real meta perk: implement it via `Health.TryPreventDeath` if it isn't elsewhere, rather than just deleting it.
 - [x] **`SurvivorsGameManager`** 20-minute siege timer / endgame boss / "SIEGE SURVIVED" text.
-- [ ] **`RunSession.RestVisitsCount`** formulas (`RestAreaGate`/`RestAreaDoor` `RestVisitsCount*3+1`), `RunState` (if unused after plan 01), `SaveData.highestUnlockedStage/selectedStage/runsAttempted`.
+- [x] **`RunSession.RestVisitsCount`** formulas (`RestAreaGate`/`RestAreaDoor` `RestVisitsCount*3+1`), `RunState` (if unused after plan 01), `SaveData.highestUnlockedStage/selectedStage/runsAttempted`.
+  - Done 2026-09-25, except `runsAttempted`: live banner code reads it, but nothing increments it, so banners only roll Standard. Kept and flagged for Lance.
 - [x] **XP level-up draft path** (`SurvivorsLevelSystem`, `SurvivorsLevelUpPromptUI`) if Lance confirms it's dead, along with coin XP.
 - [x] **Old socket fortress** (`FortDefense*`, `ArrowSlitDefense`, `BurningOilDefense`, `SpikeDefense`) and Fortress-category draft cards. Check with Lance whether Fortress cards should be reborn as tower upgrades in Phase 4.
 - [ ] **Scenes with no node:** `Bladehold Supply Room` (+ `SupplyRoomController`, `SupplyBox` if unused), `Frozen Pass`, `Ancient Garden`. Ask Lance: keep them as future sector maps, or remove them from build settings?

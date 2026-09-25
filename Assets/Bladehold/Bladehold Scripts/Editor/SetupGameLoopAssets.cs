@@ -935,7 +935,6 @@ public static class SetupGameLoopAssets
             sb.AppendLine("\n[PHASE 2: Rest Area Scene & Stations]");
             string restScenePath = "Assets/Bladehold/Bladehold Scenes/Bladehold Rest Area Scene.unity";
             EditorSceneManager.OpenScene(restScenePath, OpenSceneMode.Single);
-            RunSession.RestVisitsCount++;
 
             Player restPlayer = Object.FindAnyObjectByType<Player>();
             if (restPlayer == null) throw new System.Exception("Player not found in Rest Area Scene!");
