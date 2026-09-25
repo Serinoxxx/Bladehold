@@ -105,8 +105,18 @@ public class DraftUpgradeService : MonoBehaviour
         Debug.Log($"[DraftUpgradeService] Successfully loaded {allDefinitions.Count} draft upgrades from CSV.");
     }
 
-    private DraftUpgradeDefinition ParseRow(string row)
+    /// <summary>
+    ///     Parses one catalog row with the runtime's rules. Problems go to <paramref name="errors" /> when given
+    ///     (the Balance Tree Editor's validation panel), otherwise to the console. Returns null for a skipped row.
+    /// </summary>
+    public static DraftUpgradeDefinition ParseRow(string row, List<string> errors = null)
     {
+        void Report(string message)
+        {
+            if (errors != null) errors.Add(message);
+            else Debug.LogError($"[DraftUpgradeService] {message}");
+        }
+
         List<string> cols = ParseCsvRow(row);
         if (cols.Count < 10) return null;
 
@@ -134,7 +144,7 @@ public class DraftUpgradeService : MonoBehaviour
         string categoryStr = cols.Count > 2 ? cols[2].Trim() : "";
         if (!Enum.TryParse<DraftCategory>(categoryStr, true, out DraftCategory parsedCat) || !Enum.IsDefined(typeof(DraftCategory), parsedCat))
         {
-            Debug.LogError($"[DraftUpgradeService] Draft '{def.id}' has unknown category '{categoryStr}'. Expected one of: {string.Join(", ", Enum.GetNames(typeof(DraftCategory)))}. Row skipped.");
+            Report($"Draft '{def.id}' has unknown category '{categoryStr}'. Expected one of: {string.Join(", ", Enum.GetNames(typeof(DraftCategory)))}. Row skipped.");
             return null;
         }
         def.category = parsedCat;
@@ -143,23 +153,23 @@ public class DraftUpgradeService : MonoBehaviour
         {
             if (!string.IsNullOrEmpty(def.targetSlot) && !RunSession.KnownElementalSlots.Contains(def.targetSlot))
             {
-                Debug.LogError($"[DraftUpgradeService] Elemental draft '{def.id}' has unknown targetSlot '{def.targetSlot}'. Row skipped.");
+                Report($"Elemental draft '{def.id}' has unknown targetSlot '{def.targetSlot}'. Row skipped.");
                 return null;
             }
             if (!def.isDuo && string.IsNullOrEmpty(def.element))
             {
-                Debug.LogError($"[DraftUpgradeService] Elemental draft '{def.id}' has no element. Row skipped.");
+                Report($"Elemental draft '{def.id}' has no element. Row skipped.");
                 return null;
             }
             if (def.isDuo && (def.prerequisiteElements.Count < 2 || !string.IsNullOrEmpty(def.targetSlot)))
             {
-                Debug.LogError($"[DraftUpgradeService] Duo draft '{def.id}' needs 2+ prerequisiteElements and no targetSlot. Row skipped.");
+                Report($"Duo draft '{def.id}' needs 2+ prerequisiteElements and no targetSlot. Row skipped.");
                 return null;
             }
         }
         else if (def.isDuo || !string.IsNullOrEmpty(def.targetSlot))
         {
-            Debug.LogError($"[DraftUpgradeService] Draft '{def.id}' sets isDuo/targetSlot but its category is {def.category}, not Elemental.");
+            Report($"Draft '{def.id}' sets isDuo/targetSlot but its category is {def.category}, not Elemental.");
         }
 
         string statStr = cols.Count > 9 ? cols[9].Trim() : "";
@@ -176,7 +186,7 @@ public class DraftUpgradeService : MonoBehaviour
             {
                 if (!Enum.TryParse<StatType>(stats[i].Trim(), true, out StatType statType))
                 {
-                    Debug.LogError($"[DraftUpgradeService] Draft '{def.id}' references unknown StatType '{stats[i].Trim()}'. Effect skipped.");
+                    Report($"Draft '{def.id}' references unknown StatType '{stats[i].Trim()}'. Effect skipped.");
                     continue;
                 }
 
@@ -206,7 +216,7 @@ public class DraftUpgradeService : MonoBehaviour
         return def;
     }
 
-    private List<string> ParseCsvRow(string line)
+    public static List<string> ParseCsvRow(string line)
     {
         List<string> result = new List<string>();
         bool inQuotes = false;

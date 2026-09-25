@@ -6,6 +6,7 @@ Things that need your hands, eyes or judgement in the Unity Editor. Items marked
 - [02: Campaign Map](editor/02-campaign-map.md)
 - [03: Elemental drafts](editor/03-elemental-draft.md)
 - [04: Fishing Pond](editor/04-fishing.md) (the pond has no exit until this is done)
+- [05: Balance Tree Editor](editor/05-balance-tree.md)
 
 ## A. Triage first (biggest win)
 
