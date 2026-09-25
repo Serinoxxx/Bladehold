@@ -137237,7 +137237,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1302519688}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4a63f65da6fb41f4889ad6b85a143b70, type: 3}
   m_Name: 
@@ -137251,14 +137251,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1302519688}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 29a34375ae7d74f4491a725a1456d3c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Interactable
   promptText: Return to Battle
   interactionRadius: 3.5
-  isInteractable: 1
+  isInteractable: 0
   interactionAnchor: {fileID: 1815258201}
   onInteracted:
     m_PersistentCalls:

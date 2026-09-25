@@ -238,6 +238,25 @@ public class CampaignGraphSO : ScriptableObject
             metal: 0
         );
 
+        // Tier 3 combat option: Frozen Pass
+        CampaignNodeSO nodeTier3Frozen = CreateNode(
+            "tier3_frozen_pass",
+            "Frozen Pass",
+            "Icebound Approach",
+            "Hold the frozen mountain pass against Captain Kombusta's raiders before they reach the keep.",
+            "Bladehold Frozen Pass Scene",
+            CampaignNodeType.Combat,
+            3,
+            new Vector2(500f, 240f),
+            captainName: "Captain Kombusta",
+            difficultyTier: BannerDifficultyTier.Enraged,
+            bountyType: BannerBountyType.ElementDraft,
+            rewardsDesc: "+100 Gold, Elemental Draft",
+            gold: 100,
+            blood: 0,
+            metal: 0
+        );
+
         // Tier 2 choices lead forward to Tier 3 options
         nodeTier2A.nextNodes.Add(nodeTier3A);
         nodeTier2A.nextNodes.Add(nodeTier3Fishing);
@@ -246,6 +265,8 @@ public class CampaignGraphSO : ScriptableObject
         nodeTier2B.nextNodes.Add(nodeTier3Basin);
         nodeTier2Fishing.nextNodes.Add(nodeTier3Fishing);
         nodeTier2Fishing.nextNodes.Add(nodeTier3Basin);
+        nodeTier2A.nextNodes.Add(nodeTier3Frozen);
+        nodeTier2B.nextNodes.Add(nodeTier3Frozen);
 
         // -------------------------------------------------------------
         // TIER 4: Great Banqueting Hall + Cistern Fishing Pond Side-Route
@@ -292,6 +313,7 @@ public class CampaignGraphSO : ScriptableObject
         nodeTier3Fishing.nextNodes.Add(nodeTier4);
         nodeTier3Fishing.nextNodes.Add(nodeTier4Fishing);
         nodeTier3Basin.nextNodes.Add(nodeTier4Fishing);
+        nodeTier3Frozen.nextNodes.Add(nodeTier4);
 
         // -------------------------------------------------------------
         // TIER 5: Split into 2 options + Sunken Grotto Fishing Pond Side-Route
@@ -397,12 +419,32 @@ public class CampaignGraphSO : ScriptableObject
             metal: 0
         );
 
+        // Tier 6 combat option: Ancient Garden
+        CampaignNodeSO nodeTier6Garden = CreateNode(
+            "tier6_ancient_garden",
+            "Ancient Garden",
+            "Overgrown Cloister",
+            "Beat back Captain Kombusta's warband in the overgrown royal gardens below the keep.",
+            "Bladehold Ancient Garden",
+            CampaignNodeType.Combat,
+            6,
+            new Vector2(1100f, 240f),
+            captainName: "Captain Kombusta",
+            difficultyTier: BannerDifficultyTier.Nightmare,
+            bountyType: BannerBountyType.GoblinBlood,
+            rewardsDesc: "+150 Gold, +15 Goblin Blood",
+            gold: 150,
+            blood: 15,
+            metal: 0
+        );
+
         // Tier 5 choices lead to Tier 6
         nodeTier5A.nextNodes.Add(nodeTier6A);
         nodeTier5A.nextNodes.Add(nodeTier6Fishing);
         nodeTier5B.nextNodes.Add(nodeTier6A);
         nodeTier5B.nextNodes.Add(nodeTier6Fishing);
         nodeTier5Fishing.nextNodes.Add(nodeTier6Fishing);
+        nodeTier5A.nextNodes.Add(nodeTier6Garden);
 
         // -------------------------------------------------------------
         // TIER 7: Pre-final battle / Inner Keep + Keep Aqueduct Pond Side-Route
@@ -449,6 +491,8 @@ public class CampaignGraphSO : ScriptableObject
         nodeTier6A.nextNodes.Add(nodeTier7Fishing);
         nodeTier6Fishing.nextNodes.Add(nodeTier7);
         nodeTier6Fishing.nextNodes.Add(nodeTier7Fishing);
+        nodeTier6Garden.nextNodes.Add(nodeTier7);
+        nodeTier6Garden.nextNodes.Add(nodeTier7Fishing);
 
         // -------------------------------------------------------------
         // TIER 8: The Revelation / Necromancer Encounter (Crypt Sanctum)
@@ -530,6 +574,7 @@ public class CampaignGraphSO : ScriptableObject
         tier3.nodes.Add(nodeTier3A);
         tier3.nodes.Add(nodeTier3Fishing);
         tier3.nodes.Add(nodeTier3Basin);
+        tier3.nodes.Add(nodeTier3Frozen);
         tiers.Add(tier3);
 
         CampaignTier tier4 = new CampaignTier(4, "Great Hall");
@@ -546,6 +591,7 @@ public class CampaignGraphSO : ScriptableObject
         CampaignTier tier6 = new CampaignTier(6, "Inner Sanctum Recovery");
         tier6.nodes.Add(nodeTier6A);
         tier6.nodes.Add(nodeTier6Fishing);
+        tier6.nodes.Add(nodeTier6Garden);
         tiers.Add(tier6);
 
         CampaignTier tier7 = new CampaignTier(7, "Throne Antechamber");

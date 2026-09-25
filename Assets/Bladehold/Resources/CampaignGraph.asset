@@ -30,6 +30,7 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 6c6e6c1c6f25d6448a1cf992d3253227, type: 2}
     - {fileID: 11400000, guid: a0ba8e7d12155594a96389e2d840379d, type: 2}
     - {fileID: 11400000, guid: 3290fcc9c5305d54cbb0b36c9bf5c30c, type: 2}
+    - {fileID: 11400000, guid: b82c1194143846d297f77cab5acf10a2, type: 2}
   - tierNumber: 4
     tierName: Great Hall
     nodes:
@@ -46,6 +47,7 @@ MonoBehaviour:
     nodes:
     - {fileID: 11400000, guid: aaf2400b96b7e8144965178150ef93da, type: 2}
     - {fileID: 11400000, guid: f53b62f5969def447be9ffc469c1d889, type: 2}
+    - {fileID: 11400000, guid: 8dda2da0a6d745aa8c4c45656705457e, type: 2}
   - tierNumber: 7
     tierName: Throne Antechamber
     nodes:
