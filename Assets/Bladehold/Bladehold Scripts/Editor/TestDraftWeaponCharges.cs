@@ -40,6 +40,7 @@ public static class TestDraftWeaponCharges
                 checks += CheckHighlight(slot.elementalHighlight, "SLOT_RANGED");
             }
             weapons.EquipMelee(originalMelee);
+            checks += CheckDraftedCardImbues(weapons);
 
             foreach (string element in new[] { "FIRE", "ICE", "LIGHTNING", "" })
             {
@@ -146,6 +147,36 @@ public static class TestDraftWeaponCharges
         RunSession.ClearElementalSlot(slot);
         Require(!highlight.enabled && !highlight.highlighted, $"{slot} highlight remains enabled after clear.");
         return 4;
+    }
+
+    // Real draft path: picking an elemental card sets its slot, which drives the weapon glow.
+    private static int CheckDraftedCardImbues(PlayerWeaponManager weapons)
+    {
+        DraftUpgradeService drafts = DraftUpgradeService.GetOrCreateInstance();
+        string[] cardIds = { "elem_fire_combustion", "elem_ice_ice_shards" };
+        var saved = cardIds.ToDictionary(id => id, RunSession.GetUpgradeLevel);
+        int savedGold = RunSession.InRunGold;
+        try
+        {
+            foreach (string id in cardIds) drafts.DebugSetDraftLevel(drafts.GetById(id), 0);
+            RunSession.ClearElementalSlot(RunSession.SlotMelee);
+            RunSession.ClearElementalSlot(RunSession.SlotRanged);
+
+            drafts.ApplyUpgrade(drafts.GetById("elem_fire_combustion"));
+            var melee = weapons.meleeWeapons.First(s => s.definition.id == weapons.CurrentMeleeId).elementalHighlight;
+            Require(melee.enabled && melee.highlighted && melee.profile.name == "Fire Weapon HPP", "Drafted Combustion did not make the melee weapon glow Fire.");
+
+            drafts.ApplyUpgrade(drafts.GetById("elem_ice_ice_shards"));
+            var ranged = weapons.rangedWeapons.First(s => s.definition.id == weapons.CurrentRangedId).elementalHighlight;
+            Require(ranged.enabled && ranged.highlighted && ranged.profile.name == "Frost Weapon HPP", "Drafted Ice Shards did not make the ranged weapon glow Ice.");
+            return 2;
+        }
+        finally
+        {
+            foreach (string id in cardIds) drafts.DebugSetDraftLevel(drafts.GetById(id), 0);
+            foreach (var pair in saved) drafts.DebugSetDraftLevel(drafts.GetById(pair.Key), pair.Value);
+            RunSession.InRunGold = savedGold;
+        }
     }
 
     private static void Require(bool condition, string message)

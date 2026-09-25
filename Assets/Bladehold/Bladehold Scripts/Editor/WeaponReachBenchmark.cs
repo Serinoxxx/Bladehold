@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
@@ -2875,6 +2876,78 @@ public static class WeaponReachBenchmark
         {
             sb.AppendLine($"  - Section 25 Benchmark exception: {ex.Message} [FAILED]");
             failedCount++;
+        }
+
+        // 26. ELEMENTAL DRAFT SLOTS, DUO PREREQUISITES & OVERWRITE
+        // Play-mode glow/hit coverage for the same path: Bladehold/Tests/Draft Weapon Charges (Play Mode).
+        sb.AppendLine("\n### 26. ELEMENTAL DRAFT SLOTS, DUO PREREQUISITES & OVERWRITE");
+        {
+            bool createdService = DraftUpgradeService.Instance == null && UnityEngine.Object.FindAnyObjectByType<DraftUpgradeService>() == null;
+            DraftUpgradeService drafts = DraftUpgradeService.GetOrCreateInstance();
+            var elementals = drafts.AllDefinitions.Where(d => d.category == DraftCategory.Elemental).ToList();
+            var savedLevels = elementals.ToDictionary(d => d.id, d => RunSession.GetUpgradeLevel(d.id));
+            var savedSlots = new Dictionary<string, string>(RunSession.ElementalSlots);
+            int savedGold = RunSession.InRunGold;
+            try
+            {
+                foreach (DraftUpgradeDefinition def in elementals) drafts.DebugSetDraftLevel(def, 0);
+                foreach (string slot in new List<string>(RunSession.ElementalSlots.Keys)) RunSession.ClearElementalSlot(slot);
+
+                void Check(bool ok, string pass, string fail)
+                {
+                    sb.AppendLine(ok ? $"  - {pass} [PASSED]" : $"  - [FAIL] {fail}");
+                    if (ok) passedCount++; else failedCount++;
+                }
+
+                var duos = drafts.AllDefinitions.Where(d => d.isDuo).ToList();
+                Check(duos.Count == 3 && duos.All(d => d.category == DraftCategory.Elemental),
+                    "Duo cards parse as Elemental.", $"Expected 3 Elemental duos, found {duos.Count} ({string.Join(", ", duos.Select(d => d.id + ":" + d.category))}).");
+
+                var candidates = drafts.GetCandidateUpgrades(DraftCategory.Elemental, 999);
+                Check(!candidates.Any(d => d.isDuo), "No duos offered with no active elements.", "Duo offered without prerequisites.");
+                Check(!drafts.GetCandidateUpgrades(DraftCategory.Weapon, 999).Any(d => d.isDuo || d.category != DraftCategory.Weapon),
+                    "Weapon drafts contain only Weapon cards.", "Non-weapon card leaked into weapon draft.");
+                Check(candidates.Select(d => d.element).Distinct(StringComparer.OrdinalIgnoreCase).Count() == 3,
+                    "No element lock: fire, ice and lightning all offered.", "Elemental pool is missing an element.");
+
+                DraftUpgradeDefinition combustion = drafts.GetById("elem_fire_combustion");
+                DraftUpgradeDefinition staticEdge = drafts.GetById("elem_light_static_edge");
+                DraftUpgradeDefinition frostStep = drafts.GetById("elem_ice_frost_step");
+                drafts.ApplyUpgrade(combustion);
+                Check(RunSession.GetElementInSlot(RunSession.SlotMelee).Equals("Fire", StringComparison.OrdinalIgnoreCase),
+                    "Drafting Combustion imbues SLOT_MELEE with Fire.", $"SLOT_MELEE is '{RunSession.GetElementInSlot(RunSession.SlotMelee)}' after Combustion.");
+
+                drafts.ApplyUpgrade(frostStep);
+                var fireIceDuos = drafts.GetCandidateUpgrades(DraftCategory.Elemental, 999).Where(d => d.isDuo).Select(d => d.id).ToList();
+                Check(fireIceDuos.Count == 1 && fireIceDuos[0] == "duo_thermal_shock",
+                    "Fire + Ice unlocks only Thermal Shock.", $"Fire + Ice offered duos: [{string.Join(", ", fireIceDuos)}].");
+
+                Check(drafts.WouldOverwrite(staticEdge, out string replaced) && replaced.Equals("Fire", StringComparison.OrdinalIgnoreCase)
+                        && drafts.ConvertToSkillNode(staticEdge).description.Contains("[Overwrite]"),
+                    "Static Edge flags [Overwrite] of Fire on melee.", "Static Edge did not flag the melee overwrite.");
+
+                int goldBefore = RunSession.InRunGold;
+                drafts.ApplyUpgrade(staticEdge);
+                Check(RunSession.GetUpgradeLevel(combustion.id) == 0
+                        && RunSession.GetElementInSlot(RunSession.SlotMelee).Equals("Lightning", StringComparison.OrdinalIgnoreCase)
+                        && RunSession.InRunGold >= goldBefore + DraftUpgradeService.ElementOverwriteGold,
+                    "Overwrite removes Combustion, sets Lightning, pays conversion gold.",
+                    $"Overwrite state wrong: combustion L{RunSession.GetUpgradeLevel(combustion.id)}, melee '{RunSession.GetElementInSlot(RunSession.SlotMelee)}', gold +{RunSession.InRunGold - goldBefore}.");
+            }
+            catch (Exception ex)
+            {
+                sb.AppendLine($"  - Section 26 Benchmark exception: {ex.Message} [FAILED]");
+                failedCount++;
+            }
+            finally
+            {
+                foreach (DraftUpgradeDefinition def in elementals) drafts.DebugSetDraftLevel(def, 0);
+                foreach (var pair in savedLevels) drafts.DebugSetDraftLevel(drafts.GetById(pair.Key), pair.Value);
+                foreach (string slot in new List<string>(RunSession.ElementalSlots.Keys)) RunSession.ClearElementalSlot(slot);
+                foreach (var pair in savedSlots) RunSession.SetElementalSlot(pair.Key, pair.Value);
+                RunSession.InRunGold = savedGold;
+                if (createdService) UnityEngine.Object.DestroyImmediate(drafts.gameObject);
+            }
         }
 
         sb.AppendLine("\n=================================================");

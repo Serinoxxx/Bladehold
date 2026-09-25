@@ -131,9 +131,35 @@ public class DraftUpgradeService : MonoBehaviour
             def.prerequisiteElements.AddRange(cols[15].Split('|', StringSplitOptions.RemoveEmptyEntries));
         }
 
-        if (cols.Count > 2 && Enum.TryParse<DraftCategory>(cols[2].Trim(), true, out DraftCategory parsedCat))
+        string categoryStr = cols.Count > 2 ? cols[2].Trim() : "";
+        if (!Enum.TryParse<DraftCategory>(categoryStr, true, out DraftCategory parsedCat) || !Enum.IsDefined(typeof(DraftCategory), parsedCat))
         {
-            def.category = parsedCat;
+            Debug.LogError($"[DraftUpgradeService] Draft '{def.id}' has unknown category '{categoryStr}'. Expected one of: {string.Join(", ", Enum.GetNames(typeof(DraftCategory)))}. Row skipped.");
+            return null;
+        }
+        def.category = parsedCat;
+
+        if (def.category == DraftCategory.Elemental)
+        {
+            if (!string.IsNullOrEmpty(def.targetSlot) && !RunSession.KnownElementalSlots.Contains(def.targetSlot))
+            {
+                Debug.LogError($"[DraftUpgradeService] Elemental draft '{def.id}' has unknown targetSlot '{def.targetSlot}'. Row skipped.");
+                return null;
+            }
+            if (!def.isDuo && string.IsNullOrEmpty(def.element))
+            {
+                Debug.LogError($"[DraftUpgradeService] Elemental draft '{def.id}' has no element. Row skipped.");
+                return null;
+            }
+            if (def.isDuo && (def.prerequisiteElements.Count < 2 || !string.IsNullOrEmpty(def.targetSlot)))
+            {
+                Debug.LogError($"[DraftUpgradeService] Duo draft '{def.id}' needs 2+ prerequisiteElements and no targetSlot. Row skipped.");
+                return null;
+            }
+        }
+        else if (def.isDuo || !string.IsNullOrEmpty(def.targetSlot))
+        {
+            Debug.LogError($"[DraftUpgradeService] Draft '{def.id}' sets isDuo/targetSlot but its category is {def.category}, not Elemental.");
         }
 
         string statStr = cols.Count > 9 ? cols[9].Trim() : "";
@@ -148,7 +174,11 @@ public class DraftUpgradeService : MonoBehaviour
 
             for (int i = 0; i < stats.Length; i++)
             {
-                if (!Enum.TryParse<StatType>(stats[i].Trim(), true, out StatType statType)) continue;
+                if (!Enum.TryParse<StatType>(stats[i].Trim(), true, out StatType statType))
+                {
+                    Debug.LogError($"[DraftUpgradeService] Draft '{def.id}' references unknown StatType '{stats[i].Trim()}'. Effect skipped.");
+                    continue;
+                }
 
                 ModifierKind kind = ModifierKind.Flat;
                 if (i < kinds.Length && kinds[i].Trim().Equals("Percent", StringComparison.OrdinalIgnoreCase))
@@ -267,6 +297,7 @@ public class DraftUpgradeService : MonoBehaviour
         }
 
         bool hasUltimate = !string.IsNullOrEmpty(RunSession.ActiveUltimateId);
+        HashSet<string> activeElements = GetActiveElements();
 
         List<DraftUpgradeDefinition> candidates = new List<DraftUpgradeDefinition>();
 
@@ -291,23 +322,11 @@ public class DraftUpgradeService : MonoBehaviour
                 }
             }
 
-            // Elemental slot rule
-            if (def.category == DraftCategory.Elemental)
+            // Elemental rule: no run-wide element lock (docs/ElementSystemSpec.md). Slots mix freely,
+            // and duos only enter the pool once all their prerequisite elements are active.
+            if (def.category == DraftCategory.Elemental && def.isDuo && !MeetsDuoPrerequisites(def, activeElements))
             {
-                if (def.isDuo)
-                {
-                    bool meetsPrereqs = true;
-                    HashSet<string> activeElements = RunSession.GetActiveElements();
-                    foreach (var prereq in def.prerequisiteElements)
-                    {
-                        if (!activeElements.Contains(prereq))
-                        {
-                            meetsPrereqs = false;
-                            break;
-                        }
-                    }
-                    if (!meetsPrereqs) continue;
-                }
+                continue;
             }
 
             // Ultimate exclusivity rule: You can't have more than one ultimate per run!
@@ -350,45 +369,23 @@ public class DraftUpgradeService : MonoBehaviour
     {
         if (def == null) return false;
 
-        // Handle Elemental Slots Overwrite
-        if (def.category == DraftCategory.Elemental && !string.IsNullOrEmpty(def.targetSlot))
+        // Imbue first: overwriting a slot strips the previous element's cards before we level this one.
+        if (HasSlot(def))
         {
-            if (RunSession.ElementalSlots.TryGetValue(def.targetSlot, out string currentElement))
-            {
-                // We are overwriting a slot. Is it a different element?
-                if (!currentElement.Equals(def.element, StringComparison.OrdinalIgnoreCase))
-                {
-                    // Find the previous upgrade id for this slot (we can store it in RunSession.ElementalSlotUpgrades if we added it)
-                    // Wait, we can iterate all upgrades, find the one with this targetSlot, and remove it.
-                    foreach (var kvp in RunSession.InRunUpgradeLevels)
-                    {
-                        if (kvp.Value > 0)
-                        {
-                            DraftUpgradeDefinition oldDef = GetById(kvp.Key);
-                            if (oldDef != null && oldDef.category == DraftCategory.Elemental && oldDef.targetSlot == def.targetSlot && !oldDef.isDuo)
-                            {
-                                RemoveUpgrade(oldDef, kvp.Value);
-                                RunSession.SetUpgradeLevel(oldDef.id, 0);
-                                
-                                // Award conversion bonus
-                                RunSession.AddInRunGold(25);
-                                Debug.Log($"[DraftUpgradeService] Overwrote slot {def.targetSlot}. Removed {oldDef.id}, awarded 25 gold.");
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
+            ImbueSlot(def.targetSlot, def.element, awardConversionGold: true);
         }
 
-        int nextLevel = RunSession.GetUpgradeLevel(def.id) + 1;
+        int previousLevel = RunSession.GetUpgradeLevel(def.id);
+        int nextLevel = previousLevel + 1;
         RunSession.SetUpgradeLevel(def.id, nextLevel);
 
         Player player = Player.Instance;
         if (player != null && player.Stats != null)
         {
+            // Per-level amounts are absolute (matches RunSession's scene-load reapply): swap the old level's value for the new one.
             foreach (SkillEffect effect in def.effects)
             {
+                if (previousLevel > 0) player.Stats.AddModifier(effect.stat, effect.kind, -effect.AmountForLevel(previousLevel));
                 player.Stats.AddModifier(effect.stat, effect.kind, effect.AmountForLevel(nextLevel));
             }
 
@@ -407,13 +404,6 @@ public class DraftUpgradeService : MonoBehaviour
             }
         }
 
-        // Handle Elemental Slots
-        if (def.category == DraftCategory.Elemental && !string.IsNullOrEmpty(def.targetSlot) && !string.IsNullOrEmpty(def.element))
-        {
-            RunSession.SetElementalSlot(def.targetSlot, def.element);
-            Debug.Log($"[DraftUpgradeService] Equipped Element {def.element} to {def.targetSlot}");
-        }
-
         // Handle Fortress Upgrades
         if (def.category == DraftCategory.Fortress)
         {
@@ -424,6 +414,110 @@ public class DraftUpgradeService : MonoBehaviour
         }
 
         Debug.Log($"[DraftUpgradeService] Applied Upgrade: '{def.displayName}' (Level {nextLevel}/{def.maxLevel}).");
+        return true;
+    }
+
+    private static bool HasSlot(DraftUpgradeDefinition def) =>
+        def != null && def.category == DraftCategory.Elemental && !def.isDuo
+        && !string.IsNullOrEmpty(def.targetSlot) && !string.IsNullOrEmpty(def.element);
+
+    /// <summary>
+    ///     The one way to put an element on a slot (draft cards and the DevConsole both use it).
+    ///     A different element already on the slot is overwritten: its slot cards are removed,
+    ///     paying the 25 gold conversion bonus per card when <paramref name="awardConversionGold"/>.
+    /// </summary>
+    public void ImbueSlot(string slotName, string element, bool awardConversionGold = false)
+    {
+        EnsureInitialized();
+        if (!RunSession.KnownElementalSlots.Contains(slotName ?? "") || string.IsNullOrEmpty(element))
+        {
+            Debug.LogError($"[DraftUpgradeService] Cannot imbue slot '{slotName}' with element '{element}'.");
+            return;
+        }
+
+        string current = RunSession.GetElementInSlot(slotName);
+        if (!string.IsNullOrEmpty(current) && !current.Equals(element, StringComparison.OrdinalIgnoreCase))
+        {
+            int removed = RemoveSlotCards(slotName);
+            if (awardConversionGold && removed > 0)
+            {
+                RunSession.AddInRunGold(ElementOverwriteGold * removed);
+            }
+            Debug.Log($"[DraftUpgradeService] Overwrote {slotName} ({current} -> {element}), removed {removed} card(s).");
+        }
+
+        RunSession.SetElementalSlot(slotName, element);
+    }
+
+    /// <summary>Clears a slot's element and removes the drafted cards that were on it.</summary>
+    public void ClearSlot(string slotName)
+    {
+        EnsureInitialized();
+        RemoveSlotCards(slotName);
+        RunSession.ClearElementalSlot(slotName);
+    }
+
+    public const int ElementOverwriteGold = 25;
+
+    private bool SlotHasCards(string slotName)
+    {
+        foreach (var kvp in RunSession.InRunUpgradeLevels)
+        {
+            DraftUpgradeDefinition def = kvp.Value > 0 ? GetById(kvp.Key) : null;
+            if (HasSlot(def) && def.targetSlot.Equals(slotName, StringComparison.OrdinalIgnoreCase)) return true;
+        }
+        return false;
+    }
+
+    private int RemoveSlotCards(string slotName)
+    {
+        int removed = 0;
+        foreach (var kvp in new List<KeyValuePair<string, int>>(RunSession.InRunUpgradeLevels))
+        {
+            if (kvp.Value <= 0) continue;
+            DraftUpgradeDefinition oldDef = GetById(kvp.Key);
+            if (!HasSlot(oldDef) || !oldDef.targetSlot.Equals(slotName, StringComparison.OrdinalIgnoreCase)) continue;
+            RemoveUpgrade(oldDef, kvp.Value);
+            RunSession.SetUpgradeLevel(oldDef.id, 0);
+            removed++;
+        }
+        return removed;
+    }
+
+    /// <summary>
+    ///     True when drafting <paramref name="def"/> would replace a different element on its slot.
+    /// </summary>
+    public bool WouldOverwrite(DraftUpgradeDefinition def, out string currentElement)
+    {
+        currentElement = HasSlot(def) ? RunSession.GetElementInSlot(def.targetSlot) : "";
+        return !string.IsNullOrEmpty(currentElement) && !currentElement.Equals(def.element, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    ///     Elements the run is invested in: every imbued slot plus owned slotless elemental cards
+    ///     (Kindling, Deep Freeze, Shatter). Duo prerequisites check against this.
+    /// </summary>
+    public HashSet<string> GetActiveElements()
+    {
+        EnsureInitialized();
+        HashSet<string> active = RunSession.GetActiveElements();
+        foreach (DraftUpgradeDefinition def in allDefinitions)
+        {
+            if (def.category == DraftCategory.Elemental && !def.isDuo && !string.IsNullOrEmpty(def.element)
+                && RunSession.GetUpgradeLevel(def.id) > 0)
+            {
+                active.Add(def.element);
+            }
+        }
+        return active;
+    }
+
+    public static bool MeetsDuoPrerequisites(DraftUpgradeDefinition def, HashSet<string> activeElements)
+    {
+        foreach (string prereq in def.prerequisiteElements)
+        {
+            if (!activeElements.Contains(prereq)) return false;
+        }
         return true;
     }
 
@@ -454,6 +548,12 @@ public class DraftUpgradeService : MonoBehaviour
         targetLevel = Mathf.Clamp(targetLevel, 0, def.maxLevel);
         if (currentLevel == targetLevel) return;
 
+        // Same slot path as a real draft (no conversion gold for cheats).
+        if (HasSlot(def) && targetLevel > 0)
+        {
+            ImbueSlot(def.targetSlot, def.element);
+        }
+
         Player player = Player.Instance;
 
         // Revert old level stat modifiers
@@ -475,6 +575,11 @@ public class DraftUpgradeService : MonoBehaviour
         }
 
         RunSession.SetUpgradeLevel(def.id, targetLevel);
+
+        if (HasSlot(def) && targetLevel == 0 && !SlotHasCards(def.targetSlot))
+        {
+            RunSession.ClearElementalSlot(def.targetSlot);
+        }
 
         if (def.isUltimate && player != null && player.Stats != null)
         {
@@ -553,6 +658,10 @@ public class DraftUpgradeService : MonoBehaviour
             {
                 DebugSetDraftLevel(def, 0);
             }
+        }
+        foreach (string slot in new List<string>(RunSession.ElementalSlots.Keys))
+        {
+            RunSession.ClearElementalSlot(slot);
         }
         RunSession.ActiveUltimateId = null;
         if (Player.Instance != null && Player.Instance.Stats != null)
@@ -641,6 +750,24 @@ public class DraftUpgradeService : MonoBehaviour
             effects = new List<SkillEffect>(def.effects)
         };
 
+        if (WouldOverwrite(def, out string currentElement))
+        {
+            node.description += $"\n<color=#FFA500>[Overwrite] Replaces {currentElement} on your {SlotDisplayName(def.targetSlot)} (+{ElementOverwriteGold} gold per card)</color>";
+        }
+
         return node;
+    }
+
+    private static string SlotDisplayName(string slotName)
+    {
+        switch (slotName?.ToUpperInvariant())
+        {
+            case RunSession.SlotMelee: return "melee weapon";
+            case RunSession.SlotRanged: return "ranged weapon";
+            case RunSession.SlotMobility: return "dash";
+            case RunSession.SlotUltimate: return "ultimate";
+            case RunSession.SlotFortress: return "towers";
+            default: return slotName;
+        }
     }
 }

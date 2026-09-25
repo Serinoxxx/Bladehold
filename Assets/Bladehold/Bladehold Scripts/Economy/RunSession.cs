@@ -13,7 +13,19 @@ public static class RunSession
     public static int CurrentWave { get; set; } = 1;
     public static int RestVisitsCount { get; set; } = 0;
     
-    // Elemental Ability Slots Mapping (SlotName -> ElementType)
+    // Elemental Ability Slots Mapping (SlotName -> ElementType). Gameplay writes go through
+    // DraftUpgradeService.ImbueSlot/ClearSlot so drafted cards and slots stay in sync.
+    public const string SlotMelee = "SLOT_MELEE";
+    public const string SlotRanged = "SLOT_RANGED";
+    public const string SlotMobility = "SLOT_MOBILITY";
+    public const string SlotUltimate = "SLOT_ULTIMATE";
+    public const string SlotFortress = "SLOT_FORTRESS";
+
+    public static readonly HashSet<string> KnownElementalSlots = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        SlotMelee, SlotRanged, SlotMobility, SlotUltimate, SlotFortress
+    };
+
     public static Dictionary<string, string> ElementalSlots { get; private set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
     public static HashSet<string> GetActiveElements()

@@ -72,7 +72,7 @@ Completing any standard wave drops one reward selected from the following pool:
 Drafts present a 3-card selection governed by two core rules:
 
 > * **Targeted Weapon Pool:** Upgrades only appear for the 2 equipped weapons (1 melee, 1 ranged).  
-> * **Elemental Lock:** Selecting an elemental upgrade locks your run into that element; cards for other elements are excluded from future drafts.
+> * **Elemental Slots (no lock):** Each elemental card imbues one ability slot (melee, ranged, dash, ultimate or towers) with its element. Elements mix freely across slots; a card of a different element on a filled slot is marked **[Overwrite]**, replaces the old cards and pays 25 gold each. Duo cards unlock once both of their elements are active. See `docs/ElementSystemSpec.md`.
 
 ### **Weapon Upgrades (Mid-Run Only)**
 

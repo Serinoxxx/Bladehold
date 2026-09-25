@@ -37,28 +37,28 @@ fort_spike_barricades,Spike Barricades,Fortress,,,0,1,Surrounds the fortress wit
 fort_concussive_spikes,Concussive Spikes,Fortress,,,0,4,Barricade impacts stun enemies.,Increases stun duration,FortConcussiveSpikesDuration,Flat,0.5|1.0|1.5|2.0,fort_spikes,,,
 fort_shove,Shove,Fortress,,,0,4,Knocks enemies back 2m toward their spawn point periodically.,Decreases shove interval,FortShoveInterval,Flat,7|6|5|4,fort_spikes,,,
 fort_vulnerability_field,Vulnerability Field,Fortress,,,0,4,Enemies within the barricade zone take increased damage from all sources.,Increases barricade zone damage vulnerability,FortVulnerabilityFieldBonus,Percent,0.5|1.0|1.5|2.0,fort_spikes,,,
-elem_fire_blazing_trail,Blazing Trail,Elemental,,Fire,0,4,Dashing leaves a fire trail dealing DPS.,Increases fire trail DPS,FireBlazingTrailDPS,Flat,2|3|4|5,flamearrow,,,
-elem_fire_combustion,Combustion,Elemental,,Fire,0,4,Attacks ignite enemies for continuous burn DPS.,Increases ignition burn DPS,FireCombustionDPS,Flat,2|3|4|5,imbue_fire,,,
+elem_fire_blazing_trail,Blazing Trail,Elemental,,Fire,0,4,Dashing leaves a fire trail dealing DPS.,Increases fire trail DPS,FireBlazingTrailDPS,Flat,2|3|4|5,flamearrow,SLOT_MOBILITY,,
+elem_fire_combustion,Combustion,Elemental,,Fire,0,4,Attacks ignite enemies for continuous burn DPS.,Increases ignition burn DPS,FireCombustionDPS,Flat,2|3|4|5,imbue_fire,SLOT_MELEE,,
 elem_fire_kindling,Kindling,Elemental,,Fire,0,4,Ignited targets take bonus damage from all sources.,Increases damage bonus against ignited foes,FireKindlingDamageBonus,Percent,0.5|0.7|0.9|1.1,imbue_fire,,,
-elem_fire_inferno_burst,Inferno Burst,Elemental,,Fire,0,1,Ultimate ability immediately ignites all nearby enemies.,,FireInfernoBurstUnlocked,Flat,1,imbue_fire,,,
-elem_fire_fortress_pyre,Fortress Pyre,Elemental,,Fire,0,4,Fortress attacks deal bonus damage to ignited foes.,Increases fortress damage to ignited foes,FireFortressPyreBonus,Percent,0.5|0.8|1.1|1.4,fort_burning_oil,,,
-elem_light_static_edge,Static Edge,Elemental,,Lightning,0,4,First hit of a melee chain deals bonus lightning damage.,Increases static edge lightning damage,LightningStaticEdgeDamage,Flat,30|50|70|90,imbue_lightning,,,
-elem_light_chain_dash,Chain Dash,Elemental,,Lightning,0,4,Dashing imbues next melee swing with Chain Lightning.,Increases chain lightning targets,LightningChainDashTargets,Flat,4|6|8|10,imbue_lightning,,,
-elem_light_eye_storm,Eye of the Storm,Elemental,,Lightning,0,4,Lightning strikes a random target periodically during ultimate.,Increases lightning strike damage,LightningEyeOfTheStormDamage,Flat,50|100|150|200,imbue_lightning,,,
-elem_light_tesla_spire,Tesla Spire,Elemental,,Lightning,0,4,Fortress discharges a lightning bolt every 5s.,Increases Tesla Spire damage,LightningTeslaSpireDamage,Flat,50|100|150|200,imbue_lightning,,,
-elem_ice_frost_step,Frost Step,Elemental,,Ice,0,4,Dashing chills nearby enemies for 3s.,Increases slow and attack speed reduction,IceFrostStepSlowPercent,Percent,0.2|0.3|0.4|0.5,imbue_ice,,,
+elem_fire_inferno_burst,Inferno Burst,Elemental,,Fire,0,1,Ultimate ability immediately ignites all nearby enemies.,,FireInfernoBurstUnlocked,Flat,1,imbue_fire,SLOT_ULTIMATE,,
+elem_fire_fortress_pyre,Fortress Pyre,Elemental,,Fire,0,4,Fortress attacks deal bonus damage to ignited foes.,Increases fortress damage to ignited foes,FireFortressPyreBonus,Percent,0.5|0.8|1.1|1.4,fort_burning_oil,SLOT_FORTRESS,,
+elem_light_static_edge,Static Edge,Elemental,,Lightning,0,4,First hit of a melee chain deals bonus lightning damage.,Increases static edge lightning damage,LightningStaticEdgeDamage,Flat,30|50|70|90,imbue_lightning,SLOT_MELEE,,
+elem_light_chain_dash,Chain Dash,Elemental,,Lightning,0,4,Dashing imbues next melee swing with Chain Lightning.,Increases chain lightning targets,LightningChainDashTargets,Flat,4|6|8|10,imbue_lightning,SLOT_MOBILITY,,
+elem_light_eye_storm,Eye of the Storm,Elemental,,Lightning,0,4,Lightning strikes a random target periodically during ultimate.,Increases lightning strike damage,LightningEyeOfTheStormDamage,Flat,50|100|150|200,imbue_lightning,SLOT_ULTIMATE,,
+elem_light_tesla_spire,Tesla Spire,Elemental,,Lightning,0,4,Fortress discharges a lightning bolt every 5s.,Increases Tesla Spire damage,LightningTeslaSpireDamage,Flat,50|100|150|200,imbue_lightning,SLOT_FORTRESS,,
+elem_ice_frost_step,Frost Step,Elemental,,Ice,0,4,Dashing chills nearby enemies for 3s.,Increases slow and attack speed reduction,IceFrostStepSlowPercent,Percent,0.2|0.3|0.4|0.5,imbue_ice,SLOT_MOBILITY,,
 elem_ice_deep_freeze,Deep Freeze,Elemental,,Ice,0,1,Applying chill to an already chilled enemy freezes them solid.,,IceDeepFreezeUnlocked,Flat,1,freezedraw,,,
 elem_ice_shatter,Shatter,Elemental,,Ice,0,4,Frozen enemies take massive bonus damage from all hits.,Increases bonus damage to frozen foes,IceShatterBonus,Percent,2.0|3.0|4.0|5.0,icebreaker,,,
-elem_ice_permafrost,Permafrost,Elemental,,Ice,0,1,Fortress walls passively emit an aura that chills adjacent foes.,,IcePermafrostUnlocked,Flat,1,imbue_ice,,,
-elem_ice_ice_shards,Ice Shards,Elemental,,Ice,0,4,Ranged kills shatter enemies into an 8-way projectile burst.,Increases ice shard burst damage,IceShardsBurstDamage,Flat,50|60|70|80,brainfreeze,,,
-duo_thermal_shock,Thermal Shock,Element,,,0,1,Enemies afflicted by Fire and Ice take massive burst damage.,,DuoThermalShock,Flat,1,icebreaker,,TRUE,Fire|Ice
-duo_plasma_overload,Plasma Overload,Element,,,0,1,Fire and Lightning cause explosions.,,DuoPlasmaOverload,Flat,1,explodeheads,,TRUE,Fire|Lightning
-duo_superconductor,Superconductor,Element,,,0,1,Ice and Lightning create larger chain lightning.,,DuoSuperconductor,Flat,1,imbue_lightning,,TRUE,Ice|Lightning
+elem_ice_permafrost,Permafrost,Elemental,,Ice,0,1,Fortress walls passively emit an aura that chills adjacent foes.,,IcePermafrostUnlocked,Flat,1,imbue_ice,SLOT_FORTRESS,,
+elem_ice_ice_shards,Ice Shards,Elemental,,Ice,0,4,Ranged kills shatter enemies into an 8-way projectile burst.,Increases ice shard burst damage,IceShardsBurstDamage,Flat,50|60|70|80,brainfreeze,SLOT_RANGED,,
+duo_thermal_shock,Thermal Shock,Elemental,,,0,1,Enemies afflicted by Fire and Ice take massive burst damage.,,DuoThermalShock,Flat,1,icebreaker,,TRUE,Fire|Ice
+duo_plasma_overload,Plasma Overload,Elemental,,,0,1,Fire and Lightning cause explosions.,,DuoPlasmaOverload,Flat,1,explodeheads,,TRUE,Fire|Lightning
+duo_superconductor,Superconductor,Elemental,,,0,1,Ice and Lightning create larger chain lightning.,,DuoSuperconductor,Flat,1,imbue_lightning,,TRUE,Ice|Lightning
 fort_electrified_oil,Electrified Oil,Fortress,,,0,1,Boiling Oil combined with Lightning electrifies the oil.,,FortElectrifiedOil,Flat,1,fort_burning_oil,,TRUE,Lightning
 fort_permafrost_spikes,Permafrost Spikes,Fortress,,,0,1,Spiked Barricades combined with Ice chill enemies.,,FortPermafrostSpikes,Flat,1,fort_spikes,,TRUE,Ice
-elem_frost_arrows,Frost Arrows,Elemental,,Ice,0,1,Arrow Towers fire frost arrows that chill and slow enemies.,,TowerFrostArrows,Flat,1,freezedraw,,,
-elem_glacial_catapult,Glacial Catapult,Elemental,,Ice,0,1,Catapults create slippery ground that makes enemies slip over. Players slide with boosted speed and agility.,,TowerSlipperyGround,Flat,1,icebreaker,,,
-elem_lightning_arrows,Lightning Arrows,Elemental,,Lightning,0,1,Lightning arrows make Arrow Towers fire 50% faster.,,TowerLightningArrows;TowerArrowFireRateBonus,Flat;Percent,1;0.50,swiftarrow,,,
-elem_tempest_catapult,Tempest Catapult,Elemental,,Lightning,0,1,Catapult impacts summon a swirling storm cloud that strikes enemies with lightning bolts.,,TowerStormCloud,Flat,1,imbue_lightning,,,
-elem_fire_arrows,Fire Arrows,Elemental,,Fire,0,1,Fire arrows deal 40% more damage and ignite enemies on hit.,,TowerFireArrows;TowerArrowDamageBonus,Flat;Percent,1;0.40,flamearrow,,,
-elem_pyroclast_catapult,Rolling Fireball,Elemental,,Fire,0,1,Catapults launch a rolling fireball that leaves a blazing trail. Player melee attacks can redirect the ball and boost its speed.,,TowerRollingFireball,Flat,1,explodeheads,,,
+elem_frost_arrows,Frost Arrows,Elemental,,Ice,0,1,Arrow Towers fire frost arrows that chill and slow enemies.,,TowerFrostArrows,Flat,1,freezedraw,SLOT_FORTRESS,,
+elem_glacial_catapult,Glacial Catapult,Elemental,,Ice,0,1,Catapults create slippery ground that makes enemies slip over. Players slide with boosted speed and agility.,,TowerSlipperyGround,Flat,1,icebreaker,SLOT_FORTRESS,,
+elem_lightning_arrows,Lightning Arrows,Elemental,,Lightning,0,1,Lightning arrows make Arrow Towers fire 50% faster.,,TowerLightningArrows;TowerArrowFireRateBonus,Flat;Percent,1;0.50,swiftarrow,SLOT_FORTRESS,,
+elem_tempest_catapult,Tempest Catapult,Elemental,,Lightning,0,1,Catapult impacts summon a swirling storm cloud that strikes enemies with lightning bolts.,,TowerStormCloud,Flat,1,imbue_lightning,SLOT_FORTRESS,,
+elem_fire_arrows,Fire Arrows,Elemental,,Fire,0,1,Fire arrows deal 40% more damage and ignite enemies on hit.,,TowerFireArrows;TowerArrowDamageBonus,Flat;Percent,1;0.40,flamearrow,SLOT_FORTRESS,,
+elem_pyroclast_catapult,Rolling Fireball,Elemental,,Fire,0,1,Catapults launch a rolling fireball that leaves a blazing trail. Player melee attacks can redirect the ball and boost its speed.,,TowerRollingFireball,Flat,1,explodeheads,SLOT_FORTRESS,,

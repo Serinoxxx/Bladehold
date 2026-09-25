@@ -418,8 +418,11 @@ public class DevConsole : MonoBehaviour
     {
         if (GetWeaponManager() == null) return;
         GUILayout.Label("Draft Weapon Charges");
-        DrawElementalChargeRow("Melee", "SLOT_MELEE");
-        DrawElementalChargeRow("Ranged", "SLOT_RANGED");
+        DrawElementalChargeRow("Melee", RunSession.SlotMelee);
+        DrawElementalChargeRow("Ranged", RunSession.SlotRanged);
+        DrawElementalChargeRow("Dash", RunSession.SlotMobility);
+        DrawElementalChargeRow("Ultimate", RunSession.SlotUltimate);
+        DrawElementalChargeRow("Towers", RunSession.SlotFortress);
     }
 
     private void DrawElementalChargeRow(string label, string slotName)
@@ -427,11 +430,13 @@ public class DevConsole : MonoBehaviour
         string element = RunSession.GetElementInSlot(slotName);
         GUILayout.Label($"{label}: {(string.IsNullOrEmpty(element) ? "None" : element)}");
         GUILayout.BeginHorizontal();
-        if (GUILayout.Button("Fire", GUILayout.Height(ButtonHeight))) RunSession.SetElementalSlot(slotName, "FIRE");
-        if (GUILayout.Button("Ice", GUILayout.Height(ButtonHeight))) RunSession.SetElementalSlot(slotName, "ICE");
-        if (GUILayout.Button("Lightning", GUILayout.Height(ButtonHeight))) RunSession.SetElementalSlot(slotName, "LIGHTNING");
+        // Same slot path as drafted elemental cards.
+        DraftUpgradeService drafts = DraftUpgradeService.GetOrCreateInstance();
+        if (GUILayout.Button("Fire", GUILayout.Height(ButtonHeight))) drafts.ImbueSlot(slotName, "FIRE");
+        if (GUILayout.Button("Ice", GUILayout.Height(ButtonHeight))) drafts.ImbueSlot(slotName, "ICE");
+        if (GUILayout.Button("Lightning", GUILayout.Height(ButtonHeight))) drafts.ImbueSlot(slotName, "LIGHTNING");
         GUILayout.EndHorizontal();
-        if (GUILayout.Button($"Clear {label} Charge", GUILayout.Height(ButtonHeight))) RunSession.ClearElementalSlot(slotName);
+        if (GUILayout.Button($"Clear {label} Charge", GUILayout.Height(ButtonHeight))) drafts.ClearSlot(slotName);
     }
     public bool enableHealthbars = true;
     private void DrawUltimateControls()

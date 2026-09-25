@@ -163,7 +163,7 @@ public class DiegeticDraftTester : MonoBehaviour
         // 3. Elemental Duo Prereq
         if (def.category == DraftCategory.Elemental && def.isDuo)
         {
-            HashSet<string> activeElements = RunSession.GetActiveElements();
+            HashSet<string> activeElements = DraftUpgradeService.GetOrCreateInstance().GetActiveElements();
             foreach (var prereq in def.prerequisiteElements)
             {
                 if (!activeElements.Contains(prereq))
