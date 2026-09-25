@@ -2508,12 +2508,12 @@ public static class WeaponReachBenchmark
 
             // Start wave 1: should be active, not victory
             testGlm.StartWave(1);
-            bool wave1Active = testGlm.IsWaveActive && !testGlm.IsRestGateOpen;
+            bool wave1Active = testGlm.IsWaveActive;
 
             // Clear wave 1
             testGlm.DebugCompleteObjective();
             for (int k = 0; k < testGlm.TargetKillsThisWave; k++) testGlm.OnEnemyKilled(null);
-            bool wave1ClearedNoGate = !testGlm.IsRestGateOpen;
+            bool wave1ClearedNoGate = true; // the rest gate is gone (plan 08); kept so the report line is unchanged
 
             // Start wave 5 (final wave)
             testGlm.StartWave(5);

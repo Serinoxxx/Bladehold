@@ -467,7 +467,6 @@ public class SetupSurvivorsSceneTool : EditorWindow
             {
                 var glmSo = new SerializedObject(glm);
                 glmSo.FindProperty("spawner").objectReferenceValue = spawnerComp;
-                glmSo.FindProperty("castleGateInteractable").objectReferenceValue = portalInteractable;
                 glmSo.FindProperty("objectiveManager").objectReferenceValue = objManagerComp;
                 if (powerupSpawnGo != null) glmSo.FindProperty("upgradePowerupSpawnPoint").objectReferenceValue = powerupSpawnGo.transform;
 

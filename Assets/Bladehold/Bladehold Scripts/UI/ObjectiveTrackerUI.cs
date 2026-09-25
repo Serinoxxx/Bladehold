@@ -113,12 +113,7 @@ public class ObjectiveTrackerUI : MonoBehaviour
         // 2. Active rotating sub-objective / cleanup / intermission / boss status
         if (objectiveProgressText != null)
         {
-            if (GameLoopManager.Instance != null && GameLoopManager.Instance.IsRestGateOpen)
-            {
-                if (objectiveHeaderText != null) objectiveHeaderText.text = "ROUND COMPLETE";
-                objectiveProgressText.text = "[Round Cleared!]\nReturn to the Fortress via the gate.";
-            }
-            else if (GameLoopManager.Instance != null && GameLoopManager.Instance.ActivePowerup != null)
+            if (GameLoopManager.Instance != null && GameLoopManager.Instance.ActivePowerup != null)
             {
                 objectiveProgressText.text = $"[Wave Cleared!]\nClaim {GameLoopManager.Instance.ActivePowerup.BountyName} in the arena.";
             }

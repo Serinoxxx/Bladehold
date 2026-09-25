@@ -15,7 +15,7 @@
 - [x] **Gold skill tree + Reincarnate:** `SkillTreeService`, `SkillTreeView`, `SkillNodeView`, `SkillTreeSO` and assets, `ReincarnateService`, `Reincarnate/`, `SkillTreeCsvEditorWindow`, `DeathScreen` reincarnate bits. Mark the `SaveData` fields `[Obsolete]` or drop them; old saves tolerate missing fields.
   - Check `Player/` components that were gold-tree lines (VampiricBlade, DamageBlocker, Parry, Counterstrike, DeathNova, GoldOnDeathCollector, GoldenGoblin stats): some may be reused by drafts or perks, so keep whatever `DraftUpgrades.csv`/perks reference.
 - [x] **`HoldTheLineBonus`** (in every sector, inert).
-- [ ] **`GameLoopManager`:** rest-gate path (`HandleGateInteracted`, `OnRestGateOpened`, gate `CanInteract`), `SpawnEndgameBoss`, `siegebreakerBossPrefab`, the Second Wind stub. Note that Second Wind is a real meta perk: implement it via `Health.TryPreventDeath` if it isn't elsewhere, rather than just deleting it.
+- [x] **`GameLoopManager`:** rest-gate path (`HandleGateInteracted`, `OnRestGateOpened`, gate `CanInteract`), `SpawnEndgameBoss`, `siegebreakerBossPrefab`, the Second Wind stub. Note that Second Wind is a real meta perk: implement it via `Health.TryPreventDeath` if it isn't elsewhere, rather than just deleting it.
 - [ ] **`SurvivorsGameManager`** 20-minute siege timer / endgame boss / "SIEGE SURVIVED" text.
 - [ ] **`RunSession.RestVisitsCount`** formulas (`RestAreaGate`/`RestAreaDoor` `RestVisitsCount*3+1`), `RunState` (if unused after plan 01), `SaveData.highestUnlockedStage/selectedStage/runsAttempted`.
 - [x] **XP level-up draft path** (`SurvivorsLevelSystem`, `SurvivorsLevelUpPromptUI`) if Lance confirms it's dead, along with coin XP.

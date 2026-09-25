@@ -45,10 +45,8 @@ public class GameLoopManager : MonoBehaviour
 
     [Header("UI Dependencies")]
     [SerializeField] private SurvivorsSpawner spawner;
-    [SerializeField] private Interactable castleGateInteractable;
     [SerializeField] private SurvivorsObjectiveManager objectiveManager;
     [SerializeField] private Transform bossSpawnPoint;
-    [SerializeField] private GameObject siegebreakerBossPrefab;
 
     [Header("Upgrade Powerup (Between Waves)")]
     [Tooltip("World spawn point for the between-wave upgrade powerup. Defaults to arena center (0,0,0) if null.")]
@@ -70,9 +68,7 @@ public class GameLoopManager : MonoBehaviour
     private bool isWaveActive = false;
     private bool isIntermission = false;
     private float intermissionTimeRemaining = 0f;
-    private GameObject spawnedBoss;
     private WaveUpgradePowerup activePowerup;
-    private bool isRestGateOpen = false;
 
     [Header("Resource Reward Feedback (Auto-Wired)")]
     public DamageNumbersPro.DamageNumber goldPopupPrefab;
@@ -92,15 +88,12 @@ public class GameLoopManager : MonoBehaviour
     public bool IsIntermission => isIntermission;
     public bool IsPrepPhase => isIntermission || !isWaveActive;
     public float IntermissionTimeRemaining => intermissionTimeRemaining;
-    public bool IsRestGateOpen => isRestGateOpen;
-    public Transform CastleGateTransform => castleGateInteractable != null ? castleGateInteractable.transform : null;
     public Transform UpgradePowerupSpawnPoint => upgradePowerupSpawnPoint;
     public WaveUpgradePowerup ActivePowerup => activePowerup;
 
     public event Action<int> OnWaveStarted;
     public event Action<int, string> OnWaveCleared;
     public event Action<float> OnIntermissionTick;
-    public event Action OnRestGateOpened;
     public event Action OnVictory;
     public event Action<Health> OnEnemyKilledEvent;
 
@@ -128,25 +121,15 @@ public class GameLoopManager : MonoBehaviour
             Player.Instance.Health.OnDied += HandlePlayerDied;
         }
 
-        // Auto-discover gate if not wired
-        if (castleGateInteractable == null)
+        // The castle scenes' gates were authored with an Interactable from the old rest-gate flow;
+        // nothing handles it now, so keep it from showing a dead [E] prompt.
+        foreach (Gate gate in Gate.All)
         {
-            Gate gate = FindAnyObjectByType<Gate>();
-            if (gate != null)
+            Interactable gateInteractable = gate != null ? gate.GetComponent<Interactable>() : null;
+            if (gateInteractable != null)
             {
-                castleGateInteractable = gate.GetComponent<Interactable>();
-                if (castleGateInteractable == null)
-                {
-                    castleGateInteractable = gate.gameObject.AddComponent<Interactable>();
-                }
+                gateInteractable.CanInteract = false;
             }
-        }
-
-        if (castleGateInteractable != null)
-        {
-            castleGateInteractable.PromptText = "Rest Area";
-            castleGateInteractable.CanInteract = false;
-            castleGateInteractable.OnInteractedEvent += HandleGateInteracted;
         }
 
         // Auto-discover and bind objective manager if not wired
@@ -186,11 +169,6 @@ public class GameLoopManager : MonoBehaviour
         if (Player.Instance != null && Player.Instance.Health != null)
         {
             Player.Instance.Health.OnDied -= HandlePlayerDied;
-        }
-
-        if (castleGateInteractable != null)
-        {
-            castleGateInteractable.OnInteractedEvent -= HandleGateInteracted;
         }
 
         if (objectiveManager != null)
@@ -253,12 +231,6 @@ public class GameLoopManager : MonoBehaviour
         isObjectiveComplete = false;
         isWaveActive = true;
         isIntermission = false;
-        isRestGateOpen = false;
-
-        if (castleGateInteractable != null)
-        {
-            castleGateInteractable.CanInteract = false;
-        }
 
         if (intermissionBanner != null) intermissionBanner.SetActive(false);
 
@@ -888,76 +860,6 @@ public class GameLoopManager : MonoBehaviour
         StartWave(upcomingWave);
     }
 
-    private void HandleGateInteracted(Player player)
-    {
-        Debug.Log("[GameLoopManager] Gate interacted! Transitioning to Rest Area Scene...");
-        RunSession.RestVisitsCount++;
-
-        // Preserve player health ratio
-        if (Player.Instance != null && Player.Instance.Health != null)
-        {
-            RunSession.PlayerHealthRatio = Player.Instance.Health.CurrentHealth / Player.Instance.Health.MaxHealth;
-        }
-
-        // Preserve player ultimate charge
-        if (Player.Instance != null)
-        {
-            var ult = Player.Instance.GetComponent<PlayerUltimateController>();
-            if (ult != null)
-            {
-                RunSession.PlayerUltimateCharge = ult.CurrentCharge;
-            }
-        }
-
-        // Preserve fortress gate health
-        if (Gate.All != null && Gate.All.Count > 0)
-        {
-            foreach (var g in Gate.All)
-            {
-                if (g != null && g.GetComponent<Health>() != null)
-                {
-                    var gh = g.GetComponent<Health>();
-                    RunSession.FortressGateCurrentHealth = gh.CurrentHealth;
-                    RunSession.FortressGateMaxHealth = gh.MaxHealth;
-                    break;
-                }
-            }
-        }
-
-        // If Castle Campaign is active, completing wave 3 advances campaign node and transitions to Campaign Overview Map
-        if (CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive)
-        {
-            Debug.Log("[GameLoopManager] Castle Campaign active: completing sector node and opening Campaign Overview Map...");
-            CampaignManager.Instance.CompleteCurrentNodeAndContinue();
-            return;
-        }
-
-        // Load Rest Area Scene
-        if (Application.isPlaying)
-        {
-            SceneManager.LoadScene("Bladehold Rest Area Scene");
-        }
-    }
-
-    private void SpawnEndgameBoss()
-    {
-        if (spawnedBoss != null) return;
-
-        Vector3 spawnPos = bossSpawnPoint != null ? bossSpawnPoint.position : transform.position + new Vector3(0f, 0f, 30f);
-        Quaternion spawnRot = bossSpawnPoint != null ? bossSpawnPoint.rotation : Quaternion.identity;
-
-        if (siegebreakerBossPrefab != null)
-        {
-            spawnedBoss = Instantiate(siegebreakerBossPrefab, spawnPos, spawnRot);
-        }
-        else if (spawner != null)
-        {
-            spawner.DebugSpawnEnemyType(pacingConfig != null ? pacingConfig.bossEnemyId : "slayer");
-        }
-
-        Debug.Log("[GameLoopManager] Round 4 Endgame Boss Spawned!");
-    }
-
     /// <summary>
     ///     Spawns a Clan Captain (e.g. Captain Kombusta or Captain Fraglob) for Enraged, Nightmare, or Omega difficulty tiers,
     ///     plays the cinematic EnemyIntroUI with difficulty skulls, and initializes the captain controller.
@@ -1068,13 +970,7 @@ public class GameLoopManager : MonoBehaviour
 
     private void HandlePlayerDied()
     {
-        // Second Wind meta perk: revive once per run with 50% HP
-        if (RunSession.HasMetaPerk("second_wind") && Player.Instance != null && Player.Instance.Health != null)
-        {
-            // Check if already used
-            // If revive succeeds, heal 50%
-        }
-
+        // Second Wind is handled by RunSession's Health.TryPreventDeath hook, before death is final.
         Debug.Log("[GameLoopManager] Player died. DeathScreen handles run conclusion and transition to Meta Area.");
     }
 

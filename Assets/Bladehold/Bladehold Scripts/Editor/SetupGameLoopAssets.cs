@@ -242,7 +242,6 @@ public static class SetupGameLoopAssets
         var loopSo = new SerializedObject(loop);
         loopSo.FindProperty("pacingConfig").objectReferenceValue = pacing;
         loopSo.FindProperty("spawner").objectReferenceValue = spawner;
-        loopSo.FindProperty("castleGateInteractable").objectReferenceValue = gateInteractable;
         if (objManager != null)
         {
             loopSo.FindProperty("objectiveManager").objectReferenceValue = objManager;
