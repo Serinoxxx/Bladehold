@@ -435,7 +435,7 @@ MonoBehaviour:
   arrivalFeedback: {fileID: 0}
   arrivalSound: {fileID: 0}
   goldBurstVfxPrefab: {fileID: 1919543859444104, guid: 0796b331004a84744a609063dc845137, type: 3}
-  goldBagPrefab: {fileID: 0}
+  goldBagPrefab: {fileID: 8493665466631301938, guid: 26ebce2f78526014da0d1b69d835b6e9, type: 3}
   minGoldBags: 4
   maxGoldBags: 5
   goldPerBag: 25

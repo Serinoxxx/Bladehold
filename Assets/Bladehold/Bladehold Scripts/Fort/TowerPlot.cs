@@ -14,6 +14,8 @@ public class TowerPlot : MonoBehaviour, IInteractable
     [SerializeField] private Transform buildAnchor;
     [SerializeField] private GameObject holyLightVfxPrefab;
     [SerializeField] private AudioClip woodImpactSfx;
+    [Tooltip("Authored prefab that plays the build animation and its MMF feedbacks.")]
+    [SerializeField] private DefenseAssemblyAnimation assemblyAnimationPrefab;
 
     [Header("Prefabs for Defenses")]
     [SerializeField] private GameObject arrowTowerPrefab;
@@ -120,6 +122,12 @@ public class TowerPlot : MonoBehaviour, IInteractable
             return;
         }
 
+        if (!instant && assemblyAnimationPrefab == null)
+        {
+            Debug.LogError($"[TowerPlot] {name}: assemblyAnimationPrefab is not assigned, building without the assembly animation.", this);
+            instant = true;
+        }
+
         if (instant)
         {
             GameObject defObj = Instantiate(prefab, BuildPosition, transform.rotation);
@@ -135,11 +143,8 @@ public class TowerPlot : MonoBehaviour, IInteractable
         }
 
         IsBuilding = true;
-        GameObject animObj = new GameObject($"AssemblyAnim_Plot_{plotIndex}");
-        DefenseAssemblyAnimation anim = animObj.AddComponent<DefenseAssemblyAnimation>();
-
-        // Pass VFX/SFX references to anim if assigned
-        // Then launch assembly
+        DefenseAssemblyAnimation anim = Instantiate(assemblyAnimationPrefab, BuildPosition, transform.rotation);
+        anim.name = $"AssemblyAnim_Plot_{plotIndex}";
         anim.PlayAssembly(BuildPosition, transform.rotation, prefab, (structure) =>
         {
             IsBuilding = false;

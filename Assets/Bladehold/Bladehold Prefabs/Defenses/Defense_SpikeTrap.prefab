@@ -227,7 +227,7 @@ MonoBehaviour:
   repairSfx: {fileID: 8300000, guid: 7c0d04dc6db69374e83216718d12c785, type: 3}
   upgradeSfx: {fileID: 8300000, guid: 2eb2b26c140f51f43b51e8413af8b9b7, type: 3}
   breakSfx: {fileID: 8300000, guid: 97a7660e1c5b7564eb36da5458270186, type: 3}
-  breakVfxPrefab: {fileID: 0}
+  breakVfxPrefab: {fileID: 1260334799937022, guid: 2b28f2fdc5a65964f96ea4d2b9d6ca63, type: 3}
   supplyPopupPrefab: {fileID: 5445448510257546009, guid: 0c337af341cc6e840986619c86ca00fb, type: 3}
   interactionRadius: 3.5
   triggerRadius: 2.6

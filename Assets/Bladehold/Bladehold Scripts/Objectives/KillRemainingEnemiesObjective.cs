@@ -60,10 +60,7 @@ public class KillRemainingEnemiesObjective : MonoBehaviour, ISurvivorsObjective
             return;
         }
 
-#if UNITY_EDITOR
-        skullIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(
-            "Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/Icons_Map/ICON_FantasyWarrior_Map_Skull_01_Clean.png");
-#endif
+        Debug.LogError("[KillRemainingEnemiesObjective] No skull icon: assign skullIcon or the tracker's cleanupEnemySkullIcon.", this);
     }
 
     public void StartObjective()

@@ -10,6 +10,7 @@ Things that need your hands, eyes or judgement in the Unity Editor. Items marked
 - [06: Sector difficulty + roster](editor/06-sector-difficulty.md) (Fraglob captain has no prefab yet)
 - [07: Demo gating](editor/07-demo-gating.md) (demo end panel needed in the Campaign Map scene)
 - [08: Legacy cleanup](editor/08-legacy-cleanup.md) (run the one-shot cleanup tool first; it also reserializes the binary scenes in §B)
+- [09: Visuals + MMF](editor/09-visuals-mmf.md) (tower build feedbacks empty until wired)
 
 ## A. Triage first (biggest win)
 

@@ -5102,8 +5102,9 @@ MonoBehaviour:
   supplyWagonIcon: {fileID: 21300000, guid: c0031481d3f0509498dadc036ff9b392, type: 3}
   destinationGateIcon: {fileID: 21300000, guid: bf99f27e83c88bb45b08fc4daf9bda6e, type: 3}
   slayerBossIcon: {fileID: 21300000, guid: 6b9d8482dcc5af3429992cd4e692e675, type: 3}
+  cleanupEnemySkullIcon: {fileID: 21300000, guid: 6b9d8482dcc5af3429992cd4e692e675, type: 3}
   siegeEngineIcon: {fileID: 21300000, guid: c2c35eea2047bc64b880be3c543b5767, type: 3}
-  noSupplyIcon: {fileID: 0}
+  noSupplyIcon: {fileID: 21300000, guid: 2a01d30c31d57684d93a2166bdbd2c8f, type: 3}
   arrowIcon: {fileID: 21300000, guid: aa593943435f59245bad041b32c3b6c0, type: 3}
   iconBackground: {fileID: 21300000, guid: 27cdc8f9729566b47be8cc581f5f8edc, type: 3}
   screenEdgePadding: {x: 90, y: 90}
@@ -20417,9 +20418,9 @@ MonoBehaviour:
   supplyLabel: {fileID: 7860484963099161143}
   descriptionLabel: {fileID: 3533313294010218710}
   closeButton: {fileID: 6012780238090552418}
-  supplyPopupPrefab: {fileID: 0}
-  buildSfx: {fileID: 0}
-  buildVfxPrefab: {fileID: 0}
+  supplyPopupPrefab: {fileID: 5445448510257546009, guid: 0c337af341cc6e840986619c86ca00fb, type: 3}
+  buildSfx: {fileID: 8300000, guid: 983ecbfb126aeb746b6c37b1b95ddbc6, type: 3}
+  buildVfxPrefab: {fileID: 1260334799937022, guid: 2b28f2fdc5a65964f96ea4d2b9d6ca63, type: 3}
   sliceButtonPrefab: {fileID: 7186178662012116396, guid: 6ff43e70d61f8f64b9e0bb72a1625b26, type: 3}
   wheelButtons:
   - {fileID: 28713770722683130}

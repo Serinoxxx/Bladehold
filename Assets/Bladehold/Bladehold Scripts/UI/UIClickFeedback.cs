@@ -1,5 +1,4 @@
 using MoreMountains.Feedbacks;
-using MoreMountains.Tools;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,7 +11,6 @@ public class UIClickFeedback : MonoBehaviour
 {
     [SerializeField] private Button button;
     [SerializeField] private MMF_Player clickFeedback;
-    [SerializeField] private AudioClip customClickSound;
 
     private void OnValidate()
     {
@@ -32,6 +30,10 @@ public class UIClickFeedback : MonoBehaviour
         {
             button.onClick.AddListener(HandleClick);
         }
+        if (clickFeedback == null)
+        {
+            Debug.LogError($"[UIClickFeedback] {name}: clickFeedback is not assigned, the button has no click sound.", this);
+        }
     }
 
     private void OnDestroy()
@@ -47,23 +49,6 @@ public class UIClickFeedback : MonoBehaviour
         if (clickFeedback != null)
         {
             clickFeedback.PlayFeedbacks();
-        }
-
-        AudioClip clipToPlay = customClickSound;
-#if UNITY_EDITOR
-        if (clipToPlay == null)
-        {
-            clipToPlay = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/UI/UI_Click_01.wav");
-        }
-#endif
-        if (clipToPlay != null)
-        {
-            MMSoundManagerPlayOptions options = MMSoundManagerPlayOptions.Default;
-            options.MmSoundManagerTrack = MMSoundManager.MMSoundManagerTracks.UI;
-            options.Location = transform.position;
-            options.Volume = 0.8f;
-            options.Pitch = Random.Range(0.92f, 1.08f);
-            MMSoundManagerSoundPlayEvent.Trigger(clipToPlay, options);
         }
     }
 }

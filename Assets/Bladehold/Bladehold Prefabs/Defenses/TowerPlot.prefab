@@ -49,6 +49,7 @@ MonoBehaviour:
   buildAnchor: {fileID: 0}
   holyLightVfxPrefab: {fileID: 1195785148564078503, guid: 60ba3989da139764f8880d6e56c08e8f, type: 3}
   woodImpactSfx: {fileID: 8300000, guid: 983ecbfb126aeb746b6c37b1b95ddbc6, type: 3}
+  assemblyAnimationPrefab: {fileID: 823080693085684835, guid: 71b290265feb4891b5b84c573c80a1de, type: 3}
   arrowTowerPrefab: {fileID: 2768882519750595458, guid: ca81ba64fe23dc940acf640fbc570c59, type: 3}
   catapultPrefab: {fileID: 6875935595063796285, guid: 1a70772028137ee4e8814b1e2fc0f081, type: 3}
   ballistaPrefab: {fileID: 8099945612240998284, guid: f3a43c8c39d0c794ab3336cff8ab82b5, type: 3}

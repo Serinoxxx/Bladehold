@@ -134,6 +134,9 @@
 - Fixed Battering Ram remaining stalled during the siege objective by ensuring enemies path to lead and escort the ram forward
 - Fixed boss controller component initialization in test mode ensuring damage block event listeners are hooked immediately upon combat activation
 - Fixed Campaign Overview Map displaying no nodes by authoring dedicated node button and route line prefabs, anchoring scroll containers to the left margin, and connecting a persistent campaign graph asset
+- Fixed coin, health pack and orb pickups playing their sound twice
+- Fixed the ammo pickup making no sound
+- Fixed destroyed defenses, the build wheel, supply wagon gold bags and some objective markers losing their effects or icons outside the Editor
 
 ### Balance Changes
 

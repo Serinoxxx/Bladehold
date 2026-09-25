@@ -247,19 +247,6 @@ public class WaveClearedBannerUI : MonoBehaviour
         {
             clipToPlay = waveClearedSounds[Random.Range(0, waveClearedSounds.Length)];
         }
-#if UNITY_EDITOR
-        if (clipToPlay == null)
-        {
-            if (isNewQuest)
-            {
-                clipToPlay = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Audio/battle_viking_horn_call_far_03.wav");
-            }
-            if (clipToPlay == null)
-            {
-                clipToPlay = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Audio/Bells/chime_bell_10.wav");
-            }
-        }
-#endif
         if (clipToPlay == null && waveClearedSounds != null && waveClearedSounds.Length > 0)
         {
             clipToPlay = waveClearedSounds[Random.Range(0, waveClearedSounds.Length)];

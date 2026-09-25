@@ -69,14 +69,8 @@ public class PlayerInteraction : MonoBehaviour
             return;
         }
 
-        // 2. Instantiate from assigned prefab or Resources / AssetDatabase
+        // 2. Instantiate from the assigned prefab
         GameObject prefabToSpawn = promptPrefab;
-#if UNITY_EDITOR
-        if (prefabToSpawn == null)
-        {
-            prefabToSpawn = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/UI/InteractionPrompt.prefab");
-        }
-#endif
         if (prefabToSpawn != null)
         {
             Canvas targetCanvas = FindAnyObjectByType<Canvas>();

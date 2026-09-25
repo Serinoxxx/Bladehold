@@ -126,30 +126,14 @@ public class BuildWheelUI : MonoBehaviour
             gameObject.SetActive(false);
         }
 
-        ResolveFallbacks();
+        ValidateFeedbackReferences();
     }
 
-    private void ResolveFallbacks()
+    private void ValidateFeedbackReferences()
     {
-#if UNITY_EDITOR
-        if (supplyPopupPrefab == null)
-        {
-            var goldGo = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Third Party/DamageNumbersPro/Demo/Prefabs/3D/Gold.prefab");
-            if (goldGo != null) supplyPopupPrefab = goldGo.GetComponent<DamageNumbersPro.DamageNumber>();
-        }
-        if (buildSfx == null)
-        {
-            buildSfx = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Impacts/HAMMER_Hit_Wood_Shield_stereo.wav");
-        }
-        if (buildVfxPrefab == null)
-        {
-            buildVfxPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Synty/PolygonParticleFX/Prefabs/FX_Impact_Wood_01.prefab");
-        }
-        if (sliceButtonPrefab == null)
-        {
-            sliceButtonPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/UI/BuildWheelSliceButton.prefab");
-        }
-#endif
+        if (supplyPopupPrefab == null) Debug.LogError("BuildWheelUI: supplyPopupPrefab is not assigned.", this);
+        if (buildSfx == null) Debug.LogError("BuildWheelUI: buildSfx is not assigned.", this);
+        if (buildVfxPrefab == null) Debug.LogError("BuildWheelUI: buildVfxPrefab is not assigned.", this);
     }
 
     private void Start()

@@ -74,7 +74,7 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
             markersContainer = GetComponent<RectTransform>();
         }
 
-        LoadDefaultSpritesIfMissing();
+        ValidateSprites();
     }
 
     private void Start()
@@ -394,29 +394,17 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
         templateGo.SetActive(false);
     }
 
-    private void LoadDefaultSpritesIfMissing()
+    private void ValidateSprites()
     {
-#if UNITY_EDITOR
-        if (defaultObjectiveIcon == null)
-            defaultObjectiveIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/HUD/SPR_FantasyWarrior_Map_Objective_01_Clean.png");
-        if (prisonerCageIcon == null)
-            prisonerCageIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/Icons_Map/ICON_FantasyWarrior_Map_Lock_01_Clean.png");
-        if (supplyWagonIcon == null)
-            supplyWagonIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/Icons_Map/ICON_FantasyWarrior_Map_Treasure_01_Clean.png");
-        if (destinationGateIcon == null)
-            destinationGateIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/Icons_Map/ICON_FantasyWarrior_Map_Flag_01_Clean.png");
-        if (slayerBossIcon == null)
-            slayerBossIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/Icons_Map/ICON_FantasyWarrior_Map_Skull_01_Clean.png");
-        if (cleanupEnemySkullIcon == null)
-            cleanupEnemySkullIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/Icons_Map/ICON_FantasyWarrior_Map_Skull_01_Clean.png");
-        if (siegeEngineIcon == null)
-            siegeEngineIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/Icons_Map/ICON_FantasyWarrior_Map_Target_01_Clean.png");
-        if (noSupplyIcon == null)
-            noSupplyIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/Icons_Resources/ICON_SM_Item_Hammer_01.png");
-        if (arrowIcon == null)
-            arrowIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/HUD/SPR_HUD_FantasyWarrior_Arrow_01_Clean.png");
-        if (iconBackground == null)
-            iconBackground = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/HUD/SPR_HUD_FantasyWarrior_Map_IconBackground_01_Clean.png");
-#endif
+        if (defaultObjectiveIcon == null) Debug.LogError("[ObjectiveWaypointTrackerUI] defaultObjectiveIcon is not assigned.", this);
+        if (prisonerCageIcon == null) Debug.LogError("[ObjectiveWaypointTrackerUI] prisonerCageIcon is not assigned.", this);
+        if (supplyWagonIcon == null) Debug.LogError("[ObjectiveWaypointTrackerUI] supplyWagonIcon is not assigned.", this);
+        if (destinationGateIcon == null) Debug.LogError("[ObjectiveWaypointTrackerUI] destinationGateIcon is not assigned.", this);
+        if (slayerBossIcon == null) Debug.LogError("[ObjectiveWaypointTrackerUI] slayerBossIcon is not assigned.", this);
+        if (cleanupEnemySkullIcon == null) Debug.LogError("[ObjectiveWaypointTrackerUI] cleanupEnemySkullIcon is not assigned.", this);
+        if (siegeEngineIcon == null) Debug.LogError("[ObjectiveWaypointTrackerUI] siegeEngineIcon is not assigned.", this);
+        if (noSupplyIcon == null) Debug.LogError("[ObjectiveWaypointTrackerUI] noSupplyIcon is not assigned.", this);
+        if (arrowIcon == null) Debug.LogError("[ObjectiveWaypointTrackerUI] arrowIcon is not assigned.", this);
+        if (iconBackground == null) Debug.LogError("[ObjectiveWaypointTrackerUI] iconBackground is not assigned.", this);
     }
 }

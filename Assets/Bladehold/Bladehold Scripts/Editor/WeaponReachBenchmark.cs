@@ -2290,20 +2290,22 @@ public static class WeaponReachBenchmark
             }
 
             // 20D: DefenseAssemblyAnimation Initialization
-            GameObject assemblyAnimObj = new GameObject("Benchmark_AssemblyAnim");
-            DefenseAssemblyAnimation assemblyAnim = assemblyAnimObj.AddComponent<DefenseAssemblyAnimation>();
+            GameObject towerPlotPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/Defenses/TowerPlot.prefab");
+            TowerPlot towerPlotComp = towerPlotPrefab != null ? towerPlotPrefab.GetComponent<TowerPlot>() : null;
+            UnityEngine.Object assemblyPrefabRef = towerPlotComp != null
+                ? new UnityEditor.SerializedObject(towerPlotComp).FindProperty("assemblyAnimationPrefab")?.objectReferenceValue
+                : null;
 
-            if (assemblyAnim != null)
+            if (assemblyPrefabRef is DefenseAssemblyAnimation)
             {
-                sb.AppendLine("  - Defense Assembly Animation: Component initializes with ghost blueprint support and piece detection routines. [PASSED]");
+                sb.AppendLine("  - Defense Assembly Animation: TowerPlot prefab references an authored assembly prefab. [PASSED]");
                 passedCount++;
             }
             else
             {
-                sb.AppendLine("  - [FAIL] DefenseAssemblyAnimation could not be initialized!");
+                sb.AppendLine("  - [FAIL] TowerPlot.prefab has no assemblyAnimationPrefab assigned!");
                 failedCount++;
             }
-            UnityEngine.Object.DestroyImmediate(assemblyAnimObj);
 
             // 20E: Defense Supply Feedback
             GameObject arrowPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/Defenses/Defense_ArrowTower.prefab");

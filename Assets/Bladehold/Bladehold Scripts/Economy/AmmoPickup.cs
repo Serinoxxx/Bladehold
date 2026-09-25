@@ -108,19 +108,6 @@ public class AmmoPickup : MonoBehaviour
             pickupFeedback.PlayFeedbacks();
         }
 
-#if UNITY_EDITOR
-        AudioClip clip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Bow/bow_crossbow_arrow_draw_slide1_01.wav");
-        if (clip != null)
-        {
-            MoreMountains.Tools.MMSoundManagerPlayOptions options = MoreMountains.Tools.MMSoundManagerPlayOptions.Default;
-            options.MmSoundManagerTrack = MoreMountains.Tools.MMSoundManager.MMSoundManagerTracks.Sfx;
-            options.Location = transform.position;
-            options.Volume = 0.9f;
-            options.Pitch = Random.Range(1.1f, 1.3f);
-            MoreMountains.Tools.MMSoundManagerSoundPlayEvent.Trigger(clip, options);
-        }
-#endif
-
         Destroy(gameObject);
         return true;
     }

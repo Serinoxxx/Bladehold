@@ -93,30 +93,18 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
 
     protected virtual void Start()
     {
-        ResolveFallbacks();
+        ValidateFeedbackReferences();
         if (maxSupply <= 0) maxSupply = CalculateMaxSupplyForLevel(currentLevel);
         if (currentSupply <= 0) currentSupply = maxSupply;
         UpdatePrompt();
         OnSupplyChanged?.Invoke(currentSupply, maxSupply);
     }
 
-    private void ResolveFallbacks()
+    private void ValidateFeedbackReferences()
     {
-#if UNITY_EDITOR
-        if (supplyPopupPrefab == null)
-        {
-            var goldGo = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Third Party/DamageNumbersPro/Demo/Prefabs/3D/Gold.prefab");
-            if (goldGo != null) supplyPopupPrefab = goldGo.GetComponent<DamageNumbersPro.DamageNumber>();
-        }
-        if (repairSfx == null)
-        {
-            repairSfx = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Impacts/HAMMER_Hit_Wood_Shield_stereo.wav");
-        }
-        if (breakVfxPrefab == null)
-        {
-            breakVfxPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Synty/PolygonParticleFX/Prefabs/FX_Impact_Wood_01.prefab");
-        }
-#endif
+        if (supplyPopupPrefab == null) Debug.LogError($"{name}: DefenseStructure.supplyPopupPrefab is not assigned.", this);
+        if (repairSfx == null) Debug.LogError($"{name}: DefenseStructure.repairSfx is not assigned.", this);
+        if (breakVfxPrefab == null) Debug.LogError($"{name}: DefenseStructure.breakVfxPrefab is not assigned.", this);
     }
 
     public virtual void InitState(int level, int supply, int maxSup)

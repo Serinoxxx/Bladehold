@@ -6,62 +6,37 @@ using UnityEngine;
 
 /// <summary>
 ///     Animates the assembly sequence for a newly constructed battlefield defense.
-///     Displays a transparent blueprint ghost of the structure.
 ///     For multi-piece models, individual pieces drop sequentially from the sky with
-///     wood impact sounds, dust puffs, and screenshakes.
+///     a landing feedback each (wood impact, dust puff, screenshake).
 ///     For 1-2 piece models, the structure smoothly rises out of the ground with
 ///     rumbling tremors, ground dust, and a heavy lock-in slam.
+///     Spawned by <see cref="TowerPlot"/> from an authored prefab; all audio/VFX/shake live in its MMF players.
 /// </summary>
 public class DefenseAssemblyAnimation : MonoBehaviour
 {
-    [Header("Assembly VFX & SFX")]
-    [SerializeField] private Material ghostMaterial;
-    [SerializeField] private AudioClip impactWoodSfx;
-    [SerializeField] private GameObject impactPuffPrefab;
-    [SerializeField] private GameObject bigPuffPrefab;
+    [Header("Feedbacks (MMF)")]
+    [Tooltip("Played at each dropped piece's landing point: wood impact, small dust puff, light screenshake.")]
+    [SerializeField] private MMF_Player pieceLandFeedback;
+    [Tooltip("Played repeatedly at ground level while a 1-2 piece structure rises: small dust puff.")]
+    [SerializeField] private MMF_Player riseDustFeedback;
+    [Tooltip("Played when a rising structure locks into place: heavy impact, big dust, strong screenshake.")]
+    [SerializeField] private MMF_Player slamFeedback;
+
+    [Header("Timing")]
     [SerializeField] private float dropHeight = 12f;
     [SerializeField] private float dropDuration = 0.32f;
     [SerializeField] private float staggerInterval = 0.16f;
     [SerializeField] private float riseDuration = 1.35f;
 
-    private void Awake()
+    private void Start()
     {
-        ResolveFallbacks();
-    }
-
-    private void ResolveFallbacks()
-    {
-#if UNITY_EDITOR
-        if (ghostMaterial == null)
-        {
-            ghostMaterial = UnityEditor.AssetDatabase.LoadAssetAtPath<Material>("Assets/Bladehold/Materials/MAT_TowerGhost.mat");
-        }
-        if (impactWoodSfx == null)
-        {
-            impactWoodSfx = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Impacts/HAMMER_Hit_Wood_Shield_stereo.wav");
-            if (impactWoodSfx == null)
-            {
-                impactWoodSfx = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Impacts/Generic Wood Item Break A.wav");
-            }
-        }
-        if (impactPuffPrefab == null)
-        {
-            impactPuffPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Synty/PolygonParticleFX/Prefabs/FX_Dust_Small_01.prefab");
-            if (impactPuffPrefab == null)
-            {
-                impactPuffPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Synty/PolygonParticleFX/Prefabs/FX_Impact_Wood_01.prefab");
-            }
-        }
-        if (bigPuffPrefab == null)
-        {
-            bigPuffPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Synty/PolygonParticleFX/Prefabs/FX_Dust_Big_01.prefab");
-        }
-#endif
+        if (pieceLandFeedback == null) Debug.LogError($"{name}: DefenseAssemblyAnimation.pieceLandFeedback is not assigned.", this);
+        if (riseDustFeedback == null) Debug.LogError($"{name}: DefenseAssemblyAnimation.riseDustFeedback is not assigned.", this);
+        if (slamFeedback == null) Debug.LogError($"{name}: DefenseAssemblyAnimation.slamFeedback is not assigned.", this);
     }
 
     public void PlayAssembly(Vector3 plotPosition, Quaternion rotation, GameObject defensePrefab, Action<DefenseStructure> onComplete)
     {
-        ResolveFallbacks();
         StartCoroutine(AssemblyRoutine(plotPosition, rotation, defensePrefab, onComplete));
     }
 
@@ -151,7 +126,7 @@ public class DefenseAssemblyAnimation : MonoBehaviour
             {
                 dustTimer = 0f;
                 Vector3 dustPos = targetPos + new Vector3(UnityEngine.Random.Range(-0.8f, 0.8f), 0.1f, UnityEngine.Random.Range(-0.8f, 0.8f));
-                SpawnDust(dustPos, false);
+                PlayAt(riseDustFeedback, dustPos);
             }
 
             yield return null;
@@ -160,9 +135,7 @@ public class DefenseAssemblyAnimation : MonoBehaviour
         structureObj.transform.position = targetPos;
 
         // Heavy ground slam into place
-        PlayWoodImpact(targetPos);
-        SpawnDust(targetPos, true);
-        TriggerCameraShake(0.28f, 0.38f);
+        PlayAt(slamFeedback, targetPos);
 
         // Re-enable colliders and scripts
         foreach (var c in cols)
@@ -217,9 +190,7 @@ public class DefenseAssemblyAnimation : MonoBehaviour
             proxy.transform.position = endP;
 
             // Wood impact, dust puff, and screen shake on landing
-            PlayWoodImpact(endP);
-            SpawnDust(endP, false);
-            TriggerCameraShake(0.14f, 0.20f);
+            PlayAt(pieceLandFeedback, endP);
 
             yield return new WaitForSeconds(staggerInterval);
         }
@@ -271,61 +242,11 @@ public class DefenseAssemblyAnimation : MonoBehaviour
         return pieces;
     }
 
-    private GameObject CreateGhost(GameObject prefab, Vector3 pos, Quaternion rot)
+    private static void PlayAt(MMF_Player feedback, Vector3 position)
     {
-        GameObject ghost = Instantiate(prefab, pos, rot);
-        ghost.name = $"{prefab.name}_GhostPreview";
-
-        foreach (var mb in ghost.GetComponentsInChildren<MonoBehaviour>(true))
+        if (feedback != null)
         {
-            Destroy(mb);
+            feedback.PlayFeedbacks(position);
         }
-        foreach (var col in ghost.GetComponentsInChildren<Collider>(true))
-        {
-            Destroy(col);
-        }
-        foreach (var rb in ghost.GetComponentsInChildren<Rigidbody>(true))
-        {
-            Destroy(rb);
-        }
-
-        if (ghostMaterial != null)
-        {
-            foreach (var r in ghost.GetComponentsInChildren<MeshRenderer>(true))
-            {
-                Material[] ghostMats = new Material[r.sharedMaterials.Length];
-                for (int m = 0; m < ghostMats.Length; m++)
-                {
-                    ghostMats[m] = ghostMaterial;
-                }
-                r.sharedMaterials = ghostMats;
-                r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            }
-        }
-
-        return ghost;
-    }
-
-    private void PlayWoodImpact(Vector3 pos)
-    {
-        if (impactWoodSfx != null)
-        {
-            AudioSource.PlayClipAtPoint(impactWoodSfx, pos, 0.95f);
-        }
-    }
-
-    private void SpawnDust(Vector3 pos, bool isBig)
-    {
-        GameObject prefab = (isBig && bigPuffPrefab != null) ? bigPuffPrefab : impactPuffPrefab;
-        if (prefab != null)
-        {
-            GameObject dust = Instantiate(prefab, pos, Quaternion.identity);
-            Destroy(dust, 2.5f);
-        }
-    }
-
-    private void TriggerCameraShake(float duration, float amplitude)
-    {
-        MMCameraShakeEvent.Trigger(duration, amplitude, 35f, amplitude * 0.7f, amplitude * 0.7f, amplitude * 0.7f);
     }
 }

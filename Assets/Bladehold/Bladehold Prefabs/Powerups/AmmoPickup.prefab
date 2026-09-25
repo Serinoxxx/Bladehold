@@ -71,7 +71,7 @@ MonoBehaviour:
   ammoAmount: 5
   pickupPopup: {fileID: 8478376370258957393, guid: 3d94bfb4b96286c46a90b657c577efa6, type: 3}
   popupOffset: {x: 0, y: 0.5, z: 0}
-  pickupFeedback: {fileID: 0}
+  pickupFeedback: {fileID: 1621756893049371172}
   lifetime: 45
   bobSpeed: 2.5
   bobHeight: 0.08

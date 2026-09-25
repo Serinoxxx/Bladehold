@@ -295,16 +295,9 @@ public class SupplyWagonEscort : MonoBehaviour
     private void SpawnGoldBags()
     {
         Coin prefab = goldBagPrefab;
-#if UNITY_EDITOR
         if (prefab == null)
         {
-            prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<Coin>("Assets/Bladehold/Bladehold Prefabs/SM_Icon_CoinBag_01/SM_Icon_CoinBag_01.prefab");
-        }
-#endif
-
-        if (prefab == null)
-        {
-            Debug.LogWarning("[SupplyWagonEscort] goldBagPrefab is not assigned and could not be loaded!");
+            Debug.LogError("[SupplyWagonEscort] goldBagPrefab is not assigned.", this);
             return;
         }
 
