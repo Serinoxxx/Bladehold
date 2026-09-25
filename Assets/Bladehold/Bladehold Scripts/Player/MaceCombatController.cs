@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -13,8 +14,8 @@ public class MaceCombatController : MonoBehaviour
 {
     [SerializeField] private PlayerStats playerStats;
     [SerializeField] private PlayerAttack playerAttack;
-    [SerializeField] private GameObject shockwaveVfxPrefab;
-    [SerializeField] private AudioClip shockwaveSfx;
+    [Tooltip("MMF_Player played at the shockwave origin (rock burst + impact sound). Its particle feedback must use the Script position mode.")]
+    [SerializeField] private MMF_Player shockwaveFeedback;
 
     private DamageTrigger subscribedTrigger;
 
@@ -26,6 +27,8 @@ public class MaceCombatController : MonoBehaviour
 
     private void Start()
     {
+        if (shockwaveFeedback == null) Debug.LogError("MaceCombatController: shockwaveFeedback is not assigned.", this);
+
         if (playerStats != null)
         {
             playerStats.SetBase(StatType.MaceArmorShatterBonus, 0f);
@@ -128,13 +131,9 @@ public class MaceCombatController : MonoBehaviour
 
     private void TriggerShockwave(Vector3 position, float damage)
     {
-        if (shockwaveVfxPrefab != null)
+        if (shockwaveFeedback != null)
         {
-            Instantiate(shockwaveVfxPrefab, position, Quaternion.identity);
-        }
-        if (shockwaveSfx != null)
-        {
-            AudioSource.PlayClipAtPoint(shockwaveSfx, position);
+            shockwaveFeedback.PlayFeedbacks(position);
         }
 
         Collider[] hits = Physics.OverlapSphere(position, 4.5f);

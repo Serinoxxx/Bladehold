@@ -139,6 +139,9 @@
 - Fixed destroyed defenses, the build wheel, supply wagon gold bags and some objective markers losing their effects or icons outside the Editor
 - Fixed Captain Kombusta's dynamite, fishing arrows and pond fish showing up as plain placeholder shapes
 - Fixed the vortex blades of the throwing-axe ultimate showing as red boxes instead of axes
+- Fixed the mace ultimate's ground slam flashing your hero instead of shaking the screen; it now shakes the screen as intended
+- Fixed firing with an empty quiver making no sound; you now hear a dry click
+- Fixed the Earth Splitter smash having no screenshake
 
 ### Balance Changes
 

@@ -25,12 +25,10 @@ public class PlayerAttack : MonoBehaviour
     [Header("Earth Splitter")]
     [Tooltip("Red box telegraph prefab shown in front of the player when Earth Splitter is at full charge.")]
     [SerializeField] private GameObject earthSplitterTelegraphPrefab;
-    [Tooltip("Synty rock explosion particle effect spawned along the line on Earth Splitter release.")]
-    [SerializeField] private GameObject rockExplosionVfxPrefab;
-    [Tooltip("Smash sound effect played on Earth Splitter ground impact.")]
-    [SerializeField] private AudioClip earthSplitterSfx;
-    [Tooltip("Optional MMF_Player feedback (screenshake) on Earth Splitter release.")]
+    [Tooltip("MMF_Player played once at the player on Earth Splitter release (smash sound, screenshake).")]
     [SerializeField] private MMF_Player earthSplitterFeedback;
+    [Tooltip("MMF_Player played at each rock explosion along the line (particles). Its particle feedback must use the Script position mode.")]
+    [SerializeField] private MMF_Player rockExplosionFeedback;
     [SerializeField] private float earthSplitterLineLength = 8f;
     [SerializeField] private float earthSplitterLineWidth = 2.5f;
     [SerializeField] private float earthSplitterDamageMultiplier = 4.0f;
@@ -138,6 +136,10 @@ public class PlayerAttack : MonoBehaviour
                 animController = GetComponentInChildren<SamplePlayerAnimationController>();
             }
         }
+        // Missing feedbacks only cost looks and sound, so they don't set anyError.
+        if (earthSplitterFeedback == null) Debug.LogError("PlayerAttack: earthSplitterFeedback is not assigned.", this);
+        if (rockExplosionFeedback == null) Debug.LogError("PlayerAttack: rockExplosionFeedback is not assigned.", this);
+
         if (playerDodge == null)
         {
             playerDodge = GetComponent<PlayerDodge>() ?? GetComponentInParent<PlayerDodge>() ?? GetComponentInChildren<PlayerDodge>();
@@ -156,6 +158,10 @@ public class PlayerAttack : MonoBehaviour
             Debug.LogError("PlayerStats component is not assigned or found on the GameObject.");
             anyError = true;
         }
+
+        // Missing feedbacks only cost looks and sound, so they don't set anyError.
+        if (earthSplitterFeedback == null) Debug.LogError("PlayerAttack: earthSplitterFeedback is not assigned.", this);
+        if (rockExplosionFeedback == null) Debug.LogError("PlayerAttack: rockExplosionFeedback is not assigned.", this);
 
         if (playerDodge == null)
         {
@@ -375,10 +381,6 @@ public class PlayerAttack : MonoBehaviour
         {
             earthSplitterFeedback.PlayFeedbacks(transform.position);
         }
-        else if (earthSplitterSfx != null)
-        {
-            AudioSource.PlayClipAtPoint(earthSplitterSfx, transform.position, 1.0f);
-        }
 
         Vector3 forward = transform.forward;
         Vector3 origin = transform.position;
@@ -394,10 +396,9 @@ public class PlayerAttack : MonoBehaviour
                 targetPos = hit.point;
             }
 
-            if (rockExplosionVfxPrefab != null)
+            if (rockExplosionFeedback != null)
             {
-                GameObject vfx = Instantiate(rockExplosionVfxPrefab, targetPos, Quaternion.identity);
-                Destroy(vfx, 3f);
+                rockExplosionFeedback.PlayFeedbacks(targetPos);
             }
         }
 

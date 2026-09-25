@@ -13,7 +13,8 @@ This plan audits and migrates the existing violations. Split it into several ses
 | 1 | Runtime `LoadAssetAtPath` fallbacks (they silently return null in a player build) | **Done 2026-09-26** |
 | 2 | Code-built UI → prefab mockups | **Done 2026-09-26** (mockups await UI review) |
 | 3 | Code-built world visuals (primitives, telegraph LineRenderers, lights) | **Done 2026-09-26** (mockups await art review) |
-| 4+ | Direct audio/VFX/shake → MMF, one batch per session (ranked list below) | Next: batch A |
+| 4 | Batch A: player weapons → MMF | **Done 2026-09-26** (feel awaits tuning) |
+| 5+ | Direct audio/VFX/shake → MMF, one batch per session (ranked list below) | Next: batch B |
 
 **Session 1 done:**
 - Deleted the Editor-only duplicate pickup sounds from `AmmoPickup`, `Coin`, `HealthPack`, `ImpulseOrb`, `LightningOrb` and `PlayerSummonMount`. Their MMF players already carry the sound; AmmoPickup's player existed but wasn't wired, so it's wired now.
@@ -43,6 +44,16 @@ This plan audits and migrates the existing violations. Split it into several ses
 - Mockup materials are in `Materials/Mockup/`. Benchmark: 107 passed, 5 failed. All 5 are in files this session didn't touch (Bulwark attack, Bannerman rig, BuildWheel open/close, skull waypoints); listed in the checklist §5.
 - Editor work: [`plans/editor/09-visuals-mmf.md`](editor/09-visuals-mmf.md) §5.
 
+**Session 4 done** (batch A, Unity MCP connected). Every `PlayClipAtPoint` in the 10 batch-A scripts is gone, along with the one-shot VFX that went with them. Each event is now one `MMF_Player` on `Player.prefab → SidekickSyntyCharacter` (`DodgeMMF`, `FrostStepMMF`, `EarthSplitterMMF`, `EarthSplitterRockMMF`, `OutOfAmmoMMF`, `MaceShockwaveMMF`, `MaceSlamMMF`, `ArmourEquipMMF`, `IceShatterMMF`, `ThermalShockMMF`, `SuperconductorMMF`), called with `PlayFeedbacks(worldPos)`. Missing refs `LogError` in `Start` but don't disable gameplay.
+- **House pattern for positional one-shots** (reuse it in batches B-F): MMSoundManager Sound (2D, same clip and volume as before) + Particles Instantiation in `OnDemand` mode, `CachedRecycle` off, `PositionMode = Script`, `NestParticles` off, `ForceStopAction = Destroy`. **Looping VFX prefabs never reach a stop action**, so wrap them in a variant carrying `MMTimedDestruction` (`VFX/FrostStepBurst` 2 s, `VFX/ArmourEquipPoof` 3 s: the old `Destroy(vfx, t)` lifetimes).
+- **`ElementalEffectsManager`** (on `Player.prefab`) gained `iceShatterFeedback`, `thermalShockFeedback` and `superconductorFeedback`, plus `PlayAt(feedback, pos)`. The bow/axe Ice Shards, Inferno burst and Storm Eye zap use them. Its raw VFX/`AudioClip` fields are marked legacy: `EnemyStatusManager`, `DamageTrigger`, `BurningOilZone` and `SurvivorsSpawner` still read them. Batches B-D should add feedbacks here (plasma overload, status applied, discord) and delete the raw fields once the last reader is gone.
+- **Bugs found on the way:** `MaceUltimate` used `GetComponentInChildren<MMF_Player>()` for its "screenshake", which on the Player is the hero's damage **flicker**; it now has a serialized `slamFeedback` (sound + rock burst + the mace's Cinemachine impulse). `PlayerAmmo` wasn't on the prefab (`Player.cs` `AddComponent`s it), so its clips were always null. It's on `SidekickSyntyCharacter` now. Its pickup sound was deleted (the pickup's own MMF plays one), and the dry-fire click is a 0.25 s cooldown MMF. `EarthSplitterMMF` gained the mace's impulse; before, the feedback was empty and only the clip played.
+- `FlameZone.burnTickFeedback` is optional; its old VFX/clip were never wired and the prefab owns the looping fire.
+- **Left in batch-A scripts (not audio):** `PlayerBow` `config.headExplosionPrefab` (one-shot VFX on a config SO) and the `PlayerDodge` per-element dash trail (parented to the player for the dash). Fold them into batch B or a small A2. Arrows, tracer, Earth Splitter telegraph and armour meshes are gameplay objects, not feedback.
+- `Player.cs` still `AddComponent<PlayerAmmo>()` as a fallback. It's now dead on the real prefab and would log the unassigned-feedback error if it ever fired.
+- Benchmark: 109 passed, 3 failed (Bulwark attack, Bannerman rig, skull waypoints, all pre-existing; BuildWheel open/close passes again).
+- Editor work: [`plans/editor/09-visuals-mmf.md`](editor/09-visuals-mmf.md) §6.
+
 ## Refreshed audit (2026-09-26, after session 3)
 
 Sessions 2 (code-built UI) and 3 (code-built world visuals) are done; the visuals grep below now returns only the documented exceptions.
@@ -59,7 +70,7 @@ Highest traffic first. The counts come from a grep, so a few `.Play()` hits may 
 
 | Batch | Area | Scripts |
 |---|---|---|
-| A | Player (every second of play) | `PlayerAttack`, `PlayerBow`, `PlayerDodge`, `PlayerAmmo`, `AxeProjectile`, `MaceCombatController`, `MaceUltimate`, `PlayerUltimateController`, `FlameZone`, `PlayerArmourManager` |
+| ~~A~~ | Player (every second of play), **done session 4** | `PlayerAttack`, `PlayerBow`, `PlayerDodge`, `PlayerAmmo`, `AxeProjectile`, `MaceCombatController`, `MaceUltimate`, `PlayerUltimateController`, `FlameZone`, `PlayerArmourManager` |
 | B | Hit feedback | `SwordHitFeedback`, `BowHitFeedback`, `DamageTrigger`, `KnockbackReceiver`, `RagdollBloodImpact`, `RagdollImpactAudio`, `EnemyStatusManager` (7 calls) |
 | C | Common enemies + spawner | `SurvivorsSpawner`, `GoldenGoblin`(+`Flee`), `ImpulseGoblin`, `AssassinAttack`, `HookProjectile`, `BoulderProjectile`, `LightningBall`, `LightningOrbDropper`, `LightningStormZone`, `ToxicPoolZone`, `HomingOrb`, `SlayerDashAttack`, `SlayerStompCrusher`, `EnemyIntroController`, `SpecialEnemyIntro`, `DestructibleBanner`, `CaptainKombustaController`, `DynamiteProjectile`, `ArrowBarrageZone`, `BubbleShield` |
 | D | Towers | `DefenseStructure`, `BuildWheelUI`, `ArrowTowerDefense`, `FortArrowProjectile`, `BallistaDefense`, `CatapultDefense`, `CatapultProjectile` (**direct shake**), `NetThrowerDefense`, `NetProjectile`, `OilVatDefense`, `BurningOilZone`, `SpikeTrapDefense`, `RollingFireball`, `SlipperyIceZone`, `CatapultStormCloud` |

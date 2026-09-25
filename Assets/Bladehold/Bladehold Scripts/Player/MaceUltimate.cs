@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -22,8 +23,8 @@ public class MaceUltimate : MonoBehaviour, IUltimateHandler
     [SerializeField] private float baseSlamDamage = 90f;
     [SerializeField] private float stunDuration = 2.5f;
     [SerializeField] private float buffDuration = 6f;
-    [SerializeField] private GameObject seismicVfxPrefab;
-    [SerializeField] private AudioClip slamSfx;
+    [Tooltip("MMF_Player played at the slam centre (seismic burst, impact sound, screenshake). Its particle feedback must use the Script position mode.")]
+    [SerializeField] private MMF_Player slamFeedback;
 
     private Player player;
     private PlayerUltimateController controller;
@@ -38,6 +39,7 @@ public class MaceUltimate : MonoBehaviour, IUltimateHandler
     private void Start()
     {
         FindDependencies();
+        if (slamFeedback == null) Debug.LogError("MaceUltimate: slamFeedback is not assigned.", this);
     }
 
     private void FindDependencies()
@@ -72,19 +74,10 @@ public class MaceUltimate : MonoBehaviour, IUltimateHandler
 
         Vector3 center = player.transform.position;
 
-        // Play SFX & VFX
-        if (seismicVfxPrefab != null)
+        if (slamFeedback != null)
         {
-            Instantiate(seismicVfxPrefab, center, Quaternion.identity);
+            slamFeedback.PlayFeedbacks(center);
         }
-        if (slamSfx != null)
-        {
-            AudioSource.PlayClipAtPoint(slamSfx, center);
-        }
-
-        // Screenshake via MoreMountains Feel if available
-        var mmf = GetComponentInChildren<MoreMountains.Feedbacks.MMF_Player>();
-        if (mmf != null) mmf.PlayFeedbacks();
 
         // Calculate damage
         float damageMult = player.Stats != null ? player.Stats.GetValue(StatType.AllDamageMultiplier) : 1f;

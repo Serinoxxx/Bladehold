@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -21,11 +22,8 @@ public class PlayerArmourManager : MonoBehaviour
     public ArmourSetSO[] availableArmourSets;
 
     [Header("Equip Feedback")]
-    [Tooltip("Visual effect spawned at the player's feet when armour is equipped.")]
-    [SerializeField] private GameObject equipVfxPrefab;
-
-    [Tooltip("Audio clip played when armour is equipped.")]
-    [SerializeField] private AudioClip equipSfx;
+    [Tooltip("MMF_Player played at the player's feet when armour is equipped (poof VFX + gear sound). Its particle feedback must use the Script position mode.")]
+    [SerializeField] private MMF_Player equipFeedback;
 
     private ArmourSetSO activeArmourSet;
     private readonly List<ArmourSetSO.ArmourStatModifier> appliedModifiers = new List<ArmourSetSO.ArmourStatModifier>();
@@ -384,17 +382,11 @@ public class PlayerArmourManager : MonoBehaviour
 
     public void PlayEquipFeedback()
     {
-        // 1. VFX
-        if (equipVfxPrefab != null)
+        if (equipFeedback == null)
         {
-            GameObject vfx = Instantiate(equipVfxPrefab, transform.position + Vector3.up * 0.1f, Quaternion.identity);
-            Destroy(vfx, 3f);
+            Debug.LogError("PlayerArmourManager: equipFeedback is not assigned.", this);
+            return;
         }
-
-        // 2. Audio
-        if (equipSfx != null)
-        {
-            AudioSource.PlayClipAtPoint(equipSfx, transform.position, 1.0f);
-        }
+        equipFeedback.PlayFeedbacks(transform.position + Vector3.up * 0.1f);
     }
 }

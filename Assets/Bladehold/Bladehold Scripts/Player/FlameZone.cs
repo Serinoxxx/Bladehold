@@ -1,4 +1,5 @@
 using System.Collections;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -13,9 +14,8 @@ using UnityEngine;
 /// </summary>
 public class FlameZone : MonoBehaviour
 {
-    [Tooltip("Optional VFX instantiated at the zone's position each tick that burns anything.")]
-    [SerializeField] private GameObject burnVfxPrefab;
-    [SerializeField] private AudioClip burnSfx;
+    [Tooltip("Optional MMF_Player played at the zone each tick that burns anything (sizzle, flare). The looping fire VFX lives on the prefab itself.")]
+    [SerializeField] private MMF_Player burnTickFeedback;
 
     private const int MaxOverlapResults = 16;
     private readonly Collider[] overlapBuffer = new Collider[MaxOverlapResults];
@@ -80,13 +80,9 @@ public class FlameZone : MonoBehaviour
             return;
         }
 
-        if (burnVfxPrefab != null)
+        if (burnTickFeedback != null)
         {
-            Instantiate(burnVfxPrefab, transform.position, Quaternion.identity);
-        }
-        if (burnSfx != null)
-        {
-            AudioSource.PlayClipAtPoint(burnSfx, transform.position);
+            burnTickFeedback.PlayFeedbacks(transform.position);
         }
     }
 }

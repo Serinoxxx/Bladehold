@@ -1,4 +1,5 @@
 using System;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -11,11 +12,9 @@ public class PlayerAmmo : MonoBehaviour
 {
     public static PlayerAmmo Instance { get; private set; }
 
-    [Header("Audio Feedback (Optional)")]
-    [Tooltip("Optional SFX played when trying to fire with 0 ammo.")]
-    [SerializeField] private AudioClip outOfAmmoClip;
-    [Tooltip("Optional SFX played when picking up ammo.")]
-    [SerializeField] private AudioClip pickupAmmoClip;
+    [Header("Feedback")]
+    [Tooltip("MMF_Player played when trying to fire with 0 ammo (dry-fire sound). Pickup sounds belong to the pickup's own MMF player.")]
+    [SerializeField] private MMF_Player outOfAmmoFeedback;
 
     private PlayerStats stats;
 
@@ -89,6 +88,8 @@ public class PlayerAmmo : MonoBehaviour
 
     private void Start()
     {
+        if (outOfAmmoFeedback == null) Debug.LogError("PlayerAmmo: outOfAmmoFeedback is not assigned.", this);
+
         if (stats == null && Player.Instance != null)
         {
             stats = Player.Instance.Stats;
@@ -156,7 +157,6 @@ public class PlayerAmmo : MonoBehaviour
         {
             RunSession.CurrentAmmo = target;
             NotifyChanged();
-            PlayPickupSound();
         }
 
         return added;
@@ -172,7 +172,6 @@ public class PlayerAmmo : MonoBehaviour
         {
             RunSession.CurrentAmmo = max;
             NotifyChanged();
-            PlayPickupSound();
         }
     }
 
@@ -186,17 +185,9 @@ public class PlayerAmmo : MonoBehaviour
 
     public void PlayOutOfAmmoSound()
     {
-        if (outOfAmmoClip != null)
+        if (outOfAmmoFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(outOfAmmoClip, transform.position, 0.7f);
-        }
-    }
-
-    private void PlayPickupSound()
-    {
-        if (pickupAmmoClip != null)
-        {
-            AudioSource.PlayClipAtPoint(pickupAmmoClip, transform.position, 0.8f);
+            outOfAmmoFeedback.PlayFeedbacks(transform.position);
         }
     }
 }

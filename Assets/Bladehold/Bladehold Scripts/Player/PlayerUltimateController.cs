@@ -389,13 +389,9 @@ public class PlayerUltimateController : MonoBehaviour
     {
         Vector3 center = player != null ? player.transform.position : transform.position;
 
-        if (ElementalEffectsManager.Instance != null && ElementalEffectsManager.Instance.thermalShockVfx != null)
+        if (ElementalEffectsManager.Instance != null)
         {
-            Instantiate(ElementalEffectsManager.Instance.thermalShockVfx, center, Quaternion.identity);
-            if (ElementalEffectsManager.Instance.thermalShockSfx != null)
-            {
-                AudioSource.PlayClipAtPoint(ElementalEffectsManager.Instance.thermalShockSfx, center);
-            }
+            ElementalEffectsManager.Instance.PlayAt(ElementalEffectsManager.Instance.thermalShockFeedback, center);
         }
 
         Collider[] hits = Physics.OverlapSphere(center, 12f);
@@ -479,17 +475,7 @@ public class PlayerUltimateController : MonoBehaviour
 
         if (ElementalEffectsManager.Instance != null)
         {
-            if (ElementalEffectsManager.Instance.superconductorVfx != null)
-            {
-                Instantiate(ElementalEffectsManager.Instance.superconductorVfx, targetPos, Quaternion.identity);
-            }
-            AudioClip zapClip = ElementalEffectsManager.Instance.superconductorSfx != null
-                ? ElementalEffectsManager.Instance.superconductorSfx
-                : ElementalEffectsManager.Instance.statusAppliedSfx;
-            if (zapClip != null)
-            {
-                AudioSource.PlayClipAtPoint(zapClip, targetPos);
-            }
+            ElementalEffectsManager.Instance.PlayAt(ElementalEffectsManager.Instance.superconductorFeedback, targetPos);
         }
     }
 

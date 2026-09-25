@@ -28,16 +28,12 @@ public class PlayerDodge : MonoBehaviour
     [SerializeField] private GameObject lightningDashVfxPrefab;
     [SerializeField] private GameObject poisonDashVfxPrefab;
     
-    [Tooltip("Sound effect played on dodge initiation.")]
-    [SerializeField] private AudioClip dodgeSfx;
-    [Tooltip("Optional MMF_Player feedback triggered on dodge.")]
+    [Tooltip("MMF_Player played at the player on dodge initiation (whoosh).")]
     [SerializeField] private MMF_Player dodgeFeedback;
-    [Tooltip("Optional feedback for nimble strike sword swing.")]
+    [Tooltip("Optional feedback for the Nimble Strike sword swing. Falls back to the sword's woosh.")]
     [SerializeField] private MMF_Player nimbleStrikeFeedback;
-    [Tooltip("Optional sound effect played when Nimble Strike executes an attack during dodge.")]
-    [SerializeField] private AudioClip nimbleStrikeSfx;
-    [Tooltip("Optional sound effect played when Frost Step chill pulse triggers.")]
-    [SerializeField] private AudioClip iceChillSfx;
+    [Tooltip("MMF_Player played at the player when the Frost Step chill pulse triggers (ice VFX + chill sound). Its particle feedback must use the Script position mode.")]
+    [SerializeField] private MMF_Player frostStepFeedback;
     [SerializeField] private SwordHitFeedback swordHitFeedback;
     [SerializeField] private PlayerBow playerBow;
 
@@ -100,6 +96,10 @@ public class PlayerDodge : MonoBehaviour
             anyError = true;
             return;
         }
+
+        // Missing feedbacks only cost looks and sound, so they don't set anyError.
+        if (dodgeFeedback == null) Debug.LogError("[PlayerDodge] dodgeFeedback is not assigned.", this);
+        if (frostStepFeedback == null) Debug.LogError("[PlayerDodge] frostStepFeedback is not assigned.", this);
 
         if (config != null && player.Stats != null)
         {
@@ -231,10 +231,6 @@ public class PlayerDodge : MonoBehaviour
         if (dodgeFeedback != null)
         {
             dodgeFeedback.PlayFeedbacks(transform.position);
-        }
-        else if (dodgeSfx != null)
-        {
-            AudioSource.PlayClipAtPoint(dodgeSfx, transform.position, 1.0f);
         }
 
         GameObject activeVfx = null;
@@ -427,10 +423,6 @@ public class PlayerDodge : MonoBehaviour
         {
             nimbleStrikeFeedback.PlayFeedbacks(transform.position);
         }
-        else if (nimbleStrikeSfx != null)
-        {
-            AudioSource.PlayClipAtPoint(nimbleStrikeSfx, transform.position, 1.0f);
-        }
         else if (swordHitFeedback != null)
         {
             swordHitFeedback.PlayWoosh();
@@ -472,29 +464,9 @@ public class PlayerDodge : MonoBehaviour
             EnemyStatusManager.GetOrAdd(enemyHealth)?.ApplyStatus("Ice", frostSlow);
         }
 
-        GameObject vfxPrefab = iceDashVfxPrefab;
-        if (vfxPrefab == null && ElementalEffectsManager.Instance != null)
+        if (frostStepFeedback != null)
         {
-            vfxPrefab = ElementalEffectsManager.Instance.iceStatusVfx;
-        }
-
-        if (vfxPrefab != null)
-        {
-            GameObject vfx = Instantiate(vfxPrefab, origin, Quaternion.identity);
-            Destroy(vfx, 2.0f);
-        }
-
-        AudioClip sfx = iceChillSfx;
-        if (sfx == null && ElementalEffectsManager.Instance != null)
-        {
-            sfx = ElementalEffectsManager.Instance.statusAppliedSfx != null
-                ? ElementalEffectsManager.Instance.statusAppliedSfx
-                : ElementalEffectsManager.Instance.frozenSfx;
-        }
-
-        if (sfx != null)
-        {
-            AudioSource.PlayClipAtPoint(sfx, origin, 1.0f);
+            frostStepFeedback.PlayFeedbacks(origin);
         }
     }
 }

@@ -467,21 +467,7 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
         // Visual & audio effect at the shatter position
         if (ElementalEffectsManager.Instance != null)
         {
-            GameObject vfxPrefab = ElementalEffectsManager.Instance.frozenStatusVfx != null
-                ? ElementalEffectsManager.Instance.frozenStatusVfx
-                : ElementalEffectsManager.Instance.iceStatusVfx;
-            if (vfxPrefab != null)
-            {
-                Instantiate(vfxPrefab, burstPosition, Quaternion.identity);
-            }
-
-            AudioClip sfx = ElementalEffectsManager.Instance.frozenSfx != null
-                ? ElementalEffectsManager.Instance.frozenSfx
-                : ElementalEffectsManager.Instance.statusAppliedSfx;
-            if (sfx != null)
-            {
-                AudioSource.PlayClipAtPoint(sfx, burstPosition);
-            }
+            ElementalEffectsManager.Instance.PlayAt(ElementalEffectsManager.Instance.iceShatterFeedback, burstPosition);
         }
 
         HashSet<IDamageable> hitEnemies = new HashSet<IDamageable>();

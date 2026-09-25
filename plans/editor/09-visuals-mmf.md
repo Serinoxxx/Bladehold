@@ -56,3 +56,15 @@ Built and wired through MCP, and play-checked for errors in the Fishing Pond, Cr
 
 **Benchmark after this session: 107 passed, 5 failed.** All 5 are in systems this session didn't touch: Bulwark normal attack, Bannerman rig (`isBruteRig=False`), BuildWheelUI open/close, skull waypoints. Probably older than this session; worth a look (or a plan-11 ticket).
 **Seen during play checks, also not from this change:** the Crypt and Sanctuary `GameLoopManager.bannerSpawnPoints` is unassigned; the Fishing Pond logs `FishingDraftUI`/`FishingTallyUI` unwired-field errors (plan 04) and a legacy `UnityEngine.Input` exception (probably a `StandaloneInputModule` in that scene).
+
+## 6. Session 4: player MMF feedbacks (feel tuning, 00 §D)
+
+All wired and play-checked through MCP: each fires at the right spot with its old clip/VFX, clones clean up, no errors. What's left is taste. All of them live on `Player.prefab → SidekickSyntyCharacter`, named `*MMF`.
+
+- [ ] **Mace ultimate slam** `MaceSlamMMF`. It used to flash the hero (wrong MMF picked up by `GetComponentInChildren`); now it's sound + rock burst + a copy of the mace hit's Cinemachine impulse. Probably wants a bigger shake for a 10 m slam. Verify: DevConsole → mace + ultimate card → fire it.
+- [ ] **Earth Splitter** `EarthSplitterMMF` (sound + impulse, new) and `EarthSplitterRockMMF` (one rock burst per point, ×4). Verify: axe with Earth Splitter, full-charge release.
+- [ ] **Out-of-ammo click** `OutOfAmmoMMF`: placeholder `UI_Click_02` at 0.7, 0.25 s cooldown. It never played before (the clip was never set). Swap in a proper dry-fire/bowstring sound. Verify: empty the quiver and keep firing.
+- [ ] **Sounds are 2D now** (`SpatialBlend` 0, like the existing bow/zap MMFs), where `PlayClipAtPoint` was fully 3D. Ice shatter, thermal shock and superconductor on far-away enemies now play at full volume. Raise spatial blend on `IceShatterMMF`/`ThermalShockMMF`/`SuperconductorMMF` if that's too loud.
+- [ ] **New VFX variants** `VFX/FrostStepBurst` (`FX_ShardIce_Shooting_01` + 2 s `MMTimedDestruction`) and `VFX/ArmourEquipPoof` (`Loot_Poof` + 3 s). Both source prefabs loop; that's the only reason the variants exist. Tune the lifetime there.
+- [ ] **Flame Zone** `FlameZone.prefab → burnTickFeedback` is empty (it always was). Add a sizzle MMF if burning ticks should be heard.
+
