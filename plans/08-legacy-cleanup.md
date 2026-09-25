@@ -25,4 +25,8 @@
   - Lance (2026-09-25): Supply Room deleted. Frozen Pass is now a tier-3 combat node and Ancient Garden a tier-6 one. Both scenes still need tower plots, a `TowerPlotManager` and the build wheel ([editor checklist](editor/08-legacy-cleanup.md)).
 - [x] **Orphans:** `VictoryScreenUI` (only benchmark-created), `MainMenuManager` (not in build).
 - [x] Stale comments referencing `ClassDefinitionSO`/`PlayerClassController`.
-- [ ] Update the root `CLAUDE.md` "Legacy / dead code" list as items go.
+- [x] Update the root `CLAUDE.md` "Legacy / dead code" list as items go.
+
+## Needs Lance in the Editor
+
+Moved to its own checklist: [`plans/editor/08-legacy-cleanup.md`](editor/08-legacy-cleanup.md).

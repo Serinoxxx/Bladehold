@@ -17,7 +17,7 @@ Unity 6 game, codenamed **Bladehold**. A 3D action roguelite: one hero, a melee 
    - **Orcish Metal** on weapon and armour pedestals (`UI/Meta/WeaponPedestal.cs`, `ArmourPedestal.cs`). Mount pedestals (`MountPedestal.cs`) are **not implemented yet**.
    - **Battle Portal** (`UI/Meta/BattlePortal.cs`) wipes run state, starts a fresh campaign run and opens the Campaign Map.
 2. **Campaign Map** (`Bladehold Campaign Map Scene`, `Campaign/`): an 8-tier branching node graph. Node types: Combat sectors (castle scenes, each with a difficulty tier + named captain), Fishing Ponds, Rest Areas, a PreBoss sector, then the Crypt (Necromancer choice: Obey → Princess boss, Defy → Necromancer boss). See `Campaign/CLAUDE.md`.
-3. **Combat sector** (any battle scene: the castle scenes and `Bladehold Survivors Scene`, which despite the name is just one of the battles). 5 waves, each preceded by a war-banner pick + tower-building prep phase. Sectors deeper in the campaign (node `tierIndex` = threat level) unlock more enemy types via the roster's `minThreat` column and grow kill quotas, with goblins kept at 60%+ of every wave. Clear wave 5 → towers are dismantled for supply (remaining supply + upgrade spend) → victory screen → back to the map. Towers never carry between sectors. See `Waves/CLAUDE.md` and `Fort/CLAUDE.md`.
+3. **Combat sector** (any battle scene: the castle scenes, `Frozen Pass` (tier 3), `Ancient Garden` (tier 6) and `Bladehold Survivors Scene`, which despite the name is just one of the battles). 5 waves, each preceded by a war-banner pick + tower-building prep phase. Sectors deeper in the campaign (node `tierIndex` = threat level) unlock more enemy types via the roster's `minThreat` column and grow kill quotas, with goblins kept at 60%+ of every wave. Clear wave 5 → towers are dismantled for supply (remaining supply + upgrade spend) → victory screen → back to the map. Towers never carry between sectors. See `Waves/CLAUDE.md` and `Fort/CLAUDE.md`.
 4. **Between sectors**, run state rides in the static `Economy/RunSession.cs`: HP ratio, in-run gold, supply, ammo, draft levels, ultimate + charge, buff fish, campaign node state.
 5. **Death** → defeat screen (one button) → back to the Meta Area; the run is wiped (`RunSession.ClearRun()`). Permanent currencies are kept. No retry, and no voluntary exit from the map: the only ways home are death or campaign end.
 
@@ -41,7 +41,7 @@ Unity 6 game, codenamed **Bladehold**. A 3D action roguelite: one hero, a melee 
 
 ### In-run progression
 
-- **Drafts** (`Upgrades/DraftUpgradeService.cs`, `Assets/Bladehold/Resources/DraftUpgrades.csv`): 3-card picks. Categories are `Weapon` (only cards for your equipped weapons, including `isUltimate` cards), `Elemental`, and `Fortress` (Fortress cards are excluded from drafts; towers replaced them). Triggered by the war-banner wave bounty and the Rest Area Draft Station. The XP level-up draft (`SurvivorsLevelSystem`) is legacy and its prompt is disabled.
+- **Drafts** (`Upgrades/DraftUpgradeService.cs`, `Assets/Bladehold/Resources/DraftUpgrades.csv`): 3-card picks. Categories are `Weapon` (only cards for your equipped weapons, including `isUltimate` cards) and `Elemental`. Triggered by the war-banner wave bounty and the Rest Area Draft Station. Cards reach the UI as `SkillNode`s (a name left over from the deleted gold tree).
 - **Rest Area** (`Bladehold Rest Area Scene`, `UI/RestArea/`): Well, Shop (`ShopUI`, items in `Bladehold Config/ShopItems/`), Draft Station, gate back to the map.
 - **Fishing Pond** (`Fishing/`, spec in `docs/FishingMinigameSpec.md`): 60s Fishing Frenzy with its own draft cards; pays currencies and lets you eat buff fish (max 3 per run).
 
@@ -103,15 +103,11 @@ Build towards these; don't "fix" code back to the old behaviour.
 
 ## Legacy / dead code (don't build on it)
 
-Still in the codebase, not reachable in live build scenes:
-- Old `Waves/WaveSpawner.cs` endless loop (only Demo/Test scenes). `SurvivorsSpawner` still calls its static `ApplyDefinition`, and many systems still null-check `WaveSpawner.Instance`.
-- Gold skill tree (`SkillTreeService`, `SkillTreeView`) and Reincarnate (`Reincarnate/`), plus `SaveData.totalGold`/`purchasedNodeIds`/`reincarnatePoints`.
-- `HoldTheLineBonus`, `WaveIntermissionUI`.
-- The 3-waves-then-Rest-Area gate path in `GameLoopManager`, `RunSession.RestVisitsCount` formulas, the stage-select fields (`highestUnlockedStage`, `selectedStage`).
-- `SurvivorsGameManager`'s 20-minute siege timer / endgame boss.
-- Old socket-based `FortDefense`/`FortDefenseManager`/`FortDefenseSocket` (still applies some draft effects; plots replaced it).
-- `ClassDefinitionSO`/`PlayerClassController` are **deleted**; only stale comments remain.
-- `Bladehold Supply Room`, `Frozen Pass`, `Ancient Garden` scenes have no campaign node.
+Plan 08 (2026-09-25) deleted the old WaveSpawner loop, the gold skill tree + Reincarnate, the socket fortress + Fortress cards, the XP level-up path, the siege timer, the rest-gate path, the Supply Room and the MainMenu scene. What's left:
+- `Bladehold Demo Scene`, `Bladehold Test Scene` and `Assets/_Recovery/0.unity` aren't in the build and reference deleted scripts.
+- Dormant, stat-gated player mechanics nothing grants any more: `Parry`, `Counterstrike`, `DeathNova`, `GoldOnDeathCollector`, `StartMountedSpawner`. Fine to reuse for draft cards; don't treat them as live.
+- Unused enum values kept so serialized ints don't shift: `CampaignNodeType.SupplyRoom`, `StatType.HoldTheLineGoldPerWave`, and `BannerBountyType.FortressDraft` (which now pays a Supply Cache). **Never remove or reorder `StatType`/enum values that assets serialize.**
+- `SaveData.totalGold` (coin pickups bank into it through `Wallet`, nothing spends it) and `SaveData.runsAttempted` (banner difficulty reads it, nothing increments it): both pending a decision.
 
 ## Project skills
 

@@ -1,6 +1,6 @@
 # Waves: the in-sector battle loop
 
-Every battle scene runs the same loop: `GameLoopManager` + `SurvivorsSpawner` + `Objectives/SurvivorsObjectiveManager` + `Fort/TowerPlotManager`. They're scene objects in `Bladehold Survivors Scene` and come from prefabs elsewhere (`Bladehold Prefabs/Managers/GameLoopManager.prefab`, `Waves/EnemySpawner.prefab`, `Objectives/SurvivorsObjectives.prefab`). The old `WaveSpawner` is legacy, so don't extend it.
+Every battle scene runs the same loop: `GameLoopManager` + `SurvivorsSpawner` + `Objectives/SurvivorsObjectiveManager` + `Fort/TowerPlotManager`. They're scene objects in `Bladehold Survivors Scene` and come from prefabs elsewhere (`Bladehold Prefabs/Managers/GameLoopManager.prefab`, `Waves/EnemySpawner.prefab`, `Objectives/SurvivorsObjectives.prefab`). The old `WaveSpawner` loop was deleted in plan 08; roster overrides go through `Enemies/EnemyDefinitionApplier`.
 
 ## Sector sequence (5 waves)
 

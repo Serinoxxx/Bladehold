@@ -9,6 +9,7 @@ Things that need your hands, eyes or judgement in the Unity Editor. Items marked
 - [05: Balance Tree Editor](editor/05-balance-tree.md)
 - [06: Sector difficulty + roster](editor/06-sector-difficulty.md) (Fraglob captain has no prefab yet)
 - [07: Demo gating](editor/07-demo-gating.md) (demo end panel needed in the Campaign Map scene)
+- [08: Legacy cleanup](editor/08-legacy-cleanup.md) (run the one-shot cleanup tool first; it also reserializes the binary scenes in §B)
 
 ## A. Triage first (biggest win)
 
