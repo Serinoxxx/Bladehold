@@ -83,7 +83,9 @@ public class CampaignNodeButtonUI : MonoBehaviour, IPointerEnterHandler, IPointe
         TMP_Text captainTxt,
         GameObject lockObj,
         GameObject checkmarkObj,
-        GameObject glowObj)
+        GameObject glowObj,
+        Image iconImg = null,
+        Sprite fishIcon = null)
     {
         rectTransform = rt;
         button = btn;
@@ -95,6 +97,8 @@ public class CampaignNodeButtonUI : MonoBehaviour, IPointerEnterHandler, IPointe
         lockOverlay = lockObj;
         completedCheckmark = checkmarkObj;
         activePulseGlow = glowObj;
+        if (iconImg != null) nodeIconImage = iconImg;
+        if (fishIcon != null) fishingIcon = fishIcon;
 
         if (button != null)
         {
@@ -145,6 +149,20 @@ public class CampaignNodeButtonUI : MonoBehaviour, IPointerEnterHandler, IPointe
         if (backgroundImage != null)
         {
             backgroundImage.color = GetNodeBgColor(node.nodeType);
+        }
+
+        // Icon (e.g. fishing pond)
+        if (nodeIconImage != null)
+        {
+            if (node.nodeType == CampaignNodeType.FishingPond && fishingIcon != null)
+            {
+                nodeIconImage.gameObject.SetActive(true);
+                nodeIconImage.sprite = fishingIcon;
+            }
+            else
+            {
+                nodeIconImage.gameObject.SetActive(false);
+            }
         }
 
         // Status Visuals

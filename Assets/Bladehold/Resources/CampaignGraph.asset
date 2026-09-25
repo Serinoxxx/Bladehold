@@ -1,0 +1,79 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36dea8a895a130041a5c3de284f0eda1, type: 3}
+  m_Name: CampaignGraph
+  m_EditorClassIdentifier: Assembly-CSharp::CampaignGraphSO
+  rootNode: {fileID: 11400000, guid: 778cd3f0e7e9da24abf71098d5f51b75, type: 2}
+  tiers:
+  - tierNumber: 1
+    tierName: Outer Gate
+    nodes:
+    - {fileID: 11400000, guid: 778cd3f0e7e9da24abf71098d5f51b75, type: 2}
+  - tierNumber: 2
+    tierName: Battlements & Barracks
+    nodes:
+    - {fileID: 11400000, guid: 32dd7451bc9e8374d817999b58d80f1c, type: 2}
+    - {fileID: 11400000, guid: 14e852b703476ae42bcfa3d9476ee4c0, type: 2}
+    - {fileID: 11400000, guid: 6959791242a150b40a9a22d79666299d, type: 2}
+  - tierNumber: 3
+    tierName: Fortress Recovery
+    nodes:
+    - {fileID: 11400000, guid: 6c6e6c1c6f25d6448a1cf992d3253227, type: 2}
+    - {fileID: 11400000, guid: a0ba8e7d12155594a96389e2d840379d, type: 2}
+    - {fileID: 11400000, guid: 3290fcc9c5305d54cbb0b36c9bf5c30c, type: 2}
+  - tierNumber: 4
+    tierName: Great Hall
+    nodes:
+    - {fileID: 11400000, guid: ffe54e8f6fcc9184d9e64f93828013f6, type: 2}
+    - {fileID: 11400000, guid: 06f38798e0038294da96c023b6f6ea52, type: 2}
+  - tierNumber: 5
+    tierName: Subterranean & Grounds
+    nodes:
+    - {fileID: 11400000, guid: 210ec87a05737d24681848f7e36be1d5, type: 2}
+    - {fileID: 11400000, guid: e404b0b664ef83647927508202bf8cdd, type: 2}
+    - {fileID: 11400000, guid: 30f3d1c547d899d47a127df1d79575a9, type: 2}
+  - tierNumber: 6
+    tierName: Inner Sanctum Recovery
+    nodes:
+    - {fileID: 11400000, guid: aaf2400b96b7e8144965178150ef93da, type: 2}
+    - {fileID: 11400000, guid: f53b62f5969def447be9ffc469c1d889, type: 2}
+  - tierNumber: 7
+    tierName: Throne Antechamber
+    nodes:
+    - {fileID: 11400000, guid: b98f6555a1e960f4f903b85c31bb5105, type: 2}
+    - {fileID: 11400000, guid: af4e46d1bb7a9924b8e46e8a036efd82, type: 2}
+  - tierNumber: 8
+    tierName: Crypt of Revelation
+    nodes:
+    - {fileID: 11400000, guid: ca588e7157050724e86bb28ad5ac3319, type: 2}
+    - {fileID: 11400000, guid: 94c204f178350c74aa08bfe0a6cdc9bd, type: 2}
+    - {fileID: 11400000, guid: f9d47a5371861414b9ebef3dd6d9fc71, type: 2}
+  allNodes:
+  - {fileID: 11400000, guid: 778cd3f0e7e9da24abf71098d5f51b75, type: 2}
+  - {fileID: 11400000, guid: 32dd7451bc9e8374d817999b58d80f1c, type: 2}
+  - {fileID: 11400000, guid: 14e852b703476ae42bcfa3d9476ee4c0, type: 2}
+  - {fileID: 11400000, guid: 6959791242a150b40a9a22d79666299d, type: 2}
+  - {fileID: 11400000, guid: 6c6e6c1c6f25d6448a1cf992d3253227, type: 2}
+  - {fileID: 11400000, guid: a0ba8e7d12155594a96389e2d840379d, type: 2}
+  - {fileID: 11400000, guid: 3290fcc9c5305d54cbb0b36c9bf5c30c, type: 2}
+  - {fileID: 11400000, guid: ffe54e8f6fcc9184d9e64f93828013f6, type: 2}
+  - {fileID: 11400000, guid: 06f38798e0038294da96c023b6f6ea52, type: 2}
+  - {fileID: 11400000, guid: 210ec87a05737d24681848f7e36be1d5, type: 2}
+  - {fileID: 11400000, guid: e404b0b664ef83647927508202bf8cdd, type: 2}
+  - {fileID: 11400000, guid: 30f3d1c547d899d47a127df1d79575a9, type: 2}
+  - {fileID: 11400000, guid: aaf2400b96b7e8144965178150ef93da, type: 2}
+  - {fileID: 11400000, guid: f53b62f5969def447be9ffc469c1d889, type: 2}
+  - {fileID: 11400000, guid: b98f6555a1e960f4f903b85c31bb5105, type: 2}
+  - {fileID: 11400000, guid: af4e46d1bb7a9924b8e46e8a036efd82, type: 2}
+  - {fileID: 11400000, guid: ca588e7157050724e86bb28ad5ac3319, type: 2}
+  - {fileID: 11400000, guid: 94c204f178350c74aa08bfe0a6cdc9bd, type: 2}
+  - {fileID: 11400000, guid: f9d47a5371861414b9ebef3dd6d9fc71, type: 2}

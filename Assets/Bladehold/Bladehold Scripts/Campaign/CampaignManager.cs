@@ -23,7 +23,10 @@ public class CampaignManager : MonoBehaviour
                 {
                     GameObject go = new GameObject("CampaignManager");
                     instance = go.AddComponent<CampaignManager>();
-                    DontDestroyOnLoad(go);
+                    if (Application.isPlaying)
+                    {
+                        DontDestroyOnLoad(go);
+                    }
                 }
             }
             return instance;
@@ -73,7 +76,7 @@ public class CampaignManager : MonoBehaviour
         }
 
         instance = this;
-        if (transform.parent == null)
+        if (transform.parent == null && Application.isPlaying)
         {
             DontDestroyOnLoad(gameObject);
         }

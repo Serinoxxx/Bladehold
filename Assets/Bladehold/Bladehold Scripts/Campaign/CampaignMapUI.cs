@@ -51,6 +51,10 @@ public class CampaignMapUI : MonoBehaviour
         }
     }
 
+    public CampaignNodeButtonUI NodeButtonPrefab { get => nodeButtonPrefab; set => nodeButtonPrefab = value; }
+    public GameObject PathLinePrefab { get => pathLinePrefab; set => pathLinePrefab = value; }
+    public CampaignGraphSO CampaignGraph { get => campaignGraph; set => campaignGraph = value; }
+
     /// <summary>
     ///     Wires references procedurally if configured outside prefab serialization.
     /// </summary>
@@ -64,7 +68,9 @@ public class CampaignMapUI : MonoBehaviour
         TMP_Text goldTxt,
         TMP_Text bloodTxt,
         TMP_Text metalTxt,
-        Button returnBtn)
+        Button returnBtn,
+        CampaignNodeButtonUI btnPrefab = null,
+        GameObject linePrefab = null)
     {
         campaignGraph = graph;
         nodesContainer = nodesBox;
@@ -76,6 +82,8 @@ public class CampaignMapUI : MonoBehaviour
         goblinBloodText = bloodTxt;
         orcishMetalText = metalTxt;
         returnToMetaButton = returnBtn;
+        if (btnPrefab != null) nodeButtonPrefab = btnPrefab;
+        if (linePrefab != null) pathLinePrefab = linePrefab;
 
         if (returnToMetaButton != null)
         {
@@ -400,9 +408,17 @@ public class CampaignMapUI : MonoBehaviour
 
     private void ClearSpawnedElements()
     {
-        foreach (var kvp in spawnedButtons)
+        if (nodesContainer != null)
         {
-            if (kvp.Value != null) Destroy(kvp.Value.gameObject);
+            for (int i = nodesContainer.childCount - 1; i >= 0; i--)
+            {
+                Transform child = nodesContainer.GetChild(i);
+                if (child != null)
+                {
+                    if (Application.isPlaying) Destroy(child.gameObject);
+                    else DestroyImmediate(child.gameObject);
+                }
+            }
         }
         spawnedButtons.Clear();
 
@@ -411,9 +427,17 @@ public class CampaignMapUI : MonoBehaviour
 
     private void ClearPaths()
     {
-        for (int i = 0; i < spawnedPaths.Count; i++)
+        if (pathsContainer != null)
         {
-            if (spawnedPaths[i] != null) Destroy(spawnedPaths[i]);
+            for (int i = pathsContainer.childCount - 1; i >= 0; i--)
+            {
+                Transform child = pathsContainer.GetChild(i);
+                if (child != null)
+                {
+                    if (Application.isPlaying) Destroy(child.gameObject);
+                    else DestroyImmediate(child.gameObject);
+                }
+            }
         }
         spawnedPaths.Clear();
     }

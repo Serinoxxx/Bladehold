@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
+  m_Name: Node_tier2_north_ramparts
+  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
+  nodeId: tier2_north_ramparts
+  nodeTitle: North Ramparts
+  subtitle: Windy Battlements
+  description: Hold the elevated stone battlements against Captain Fraglob and his
+    vanguard. High elevation, windy gusts.
+  sceneName: Bladehold Castle Ramparts
+  nodeType: 0
+  tierIndex: 2
+  mapPosition: {x: 300, y: 130}
+  captainName: Captain Fraglob
+  difficultyTier: 2
+  clanBuff: {fileID: 0}
+  captainIcon: {fileID: 0}
+  bountyType: 4
+  rewardsDescription: +250 Gold Cache, Captain Fraglob Bounty
+  goldReward: 250
+  bloodReward: 0
+  metalReward: 0
+  rewardIcon: {fileID: 0}
+  nextNodes:
+  - {fileID: 11400000, guid: 6c6e6c1c6f25d6448a1cf992d3253227, type: 2}
+  - {fileID: 11400000, guid: a0ba8e7d12155594a96389e2d840379d, type: 2}

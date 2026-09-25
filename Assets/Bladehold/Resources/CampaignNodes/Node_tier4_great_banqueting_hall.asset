@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
+  m_Name: Node_tier4_great_banqueting_hall
+  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
+  nodeId: tier4_great_banqueting_hall
+  nodeTitle: Great Banqueting Hall
+  subtitle: Ruined Grand Feast Hall
+  description: Fight through high-density enemy hordes among long banquet tables,
+    chandeliers, and fallen tapestries.
+  sceneName: Bladehold Great Hall
+  nodeType: 0
+  tierIndex: 4
+  mapPosition: {x: 700, y: 0}
+  captainName: Captain Fraglob
+  difficultyTier: 3
+  clanBuff: {fileID: 0}
+  captainIcon: {fileID: 0}
+  bountyType: 2
+  rewardsDescription: +200 Gold, +10 Goblin Blood, Fortress Draft
+  goldReward: 200
+  bloodReward: 10
+  metalReward: 0
+  rewardIcon: {fileID: 0}
+  nextNodes:
+  - {fileID: 11400000, guid: 210ec87a05737d24681848f7e36be1d5, type: 2}
+  - {fileID: 11400000, guid: e404b0b664ef83647927508202bf8cdd, type: 2}

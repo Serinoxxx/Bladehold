@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
+  m_Name: Node_tier8_necromancer_boss
+  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
+  nodeId: tier8_necromancer_boss
+  nodeTitle: Necromancer's Crypt
+  subtitle: Catacombs of the Fallen
+  description: Defy Malakor the Defiler and shatter his dark legion of skeletons.
+  sceneName: Bladehold Necromancer Crypt
+  nodeType: 7
+  tierIndex: 8
+  mapPosition: {x: 1750, y: -150}
+  captainName: Malakor the Defiler
+  difficultyTier: 4
+  clanBuff: {fileID: 0}
+  captainIcon: {fileID: 0}
+  bountyType: 4
+  rewardsDescription: 'Crypt Liberator: +500 Gold, +30 Blood, +10 Metal'
+  goldReward: 500
+  bloodReward: 30
+  metalReward: 10
+  rewardIcon: {fileID: 0}
+  nextNodes: []

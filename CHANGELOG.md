@@ -126,6 +126,7 @@
 - Fixed Arrow Tower and other defense structures continuously firing at friendly Castle Gates
 - Fixed Battering Ram remaining stalled during the siege objective by ensuring enemies path to lead and escort the ram forward
 - Fixed boss controller component initialization in test mode ensuring damage block event listeners are hooked immediately upon combat activation
+- Fixed Campaign Overview Map displaying no nodes by authoring dedicated node button and route line prefabs, anchoring scroll containers to the left margin, and connecting a persistent campaign graph asset
 
 ### Balance Changes
 
@@ -147,6 +148,7 @@
 - Migrated net captured status visuals from procedural runtime code to an authored Editor prefab configured via NetRootConfigSO
 - Removed runtime asset-path fallbacks from Net Thrower defense and Net projectile scripts
 - Added project rule prohibiting procedural visual creation in code and runtime asset-path fallbacks
+- Added automated editor setup script to regenerate campaign UI prefabs and persistent graph data
 
 ## [0.1.20] - 2026-09-08
 

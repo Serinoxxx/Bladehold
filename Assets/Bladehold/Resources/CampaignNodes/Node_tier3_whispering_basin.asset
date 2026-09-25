@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
+  m_Name: Node_tier3_whispering_basin
+  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
+  nodeId: tier3_whispering_basin
+  nodeTitle: Whispering Basin
+  subtitle: Forgotten Grotto
+  description: A secluded pond teeming with ancient subterranean fish. 60-second
+    fishing frenzy for precious resources.
+  sceneName: Bladehold Fishing Pond
+  nodeType: 3
+  tierIndex: 3
+  mapPosition: {x: 500, y: -240}
+  captainName: 
+  difficultyTier: 1
+  clanBuff: {fileID: 0}
+  captainIcon: {fileID: 0}
+  bountyType: 0
+  rewardsDescription: '60s Fishing Frenzy: Gold, Metal, Blood, Buff Fish'
+  goldReward: 0
+  bloodReward: 0
+  metalReward: 0
+  rewardIcon: {fileID: 0}
+  nextNodes:
+  - {fileID: 11400000, guid: 06f38798e0038294da96c023b6f6ea52, type: 2}

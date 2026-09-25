@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56ea544cdf3a1634f89025e02319b07b, type: 3}
+  m_Name: Node_tier5_royal_conservatory
+  m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
+  nodeId: tier5_royal_conservatory
+  nodeTitle: Royal Conservatory
+  subtitle: Overgrown Glass Arches
+  description: Battle through shattered glass greenhouses and toxic fungal blooms
+    guarded by Captain Kombusta's firebrands.
+  sceneName: Bladehold Castle Conservatory
+  nodeType: 0
+  tierIndex: 5
+  mapPosition: {x: 900, y: -100}
+  captainName: Captain Kombusta
+  difficultyTier: 3
+  clanBuff: {fileID: 0}
+  captainIcon: {fileID: 0}
+  bountyType: 3
+  rewardsDescription: Elemental Upgrade Draft, +150 Gold
+  goldReward: 150
+  bloodReward: 0
+  metalReward: 0
+  rewardIcon: {fileID: 0}
+  nextNodes:
+  - {fileID: 11400000, guid: aaf2400b96b7e8144965178150ef93da, type: 2}
+  - {fileID: 11400000, guid: f53b62f5969def447be9ffc469c1d889, type: 2}
