@@ -13,7 +13,7 @@ using static System.FormattableString;
 ///     <see cref="RuntimeInitializeOnLoadMethod" />, surviving scene reloads) — nothing to add to the scene.
 ///
 ///     Pure listener, per the Health-is-the-hub convention: it subscribes to existing events
-///     (<see cref="WaveSpawner" /> wave events, the player's <see cref="Health.OnDamaged" />/<see cref="Health.OnDied" />,
+///     (<see cref="GameLoopManager" /> wave events, the player's <see cref="Health.OnDamaged" />/<see cref="Health.OnDied" />,
 ///     the sword <see cref="DamageTrigger.OnHit" />, <see cref="InputReader.onAttackDeactivated" /> for swing
 ///     counting, and both tree services' <c>OnNodePurchased</c>) and never changes gameplay. Sprint time is
 ///     polled from the vendored controller's private <c>_isSprinting</c> field by reflection (the
@@ -54,7 +54,7 @@ public class RunTelemetry : MonoBehaviour
     public event Action<RunTelemetryData> OnRunEnded;
 
     // Bound scene objects (re-bound every scene load; scene reload = new run).
-    private WaveSpawner waveSpawner;
+    private GameLoopManager gameLoop;
     private Health playerHealth;
     private GameStats gameStats;
     private PlayerAttack playerAttack;
@@ -193,7 +193,7 @@ public class RunTelemetry : MonoBehaviour
 
         playerHealth = player.Health;
         gameStats = GameStats.Instance;
-        waveSpawner = WaveSpawner.Instance;
+        gameLoop = GameLoopManager.Instance;
         goldTree = SkillTreeService.Instance;
         reincarnateTree = ReincarnateService.Instance;
         playerAttack = player.GetComponentInChildren<PlayerAttack>(true);
@@ -215,14 +215,14 @@ public class RunTelemetry : MonoBehaviour
             }
         }
 
-        if (waveSpawner == null) Debug.LogWarning("RunTelemetry: no WaveSpawner; wave rows won't be recorded.");
+        if (gameLoop == null) Debug.LogWarning("RunTelemetry: no GameLoopManager; wave rows won't be recorded.");
         if (swordTrigger == null) Debug.LogWarning("RunTelemetry: no player-stats DamageTrigger found under the player; damage dealt won't be recorded.");
         if (inputReader == null) Debug.LogWarning("RunTelemetry: no InputReader found under the player; swing counts won't be recorded.");
 
-        if (waveSpawner != null)
+        if (gameLoop != null)
         {
-            waveSpawner.WaveStarted += HandleWaveStarted;
-            waveSpawner.WaveCleared += HandleWaveCleared;
+            gameLoop.OnWaveStarted += HandleWaveStarted;
+            gameLoop.OnWaveCleared += HandleWaveCleared;
         }
         if (playerHealth != null)
         {
@@ -312,10 +312,10 @@ public class RunTelemetry : MonoBehaviour
 
     private void Unbind()
     {
-        if (waveSpawner != null)
+        if (gameLoop != null)
         {
-            waveSpawner.WaveStarted -= HandleWaveStarted;
-            waveSpawner.WaveCleared -= HandleWaveCleared;
+            gameLoop.OnWaveStarted -= HandleWaveStarted;
+            gameLoop.OnWaveCleared -= HandleWaveCleared;
         }
         if (playerHealth != null)
         {
@@ -350,7 +350,7 @@ public class RunTelemetry : MonoBehaviour
         if (playerDodge != null) playerDodge.OnDodgeStarted -= HandleDodgeStarted;
         Gate.OnAnyGateDestroyed -= HandleGateDestroyed;
         Chest.OnAnyChestDestroyed -= HandleChestDestroyed;
-        waveSpawner = null;
+        gameLoop = null;
         playerHealth = null;
         gameStats = null;
         playerAttack = null;
@@ -369,7 +369,7 @@ public class RunTelemetry : MonoBehaviour
         ResetWaveAccumulators();
     }
 
-    private void HandleWaveCleared(int wave)
+    private void HandleWaveCleared(int wave, string _)
     {
         WriteWaveRow("wave_clear", wave, "");
     }
@@ -394,7 +394,7 @@ public class RunTelemetry : MonoBehaviour
         playerDead = true;
         fatalEnemy = lastDamagerName;
 
-        int wave = waveSpawner != null ? waveSpawner.CurrentWave : 0;
+        int wave = gameLoop != null ? gameLoop.CurrentWave : 0;
         WriteWaveRow("death", wave, "died mid-wave");
 
         int kills = gameStats != null ? gameStats.GoblinsKilled : 0;
@@ -481,7 +481,7 @@ public class RunTelemetry : MonoBehaviour
     private void HandleChestDestroyed() => totalChestsDestroyed++;
     private void HandleGateDestroyed(Gate gate)
     {
-        gateDestroyedWave = waveSpawner != null ? waveSpawner.CurrentWave : 0;
+        gateDestroyedWave = gameLoop != null ? gameLoop.CurrentWave : 0;
         // The gate doesn't have an OnDamaged hook giving the last attacker out of the box, 
         // but we can at least log the wave it died on.
         gateDestroyerEnemy = "Enemy";
@@ -526,7 +526,7 @@ public class RunTelemetry : MonoBehaviour
 
     private void WritePurchaseRow(string tree, SkillNode node, int price)
     {
-        int wave = waveSpawner != null ? waveSpawner.CurrentWave : 0;
+        int wave = gameLoop != null ? gameLoop.CurrentWave : 0;
         AppendRow("purchase",
             wave: Invariant($"{wave}"),
             runSeconds: Invariant($"{RunSeconds():F1}"),

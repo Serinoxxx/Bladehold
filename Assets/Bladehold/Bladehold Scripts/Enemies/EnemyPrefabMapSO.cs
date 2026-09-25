@@ -5,7 +5,7 @@ using UnityEngine;
 /// <summary>
 ///     The single id → prefab mapping for the enemy roster: each entry pairs a roster CSV id
 ///     (see <see cref="EnemyRosterSO" />) with the enemy prefab that spawns for it. An asset rather
-///     than a per-scene inspector list so <see cref="WaveSpawner" /> and the EnemyZoo gallery share
+///     than a per-scene inspector list so <see cref="SurvivorsSpawner" /> and the EnemyZoo gallery share
 ///     one source of truth, and so editor tooling (the enemy prefab generator) can register new
 ///     enemies by writing this asset instead of editing scenes.
 /// </summary>

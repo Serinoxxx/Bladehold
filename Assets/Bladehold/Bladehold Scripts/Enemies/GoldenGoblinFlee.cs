@@ -36,7 +36,7 @@ public class GoldenGoblinFlee : MonoBehaviour
     }
 
     /// <summary>
-    ///     Exposed for WaveSpawner CSV definition routing compatibility.
+    ///     Exposed for EnemyDefinitionApplier CSV routing compatibility.
     ///     Golden Goblin does not deal damage, so this setter is a no-op.
     /// </summary>
     public void SetDamage(float value)

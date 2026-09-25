@@ -27,7 +27,7 @@ public class AIMovement : MonoBehaviour
     float speedMultiplier = 1f;
 
     /// <summary>
-    ///     Per-instance agent-speed override (e.g. <see cref="WaveSpawner" /> applying an enemy type's
+    ///     Per-instance agent-speed override (e.g. <see cref="SurvivorsSpawner" /> applying an enemy type's
     ///     roster CSV row). Call right after Instantiate, before Start runs; the shared
     ///     <see cref="AIMovementSO" /> is never mutated.
     /// </summary>

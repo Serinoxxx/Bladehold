@@ -555,7 +555,7 @@ public class SurvivorsSpawner : MonoBehaviour
 
             GameObject enemy = Instantiate(selectedType.prefab, spawnPos, Quaternion.identity);
 
-            WaveSpawner.ApplyDefinition(enemy, selectedType.def);
+            EnemyDefinitionApplier.Apply(enemy, selectedType.def);
 
             // Note: Banner wave buffs are localized to Bannerman units and their auras (others do not get it globally)
 
@@ -826,7 +826,7 @@ public class SurvivorsSpawner : MonoBehaviour
 
         Vector3 spawnPos = ResolveSpawnPosition();
         GameObject enemy = Instantiate(type.prefab, spawnPos, Quaternion.identity);
-        WaveSpawner.ApplyDefinition(enemy, type.def);
+        EnemyDefinitionApplier.Apply(enemy, type.def);
 
         Health health = enemy.GetComponent<Health>();
         if (health != null)

@@ -9,8 +9,8 @@ using UnityEngine;
 ///     <see cref="Health" />/<see cref="IDamageable" /> scene object: enemies path to and attack it
 ///     through <see cref="AITargetSelector" />/<see cref="AIAttack" /> exactly as they do the player,
 ///     and when any gate's <see cref="Health.OnDied" /> fires the run is over
-///     (<see cref="OnAnyGateDestroyed" /> — <see cref="DeathScreen" /> and <see cref="WaveSpawner" />
-///     listen, the same routing as the player's death).
+///     (<see cref="OnAnyGateDestroyed" /> — <see cref="DeathScreen" /> and
+///     <see cref="SurvivorsGameManager" /> listen, the same routing as the player's death).
 ///
 ///     Gates self-register in a static list in <c>Awake</c> (so enemy <c>Start</c>s can already see
 ///     them) and unregister in <c>OnDestroy</c>, which keeps the list correct across scene reloads.

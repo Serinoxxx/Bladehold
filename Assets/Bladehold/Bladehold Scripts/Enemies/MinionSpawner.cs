@@ -6,12 +6,10 @@ using UnityEngine.AI;
 /// <summary>
 ///     The Fort Golem's production line: every <see cref="MinionSpawnerSO.spawnInterval" /> seconds
 ///     it spawns <see cref="MinionSpawnerSO.spawnCount" /> minions (dwarves) beside itself,
-///     NavMesh-snapped, applies the minion's roster CSV row via the public static
-///     <see cref="WaveSpawner.ApplyDefinition" /> (the EnemyZoo precedent — right after Instantiate,
-///     before the minion's Start), and reports each one to
-///     <see cref="WaveSpawner.RegisterExternalEnemy" /> so wave accounting stays consistent.
-///     Registration failing (no spawner, intermission) degrades gracefully — minions still work
-///     standalone, since kill credit/coins/corpses are all <see cref="Health" />-event-driven.
+///     NavMesh-snapped, and applies the minion's roster CSV row via
+///     <see cref="EnemyDefinitionApplier.Apply" /> (right after Instantiate, before the minion's Start).
+///     Minions aren't tracked by the <see cref="SurvivorsSpawner" />; kill credit/coins/corpses are all
+///     <see cref="Health" />-event-driven, so they work standalone.
 ///     Production stops at <see cref="MinionSpawnerSO.maxAliveMinions" /> and on the golem's or the
 ///     player's death.
 /// </summary>
@@ -156,7 +154,7 @@ public class MinionSpawner : MonoBehaviour
 
     private bool SpawnMinion()
     {
-        // A ring point beside the golem, snapped onto the NavMesh (the WaveSpawner placement idiom).
+        // A ring point beside the golem, snapped onto the NavMesh.
         Vector2 ring = UnityEngine.Random.insideUnitCircle.normalized * data.spawnRadius;
         Vector3 candidate = transform.position + new Vector3(ring.x, 0f, ring.y);
         if (!NavMesh.SamplePosition(candidate, out NavMeshHit navHit, 3f, NavMesh.AllAreas))
@@ -167,12 +165,7 @@ public class MinionSpawner : MonoBehaviour
         GameObject minion = Instantiate(minionPrefab, navHit.position, Quaternion.identity);
 
         // Roster overrides before the minion's Start (the MarkGolden timing trick).
-        WaveSpawner.ApplyDefinition(minion, minionDef);
-
-        // Wave accounting: registration grows the wave total and alive set so the wave only clears
-        // once minions are dead too. Failing (no spawner, intermission) is fine — see class doc.
-        WaveSpawner spawner = WaveSpawner.Instance;
-        spawner?.RegisterExternalEnemy(minion);
+        EnemyDefinitionApplier.Apply(minion, minionDef);
 
         // Track this golem's own population cap through the same death signal everything else uses.
         Health minionHealth = minion.GetComponent<Health>();

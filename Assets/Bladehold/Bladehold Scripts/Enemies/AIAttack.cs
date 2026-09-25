@@ -39,7 +39,7 @@ public class AIAttack : MonoBehaviour
     private float damageMultiplier = 1f;
 
     /// <summary>
-    ///     Per-instance damage override (e.g. <see cref="WaveSpawner" /> applying an enemy type's
+    ///     Per-instance damage override (e.g. <see cref="SurvivorsSpawner" /> applying an enemy type's
     ///     roster CSV row). Call right after Instantiate; the shared <see cref="AIAttackSO" /> is
     ///     never mutated.
     /// </summary>

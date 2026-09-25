@@ -191,7 +191,7 @@ public class ReincarnateService : MonoBehaviour, ISkillTreeService
     /// <summary>Reincarnate Points banked if the player reincarnates right now (highest wave reached this run).</summary>
     public int PreviewPointsForReincarnate()
     {
-        return WaveSpawner.Instance != null ? WaveSpawner.Instance.CurrentWave : 0;
+        return GameLoopManager.Instance != null ? GameLoopManager.Instance.CurrentWave : 0;
     }
 
     /// <summary>

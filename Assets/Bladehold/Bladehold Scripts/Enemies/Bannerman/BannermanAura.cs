@@ -50,7 +50,7 @@ public class BannermanAura : MonoBehaviour
 
     public void SetDamage(float value)
     {
-        // Support WaveSpawner dispatch if needed
+        // Roster damage override (EnemyDefinitionApplier)
     }
 
     private void OnValidate()

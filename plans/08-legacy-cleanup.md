@@ -4,7 +4,7 @@
 
 ## Candidates (verify each is unreferenced in build scenes before deleting)
 
-- [ ] **`Waves/WaveSpawner.cs`** and its satellites (`WaveUI`, `GateAssaultSpawner`, `WaveIntermissionUI`, `ElementNodeSpawner` if dead):
+- [x] **`Waves/WaveSpawner.cs`** and its satellites (`WaveUI`, `GateAssaultSpawner`, `WaveIntermissionUI`, `ElementNodeSpawner` if dead):
   - First move the static `ApplyDefinition` (used by `SurvivorsSpawner`) somewhere sensible.
   - Replace the ~20 `WaveSpawner.Instance` null-checks (DeathScreen, DevConsole, MinionSpawner, RunTelemetry, …) with `GameLoopManager`/`SurvivorsSpawner` equivalents or delete them.
 - [x] **Balance sim** (decided 2026-09-25: retire it, don't port it). Do this **before or with** the gold skill tree below, because the sim's `UpgradePolicy` spends gold on `SkillTreeSO` and won't compile without it.

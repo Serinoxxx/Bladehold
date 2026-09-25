@@ -2,13 +2,11 @@ using TMPro;
 using UnityEngine;
 
 /// <summary>
-///     Dynamically updates the objective panel to reflect either:
-///     1) Wave defense progress in classic mode (via <see cref="WaveSpawner"/>)
-///     2) Active objective progress in survival mode (via <see cref="SurvivorsObjectiveManager"/>).
+///     Dynamically updates the objective panel to reflect the active sector objective
+///     (via <see cref="SurvivorsObjectiveManager"/>), or static guidance in scenes without one.
 /// </summary>
 public class ObjectiveTrackerUI : MonoBehaviour
 {
-    [SerializeField] private WaveSpawner spawner;
     [SerializeField] private SurvivorsObjectiveManager objectiveManager;
 
     [Header("References")]
@@ -19,19 +17,14 @@ public class ObjectiveTrackerUI : MonoBehaviour
     [SerializeField] private TMP_Text objectiveProgressText;
 
     [Header("Scene Guidance")]
-    [Tooltip("Persistent guidance shown in scenes without a wave spawner or objective manager.")]
+    [Tooltip("Persistent guidance shown in scenes without an objective manager.")]
     [TextArea]
     [SerializeField] private string guidanceObjectiveText;
 
     private bool anyError;
-    private bool waveInProgress;
 
     private void OnValidate()
     {
-        if (spawner == null)
-        {
-            spawner = FindObjectOfType<WaveSpawner>();
-        }
         if (objectiveManager == null)
         {
             objectiveManager = FindObjectOfType<SurvivorsObjectiveManager>();
@@ -40,16 +33,12 @@ public class ObjectiveTrackerUI : MonoBehaviour
 
     private void Start()
     {
-        if (spawner == null)
-        {
-            spawner = FindObjectOfType<WaveSpawner>();
-        }
         if (objectiveManager == null)
         {
             objectiveManager = SurvivorsObjectiveManager.Instance ?? FindObjectOfType<SurvivorsObjectiveManager>();
         }
 
-        if (spawner == null && objectiveManager == null)
+        if (objectiveManager == null)
         {
             if (!string.IsNullOrWhiteSpace(guidanceObjectiveText))
             {
@@ -60,42 +49,24 @@ public class ObjectiveTrackerUI : MonoBehaviour
                 return;
             }
 
-            Debug.LogWarning("ObjectiveTrackerUI: Neither WaveSpawner nor SurvivorsObjectiveManager was found in the scene.");
+            Debug.LogWarning("ObjectiveTrackerUI: no SurvivorsObjectiveManager was found in the scene.");
             anyError = true;
             return;
         }
 
-        if (spawner != null)
-        {
-            spawner.WaveStarted += HandleWaveStarted;
-            spawner.WaveCleared += HandleWaveCleared;
-            spawner.CountdownTick += HandleCountdownTick;
-            UpdateProgressText(0, 0);
-        }
+        objectiveManager.OnObjectiveStarted += HandleSurvivorsObjectiveStarted;
+        objectiveManager.OnObjectiveProgressChanged += HandleSurvivorsObjectiveProgress;
+        objectiveManager.OnObjectiveCompleted += HandleSurvivorsObjectiveCompleted;
+        objectiveManager.OnObjectiveFailed += HandleSurvivorsObjectiveFailed;
 
-        if (objectiveManager != null)
+        if (objectiveManager.CurrentObjective != null)
         {
-            objectiveManager.OnObjectiveStarted += HandleSurvivorsObjectiveStarted;
-            objectiveManager.OnObjectiveProgressChanged += HandleSurvivorsObjectiveProgress;
-            objectiveManager.OnObjectiveCompleted += HandleSurvivorsObjectiveCompleted;
-            objectiveManager.OnObjectiveFailed += HandleSurvivorsObjectiveFailed;
-
-            if (objectiveManager.CurrentObjective != null)
-            {
-                HandleSurvivorsObjectiveStarted(objectiveManager.CurrentObjective);
-            }
+            HandleSurvivorsObjectiveStarted(objectiveManager.CurrentObjective);
         }
     }
 
     private void OnDestroy()
     {
-        if (spawner != null)
-        {
-            spawner.WaveStarted -= HandleWaveStarted;
-            spawner.WaveCleared -= HandleWaveCleared;
-            spawner.CountdownTick -= HandleCountdownTick;
-        }
-
         if (objectiveManager != null)
         {
             objectiveManager.OnObjectiveStarted -= HandleSurvivorsObjectiveStarted;
@@ -125,54 +96,11 @@ public class ObjectiveTrackerUI : MonoBehaviour
         UpdateSurvivorsUI();
     }
 
-    private void HandleWaveStarted(int wave)
-    {
-        waveInProgress = true;
-        if (objectiveHeaderText != null)
-        {
-            objectiveHeaderText.text = $"HOLD THE GATE: WAVE {wave}";
-        }
-    }
-
-    private void HandleWaveCleared(int wave)
-    {
-        waveInProgress = false;
-        if (objectiveHeaderText != null)
-        {
-            objectiveHeaderText.text = $"HOLD THE GATE: WAVE {wave} CLEARED";
-        }
-        if (objectiveProgressText != null)
-        {
-            objectiveProgressText.text = "Prepare for next wave...";
-        }
-    }
-
-    private void HandleCountdownTick(int secondsRemaining)
-    {
-        if (waveInProgress) return;
-
-        if (objectiveHeaderText != null)
-        {
-            objectiveHeaderText.text = $"HOLD THE GATE: NEXT WAVE IN {secondsRemaining}s";
-        }
-        if (objectiveProgressText != null)
-        {
-            objectiveProgressText.text = $"Wave starting in {secondsRemaining}s...";
-        }
-    }
-
     private void Update()
     {
         if (anyError) return;
 
-        if (SurvivorsGameManager.Instance != null || objectiveManager != null || FindObjectOfType<SurvivorsGameManager>() != null)
-        {
-            UpdateSurvivorsUI();
-        }
-        else if (waveInProgress && spawner != null)
-        {
-            UpdateProgressText(spawner.KilledThisWave, spawner.WaveGoblinTotal);
-        }
+        UpdateSurvivorsUI();
     }
 
     private void UpdateSurvivorsUI()
@@ -237,14 +165,6 @@ public class ObjectiveTrackerUI : MonoBehaviour
             {
                 objectiveProgressText.text = "Prepare for incoming siege objective...";
             }
-        }
-    }
-
-    private void UpdateProgressText(int killed, int total)
-    {
-        if (objectiveProgressText != null)
-        {
-            objectiveProgressText.text = $"Slay all enemies: {killed}/{total}";
         }
     }
 }

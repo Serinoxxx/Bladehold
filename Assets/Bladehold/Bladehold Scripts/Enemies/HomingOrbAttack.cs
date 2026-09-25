@@ -34,7 +34,7 @@ public class HomingOrbAttack : MonoBehaviour
     private bool anyError = false;
 
     /// <summary>
-    ///     Per-instance damage override (e.g. <see cref="WaveSpawner" /> applying an enemy type's
+    ///     Per-instance damage override (e.g. <see cref="SurvivorsSpawner" /> applying an enemy type's
     ///     roster CSV row). Call right after Instantiate; the shared <see cref="HomingOrbAttackSO" />
     ///     is never mutated.
     /// </summary>

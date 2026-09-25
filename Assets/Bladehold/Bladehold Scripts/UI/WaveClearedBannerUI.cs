@@ -5,13 +5,11 @@ using UnityEngine;
 using MoreMountains.Tools;
 
 /// <summary>
-///     Listens for wave clear events (in classic mode via <see cref="WaveSpawner"/>) or
-///     objective completion events (in survival mode via <see cref="SurvivorsObjectiveManager"/>)
+///     Listens for objective start/complete/fail events (via <see cref="SurvivorsObjectiveManager"/>)
 ///     and pops in a banner displaying rewards/stats. Uses <see cref="MMF_Player"/> to animate the banner in and out.
 /// </summary>
 public class WaveClearedBannerUI : MonoBehaviour
 {
-    [SerializeField] private WaveSpawner spawner;
     [SerializeField] private SurvivorsObjectiveManager objectiveManager;
 
     [Header("References")]
@@ -45,17 +43,11 @@ public class WaveClearedBannerUI : MonoBehaviour
     [Tooltip("How long the banner stays on screen before hiding itself.")]
     [SerializeField] private float displayDuration = 3f;
 
-    private int goldAtWaveStart;
-    private int killsAtWaveStart;
     private Coroutine hideRoutine;
     private bool anyError;
 
     private void OnValidate()
     {
-        if (spawner == null)
-        {
-            spawner = FindObjectOfType<WaveSpawner>();
-        }
         if (objectiveManager == null)
         {
             objectiveManager = FindObjectOfType<SurvivorsObjectiveManager>();
@@ -113,18 +105,14 @@ public class WaveClearedBannerUI : MonoBehaviour
     {
         EnsureTextReferences();
 
-        if (spawner == null)
-        {
-            spawner = WaveSpawner.Instance ?? FindObjectOfType<WaveSpawner>();
-        }
         if (objectiveManager == null)
         {
             objectiveManager = SurvivorsObjectiveManager.Instance ?? FindObjectOfType<SurvivorsObjectiveManager>();
         }
 
-        if (spawner == null && objectiveManager == null)
+        if (objectiveManager == null)
         {
-            Debug.LogWarning("WaveClearedBannerUI: Neither WaveSpawner nor SurvivorsObjectiveManager was found in the scene.");
+            Debug.LogWarning("WaveClearedBannerUI: no SurvivorsObjectiveManager was found in the scene.");
             anyError = true;
             return;
         }
@@ -134,54 +122,25 @@ public class WaveClearedBannerUI : MonoBehaviour
             bannerRoot.SetActive(false);
         }
 
-        if (spawner != null)
-        {
-            spawner.WaveStarted += HandleWaveStarted;
-            spawner.WaveCleared += HandleWaveCleared;
-        }
+        objectiveManager.OnObjectiveStarted += HandleSurvivorsObjectiveStarted;
+        objectiveManager.OnObjectiveCompleted += HandleSurvivorsObjectiveCleared;
+        objectiveManager.OnObjectiveFailed += HandleSurvivorsObjectiveFailed;
 
-        if (objectiveManager != null)
+        // If an objective was already active before Start (e.g. introductory objective), announce it
+        if (objectiveManager.CurrentObjective != null && objectiveManager.CurrentObjective.IsActive)
         {
-            objectiveManager.OnObjectiveStarted += HandleSurvivorsObjectiveStarted;
-            objectiveManager.OnObjectiveCompleted += HandleSurvivorsObjectiveCleared;
-            objectiveManager.OnObjectiveFailed += HandleSurvivorsObjectiveFailed;
-
-            // If an objective was already active before Start (e.g. introductory objective), announce it
-            if (objectiveManager.CurrentObjective != null && objectiveManager.CurrentObjective.IsActive)
-            {
-                HandleSurvivorsObjectiveStarted(objectiveManager.CurrentObjective);
-            }
+            HandleSurvivorsObjectiveStarted(objectiveManager.CurrentObjective);
         }
     }
 
     private void OnDestroy()
     {
-        if (spawner != null)
-        {
-            spawner.WaveStarted -= HandleWaveStarted;
-            spawner.WaveCleared -= HandleWaveCleared;
-        }
-
         if (objectiveManager != null)
         {
             objectiveManager.OnObjectiveStarted -= HandleSurvivorsObjectiveStarted;
             objectiveManager.OnObjectiveCompleted -= HandleSurvivorsObjectiveCleared;
             objectiveManager.OnObjectiveFailed -= HandleSurvivorsObjectiveFailed;
         }
-    }
-
-    private void HandleWaveStarted(int wave)
-    {
-        goldAtWaveStart = GameStats.Instance != null ? GameStats.Instance.GoldEarnedThisRun : 0;
-        killsAtWaveStart = GameStats.Instance != null ? GameStats.Instance.GoblinsKilled : 0;
-    }
-
-    private void HandleWaveCleared(int wave)
-    {
-        int goldEarned = (GameStats.Instance != null ? GameStats.Instance.GoldEarnedThisRun : 0) - goldAtWaveStart;
-        int kills = (GameStats.Instance != null ? GameStats.Instance.GoblinsKilled : 0) - killsAtWaveStart;
-
-        ShowBanner($"WAVE {wave} CLEARED", null, Mathf.Max(0, goldEarned), Mathf.Max(0, kills), isNewQuest: false);
     }
 
     private void HandleSurvivorsObjectiveStarted(ISurvivorsObjective obj)

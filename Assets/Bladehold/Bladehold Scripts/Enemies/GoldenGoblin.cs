@@ -2,9 +2,9 @@ using UnityEngine;
 
 /// <summary>
 ///     Marks a spawned goblin as a Golden Goblin: a shinier, more valuable variant rolled by
-///     <see cref="WaveSpawner" /> per-spawn against <see cref="StatType.GoldenGoblinChance" />.
+///     <see cref="SurvivorsSpawner" /> per-spawn against <see cref="StatType.GoldenGoblinChance" />.
 ///     <see cref="MarkGolden" /> is called right after <c>Instantiate</c>, before <c>Start</c> runs (the same
-///     ordering <see cref="WaveSpawner" /> already relies on elsewhere), so the visual swap in <c>Start</c>
+///     ordering <see cref="SurvivorsSpawner" /> already relies on elsewhere), so the visual swap in <c>Start</c>
 ///     sees the flag.
 ///
 ///     Reacts to this goblin's own <see cref="Health.OnDied" /> independently of <see cref="CoinDropper" /> —

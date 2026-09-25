@@ -66,7 +66,7 @@ public class MountedKnightBrain : MonoBehaviour
 
     /// <summary>
     ///     Per-instance damage override (the roster CSV's damage column, applied by
-    ///     <see cref="WaveSpawner.ApplyDefinition" />). The charge deals this ×
+    ///     <see cref="EnemyDefinitionApplier.Apply" />). The charge deals this ×
     ///     <see cref="MountedKnightSO.chargeDamageMultiplier" /> per trample hit; the shared SO is
     ///     never mutated.
     /// </summary>

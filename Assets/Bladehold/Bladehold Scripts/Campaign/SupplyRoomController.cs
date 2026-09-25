@@ -79,13 +79,6 @@ public class SupplyRoomController : MonoBehaviour
 
     private void VerifyZeroEnemySpawners()
     {
-        var waveSpawner = FindAnyObjectByType<WaveSpawner>();
-        if (waveSpawner != null)
-        {
-            Debug.LogWarning("[SupplyRoomController] WaveSpawner found in non-hostile Supply Room! Disabling it.");
-            waveSpawner.gameObject.SetActive(false);
-        }
-
         var survivorsSpawner = FindAnyObjectByType<SurvivorsSpawner>();
         if (survivorsSpawner != null)
         {

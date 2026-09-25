@@ -7,7 +7,7 @@ using UnityEngine.AI;
 ///     which he fights on foot as an ordinary goblin (his standard AI components ship disabled and
 ///     are enabled here) and the horse becomes riderless and player-mountable.
 ///
-///     The composite prefab's ROOT is the knight (so <see cref="WaveSpawner" />'s wave tracking,
+///     The composite prefab's ROOT is the knight (so <see cref="SurvivorsSpawner" />'s wave tracking,
 ///     kill credit, and CSV overrides all bind to him); the nested Horse prefab child is detached
 ///     to the scene root in <c>Awake</c> so the knight's corpse pipeline
 ///     (<see cref="CorpseDespawner" />/<see cref="DisableCollidersOnDeath" /> walk children) can

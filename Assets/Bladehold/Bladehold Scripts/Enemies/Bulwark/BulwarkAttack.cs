@@ -36,7 +36,7 @@ public class BulwarkAttack : MonoBehaviour
     public BulwarkShield Shield => shield;
 
     /// <summary>
-    ///     Per-instance damage override applied by WaveSpawner.
+    ///     Per-instance damage override applied by EnemyDefinitionApplier.
     /// </summary>
     public void SetDamage(float value)
     {

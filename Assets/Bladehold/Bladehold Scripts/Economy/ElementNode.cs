@@ -3,8 +3,7 @@ using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
-///     An elemental node pickup — the Mage's imbuement fuel, scattered each wave by
-///     <see cref="ElementNodeSpawner" /> and rolled from chest loot. Walking over it grants its
+///     An elemental node pickup — the Mage's imbuement fuel, rolled from chest loot. Walking over it grants its
 ///     element to the player's <see cref="MageImbuement" /> (a charge + timer reset, or an element
 ///     swap — see the buff's grant semantics); the wand's missiles also collect nodes they fly past
 ///     via <see cref="TryCollectRemote" /> (the "swap imbuement from a distance" half for ground

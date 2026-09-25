@@ -36,7 +36,7 @@ public class CoinDropper : MonoBehaviour
     private bool anyError = false;
 
     /// <summary>
-    ///     Per-instance coin-drop override (e.g. <see cref="WaveSpawner" /> applying an enemy type's
+    ///     Per-instance coin-drop override (e.g. <see cref="SurvivorsSpawner" /> applying an enemy type's
     ///     roster CSV row). Call right after Instantiate; the shared <see cref="EnemySO" /> is never
     ///     mutated.
     /// </summary>

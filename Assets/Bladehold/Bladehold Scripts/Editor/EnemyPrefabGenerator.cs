@@ -378,7 +378,7 @@ public static class EnemyPrefabGenerator
         {
             map = ScriptableObject.CreateInstance<EnemyPrefabMapSO>();
             AssetDatabase.CreateAsset(map, MapAssetPath);
-            Debug.LogWarning($"EnemyPrefabGenerator: created '{MapAssetPath}' — assign it on the WaveSpawner and EnemyZoo (see TODO.md) and add the existing hand-built mappings.");
+            Debug.LogWarning($"EnemyPrefabGenerator: created '{MapAssetPath}' — assign it on the SurvivorsSpawner and EnemyZoo and add the existing hand-built mappings.");
         }
 
         var serialized = new SerializedObject(map);

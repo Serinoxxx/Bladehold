@@ -85,7 +85,7 @@ public class Health : MonoBehaviour, IDamageable
     private float? maxHealthOverride;
 
     /// <summary>
-    ///     Per-instance max-health override (e.g. <see cref="WaveSpawner" /> applying an enemy type's
+    ///     Per-instance max-health override (e.g. <see cref="SurvivorsSpawner" /> applying an enemy type's
     ///     roster CSV row). Call right after Instantiate, before Start runs — the same timing as
     ///     <c>GoldenGoblin.MarkGolden</c> — so the shared <see cref="HealthSO" /> is never mutated.
     /// </summary>

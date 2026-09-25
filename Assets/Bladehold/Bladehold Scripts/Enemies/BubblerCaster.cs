@@ -48,7 +48,7 @@ public class BubblerCaster : MonoBehaviour
     }
 
     /// <summary>
-    ///     WaveSpawner CSV routing compatibility. Bubblers do not deal damage.
+    ///     EnemyDefinitionApplier CSV routing compatibility. Bubblers do not deal damage.
     /// </summary>
     public void SetDamage(float value)
     {

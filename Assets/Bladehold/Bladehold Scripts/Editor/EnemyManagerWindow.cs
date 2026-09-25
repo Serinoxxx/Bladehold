@@ -42,7 +42,7 @@ public class EnemyManagerWindow : EditorWindow
         statsTab.onRowEdited = row => EnemyZooTab.FindZoo()?.ApplyLiveDefinition(row.ToDefinition());
 
         // Resume the persisted session; first open (or a deleted roster) falls back to the shared
-        // roster asset the WaveSpawner uses.
+        // roster asset the SurvivorsSpawner uses.
         if (Session.Roster == null)
         {
             var roster = AssetDatabase.LoadAssetAtPath<EnemyRosterSO>(DefaultRosterPath);
@@ -133,7 +133,7 @@ public class EnemyManagerWindow : EditorWindow
                 Session.MarkDirty();
             }
 
-            // Row 0 is the fallback type (WaveSpawner's unlimited default) — deleting or displacing
+            // Row 0 is the fallback type (the spawner's unlimited default) — deleting or displacing
             // it would silently re-point the fallback at whatever row came next.
             using (new EditorGUI.DisabledScope(selected == 0))
             {

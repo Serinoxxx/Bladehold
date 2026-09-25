@@ -46,7 +46,7 @@ public class PowderKegAttack : MonoBehaviour
     private bool isSlamming = false;
 
     /// <summary>
-    ///     Per-instance damage override from WaveSpawner / Enemies.csv.
+    ///     Per-instance damage override from EnemyDefinitionApplier / Enemies.csv.
     /// </summary>
     public void SetDamage(float value)
     {

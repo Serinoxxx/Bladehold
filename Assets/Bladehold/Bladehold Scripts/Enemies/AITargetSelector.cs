@@ -3,8 +3,8 @@ using UnityEngine;
 
 /// <summary>
 ///     The target-selection layer between an enemy and what it chases/attacks. By default an enemy
-///     heads for its assigned <see cref="Gate" /> (set by whatever spawned it, e.g.
-///     <see cref="GateAssaultSpawner" /> — the MarkGolden right-after-Instantiate timing) or, with no
+///     heads for its assigned <see cref="Gate" /> (set by whatever spawned it, right
+///     after Instantiate, the MarkGolden timing) or, with no
 ///     assignment, the nearest still-standing gate — but the player always takes priority when they
 ///     come within <see cref="playerEngageRange" />. In a scene with no gates (or once every gate has
 ///     fallen) the target is simply the player, so enemies without this component — and every

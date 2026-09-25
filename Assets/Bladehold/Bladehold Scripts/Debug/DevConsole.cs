@@ -18,10 +18,8 @@ public class DevConsole : MonoBehaviour
     private const float SkillsPanelWidth = 360f;
     private const float Padding = 10f;
     private const float ButtonHeight = 30f;
-    private const string NextWaveFieldName = "DevConsoleNextWave";
 
     private bool visible;
-    private string nextWaveText = "";
     private int spawnTypeIndex;
     private int objectiveIndex;
     private bool isGodMode;
@@ -554,62 +552,22 @@ public class DevConsole : MonoBehaviour
     }
 
     /// <summary>
-    ///     Wave cheats: the current wave, a "Wipe Wave" kill-everything button, and a next-wave picker
-    ///     (integer field + ▲/▼). Edits apply immediately — mid-wave they take effect when the wave
-    ///     clears; during the intermission they retarget the wave about to start.
+    ///     Wave cheats for a live sector: the current wave and kill quota, and a "Wipe Wave" button that
+    ///     kills every alive enemy through <see cref="Health" /> (so kill credit and the quota count them).
     /// </summary>
     private void DrawWaveControls()
     {
-        WaveSpawner spawner = WaveSpawner.Instance;
-        if (spawner == null)
+        GameLoopManager loop = GameLoopManager.Instance;
+        if (loop == null || SurvivorsSpawner.Instance == null)
         {
             return;
         }
 
-        GUILayout.Label($"Wave {spawner.CurrentWave}");
+        GUILayout.Label($"Wave {loop.CurrentWave}  ({loop.KillsThisWave}/{loop.TargetKillsThisWave} kills)");
         if (GUILayout.Button("Wipe Wave", GUILayout.Height(ButtonHeight)))
         {
-            spawner.DebugWipeWave();
+            SurvivorsSpawner.Instance.StrikeAllAliveWithLightning();
         }
-
-        if (GUILayout.Button(spawner.IsSpawningPaused ? "Resume Wave Spawner" : "Pause Wave Spawner", GUILayout.Height(ButtonHeight)))
-        {
-            spawner.DebugSetSpawningPaused(!spawner.IsSpawningPaused);
-        }
-
-        GUILayout.Label("Next Wave");
-        GUILayout.BeginHorizontal();
-
-        // While the field isn't being edited, mirror the spawner's actual next wave so it stays live;
-        // while focused, leave the user's in-progress text alone (it re-syncs on blur, so a garbage
-        // entry just snaps back).
-        if (GUI.GetNameOfFocusedControl() != NextWaveFieldName)
-        {
-            nextWaveText = spawner.NextWave.ToString();
-        }
-        GUI.SetNextControlName(NextWaveFieldName);
-        string edited = GUILayout.TextField(nextWaveText, GUILayout.Height(ButtonHeight));
-        if (edited != nextWaveText)
-        {
-            nextWaveText = edited;
-            if (int.TryParse(edited, out int typed))
-            {
-                spawner.DebugSetNextWave(typed);
-            }
-        }
-
-        if (GUILayout.Button("▲", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
-        {
-            spawner.DebugSetNextWave(spawner.NextWave + 1);
-            GUI.FocusControl(null); // unfocus the field so it re-syncs to the new value
-        }
-        if (GUILayout.Button("▼", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
-        {
-            spawner.DebugSetNextWave(spawner.NextWave - 1);
-            GUI.FocusControl(null);
-        }
-
-        GUILayout.EndHorizontal();
     }
 
     /// <summary>
@@ -698,19 +656,15 @@ public class DevConsole : MonoBehaviour
     }
 
     /// <summary>
-    ///     Spawn-a-specific-type cheat: a ◄/► picker over <see cref="WaveSpawner.DebugSpawnableTypes" />
+    ///     Spawn-a-specific-type cheat: a ◄/► picker over <see cref="SurvivorsSpawner.DebugSpawnableTypes" />
     ///     (all roster ids with a prefab mapping) plus a "Spawn" button that instantly places one at a
-    ///     random spawn point via <see cref="WaveSpawner.DebugSpawnEnemyType" />.
+    ///     random spawn point via <see cref="SurvivorsSpawner.DebugSpawnEnemyType" />.
     /// </summary>
     private void DrawEnemySpawnControls()
     {
         IReadOnlyList<EnemyDefinition> types = null;
 
-        if (WaveSpawner.Instance != null)
-        {
-            types = WaveSpawner.Instance.DebugSpawnableTypes;
-        }
-        else if (SurvivorsSpawner.Instance != null)
+        if (SurvivorsSpawner.Instance != null)
         {
             types = SurvivorsSpawner.Instance.DebugSpawnableTypes;
         }
@@ -738,11 +692,7 @@ public class DevConsole : MonoBehaviour
 
         if (GUILayout.Button($"Spawn {label}", GUILayout.Height(ButtonHeight)))
         {
-            if (WaveSpawner.Instance != null)
-            {
-                WaveSpawner.Instance.DebugSpawnEnemyType(selected.id);
-            }
-            else if (SurvivorsSpawner.Instance != null)
+            if (SurvivorsSpawner.Instance != null)
             {
                 SurvivorsSpawner.Instance.DebugSpawnEnemyType(selected.id);
             }
@@ -830,11 +780,7 @@ public class DevConsole : MonoBehaviour
     {
         if (GUILayout.Button($"+{count}", GUILayout.Height(ButtonHeight)))
         {
-            if (WaveSpawner.Instance != null)
-            {
-                WaveSpawner.Instance.DebugSpawnBurst(count);
-            }
-            else if (SurvivorsSpawner.Instance != null)
+            if (SurvivorsSpawner.Instance != null)
             {
                 SurvivorsSpawner.Instance.DebugSpawnBurst(count);
             }
@@ -921,8 +867,7 @@ public class DevConsole : MonoBehaviour
         Quaternion lookRot = toPlayer.sqrMagnitude > 0.01f ? Quaternion.LookRotation(toPlayer) : Quaternion.identity;
 
         EnemyPrefabMapSO map = null;
-        if (WaveSpawner.Instance != null) map = WaveSpawner.Instance.PrefabMap;
-        if (map == null && SurvivorsSpawner.Instance != null) map = SurvivorsSpawner.Instance.PrefabMap;
+        if (SurvivorsSpawner.Instance != null) map = SurvivorsSpawner.Instance.PrefabMap;
         if (map == null)
         {
             var maps = Resources.FindObjectsOfTypeAll<EnemyPrefabMapSO>();
@@ -940,11 +885,10 @@ public class DevConsole : MonoBehaviour
         activeScenarioSpawns.Add(spawned);
 
         EnemyRosterSO roster = null;
-        if (WaveSpawner.Instance != null) roster = WaveSpawner.Instance.Roster;
-        if (roster == null && SurvivorsSpawner.Instance != null) roster = SurvivorsSpawner.Instance.Roster;
+        if (SurvivorsSpawner.Instance != null) roster = SurvivorsSpawner.Instance.Roster;
         EnemyDefinition def = roster != null ? roster.Find(enemyId) : new EnemyDefinition { id = enemyId };
 
-        WaveSpawner.ApplyDefinition(spawned, def);
+        EnemyDefinitionApplier.Apply(spawned, def);
 
         if (asDummy || aiPassiveMode)
         {

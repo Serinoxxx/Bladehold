@@ -58,7 +58,7 @@ public class AssassinAttack : MonoBehaviour
     private bool anyError = false;
 
     /// <summary>
-    ///     Per-instance damage override applied by <see cref="WaveSpawner" /> from Enemies.csv.
+    ///     Per-instance damage override applied by <see cref="SurvivorsSpawner" /> from Enemies.csv.
     /// </summary>
     public void SetDamage(float value)
     {

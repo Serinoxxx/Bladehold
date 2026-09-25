@@ -12,8 +12,8 @@ using UnityEngine.AI;
 ///     side, toggled between a frozen "display" state and a live "battle" state (chase/attack the
 ///     player), and stress-tested by spawning batches of a picked type on demand.
 ///
-///     Roster-faithful: each gallery enemy gets the same CSV overrides <see cref="WaveSpawner" />
-///     applies at spawn (via the shared <see cref="WaveSpawner.ApplyDefinition" />), so what you see
+///     Roster-faithful: each gallery enemy gets the same CSV overrides <see cref="SurvivorsSpawner" />
+///     applies at spawn (via the shared <see cref="EnemyDefinitionApplier.Apply" />), so what you see
 ///     matches what the waves actually spawn. Controls are an IMGUI panel in the same wiring-free
 ///     idiom as <see cref="DevConsole" /> (no canvas/prefab setup needed).
 ///
@@ -25,7 +25,7 @@ public class EnemyZoo : MonoBehaviour
 {
     [Header("Roster")]
     [SerializeField] private EnemyRosterSO roster;
-    [Tooltip("The shared id → prefab map asset (the same one the WaveSpawner uses). Rows without a mapping are skipped (with a warning).")]
+    [Tooltip("The shared id → prefab map asset (the same one the SurvivorsSpawner uses). Rows without a mapping are skipped (with a warning).")]
     [SerializeField] private EnemyPrefabMapSO prefabMap;
     [Tooltip("Apply each row's CSV stat overrides (health/damage/scale/…) so the gallery matches what waves spawn.")]
     [SerializeField] private bool applyRosterOverrides = true;
@@ -215,7 +215,7 @@ public class EnemyZoo : MonoBehaviour
         
         if (applyRosterOverrides)
         {
-            WaveSpawner.ApplyDefinition(instance, spawnable.def);
+            EnemyDefinitionApplier.Apply(instance, spawnable.def);
         }
 
         // Strip everything that makes it alive
@@ -249,7 +249,7 @@ public class EnemyZoo : MonoBehaviour
         GameObject instance = Instantiate(spawnable.prefab, snapped, rotation);
         if (applyRosterOverrides)
         {
-            WaveSpawner.ApplyDefinition(instance, spawnable.def);
+            EnemyDefinitionApplier.Apply(instance, spawnable.def);
         }
         extraSpawns.Add(new ExtraSpawn { id = spawnable.def.id, instance = instance });
     }
@@ -369,7 +369,7 @@ public class EnemyZoo : MonoBehaviour
                 entry.def = def;
                 // Don't apply live to dummy because the dummy might reactivate scripts?
                 // ApplyDefinitionLive doesn't enable scripts, it just sets stats.
-                WaveSpawner.ApplyDefinitionLive(entry.instance, def);
+                EnemyDefinitionApplier.ApplyLive(entry.instance, def);
                 if (entry.nameplateTmp != null)
                 {
                     entry.nameplateTmp.text = string.IsNullOrEmpty(def.displayName) ? def.id : def.displayName;
@@ -383,7 +383,7 @@ public class EnemyZoo : MonoBehaviour
         {
             if (spawn.id == def.id && spawn.instance != null)
             {
-                WaveSpawner.ApplyDefinitionLive(spawn.instance, def);
+                EnemyDefinitionApplier.ApplyLive(spawn.instance, def);
                 updated++;
             }
         }

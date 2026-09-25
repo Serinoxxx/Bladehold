@@ -539,7 +539,6 @@ public class SetupSurvivorsSceneTool : EditorWindow
             if (objTracker != null)
             {
                 var otSo = new SerializedObject(objTracker);
-                otSo.FindProperty("spawner").objectReferenceValue = spawnerComp;
                 otSo.FindProperty("objectiveManager").objectReferenceValue = objManagerComp;
                 otSo.ApplyModifiedProperties();
             }
@@ -548,18 +547,8 @@ public class SetupSurvivorsSceneTool : EditorWindow
             if (waveClearedBanner != null)
             {
                 var wcbSo = new SerializedObject(waveClearedBanner);
-                wcbSo.FindProperty("spawner").objectReferenceValue = spawnerComp;
                 wcbSo.FindProperty("objectiveManager").objectReferenceValue = objManagerComp;
                 wcbSo.ApplyModifiedProperties();
-            }
-
-            var waveIntermissionUI = hudGo.GetComponentInChildren<WaveIntermissionUI>(true);
-            if (waveIntermissionUI != null)
-            {
-                var wiSo = new SerializedObject(waveIntermissionUI);
-                wiSo.FindProperty("spawner").objectReferenceValue = spawnerComp;
-                wiSo.FindProperty("holdTheLineBonus").objectReferenceValue = htlBonus;
-                wiSo.ApplyModifiedProperties();
             }
 
             if (sidekickT != null)

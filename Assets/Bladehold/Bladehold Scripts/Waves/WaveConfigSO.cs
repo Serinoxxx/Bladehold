@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-///     Tunable parameters for wave-based goblin spawning, read by <see cref="WaveSpawner" />. As with
+///     Tunable parameters for wave-based goblin spawning, read by <see cref="SurvivorsSpawner" />. As with
 ///     <see cref="AIMovementSO" /> and <see cref="EnemySO" />, tune spawning by editing the asset rather
 ///     than the spawner script.
 /// </summary>

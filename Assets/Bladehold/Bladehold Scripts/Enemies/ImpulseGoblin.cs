@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// <summary>
 ///     Marks a spawned goblin as an Impulse Goblin: a crackling variant rolled by
-///     <see cref="WaveSpawner" /> per-spawn against <see cref="StatType.ImpulseGoblinChance" />, the
+///     <see cref="SurvivorsSpawner" /> per-spawn against <see cref="StatType.ImpulseGoblinChance" />, the
 ///     same pattern as <see cref="GoldenGoblin" />. <see cref="MarkImpulse" /> is called right after
 ///     <c>Instantiate</c>, before <c>Start</c> runs, so the visual swap in <c>Start</c> sees the flag.
 ///
