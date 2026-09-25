@@ -1966,6 +1966,7 @@ MonoBehaviour:
   orbitSpeed: 540
   damageTickInterval: 0.25
   bladeDamage: 25
+  orbitBladePrefab: {fileID: 8007509080676759824, guid: 5c177b94978bf9947ac50a5b4afb4b0d, type: 3}
 --- !u!114 &9064934731767258215
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -63264,6 +63265,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1286234636382112833}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8429469273078122486}
   m_SourcePrefab: {fileID: 100100000, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
 --- !u!4 &190421269890890082 stripped
 Transform:
@@ -64714,6 +64718,25 @@ MonoBehaviour:
   stats: {fileID: 5156588240620538864}
   meleeTrigger: {fileID: 3556331140146632137}
   thrownAxe: {fileID: 0}
+--- !u!114 &8429469273078122486
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8033356972124291578}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2c3af916f4fa194ab3342070d173be7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FishingBowController
+  inputReader: {fileID: 0}
+  aimCamera: {fileID: 0}
+  arrowSpawnPoint: {fileID: 0}
+  arrowPrefab: {fileID: 7957775341414643220, guid: 0915611c616a925409034c3330963203, type: 3}
+  audioSource: {fileID: 0}
+  shootSfx: {fileID: 0}
+  fireCooldown: 0.35
 --- !u!4 &8319765117670202089 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8013909246233647550, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}

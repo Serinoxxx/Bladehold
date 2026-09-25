@@ -91,11 +91,6 @@ public class ArmoredKnightAI : MonoBehaviour
         if (agent == null) agent = GetComponent<NavMeshAgent>();
         if (animator == null) animator = GetComponentInChildren<Animator>();
         if (knightCollider == null) knightCollider = GetComponent<Collider>();
-
-        if (holySoulBeaconVisual == null)
-        {
-            CreateProceduralSoulBeacon();
-        }
     }
 
     private void Start()
@@ -121,6 +116,10 @@ public class ArmoredKnightAI : MonoBehaviour
         {
             holySoulBeaconVisual.SetActive(false);
         }
+        else
+        {
+            Debug.LogError("[ArmoredKnightAI] holySoulBeaconVisual is not assigned (instance VFX/HolySoulBeacon.prefab under the knight).", this);
+        }
     }
 
     private void OnDestroy()
@@ -133,37 +132,6 @@ public class ArmoredKnightAI : MonoBehaviour
         eventsSubscribed = false;
     }
 
-    private void CreateProceduralSoulBeacon()
-    {
-        // Check if child beacon already exists
-        Transform existing = transform.Find("HolySoulBeacon");
-        if (existing != null)
-        {
-            holySoulBeaconVisual = existing.gameObject;
-            return;
-        }
-
-        // Procedural vertical golden pillar of light
-        holySoulBeaconVisual = new GameObject("HolySoulBeacon");
-        holySoulBeaconVisual.transform.SetParent(transform, false);
-        holySoulBeaconVisual.transform.localPosition = new Vector3(0f, 0.1f, 0f);
-
-        LineRenderer lr = holySoulBeaconVisual.AddComponent<LineRenderer>();
-        lr.useWorldSpace = false;
-        lr.startWidth = 0.55f;
-        lr.endWidth = 0.25f;
-        lr.positionCount = 2;
-        lr.SetPosition(0, Vector3.zero);
-        lr.SetPosition(1, new Vector3(0f, 9f, 0f));
-
-        Shader s = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Sprites/Default");
-        Material beaconMat = new Material(s);
-        beaconMat.color = new Color(1.0f, 0.9f, 0.35f, 0.85f);
-        lr.sharedMaterial = beaconMat;
-        lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-
-        holySoulBeaconVisual.SetActive(false);
-    }
 
     private void Update()
     {

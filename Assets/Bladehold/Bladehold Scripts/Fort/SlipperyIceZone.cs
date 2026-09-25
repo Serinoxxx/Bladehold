@@ -12,82 +12,52 @@ public class SlipperyIceZone : MonoBehaviour
     [SerializeField] private float duration = 10.0f;
     [SerializeField] private float enemySlipCooldown = 3.5f;
     [SerializeField] private AudioClip slipSfx;
-    [SerializeField] private GameObject iceVisualPrefab;
+    [Tooltip("The ice pad child, authored for a 1m radius; x/z are scaled to the zone radius.")]
+    [SerializeField] private Transform visualRoot;
 
     private readonly Dictionary<KnockbackReceiver, float> slipCooldowns = new Dictionary<KnockbackReceiver, float>();
     private readonly Collider[] hitBuffer = new Collider[32];
     private float aliveTime = 0f;
     private bool playerInside = false;
-    private GameObject visualInstance;
+    private Vector3 visualBaseScale = Vector3.one;
 
     public float Radius => radius;
     public float Duration => duration;
 
-    public static SlipperyIceZone Spawn(Vector3 position, float rad = 5.5f, float dur = 10f, GameObject visualPrefab = null, AudioClip slipAudio = null)
+    /// <summary>Instantiates the authored ice zone prefab (CatapultProjectile.slipperyIceZonePrefab).</summary>
+    public static SlipperyIceZone Spawn(SlipperyIceZone prefab, Vector3 position, float rad = 5.5f, float dur = 10f)
     {
-        GameObject zoneObj = new GameObject("SlipperyIceZone");
-        zoneObj.transform.position = position;
+        if (prefab == null)
+        {
+            Debug.LogError("[SlipperyIceZone] No ice zone prefab: assign CatapultProjectile.slipperyIceZonePrefab.");
+            return null;
+        }
 
-        SlipperyIceZone zone = zoneObj.AddComponent<SlipperyIceZone>();
-        zone.Init(rad, dur, visualPrefab, slipAudio);
+        SlipperyIceZone zone = Instantiate(prefab, position, Quaternion.identity);
+        zone.Init(rad, dur);
         return zone;
     }
 
-    public void Init(float rad, float dur, GameObject visualPrefab = null, AudioClip slipAudio = null)
+    public void Init(float rad, float dur)
     {
         radius = rad;
         duration = dur;
-        iceVisualPrefab = visualPrefab;
-        slipSfx = slipAudio;
+        ScaleVisual();
+    }
 
-        CreateVisual();
+    private void Awake()
+    {
+        if (visualRoot != null) visualBaseScale = visualRoot.localScale;
     }
 
     private void Start()
     {
-        if (visualInstance == null)
+        if (visualRoot == null)
         {
-            CreateVisual();
+            // Still slips enemies, just invisible.
+            Debug.LogError("[SlipperyIceZone] visualRoot is not assigned (the ice pad child, authored for a 1m radius).", this);
         }
-    }
-
-    private void CreateVisual()
-    {
-        if (visualInstance != null) return;
-
-        if (iceVisualPrefab != null)
-        {
-            visualInstance = Instantiate(iceVisualPrefab, transform.position, Quaternion.identity, transform);
-        }
-        else
-        {
-            // Procedural ice disc pad
-            GameObject disc = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            disc.name = "IceDiscVisual";
-            disc.transform.SetParent(transform, false);
-            disc.transform.localPosition = new Vector3(0f, 0.03f, 0f);
-            disc.transform.localScale = new Vector3(radius * 2f, 0.04f, radius * 2f);
-
-            // Remove cylinder collider so it doesn't block player/enemies
-            Collider discCol = disc.GetComponent<Collider>();
-            if (discCol != null)
-            {
-                if (Application.isPlaying) Destroy(discCol);
-                else DestroyImmediate(discCol);
-            }
-
-            // Frost tint
-            if (disc.TryGetComponent(out Renderer rend))
-            {
-                Material mat = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
-                mat.color = new Color(0.5f, 0.85f, 1.0f, 0.55f);
-                if (mat.HasProperty("_Smoothness")) mat.SetFloat("_Smoothness", 0.95f);
-                if (mat.HasProperty("_Metallic")) mat.SetFloat("_Metallic", 0.2f);
-                rend.material = mat;
-            }
-
-            visualInstance = disc;
-        }
+        ScaleVisual();
 
         // Spawn chilled status vfx if available
         if (ElementalEffectsManager.Instance != null && ElementalEffectsManager.Instance.iceStatusVfx != null)
@@ -95,6 +65,12 @@ public class SlipperyIceZone : MonoBehaviour
             GameObject frostVfx = Instantiate(ElementalEffectsManager.Instance.iceStatusVfx, transform.position + Vector3.up * 0.2f, Quaternion.identity, transform);
             frostVfx.transform.localScale = Vector3.one * (radius * 0.5f);
         }
+    }
+
+    private void ScaleVisual()
+    {
+        if (visualRoot == null) return;
+        visualRoot.localScale = new Vector3(visualBaseScale.x * radius, visualBaseScale.y, visualBaseScale.z * radius);
     }
 
     private void Update()
@@ -174,11 +150,6 @@ public class SlipperyIceZone : MonoBehaviour
         {
             PlayerIceSlideController.GetOrAdd(Player.Instance)?.UnregisterIceZone();
             playerInside = false;
-        }
-
-        if (visualInstance != null)
-        {
-            Destroy(visualInstance);
         }
     }
 

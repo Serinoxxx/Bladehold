@@ -50,7 +50,7 @@ public class GameLoopManager : MonoBehaviour
     [Header("Upgrade Powerup (Between Waves)")]
     [Tooltip("World spawn point for the between-wave upgrade powerup. Defaults to arena center (0,0,0) if null.")]
     [SerializeField] private Transform upgradePowerupSpawnPoint;
-    [Tooltip("Optional custom prefab for the WaveUpgradePowerup. If null, creates procedural visual.")]
+    [Tooltip("Fallback powerup prefab (a Powerups/WaveReward_* variant) for a bounty whose WarBannerRewardSO has no rewardPrefab.")]
     [SerializeField] private GameObject upgradePowerupPrefab;
 
     [Header("UI References (Optional / Fallback)")]
@@ -520,6 +520,12 @@ public class GameLoopManager : MonoBehaviour
         }
 
         activePowerup = WaveUpgradePowerup.Spawn(spawnPos, CurrentWaveBounty, prefabToSpawn);
+        if (activePowerup == null)
+        {
+            // Spawn already logged which field to wire. Skip the reward rather than stall the run.
+            StartCoroutine(TransitionToNextBannersRoutine());
+            return;
+        }
         activePowerup.OnClaimed += HandlePowerupClaimed;
     }
 

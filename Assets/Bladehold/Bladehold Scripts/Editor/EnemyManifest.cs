@@ -916,7 +916,7 @@ internal static class EnemyManifest
                     {
                         var bso = (BubbleShieldSO)so;
                         bso.radius = 2.0f;
-                        bso.bubbleMaterial = AssetDatabase.LoadAssetAtPath<Material>("Assets/Piloto Studio/Materials/Shields/Shield_TopLayer_Rainbow.mat");
+                        bso.bubbleVisualPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/VFX/BubbleShieldVisual.prefab");
                         bso.blockSfx = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Impacts/Fantasy_Game_Weapons_Wood Shield_1_Block_Defend_Buckler_Deflect.wav");
                         bso.blockSfxVolume = 0.8f;
                     }

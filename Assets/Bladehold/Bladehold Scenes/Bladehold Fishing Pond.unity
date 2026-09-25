@@ -2364,7 +2364,7 @@ MonoBehaviour:
   minOrbitRadius: 4
   maxOrbitRadius: 13
   maxFishCount: 30
-  fishBasePrefab: {fileID: 0}
+  fishBasePrefab: {fileID: 806497976973425030, guid: 195732450ad595d4ab1cbd17877b383c, type: 3}
   goldFishMat: {fileID: 0}
   orcMetalFishMat: {fileID: 0}
   goblinBloodFishMat: {fileID: 0}

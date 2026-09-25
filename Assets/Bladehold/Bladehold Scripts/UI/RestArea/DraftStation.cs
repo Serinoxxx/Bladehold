@@ -78,23 +78,16 @@ public class DraftStation : MonoBehaviour
 
         if (stationLight == null)
         {
-            stationLight = GetComponentInChildren<Light>();
-        }
-        if (stationLight == null)
-        {
-            GameObject lightGo = new GameObject("StationLight");
-            lightGo.transform.SetParent(transform, false);
-            lightGo.transform.localPosition = new Vector3(0f, 1.5f, 0f);
-            stationLight = lightGo.AddComponent<Light>();
-            stationLight.type = LightType.Point;
-            stationLight.range = 8f;
-            stationLight.intensity = 2.5f;
+            Debug.LogError("[DraftStation] stationLight is not assigned (a child point Light).", this);
+            return;
         }
 
-        if (stationLight != null)
-        {
-            stationLight.color = color;
-        }
+        stationLight.color = color;
+    }
+
+    private void OnValidate()
+    {
+        if (stationLight == null) stationLight = GetComponentInChildren<Light>(true);
     }
 
     private void HandleDraft(Player player)

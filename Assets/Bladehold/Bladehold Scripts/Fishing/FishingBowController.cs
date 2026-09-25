@@ -103,26 +103,21 @@ public class FishingBowController : MonoBehaviour
         int pierces = FishingUpgradeManager.Instance != null ? FishingUpgradeManager.Instance.PierceCount : 0;
         int bounces = FishingUpgradeManager.Instance != null ? FishingUpgradeManager.Instance.BounceCount : 0;
 
-        if (arrowPrefab != null)
+        if (arrowPrefab == null)
         {
-            GameObject arrowObj = Instantiate(arrowPrefab, spawnPos, Quaternion.LookRotation(fireDir));
-            FishingBowArrow arrow = arrowObj.GetComponent<FishingBowArrow>();
-            if (arrow != null)
-            {
-                arrow.Setup(fireDir, pierces, bounces);
-            }
+            Debug.LogError("[FishingBowController] arrowPrefab is not assigned (Player.prefab → SidekickSyntyCharacter → FishingBowController).", this);
+            return;
+        }
+
+        GameObject arrowObj = Instantiate(arrowPrefab, spawnPos, Quaternion.LookRotation(fireDir));
+        FishingBowArrow arrow = arrowObj.GetComponent<FishingBowArrow>();
+        if (arrow != null)
+        {
+            arrow.Setup(fireDir, pierces, bounces);
         }
         else
         {
-            // Procedural fallback arrow if prefab not assigned
-            GameObject arrowObj = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            arrowObj.transform.position = spawnPos;
-            arrowObj.transform.localScale = new Vector3(0.08f, 0.4f, 0.08f);
-            arrowObj.transform.rotation = Quaternion.LookRotation(fireDir) * Quaternion.Euler(90f, 0f, 0f);
-            var col = arrowObj.GetComponent<Collider>();
-            if (col != null) col.isTrigger = true;
-            FishingBowArrow arrow = arrowObj.AddComponent<FishingBowArrow>();
-            arrow.Setup(fireDir, pierces, bounces);
+            Debug.LogError($"[FishingBowController] arrowPrefab '{arrowPrefab.name}' has no FishingBowArrow.", this);
         }
 
         if (audioSource != null && shootSfx != null)

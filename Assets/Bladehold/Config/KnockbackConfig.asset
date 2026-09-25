@@ -51,6 +51,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 785e315020ffda14094e42d2feac98ab, type: 3}
   - {fileID: 8300000, guid: abe7912f70a949e4485ca92114bf2935, type: 3}
   enableFlyingLightFlash: 1
+  flyingLightFlashPrefab: {fileID: 3086303432559563144, guid: fa72b3b3a66f1d54ea44f4741012ac69, type: 3}
   flyingLightColor: {r: 0.8, g: 0.96057284, b: 1, a: 1}
   flyingLightIntensity: 2
   flyingLightRange: 10

@@ -130,10 +130,12 @@ public class FishingManager : MonoBehaviour
         Player player = Player.Instance ?? FindAnyObjectByType<Player>();
         if (player != null)
         {
+            // Authored (disabled) on the Player prefab so its arrow prefab is wired; only the pond enables it.
             FishingBowController bow = player.GetComponentInChildren<FishingBowController>(true);
             if (bow == null)
             {
-                bow = player.gameObject.AddComponent<FishingBowController>();
+                Debug.LogError("[FishingManager] The Player has no FishingBowController (expected, disabled, on Player.prefab → SidekickSyntyCharacter).", this);
+                return;
             }
             bow.enabled = true;
         }
@@ -320,20 +322,20 @@ public class FishingManager : MonoBehaviour
 
     private void SpawnFish(bool isBuff, ResourceFishType resType, BuffFishType bType, Material mat, float hpMult)
     {
-        GameObject fishObj;
-        if (fishBasePrefab != null)
+        if (fishBasePrefab == null)
         {
-            fishObj = Instantiate(fishBasePrefab);
-        }
-        else
-        {
-            // Procedural primitive fallback
-            fishObj = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            fishObj.transform.localScale = new Vector3(0.35f, 0.2f, 0.7f);
+            Debug.LogError("[FishingManager] fishBasePrefab is not assigned.", this);
+            return;
         }
 
+        GameObject fishObj = Instantiate(fishBasePrefab);
         FishController controller = fishObj.GetComponent<FishController>();
-        if (controller == null) controller = fishObj.AddComponent<FishController>();
+        if (controller == null)
+        {
+            Debug.LogError($"[FishingManager] fishBasePrefab '{fishBasePrefab.name}' has no FishController.", this);
+            Destroy(fishObj);
+            return;
+        }
 
         Renderer rend = fishObj.GetComponentInChildren<Renderer>();
         if (rend != null && mat != null)

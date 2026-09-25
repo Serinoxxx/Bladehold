@@ -77,6 +77,9 @@ public class KnockbackConfigSO : ScriptableObject
     [Tooltip("Whether to spawn a bright flash light when an enemy is flung into a ragdoll.")]
     public bool enableFlyingLightFlash = true;
 
+    [Tooltip("Authored flash prefab: a point Light + FlashLightDimmer. Colour, intensity and range below are applied to it on spawn.")]
+    public GameObject flyingLightFlashPrefab;
+
     [Tooltip("Initial color of the bright light flash on flying ragdoll launch.")]
     public Color flyingLightColor = new Color(1f, 0.95f, 0.8f, 1f);
 

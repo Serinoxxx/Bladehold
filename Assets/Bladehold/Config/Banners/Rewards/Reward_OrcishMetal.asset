@@ -18,5 +18,5 @@ MonoBehaviour:
   quantityText: x 3
   minAmount: 2
   maxAmount: 3
-  rewardPrefab: {fileID: 176990, guid: 6a57b9f39fb08014aabf0466d55fedb9, type: 3}
+  rewardPrefab: {fileID: 6526744723001803042, guid: 4f5f9376d95a99243b359b41732cc649, type: 3}
   rewardDescription: Grants permanent Orcish Metal to player meta-inventory.

@@ -18,5 +18,5 @@ MonoBehaviour:
   quantityText: x 1 Draft
   minAmount: 1
   maxAmount: 1
-  rewardPrefab: {fileID: 149244, guid: 2835e173a7421ca499f76d4b7867306f, type: 3}
+  rewardPrefab: {fileID: 7466440132701520612, guid: 3d71ecaba0d931249b1155ec6b19bb62, type: 3}
   rewardDescription: Triggers a 3-card draft for the active element.

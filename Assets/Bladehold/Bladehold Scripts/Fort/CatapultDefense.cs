@@ -180,48 +180,22 @@ public class CatapultDefense : DefenseStructure
             effectiveSplashDamage *= Player.Instance.Stats.GetValue(StatType.AllDamageMultiplier);
         }
 
-        if (projectilePrefab != null)
+        if (projectilePrefab == null)
         {
-            GameObject projObj = Instantiate(projectilePrefab, spawnPos, Quaternion.identity);
-            CatapultProjectile proj = projObj.GetComponent<CatapultProjectile>();
-            if (proj != null)
-            {
-                proj.SetElementalUpgrades(hasIce, hasLightning, hasFire);
-                proj.Launch(spawnPos, targetPos, effectiveSplashDamage, 1.2f, splashRadius);
-            }
+            Debug.LogError("[CatapultDefense] projectilePrefab is not assigned.", this);
+            return;
+        }
+
+        GameObject projObj = Instantiate(projectilePrefab, spawnPos, Quaternion.identity);
+        CatapultProjectile proj = projObj.GetComponent<CatapultProjectile>();
+        if (proj != null)
+        {
+            proj.SetElementalUpgrades(hasIce, hasLightning, hasFire);
+            proj.Launch(spawnPos, targetPos, effectiveSplashDamage, 1.2f, splashRadius);
         }
         else
         {
-            // Fallback direct splash
-            Collider[] hits = Physics.OverlapSphere(targetPos, splashRadius);
-            foreach (var hit in hits)
-            {
-                if (hit == null) continue;
-                Health h = hit.GetComponentInParent<Health>();
-                if (h != null && !h.IsDead && (Player.Instance == null || h.transform.root != Player.Instance.transform.root))
-                {
-                    Damage dmg = new Damage
-                    {
-                        value = effectiveSplashDamage,
-                        type = DamageType.elemental,
-                        elementId = "Fire",
-                        isPlayerDamage = true,
-                        sourcePosition = spawnPos,
-                        source = Player.Instance != null ? Player.Instance.Damageable : null
-                    };
-                    h.ReceiveDamage(dmg);
-                    EnemyStatusManager.GetOrAdd(h)?.ApplyStatus("Fire");
-                }
-            }
-
-            if (hasIce) SlipperyIceZone.Spawn(targetPos, splashRadius * 1.25f, 10f);
-            if (hasLightning) CatapultStormCloud.Spawn(targetPos, splashRadius * 1.35f, 8f, effectiveSplashDamage * 0.45f);
-            if (hasFire)
-            {
-                Vector3 rollDir = (targetPos - spawnPos);
-                rollDir.y = 0f;
-                RollingFireball.Spawn(targetPos, rollDir.normalized, 9.5f, effectiveSplashDamage * 0.8f, 10f);
-            }
+            Debug.LogError($"[CatapultDefense] projectilePrefab '{projectilePrefab.name}' has no CatapultProjectile.", this);
         }
 
         if (fireSfx != null)

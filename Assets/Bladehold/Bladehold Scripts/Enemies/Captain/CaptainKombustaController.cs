@@ -309,20 +309,19 @@ public class CaptainKombustaController : MonoBehaviour
             Vector3 spawnPos = firePoint != null ? firePoint.position : (transform.position + Vector3.up * 1.5f + transform.forward * 0.5f);
 
             // Spawn dynamite projectile
-            GameObject dynObj = null;
-            if (attackData != null && attackData.dynamitePrefab != null)
+            if (attackData == null || attackData.dynamitePrefab == null)
             {
-                dynObj = Instantiate(attackData.dynamitePrefab, spawnPos, Quaternion.identity);
-            }
-            else
-            {
-                dynObj = new GameObject("DynamiteProjectileInstance");
+                Debug.LogError("[CaptainKombustaController] CaptainKombustaSO.dynamitePrefab is not assigned.", this);
+                break;
             }
 
+            GameObject dynObj = Instantiate(attackData.dynamitePrefab, spawnPos, Quaternion.identity);
             DynamiteProjectile projectile = dynObj.GetComponent<DynamiteProjectile>();
             if (projectile == null)
             {
-                projectile = dynObj.AddComponent<DynamiteProjectile>();
+                Debug.LogError($"[CaptainKombustaController] dynamitePrefab '{attackData.dynamitePrefab.name}' has no DynamiteProjectile.", this);
+                Destroy(dynObj);
+                break;
             }
 
             GameObject telegraphPrefab = attackData != null ? attackData.telegraphPrefab : null;

@@ -137,6 +137,8 @@
 - Fixed coin, health pack and orb pickups playing their sound twice
 - Fixed the ammo pickup making no sound
 - Fixed destroyed defenses, the build wheel, supply wagon gold bags and some objective markers losing their effects or icons outside the Editor
+- Fixed Captain Kombusta's dynamite, fishing arrows and pond fish showing up as plain placeholder shapes
+- Fixed the vortex blades of the throwing-axe ultimate showing as red boxes instead of axes
 
 ### Balance Changes
 

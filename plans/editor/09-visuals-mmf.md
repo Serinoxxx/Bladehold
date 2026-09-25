@@ -39,3 +39,20 @@ Built by an agent through MCP, wired and play-checked for errors, but nobody has
 - [ ] **Crosshair ammo text** switched from LiberationSans to Grenze (`Bladehold HUD.prefab` → `Crosshair`). Check it still reads at a glance. `Enemy Zoo`'s crosshair is now a copy of the HUD one.
 
 **Seen in the console during the play check, not from this change:** `SwordChargeFeedback`: "PlayerAttack is not assigned" and a `KnockbackReceiver` dependency error on `TrainingDummy_MetaArea`, both in the Meta Area.
+
+## 5. Session 3: world-visual mockups (agent mockup, art review)
+
+Built and wired through MCP, and play-checked for errors in the Fishing Pond, Crypt, Sanctuary and Survivors scenes. The shapes and colours copy what the old code built, so they look exactly as rough as before; now they're prefabs you can reskin. Mockup materials are in `Materials/Mockup/`. Code only needs the wired refs (and, where noted, the child that gets scaled).
+
+- [ ] **Catapult payloads** (`Bladehold Prefabs/Fort/`): `SlipperyIceZone` (flat ice disc), `CatapultStormCloud` (dark puff), `RollingFireball` (fire-material sphere). The ice/cloud `visualRoot` child is authored for a **1 m radius** and its x/z get scaled to the zone radius. Swap in real VFX as children of those roots, or re-point `visualRoot`. Candidates: `vfx_LingerRoundMarker04_Blue`, `FX_Smoke_Black_Large_01`, `FX_Fireball_01`. Verify: DevConsole → build a catapult with the Glacial/Tempest/Pyroclast upgrade and let it fire.
+- [ ] **Wave reward chests** (`Powerups/WaveReward_*.prefab`, variants of `WaveUpgradePowerup.prefab`). Each holds its old Synty chest under `Visual`, with the chest colliders removed and a point light. The light is tinted by bounty; the chest isn't. Verify: clear a wave, and the chest appears, bobs, and `[E]` claims it.
+- [ ] **Kombusta dynamite** `Enemies/DynamiteProjectile.prefab` (Synty `SM_Prop_Dynamite_01`). It used to be a red cylinder because `dynamitePrefab` was empty. Verify: a Kombusta captain throws visible sticks.
+- [ ] **Fishing** `Fishing/FishingArrow.prefab` (Synty arrow) and `Fishing/Fish.prefab` (Synty `SM_Item_Meat_Fish_01` at 0.3 scale; the code tints its renderer per fish type). Both used to be primitives. Probably wants a real live-fish mesh. The pond's `FishingBowController` now lives, disabled, on `Player.prefab → SidekickSyntyCharacter`. Verify: pond → T → fish swim, shots fire visible arrows.
+- [ ] **Bubbles**: `VFX/BubbleShieldVisual.prefab` (Bubbler shield, same Piloto material as before; `BubbleShieldSO.bubbleMaterial` became `bubbleVisualPrefab`) and `VFX/NecromancerBubbleShield.prefab` (purple, in the Crypt). Both keep a trigger `SphereCollider`, because projectile/sweep hit tests use it.
+- [ ] **Boss telegraphs** (LineRenderers on `Mockup_TelegraphLine`): `SweepTelegraphArc` (Necromancer, scaled to `sweepAttackRange`), `HolySoulBeacon` (×4 knights, Sanctuary), `PrincessMagicCircle` (Sanctuary; Synty `FX_Ritual_Circle_01` might suit it better). Verify: Crypt → Defy → watch a scythe sweep; Sanctuary → down a knight.
+- [ ] **Throwing-axe ultimate blades** `VFX/VortexBlade.prefab` (Synty axe at 0.8, no collider; code sets rotation). They used to be red cubes. Check the axe orientation while it orbits.
+- [ ] **Knockback flash** `VFX/KnockbackFlashLight.prefab` (Light + `FlashLightDimmer`). `KnockbackConfig` still drives its colour/intensity/range. Plan 09 batch B may turn this into an MMF light feedback.
+- [ ] **Rest Area Draft Station** got an authored `StationLight` child (range 8, intensity 2.5), tinted by category at runtime.
+
+**Benchmark after this session: 107 passed, 5 failed.** All 5 are in systems this session didn't touch: Bulwark normal attack, Bannerman rig (`isBruteRig=False`), BuildWheelUI open/close, skull waypoints. Probably older than this session; worth a look (or a plan-11 ticket).
+**Seen during play checks, also not from this change:** the Crypt and Sanctuary `GameLoopManager.bannerSpawnPoints` is unassigned; the Fishing Pond logs `FishingDraftUI`/`FishingTallyUI` unwired-field errors (plan 04) and a legacy `UnityEngine.Input` exception (probably a `StandaloneInputModule` in that scene).

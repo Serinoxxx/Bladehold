@@ -140,11 +140,6 @@ public class PrincessBossController : MonoBehaviour
             if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
             audioSource.playOnAwake = false;
         }
-
-        if (magicCircleVisual == null)
-        {
-            CreateProceduralMagicCircle();
-        }
     }
 
     private void Start()
@@ -180,6 +175,7 @@ public class PrincessBossController : MonoBehaviour
 
         // Hide casting visuals initially
         if (magicCircleVisual != null) magicCircleVisual.SetActive(false);
+        else Debug.LogError("[PrincessBossController] magicCircleVisual is not assigned (instance VFX/PrincessMagicCircle.prefab under the Princess).", this);
         if (floatingCastBarRoot != null) floatingCastBarRoot.SetActive(false);
 
         // Show Boss Health Bar
@@ -209,44 +205,6 @@ public class PrincessBossController : MonoBehaviour
         }
     }
 
-    private void CreateProceduralMagicCircle()
-    {
-        Transform existing = transform.Find("Procedural_MagicCircle");
-        if (existing != null)
-        {
-            magicCircleVisual = existing.gameObject;
-            return;
-        }
-
-        magicCircleVisual = new GameObject("Procedural_MagicCircle");
-        magicCircleVisual.transform.SetParent(transform, false);
-        magicCircleVisual.transform.localPosition = new Vector3(0f, 0.08f, 0f);
-
-        LineRenderer lr = magicCircleVisual.AddComponent<LineRenderer>();
-        lr.useWorldSpace = false;
-        lr.loop = true;
-        lr.startWidth = 0.18f;
-        lr.endWidth = 0.18f;
-
-        int segments = 36;
-        lr.positionCount = segments;
-        float radius = 2.4f;
-        Vector3[] pts = new Vector3[segments];
-        for (int i = 0; i < segments; i++)
-        {
-            float rad = (360f / segments) * i * Mathf.Deg2Rad;
-            pts[i] = new Vector3(Mathf.Sin(rad) * radius, 0f, Mathf.Cos(rad) * radius);
-        }
-        lr.SetPositions(pts);
-
-        Shader s = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Sprites/Default");
-        Material circleMat = new Material(s);
-        circleMat.color = new Color(1.0f, 0.85f, 0.2f, 0.9f);
-        lr.sharedMaterial = circleMat;
-        lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-
-        magicCircleVisual.SetActive(false);
-    }
 
     private void Update()
     {

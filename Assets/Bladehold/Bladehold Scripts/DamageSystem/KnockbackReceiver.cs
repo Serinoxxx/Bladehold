@@ -722,17 +722,29 @@ public class KnockbackReceiver : MonoBehaviour
 
     private void SpawnFlashLight(Vector3 position, Color color, float peakIntensity, float range, float duration)
     {
-        GameObject lightObj = new GameObject("KnockbackFlashLight");
-        lightObj.transform.position = position;
+        if (config.flyingLightFlashPrefab == null)
+        {
+            Debug.LogError("[KnockbackReceiver] KnockbackConfigSO.flyingLightFlashPrefab is not assigned (or untick enableFlyingLightFlash).", config);
+            return;
+        }
 
-        Light lightComp = lightObj.AddComponent<Light>();
-        lightComp.type = LightType.Point;
-        lightComp.color = color;
-        lightComp.intensity = peakIntensity;
-        lightComp.range = range;
+        GameObject lightObj = Instantiate(config.flyingLightFlashPrefab, position, Quaternion.identity);
+        if (lightObj.TryGetComponent(out Light lightComp))
+        {
+            lightComp.color = color;
+            lightComp.intensity = peakIntensity;
+            lightComp.range = range;
+        }
 
-        FlashLightDimmer dimmer = lightObj.AddComponent<FlashLightDimmer>();
-        dimmer.Initialize(peakIntensity, duration);
+        if (lightObj.TryGetComponent(out FlashLightDimmer dimmer))
+        {
+            dimmer.Initialize(peakIntensity, duration);
+        }
+        else
+        {
+            Debug.LogError($"[KnockbackReceiver] flyingLightFlashPrefab '{config.flyingLightFlashPrefab.name}' has no FlashLightDimmer.", config);
+            Destroy(lightObj, duration);
+        }
     }
 }
 

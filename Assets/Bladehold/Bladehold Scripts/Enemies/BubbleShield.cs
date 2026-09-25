@@ -59,31 +59,17 @@ public class BubbleShield : MonoBehaviour
     {
         if (bubbleVisualObj != null) return;
 
-        float radius = data != null ? data.radius : 2.0f;
+        if (data == null || data.bubbleVisualPrefab == null)
+        {
+            // The shield still blocks damage; it's just invisible.
+            Debug.LogError("[BubbleShield] BubbleShieldSO.bubbleVisualPrefab is not assigned.", data);
+            return;
+        }
 
-        bubbleVisualObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        bubbleVisualObj.name = "BubbleShield_Sphere";
-        bubbleVisualObj.transform.SetParent(transform, false);
+        float radius = data.radius;
+        bubbleVisualObj = Instantiate(data.bubbleVisualPrefab, transform);
         bubbleVisualObj.transform.localPosition = new Vector3(0f, 1.0f, 0f);
         bubbleVisualObj.transform.localScale = Vector3.one * (radius * 2.0f);
-
-        // Configure collider: trigger so it does not interfere with NavMeshAgent physics
-        Collider col = bubbleVisualObj.GetComponent<Collider>();
-        if (col != null)
-        {
-            col.isTrigger = true;
-        }
-
-        // Apply material
-        if (data != null && data.bubbleMaterial != null)
-        {
-            Renderer rend = bubbleVisualObj.GetComponent<Renderer>();
-            if (rend != null)
-            {
-                rend.sharedMaterial = data.bubbleMaterial;
-                rend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            }
-        }
     }
 
     private bool HandleTryBlockDamage(Damage damage)

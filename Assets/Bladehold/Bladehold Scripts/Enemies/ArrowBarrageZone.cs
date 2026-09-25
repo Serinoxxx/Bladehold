@@ -18,9 +18,7 @@ public class ArrowBarrageZone : MonoBehaviour
     private DamageType damageType;
     private IDamageable owner;
 
-    // Optional visual telegraph
-    private LineRenderer telegraphCircle;
-
+    // The ground telegraph is the prefab's authored red round-marker VFX.
     public void Initialize(float strikeRadius, float duration, float strikeInterval, float strikeDamage, DamageType type, IDamageable ownerDamageable)
     {
         radius = strikeRadius;
@@ -28,27 +26,7 @@ public class ArrowBarrageZone : MonoBehaviour
         damageType = type;
         owner = ownerDamageable;
 
-        SetupTelegraph();
         StartCoroutine(RunBarrage(duration, strikeInterval));
-    }
-
-    private void SetupTelegraph()
-    {
-        telegraphCircle = gameObject.AddComponent<LineRenderer>();
-        telegraphCircle.useWorldSpace = false;
-        telegraphCircle.startWidth = 0.1f;
-        telegraphCircle.endWidth = 0.1f;
-        telegraphCircle.material = new Material(Shader.Find("Sprites/Default"));
-        telegraphCircle.startColor = new Color(1f, 0f, 0f, 0.5f);
-        telegraphCircle.endColor = new Color(1f, 0f, 0f, 0.5f);
-        
-        int segments = 36;
-        telegraphCircle.positionCount = segments + 1;
-        for (int i = 0; i <= segments; i++)
-        {
-            float angle = i * Mathf.PI * 2f / segments;
-            telegraphCircle.SetPosition(i, new Vector3(Mathf.Cos(angle) * radius, 0.1f, Mathf.Sin(angle) * radius));
-        }
     }
 
     private IEnumerator RunBarrage(float duration, float strikeInterval)

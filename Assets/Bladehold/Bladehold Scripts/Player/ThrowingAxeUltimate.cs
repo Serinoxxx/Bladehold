@@ -21,6 +21,8 @@ public class ThrowingAxeUltimate : MonoBehaviour, IUltimateHandler
     [SerializeField] private float orbitSpeed = 540f; // degrees per second
     [SerializeField] private float damageTickInterval = 0.25f;
     [SerializeField] private float bladeDamage = 25f;
+    [Tooltip("Authored visual for one orbiting blade (no collider). Positioned and spun by code.")]
+    [SerializeField] private GameObject orbitBladePrefab;
 
     private Player player;
     private PlayerThrownAxe playerThrownAxe;
@@ -82,33 +84,15 @@ public class ThrowingAxeUltimate : MonoBehaviour, IUltimateHandler
     {
         ClearOrbitalBlades();
 
-        GameObject axeVisualSource = playerThrownAxe != null ? playerThrownAxe.gameObject : null;
+        if (orbitBladePrefab == null)
+        {
+            // The vortex still damages; it just has nothing to show.
+            Debug.LogError("[ThrowingAxeUltimate] orbitBladePrefab is not assigned (Player.prefab → ThrowingAxeUltimate).", this);
+        }
 
         for (int i = 0; i < orbitBladeCount; i++)
         {
-            GameObject blade = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            blade.name = $"VortexBlade_{i}";
-            blade.transform.localScale = new Vector3(0.15f, 0.8f, 0.4f);
-
-            Collider c = blade.GetComponent<Collider>();
-            if (c != null) Destroy(c);
-
-            Renderer r = blade.GetComponent<Renderer>();
-            if (r != null)
-            {
-                Shader s = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
-                if (s != null)
-                {
-                    Material mat = new Material(s);
-                    mat.color = new Color(1f, 0.2f, 0.1f, 1f);
-                    if (mat.HasProperty("_EmissionColor"))
-                    {
-                        mat.SetColor("_EmissionColor", new Color(1f, 0.4f, 0.1f, 1f) * 2f);
-                    }
-                    r.material = mat;
-                }
-            }
-
+            GameObject blade = orbitBladePrefab != null ? Instantiate(orbitBladePrefab) : new GameObject($"VortexBlade_{i}");
             orbitalBlades.Add(blade.transform);
         }
 

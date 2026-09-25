@@ -73,6 +73,9 @@ MonoBehaviour:
   splashRadius: 4.5
   explosionVfxPrefab: {fileID: 1748061420571399569, guid: 53a5bac6d6897274384288d420f90ecd, type: 3}
   explosionSfx: {fileID: 8300000, guid: 886dd441091c1974ead974fbbefa1324, type: 3}
+  slipperyIceZonePrefab: {fileID: 6473471889347722536, guid: b2f971d8006cf2947aa3372906de772b, type: 3}
+  stormCloudPrefab: {fileID: 8052584405428995988, guid: 8d8e0be453171ec43938a1d20e7a6739, type: 3}
+  rollingFireballPrefab: {fileID: 7897219573613890464, guid: 2dd0f8178092bb64797abf21b9efe91e, type: 3}
 --- !u!96 &7961911923243075815
 TrailRenderer:
   serializedVersion: 4

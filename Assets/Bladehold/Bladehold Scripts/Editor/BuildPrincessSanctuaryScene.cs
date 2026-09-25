@@ -408,6 +408,17 @@ public static class BuildPrincessSanctuaryScene
             if (downedClip != null) aiSo.FindProperty("downedSfx").objectReferenceValue = downedClip;
             if (reviveClip != null) aiSo.FindProperty("reviveSfx").objectReferenceValue = reviveClip;
 
+            // Downed soul beacon (authored prefab, hidden until the knight is downed)
+            GameObject beaconPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/VFX/HolySoulBeacon.prefab");
+            if (beaconPrefab != null)
+            {
+                GameObject beacon = (GameObject)PrefabUtility.InstantiatePrefab(beaconPrefab, knightGo.transform);
+                beacon.transform.localPosition = new Vector3(0f, 0.1f, 0f);
+                beacon.SetActive(false);
+                aiSo.FindProperty("holySoulBeaconVisual").objectReferenceValue = beacon;
+            }
+            else Debug.LogError("[BuildPrincessSanctuaryScene] VFX/HolySoulBeacon.prefab not found!");
+
             aiSo.ApplyModifiedProperties();
 
             // Equip Sword & Shield
@@ -523,6 +534,17 @@ public static class BuildPrincessSanctuaryScene
         if (completeClip != null) pSo.FindProperty("spellCompleteSfx").objectReferenceValue = completeClip;
         if (victoryClip != null) pSo.FindProperty("victoryMusicSfx").objectReferenceValue = victoryClip;
         if (interruptClip != null) pSo.FindProperty("spellHitInterruptSfx").objectReferenceValue = interruptClip;
+
+        // Revive-channel magic circle (authored prefab, hidden until she channels)
+        GameObject circlePrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/VFX/PrincessMagicCircle.prefab");
+        if (circlePrefab != null)
+        {
+            GameObject circle = (GameObject)PrefabUtility.InstantiatePrefab(circlePrefab, princessGo.transform);
+            circle.transform.localPosition = new Vector3(0f, 0.08f, 0f);
+            circle.SetActive(false);
+            pSo.FindProperty("magicCircleVisual").objectReferenceValue = circle;
+        }
+        else Debug.LogError("[BuildPrincessSanctuaryScene] VFX/PrincessMagicCircle.prefab not found!");
 
         // Overhead revive cast bar (authored prefab, hidden until she channels)
         GameObject castBarPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/UI/BossCastBar.prefab");

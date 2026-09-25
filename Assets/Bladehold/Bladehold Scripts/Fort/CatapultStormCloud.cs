@@ -11,84 +11,62 @@ public class CatapultStormCloud : MonoBehaviour
     [SerializeField] private float duration = 8.0f;
     [SerializeField] private float strikeInterval = 0.75f;
     [SerializeField] private float strikeDamage = 35f;
-    [SerializeField] private GameObject cloudVisualPrefab;
+    [Tooltip("The cloud child, authored for a 1m radius; x/z are scaled to the strike radius.")]
+    [SerializeField] private Transform visualRoot;
     [SerializeField] private GameObject strikeVfxPrefab;
     [SerializeField] private AudioClip strikeSfx;
 
     private readonly Collider[] hitBuffer = new Collider[32];
     private float aliveTime = 0f;
     private float nextStrikeTime = 0f;
-    private GameObject visualInstance;
+    private Vector3 visualBaseScale = Vector3.one;
 
     public float Radius => radius;
     public float Duration => duration;
     public float StrikeDamage => strikeDamage;
 
-    public static CatapultStormCloud Spawn(Vector3 impactPosition, float rad = 6.0f, float dur = 8.0f, float damage = 35f, GameObject cloudPrefab = null, GameObject strikeVfx = null, AudioClip strikeAudio = null)
+    /// <summary>Instantiates the authored storm cloud prefab (CatapultProjectile.stormCloudPrefab) above the impact point.</summary>
+    public static CatapultStormCloud Spawn(CatapultStormCloud prefab, Vector3 impactPosition, float rad = 6.0f, float dur = 8.0f, float damage = 35f)
     {
-        Vector3 spawnPos = impactPosition + Vector3.up * 3.5f;
-        GameObject cloudObj = new GameObject("CatapultStormCloud");
-        cloudObj.transform.position = spawnPos;
+        if (prefab == null)
+        {
+            Debug.LogError("[CatapultStormCloud] No storm cloud prefab: assign CatapultProjectile.stormCloudPrefab.");
+            return null;
+        }
 
-        CatapultStormCloud cloud = cloudObj.AddComponent<CatapultStormCloud>();
-        cloud.Init(rad, dur, damage, cloudPrefab, strikeVfx, strikeAudio);
+        CatapultStormCloud cloud = Instantiate(prefab, impactPosition + Vector3.up * 3.5f, Quaternion.identity);
+        cloud.Init(rad, dur, damage);
         return cloud;
     }
 
-    public void Init(float rad, float dur, float damage, GameObject cloudPrefab = null, GameObject strikeVfx = null, AudioClip strikeAudio = null)
+    public void Init(float rad, float dur, float damage)
     {
         radius = rad;
         duration = dur;
         strikeDamage = damage;
-        cloudVisualPrefab = cloudPrefab;
-        strikeVfxPrefab = strikeVfx;
-        strikeSfx = strikeAudio;
+        ScaleVisual();
+    }
 
-        CreateCloudVisual();
+    private void Awake()
+    {
+        if (visualRoot != null) visualBaseScale = visualRoot.localScale;
     }
 
     private void Start()
     {
-        if (visualInstance == null)
+        if (visualRoot == null)
         {
-            CreateCloudVisual();
+            // Still strikes, just invisible.
+            Debug.LogError("[CatapultStormCloud] visualRoot is not assigned (the cloud child, authored for a 1m radius).", this);
         }
+        ScaleVisual();
         nextStrikeTime = Time.time + 0.3f; // quick initial strike
     }
 
-    private void CreateCloudVisual()
+    private void ScaleVisual()
     {
-        if (visualInstance != null) return;
-
-        if (cloudVisualPrefab != null)
-        {
-            visualInstance = Instantiate(cloudVisualPrefab, transform.position, Quaternion.identity, transform);
-        }
-        else
-        {
-            // Try load generic cloud or create procedural puff
-            GameObject puff = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            puff.name = "StormCloudSphere";
-            puff.transform.SetParent(transform, false);
-            puff.transform.localScale = new Vector3(radius * 1.5f, 1.2f, radius * 1.5f);
-
-            Collider col = puff.GetComponent<Collider>();
-            if (col != null)
-            {
-                if (Application.isPlaying) Destroy(col);
-                else DestroyImmediate(col);
-            }
-
-            if (puff.TryGetComponent(out Renderer rend))
-            {
-                Material mat = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
-                mat.color = new Color(0.2f, 0.25f, 0.35f, 0.75f);
-                if (mat.HasProperty("_Smoothness")) mat.SetFloat("_Smoothness", 0.1f);
-                rend.material = mat;
-            }
-
-            visualInstance = puff;
-        }
+        if (visualRoot == null) return;
+        visualRoot.localScale = new Vector3(visualBaseScale.x * radius, visualBaseScale.y, visualBaseScale.z * radius);
     }
 
     private void Update()
@@ -185,14 +163,6 @@ public class CatapultStormCloud : MonoBehaviour
         if (strikeSfx != null)
         {
             AudioSource.PlayClipAtPoint(strikeSfx, strikePoint, 0.8f);
-        }
-    }
-
-    private void OnDestroy()
-    {
-        if (visualInstance != null)
-        {
-            Destroy(visualInstance);
         }
     }
 

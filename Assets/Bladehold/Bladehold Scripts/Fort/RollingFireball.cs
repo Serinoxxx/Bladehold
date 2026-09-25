@@ -20,7 +20,8 @@ public class RollingFireball : MonoBehaviour, IDamageable
     [SerializeField] private LayerMask groundLayers = ~0;
 
     [Header("Visual & Audio")]
-    [SerializeField] private GameObject fireballVisualPrefab;
+    [Tooltip("The rolling mesh child; spun by code as the ball rolls. The prefab root also carries the trigger SphereCollider melee hits register on.")]
+    [SerializeField] private Transform visualChild;
     [SerializeField] private GameObject trailVfxPrefab;
     [SerializeField] private GameObject hitBurstVfxPrefab;
     [SerializeField] private AudioClip strikeRedirectSfx;
@@ -31,91 +32,41 @@ public class RollingFireball : MonoBehaviour, IDamageable
     private float nextTrailTime = 0f;
     private readonly Dictionary<Health, float> hitCooldowns = new Dictionary<Health, float>();
     private readonly Collider[] hitBuffer = new Collider[16];
-    private Transform visualChild;
     private AudioSource rollAudioSource;
 
     public float CurrentSpeed => currentSpeed;
     public Vector3 MoveDirection => moveDirection;
     public Health Health => null; // IDamageable interface
 
-    public static RollingFireball Spawn(Vector3 position, Vector3 direction, float speed = 9f, float damage = 50f, float life = 10f, GameObject visualPrefab = null)
+    /// <summary>Instantiates the authored fireball prefab (CatapultProjectile.rollingFireballPrefab) and sets it rolling.</summary>
+    public static RollingFireball Spawn(RollingFireball prefab, Vector3 position, Vector3 direction, float speed = 9f, float damage = 50f, float life = 10f)
     {
-        GameObject fbObj = new GameObject("RollingFireball");
-        fbObj.transform.position = position;
+        if (prefab == null)
+        {
+            Debug.LogError("[RollingFireball] No fireball prefab: assign CatapultProjectile.rollingFireballPrefab.");
+            return null;
+        }
 
-        RollingFireball fb = fbObj.AddComponent<RollingFireball>();
-        fb.Init(direction, speed, damage, life, visualPrefab);
+        RollingFireball fb = Instantiate(prefab, position, Quaternion.identity);
+        fb.Init(direction, speed, damage, life);
         return fb;
     }
 
-    public void Init(Vector3 direction, float speed = 9f, float damage = 50f, float life = 10f, GameObject visualPrefab = null)
+    public void Init(Vector3 direction, float speed = 9f, float damage = 50f, float life = 10f)
     {
         direction.y = 0f;
         moveDirection = direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector3.forward;
         currentSpeed = speed;
         rollDamage = damage;
         lifetime = life;
-        fireballVisualPrefab = visualPrefab;
-
-        CreateVisual();
-    }
-
-    private void Awake()
-    {
-        // Add a trigger collider so DamageTrigger sweeps can register hits on it
-        SphereCollider col = gameObject.AddComponent<SphereCollider>();
-        col.radius = radius * 1.2f;
-        col.isTrigger = true;
     }
 
     private void Start()
     {
         if (visualChild == null)
         {
-            CreateVisual();
-        }
-
-        // Snap to ground initially
-        AlignWithGround();
-    }
-
-    private void CreateVisual()
-    {
-        if (visualChild != null) return;
-
-        if (fireballVisualPrefab != null)
-        {
-            GameObject inst = Instantiate(fireballVisualPrefab, transform.position, Quaternion.identity, transform);
-            visualChild = inst.transform;
-        }
-        else
-        {
-            // Procedural glowing fireball sphere
-            GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            sphere.name = "FireballSphereVisual";
-            sphere.transform.SetParent(transform, false);
-            sphere.transform.localScale = Vector3.one * (radius * 2f);
-
-            Collider c = sphere.GetComponent<Collider>();
-            if (c != null)
-            {
-                if (Application.isPlaying) Destroy(c);
-                else DestroyImmediate(c);
-            }
-
-            if (sphere.TryGetComponent(out Renderer rend))
-            {
-                Material mat = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
-                mat.color = new Color(1.0f, 0.35f, 0.05f);
-                if (mat.HasProperty("_EmissionColor"))
-                {
-                    mat.EnableKeyword("_EMISSION");
-                    mat.SetColor("_EmissionColor", new Color(1.0f, 0.45f, 0.1f) * 2.5f);
-                }
-                rend.material = mat;
-            }
-
-            visualChild = sphere.transform;
+            // Still rolls and burns, just invisible.
+            Debug.LogError("[RollingFireball] visualChild is not assigned (the rolling mesh child).", this);
         }
 
         // Attach fire status particles if available
@@ -124,6 +75,9 @@ public class RollingFireball : MonoBehaviour, IDamageable
             GameObject fireParticles = Instantiate(ElementalEffectsManager.Instance.fireStatusVfx, transform.position, Quaternion.identity, transform);
             fireParticles.transform.localScale = Vector3.one * (radius * 1.5f);
         }
+
+        // Snap to ground initially
+        AlignWithGround();
     }
 
     private void Update()
@@ -305,13 +259,5 @@ public class RollingFireball : MonoBehaviour, IDamageable
         }
 
         Destroy(gameObject);
-    }
-
-    private void OnDestroy()
-    {
-        if (visualChild != null)
-        {
-            Destroy(visualChild.gameObject);
-        }
     }
 }

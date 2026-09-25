@@ -33,7 +33,7 @@ MonoBehaviour:
   telegraphPrefab: {fileID: 5856850007466671987, guid: e5dd6852d515fe64487dfd3ccf2f43b4, type: 3}
   explosionVfxPrefab: {fileID: 1879769179923522, guid: 65932b7368590234d8163da03c2055d8, type: 3}
   fireAuraVfxPrefab: {fileID: 1392961458021664, guid: 7c2d45330a7b1894ca1aacb0ebd30599, type: 3}
-  dynamitePrefab: {fileID: 0}
+  dynamitePrefab: {fileID: 6906798984119050256, guid: 82b23aec0be28224ea93260b52c37e71, type: 3}
   explosionSfx: {fileID: 8300000, guid: e53c50cdd14c0004f8f381d4a956ab7b, type: 3}
   fuseSfx: {fileID: 8300000, guid: 797360d2cb081944dba13bf542dd7079, type: 3}
   igniteSfx: {fileID: 0}

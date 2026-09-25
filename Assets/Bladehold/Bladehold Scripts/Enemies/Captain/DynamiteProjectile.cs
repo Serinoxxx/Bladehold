@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-///     Dynamite stick projectile thrown by Captain Kombusta.
+///     Dynamite stick projectile thrown by Captain Kombusta. Lives on an authored prefab (CaptainKombustaSO.dynamitePrefab) that carries the stick mesh.
 ///     Lobs along a parabolic arc toward a target ground position, accompanied by a telegraphed
 ///     ground circle. On landing, detonates into a 2m radius fiery explosion dealing 20 damage.
 /// </summary>
@@ -68,8 +68,8 @@ public class DynamiteProjectile : MonoBehaviour
         }
         else
         {
-            // Fallback ground indicator if no prefab assigned
-            telegraphInstance = CreateFallbackTelegraph(targetPosition, explosionRadius, groundNormal);
+            // The blast still lands, just untelegraphed.
+            Debug.LogError("[DynamiteProjectile] No telegraph prefab: assign CaptainKombustaSO.telegraphPrefab.", this);
         }
 
         if (sfxFuse != null)
@@ -77,7 +77,6 @@ public class DynamiteProjectile : MonoBehaviour
             AudioSource.PlayClipAtPoint(sfxFuse, transform.position, 0.6f);
         }
 
-        EnsureVisualStick();
         isLaunched = true;
     }
 
@@ -164,56 +163,6 @@ public class DynamiteProjectile : MonoBehaviour
         }
 
         Destroy(gameObject);
-    }
-
-    private void EnsureVisualStick()
-    {
-        // If the projectile doesn't have a mesh or renderer, build a red cylinder dynamite stick
-        if (GetComponentInChildren<Renderer>() == null)
-        {
-            GameObject stick = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            stick.name = "DynamiteMesh";
-            stick.transform.SetParent(transform, false);
-            stick.transform.localScale = new Vector3(0.12f, 0.25f, 0.12f);
-
-            Collider col = stick.GetComponent<Collider>();
-            if (col != null) Destroy(col);
-
-            Renderer ren = stick.GetComponent<Renderer>();
-            if (ren != null)
-            {
-                Material redMat = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
-                redMat.color = new Color(0.85f, 0.15f, 0.1f);
-                ren.material = redMat;
-            }
-        }
-    }
-
-    private GameObject CreateFallbackTelegraph(Vector3 center, float radius, Vector3 normal)
-    {
-        GameObject go = new GameObject("DynamiteFallbackTelegraph");
-        go.transform.position = center + normal * 0.05f;
-        go.transform.rotation = Quaternion.FromToRotation(Vector3.up, normal);
-
-        LineRenderer lr = go.AddComponent<LineRenderer>();
-        lr.useWorldSpace = false;
-        lr.startWidth = 0.08f;
-        lr.endWidth = 0.08f;
-        lr.startColor = new Color(1f, 0.2f, 0f, 0.7f);
-        lr.endColor = new Color(1f, 0.2f, 0f, 0.7f);
-
-        Shader spriteShader = Shader.Find("Sprites/Default") ?? Shader.Find("Universal Render Pipeline/Unlit");
-        if (spriteShader != null) lr.material = new Material(spriteShader);
-
-        int segments = 32;
-        lr.positionCount = segments + 1;
-        for (int i = 0; i <= segments; i++)
-        {
-            float angle = i * Mathf.PI * 2f / segments;
-            lr.SetPosition(i, new Vector3(Mathf.Cos(angle) * radius, 0f, Mathf.Sin(angle) * radius));
-        }
-
-        return go;
     }
 
     private void OnDestroy()

@@ -20,7 +20,6 @@ public class NecromancerBossController : MonoBehaviour
 
     [Header("Phase 1: Bubble Shield & Summoning")]
     [SerializeField] private GameObject bubbleShieldVisual;
-    [SerializeField] private Material bubbleShieldMaterial;
     [SerializeField] private float bubbleRadius = 2.4f;
     [SerializeField] private AudioClip bubbleDeflectSfx;
     [SerializeField] private AudioClip shieldShatterSfx;
@@ -103,11 +102,6 @@ public class NecromancerBossController : MonoBehaviour
             Transform scytheT = transform.Find("SM_Wep_Staff_DoubleBlade_01") ?? transform.Find("Scythe");
             if (scytheT != null) scytheWeaponObject = scytheT.gameObject;
         }
-
-        if (sweepTelegraphArc == null)
-        {
-            CreateProceduralTelegraphArc();
-        }
     }
 
     private void Start()
@@ -129,10 +123,15 @@ public class NecromancerBossController : MonoBehaviour
         // Initialize Bubble Shield Visual
         CreateOrConfigureBubbleShield();
 
-        // Hide telegraph arc initially
+        // Hide telegraph arc initially. It's authored as a 1m fan, scaled to the sweep range.
         if (sweepTelegraphArc != null)
         {
+            sweepTelegraphArc.transform.localScale = new Vector3(sweepAttackRange, 1f, sweepAttackRange);
             sweepTelegraphArc.SetActive(false);
+        }
+        else
+        {
+            Debug.LogError("[NecromancerBossController] sweepTelegraphArc is not assigned (instance VFX/SweepTelegraphArc.prefab under the boss).", this);
         }
     }
 
@@ -149,71 +148,13 @@ public class NecromancerBossController : MonoBehaviour
     {
         if (bubbleShieldVisual == null)
         {
-            bubbleShieldVisual = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            bubbleShieldVisual.name = "Necromancer_BubbleShield";
-            bubbleShieldVisual.transform.SetParent(transform, false);
-            bubbleShieldVisual.transform.localPosition = new Vector3(0f, 1.2f, 0f);
-            bubbleShieldVisual.transform.localScale = Vector3.one * (bubbleRadius * 2f);
-
-            Collider col = bubbleShieldVisual.GetComponent<Collider>();
-            if (col != null) col.isTrigger = true;
-
-            Renderer rend = bubbleShieldVisual.GetComponent<Renderer>();
-            if (rend != null)
-            {
-                if (bubbleShieldMaterial != null)
-                {
-                    rend.sharedMaterial = bubbleShieldMaterial;
-                }
-                else
-                {
-                    Shader urpShader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
-                    Material mat = new Material(urpShader);
-                    mat.name = "BubbleShield_Purple_Mat";
-                    mat.color = new Color(0.6f, 0.1f, 0.9f, 0.45f);
-                    rend.sharedMaterial = mat;
-                }
-                rend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            }
+            // The shield still blocks damage; it's just invisible.
+            Debug.LogError("[NecromancerBossController] bubbleShieldVisual is not assigned (instance VFX/BubbleShieldVisual.prefab under the boss).", this);
+            return;
         }
 
+        bubbleShieldVisual.transform.localScale = Vector3.one * (bubbleRadius * 2f);
         bubbleShieldVisual.SetActive(true);
-    }
-
-    private void CreateProceduralTelegraphArc()
-    {
-        sweepTelegraphArc = new GameObject("SweepTelegraphArc");
-        sweepTelegraphArc.transform.SetParent(transform, false);
-        sweepTelegraphArc.transform.localPosition = new Vector3(0f, 0.05f, 0f);
-
-        LineRenderer lr = sweepTelegraphArc.AddComponent<LineRenderer>();
-        lr.useWorldSpace = false;
-        lr.loop = true;
-        lr.startWidth = 0.15f;
-        lr.endWidth = 0.15f;
-
-        int segments = 24;
-        lr.positionCount = segments + 2;
-
-        float radius = sweepAttackRange;
-        Vector3[] pts = new Vector3[segments + 2];
-        pts[0] = Vector3.zero;
-
-        for (int i = 0; i <= segments; i++)
-        {
-            // 180 degree fan (-90 to +90)
-            float angle = -90f + (180f / segments) * i;
-            float rad = angle * Mathf.Deg2Rad;
-            pts[i + 1] = new Vector3(Mathf.Sin(rad) * radius, 0f, Mathf.Cos(rad) * radius);
-        }
-
-        lr.SetPositions(pts);
-
-        Shader s = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Sprites/Default");
-        Material arcMat = new Material(s);
-        arcMat.color = new Color(0.9f, 0.15f, 0.35f, 0.85f);
-        lr.sharedMaterial = arcMat;
-        lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
     }
 
     /// <summary>
@@ -307,17 +248,13 @@ public class NecromancerBossController : MonoBehaviour
                 ? skeletonPrefabs[i % skeletonPrefabs.Length]
                 : null;
 
-            GameObject skelObj = null;
-            if (chosenPrefab != null)
+            if (chosenPrefab == null)
             {
-                skelObj = Instantiate(chosenPrefab, spawnPos, Quaternion.LookRotation(transform.position - spawnPos));
+                Debug.LogError("[NecromancerBossController] skeletonPrefabs is empty or has a null entry.", this);
+                continue;
             }
-            else
-            {
-                skelObj = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-                skelObj.name = $"Crypt_Skeleton_{i + 1}";
-                skelObj.transform.position = spawnPos;
-            }
+
+            GameObject skelObj = Instantiate(chosenPrefab, spawnPos, Quaternion.LookRotation(transform.position - spawnPos));
 
             CryptSkeletonAI ai = skelObj.GetComponent<CryptSkeletonAI>() ?? skelObj.AddComponent<CryptSkeletonAI>();
             ai.Initialize(this);

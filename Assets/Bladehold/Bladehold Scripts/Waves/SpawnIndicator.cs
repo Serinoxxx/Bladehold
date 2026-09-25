@@ -33,32 +33,11 @@ public class SpawnIndicator : MonoBehaviour
         }
         else
         {
-            CreateFallbackVisual();
+            // The enemy still spawns on time, just without a telegraph.
+            Debug.LogError("[SpawnIndicator] No indicator prefab: assign RoundPacingConfigSO.indicatorPrefab (or SurvivorsSpawner.spawnIndicatorPrefab).");
         }
 
         StartCoroutine(IndicatorRoutine());
-    }
-
-    private void CreateFallbackVisual()
-    {
-        // Fallback: simple flat red ring
-        GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        sphere.name = "Telegraph_Visual";
-        sphere.transform.SetParent(transform, false);
-        sphere.transform.localPosition = new Vector3(0f, 0.05f, 0f);
-        sphere.transform.localScale = new Vector3(2.5f, 0.02f, 2.5f);
-
-        Collider col = sphere.GetComponent<Collider>();
-        if (col != null) Destroy(col);
-
-        Renderer rend = sphere.GetComponent<Renderer>();
-        if (rend != null)
-        {
-            rend.material = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
-            rend.material.color = new Color(1f, 0.15f, 0.15f, 0.6f);
-        }
-
-        visualInstance = sphere;
     }
 
     private IEnumerator IndicatorRoutine()

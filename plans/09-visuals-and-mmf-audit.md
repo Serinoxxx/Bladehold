@@ -12,8 +12,8 @@ This plan audits and migrates the existing violations. Split it into several ses
 |---|---|---|
 | 1 | Runtime `LoadAssetAtPath` fallbacks (they silently return null in a player build) | **Done 2026-09-26** |
 | 2 | Code-built UI → prefab mockups | **Done 2026-09-26** (mockups await UI review) |
-| 3 | Code-built world visuals (primitives, telegraph LineRenderers, lights) | Next. Needs MCP or Lance for art |
-| 4+ | Direct audio/VFX/shake → MMF, one batch per session (ranked list below) | After 2-3 |
+| 3 | Code-built world visuals (primitives, telegraph LineRenderers, lights) | **Done 2026-09-26** (mockups await art review) |
+| 4+ | Direct audio/VFX/shake → MMF, one batch per session (ranked list below) | Next: batch A |
 
 **Session 1 done:**
 - Deleted the Editor-only duplicate pickup sounds from `AmmoPickup`, `Coin`, `HealthPack`, `ImpulseOrb`, `LightningOrb` and `PlayerSummonMount`. Their MMF players already carry the sound; AmmoPickup's player existed but wasn't wired, so it's wired now.
@@ -30,12 +30,22 @@ This plan audits and migrates the existing violations. Split it into several ses
 - Every fallback now `LogError`s naming the field to wire.
 - Blocker cleared on the way: Unity refuses to save a prefab with missing scripts, so plan 08's cleanup was run (its logic via MCP, minus the modal dialog), the legacy prefabs and `Plan08LegacyCleanup.cs` deleted. The binary scenes did **not** become text (neither `SaveScene` nor `ForceReserializeAssets` converted them); see 00 §B.
 
-## Refreshed audit (2026-09-26, after session 1)
+**Session 3 done** (Unity MCP connected). Every world visual that was built in code is now an authored prefab or a wired reference. Missing refs `LogError` with the field name.
+- **Already authored, fallback deleted:** `ArrowBarrageZone` (its prefab already has a red round-marker VFX, so the LineRenderer was a duplicate), `SpawnIndicator` (the pacing config's `indicatorPrefab` is wired), the Kombusta dynamite telegraph (`SlamTelegraph`).
+- **New prefabs, all agent mockups built from the old code's shapes and colours:**
+  - `VFX/`: `BubbleShieldVisual` (on `BubbleShieldSO.bubbleVisualPrefab`, replacing `bubbleMaterial`), `NecromancerBubbleShield`, `SweepTelegraphArc` (a unit-radius fan scaled to the sweep range), `HolySoulBeacon`, `PrincessMagicCircle`, `KnockbackFlashLight` (on `KnockbackConfigSO.flyingLightFlashPrefab`), `VortexBlade` (Synty axe, on `ThrowingAxeUltimate.orbitBladePrefab`).
+  - `Fort/`: `SlipperyIceZone`, `CatapultStormCloud`, `RollingFireball`. Each `Spawn()` takes its prefab now, held by `CatapultBoulder.prefab`'s `CatapultProjectile`. `CatapultDefense`'s no-projectile splash fallback is gone.
+  - `Enemies/DynamiteProjectile` (Synty dynamite, on `CaptainKombustaSO.dynamitePrefab`, which was empty before, so the stick was always a code-built red cylinder).
+  - `Fishing/FishingArrow` and `Fishing/Fish`. Both prefab fields were empty before, so arrows and fish were always primitives. `FishingBowController` now sits disabled on `Player.prefab → SidekickSyntyCharacter` with the arrow wired; the pond enables it instead of `AddComponent`.
+  - `Powerups/WaveUpgradePowerup` (base: Interactable, trigger, light, `Visual`) + 7 `WaveReward_*` variants, one per chest. The `WarBannerRewardSO`s point at the variants. `Spawn()` used to bolt a Light/Interactable/collider/component onto the raw chest mesh.
+- **Scene wiring:** Necromancer bubble + arc (Crypt), 4 knight beacons + the magic circle (Sanctuary), `DraftStation.stationLight` (Rest Area), `FishingManager.fishBasePrefab` (Fishing Pond). The Crypt and Sanctuary builders instance the same prefabs.
+- **Deleted:** the Necromancer's placeholder skeleton capsule (it now logs an error and skips that skeleton).
+- Mockup materials are in `Materials/Mockup/`. Benchmark: 107 passed, 5 failed. All 5 are in files this session didn't touch (Bulwark attack, Bannerman rig, BuildWheel open/close, skull waypoints); listed in the checklist §5.
+- Editor work: [`plans/editor/09-visuals-mmf.md`](editor/09-visuals-mmf.md) §5.
 
-**Session 2, code-built UI:** done (see above).
+## Refreshed audit (2026-09-26, after session 3)
 
-**Session 3, code-built world visuals:**
-`NecromancerBossController` (bubble sphere, sweep-arc LineRenderer, placeholder skeleton capsule), `ArmoredKnightAI` (beacon LineRenderer), `PrincessBossController` (magic circle LineRenderer), `BubbleShield` (sphere), `ArrowBarrageZone` (telegraph LineRenderer), `Captain/DynamiteProjectile` (stick cylinder + fuse LineRenderer), `FishingBowController` (arrow cylinder), `FishingManager` (fish capsule), `CatapultStormCloud` (puffs), `RollingFireball` (sphere), `SlipperyIceZone` (disc), `SpawnIndicator` (cylinder), `WaveUpgradePowerup` (sphere + lights), `ThrowingAxeUltimate` (blade cube), `KnockbackReceiver` (light), `RestArea/DraftStation` (light).
+Sessions 2 (code-built UI) and 3 (code-built world visuals) are done; the visuals grep below now returns only the documented exceptions.
 
 **Documented exceptions (leave):**
 - `DefenseAssemblyAnimation` proxy `MeshFilter`/`MeshRenderer`: re-uses the tower prefab's own meshes to animate them.
@@ -60,17 +70,9 @@ Skip `TrainingDummy` (debug).
 
 ## Code-built visuals (non-Editor scripts, from grep; re-run to refresh)
 
-- **Bosses:** `ArmoredKnightAI`, `NecromancerBossController`, `PrincessBossController`
-- **Economy pickups:** `AmmoPickup`, `Coin`, `HealthPack`, `ImpulseOrb`, `LightningOrb`, `SupplyBox`
-- **Enemies:** `ArrowBarrageZone`, `BubbleShield`, `Captain/DynamiteProjectile`
-- **Fishing:** `FishingBowController`, `FishingManager`, `UI/FishingTallyUI` (overlaps plan 04)
-- **Fort:** `CatapultStormCloud`, `DefenseAssemblyAnimation`, `DefenseStructure`, `RollingFireball`, `SlipperyIceZone`
-- **Objectives:** `KillRemainingEnemiesObjective`, `SupplyWagonEscort`
-- **Player:** `PlayerInteraction`, `PlayerSummonMount`, `ThrowingAxeUltimate`
-- **UI:** `BuildWheelUI`, `UIClickFeedback`, `WaveClearedBannerUI` (the rest were fixed in sessions 1-2)
-- **Other:** `Upgrades/SurvivorsGameManager`, `Waves/Gate`, `Waves/SpawnIndicator`, `Waves/WaveUpgradePowerup`, `Debug/DiegeticDraftTester`, plus `Campaign/CampaignMapUI` (handled in plan 02)
+**Clean as of session 3.** The grep returns only the documented exceptions: `DefenseAssemblyAnimation` (proxy meshes), `Waves/Gate` (edit-time `Reset`/`OnValidate`) and `Debug/DiegeticDraftTester`. Any new hit is a regression.
 
-Grep used: `CreatePrimitive|AddComponent<(MeshRenderer|MeshFilter|LineRenderer|ParticleSystem|Image|TextMeshProUGUI|Canvas)>|LoadAssetAtPath|Ensure(Visuals|UI|Canvas)|new GameObject("…", typeof(RectTransform)`
+Grep used: `CreatePrimitive|AddComponent<(MeshRenderer|MeshFilter|LineRenderer|ParticleSystem|Light|Image|TextMeshProUGUI|Canvas)>|LoadAssetAtPath|Ensure(Visuals|UI|Canvas)|new GameObject("…", typeof(RectTransform)`
 
 **Per file:**
 - If an authored prefab already exists: delete the fallback, add `LogError`.

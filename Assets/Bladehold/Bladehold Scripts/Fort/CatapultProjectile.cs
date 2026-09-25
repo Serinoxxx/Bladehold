@@ -13,6 +13,11 @@ public class CatapultProjectile : MonoBehaviour
     [SerializeField] private GameObject explosionVfxPrefab;
     [SerializeField] private AudioClip explosionSfx;
 
+    [Header("Elemental Payloads (tower upgrades)")]
+    [SerializeField] private SlipperyIceZone slipperyIceZonePrefab;
+    [SerializeField] private CatapultStormCloud stormCloudPrefab;
+    [SerializeField] private RollingFireball rollingFireballPrefab;
+
     private Vector3 startPoint;
     private Vector3 targetPoint;
     private float damageAmount;
@@ -122,13 +127,13 @@ public class CatapultProjectile : MonoBehaviour
         // 1. Frost Catapult: Spawn Slippery Ice Ground
         if (isSlipperyGround)
         {
-            SlipperyIceZone.Spawn(impactPos, splashRadius * 1.25f, 10f);
+            SlipperyIceZone.Spawn(slipperyIceZonePrefab, impactPos, splashRadius * 1.25f, 10f);
         }
 
         // 2. Lightning Catapult: Spawn Storm Cloud
         if (isStormCloud)
         {
-            CatapultStormCloud.Spawn(impactPos, splashRadius * 1.35f, 8f, damageAmount * 0.45f);
+            CatapultStormCloud.Spawn(stormCloudPrefab, impactPos, splashRadius * 1.35f, 8f, damageAmount * 0.45f);
         }
 
         // 3. Fire Catapult: Spawn Rolling Fireball that carries on along the ground
@@ -137,7 +142,7 @@ public class CatapultProjectile : MonoBehaviour
             Vector3 rollDir = (targetPoint - startPoint);
             rollDir.y = 0f;
             if (rollDir.sqrMagnitude < 0.001f) rollDir = transform.forward;
-            RollingFireball.Spawn(impactPos, rollDir.normalized, 9.5f, damageAmount * 0.8f, 10f);
+            RollingFireball.Spawn(rollingFireballPrefab, impactPos, rollDir.normalized, 9.5f, damageAmount * 0.8f, 10f);
         }
 
         Destroy(gameObject);

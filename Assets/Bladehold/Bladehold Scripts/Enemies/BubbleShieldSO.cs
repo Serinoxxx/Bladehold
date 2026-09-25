@@ -6,8 +6,8 @@ public class BubbleShieldSO : ScriptableObject
     [Tooltip("Radius of the protective bubble sphere in metres.")]
     public float radius = 2.0f;
 
-    [Tooltip("Material used for the transparent bubble sphere.")]
-    public Material bubbleMaterial;
+    [Tooltip("Authored bubble visual: a unit-diameter sphere with a trigger SphereCollider (projectile/sweep hit tests use it). Scaled to radius at runtime.")]
+    public GameObject bubbleVisualPrefab;
 
     [Tooltip("Maximum health pool of the bubble shield before it is destroyed.")]
     public float shieldHealth = 40.0f;

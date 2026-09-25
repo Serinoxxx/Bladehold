@@ -1462,6 +1462,7 @@ public static class WeaponReachBenchmark
 
             GameObject dynGo = new GameObject("Test_Dynamite");
             DynamiteProjectile projectile = dynGo.AddComponent<DynamiteProjectile>();
+            CaptainKombustaSO dynamiteSO = AssetDatabase.LoadAssetAtPath<CaptainKombustaSO>("Assets/Bladehold/Bladehold Scripts/Enemies/Captain/CaptainKombustaSO.asset");
 
             projectile.Launch(
                 start: Vector3.up * 2f,
@@ -1472,7 +1473,7 @@ public static class WeaponReachBenchmark
                 damage: 20f,
                 knockback: 5f,
                 sourceOwner: null,
-                telegraphPrefab: null,
+                telegraphPrefab: dynamiteSO != null ? dynamiteSO.telegraphPrefab : null,
                 vfxPrefab: null,
                 sfxExplosion: null
             );
@@ -1875,7 +1876,7 @@ public static class WeaponReachBenchmark
             }
 
             // 16D: Catapult Storm Cloud Attributes
-            CatapultStormCloud stormCloud = CatapultStormCloud.Spawn(Vector3.zero, 6.0f, 8.0f, 40f);
+            CatapultStormCloud stormCloud = CatapultStormCloud.Spawn(AssetDatabase.LoadAssetAtPath<CatapultStormCloud>("Assets/Bladehold/Bladehold Prefabs/Fort/CatapultStormCloud.prefab"), Vector3.zero, 6.0f, 8.0f, 40f);
             if (stormCloud != null && Mathf.Approximately(stormCloud.Radius, 6.0f) && Mathf.Approximately(stormCloud.Duration, 8.0f))
             {
                 sb.AppendLine("  - Catapult Storm Cloud: Successfully spawned with 6m radius and 8s duration. [PASSED]");
@@ -1888,7 +1889,7 @@ public static class WeaponReachBenchmark
             }
 
             // 16E: Rolling Fireball Melee Redirection & Speed Boost
-            RollingFireball fireball = RollingFireball.Spawn(Vector3.zero, Vector3.forward, 9.0f, 50f, 10f);
+            RollingFireball fireball = RollingFireball.Spawn(AssetDatabase.LoadAssetAtPath<RollingFireball>("Assets/Bladehold/Bladehold Prefabs/Fort/RollingFireball.prefab"), Vector3.zero, Vector3.forward, 9.0f, 50f, 10f);
             float initialSpeed = fireball.CurrentSpeed;
             Vector3 initialDir = fireball.MoveDirection;
 

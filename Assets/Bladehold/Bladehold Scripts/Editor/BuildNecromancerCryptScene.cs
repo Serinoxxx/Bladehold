@@ -473,6 +473,24 @@ public static class BuildNecromancerCryptScene
             skProp.GetArrayElementAtIndex(i).objectReferenceValue = skelList[i];
         }
 
+        // Authored visuals: bubble shield and the sweep telegraph fan
+        GameObject bubblePrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/VFX/NecromancerBubbleShield.prefab");
+        GameObject arcPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/VFX/SweepTelegraphArc.prefab");
+        if (bubblePrefab != null)
+        {
+            GameObject bubble = (GameObject)PrefabUtility.InstantiatePrefab(bubblePrefab, bossGo.transform);
+            bubble.transform.localPosition = new Vector3(0f, 1.2f, 0f);
+            bSo.FindProperty("bubbleShieldVisual").objectReferenceValue = bubble;
+        }
+        else Debug.LogError("[BuildNecromancerCryptScene] VFX/NecromancerBubbleShield.prefab not found!");
+        if (arcPrefab != null)
+        {
+            GameObject arc = (GameObject)PrefabUtility.InstantiatePrefab(arcPrefab, bossGo.transform);
+            arc.transform.localPosition = new Vector3(0f, 0.05f, 0f);
+            bSo.FindProperty("sweepTelegraphArc").objectReferenceValue = arc;
+        }
+        else Debug.LogError("[BuildNecromancerCryptScene] VFX/SweepTelegraphArc.prefab not found!");
+
         bSo.ApplyModifiedProperties();
 
         return bossGo;

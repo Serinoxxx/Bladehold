@@ -173,103 +173,25 @@ public class WaveUpgradePowerup : MonoBehaviour
     }
 
     /// <summary>
-    ///     Creates a runtime fallback powerup GameObject if no prefab was assigned,
-    ///     or instantiates and configures a custom visual prefab.
+    ///     Instantiates an authored powerup prefab (a WaveUpgradePowerup variant: Interactable, trigger collider,
+    ///     point Light and a "Visual" child) and sets its bounty. Returns null if the prefab is missing or wrong.
     /// </summary>
-    public static WaveUpgradePowerup Spawn(Vector3 position, BannerBountyType bounty, GameObject prefab = null)
+    public static WaveUpgradePowerup Spawn(Vector3 position, BannerBountyType bounty, GameObject prefab)
     {
-        GameObject go;
-        bool isProceduralFallback = false;
-
-        if (prefab != null)
+        if (prefab == null)
         {
-            go = Instantiate(prefab, position, Quaternion.identity);
-
-            // Ensure any existing colliders act as triggers so player movement isn't blocked
-            Collider[] existingColliders = go.GetComponentsInChildren<Collider>();
-            if (existingColliders.Length > 0)
-            {
-                foreach (Collider col in existingColliders)
-                {
-                    col.isTrigger = true;
-                }
-            }
-            else
-            {
-                SphereCollider sc = go.AddComponent<SphereCollider>();
-                sc.isTrigger = true;
-                sc.radius = 2.5f;
-            }
-
-            // Ensure powerup light exists for ambiance
-            if (go.GetComponentInChildren<Light>() == null)
-            {
-                GameObject lightObj = new GameObject("PowerupLight");
-                lightObj.transform.SetParent(go.transform, false);
-                lightObj.transform.localPosition = new Vector3(0f, 1.2f, 0f);
-                Light l = lightObj.AddComponent<Light>();
-                l.type = LightType.Point;
-                l.range = 6f;
-                l.intensity = 2.0f;
-            }
-
-            // Ensure interactable exists
-            if (go.GetComponent<Interactable>() == null)
-            {
-                go.AddComponent<Interactable>();
-            }
-        }
-        else
-        {
-            isProceduralFallback = true;
-            go = new GameObject("WaveUpgradePowerup");
-            go.transform.position = position;
-
-            // Visual sphere
-            GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            sphere.name = "Visual";
-            sphere.transform.SetParent(go.transform, false);
-            sphere.transform.localPosition = new Vector3(0f, 1.2f, 0f);
-            sphere.transform.localScale = new Vector3(0.9f, 0.9f, 0.9f);
-
-            Collider col = sphere.GetComponent<Collider>();
-            if (col != null) Destroy(col);
-
-            Renderer rend = sphere.GetComponent<Renderer>();
-            if (rend != null)
-            {
-                Shader s = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
-                if (s != null) rend.material = new Material(s);
-            }
-
-            // Light
-            GameObject lightObj = new GameObject("PowerupLight");
-            lightObj.transform.SetParent(go.transform, false);
-            lightObj.transform.localPosition = new Vector3(0f, 1.2f, 0f);
-            Light l = lightObj.AddComponent<Light>();
-            l.type = LightType.Point;
-            l.range = 7f;
-            l.intensity = 2.5f;
-
-            // Trigger collider for proximity
-            SphereCollider sc = go.AddComponent<SphereCollider>();
-            sc.isTrigger = true;
-            sc.radius = 2.5f;
-
-            go.AddComponent<Interactable>();
+            Debug.LogError($"[WaveUpgradePowerup] No powerup prefab for bounty {bounty}: assign WarBannerRewardSO.rewardPrefab (or GameLoopManager.upgradePowerupPrefab).");
+            return null;
         }
 
+        if (prefab.GetComponent<WaveUpgradePowerup>() == null)
+        {
+            Debug.LogError($"[WaveUpgradePowerup] Prefab '{prefab.name}' has no WaveUpgradePowerup: point the reward at a Powerups/WaveReward_* variant.", prefab);
+            return null;
+        }
+
+        GameObject go = Instantiate(prefab, position, Quaternion.identity);
         WaveUpgradePowerup powerup = go.GetComponent<WaveUpgradePowerup>();
-        if (powerup == null)
-        {
-            powerup = go.AddComponent<WaveUpgradePowerup>();
-        }
-
-        if (isProceduralFallback)
-        {
-            powerup.tintMaterialsWithBountyColor = true;
-        }
-
         powerup.InitializeBounty(bounty);
         return powerup;
     }
