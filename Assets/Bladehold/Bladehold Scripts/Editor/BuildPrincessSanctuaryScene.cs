@@ -524,6 +524,22 @@ public static class BuildPrincessSanctuaryScene
         if (victoryClip != null) pSo.FindProperty("victoryMusicSfx").objectReferenceValue = victoryClip;
         if (interruptClip != null) pSo.FindProperty("spellHitInterruptSfx").objectReferenceValue = interruptClip;
 
+        // Overhead revive cast bar (authored prefab, hidden until she channels)
+        GameObject castBarPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/UI/BossCastBar.prefab");
+        if (castBarPrefab != null)
+        {
+            GameObject castBar = (GameObject)PrefabUtility.InstantiatePrefab(castBarPrefab, princessGo.transform);
+            castBar.transform.localPosition = new Vector3(0f, 2.5f, 0f);
+            castBar.SetActive(false);
+            pSo.FindProperty("floatingCastBarRoot").objectReferenceValue = castBar;
+            pSo.FindProperty("castBarFillImage").objectReferenceValue = castBar.transform.Find("CastBar_Fill").GetComponent<UnityEngine.UI.Image>();
+            pSo.FindProperty("castBarTimeText").objectReferenceValue = castBar.transform.Find("CastBar_Text").GetComponent<TMPro.TMP_Text>();
+        }
+        else
+        {
+            Debug.LogError("[BuildPrincessSanctuaryScene] UI/BossCastBar.prefab not found!");
+        }
+
         pSo.ApplyModifiedProperties();
 
         return princessGo;

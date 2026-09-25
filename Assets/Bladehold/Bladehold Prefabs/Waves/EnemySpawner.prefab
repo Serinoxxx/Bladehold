@@ -564,7 +564,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1427332617875962604}
-  - component: {fileID: 4451971272575659071}
   - component: {fileID: 615871162583436328}
   m_Layer: 0
   m_Name: EnemySpawner
@@ -591,22 +590,6 @@ Transform:
   - {fileID: 4730335246504654260}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4451971272575659071
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3235339430547657717}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d820c34ccf19d4644959e28f98561212, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HoldTheLineBonus
-  stats: {fileID: 0}
-  baseGoldPerWave: 0.05
-  extendFeedback: {fileID: 5413046310551879832}
-  resetFeedback: {fileID: 7969646056043582142}
 --- !u!114 &615871162583436328
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -657,7 +640,6 @@ MonoBehaviour:
   maxConcurrentShielders: 2
   cleanupLightningVfx: {fileID: 1454807473737458, guid: 6108438f5e38d0b4b8fed06af6b74254, type: 3}
   cleanupLightningSfx: {fileID: 8300000, guid: 7418f4853db77134f83e1ecba7247878, type: 3}
-  ignoreRowMaxConcurrent: 1
 --- !u!1 &4834951400620588402
 GameObject:
   m_ObjectHideFlags: 0

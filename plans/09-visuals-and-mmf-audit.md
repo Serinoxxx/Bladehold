@@ -11,8 +11,8 @@ This plan audits and migrates the existing violations. Split it into several ses
 | Session | Scope | Status |
 |---|---|---|
 | 1 | Runtime `LoadAssetAtPath` fallbacks (they silently return null in a player build) | **Done 2026-09-26** |
-| 2 | Code-built UI → prefab mockups | Next. Needs Unity MCP (prefab mockups) |
-| 3 | Code-built world visuals (primitives, telegraph LineRenderers, lights) | Needs MCP or Lance for art |
+| 2 | Code-built UI → prefab mockups | **Done 2026-09-26** (mockups await UI review) |
+| 3 | Code-built world visuals (primitives, telegraph LineRenderers, lights) | Next. Needs MCP or Lance for art |
 | 4+ | Direct audio/VFX/shake → MMF, one batch per session (ranked list below) | After 2-3 |
 
 **Session 1 done:**
@@ -22,10 +22,17 @@ This plan audits and migrates the existing violations. Split it into several ses
 - `DefenseAssemblyAnimation` is an authored prefab (`Defenses/DefenseAssemblyAnimation.prefab`, referenced by `TowerPlot.assemblyAnimationPrefab`) with three `MMF_Player`s, replacing `AddComponent` + loaded clips/particles + `MMCameraShakeEvent`. Dead ghost-blueprint code removed. Benchmark 20D updated.
 - Editor work: [`plans/editor/09-visuals-mmf.md`](editor/09-visuals-mmf.md).
 
+**Session 2 done** (Unity MCP connected):
+- New agent-mockup prefabs (Synty art, Grenze/Texturina): `UI/ObjectiveWaypointMarker.prefab` (tracker `markerTemplate`), `UI/SidebarSkillRow.prefab` (sidebar `skillItemPrefab` in the HUD, DeathScreen and Survivors scene), `Resources/LoadingScreenManager.prefab` (manager + loading canvas; the singleton now spawns it via `Resources.Load` instead of building a canvas), `UI/BossCastBar.prefab` (instanced under the Princess in the Sanctuary scene and by `BuildPrincessSanctuaryScene`).
+- The HUD's `EnemyIntroUI` got an authored `SubtitleText`. Its crosshair and ammo counter were already authored, so `BowCrosshairUI`/`BowAmmoUI` just lost their builders (ammo text now in Grenze). `Enemy Zoo`'s stand-alone crosshair was replaced with a copy of the HUD one.
+- `SkillTooltip` no longer adds its Canvas/CanvasGroup: `Tooltip.prefab` carries both. `LoadingScreenUI` no longer adds a CanvasGroup.
+- `ActiveTowersHUDUI` deleted: nothing referenced it (no scene, prefab or code), so it never ran.
+- Every fallback now `LogError`s naming the field to wire.
+- Blocker cleared on the way: Unity refuses to save a prefab with missing scripts, so plan 08's cleanup was run (its logic via MCP, minus the modal dialog), the legacy prefabs and `Plan08LegacyCleanup.cs` deleted. The binary scenes did **not** become text (neither `SaveScene` nor `ForceReserializeAssets` converted them); see 00 §B.
+
 ## Refreshed audit (2026-09-26, after session 1)
 
-**Session 2, code-built UI** (each needs a prefab mockup: Synty art, Texturina/Grenze, human review):
-`ObjectiveWaypointTrackerUI` (marker template), `LoadingScreenManager` (whole fallback canvas), `BowAmmoUI` (counter/icon/warning + its sprite `LoadAssetAtPath`), `ActiveTowersHUDUI` (panel + rows), `SurvivorsPlayerInfoSidebarUI` (rows), `EnemyIntroUI` (subtitle), `BowCrosshairUI` (reticle), `SkillTooltip` (canvas), `PrincessBossController` (cast bar).
+**Session 2, code-built UI:** done (see above).
 
 **Session 3, code-built world visuals:**
 `NecromancerBossController` (bubble sphere, sweep-arc LineRenderer, placeholder skeleton capsule), `ArmoredKnightAI` (beacon LineRenderer), `PrincessBossController` (magic circle LineRenderer), `BubbleShield` (sphere), `ArrowBarrageZone` (telegraph LineRenderer), `Captain/DynamiteProjectile` (stick cylinder + fuse LineRenderer), `FishingBowController` (arrow cylinder), `FishingManager` (fish capsule), `CatapultStormCloud` (puffs), `RollingFireball` (sphere), `SlipperyIceZone` (disc), `SpawnIndicator` (cylinder), `WaveUpgradePowerup` (sphere + lights), `ThrowingAxeUltimate` (blade cube), `KnockbackReceiver` (light), `RestArea/DraftStation` (light).
@@ -60,7 +67,7 @@ Skip `TrainingDummy` (debug).
 - **Fort:** `CatapultStormCloud`, `DefenseAssemblyAnimation`, `DefenseStructure`, `RollingFireball`, `SlipperyIceZone`
 - **Objectives:** `KillRemainingEnemiesObjective`, `SupplyWagonEscort`
 - **Player:** `PlayerInteraction`, `PlayerSummonMount`, `ThrowingAxeUltimate`
-- **UI:** `ActiveTowersHUDUI`, `BowAmmoUI`, `BowCrosshairUI`, `BuildWheelUI`, `EnemyIntroUI`, `MainMenu/MetaProgressionGridUI`, `ObjectiveWaypointTrackerUI`, `SkillTooltip`, `SurvivorsPlayerInfoSidebarUI`, `Transitions/LoadingScreenManager`, `UIClickFeedback`, `VictoryScreenUI`, `WaveClearedBannerUI`
+- **UI:** `BuildWheelUI`, `UIClickFeedback`, `WaveClearedBannerUI` (the rest were fixed in sessions 1-2)
 - **Other:** `Upgrades/SurvivorsGameManager`, `Waves/Gate`, `Waves/SpawnIndicator`, `Waves/WaveUpgradePowerup`, `Debug/DiegeticDraftTester`, plus `Campaign/CampaignMapUI` (handled in plan 02)
 
 Grep used: `CreatePrimitive|AddComponent<(MeshRenderer|MeshFilter|LineRenderer|ParticleSystem|Image|TextMeshProUGUI|Canvas)>|LoadAssetAtPath|Ensure(Visuals|UI|Canvas)|new GameObject("…", typeof(RectTransform)`

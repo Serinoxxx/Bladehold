@@ -14,7 +14,7 @@ public class BowCrosshairUI : MonoBehaviour
     [SerializeField] private PlayerBow bow;
     [Tooltip("Faded in while aiming. Usually on this object.")]
     [SerializeField] private CanvasGroup canvasGroup;
-    [Tooltip("Scaled down as the draw charges. Usually this object's own RectTransform.")]
+    [Tooltip("Scaled down as the draw charges. Use the ReticleVisual child so the ammo counter under the crosshair doesn't shrink with it.")]
     [SerializeField] private RectTransform reticle;
 
     [Tooltip("Seconds the crosshair takes to fade in and out.")]
@@ -34,18 +34,6 @@ public class BowCrosshairUI : MonoBehaviour
         {
             canvasGroup = GetComponent<CanvasGroup>();
         }
-        if (reticle == null)
-        {
-            reticle = transform as RectTransform;
-        }
-    }
-
-    private void Awake()
-    {
-        if (GetComponent<BowAmmoUI>() == null)
-        {
-            gameObject.AddComponent<BowAmmoUI>();
-        }
     }
 
     private void Start()
@@ -59,40 +47,6 @@ public class BowCrosshairUI : MonoBehaviour
             Debug.LogError("No aim weapon found: assign the bow, or ensure the class controller's active class carries an IChargedAimWeapon.");
             anyError = true;
         }
-        if (reticle == null || reticle == (RectTransform)transform)
-        {
-            Transform existingVisual = transform.Find("ReticleVisual");
-            if (existingVisual != null)
-            {
-                reticle = existingVisual as RectTransform;
-            }
-            else
-            {
-                var img = GetComponent<UnityEngine.UI.Image>();
-                if (img != null)
-                {
-                    GameObject visualObj = new GameObject("ReticleVisual", typeof(RectTransform), typeof(UnityEngine.UI.Image));
-                    visualObj.transform.SetParent(transform, false);
-                    visualObj.transform.SetAsFirstSibling();
-                    var vRt = visualObj.GetComponent<RectTransform>();
-                    vRt.anchorMin = new Vector2(0.5f, 0.5f);
-                    vRt.anchorMax = new Vector2(0.5f, 0.5f);
-                    vRt.pivot = new Vector2(0.5f, 0.5f);
-                    vRt.anchoredPosition = Vector2.zero;
-                    vRt.sizeDelta = ((RectTransform)transform).sizeDelta;
-
-                    var vImg = visualObj.GetComponent<UnityEngine.UI.Image>();
-                    vImg.sprite = img.sprite;
-                    vImg.color = img.color;
-                    vImg.raycastTarget = false;
-                    vImg.material = img.material;
-
-                    Destroy(img);
-                    reticle = vRt;
-                }
-            }
-        }
-
         if (canvasGroup == null)
         {
             Debug.LogError("CanvasGroup is not assigned or found on the GameObject.");
@@ -100,7 +54,7 @@ public class BowCrosshairUI : MonoBehaviour
         }
         if (reticle == null)
         {
-            Debug.LogError("Reticle RectTransform is not assigned and this object has none.");
+            Debug.LogError("[BowCrosshairUI] reticle is not assigned (wire the ReticleVisual child).", this);
             anyError = true;
         }
 

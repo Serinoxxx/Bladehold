@@ -65,16 +65,6 @@ public class ObjectiveWaypointMarkerUI : MonoBehaviour
         }
     }
 
-    public void SetupReferences(RectTransform rect, CanvasGroup cg, Image bg, Image icon, Image arrow, TMP_Text text)
-    {
-        markerRect = rect;
-        canvasGroup = cg;
-        iconBackground = bg;
-        iconImage = icon;
-        offscreenArrow = arrow;
-        distanceText = text;
-    }
-
     public void Bind(Transform target, Vector3 offset, Sprite icon, Color tint, string label)
     {
         targetTransform = target;

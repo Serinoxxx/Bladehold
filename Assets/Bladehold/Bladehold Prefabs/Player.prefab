@@ -63179,9 +63179,6 @@ PrefabInstance:
       addedObject: {fileID: 9087728008629332351}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1179703034265793853}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 5156588240620538864}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
       insertIndex: -1
@@ -63192,9 +63189,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5860810775408780932}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 4109038269198118712}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2420221355282876127}
@@ -64177,18 +64171,6 @@ MonoBehaviour:
   popupPrefab: {fileID: 5617686091126449503, guid: d8f5577eb4cb9544aabf9428e808d21c, type: 3}
   critPopupPrefab: {fileID: 8478376370258957393, guid: 3d94bfb4b96286c46a90b657c577efa6, type: 3}
   spawnOffset: {x: 0, y: 1, z: 0}
---- !u!114 &1179703034265793853
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8033356972124291578}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3b3100a3a41846746b4a72b7a3827791, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Wallet
 --- !u!114 &5156588240620538864
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -64259,21 +64241,6 @@ MonoBehaviour:
   config: {fileID: 11400000, guid: 96b196305da559341b02a4a3f3bdb316, type: 2}
   stats: {fileID: 5156588240620538864}
   novaFeedback: {fileID: 3763160800139989689}
---- !u!114 &4109038269198118712
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8033356972124291578}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 706da8d62441b7543b57d2cb5f74de85, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GoldOnDeathCollector
-  health: {fileID: 46043393445266479}
-  wallet: {fileID: 1179703034265793853}
-  stats: {fileID: 5156588240620538864}
 --- !u!114 &2420221355282876127
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -64353,6 +64320,7 @@ MonoBehaviour:
     m_Bits: 128
   mount: {fileID: 1504036595472203636}
   playerHealth: {fileID: 46043393445266479}
+  playerAmmo: {fileID: 0}
 --- !u!114 &1839661837703581504
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -64603,6 +64571,7 @@ MonoBehaviour:
   ridingLayerName: Riding
   mountFeedback: {fileID: 1728939308097273906}
   dismountFeedback: {fileID: 1545244807824927532}
+  horsePrefab: {fileID: 0}
 --- !u!114 &518862848152106909
 MonoBehaviour:
   m_ObjectHideFlags: 0

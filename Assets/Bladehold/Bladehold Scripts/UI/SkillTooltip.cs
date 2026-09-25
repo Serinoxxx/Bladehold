@@ -5,9 +5,9 @@ using UnityEngine.InputSystem;
 /// <summary>
 ///     Cursor-following tooltip for draft cards (e.g. the acquired-skills sidebar): shows a card's name,
 ///     description and an optional cost line. While visible it follows the mouse every frame, flipping
-///     which corner hugs the cursor per screen half so it never runs off screen. A CanvasGroup with
-///     raycasts blocked is forced on so the tooltip can sit next to the cursor without stealing the very
-///     hover it is reporting on.
+///     which corner hugs the cursor per screen half so it never runs off screen. Its own Canvas (override
+///     sorting) and CanvasGroup are authored on the prefab; the group's raycasts are forced off so the
+///     tooltip can sit next to the cursor without stealing the very hover it is reporting on.
 /// </summary>
 public class SkillTooltip : MonoBehaviour
 {
@@ -37,26 +37,23 @@ public class SkillTooltip : MonoBehaviour
         canvas = transform.parent != null ? transform.parent.GetComponentInParent<Canvas>(true) : null;
 
         tooltipCanvas = GetComponent<Canvas>();
-        if (tooltipCanvas == null)
+        if (tooltipCanvas != null)
         {
-            tooltipCanvas = gameObject.AddComponent<Canvas>();
-        }
-        tooltipCanvas.overrideSorting = true;
-        tooltipCanvas.sortingOrder = sortingOrder;
-
-        if (canvas != null)
-        {
-            tooltipCanvas.additionalShaderChannels = canvas.additionalShaderChannels;
-            tooltipCanvas.sortingLayerID = canvas.sortingLayerID;
+            tooltipCanvas.overrideSorting = true;
+            tooltipCanvas.sortingOrder = sortingOrder;
+            if (canvas != null)
+            {
+                tooltipCanvas.additionalShaderChannels = canvas.additionalShaderChannels;
+                tooltipCanvas.sortingLayerID = canvas.sortingLayerID;
+            }
         }
 
         CanvasGroup group = GetComponent<CanvasGroup>();
-        if (group == null)
+        if (group != null)
         {
-            group = gameObject.AddComponent<CanvasGroup>();
+            group.blocksRaycasts = false;
+            group.interactable = false;
         }
-        group.blocksRaycasts = false;
-        group.interactable = false;
     }
 
     private void OnEnable()
@@ -79,9 +76,13 @@ public class SkillTooltip : MonoBehaviour
                 tooltipCanvas.sortingLayerID = canvas.sortingLayerID;
             }
         }
-        if (canvas == null && tooltipCanvas == null)
+        if (tooltipCanvas == null)
         {
-            Debug.LogError("SkillTooltip is not under a Canvas.");
+            Debug.LogError("[SkillTooltip] needs its own Canvas (override sorting) on this object; see UI/Tooltip.prefab.", this);
+        }
+        if (GetComponent<CanvasGroup>() == null)
+        {
+            Debug.LogError("[SkillTooltip] needs a CanvasGroup on this object so it never blocks the hover it reports on; see UI/Tooltip.prefab.", this);
         }
     }
 

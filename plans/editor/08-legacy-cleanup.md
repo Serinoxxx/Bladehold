@@ -1,16 +1,10 @@
 # Editor to-do: plan 08 (Legacy cleanup)
 
-From [plan 08](../08-legacy-cleanup.md), 2026-09-25. Unity MCP wasn't connected, so nothing was opened in the Editor or play-tested. **Do section 1 first:** until it runs, the build scenes and prefabs carry "missing script" components and old fortress/skill-node prefab instances (warnings only, nothing breaks). Tick items off as you go and delete the file when it's empty.
+From [plan 08](../08-legacy-cleanup.md), 2026-09-25. Unity MCP wasn't connected, so nothing was opened in the Editor or play-tested. Tick items off as you go and delete the file when it's empty.
 
-## 1. Run the cleanup tool (5 min, could be run by an agent via MCP)
+## 1. Cleanup
 
-- [ ] **Let Unity recompile** (lots of scripts were deleted), then check the Console has no compile errors.
-- [ ] **Run `Bladehold/Maintenance/Plan 08 Legacy Cleanup`.** It opens every build scene and every prefab under `Assets/Bladehold`, then:
-  - strips nested instances of `FortDefenseSockets`, `FortDefenseManager`, `Fort_ArrowSlit`/`Fort_BoilingOil`/`Fort_Spikes` and `SkillNode`/`SkillNode Reincarnate`/`SkillNodeConnector`, plus every missing-script component;
-  - adds a `TowerPlotManager` to any scene that has tower plots but no manager (the `Bladehold Survivors Scene` has none, so Tesla Spire, Permafrost and the victory supply refund don't run there);
-  - re-saves each build scene, which also rewrites the binary castle/crypt/sanctuary scenes as text. That ticks off 00 §B "Re-serialize the binary scenes" for the build scenes;
-  - then deletes those legacy prefab files.
-  - Verify: the Console report ends "Done, no problems." Any `!!` line names an object to fix by hand (usually a legacy instance nested inside another prefab instance). Then commit and **delete `Editor/Plan08LegacyCleanup.cs`**.
+- [x] ~~Run the cleanup tool~~: done by an agent via MCP on 2026-09-26 (plan 09 session 2 needed it: Unity won't save a prefab with missing scripts). No problems reported. Prefabs: HUD, DeathScreen (-3 legacy skill-tree instances), Player, SurvivorsGameManager, EnemySpawner. Scenes: MainMenu lost its 5 dead screens, Survivors Scene got a `TowerPlotManager`, each castle scene lost 2 legacy fort instances. Legacy prefabs and `Plan08LegacyCleanup.cs` are deleted. The binary scenes did **not** turn into text (see 00 §B).
 - [ ] **`Bladehold Demo Scene`, `Bladehold Test Scene`, `Assets/_Recovery/0.unity`** aren't in the build and still reference deleted scripts (WaveSpawner, SkillTreeService…). Delete them unless you still use them (they won't run as they are).
 
 ## 2. Scene wiring

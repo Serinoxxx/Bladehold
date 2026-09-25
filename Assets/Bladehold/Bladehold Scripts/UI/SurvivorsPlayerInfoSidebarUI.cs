@@ -135,6 +135,11 @@ public class SurvivorsPlayerInfoSidebarUI : MonoBehaviour
     private void PopulateAcquiredSkills()
     {
         if (skillsListContainer == null) return;
+        if (skillItemPrefab == null)
+        {
+            Debug.LogError("[SurvivorsPlayerInfoSidebarUI] skillItemPrefab is not assigned (UI/SidebarSkillRow.prefab).", this);
+            return;
+        }
 
         // Clear previous rows
         for (int i = spawnedSkillItems.Count - 1; i >= 0; i--)
@@ -166,15 +171,9 @@ public class SurvivorsPlayerInfoSidebarUI : MonoBehaviour
             SkillNode node = draftService.ConvertToSkillNode(def);
             Sprite icon = draftService.GetIcon(def.iconName);
 
-            GameObject itemGO = skillItemPrefab != null
-                ? Instantiate(skillItemPrefab, skillsListContainer)
-                : CreateDefaultSkillItem(node, level, icon, isWeapon: def.isUltimate);
-
-            if (itemGO != null)
-            {
-                spawnedSkillItems.Add(itemGO);
-                SetupSkillItemData(itemGO, node, level, icon);
-            }
+            GameObject itemGO = Instantiate(skillItemPrefab, skillsListContainer);
+            spawnedSkillItems.Add(itemGO);
+            SetupSkillItemData(itemGO, node, level, icon);
         }
     }
 
@@ -229,54 +228,5 @@ public class SurvivorsPlayerInfoSidebarUI : MonoBehaviour
             }
         });
         trigger.triggers.Add(exitEntry);
-    }
-
-    private GameObject CreateDefaultSkillItem(SkillNode node, int level, Sprite icon, bool isWeapon = false)
-    {
-        GameObject row = new GameObject(node.displayName, typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(Image));
-        row.transform.SetParent(skillsListContainer, false);
-
-        Image bg = row.GetComponent<Image>();
-        bg.color = isWeapon ? new Color(0.2f, 0.15f, 0.08f, 0.85f) : new Color(0.1f, 0.12f, 0.15f, 0.75f);
-
-        HorizontalLayoutGroup hlg = row.GetComponent<HorizontalLayoutGroup>();
-        hlg.childControlWidth = true;
-        hlg.childControlHeight = true;
-        hlg.childForceExpandWidth = false;
-        hlg.childForceExpandHeight = false;
-        hlg.spacing = 8f;
-        hlg.padding = new RectOffset(6, 6, 4, 4);
-
-        // Icon
-        GameObject iconGO = new GameObject("Icon", typeof(RectTransform), typeof(Image));
-        iconGO.transform.SetParent(row.transform, false);
-        Image img = iconGO.GetComponent<Image>();
-        img.sprite = icon;
-        LayoutElement iconLE = iconGO.AddComponent<LayoutElement>();
-        iconLE.preferredWidth = 28f;
-        iconLE.preferredHeight = 28f;
-
-        // Name
-        GameObject nameGO = new GameObject("Name", typeof(RectTransform), typeof(TextMeshProUGUI));
-        nameGO.transform.SetParent(row.transform, false);
-        TextMeshProUGUI nameTMP = nameGO.GetComponent<TextMeshProUGUI>();
-        nameTMP.text = node.LocalizedDisplayName;
-        nameTMP.fontSize = 14;
-        nameTMP.alignment = TextAlignmentOptions.MidlineLeft;
-        LayoutElement nameLE = nameGO.AddComponent<LayoutElement>();
-        nameLE.flexibleWidth = 1f;
-
-        // Level
-        GameObject levelGO = new GameObject("LevelBadge", typeof(RectTransform), typeof(TextMeshProUGUI));
-        levelGO.transform.SetParent(row.transform, false);
-        TextMeshProUGUI levelTMP = levelGO.GetComponent<TextMeshProUGUI>();
-        levelTMP.text = $"Lv. {level}";
-        levelTMP.fontSize = 13;
-        levelTMP.alignment = TextAlignmentOptions.MidlineRight;
-        levelTMP.color = new Color(0.95f, 0.8f, 0.3f);
-        LayoutElement levelLE = levelGO.AddComponent<LayoutElement>();
-        levelLE.preferredWidth = 45f;
-
-        return row;
     }
 }

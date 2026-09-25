@@ -145,17 +145,17 @@ public class PrincessBossController : MonoBehaviour
         {
             CreateProceduralMagicCircle();
         }
-
-        if (floatingCastBarRoot == null)
-        {
-            CreateProceduralCastBar();
-        }
     }
 
     private void Start()
     {
         EnsureComponents();
         SubscribeEvents();
+
+        if (floatingCastBarRoot == null || castBarFillImage == null || castBarTimeText == null)
+        {
+            Debug.LogError("[PrincessBossController] Cast bar refs are not assigned (instance UI/BossCastBar.prefab as a child and wire floatingCastBarRoot, castBarFillImage, castBarTimeText).", this);
+        }
 
         if (agent != null)
         {
@@ -246,65 +246,6 @@ public class PrincessBossController : MonoBehaviour
         lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 
         magicCircleVisual.SetActive(false);
-    }
-
-    private void CreateProceduralCastBar()
-    {
-        Transform existing = transform.Find("Overhead_CastBar_Canvas");
-        if (existing != null)
-        {
-            floatingCastBarRoot = existing.gameObject;
-            return;
-        }
-
-        floatingCastBarRoot = new GameObject("Overhead_CastBar_Canvas", typeof(Canvas), typeof(CanvasScaler));
-        floatingCastBarRoot.transform.SetParent(transform, false);
-        floatingCastBarRoot.transform.localPosition = new Vector3(0f, 2.5f, 0f);
-
-        Canvas canvas = floatingCastBarRoot.GetComponent<Canvas>();
-        canvas.renderMode = RenderMode.WorldSpace;
-        RectTransform canvasRect = floatingCastBarRoot.GetComponent<RectTransform>();
-        canvasRect.sizeDelta = new Vector2(240f, 40f);
-        canvasRect.localScale = Vector3.one * 0.01f;
-
-        // Background Bar
-        GameObject bgObj = new GameObject("CastBar_BG", typeof(RectTransform), typeof(Image));
-        bgObj.transform.SetParent(floatingCastBarRoot.transform, false);
-        RectTransform bgRect = bgObj.GetComponent<RectTransform>();
-        bgRect.anchorMin = Vector2.zero;
-        bgRect.anchorMax = Vector2.one;
-        bgRect.sizeDelta = Vector2.zero;
-        bgObj.GetComponent<Image>().color = new Color(0.1f, 0.1f, 0.15f, 0.85f);
-
-        // Fill Bar
-        GameObject fillObj = new GameObject("CastBar_Fill", typeof(RectTransform), typeof(Image));
-        fillObj.transform.SetParent(floatingCastBarRoot.transform, false);
-        RectTransform fillRect = fillObj.GetComponent<RectTransform>();
-        fillRect.anchorMin = new Vector2(0f, 0f);
-        fillRect.anchorMax = new Vector2(1f, 1f);
-        fillRect.sizeDelta = new Vector2(-4f, -4f);
-        fillRect.anchoredPosition = Vector2.zero;
-        castBarFillImage = fillObj.GetComponent<Image>();
-        castBarFillImage.type = Image.Type.Filled;
-        castBarFillImage.fillMethod = Image.FillMethod.Horizontal;
-        castBarFillImage.fillOrigin = (int)Image.OriginHorizontal.Left;
-        castBarFillImage.color = new Color(1.0f, 0.85f, 0.2f, 0.95f);
-
-        // Text Label
-        GameObject textObj = new GameObject("CastBar_Text", typeof(RectTransform), typeof(TextMeshProUGUI));
-        textObj.transform.SetParent(floatingCastBarRoot.transform, false);
-        RectTransform textRect = textObj.GetComponent<RectTransform>();
-        textRect.anchorMin = Vector2.zero;
-        textRect.anchorMax = Vector2.one;
-        textRect.sizeDelta = Vector2.zero;
-        castBarTimeText = textObj.GetComponent<TextMeshProUGUI>();
-        castBarTimeText.alignment = TextAlignmentOptions.Center;
-        castBarTimeText.fontSize = 18;
-        castBarTimeText.fontStyle = FontStyles.Bold;
-        castBarTimeText.color = Color.white;
-        castBarTimeText.text = "REVIVING KNIGHT";
-
-        floatingCastBarRoot.SetActive(false);
     }
 
     private void Update()

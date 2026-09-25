@@ -2669,6 +2669,7 @@ MonoBehaviour:
   nodeButtonPrefab: {fileID: 7729393446166711877, guid: 3c3da0c73b4356d449db9d0362773b2c, type: 3}
   pathLinePrefab: {fileID: 2233145023484482906, guid: dd2fe5cc3d2c4c9408f1edb8254b29c8, type: 3}
   tooltipUI: {fileID: 982278945}
+  demoEndScreen: {fileID: 0}
   screenTitleText: {fileID: 1194372421}
   inRunGoldText: {fileID: 1950249674}
   goblinBloodText: {fileID: 1679513345}

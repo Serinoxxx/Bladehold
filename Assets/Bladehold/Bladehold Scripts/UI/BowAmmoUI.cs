@@ -37,9 +37,14 @@ public class BowAmmoUI : MonoBehaviour
     private IChargedAimWeapon weapon;
     private PlayerAmmo playerAmmo;
 
-    private void Awake()
+    private bool anyError;
+
+    private void OnValidate()
     {
-        EnsureVisualElements();
+        if (canvasGroup == null)
+        {
+            canvasGroup = GetComponent<CanvasGroup>();
+        }
     }
 
     private void Start()
@@ -48,15 +53,32 @@ public class BowAmmoUI : MonoBehaviour
 
         if (canvasGroup == null)
         {
-            canvasGroup = GetComponent<CanvasGroup>();
+            Debug.LogError("[BowAmmoUI] canvasGroup is not assigned.", this);
+            anyError = true;
+        }
+        if (ammoCountText == null)
+        {
+            Debug.LogError("[BowAmmoUI] ammoCountText is not assigned.", this);
+            anyError = true;
+        }
+        if (arrowIcon == null)
+        {
+            Debug.LogError("[BowAmmoUI] arrowIcon is not assigned.", this);
+            anyError = true;
+        }
+        if (outOfAmmoText == null)
+        {
+            Debug.LogError("[BowAmmoUI] outOfAmmoText is not assigned.", this);
+            anyError = true;
+        }
+        if (anyError)
+        {
+            return;
         }
 
-        if (canvasGroup != null)
-        {
-            canvasGroup.alpha = 0f;
-            canvasGroup.blocksRaycasts = false;
-            canvasGroup.interactable = false;
-        }
+        canvasGroup.alpha = 0f;
+        canvasGroup.blocksRaycasts = false;
+        canvasGroup.interactable = false;
 
         ResolveAmmoComponent();
         PlayerAmmo.OnAnyAmmoChanged += HandleAmmoChanged;
@@ -121,6 +143,11 @@ public class BowAmmoUI : MonoBehaviour
 
     private void Update()
     {
+        if (anyError)
+        {
+            return;
+        }
+
         if (weapon == null)
         {
             weapon = AimWeaponResolver.Resolve(bow);
@@ -146,173 +173,6 @@ public class BowAmmoUI : MonoBehaviour
             {
                 outOfAmmoText.gameObject.SetActive(showWarning);
             }
-        }
-    }
-
-    private void EnsureVisualElements()
-    {
-        if (canvasGroup == null)
-        {
-            canvasGroup = GetComponent<CanvasGroup>();
-            if (canvasGroup == null)
-            {
-                canvasGroup = gameObject.AddComponent<CanvasGroup>();
-            }
-        }
-
-        // If all essential visual components are already wired via Inspector/Prefab, skip re-creating them
-        if (ammoCountText != null && arrowIcon != null && outOfAmmoText != null)
-        {
-            return;
-        }
-
-        // 1. Build or locate Ammo Counter container directly under crosshairs
-        Transform existingCounter = transform.Find("AmmoCounter");
-        GameObject counterObj;
-        if (existingCounter != null)
-        {
-            counterObj = existingCounter.gameObject;
-        }
-        else
-        {
-            counterObj = new GameObject("AmmoCounter", typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(ContentSizeFitter));
-            counterObj.transform.SetParent(transform, false);
-        }
-
-        RectTransform rt = counterObj.GetComponent<RectTransform>();
-        rt.anchorMin = new Vector2(0.5f, 0.5f);
-        rt.anchorMax = new Vector2(0.5f, 0.5f);
-        rt.pivot = new Vector2(0.5f, 0.5f);
-        rt.anchoredPosition = new Vector2(0f, -95f);
-        rt.sizeDelta = new Vector2(240f, 60f);
-
-        HorizontalLayoutGroup hlg = counterObj.GetComponent<HorizontalLayoutGroup>();
-        if (hlg == null) hlg = counterObj.AddComponent<HorizontalLayoutGroup>();
-        hlg.childAlignment = TextAnchor.MiddleCenter;
-        hlg.spacing = 10f;
-        hlg.childControlWidth = false;
-        hlg.childControlHeight = false;
-        hlg.childForceExpandWidth = false;
-        hlg.childForceExpandHeight = false;
-
-        ContentSizeFitter csf = counterObj.GetComponent<ContentSizeFitter>();
-        if (csf == null) csf = counterObj.AddComponent<ContentSizeFitter>();
-        csf.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-        csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-        // Ammo Text
-        if (ammoCountText == null)
-        {
-            Transform textChild = counterObj.transform.Find("AmmoText");
-            GameObject textObj;
-            if (textChild != null)
-            {
-                textObj = textChild.gameObject;
-            }
-            else
-            {
-                textObj = new GameObject("AmmoText", typeof(RectTransform), typeof(TextMeshProUGUI));
-                textObj.transform.SetParent(counterObj.transform, false);
-            }
-
-            TextMeshProUGUI tmp = textObj.GetComponent<TextMeshProUGUI>();
-            if (tmp == null) tmp = textObj.AddComponent<TextMeshProUGUI>();
-            tmp.fontSize = 46f;
-            tmp.fontStyle = FontStyles.Bold;
-            tmp.alignment = TextAlignmentOptions.Center;
-            tmp.color = normalAmmoColor;
-            tmp.raycastTarget = false;
-            ApplySafeOutline(tmp, 0.25f, Color.black);
-            ammoCountText = tmp;
-        }
-
-        // Arrow Icon
-        if (arrowIcon == null)
-        {
-            Transform iconChild = counterObj.transform.Find("ArrowIcon");
-            GameObject iconObj;
-            if (iconChild != null)
-            {
-                iconObj = iconChild.gameObject;
-            }
-            else
-            {
-                iconObj = new GameObject("ArrowIcon", typeof(RectTransform), typeof(Image));
-                iconObj.transform.SetParent(counterObj.transform, false);
-            }
-
-            RectTransform iconRt = iconObj.GetComponent<RectTransform>();
-            iconRt.sizeDelta = new Vector2(52f, 52f);
-
-            Image img = iconObj.GetComponent<Image>();
-            if (img == null) img = iconObj.AddComponent<Image>();
-            img.raycastTarget = false;
-#if UNITY_EDITOR
-            if (img.sprite == null)
-            {
-                img.sprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/Icons_Weapons/ICON_SM_Prop_Arrow_01.png")
-                    ?? UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Bladehold/Art/Icons/Skills/Base/swiftarrow.png");
-            }
-#endif
-            arrowIcon = img;
-        }
-
-        // 2. Build or locate Out Of Ammo warning in center screen
-        if (outOfAmmoText == null)
-        {
-            Transform existingWarning = transform.Find("OutOfAmmoWarning");
-            GameObject warnObj;
-            if (existingWarning != null)
-            {
-                warnObj = existingWarning.gameObject;
-            }
-            else
-            {
-                warnObj = new GameObject("OutOfAmmoWarning", typeof(RectTransform), typeof(TextMeshProUGUI));
-                warnObj.transform.SetParent(transform, false);
-            }
-
-            RectTransform wrt = warnObj.GetComponent<RectTransform>();
-            wrt.anchorMin = new Vector2(0.5f, 0.5f);
-            wrt.anchorMax = new Vector2(0.5f, 0.5f);
-            wrt.pivot = new Vector2(0.5f, 0.5f);
-            wrt.anchoredPosition = new Vector2(0f, 90f);
-            wrt.sizeDelta = new Vector2(500f, 80f);
-
-            TextMeshProUGUI wTmp = warnObj.GetComponent<TextMeshProUGUI>();
-            if (wTmp == null) wTmp = warnObj.AddComponent<TextMeshProUGUI>();
-            wTmp.text = "OUT OF AMMO";
-            wTmp.fontSize = 64f;
-            wTmp.fontStyle = FontStyles.Bold;
-            wTmp.alignment = TextAlignmentOptions.Center;
-            wTmp.color = outOfAmmoColor;
-            wTmp.raycastTarget = false;
-            ApplySafeOutline(wTmp, 0.3f, Color.black);
-            outOfAmmoText = wTmp;
-            warnObj.SetActive(false);
-        }
-    }
-
-    private static void ApplySafeOutline(TextMeshProUGUI tmp, float width, Color color)
-    {
-        if (tmp == null) return;
-        try
-        {
-            if (tmp.fontSharedMaterial != null)
-            {
-                tmp.outlineWidth = width;
-                tmp.outlineColor = color;
-            }
-            else if (tmp.font != null && tmp.font.material != null)
-            {
-                tmp.fontSharedMaterial = tmp.font.material;
-                tmp.outlineWidth = width;
-                tmp.outlineColor = color;
-            }
-        }
-        catch (System.Exception)
-        {
-            // Silently fall back if material cannot be instanced on uninitialized or inactive TMP
         }
     }
 }

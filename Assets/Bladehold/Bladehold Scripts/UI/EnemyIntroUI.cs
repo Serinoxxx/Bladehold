@@ -59,6 +59,10 @@ public class EnemyIntroUI : MonoBehaviour
         {
             canvasGroup = GetComponent<CanvasGroup>();
         }
+        if (enemyNameText == null || subtitleText == null)
+        {
+            Debug.LogError("[EnemyIntroUI] enemyNameText or subtitleText is not assigned.", this);
+        }
 
         SetVisible(false);
     }
@@ -94,8 +98,6 @@ public class EnemyIntroUI : MonoBehaviour
             enemyNameText.text = enemyName.ToUpper();
         }
 
-        EnsureSubtitleText();
-
         if (subtitleText != null)
         {
             if (difficultySkulls > 0)
@@ -126,30 +128,6 @@ public class EnemyIntroUI : MonoBehaviour
         }
 
         activeIntroRoutine = StartCoroutine(IntroSequenceRoutine(totalDuration, onComplete));
-    }
-
-    private void EnsureSubtitleText()
-    {
-        if (subtitleText != null) return;
-        if (enemyNameText == null) return;
-
-        GameObject subObj = new GameObject("SubtitleText", typeof(RectTransform));
-        subObj.transform.SetParent(enemyNameText.transform.parent != null ? enemyNameText.transform.parent : enemyNameText.transform, false);
-
-        subtitleText = subObj.AddComponent<TextMeshProUGUI>();
-        subtitleText.font = enemyNameText.font;
-        subtitleText.fontSize = enemyNameText.fontSize * 0.5f;
-        subtitleText.alignment = TextAlignmentOptions.Center;
-        subtitleText.color = new Color(1f, 0.85f, 0.3f);
-        subtitleText.enableWordWrapping = false;
-
-        RectTransform rt = subtitleText.rectTransform;
-        RectTransform nameRt = enemyNameText.rectTransform;
-        rt.anchorMin = nameRt.anchorMin;
-        rt.anchorMax = nameRt.anchorMax;
-        rt.pivot = new Vector2(0.5f, 1f);
-        rt.sizeDelta = new Vector2(nameRt.sizeDelta.x, 40f);
-        rt.anchoredPosition = new Vector2(nameRt.anchoredPosition.x, nameRt.anchoredPosition.y - 45f);
     }
 
     /// <summary>

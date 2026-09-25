@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 3199410792049187414}
   - component: {fileID: 826778375920978796}
-  - component: {fileID: 8428941998528781557}
   - component: {fileID: 1720917714150420976}
   m_Layer: 0
   m_Name: SurvivorsGameManager
@@ -46,29 +45,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96210c16b638f9b479295b18cd5310b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SurvivorsGameManager
-  siegeDuration: 1200
-  objectiveStopLeadTime: 120
-  siegebreakerPrefab: {fileID: 7523417870565108817, guid: ebf5b0a5eaa0e9b4caa4f09859ae9f60, type: 3}
-  bossSpawnPoint: {fileID: 0}
-  fallbackBossSpawnOffset: {x: 0, y: 0, z: 40}
-  victoryBanner: {fileID: 0}
-  deathScreen: {fileID: 0}
---- !u!114 &8428941998528781557
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3149384533259003002}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dc9f7f83c2622e64dbbe2f9bb4166e6c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SurvivorsLevelSystem
-  baseGoldTarget: 15
-  goldCostMultiplier: 1.25
-  flatCostIncrement: 5
-  wallet: {fileID: 0}
 --- !u!114 &1720917714150420976
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -81,4 +57,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: df758ca4d983548488d4998e4dd46a77, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SurvivorsCardSelector
-  maxActiveWeapons: 4

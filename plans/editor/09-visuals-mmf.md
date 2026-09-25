@@ -1,6 +1,6 @@
 # Editor to-do: plan 09 (Code-built visuals + MMF audit)
 
-From [plan 09](../09-visuals-and-mmf-audit.md), session 1 (2026-09-26, the runtime `LoadAssetAtPath` batch). Unity MCP wasn't connected, so nothing was opened in the Editor or play-tested. **Until §2's first item is done, building a tower plays no sound, dust or shake** and logs 3 errors per build. Tick items off as you go and delete the file when it's empty.
+From [plan 09](../09-visuals-and-mmf-audit.md). Sections 1-3 are from session 1 (2026-09-26, the runtime `LoadAssetAtPath` batch; MCP wasn't connected). Section 4 is session 2 (code-built UI, done via MCP). **Until §2's first item is done, building a tower plays no sound, dust or shake** and logs 3 errors per build. Tick items off as you go and delete the file when it's empty.
 
 ## 1. Verify first (5 min)
 
@@ -26,3 +26,16 @@ From [plan 09](../09-visuals-and-mmf-audit.md), session 1 (2026-09-26, the runti
 - [ ] **Towers:** building shows the wood-impact VFX from the build wheel. Let enemies wreck a tower: it now shows the wood break VFX in a build too.
 - [ ] **Objectives:** supply wagon arrival spawns gold bags; the cleanup phase shows skull markers; the "no supply" waypoint shows the hammer icon; the `[E]` interaction prompt appears.
 - [ ] **Must never happen:** any `... is not assigned` error in the Console during a normal run. Each one names the exact field to wire.
+
+## 4. Session 2: UI mockups (agent mockup, human review)
+
+Built by an agent through MCP, wired and play-checked for errors, but nobody has looked at them yet. Synty art, Grenze/Texturina. Tune freely: code only needs the wired refs.
+
+- [ ] **Loading screen** `Resources/LoadingScreenManager.prefab` → child `LoadingScreen_Canvas`. Title, subtitle, lore, Synty bar, status text on a dark vignette. It used to be a plain code-built canvas. Verify: Battle Portal or any map node → the loading screen shows "Entering …" and a filling bar. (Checked by agent: loads Meta Area cleanly, no errors.)
+- [ ] **Waypoint marker** `UI/ObjectiveWaypointMarker.prefab`: badge background, icon, off-screen arrow, distance text. Verify: an objective sector shows markers on screen and clamped arrows off screen.
+- [ ] **Acquired-skill row** `UI/SidebarSkillRow.prefab`, used by the pause-menu and death-screen sidebars. Name + level badge + icon, with hover tooltip. Verify: pick a couple of draft cards, open pause and check the list. (Ultimate cards no longer get a gold-tinted row; the fallback did that. Say if you want it back.)
+- [ ] **Enemy intro subtitle** `Bladehold HUD.prefab` → `Enemy Intro UI/Top Bar/Name Container/SubtitleText`: skulls + `[Captain]` tag in gold Grenze below the name. Verify: a captain sector's intro.
+- [ ] **Princess cast bar** `UI/BossCastBar.prefab`, instanced above the Princess in `Bladehold Princess Sanctuary` (world space). Verify: down a knight and watch her revive channel.
+- [ ] **Crosshair ammo text** switched from LiberationSans to Grenze (`Bladehold HUD.prefab` → `Crosshair`). Check it still reads at a glance. `Enemy Zoo`'s crosshair is now a copy of the HUD one.
+
+**Seen in the console during the play check, not from this change:** `SwordChargeFeedback`: "PlayerAttack is not assigned" and a `KnockbackReceiver` dependency error on `TrainingDummy_MetaArea`, both in the Meta Area.

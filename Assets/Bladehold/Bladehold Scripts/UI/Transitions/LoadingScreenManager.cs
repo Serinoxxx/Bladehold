@@ -1,8 +1,6 @@
 using System.Collections;
-using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 namespace Bladehold.UI
 {
@@ -15,6 +13,13 @@ namespace Bladehold.UI
     {
         private static LoadingScreenManager _instance;
 
+        /// <summary>Resources path of the authored manager + loading canvas prefab.</summary>
+        private const string PrefabResourcePath = "LoadingScreenManager";
+
+        /// <summary>
+        ///     The persistent manager. Spawned on first use from <c>Resources/LoadingScreenManager.prefab</c>;
+        ///     null (with an error) if that prefab is missing, so callers fall back to a plain scene load.
+        /// </summary>
         public static LoadingScreenManager Instance
         {
             get
@@ -22,22 +27,24 @@ namespace Bladehold.UI
                 if (_instance == null)
                 {
                     _instance = Object.FindAnyObjectByType<LoadingScreenManager>();
-                    if (_instance == null)
+                }
+                if (_instance == null)
+                {
+                    LoadingScreenManager prefab = Resources.Load<LoadingScreenManager>(PrefabResourcePath);
+                    if (prefab == null)
                     {
-                        GameObject go = new GameObject("LoadingScreenManager");
-                        _instance = go.AddComponent<LoadingScreenManager>();
-                        DontDestroyOnLoad(go);
+                        Debug.LogError("[LoadingScreenManager] Resources/" + PrefabResourcePath + ".prefab is missing.");
+                        return null;
                     }
+                    // Awake registers _instance and marks it DontDestroyOnLoad.
+                    Instantiate(prefab).name = prefab.name;
                 }
                 return _instance;
             }
         }
 
         [Header("UI References")]
-        [Tooltip("Optional LoadingScreen prefab to instantiate if no instance exists in the scene.")]
-        [SerializeField] private GameObject loadingScreenPrefab;
-
-        [Tooltip("Direct reference to an active LoadingScreenUI instance.")]
+        [Tooltip("The loading canvas, a child of this prefab.")]
         [SerializeField] private LoadingScreenUI activeLoadingUI;
 
         [Header("Timing")]
@@ -66,184 +73,12 @@ namespace Bladehold.UI
             _instance = this;
             DontDestroyOnLoad(gameObject);
 
-            EnsureLoadingUI();
-        }
-
-        /// <summary>
-        ///     Finds, instantiates, or builds an active LoadingScreenUI.
-        /// </summary>
-        private void EnsureLoadingUI()
-        {
-            if (activeLoadingUI != null) return;
-
-            // 1. Try finding in active scene
-            activeLoadingUI = Object.FindAnyObjectByType<LoadingScreenUI>(FindObjectsInactive.Include);
-            if (activeLoadingUI != null)
+            if (activeLoadingUI == null)
             {
-                DontDestroyOnLoad(activeLoadingUI.transform.root.gameObject);
-                activeLoadingUI.gameObject.SetActive(false);
+                Debug.LogError("[LoadingScreenManager] activeLoadingUI is not assigned; scenes will load without a loading screen.", this);
                 return;
             }
-
-            // 2. Try instantiating configured prefab
-            if (loadingScreenPrefab != null)
-            {
-                GameObject instance = Instantiate(loadingScreenPrefab);
-                instance.name = "LoadingScreen_Instance";
-                DontDestroyOnLoad(instance);
-                activeLoadingUI = instance.GetComponentInChildren<LoadingScreenUI>(true);
-                if (activeLoadingUI == null)
-                {
-                    activeLoadingUI = instance.AddComponent<LoadingScreenUI>();
-                }
-                activeLoadingUI.gameObject.SetActive(false);
-                return;
-            }
-
-            // 3. Fallback: Build a lightweight UI canvas dynamically
-            activeLoadingUI = CreateFallbackLoadingUI();
-        }
-
-        /// <summary>
-        ///     Constructs a clean dark-fantasy styled loading screen canvas dynamically as a fallback.
-        /// </summary>
-        private LoadingScreenUI CreateFallbackLoadingUI()
-        {
-            GameObject canvasGo = new GameObject("LoadingScreen_Canvas");
-            DontDestroyOnLoad(canvasGo);
-
-            Canvas canvas = canvasGo.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 9999;
-
-            CanvasScaler scaler = canvasGo.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920, 1080);
-            scaler.matchWidthOrHeight = 0.5f;
-
-            canvasGo.AddComponent<GraphicRaycaster>();
-            CanvasGroup group = canvasGo.AddComponent<CanvasGroup>();
-            group.alpha = 0f;
-
-            // Background panel
-            GameObject bgGo = new GameObject("Background", typeof(RectTransform), typeof(Image));
-            bgGo.transform.SetParent(canvasGo.transform, false);
-            RectTransform bgRt = bgGo.GetComponent<RectTransform>();
-            bgRt.anchorMin = Vector2.zero;
-            bgRt.anchorMax = Vector2.one;
-            bgRt.sizeDelta = Vector2.zero;
-            Image bgImg = bgGo.GetComponent<Image>();
-            bgImg.color = new Color(0.04f, 0.04f, 0.05f, 0.98f);
-
-            // Container for centered layout
-            GameObject container = new GameObject("ContentContainer", typeof(RectTransform));
-            container.transform.SetParent(canvasGo.transform, false);
-            RectTransform contRt = container.GetComponent<RectTransform>();
-            contRt.anchorMin = new Vector2(0.15f, 0.1f);
-            contRt.anchorMax = new Vector2(0.85f, 0.9f);
-            contRt.sizeDelta = Vector2.zero;
-
-            // Title: "Entering [Scene Name]"
-            GameObject titleGo = new GameObject("EnteringTitle", typeof(RectTransform), typeof(TextMeshProUGUI));
-            titleGo.transform.SetParent(container.transform, false);
-            RectTransform titleRt = titleGo.GetComponent<RectTransform>();
-            titleRt.anchorMin = new Vector2(0f, 0.7f);
-            titleRt.anchorMax = new Vector2(1f, 0.88f);
-            titleRt.sizeDelta = Vector2.zero;
-            TextMeshProUGUI titleTxt = titleGo.GetComponent<TextMeshProUGUI>();
-            titleTxt.alignment = TextAlignmentOptions.Center;
-            titleTxt.fontSize = 44;
-            titleTxt.fontStyle = FontStyles.Bold;
-            titleTxt.color = new Color(0.95f, 0.85f, 0.55f); // Parchment gold
-
-            // Subtitle
-            GameObject subGo = new GameObject("Subtitle", typeof(RectTransform), typeof(TextMeshProUGUI));
-            subGo.transform.SetParent(container.transform, false);
-            RectTransform subRt = subGo.GetComponent<RectTransform>();
-            subRt.anchorMin = new Vector2(0f, 0.62f);
-            subRt.anchorMax = new Vector2(1f, 0.7f);
-            subRt.sizeDelta = Vector2.zero;
-            TextMeshProUGUI subTxt = subGo.GetComponent<TextMeshProUGUI>();
-            subTxt.alignment = TextAlignmentOptions.Center;
-            subTxt.fontSize = 26;
-            subTxt.fontStyle = FontStyles.Italic;
-            subTxt.color = new Color(0.75f, 0.75f, 0.75f);
-
-            // Description / Lore
-            GameObject descGo = new GameObject("Description", typeof(RectTransform), typeof(TextMeshProUGUI));
-            descGo.transform.SetParent(container.transform, false);
-            RectTransform descRt = descGo.GetComponent<RectTransform>();
-            descRt.anchorMin = new Vector2(0.1f, 0.35f);
-            descRt.anchorMax = new Vector2(0.9f, 0.58f);
-            descRt.sizeDelta = Vector2.zero;
-            TextMeshProUGUI descTxt = descGo.GetComponent<TextMeshProUGUI>();
-            descTxt.alignment = TextAlignmentOptions.Center;
-            descTxt.fontSize = 22;
-            descTxt.enableWordWrapping = true;
-            descTxt.color = new Color(0.85f, 0.85f, 0.88f);
-
-            // Progress Slider
-            GameObject sliderGo = new GameObject("LoadingBar", typeof(RectTransform), typeof(Slider));
-            sliderGo.transform.SetParent(container.transform, false);
-            RectTransform sliderRt = sliderGo.GetComponent<RectTransform>();
-            sliderRt.anchorMin = new Vector2(0.2f, 0.2f);
-            sliderRt.anchorMax = new Vector2(0.8f, 0.23f);
-            sliderRt.sizeDelta = Vector2.zero;
-            Slider slider = sliderGo.GetComponent<Slider>();
-            slider.minValue = 0f;
-            slider.maxValue = 1f;
-
-            // Slider Background
-            GameObject sBg = new GameObject("Background", typeof(RectTransform), typeof(Image));
-            sBg.transform.SetParent(sliderGo.transform, false);
-            RectTransform sBgRt = sBg.GetComponent<RectTransform>();
-            sBgRt.anchorMin = Vector2.zero;
-            sBgRt.anchorMax = Vector2.one;
-            sBgRt.sizeDelta = Vector2.zero;
-            Image sBgImg = sBg.GetComponent<Image>();
-            sBgImg.color = new Color(0.15f, 0.15f, 0.18f);
-
-            // Slider Fill Area & Fill
-            GameObject fillArea = new GameObject("Fill Area", typeof(RectTransform));
-            fillArea.transform.SetParent(sliderGo.transform, false);
-            RectTransform faRt = fillArea.GetComponent<RectTransform>();
-            faRt.anchorMin = Vector2.zero;
-            faRt.anchorMax = Vector2.one;
-            faRt.sizeDelta = Vector2.zero;
-
-            GameObject fill = new GameObject("Fill", typeof(RectTransform), typeof(Image));
-            fill.transform.SetParent(fillArea.transform, false);
-            RectTransform fillRt = fill.GetComponent<RectTransform>();
-            fillRt.anchorMin = Vector2.zero;
-            fillRt.anchorMax = Vector2.one;
-            fillRt.sizeDelta = Vector2.zero;
-            Image fillImg = fill.GetComponent<Image>();
-            fillImg.color = new Color(0.85f, 0.65f, 0.2f); // Golden amber
-            slider.fillRect = fillRt;
-
-            // Loading / Percentage text
-            GameObject loadTextGo = new GameObject("LoadingText", typeof(RectTransform), typeof(TextMeshProUGUI));
-            loadTextGo.transform.SetParent(container.transform, false);
-            RectTransform loadTextRt = loadTextGo.GetComponent<RectTransform>();
-            loadTextRt.anchorMin = new Vector2(0f, 0.12f);
-            loadTextRt.anchorMax = new Vector2(1f, 0.18f);
-            loadTextRt.sizeDelta = Vector2.zero;
-            TextMeshProUGUI loadTxt = loadTextGo.GetComponent<TextMeshProUGUI>();
-            loadTxt.alignment = TextAlignmentOptions.Center;
-            loadTxt.fontSize = 20;
-            loadTxt.color = new Color(0.7f, 0.7f, 0.7f);
-
-            // Wire view
-            LoadingScreenUI ui = canvasGo.AddComponent<LoadingScreenUI>();
-            ui.canvasGroup = group;
-            ui.enteringTitleText = titleTxt;
-            ui.subtitleText = subTxt;
-            ui.descriptionText = descTxt;
-            ui.loadingBar = slider;
-            ui.loadingText = loadTxt;
-
-            canvasGo.SetActive(false);
-            return ui;
+            activeLoadingUI.gameObject.SetActive(false);
         }
 
         /// <summary>
@@ -293,8 +128,6 @@ namespace Bladehold.UI
         {
             isLoading = true;
             Time.timeScale = 1f;
-
-            EnsureLoadingUI();
 
             if (activeLoadingUI != null)
             {

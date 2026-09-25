@@ -9,7 +9,7 @@ Things that need your hands, eyes or judgement in the Unity Editor. Items marked
 - [05: Balance Tree Editor](editor/05-balance-tree.md)
 - [06: Sector difficulty + roster](editor/06-sector-difficulty.md) (Fraglob captain has no prefab yet)
 - [07: Demo gating](editor/07-demo-gating.md) (demo end panel needed in the Campaign Map scene)
-- [08: Legacy cleanup](editor/08-legacy-cleanup.md) (run the one-shot cleanup tool first; it also reserializes the binary scenes in §B)
+- [08: Legacy cleanup](editor/08-legacy-cleanup.md) (cleanup tool already run by an agent, 2026-09-26)
 - [09: Visuals + MMF](editor/09-visuals-mmf.md) (tower build feedbacks empty until wired)
 
 ## A. Triage first (biggest win)
@@ -21,7 +21,7 @@ Things that need your hands, eyes or judgement in the Unity Editor. Items marked
 
 ## B. Scenes and data
 
-- [ ] **Re-serialize the binary scenes as text.** The project is set to Force Text, but the castle scenes, `Necromancer Crypt` and `Princess Sanctuary` are binary, so agents can't read or diff them. Select them → right-click → *Reserialize*, or use `AssetDatabase.ForceReserializeAssets`. *(MCP-able)*
+- [ ] **Re-serialize the binary scenes as text.** The project is set to Force Text, but the castle scenes, `Necromancer Crypt` and `Princess Sanctuary` are binary, so agents can't read or diff them. Select them → right-click → *Reserialize*. **Note (2026-09-26):** an agent tried `EditorSceneManager.SaveScene` and `AssetDatabase.ForceReserializeAssets` via MCP and the 9 files stayed binary, so this needs a look in the Editor (try the right-click Reserialize, or *Save As* a new file and swap it in).
 - [ ] **Verify each castle scene has a working sector loop.** Enter Play mode directly in each one: GameLoopManager, SurvivorsSpawner, objectives, TowerPlots, BuildWheelUI, DeathScreen, baked NavMesh. The agents couldn't inspect them.
 - [x] ~~**Captain prefabs**~~: moved to [`editor/06-sector-difficulty.md`](editor/06-sector-difficulty.md) (Fraglob needs a prefab; the empty slot now logs an error).
 - [ ] **Campaign Map scene**: the prefabs and graph asset are in (`fa185dc7e`). Give the node button and path line prefabs a UI review.
