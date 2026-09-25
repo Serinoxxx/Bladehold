@@ -23,6 +23,6 @@
 - [x] **Old socket fortress** (`FortDefense*`, `ArrowSlitDefense`, `BurningOilDefense`, `SpikeDefense`) and Fortress-category draft cards. Check with Lance whether Fortress cards should be reborn as tower upgrades in Phase 4.
 - [x] **Scenes with no node:** `Bladehold Supply Room` (+ `SupplyRoomController`, `SupplyBox` if unused), `Frozen Pass`, `Ancient Garden`. Ask Lance: keep them as future sector maps, or remove them from build settings?
   - Lance (2026-09-25): Supply Room deleted. Frozen Pass is now a tier-3 combat node and Ancient Garden a tier-6 one. Both scenes still need tower plots, a `TowerPlotManager` and the build wheel ([editor checklist](editor/08-legacy-cleanup.md)).
-- [ ] **Orphans:** `VictoryScreenUI` (only benchmark-created), `MainMenuManager` (not in build).
-- [ ] Stale comments referencing `ClassDefinitionSO`/`PlayerClassController`.
+- [x] **Orphans:** `VictoryScreenUI` (only benchmark-created), `MainMenuManager` (not in build).
+- [x] Stale comments referencing `ClassDefinitionSO`/`PlayerClassController`.
 - [ ] Update the root `CLAUDE.md` "Legacy / dead code" list as items go.

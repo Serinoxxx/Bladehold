@@ -55,7 +55,7 @@ public class WeaponHUDController : MonoBehaviour
 
         if (anyError) return;
 
-        // Wait a frame to ensure PlayerClassController has initialized ActiveClass in its Awake
+        // Wait a frame to ensure PlayerWeaponManager has equipped the loadout in its Awake
         StartCoroutine(InitIconsRoutine());
     }
 

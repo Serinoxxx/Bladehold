@@ -9,7 +9,7 @@ using UnityEngine;
 ///     <see cref="IChargedAimWeapon.AimFieldOfViewPercent" /> (1 = unchanged) — the framing values
 ///     live on each weapon's own SO and surface through the interface. The weapon is the serialized
 ///     bow when it's the active class's (enabled), else
-///     <see cref="PlayerClassController.ActiveAimWeapon" />. Everything goes through Cinemachine's
+///     <see cref="PlayerWeaponManager.ActiveAimWeapon" />. Everything goes through Cinemachine's
 ///     public fields, so the reflection the old Synty-controller version needed is gone. The resting
 ///     framing is captured once in <c>Start</c>; releasing aim blends everything back to it. This
 ///     also owns the gameplay camera's resting field of view for <see cref="GameSettingsService" />'s

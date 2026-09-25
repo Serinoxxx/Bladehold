@@ -9,8 +9,8 @@ public class AnimationEvents : MonoBehaviour
     [SerializeField] MMF_Player footstepFeedback;
 
     /// <summary>
-    ///     Points the attack events at the active class's weapon. Called by
-    ///     <see cref="PlayerClassController" /> in Awake, before any clip event can fire. The event
+    ///     Points the attack events at the equipped weapon. Called by
+    ///     <see cref="PlayerWeaponManager" /> in Awake, before any clip event can fire. The event
     ///     method names below stay as-is — they're baked into the attack clips, so every class's clip
     ///     calls the same methods and this component routes them to the active weapon.
     /// </summary>

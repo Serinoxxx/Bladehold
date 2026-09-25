@@ -4,7 +4,7 @@
 ///     (<see cref="BowAimCamera" />, <see cref="BowCrosshairUI" />, <see cref="BowReloadUI" />) poll
 ///     whichever weapon the active class carries without knowing its concrete type; they resolve it
 ///     from a serialized <see cref="PlayerBow" /> (legacy wiring) or
-///     <see cref="PlayerClassController.ActiveAimWeapon" />. The aim-camera framing values live on
+///     <see cref="PlayerWeaponManager.ActiveAimWeapon" />. The aim-camera framing values live on
 ///     each weapon's own SO and are surfaced here so the camera needs no per-weapon config reference.
 /// </summary>
 public interface IChargedAimWeapon

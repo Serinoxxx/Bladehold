@@ -2535,31 +2535,9 @@ public static class WeaponReachBenchmark
                 failedCount++;
             }
 
-            // 22C: VictoryScreenUI Procedural Fallback & Click Handling
-            VictoryScreenUI testVictoryUI = VictoryScreenUI.EnsureInstance();
-            bool victoryUiExists = testVictoryUI != null;
-            testVictoryUI.OpenVictory(5, 5, 45, 120, "Test Sector");
-            bool cursorUnlocked = CursorLockManager.IsCursorUnlocked;
-
-            if (victoryUiExists && cursorUnlocked)
-            {
-                sb.AppendLine("  - VictoryScreenUI: Procedural overlay instantiates, formats 5/5 stats, and unlocks cursor for player interaction. [PASSED]");
-                passedCount++;
-            }
-            else
-            {
-                sb.AppendLine($"  - [FAIL] VictoryScreenUI test failed (exists={victoryUiExists}, cursorUnlocked={cursorUnlocked})");
-                failedCount++;
-            }
-
             // Cleanup test objects
             UnityEngine.Object.DestroyImmediate(glmTestObj);
             UnityEngine.Object.DestroyImmediate(playerTestObj);
-            if (testVictoryUI != null)
-            {
-                CursorLockManager.SetUnlock("VictoryScreen", false);
-                UnityEngine.Object.DestroyImmediate(testVictoryUI.gameObject);
-            }
         }
         catch (Exception ex)
         {

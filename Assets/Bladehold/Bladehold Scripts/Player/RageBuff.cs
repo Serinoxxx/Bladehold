@@ -17,7 +17,7 @@ using UnityEngine;
 ///
 ///     Lives on the player root, enabled only in the Berserker's class slot — a disabled component
 ///     never runs Start, so the Swordsman pays nothing. Gain sources resolve through
-///     <see cref="PlayerClassController.ActiveMeleeTrigger" /> and the sibling
+///     <see cref="PlayerWeaponManager.ActiveMeleeTrigger" /> and the sibling
 ///     <see cref="PlayerThrownAxe" />; cosmetic listeners (the HUD rage bar) poll
 ///     <see cref="RageFraction" /> (the <see cref="SwordChargeFeedback" /> pattern).
 /// </summary>

@@ -4,7 +4,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 
 /// <summary>
-///     Edit-time twin of <see cref="PlayerClassController" />'s SwapCharacterModel: rebinds a character
+///     Edit-time twin of <see cref="PlayerArmourManager" />'s SwapCharacterModel: rebinds a character
 ///     model prefab's SkinnedMeshRenderers onto an existing rig's skeleton by bone name and bakes the
 ///     result into the open prefab (or scene instance), so the authored default model can be replaced
 ///     without re-wiring anything hanging off the skeleton — weapons under hand bones, the Animator,
