@@ -24,9 +24,6 @@ EditorBuildSettings:
     path: Assets/Bladehold/Bladehold Scenes/Bladehold Campaign Map Scene.unity
     guid: a52b15f993c04e53aaa6e515cfe90ebb
   - enabled: 1
-    path: Assets/Bladehold/Bladehold Scenes/Bladehold Supply Room.unity
-    guid: e50f7201f2c50b24e9fa1334e3a03f85
-  - enabled: 1
     path: Assets/Bladehold/Bladehold Scenes/Bladehold Castle Courtyard.unity
     guid: 74f2c2ef2afb2674ca744996348e158d
   - enabled: 1

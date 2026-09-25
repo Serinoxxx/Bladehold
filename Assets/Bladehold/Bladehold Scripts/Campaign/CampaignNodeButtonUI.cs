@@ -43,7 +43,6 @@ public class CampaignNodeButtonUI : MonoBehaviour, IPointerEnterHandler, IPointe
 
     [SerializeField] private Color combatNodeColor = new Color(0.55f, 0.18f, 0.18f, 1f);
     [SerializeField] private Color restNodeColor = new Color(0.18f, 0.45f, 0.32f, 1f);
-    [SerializeField] private Color supplyNodeColor = new Color(0.18f, 0.35f, 0.55f, 1f);
     [SerializeField] private Color fishingNodeColor = new Color(0.12f, 0.52f, 0.58f, 1f);
     [SerializeField] private Color bossNodeColor = new Color(0.45f, 0.15f, 0.55f, 1f);
     [SerializeField] private Sprite fishingIcon;
@@ -179,7 +178,6 @@ public class CampaignNodeButtonUI : MonoBehaviour, IPointerEnterHandler, IPointe
         {
             case CampaignNodeType.Combat: return combatNodeColor;
             case CampaignNodeType.RestArea: return restNodeColor;
-            case CampaignNodeType.SupplyRoom: return supplyNodeColor;
             case CampaignNodeType.FishingPond: return fishingNodeColor;
             case CampaignNodeType.PreBoss:
             case CampaignNodeType.NecromancerEncounter:

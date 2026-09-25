@@ -5,7 +5,7 @@ public enum CampaignNodeType
 {
     Combat,
     RestArea,
-    SupplyRoom,
+    SupplyRoom, // Unused: the Supply Room was deleted in plan 08. Kept so serialized node types don't shift.
     FishingPond,
     PreBoss,
     NecromancerEncounter,

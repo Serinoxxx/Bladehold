@@ -74,7 +74,7 @@ public class RestAreaGate : MonoBehaviour
             }
         }
 
-        // If Castle Campaign is active, completing the Rest Area / Supply Room returns to Campaign Map
+        // If Castle Campaign is active, completing the Rest Area returns to Campaign Map
         if (CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive)
         {
             Debug.Log("[RestAreaGate] Castle Campaign active: completing stop scene and opening Campaign Overview Map...");

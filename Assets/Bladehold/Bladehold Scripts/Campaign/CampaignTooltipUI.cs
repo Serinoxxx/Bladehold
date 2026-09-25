@@ -237,7 +237,6 @@ public class CampaignTooltipUI : MonoBehaviour
         {
             case CampaignNodeType.Combat: return "Combat Sector - 5 Waves";
             case CampaignNodeType.RestArea: return "Sanctuary Rest Area";
-            case CampaignNodeType.SupplyRoom: return "Supply Depot - Zero Enemies";
             case CampaignNodeType.PreBoss: return "Inner Portico - Elite Horde";
             case CampaignNodeType.NecromancerEncounter: return "The Revelation - Boss Encounter";
             case CampaignNodeType.PrincessBoss: return "Throne Room - The Corrupted Princess";
@@ -252,7 +251,6 @@ public class CampaignTooltipUI : MonoBehaviour
         {
             case CampaignNodeType.Combat: return new Color(0.85f, 0.35f, 0.2f, 1f);
             case CampaignNodeType.RestArea: return new Color(0.2f, 0.75f, 0.45f, 1f);
-            case CampaignNodeType.SupplyRoom: return new Color(0.25f, 0.65f, 0.85f, 1f);
             case CampaignNodeType.PreBoss: return new Color(0.9f, 0.45f, 0.1f, 1f);
             case CampaignNodeType.NecromancerEncounter:
             case CampaignNodeType.PrincessBoss:

@@ -133,15 +133,6 @@ namespace Bladehold.UI
                 "Survey the fortress battlements, choose your tactical route through the sectors, and confront the clan captains."
             ));
 
-            // Supply Room
-            Register(new AreaMetadata(
-                "Bladehold Supply Room",
-                0,
-                "Supply Room",
-                "Castle Storehouse",
-                "An abandoned underground storage depot packed with smashable crates and barrels. Plunder free resources with zero enemy resistance."
-            ));
-
             // Castle Campaign Levels
             // Tier 1: Castle Courtyard
             Register(new AreaMetadata(
