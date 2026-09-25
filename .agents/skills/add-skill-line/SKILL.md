@@ -62,6 +62,5 @@ You are adding draft skills to `Assets/Bladehold/Resources/DraftUpgrades.csv` or
 
 1. Run `/compile-check` (new files must be added to `Assembly-CSharp.csproj` first — that skill explains).
 2. **Automated Behavioral Test (Mandatory)**: Use `/maintain-mechanic-tests` to append an automated behavioral assertion to `WeaponReachBenchmark.cs` (or Unity Test Runner) verifying that the new skill, perk, or stat modifier behaves as designed, and verify the test passes.
-3. If the node touches combat/economy stats, `/balance-sim` — prototype it with a `node.<id>=<level>` override to see the pacing effect, and re-run the baseline once the CSV lands.
-4. Write the wiring + manual-verification entry via `/editor-wiring-todo` (component additions to `Player.prefab`, SO assets, icons, balance pass); with the Editor open, `/editor-wire` executes the MCP-doable items.
-5. Commit directly to `main` and push (no branches/PRs — solo project rule in AGENTS.md).
+3. Write the wiring + manual-verification entry via `/editor-wiring-todo` (component additions to `Player.prefab`, SO assets, icons, balance pass); with the Editor open, `/editor-wire` executes the MCP-doable items.
+4. Commit directly to `main` and push (no branches/PRs — solo project rule in AGENTS.md).

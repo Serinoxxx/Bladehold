@@ -56,6 +56,5 @@ The goblin base already carries the full stock component set every enemy inherit
 
 1. `/compile-check` (new files added to `Assembly-CSharp.csproj` first).
 2. **Automated Behavioral Test (Mandatory)**: Follow `/maintain-mechanic-tests` to ensure any unique mechanic (e.g. self-destruct triggers, projectile stats, shield parameters, DoT application) has an automated assertion in `WeaponReachBenchmark.cs` or test runner.
-3. `/balance-sim` — the new Enemies.csv row changes the pacing math; run the baseline and review the findings before calling the numbers done.
-4. `/editor-wiring-todo` — whatever the generator can't do (animator additions, MMF juice, VFX/materials, balance pass); manual verification modeled on the Bomber entry (spawn wave, behaviour beats, death accounting, negative cases). With the Editor open, `/editor-wire` executes the MCP-doable items and verifies in the EnemyZoo via Play mode.
-5. Commit directly to `main` and push.
+3. `/editor-wiring-todo` — whatever the generator can't do (animator additions, MMF juice, VFX/materials, balance pass); manual verification modeled on the Bomber entry (spawn wave, behaviour beats, death accounting, negative cases). With the Editor open, `/editor-wire` executes the MCP-doable items and verifies in the EnemyZoo via Play mode.
+4. Commit directly to `main` and push.

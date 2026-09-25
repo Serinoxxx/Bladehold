@@ -21,7 +21,6 @@ The `unityMCP` server (repo-root `.mcp.json`, HTTP on `localhost:8080/mcp`) brid
 | CSV config (`Config/*.csv`) | Normal file edits; Unity reimports on focus |
 | SO asset instance, prefab component/ref wiring, scene object edits | MCP asset/GameObject/prefab tools |
 | Enemy prefab variants | **Never by hand** — `/generate-enemy-prefabs` (menu `Bladehold > Generate Enemy Prefabs`, runnable via MCP's menu-item tool) |
-| Balance projection | `/balance-sim` (menu `Bladehold > Balance Simulator`, or headless CLI) |
 | Animator/clip work, baked animation events, art/audio | **Human** — record in TODO.md via `/editor-wiring-todo` |
 
 ## Step 2 — Editor-wiring session pattern
@@ -40,7 +39,7 @@ Enter Play mode via MCP, then drive the game with the **DevConsole** (backquote)
 
 - **Play-mode edits don't persist.** Anything wired while playing is lost on exit — always wire in edit mode, verify in play mode.
 - **Domain reload wipes state**: after a script recompile mid-session, re-query objects rather than trusting stale ids/paths from before the reload.
-- **Batchmode vs MCP are exclusive**: the headless CLI (`BatchBuild`, `BalanceSimCli`) needs the project *closed*; MCP needs it *open*. Don't queue both.
+- **Batchmode vs MCP are exclusive**: the headless CLI (`BatchBuild`) needs the project *closed*; MCP needs it *open*. Don't queue both.
 - Don't edit vendored assets (`Assets/Third Party/`, `Assets/Synty/`, `Assets/Feel/`, …) through MCP any more than through files.
 - MCP writes to scenes/prefabs are real working-tree changes — review `git status` and include them in the commit like any other change.
 

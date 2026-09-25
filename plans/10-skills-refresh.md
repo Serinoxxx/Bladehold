@@ -4,7 +4,7 @@
 
 ## Tasks
 
-- [ ] **Retire** `add-player-class` (class system deleted) and `balance-sim` (sim removed in plan 08; skip it if 08 already did). (`editor-wiring-todo` and `editor-wire` were repointed to `plans/editor/` checklists on 2026-09-25, so keep them. Fold any useful Unity MCP wiring know-how into `unity-editor-mcp`.)
+- [ ] **Retire** `add-player-class` (class system deleted) (`balance-sim` was already deleted in plan 08). (`editor-wiring-todo` and `editor-wire` were repointed to `plans/editor/` checklists on 2026-09-25, so keep them. Fold any useful Unity MCP wiring know-how into `unity-editor-mcp`.)
 - [ ] **Rewrite** `add-skill-line` → `add-draft-card`:
   - `DraftUpgrades.csv` columns, `;`/`|` syntax, categories, `targetSlot`, `isUltimate`/`isDuo`/`prerequisiteElements`.
   - `StatType` registration, where effects are applied.

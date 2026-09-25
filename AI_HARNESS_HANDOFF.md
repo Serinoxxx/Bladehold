@@ -19,6 +19,8 @@ Check items off as they complete; note deviations inline as sub-bullets. Any age
 
 ## Phase B — Balance simulator v1
 
+> **Retired 2026-09-25 (plan 08).** The sim, its CSVs and the `balance-sim` skill are deleted; balance now comes from real RunTelemetry playtest CSVs plus the spawn-budget report (plan 11). Phases B–D below are history.
+
 Code lives in `Assets/Bladehold/Bladehold Scripts/Editor/BalanceSim/`; data in `Assets/Bladehold/Config/`.
 
 - [x] B1. `Config/SimProfiles.csv` (bad/average/good rows, columns per plan)
