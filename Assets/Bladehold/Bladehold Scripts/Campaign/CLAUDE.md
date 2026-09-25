@@ -14,10 +14,9 @@ The macro run structure: an 8-tier branching node map between the Meta Area and 
 
 ## Flow
 
-- **Current:** Meta `BattlePortal` → `Bladehold Survivors Scene` → victory → `DeathScreen.ProceedToCampaignMap` → map → `StartCampaignRun`.
-- **Decided:** the Battle Portal should go straight to the map.
-- Sector victory → `DeathScreen` → `CampaignManager.CompleteCurrentNodeAndOpenMap()`.
-- Rest Area in campaign mode: `RestAreaGate` returns to the map.
+- Meta `BattlePortal` → `RunSession.StartNewRun` + `CampaignManager.StartCampaignRun` → map. The map has no Return-to-Meta button: the only ways home are death or campaign end.
+- Sector victory → `DeathScreen` → `CampaignManager.CompleteCurrentNodeAndOpenMap()`. A battle scene played straight from the Editor has no campaign run, so its victory starts a fresh one and opens the map.
+- Rest Area in campaign mode: `RestAreaGate` saves HP ratio + ultimate charge, then returns to the map.
 - Fishing: `FishingManager` loads the map directly.
 - Each Combat node supplies only `difficultyTier`, `bountyType` and `captainName` to `GameLoopManager`. Wave count and pacing are the same everywhere; scaling with depth is planned (see root CLAUDE.md, "Design direction").
 

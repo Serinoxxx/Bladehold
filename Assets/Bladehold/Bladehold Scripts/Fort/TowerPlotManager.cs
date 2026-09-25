@@ -3,7 +3,8 @@ using UnityEngine;
 
 /// <summary>
 ///     Coordinates all TowerPlots across the battlefield scene.
-///     Handles rehydration of defenses across runs/rounds and clears defenses on player death.
+///     Towers never leave their sector: on victory they're dismantled for a supply refund
+///     (<see cref="DismantleAllForRefund" />), on player death they're simply cleared.
 /// </summary>
 public class TowerPlotManager : MonoBehaviour
 {
@@ -31,16 +32,10 @@ public class TowerPlotManager : MonoBehaviour
     private void Start()
     {
         RefreshPlots();
-        RestoreSavedDefenses();
 
         if (Player.Instance != null && Player.Instance.Health != null)
         {
             Player.Instance.Health.OnDied += HandlePlayerDied;
-        }
-
-        if (GameLoopManager.Instance != null)
-        {
-            GameLoopManager.Instance.OnWaveCleared += HandleWaveCleared;
         }
     }
 
@@ -51,11 +46,6 @@ public class TowerPlotManager : MonoBehaviour
         if (Player.Instance != null && Player.Instance.Health != null)
         {
             Player.Instance.Health.OnDied -= HandlePlayerDied;
-        }
-
-        if (GameLoopManager.Instance != null)
-        {
-            GameLoopManager.Instance.OnWaveCleared -= HandleWaveCleared;
         }
     }
 
@@ -96,40 +86,26 @@ public class TowerPlotManager : MonoBehaviour
         }
     }
 
-    public void RestoreSavedDefenses()
+    /// <summary>
+    ///     Dismantles every placed tower, paying its <see cref="DefenseStructure.DismantleRefund" />
+    ///     (remaining supply + upgrade spend) back into <see cref="RunSession.InRunSupply" />.
+    ///     Called when the sector is won. Returns the total refunded.
+    /// </summary>
+    public int DismantleAllForRefund()
     {
-        if (RunSession.SavedDefenses == null || RunSession.SavedDefenses.Count == 0) return;
-
-        foreach (var saved in RunSession.SavedDefenses)
-        {
-            if (saved == null) continue;
-            TowerPlot targetPlot = GetPlotByIndex(saved.plotIndex);
-            if (targetPlot != null && !targetPlot.IsOccupied)
-            {
-                targetPlot.BuildDefense(saved.defenseType, saved.level, saved.currentSupply, instant: true);
-                Debug.Log($"[TowerPlotManager] Restored {saved.defenseType} (Lv {saved.level}, Supply {saved.currentSupply}) at Plot {saved.plotIndex}.");
-            }
-        }
-    }
-
-    public void SaveActiveDefenses()
-    {
-        RunSession.SavedDefenses.Clear();
+        int total = 0;
         foreach (TowerPlot p in plots)
         {
             if (p != null && p.CurrentDefense != null)
             {
-                RunSession.SavedDefenses.Add(new RunSession.SavedDefenseData
-                {
-                    plotIndex = p.PlotIndex,
-                    defenseType = p.CurrentDefense.DefenseType,
-                    level = p.CurrentDefense.Level,
-                    currentSupply = p.CurrentDefense.CurrentSupply,
-                    maxSupply = p.CurrentDefense.MaxSupply
-                });
+                total += p.CurrentDefense.DismantleRefund;
+                p.ClearDefense();
             }
         }
-        Debug.Log($"[TowerPlotManager] Saved {RunSession.SavedDefenses.Count} active defenses to RunSession.");
+
+        RunSession.AddInRunSupply(total);
+        Debug.Log($"[TowerPlotManager] Towers dismantled: +{total} supply refunded.");
+        return total;
     }
 
     public void ClearAllDefenses()
@@ -141,7 +117,6 @@ public class TowerPlotManager : MonoBehaviour
                 p.ClearDefense();
             }
         }
-        RunSession.SavedDefenses.Clear();
         Debug.Log("[TowerPlotManager] All battlefield defenses cleared.");
     }
 
@@ -152,11 +127,6 @@ public class TowerPlotManager : MonoBehaviour
             if (p != null && p.PlotIndex == index) return p;
         }
         return null;
-    }
-
-    private void HandleWaveCleared(int waveNumber, string message)
-    {
-        SaveActiveDefenses();
     }
 
     private void HandlePlayerDied()

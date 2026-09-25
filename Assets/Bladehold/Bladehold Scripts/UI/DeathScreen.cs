@@ -9,10 +9,10 @@ using MoreMountains.Feedbacks;
 ///     Fades in a death screen when the run ends — the player dying (the player's
 ///     <see cref="Health.OnDied" /> via the <see cref="Player" /> singleton) or, in gate defense, any
 ///     <see cref="Gate" /> falling (<see cref="Gate.OnAnyGateDestroyed" />; time is frozen for that
-///     one since the player is still alive behind the screen). Shows goblins killed and gold earned
-///     this run (from <see cref="GameStats" />) plus the player's total gold (from
-///     <see cref="Wallet" />), and offers two restart options: from wave 1, or from the wave the run
-///     ended on (via <see cref="RunState" />). Both reload the scene. When an optional
+///     one since the player is still alive behind the screen) — or, via <see cref="ShowVictory" />, when
+///     the sector is won. Shows goblins killed and gold earned this run (from <see cref="GameStats" />)
+///     plus the player's total gold (from <see cref="Wallet" />). Defeat has one way out: back to the
+///     Meta Area with the run wiped. Victory has one: on to the Campaign Map. When an optional
 ///     <see cref="FailureBanner" /> is assigned, it plays first with a per-condition failure reason
 ///     ("The hero has fallen…" / "The gate was destroyed…") and the screen only fades in after it
 ///     finishes.
@@ -50,24 +50,18 @@ public class DeathScreen : MonoBehaviour
     [SerializeField] private SurvivorsPlayerInfoSidebarUI survivorsSidebar;
     [Tooltip("Optional: animated stats panel for Survivors mode.")]
     [SerializeField] private SurvivorsStatsPanelUI survivorsStatsPanel;
-    [Tooltip("Restarts the run from wave 1.")]
-    [SerializeField] private Button tryAgainButton;
-    [Tooltip("Optional: button to proceed to the next stage level in Survivors mode.")]
+    [Tooltip("Victory: proceeds to the Campaign Map.")]
     [SerializeField] private Button nextStageButton;
-    [Tooltip("Optional: button to return to the Main Menu meta-progression upgrades screen.")]
+    [Tooltip("Defeat: wipes the run and returns to the Meta Area.")]
     [SerializeField] private Button returnToMetaButton;
-    [Tooltip("Optional: restarts from the wave the player died on. Leave unassigned to offer only a wave-1 restart.")]
-    [SerializeField] private Button restartCurrentWaveButton;
-    [Tooltip("Optional label on the restart-current-wave button, set to e.g. \"Restart Wave 3\".")]
-    [SerializeField] private TMP_Text restartCurrentWaveLabel;
-    [Tooltip("Optional: reincarnates — banks Reincarnate Points, resets the gold skill tree and wave to 1, restarts. Leave unassigned to omit the option.")]
-    [SerializeField] private Button reincarnateButton;
-    [Tooltip("Optional label on the reincarnate button, set to e.g. \"Reincarnate (+7 pts)\".")]
-    [SerializeField] private TMP_Text reincarnatePreviewLabel;
-    [Tooltip("Optional: the gold skill-tree panel shown when the player dies; hidden once they choose to reincarnate.")]
+    [Tooltip("Optional: legacy gold skill-tree panel, kept hidden in Survivors mode.")]
     [SerializeField] private GameObject goldTreePanel;
-    [Tooltip("Optional: the Reincarnate skill-tree panel; hidden until the player clicks Reincarnate, then shown so banked points can be spent before the new run starts.")]
+    [Tooltip("Optional: legacy Reincarnate skill-tree panel, kept hidden.")]
     [SerializeField] private GameObject reincarnateTreePanel;
+    [Tooltip("Optional: victory line showing the supply refunded for dismantled towers. Hidden on defeat or when nothing was refunded.")]
+    [SerializeField] private TMP_Text towerRefundText;
+    [Tooltip("Format for the tower refund line; {0} is the supply amount.")]
+    [SerializeField] private string towerRefundFormat = "Towers dismantled: +{0} supply";
     [Tooltip("Seconds to fade the screen in.")]
     [SerializeField] private float fadeDuration = 1f;
 
@@ -82,7 +76,6 @@ public class DeathScreen : MonoBehaviour
     public static DeathScreen Instance { get; private set; }
 
     private Health playerHealth;
-    private bool reincarnateBanked = false;
     private bool shown = false;   // latch: the run only ends once, whichever signal fires first
     private bool anyError = false;
 
@@ -113,9 +106,14 @@ public class DeathScreen : MonoBehaviour
             Debug.LogError("CanvasGroup is not assigned or found on the GameObject.");
             anyError = true;
         }
-        if (tryAgainButton == null)
+        if (nextStageButton == null)
         {
-            Debug.LogError("Try Again button is not assigned in the inspector.");
+            Debug.LogError("[DeathScreen] Next Stage (proceed to map) button is not assigned in the inspector.");
+            anyError = true;
+        }
+        if (returnToMetaButton == null)
+        {
+            Debug.LogError("[DeathScreen] Return To Meta button is not assigned in the inspector.");
             anyError = true;
         }
 
@@ -136,30 +134,17 @@ public class DeathScreen : MonoBehaviour
         canvasGroup.interactable = false;
         canvasGroup.blocksRaycasts = false;
 
-        // The Reincarnate tree (and the class-select screen) only appear after the player commits
-        // to reincarnating.
         if (reincarnateTreePanel != null)
         {
             reincarnateTreePanel.SetActive(false);
         }
+        if (towerRefundText != null)
+        {
+            towerRefundText.gameObject.SetActive(false);
+        }
 
-        tryAgainButton.onClick.AddListener(RestartFromLevelOne);
-        if (nextStageButton != null)
-        {
-            nextStageButton.onClick.AddListener(ProceedToCampaignMap);
-        }
-        if (returnToMetaButton != null)
-        {
-            returnToMetaButton.onClick.AddListener(ReturnToMetaScene);
-        }
-        if (restartCurrentWaveButton != null)
-        {
-            restartCurrentWaveButton.onClick.AddListener(RestartFromCurrentWave);
-        }
-        if (reincarnateButton != null)
-        {
-            reincarnateButton.onClick.AddListener(HandleReincarnate);
-        }
+        nextStageButton.onClick.AddListener(ProceedToCampaignMap);
+        returnToMetaButton.onClick.AddListener(ReturnToMetaScene);
 
         playerHealth = player.Health;
         playerHealth.OnDied += HandlePlayerDied;
@@ -178,10 +163,6 @@ public class DeathScreen : MonoBehaviour
             playerHealth.OnDied -= HandlePlayerDied;
         }
         Gate.OnAnyGateDestroyed -= HandleGateDestroyed;
-        if (tryAgainButton != null)
-        {
-            tryAgainButton.onClick.RemoveListener(RestartFromLevelOne);
-        }
         if (nextStageButton != null)
         {
             nextStageButton.onClick.RemoveListener(ProceedToCampaignMap);
@@ -190,22 +171,20 @@ public class DeathScreen : MonoBehaviour
         {
             returnToMetaButton.onClick.RemoveListener(ReturnToMetaScene);
         }
-        if (restartCurrentWaveButton != null)
-        {
-            restartCurrentWaveButton.onClick.RemoveListener(RestartFromCurrentWave);
-        }
-        if (reincarnateButton != null)
-        {
-            reincarnateButton.onClick.RemoveListener(HandleReincarnate);
-        }
     }
 
     /// <summary>
     ///     Public entrypoint to display the victory screen when all waves are cleared.
+    ///     <paramref name="towerRefund" /> is the supply already refunded for dismantled towers.
     /// </summary>
-    public void ShowVictory(string title = null)
+    public void ShowVictory(string title = null, int towerRefund = 0)
     {
         string t = !string.IsNullOrEmpty(title) ? title : victoryTitle;
+        if (towerRefundText != null)
+        {
+            towerRefundText.gameObject.SetActive(towerRefund > 0);
+            towerRefundText.text = string.Format(towerRefundFormat, towerRefund);
+        }
         ShowRunOver(t, null, isVictory: true);
     }
 
@@ -239,7 +218,7 @@ public class DeathScreen : MonoBehaviour
     private void HandleGateDestroyed(Gate gate)
     {
         // Unlike a player death, the player is still alive and controllable — freeze time so the
-        // run visibly ends behind the screen. Reload() restores the timescale.
+        // run visibly ends behind the screen. ReturnToMetaScene() restores the timescale.
         Time.timeScale = 0f;
         bool isSurvivorsMode = SurvivorsGameManager.Instance != null;
         if (isSurvivorsMode && SurvivorsGameManager.Instance.HasSurvivedSiege)
@@ -254,7 +233,7 @@ public class DeathScreen : MonoBehaviour
 
     private void ShowRunOver(string title, string failureReason, bool isVictory = false)
     {
-        if (shown)
+        if (shown || anyError)
         {
             return;
         }
@@ -314,47 +293,21 @@ public class DeathScreen : MonoBehaviour
         if (isVictory)
         {
             // Victory: proceed directly to Campaign Map
-            if (tryAgainButton != null)
-            {
-                tryAgainButton.gameObject.SetActive(false);
-            }
-            if (returnToMetaButton != null)
-            {
-                returnToMetaButton.gameObject.SetActive(false);
-            }
-            if (nextStageButton != null)
-            {
-                nextStageButton.gameObject.SetActive(true);
-                TMP_Text lbl = nextStageButton.GetComponentInChildren<TMP_Text>();
-                if (lbl != null) lbl.text = victoryButtonText;
-            }
-            if (restartCurrentWaveButton != null)
-            {
-                restartCurrentWaveButton.gameObject.SetActive(false);
-            }
-            if (reincarnateButton != null)
-            {
-                reincarnateButton.gameObject.SetActive(false);
-            }
+            returnToMetaButton.gameObject.SetActive(false);
+            nextStageButton.gameObject.SetActive(true);
+            TMP_Text lbl = nextStageButton.GetComponentInChildren<TMP_Text>();
+            if (lbl != null) lbl.text = victoryButtonText;
         }
         else
         {
-            // Defeat: return to Meta Scene
-            if (nextStageButton != null)
+            // Defeat: the only way out is back to the Meta Area
+            nextStageButton.gameObject.SetActive(false);
+            returnToMetaButton.gameObject.SetActive(true);
+            TMP_Text lbl = returnToMetaButton.GetComponentInChildren<TMP_Text>();
+            if (lbl != null) lbl.text = defeatButtonText;
+            if (towerRefundText != null)
             {
-                nextStageButton.gameObject.SetActive(false);
-            }
-            if (returnToMetaButton != null)
-            {
-                returnToMetaButton.gameObject.SetActive(true);
-                TMP_Text lbl = returnToMetaButton.GetComponentInChildren<TMP_Text>();
-                if (lbl != null) lbl.text = defeatButtonText;
-            }
-            if (tryAgainButton != null)
-            {
-                tryAgainButton.gameObject.SetActive(true);
-                TMP_Text lbl = tryAgainButton.GetComponentInChildren<TMP_Text>();
-                if (lbl != null) lbl.text = "Retry Level";
+                towerRefundText.gameObject.SetActive(false);
             }
         }
 
@@ -367,14 +320,6 @@ public class DeathScreen : MonoBehaviour
             if (reincarnateTreePanel != null)
             {
                 reincarnateTreePanel.SetActive(false);
-            }
-            if (reincarnateButton != null)
-            {
-                reincarnateButton.gameObject.SetActive(false);
-            }
-            if (restartCurrentWaveButton != null)
-            {
-                restartCurrentWaveButton.gameObject.SetActive(false);
             }
 
             // Survivors run telemetry & stats
@@ -417,29 +362,6 @@ public class DeathScreen : MonoBehaviour
                 survivorsSidebar.RefreshSidebar();
             }
         }
-        else if (!isVictory)
-        {
-            // Non-survivors mode extra buttons on defeat
-            if (restartCurrentWaveButton != null)
-            {
-                bool hasWave = WaveSpawner.Instance != null;
-                restartCurrentWaveButton.gameObject.SetActive(hasWave);
-                if (hasWave && restartCurrentWaveLabel != null)
-                {
-                    restartCurrentWaveLabel.text = Loc.Format("death.restart_wave", WaveSpawner.Instance.CurrentWave);
-                }
-            }
-
-            if (reincarnateButton != null)
-            {
-                bool hasService = ReincarnateService.Instance != null;
-                reincarnateButton.gameObject.SetActive(hasService);
-                if (hasService && reincarnatePreviewLabel != null)
-                {
-                    reincarnatePreviewLabel.text = Loc.Format("death.reincarnate", ReincarnateService.Instance.PreviewPointsForReincarnate());
-                }
-            }
-        }
 
         StartCoroutine(RunOverSequence(failureReason, isSurvivorsMode, isVictory, runSeconds, lvl, killed, earned, dmgDealt, dmgTaken, crits));
     }
@@ -480,12 +402,6 @@ public class DeathScreen : MonoBehaviour
         canvasGroup.interactable = true;
     }
 
-    private void RestartFromLevelOne()
-    {
-        RunState.StartingWave = 1;
-        Reload();
-    }
-
     private void ProceedToCampaignMap()
     {
         Time.timeScale = 1f;
@@ -501,38 +417,24 @@ public class DeathScreen : MonoBehaviour
         // Preserve player ultimate charge
         if (Player.Instance != null)
         {
-            var ult = Player.Instance.GetComponent<PlayerUltimateController>();
+            var ult = Player.Instance.transform.root.GetComponentInChildren<PlayerUltimateController>(true);
             if (ult != null)
             {
                 RunSession.PlayerUltimateCharge = ult.CurrentCharge;
             }
         }
 
-        SaveData data = SaveSystem.Load();
-        if (data != null)
+        if (!CampaignManager.Instance.IsCampaignActive)
         {
-            int currentStage = data.selectedStage;
-            data.highestUnlockedStage = Mathf.Max(data.highestUnlockedStage, currentStage + 1);
-            SaveSystem.Save(data);
+            // Only happens when a battle scene is played straight from the Editor: there's no node
+            // to complete, so hand over to a fresh campaign run instead.
+            Debug.Log("[DeathScreen] Victory with no campaign run active (scene played standalone). Starting a fresh campaign run.");
+            CampaignManager.Instance.StartCampaignRun();
+            CampaignManager.Instance.OpenOverviewMap();
+            return;
         }
 
-        if (CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive)
-        {
-            CampaignManager.Instance.CompleteCurrentNodeAndOpenMap();
-        }
-        else if (Bladehold.UI.LoadingScreenManager.Instance != null)
-        {
-            Bladehold.UI.LoadingScreenManager.Instance.LoadScene(
-                "Bladehold Campaign Map Scene",
-                "Castle Campaign",
-                "War Room Map",
-                "Select your tactical route through the fortress battlements and inner halls."
-            );
-        }
-        else
-        {
-            SceneManager.LoadScene("Bladehold Campaign Map Scene");
-        }
+        CampaignManager.Instance.CompleteCurrentNodeAndOpenMap();
     }
 
     private void ReturnToMetaScene()
@@ -574,46 +476,5 @@ public class DeathScreen : MonoBehaviour
         {
             supply.Refresh();
         }
-    }
-
-    private void ProceedToNextLevel()
-    {
-        ProceedToCampaignMap();
-    }
-
-    private void ReturnToMetaProgression()
-    {
-        ReturnToMetaScene();
-    }
-
-    private void RestartFromCurrentWave()
-    {
-        // WaveSpawner keeps RunState.StartingWave at the current wave, but read it back explicitly in case
-        // execution order ever changes.
-        if (WaveSpawner.Instance != null)
-        {
-            RunState.StartingWave = WaveSpawner.Instance.CurrentWave;
-        }
-        Reload();
-    }
-
-    private void HandleReincarnate()
-    {
-        if (ReincarnateService.Instance == null || reincarnateBanked)
-        {
-            return;
-        }
-
-        ReincarnateService.Instance.Reincarnate();
-    }
-
-    private void Reload()
-    {
-        // Reload the active scene; scene-scoped singletons (GameStats, Wallet) reset naturally, while the
-        // wave to resume from rides across the reload in the static RunState.
-        Time.timeScale = 1f;
-        MMTimeScaleEvent.Reset();
-        CursorLockManager.SetUnlock("DeathScreen", false);
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }

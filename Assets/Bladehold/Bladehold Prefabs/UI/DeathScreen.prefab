@@ -18283,6 +18283,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Try Again
       objectReference: {fileID: 0}
+    - target: {fileID: 1508758403866968506, guid: 72f0ec0ac8b931c498594e189c6f6d64, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2617263665655766227, guid: 72f0ec0ac8b931c498594e189c6f6d64, type: 3}
       propertyPath: m_text
       value: Retry Level

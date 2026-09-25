@@ -1,14 +1,12 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 /// <summary>
-///     Portal/Gate in the Meta Area scene that launches a new run.
+///     Portal/Gate in the Meta Area scene that launches a new run: wipes run state, starts a fresh
+///     campaign and opens the Campaign Map.
 /// </summary>
 [RequireComponent(typeof(Interactable))]
 public class BattlePortal : MonoBehaviour
 {
-    [SerializeField] private string battleSceneName = "Bladehold Survivors Scene";
-
     private Interactable interactable;
 
     public void Initialize()
@@ -18,7 +16,7 @@ public class BattlePortal : MonoBehaviour
             interactable = GetComponent<Interactable>();
             if (interactable != null)
             {
-                interactable.PromptText = "Begin Run (Enter Battle)";
+                interactable.PromptText = "Begin Run";
                 interactable.OnInteractedEvent += HandleEnterBattle;
             }
         }
@@ -51,7 +49,8 @@ public class BattlePortal : MonoBehaviour
 
         if (Application.isPlaying)
         {
-            Bladehold.UI.LoadingScreenManager.Instance.LoadScene(battleSceneName);
+            CampaignManager.Instance.StartCampaignRun();
+            CampaignManager.Instance.OpenOverviewMap();
         }
     }
 }

@@ -1071,16 +1071,15 @@ public static class WeaponReachBenchmark
 
             RunSession.ClearRun();
             int resetSupply = RunSession.InRunSupply;
-            int resetSavedDefenses = RunSession.SavedDefenses.Count;
 
-            if (freshSupply == 60 && addedSupply == 100 && spendSuccess && spentSupply == 70 && resetSupply == 60 && resetSavedDefenses == 0)
+            if (freshSupply == 60 && addedSupply == 100 && spendSuccess && spentSupply == 70 && resetSupply == 60)
             {
                 sb.AppendLine("  - Supply Currency & Death Reset: Initial 60, add +40 -> 100, spend 30 -> 70, reset on death -> 60. [PASSED]");
                 passedCount++;
             }
             else
             {
-                sb.AppendLine($"  - [FAIL] Supply Currency test failed (fresh={freshSupply}, added={addedSupply}, spent={spentSupply}, reset={resetSupply}, savedDefenses={resetSavedDefenses})!");
+                sb.AppendLine($"  - [FAIL] Supply Currency test failed (fresh={freshSupply}, added={addedSupply}, spent={spentSupply}, reset={resetSupply})!");
                 failedCount++;
             }
 
@@ -1158,6 +1157,20 @@ public static class WeaponReachBenchmark
             else
             {
                 sb.AppendLine($"  - [FAIL] Supply depletion failed (isDepleted={def.IsDepleted}, curSupply={def.CurrentSupply})!");
+                failedCount++;
+            }
+
+            // 10E2: Dismantle Refund (remaining supply + upgrade spend)
+            bool refundCorrect = def.UpgradeSupplySpent == upgradeCost && def.DismantleRefund == upgradeCost;
+
+            if (refundCorrect)
+            {
+                sb.AppendLine($"  - Dismantle Refund: depleted Lv2 tower refunds its {upgradeCost} upgrade spend + 0 remaining supply. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Dismantle refund mismatch (upgradeSpent={def.UpgradeSupplySpent}, refund={def.DismantleRefund}, expected={upgradeCost})!");
                 failedCount++;
             }
 
@@ -2437,6 +2450,20 @@ public static class WeaponReachBenchmark
                 failedCount++;
             }
 
+            // 21C2: Armored fish max HP is derived from ConsumedBuffFish, never stacked into the persistent bonus
+            bool armoredIdempotent = RunSession.BuffFishBonusMaxHealth == 10f && RunSession.PlayerBonusMaxHealth == 0f;
+
+            if (armoredIdempotent)
+            {
+                sb.AppendLine("  - Buff Fish Rehydrate: Armored fish grants +10 max HP via ConsumedBuffFish without mutating PlayerBonusMaxHealth. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Armored fish bonus not idempotent (fishBonus={RunSession.BuffFishBonusMaxHealth}, persistentBonus={RunSession.PlayerBonusMaxHealth})");
+                failedCount++;
+            }
+
             // 21D: Diamond Fish Bones Currency Persistence
             SaveData testSave = SaveSystem.Load() ?? new SaveData();
             int initialBones = testSave.diamondFishBones;
@@ -2794,22 +2821,20 @@ public static class WeaponReachBenchmark
             var titleText = dsSo.FindProperty("titleText").objectReferenceValue as TMPro.TMP_Text;
             var nextBtn = dsSo.FindProperty("nextStageButton").objectReferenceValue as UnityEngine.UI.Button;
             var metaBtn = dsSo.FindProperty("returnToMetaButton").objectReferenceValue as UnityEngine.UI.Button;
-            var tryAgainBtn = dsSo.FindProperty("tryAgainButton").objectReferenceValue as UnityEngine.UI.Button;
 
             bool titleCorrect = titleText != null && titleText.text == "VICTORY!";
             bool nextActive = nextBtn != null && nextBtn.gameObject.activeSelf;
             bool nextLabelValid = nextBtn != null && nextBtn.GetComponentInChildren<TMPro.TMP_Text>() != null && nextBtn.GetComponentInChildren<TMPro.TMP_Text>().text.Contains("CAMPAIGN");
             bool metaHidden = metaBtn != null && !metaBtn.gameObject.activeSelf;
-            bool tryAgainHidden = tryAgainBtn != null && !tryAgainBtn.gameObject.activeSelf;
 
-            if (titleCorrect && nextActive && nextLabelValid && metaHidden && tryAgainHidden)
+            if (titleCorrect && nextActive && nextLabelValid && metaHidden)
             {
                 sb.AppendLine("  - DeathScreen Victory Mode: Sets headline to 'VICTORY!', displays 'PROCEED TO CAMPAIGN MAP' button, and hides defeat buttons. [PASSED]");
                 passedCount++;
             }
             else
             {
-                sb.AppendLine($"  - [FAIL] Victory mode mismatch: titleCorrect={titleCorrect}, nextActive={nextActive}, nextLabelValid={nextLabelValid}, metaHidden={metaHidden}, tryAgainHidden={tryAgainHidden}");
+                sb.AppendLine($"  - [FAIL] Victory mode mismatch: titleCorrect={titleCorrect}, nextActive={nextActive}, nextLabelValid={nextLabelValid}, metaHidden={metaHidden}");
                 failedCount++;
             }
 

@@ -4,6 +4,7 @@
 
 ### New Features
 
+- Added supply refund on sector victory: towers are dismantled and their remaining supply plus upgrade costs return to you
 - Unified victory and defeat presentation using the customizable End Game Screen prefab, displaying triumphant victory titling upon clearing all sector waves
 - Added automated behavioral benchmark tests verifying end game screen victory mode, defeat routing, and live currency updates
 - Added automatic post-objective cleanup phase transitioning the objective to "Kill all remaining enemies" whenever stragglers remain on the battlefield
@@ -108,6 +109,10 @@
 
 ### Fixes
 
+- Fixed Rest Area healing and ultimate charge being lost when returning to the campaign map
+- Fixed ultimate charge not carrying over between sectors
+- Fixed Armored buff fish max health stacking again on every scene load
+- Fixed upgrades being applied twice in the Supply Room
 - Fixed Goblin Blood and Orcish Metal counters displaying placeholder values instead of current save quantities on the end game screen
 - Fixed defeat screen forcibly transitioning to the meta area after two seconds, allowing players to view combat stats and choose when to return
 - Fixed end game screen navigation routing to the Campaign Map upon victory and returning to the Meta Area upon defeat
@@ -138,6 +143,10 @@
 
 ### General Changes
 
+- Updated the Battle Portal to start a new run straight on the campaign map
+- Removed Retry Level from the defeat screen; dying always returns you to the Meta Area
+- Removed the Return to Stronghold button from the campaign map
+- Towers no longer carry over between sectors; each sector starts with empty plots
 - Updated Bannerman enemy variant to use the Goblin Brute model with war banner mounted to the upper spine
 - Updated campaign combat sector tooltip labels to reflect 5-wave defense structure
 - Added click-to-proceed button on Victory Screen routing directly to the Campaign Map

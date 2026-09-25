@@ -64,18 +64,6 @@ public static class RunSession
     public static List<string> CampaignCompletedNodeIds { get; } = new List<string>();
     public static List<string> CampaignAvailableNodeIds { get; } = new List<string>();
 
-    [System.Serializable]
-    public class SavedDefenseData
-    {
-        public int plotIndex;
-        public FortDefenseType defenseType;
-        public int level;
-        public int currentSupply;
-        public int maxSupply;
-    }
-
-    public static readonly List<SavedDefenseData> SavedDefenses = new List<SavedDefenseData>();
-
     /// <summary>
     ///     Checks if a permanent meta-progression perk is owned in SaveData.
     /// </summary>
@@ -142,7 +130,6 @@ public static class RunSession
         OnInRunGoldChanged?.Invoke(InRunGold);
 
         InRunSupply = 60;
-        SavedDefenses.Clear();
         OnInRunSupplyChanged?.Invoke(InRunSupply);
 
         CurrentAmmo = HasMetaPerk("deep_quiver") ? 25 : 20;
@@ -171,12 +158,13 @@ public static class RunSession
     {
         if (player == null) return;
 
-        // 1. Reapply bonus health from Troll Hearts & health ratio
+        // 1. Reapply bonus health from Troll Hearts/shop and Armored buff fish, then the health ratio
         if (player.Health != null)
         {
-            if (PlayerBonusMaxHealth > 0f)
+            float bonusMaxHealth = PlayerBonusMaxHealth + BuffFishBonusMaxHealth;
+            if (bonusMaxHealth > 0f)
             {
-                player.Health.SetMaxHealth(player.Health.MaxHealth + PlayerBonusMaxHealth);
+                player.Health.SetMaxHealth(player.Health.MaxHealth + bonusMaxHealth);
             }
             if (PlayerHealthRatio > 0f && PlayerHealthRatio <= 1f)
             {
@@ -233,7 +221,7 @@ public static class RunSession
         // 6. Reapply preserved Ultimate Charge
         if (PlayerUltimateCharge > 0f)
         {
-            PlayerUltimateController ult = player.GetComponent<PlayerUltimateController>();
+            PlayerUltimateController ult = player.transform.root.GetComponentInChildren<PlayerUltimateController>(true);
             if (ult != null)
             {
                 ult.SetCharge(PlayerUltimateCharge);
@@ -372,19 +360,41 @@ public static class RunSession
         }
     }
 
-    // Buff Fish tracking (Max 3 consumed per run)
+    // Buff Fish tracking (Max 3 consumed per run). ConsumedBuffFish is the only persistent record:
+    // every bonus is derived from it on rehydrate, so reloading a scene never stacks a fish twice.
     public static readonly List<BuffFishType> ConsumedBuffFish = new List<BuffFishType>();
     public static bool CanConsumeBuffFish => ConsumedBuffFish.Count < 3;
+
+    private const float ArmoredFishMaxHealth = 10f;
+
+    /// <summary>Max HP granted by every Armored fish eaten this run; folded in by <see cref="RestoreInRunUpgrades" />.</summary>
+    public static float BuffFishBonusMaxHealth
+    {
+        get
+        {
+            int armored = 0;
+            for (int i = 0; i < ConsumedBuffFish.Count; i++)
+            {
+                if (ConsumedBuffFish[i] == BuffFishType.Armored) armored++;
+            }
+            return armored * ArmoredFishMaxHealth;
+        }
+    }
 
     public static bool TryConsumeBuffFish(BuffFishType type, Player player = null)
     {
         if (ConsumedBuffFish.Count >= 3) return false;
         ConsumedBuffFish.Add(type);
-        ApplyBuffFishBonus(type, player);
+        ApplyBuffFishBonus(type, player, justEaten: true);
         return true;
     }
 
-    public static void ApplyBuffFishBonus(BuffFishType type, Player player = null)
+    /// <summary>
+    ///     Applies one fish's bonus to the live player. <paramref name="justEaten" /> is true only at the
+    ///     feast itself; on scene-load rehydrate the Armored max HP is already restored by
+    ///     <see cref="RestoreInRunUpgrades" />, so only stat modifiers are re-added.
+    /// </summary>
+    public static void ApplyBuffFishBonus(BuffFishType type, Player player = null, bool justEaten = false)
     {
         player = (player != null) ? player : Player.Instance;
         if (player == null || player.Stats == null) return;
@@ -396,10 +406,11 @@ public static class RunSession
                 stats.AddModifier(StatType.MoveSpeed, ModifierKind.Percent, 0.10f);
                 break;
             case BuffFishType.Armored:
-                PlayerBonusMaxHealth += 10f;
-                if (player.Health != null)
+                if (justEaten && player.Health != null)
                 {
-                    player.Health.Heal(10f);
+                    float current = player.Health.CurrentHealth;
+                    player.Health.SetMaxHealth(player.Health.MaxHealth + ArmoredFishMaxHealth);
+                    player.Health.SetCurrentHealth(current + ArmoredFishMaxHealth);
                 }
                 break;
             case BuffFishType.Fire:

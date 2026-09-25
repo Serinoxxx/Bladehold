@@ -127,31 +127,6 @@ public static class BuildAndCaptureCampaignMap
         TextMeshProUGUI bloodTmp = CreateCurrencyBadge(currsGo.transform, "BloodBadge", "Blood: 45", new Color(0.95f, 0.3f, 0.3f));
         TextMeshProUGUI metalTmp = CreateCurrencyBadge(currsGo.transform, "MetalBadge", "Metal: 12", new Color(0.45f, 0.85f, 1f));
 
-        // Return Button (Bottom Left)
-        GameObject returnBtnGo = new GameObject("ReturnToMetaButton", typeof(RectTransform), typeof(Image), typeof(Button));
-        returnBtnGo.transform.SetParent(canvasGo.transform, false);
-        RectTransform retRt = returnBtnGo.GetComponent<RectTransform>();
-        retRt.anchorMin = new Vector2(0f, 0f);
-        retRt.anchorMax = new Vector2(0f, 0f);
-        retRt.pivot = new Vector2(0f, 0f);
-        retRt.anchoredPosition = new Vector2(40f, 30f);
-        retRt.sizeDelta = new Vector2(220f, 50f);
-        Image retImg = returnBtnGo.GetComponent<Image>();
-        retImg.color = new Color(0.25f, 0.22f, 0.28f, 0.95f);
-        Button retBtn = returnBtnGo.GetComponent<Button>();
-
-        GameObject retTextGo = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI));
-        retTextGo.transform.SetParent(returnBtnGo.transform, false);
-        RectTransform retTextRt = retTextGo.GetComponent<RectTransform>();
-        retTextRt.anchorMin = Vector2.zero;
-        retTextRt.anchorMax = Vector2.one;
-        retTextRt.sizeDelta = Vector2.zero;
-        TextMeshProUGUI retTmp = retTextGo.GetComponent<TextMeshProUGUI>();
-        retTmp.text = "< Return to Stronghold";
-        retTmp.fontSize = 14;
-        retTmp.alignment = TextAlignmentOptions.Center;
-        retTmp.color = Color.white;
-
         // ScrollRect & Viewport for Nodes
         GameObject scrollGo = new GameObject("MapScrollRect", typeof(RectTransform), typeof(ScrollRect));
         scrollGo.transform.SetParent(canvasGo.transform, false);
@@ -218,8 +193,7 @@ public static class BuildAndCaptureCampaignMap
             titleTmp,
             goldTmp,
             bloodTmp,
-            metalTmp,
-            retBtn
+            metalTmp
         );
 
         // Save Scene

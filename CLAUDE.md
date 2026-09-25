@@ -15,11 +15,11 @@ Unity 6 game, codenamed **Bladehold**. A 3D action roguelite: one hero, a melee 
 1. **Meta Area** (`Bladehold Meta Area Scene`) is the hub. Spend permanent currencies:
    - **Goblin Blood** on 3-tier perks at the Spirit NPC (`UI/Meta/MetaUpgradesUI.cs`, `MetaPerkDefinitionSO` assets in `Bladehold Config/MetaPerks/`). Tier 2/3 unlock with Orcish Metal.
    - **Orcish Metal** on weapon and armour pedestals (`UI/Meta/WeaponPedestal.cs`, `ArmourPedestal.cs`). Mount pedestals (`MountPedestal.cs`) are **not implemented yet**.
-   - **Battle Portal** (`UI/Meta/BattlePortal.cs`) starts a run.
+   - **Battle Portal** (`UI/Meta/BattlePortal.cs`) wipes run state, starts a fresh campaign run and opens the Campaign Map.
 2. **Campaign Map** (`Bladehold Campaign Map Scene`, `Campaign/`): an 8-tier branching node graph. Node types: Combat sectors (castle scenes, each with a difficulty tier + named captain), Fishing Ponds, Rest Areas, a PreBoss sector, then the Crypt (Necromancer choice: Obey → Princess boss, Defy → Necromancer boss). See `Campaign/CLAUDE.md`.
-3. **Combat sector** (any battle scene: the castle scenes and `Bladehold Survivors Scene`, which despite the name is just one of the battles). 5 waves, each preceded by a war-banner pick + tower-building prep phase. Clear wave 5 → victory screen → back to the map. See `Waves/CLAUDE.md` and `Fort/CLAUDE.md`.
+3. **Combat sector** (any battle scene: the castle scenes and `Bladehold Survivors Scene`, which despite the name is just one of the battles). 5 waves, each preceded by a war-banner pick + tower-building prep phase. Clear wave 5 → towers are dismantled for supply (remaining supply + upgrade spend) → victory screen → back to the map. Towers never carry between sectors. See `Waves/CLAUDE.md` and `Fort/CLAUDE.md`.
 4. **Between sectors**, run state rides in the static `Economy/RunSession.cs`: HP ratio, in-run gold, supply, ammo, draft levels, ultimate + charge, buff fish, campaign node state.
-5. **Death** → defeat screen → back to the Meta Area; the run is wiped (`RunSession.ClearRun()`). Permanent currencies are kept.
+5. **Death** → defeat screen (one button) → back to the Meta Area; the run is wiped (`RunSession.ClearRun()`). Permanent currencies are kept. No retry, and no voluntary exit from the map: the only ways home are death or campaign end.
 
 ### Currencies
 
@@ -49,9 +49,6 @@ Unity 6 game, codenamed **Bladehold**. A 3D action roguelite: one hero, a melee 
 
 Build towards these; don't "fix" code back to the old behaviour.
 
-- **Battle Portal goes straight to the Campaign Map.** Currently it loads `Bladehold Survivors Scene` first as a de facto prologue; that detour is going away.
-- **Death has one outcome: back to the Meta Area.** Remove the defeat screen's "Retry Level" button.
-- **Towers don't carry between sectors.** On leaving a sector, refund each tower's remaining supply to the player instead of restoring towers by plot index (`TowerPlotManager` + `RunSession.SavedDefenses` currently transfer them).
 - **Sectors get harder deeper into the campaign.** Stronger enemy types spawn in later sectors, but basic goblin fodder keeps spawning alongside them for the power fantasy. Today every sector resets to waves 1-5 with the same pacing asset.
 - **The newer enemies belong in sector waves**: Bulwark, Bannerman, Powder Keg and co. Today `SurvivorsSpawner` only admits goblin/brute/big_ork/bubbler/bomber via each wave's `allowedEnemyIds`.
 - **Mount summon is available from the start** on **X**, keeping the cast time, ride duration and cooldown. The *variants* (Frost Strider etc.) show on pedestals but are locked for the demo.

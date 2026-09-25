@@ -30,10 +30,6 @@ public class CampaignMapUI : MonoBehaviour
     [SerializeField] private TMP_Text goblinBloodText;
     [SerializeField] private TMP_Text orcishMetalText;
 
-    [Header("Navigation Buttons")]
-    [SerializeField] private Button returnToMetaButton;
-    [SerializeField] private string metaAreaSceneName = "Bladehold Meta Area Scene";
-
     [Header("Path Visual Styling")]
     [SerializeField] private Color pathLockedColor = new Color(0.3f, 0.3f, 0.35f, 0.4f);
     [SerializeField] private Color pathAvailableColor = new Color(1f, 0.85f, 0.25f, 0.95f);
@@ -42,14 +38,6 @@ public class CampaignMapUI : MonoBehaviour
 
     private readonly Dictionary<string, CampaignNodeButtonUI> spawnedButtons = new Dictionary<string, CampaignNodeButtonUI>();
     private readonly List<GameObject> spawnedPaths = new List<GameObject>();
-
-    private void Awake()
-    {
-        if (returnToMetaButton != null)
-        {
-            returnToMetaButton.onClick.AddListener(HandleReturnToMeta);
-        }
-    }
 
     public CampaignNodeButtonUI NodeButtonPrefab { get => nodeButtonPrefab; set => nodeButtonPrefab = value; }
     public GameObject PathLinePrefab { get => pathLinePrefab; set => pathLinePrefab = value; }
@@ -68,7 +56,6 @@ public class CampaignMapUI : MonoBehaviour
         TMP_Text goldTxt,
         TMP_Text bloodTxt,
         TMP_Text metalTxt,
-        Button returnBtn,
         CampaignNodeButtonUI btnPrefab = null,
         GameObject linePrefab = null)
     {
@@ -81,15 +68,8 @@ public class CampaignMapUI : MonoBehaviour
         inRunGoldText = goldTxt;
         goblinBloodText = bloodTxt;
         orcishMetalText = metalTxt;
-        returnToMetaButton = returnBtn;
         if (btnPrefab != null) nodeButtonPrefab = btnPrefab;
         if (linePrefab != null) pathLinePrefab = linePrefab;
-
-        if (returnToMetaButton != null)
-        {
-            returnToMetaButton.onClick.RemoveAllListeners();
-            returnToMetaButton.onClick.AddListener(HandleReturnToMeta);
-        }
     }
 
     private void Start()
@@ -379,19 +359,6 @@ public class CampaignMapUI : MonoBehaviour
         if (tooltipUI != null)
         {
             tooltipUI.Hide();
-        }
-    }
-
-    private void HandleReturnToMeta()
-    {
-        Time.timeScale = 1f;
-        if (Bladehold.UI.LoadingScreenManager.Instance != null)
-        {
-            Bladehold.UI.LoadingScreenManager.Instance.LoadScene(metaAreaSceneName);
-        }
-        else
-        {
-            SceneManager.LoadScene(metaAreaSceneName);
         }
     }
 

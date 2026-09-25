@@ -58,28 +58,28 @@ public class RestAreaGate : MonoBehaviour
         Debug.Log("[RestAreaGate] Returning to battle scene...");
         Time.timeScale = 1f;
 
+        // Preserve player health ratio when leaving the Rest Area (e.g. from shop healing or Troll Hearts)
+        if (player != null && player.Health != null)
+        {
+            RunSession.PlayerHealthRatio = Mathf.Clamp01(player.Health.CurrentHealth / player.Health.MaxHealth);
+        }
+
+        // Preserve player ultimate charge
+        if (player != null)
+        {
+            var ult = player.transform.root.GetComponentInChildren<PlayerUltimateController>(true);
+            if (ult != null)
+            {
+                RunSession.PlayerUltimateCharge = ult.CurrentCharge;
+            }
+        }
+
         // If Castle Campaign is active, completing the Rest Area / Supply Room returns to Campaign Map
         if (CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive)
         {
             Debug.Log("[RestAreaGate] Castle Campaign active: completing stop scene and opening Campaign Overview Map...");
             CampaignManager.Instance.CompleteCurrentNodeAndOpenMap();
             return;
-        }
-
-        // Preserve player health ratio when leaving the Rest Area (e.g. from shop healing or Troll Hearts)
-        if (player != null && player.Health != null)
-        {
-            RunSession.PlayerHealthRatio = player.Health.CurrentHealth / player.Health.MaxHealth;
-        }
-
-        // Preserve player ultimate charge
-        if (player != null)
-        {
-            var ult = player.GetComponent<PlayerUltimateController>();
-            if (ult != null)
-            {
-                RunSession.PlayerUltimateCharge = ult.CurrentCharge;
-            }
         }
 
         // Preserve fortress gate health

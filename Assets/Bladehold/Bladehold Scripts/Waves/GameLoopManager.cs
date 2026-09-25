@@ -1074,18 +1074,14 @@ public class GameLoopManager : MonoBehaviour
             RunSession.PlayerHealthRatio = Mathf.Clamp01(Player.Instance.Health.CurrentHealth / Player.Instance.Health.MaxHealth);
         }
 
-        SaveData data = SaveSystem.Load();
-        if (data != null)
-        {
-            data.highestUnlockedStage = Mathf.Max(data.highestUnlockedStage, data.selectedStage + 1);
-            SaveSystem.Save(data);
-        }
+        // Towers don't follow the player to the next sector: dismantle them for supply.
+        int towerRefund = TowerPlotManager.Instance != null ? TowerPlotManager.Instance.DismantleAllForRefund() : 0;
 
         // Trigger DeathScreen in victory mode (No procedural fallback UI)
         DeathScreen endScreen = DeathScreen.Instance != null ? DeathScreen.Instance : FindAnyObjectByType<DeathScreen>();
         if (endScreen != null)
         {
-            endScreen.ShowVictory("VICTORY!");
+            endScreen.ShowVictory("VICTORY!", towerRefund);
         }
         else if (victoryScreen != null)
         {

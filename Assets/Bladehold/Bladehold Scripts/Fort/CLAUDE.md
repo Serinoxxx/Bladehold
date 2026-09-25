@@ -9,11 +9,7 @@
   - Each tower holds its own supply and spends some per shot. At 0 it stays standing but stops firing (a "NO SUPPLY" marker points at it).
   - `[E]` on a tower refills it from the player's pool. Once it's full, `[E]` upgrades it instead (max level 3). Refill and upgrade work any time, not just during prep.
 - **`DefenseAssemblyAnimation`**: ghost preview plus the piece-drop / ground-emerge build animation.
-- **`TowerPlotManager`**: owns the plots. It currently saves towers to `RunSession.SavedDefenses` on every wave clear, restores them by plot index in the next scene, and wipes them on death.
-
-## Decided change
-
-Towers should **not** carry between sectors. When leaving a sector, refund each tower's remaining supply to the player, and start the next sector with empty plots. That means removing the `SavedDefenses` transfer. It was also fragile, since it restored towers by plot index into a different castle layout.
+- **`TowerPlotManager`**: owns the plots. Towers **never carry between sectors**. On victory, `GameLoopManager.TriggerVictory` calls `DismantleAllForRefund()`, which pays each tower's `DismantleRefund` (remaining supply + supply spent upgrading it) into `RunSession.InRunSupply`; the victory screen shows the total. On player death the towers are just cleared. Every sector starts with empty plots.
 
 ## Legacy
 

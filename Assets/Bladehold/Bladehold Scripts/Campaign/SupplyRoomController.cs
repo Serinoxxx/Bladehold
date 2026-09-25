@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 ///     Master controller for the Supply Room scene (Tier 3 tactical node in Castle Campaign).
 ///     Manages the non-hostile loot room:
 ///     - Confirms zero enemy spawners exist in this scene.
-///     - Rehydrates player state upon scene load: invokes <see cref="RunSession.RestoreInRunUpgrades"/>.
+///     - Player state rehydrates itself in <see cref="Player" />.Start; don't call RestoreInRunUpgrades here too.
 ///     - Wires exit gate/door <see cref="Interactable"/> to complete the node and return to Castle Map.
 ///     - Tracks remaining smashable crates count for UI feedback ("Supply Crates Smashed: X / Y").
 /// </summary>
@@ -30,10 +30,6 @@ public class SupplyRoomController : MonoBehaviour
     [Header("UI Feedback")]
     [Tooltip("Optional HUD or world text displaying smash progress (e.g. 'Supply Crates Smashed: 5 / 20').")]
     [SerializeField] private TMP_Text cratesSmashedText;
-
-    [Header("Settings")]
-    [Tooltip("Delay in seconds before rehydrating player stats to ensure all player components have initialized in Start.")]
-    [SerializeField] private float rehydrateDelay = 0.1f;
 
     private int totalCrates = 0;
     private int smashedCrates = 0;
@@ -62,10 +58,7 @@ public class SupplyRoomController : MonoBehaviour
         // 3. Configure Exit Door
         ConfigureExitDoor();
 
-        // 4. Rehydrate player state
-        StartCoroutine(RehydratePlayerRoutine());
-
-        // 5. Subscribe to supply box broken events
+        // 4. Subscribe to supply box broken events
         SupplyBox.OnAnySupplyBoxSmashed += HandleSupplyBoxSmashed;
     }
 
@@ -128,22 +121,6 @@ public class SupplyRoomController : MonoBehaviour
         else
         {
             Debug.LogWarning("[SupplyRoomController] No exit door Interactable found in scene!");
-        }
-    }
-
-    private IEnumerator RehydratePlayerRoutine()
-    {
-        yield return new WaitForSeconds(rehydrateDelay);
-
-        Player player = Player.Instance != null ? Player.Instance : FindAnyObjectByType<Player>();
-        if (player != null)
-        {
-            RunSession.RestoreInRunUpgrades(player);
-            Debug.Log($"[SupplyRoomController] Restored player in-run upgrades and meta perks for {player.name}.");
-        }
-        else
-        {
-            Debug.LogWarning("[SupplyRoomController] Player instance not found during rehydration attempt.");
         }
     }
 

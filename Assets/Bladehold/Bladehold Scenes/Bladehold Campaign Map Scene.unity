@@ -2673,8 +2673,6 @@ MonoBehaviour:
   inRunGoldText: {fileID: 1950249674}
   goblinBloodText: {fileID: 1679513345}
   orcishMetalText: {fileID: 928060988}
-  returnToMetaButton: {fileID: 1897674040}
-  metaAreaSceneName: Bladehold Meta Area Scene
   pathLockedColor: {r: 0.3, g: 0.3, b: 0.35, a: 0.4}
   pathAvailableColor: {r: 1, g: 0.85, b: 0.25, a: 0.95}
   pathCompletedColor: {r: 0.35, g: 0.75, b: 0.45, a: 0.75}
@@ -2922,7 +2920,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1897674040
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -40,6 +40,12 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
     public int MaxSupply => maxSupply;
     public int SupplyPerAction => supplyPerAction;
     public bool IsDepleted => currentSupply <= 0;
+    /// <summary>Supply the player has paid to upgrade this tower (free level-ups via SetLevel/InitState don't count).</summary>
+    public int UpgradeSupplySpent => upgradeSupplySpent;
+    /// <summary>What dismantling this tower hands back: its remaining supply plus everything spent upgrading it.</summary>
+    public int DismantleRefund => Mathf.Max(0, currentSupply) + upgradeSupplySpent;
+
+    private int upgradeSupplySpent;
     public bool RotateToTarget
     {
         get => rotateToTarget;
@@ -229,6 +235,7 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
             int upgradeCost = GetUpgradeCost();
             if (RunSession.InRunSupply >= upgradeCost && RunSession.TrySpendInRunSupply(upgradeCost))
             {
+                upgradeSupplySpent += upgradeCost;
                 Upgrade();
 
                 if (breakVfxPrefab != null)
