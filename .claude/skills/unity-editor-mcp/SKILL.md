@@ -33,7 +33,7 @@ The `unityMCP` server (repo-root `.mcp.json`, HTTP on `localhost:8080/mcp`) brid
 
 ## Step 3 — Play-mode verification
 
-Enter Play mode via MCP, then drive the game with the **DevConsole** (backquote) cheats instead of playing manually: `DebugSetNextWave(n)`, `DebugSpawnBurst(count)`, `DebugWipeWave()`, class ◄/► picker + "Switch & Reload". The `EnemyZoo` gallery scene spawns every roster row with CSV overrides for enemy checks; `SkillTreePreview.unity` for tree/tooltip checks. Read the console during play for errors; exit Play mode when done.
+Enter Play mode via MCP, then drive the game with the **DevConsole** (backquote) cheats instead of playing manually: the wave panel's "Wipe Wave", the enemy-type spawn picker and +N burst buttons, the threat override, objective select, draft cards and currencies. The `Enemy Zoo` scene spawns every roster row with CSV overrides for enemy checks. Read the console during play for errors; exit Play mode when done.
 
 ## Pitfalls
 

@@ -641,21 +641,6 @@ public class SetupSurvivorsSceneTool : EditorWindow
             }
         }
 
-        // 6. DeathScreen
-        if (deathScreenGo != null && sidekickT != null)
-        {
-            var skillTreeViews = deathScreenGo.GetComponentsInChildren<SkillTreeView>(true);
-            foreach (var stv in skillTreeViews)
-            {
-                if (stv != null)
-                {
-                    var stvSo = new SerializedObject(stv);
-                    stvSo.FindProperty("wallet").objectReferenceValue = sidekickT.GetComponent<Wallet>();
-                    stvSo.ApplyModifiedProperties();
-                }
-            }
-        }
-
         // 7. SurvivorsGameManager
         if (survivorsGameMgrGo != null)
         {

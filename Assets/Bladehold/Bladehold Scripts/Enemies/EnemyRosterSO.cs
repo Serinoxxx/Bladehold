@@ -65,8 +65,8 @@ public class EnemyDefinition
 }
 
 /// <summary>
-///     The enemy roster, authored as a CSV and parsed into <see cref="EnemyDefinition" />s — the same
-///     designer-edits-a-spreadsheet pattern as <see cref="SkillTreeSO" />. The CSV is the balance sheet
+///     The enemy roster, authored as a CSV and parsed into <see cref="EnemyDefinition" />s (the
+///     designer-edits-a-spreadsheet pattern). The CSV is the balance sheet
 ///     for every enemy type; <see cref="SurvivorsSpawner" /> maps each row's id to a prefab and applies the
 ///     row's overrides to each spawned instance.
 ///

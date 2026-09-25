@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-///     Grave Robber: a Reincarnate-tree upgrade. Listens to the player's real <see cref="Health.OnDied" />
+///     Grave Robber (dormant: it was a Reincarnate-tree upgrade and nothing grants it since plan 08). Listens to the player's real <see cref="Health.OnDied" />
 ///     (fires only when death wasn't cancelled by <see cref="DeathNova" />) and auto-collects
 ///     <see cref="StatType.GoldOnDeathPickupPercent" /> of the gold currently sitting on the ground into the
 ///     wallet, then removes those coins so they don't linger as a dead pickup once the death screen shows.

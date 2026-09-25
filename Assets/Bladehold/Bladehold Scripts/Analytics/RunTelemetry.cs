@@ -15,7 +15,7 @@ using static System.FormattableString;
 ///     Pure listener, per the Health-is-the-hub convention: it subscribes to existing events
 ///     (<see cref="GameLoopManager" /> wave events, the player's <see cref="Health.OnDamaged" />/<see cref="Health.OnDied" />,
 ///     the sword <see cref="DamageTrigger.OnHit" />, <see cref="InputReader.onAttackDeactivated" /> for swing
-///     counting, and both tree services' <c>OnNodePurchased</c>) and never changes gameplay. Sprint time is
+///     counting) and never changes gameplay. Sprint time is
 ///     polled from the vendored controller's private <c>_isSprinting</c> field by reflection (the
 ///     <see cref="PlayerMoveSpeedBinder" /> precedent). Missing pieces log one warning and are skipped, so
 ///     telemetry can never break the game.
@@ -26,9 +26,6 @@ using static System.FormattableString;
 ///         <item><c>wave_clear</c> — one per cleared wave: clear time, kills, gold, damage in/out, crits,
 ///         quick vs charged swings, sprint seconds. Intermission activity (accumulators reset when the
 ///         next wave starts) is excluded from wave rows but still lands in the run totals.</item>
-///         <item><c>purchase</c> — one per skill purchase (either tree): node id/name in <c>detail</c>,
-///         price paid in <c>cost</c>. Death-screen shopping lands after the death row, which is correct —
-///         it is part of that run's story.</item>
 ///         <item><c>death</c> — the fatal wave's partial stats; <c>run_summary</c> — whole-run totals.</item>
 ///     </list>
 /// </summary>
@@ -63,8 +60,6 @@ public class RunTelemetry : MonoBehaviour
     private DamageTrigger swordTrigger;
     private PlayerThrownAxe thrownAxe;
     private PlayerWand wand;
-    private SkillTreeService goldTree;
-    private ReincarnateService reincarnateTree;
     private FieldInfo isSprintingField;
     
     private PlayerDodge playerDodge;
@@ -194,8 +189,6 @@ public class RunTelemetry : MonoBehaviour
         playerHealth = player.Health;
         gameStats = GameStats.Instance;
         gameLoop = GameLoopManager.Instance;
-        goldTree = SkillTreeService.Instance;
-        reincarnateTree = ReincarnateService.Instance;
         playerAttack = player.GetComponentInChildren<PlayerAttack>(true);
         inputReader = player.GetComponentInChildren<InputReader>(true);
         controller = player.GetComponentInChildren<SamplePlayerAnimationController>(true);
@@ -252,14 +245,6 @@ public class RunTelemetry : MonoBehaviour
         {
             inputReader.onAttackDeactivated += HandleAttackReleased;
         }
-        if (goldTree != null)
-        {
-            goldTree.OnNodePurchased += HandleGoldPurchase;
-        }
-        if (reincarnateTree != null)
-        {
-            reincarnateTree.OnNodePurchased += HandleReincarnatePurchase;
-        }
         
         if (playerDodge != null) playerDodge.OnDodgeStarted += HandleDodgeStarted;
         Gate.OnAnyGateDestroyed += HandleGateDestroyed;
@@ -278,8 +263,7 @@ public class RunTelemetry : MonoBehaviour
 
         OpenRunFile();
 
-        // The context row waits a frame so every scene singleton's Start (save load, purchased-node
-        // re-apply) has run and the counts are real.
+        // The context row waits a frame so every scene singleton's Start (save load) has run.
         StartCoroutine(WriteRunStartNextFrame());
     }
 
@@ -289,25 +273,8 @@ public class RunTelemetry : MonoBehaviour
 
         Wallet wallet = Player.Instance != null ? Player.Instance.Wallet : null;
         string classId = SaveSystem.Load().equippedArmourSet;
-        string detail = Invariant($"startWave={RunState.StartingWave};class={classId};gold={(wallet != null ? wallet.Coins : 0)};goldNodes={CountOwned(goldTree)};reincNodes={CountOwned(reincarnateTree)}");
-        AppendRow("run_start", wave: Invariant($"{RunState.StartingWave}"), runSeconds: "0", detail: detail);
-    }
-
-    private static int CountOwned(ISkillTreeService service)
-    {
-        if (service == null || service.Tree == null)
-        {
-            return 0;
-        }
-        int owned = 0;
-        foreach (SkillNode node in service.Tree.Nodes)
-        {
-            if (service.IsPurchased(node.id))
-            {
-                owned++;
-            }
-        }
-        return owned;
+        string detail = Invariant($"startWave={RunSession.CurrentWave};class={classId};gold={(wallet != null ? wallet.Coins : 0)}");
+        AppendRow("run_start", wave: Invariant($"{RunSession.CurrentWave}"), runSeconds: "0", detail: detail);
     }
 
     private void Unbind()
@@ -338,14 +305,6 @@ public class RunTelemetry : MonoBehaviour
         {
             inputReader.onAttackDeactivated -= HandleAttackReleased;
         }
-        if (goldTree != null)
-        {
-            goldTree.OnNodePurchased -= HandleGoldPurchase;
-        }
-        if (reincarnateTree != null)
-        {
-            reincarnateTree.OnNodePurchased -= HandleReincarnatePurchase;
-        }
         
         if (playerDodge != null) playerDodge.OnDodgeStarted -= HandleDodgeStarted;
         Gate.OnAnyGateDestroyed -= HandleGateDestroyed;
@@ -357,8 +316,6 @@ public class RunTelemetry : MonoBehaviour
         inputReader = null;
         controller = null;
         swordTrigger = null;
-        goldTree = null;
-        reincarnateTree = null;
     }
 
     // ---- event handlers ----
@@ -420,7 +377,7 @@ public class RunTelemetry : MonoBehaviour
         {
             playtestVersion = Application.version,
             classId = classId,
-            startingWave = RunState.StartingWave,
+            startingWave = RunSession.CurrentWave,
             maxWaveReached = wave,
             totalRunTimeSeconds = RunSeconds(),
             fatalEnemy = fatalEnemy,
@@ -473,10 +430,6 @@ public class RunTelemetry : MonoBehaviour
         }
     }
 
-    private void HandleGoldPurchase(SkillNode node, int price) => WritePurchaseRow("gold", node, price);
-
-    private void HandleReincarnatePurchase(SkillNode node, int price) => WritePurchaseRow("reinc", node, price);
-
     private void HandleDodgeStarted() => totalDodges++;
     private void HandleChestDestroyed() => totalChestsDestroyed++;
     private void HandleGateDestroyed(Gate gate)
@@ -522,16 +475,6 @@ public class RunTelemetry : MonoBehaviour
             charged: Invariant($"{chargedAttacks}"),
             sprint: Invariant($"{sprintSeconds:F1}"),
             detail: detail);
-    }
-
-    private void WritePurchaseRow(string tree, SkillNode node, int price)
-    {
-        int wave = gameLoop != null ? gameLoop.CurrentWave : 0;
-        AppendRow("purchase",
-            wave: Invariant($"{wave}"),
-            runSeconds: Invariant($"{RunSeconds():F1}"),
-            cost: Invariant($"{price}"),
-            detail: $"{tree}:{node.id}:{node.displayName}");
     }
 
     private float RunSeconds() => Time.time - runStartTime;

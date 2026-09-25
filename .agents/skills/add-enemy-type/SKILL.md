@@ -50,7 +50,7 @@ The goblin base already carries the full stock component set every enemy inherit
 - **Death is signalled, not destruction**: react via `Health.OnDied`/`IsDead`, never `OnDestroy`/object counts. Enemies become corpses; `CorpseDespawner`/`CorpseManager` clean up later. Any scripted kill goes **through `Health.ReceiveDamage`** so coins/kill-credit/wave-count stay consistent.
 - Don't hand-tune the prefab's `NavMeshAgent` avoidance — `AIMovement` applies the SO's settings in code.
 - A non-humanoid or non-standard rig can't use `EnemyRagdoll` (it walks Humanoid bones) — give it high `impulseResistance` instead and note it.
-- Testing (Editor): DevConsole `DebugSetNextWave` to jump to the unlock wave, `DebugSpawnBurst` for perf, `DebugWipeWave` to clear; `Debug/EnemyZoo.cs`'s gallery scene spawns every roster row with CSV overrides applied — cite these in the manual-verification checklist.
+- Testing (Editor): DevConsole threat override (▲) to reach the row's `minThreat`, the spawn-type picker, +N burst buttons for perf, "Wipe Wave" to clear; `Debug/EnemyZoo.cs`'s gallery scene spawns every roster row with CSV overrides applied — cite these in the manual-verification checklist.
 
 ## Finish protocol
 

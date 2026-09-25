@@ -19,7 +19,7 @@ public static class SaveSystem
     /// <summary>True if the current save file exists on disk.</summary>
     public static bool SaveFileExists => File.Exists(FilePath);
 
-    // A single in-memory SaveData shared by every owner (Wallet, SkillTreeService, …). Without this each
+    // A single in-memory SaveData shared by every owner (Wallet, the Meta Area UIs, …). Without this each
     // caller would hold its own copy and the last one to Save() would clobber the others' fields. Statics
     // persist across scene reloads within a play session and reset when play stops, mirroring how the
     // persisted progress should behave.

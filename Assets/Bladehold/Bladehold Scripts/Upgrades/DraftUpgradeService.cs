@@ -272,12 +272,6 @@ public class DraftUpgradeService : MonoBehaviour
             if (s != null) return s;
         }
 
-        if (SkillTreeService.Instance != null && SkillTreeService.Instance.Tree != null)
-        {
-            Sprite s = SkillTreeService.Instance.Tree.GetIcon(iconName);
-            if (s != null) return s;
-        }
-
         return null;
     }
 

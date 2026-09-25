@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 /// <summary>
 ///     Minimal RFC-4180-ish CSV line splitter shared by the CSV-driven configs
-///     (<see cref="SkillTreeSO" />, <see cref="EnemyRosterSO" />): supports double-quoted fields
+///     (e.g. <see cref="EnemyRosterSO" />): supports double-quoted fields
 ///     with embedded commas and "" escapes.
 /// </summary>
 public static class CsvUtil

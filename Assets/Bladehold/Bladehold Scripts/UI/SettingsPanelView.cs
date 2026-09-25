@@ -443,7 +443,7 @@ public class SettingsPanelView : MonoBehaviour
                 data.ResetProgress();
                 SaveSystem.Save(data);
 
-                RunState.StartingWave = 1; // a fresh save shouldn't resume mid-run.
+                RunSession.ClearRun(); // a fresh save shouldn't resume mid-run.
                 Time.timeScale = GameSettingsService.TargetTimeScale; // ensure the reloaded scene doesn't start paused.
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             },

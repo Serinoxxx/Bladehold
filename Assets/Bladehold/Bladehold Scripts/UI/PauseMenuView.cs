@@ -163,8 +163,6 @@ public class PauseMenuView : MonoBehaviour
 
         Time.timeScale = 1f;
         MMTimeScaleEvent.Reset();
-        Bladehold.UI.MainMenuManager.OpenUpgradesOnLoad = false;
-        RunState.StartingWave = 1;
 
         string sceneName = string.IsNullOrEmpty(mainMenuSceneName) ? "MainMenu" : mainMenuSceneName;
         SceneManager.LoadScene(sceneName);

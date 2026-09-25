@@ -289,14 +289,14 @@ public class DevConsole : MonoBehaviour
 
         if (GUILayout.Button("Wipe Progress & Reload", GUILayout.Height(ButtonHeight)))
         {
-            // Wipe only the progress half of the save (gold, both skill trees, Reincarnate points) —
+            // Wipe only the progress half of the save (currencies, unlocks, meta perks) —
             // settings survive, same as the settings menu's Delete Save. Save() also updates
-            // SaveSystem's in-memory cache, so the reloaded scene's Wallet/tree services Load() the
+            // SaveSystem's in-memory cache, so the reloaded scene's Wallet Load()s the
             // wiped-progress-but-same-settings data.
             SaveData data = SaveSystem.Load();
             data.ResetProgress();
             SaveSystem.Save(data);
-            RunState.StartingWave = 1;
+            RunSession.ClearRun();
             Time.timeScale = GameSettingsService.TargetTimeScale; // ensure normal speed resumes even if something paused time on death.
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }

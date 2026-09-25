@@ -2,12 +2,10 @@ using System.Collections;
 using UnityEngine;
 
 /// <summary>
-///     The Reincarnate "Cavalier" node: when <see cref="StatType.StartMounted" /> is owned, each
-///     run begins with a fresh horse spawned beside the player and the player already in the
-///     saddle. Waits one frame so <c>SkillTreeService</c>/<c>ReincarnateService</c> have re-applied
-///     the saved modifiers first; a scene reload (restart, Reincarnate) naturally re-runs it. The
-///     node also grants riding by itself — see <see cref="PlayerMount.CanRide" />'s code-side OR —
-///     so it keeps working after a Reincarnate wipes the gold tree.
+///     When <see cref="StatType.StartMounted" /> is owned, each run begins with a fresh horse spawned
+///     beside the player and the player already in the saddle. Waits one frame so stat modifiers are
+///     applied first. Dormant: nothing grants StartMounted since the Reincarnate tree was deleted. It
+///     also grants riding by itself — see <see cref="PlayerMount.CanRide" />'s code-side OR.
 /// </summary>
 public class StartMountedSpawner : MonoBehaviour
 {

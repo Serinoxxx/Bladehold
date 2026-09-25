@@ -2,7 +2,7 @@ using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
-///     The Death Nova: a Reincarnate-tree ability. Hooks <see cref="Health.TryPreventDeath" /> on the
+///     The Death Nova (dormant: it was a Reincarnate-tree ability and nothing grants it since plan 08). Hooks <see cref="Health.TryPreventDeath" /> on the
 ///     player's own <see cref="Health" /> so it's asked before every lethal hit is finalized.
 ///
 ///     Unlocking is itself a stat (<see cref="StatType.DeathNovaCharges" />) rather than a hardcoded node-id

@@ -54,10 +54,6 @@ public class DeathScreen : MonoBehaviour
     [SerializeField] private Button nextStageButton;
     [Tooltip("Defeat: wipes the run and returns to the Meta Area.")]
     [SerializeField] private Button returnToMetaButton;
-    [Tooltip("Optional: legacy gold skill-tree panel, kept hidden in Survivors mode.")]
-    [SerializeField] private GameObject goldTreePanel;
-    [Tooltip("Optional: legacy Reincarnate skill-tree panel, kept hidden.")]
-    [SerializeField] private GameObject reincarnateTreePanel;
     [Tooltip("Optional: victory line showing the supply refunded for dismantled towers. Hidden on defeat or when nothing was refunded.")]
     [SerializeField] private TMP_Text towerRefundText;
     [Tooltip("Format for the tower refund line; {0} is the supply amount.")]
@@ -139,10 +135,6 @@ public class DeathScreen : MonoBehaviour
         canvasGroup.interactable = false;
         canvasGroup.blocksRaycasts = false;
 
-        if (reincarnateTreePanel != null)
-        {
-            reincarnateTreePanel.SetActive(false);
-        }
         if (towerRefundText != null)
         {
             towerRefundText.gameObject.SetActive(false);
@@ -322,15 +314,6 @@ public class DeathScreen : MonoBehaviour
 
         if (isSurvivorsMode)
         {
-            if (goldTreePanel != null)
-            {
-                goldTreePanel.SetActive(false);
-            }
-            if (reincarnateTreePanel != null)
-            {
-                reincarnateTreePanel.SetActive(false);
-            }
-
             // Survivors run telemetry & stats
             runSeconds = SurvivorsGameManager.Instance != null ? SurvivorsGameManager.Instance.RunTimer : 0f;
             // The stats panel's "Level Reached" row now shows the wave reached (the XP level system is gone).

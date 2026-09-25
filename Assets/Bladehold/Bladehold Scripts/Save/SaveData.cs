@@ -14,25 +14,6 @@ public class SaveData
     /// <summary>The player's accumulated total gold, persisted across runs.</summary>
     public int totalGold;
 
-    /// <summary>
-    ///     Purchased gold-tree levels as a <b>multiset</b>: a node's id appears once per level owned, so its
-    ///     level is how many times it occurs. Re-applied as stat modifiers on each run by
-    ///     <see cref="SkillTreeService" />, making upgrades permanent meta-progression like gold. Cleared by
-    ///     <see cref="ReincarnateService.BankPointsAndResetGoldTree" /> when the player reincarnates.
-    /// </summary>
-    public List<string> purchasedNodeIds = new List<string>();
-
-    /// <summary>The player's accumulated Reincarnate Points, persisted across runs and never reset.</summary>
-    public int reincarnatePoints;
-
-    /// <summary>
-    ///     Purchased Reincarnate-tree levels, same multiset encoding as <see cref="purchasedNodeIds" /> (one
-    ///     entry per level owned). Re-applied as stat modifiers on each run by
-    ///     <see cref="ReincarnateService" /> — but these survive reincarnating, since the point tree is the
-    ///     permanent progression layer.
-    /// </summary>
-    public List<string> purchasedReincarnateNodeIds = new List<string>();
-
 
     /// <summary>Permanent currency obtained from waves and drops, used to purchase permanent perks.</summary>
     public int goblinBlood;
@@ -136,16 +117,13 @@ public class SaveData
     public float postProcessingExposure = 0f;
 
     /// <summary>
-    ///     Wipes all progress (gold, both skill trees' purchases, Reincarnate points) back to a fresh
+    ///     Wipes all progress (gold, permanent currencies, unlocks, meta perks) back to a fresh
     ///     save while leaving every settings field untouched. Used by the settings menu's Delete Save.
     /// </summary>
     public void ResetProgress()
     {
         SaveData defaults = new SaveData();
         totalGold = defaults.totalGold;
-        reincarnatePoints = defaults.reincarnatePoints;
-        purchasedNodeIds.Clear();
-        purchasedReincarnateNodeIds.Clear();
         highestUnlockedStage = defaults.highestUnlockedStage;
         selectedStage = defaults.selectedStage;
         goblinBlood = defaults.goblinBlood;

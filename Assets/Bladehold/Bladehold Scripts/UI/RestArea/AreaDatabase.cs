@@ -45,7 +45,7 @@ namespace Bladehold.UI
 
     /// <summary>
     ///     Static registry and resolver for area/scene metadata across Bladehold.
-    ///     Pre-populated with the 5 stages from LevelSelectScreenUI and key scenes,
+    ///     Pre-populated with the old 5 stages and key scenes,
     ///     guaranteeing rich "Entering [DisplayName]" and lore text during loading transitions
     ///     even before any custom ScriptableObject assets are wired.
     /// </summary>

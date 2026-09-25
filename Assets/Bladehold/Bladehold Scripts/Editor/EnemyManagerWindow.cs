@@ -7,7 +7,7 @@ using UnityEngine;
 ///     (swap the Sidekick model on the prefab variant), Animation (preview clips / assign overrides),
 ///     Bake (record clips or ragdoll falls to .anim), and Zoo (drive the Enemy Zoo play-mode
 ///     gallery). Edits live in <see cref="EnemyManagerSession" /> until "Save to CSV", so they
-///     survive play-mode round-trips; the CSV write path mirrors <see cref="SkillTreeCsvIO" />.
+///     survive play-mode round-trips.
 /// </summary>
 public class EnemyManagerWindow : EditorWindow
 {

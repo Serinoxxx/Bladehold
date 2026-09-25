@@ -146,64 +146,7 @@ public class SurvivorsPlayerInfoSidebarUI : MonoBehaviour
         }
         spawnedSkillItems.Clear();
 
-        if (SkillTreeService.Instance == null || SkillTreeService.Instance.Tree == null)
-        {
-            PopulateFromDraftService();
-            return;
-        }
-
-        SkillTreeSO tree = SkillTreeService.Instance.Tree;
-        IReadOnlyList<SkillNode> allNodes = tree.Nodes;
-
-        // First pass: Active Weapons
-        foreach (SkillNode node in allNodes)
-        {
-            if (node == null || !node.isActiveWeapon) continue;
-
-            int level = SkillTreeService.Instance.GetLevel(node);
-            if (level <= 0) continue;
-
-            GameObject itemGO;
-            if (skillItemPrefab != null)
-            {
-                itemGO = Instantiate(skillItemPrefab, skillsListContainer);
-            }
-            else
-            {
-                itemGO = CreateDefaultSkillItem(node, level, tree.GetIcon(node.iconName), isWeapon: true);
-            }
-
-            if (itemGO != null)
-            {
-                spawnedSkillItems.Add(itemGO);
-                SetupSkillItemData(itemGO, node, level, tree.GetIcon(node.iconName));
-            }
-        }
-
-        // Second pass: Passives & Upgrades
-        foreach (SkillNode node in allNodes)
-        {
-            if (node == null || node.isActiveWeapon) continue;
-
-            int level = SkillTreeService.Instance.GetLevel(node);
-            if (level <= 0) continue;
-
-            GameObject itemGO;
-            if (skillItemPrefab != null)
-            {
-                itemGO = Instantiate(skillItemPrefab, skillsListContainer);
-            }
-            else
-            {
-                itemGO = CreateDefaultSkillItem(node, level, tree.GetIcon(node.iconName), isWeapon: false);
-            }
-
-            if (itemGO != null)
-            {
-                spawnedSkillItems.Add(itemGO);
-                SetupSkillItemData(itemGO, node, level, tree.GetIcon(node.iconName));
-            }
-        }
+        PopulateFromDraftService();
     }
 
     private void PopulateFromDraftService()
@@ -271,7 +214,7 @@ public class SurvivorsPlayerInfoSidebarUI : MonoBehaviour
         {
             if (tooltip != null)
             {
-                tooltip.Show(node, SkillTreeService.Instance);
+                tooltip.ShowDirect(node.LocalizedDisplayName, node.LocalizedDescription);
             }
         });
         trigger.triggers.Add(enterEntry);

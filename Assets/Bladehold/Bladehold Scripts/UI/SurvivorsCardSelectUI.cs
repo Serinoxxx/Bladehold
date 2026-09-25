@@ -30,7 +30,7 @@ public class SurvivorsCardSelectUI : MonoBehaviour
     [SerializeField] private SurvivorsPlayerInfoSidebarUI sidebar;
 
     [Header("Icon Lookup (optional)")]
-    [Tooltip("Central skill tree icons asset for resolving draft icons when SkillTreeService is absent.")]
+    [Tooltip("Central icons asset for resolving draft card icons.")]
     [SerializeField] private SkillTreeIconsSO iconsConfig;
 
     [Header("Click Protection & Transition")]
@@ -204,12 +204,6 @@ public class SurvivorsCardSelectUI : MonoBehaviour
             if (s != null) return s;
         }
 
-        if (SkillTreeService.Instance != null && SkillTreeService.Instance.Tree != null)
-        {
-            Sprite s = SkillTreeService.Instance.Tree.GetIcon(iconName);
-            if (s != null) return s;
-        }
-
         return null;
     }
 
@@ -226,10 +220,6 @@ public class SurvivorsCardSelectUI : MonoBehaviour
                 cardUI.gameObject.SetActive(true);
 
                 int currentLevel = RunSession.GetUpgradeLevel(node.id);
-                if (currentLevel == 0 && SkillTreeService.Instance != null)
-                {
-                    currentLevel = SkillTreeService.Instance.GetLevel(node);
-                }
 
                 Sprite icon = ResolveIcon(node.iconName);
 
@@ -290,17 +280,15 @@ public class SurvivorsCardSelectUI : MonoBehaviour
 
         SkillNode chosenNode = currentOfferedNodes[cardIndex];
 
-        // Apply chosen card upgrade through DraftUpgradeService or fallback
         DraftUpgradeService draftService = DraftUpgradeService.GetOrCreateInstance();
         DraftUpgradeDefinition draftDef = draftService != null ? draftService.GetById(chosenNode.id) : null;
         if (draftDef != null)
         {
             draftService.ApplyUpgrade(draftDef);
         }
-        else if (SkillTreeService.Instance != null)
+        else
         {
-            SkillTreeService.Instance.ApplyFreePurchase(chosenNode.id);
-            Debug.Log($"[SurvivorsCardSelectUI] Selected skill: '{chosenNode.displayName}' (ID: {chosenNode.id}). Granted level {SkillTreeService.Instance.GetLevel(chosenNode)}.");
+            Debug.LogError($"[SurvivorsCardSelectUI] No draft definition for picked card '{chosenNode.id}'.");
         }
 
         if (sidebar != null)

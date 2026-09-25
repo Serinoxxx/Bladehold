@@ -37,7 +37,7 @@ Ordered roughly: assets → prefabs → scene → cosmetics → balance.
 - The happy path, step by step ("Reach wave 5 → a bomber spawns and…").
 - **Negative cases** — things that must *never* happen ("the explosion is never parried", "a chest is never flung"). These catch the subtle regressions.
 - Interactions with existing systems (death/restart, Reincarnate wipe, save/load, Hold the Line, class switch).
-- How to reach the state fast: DevConsole cheats (`DebugSetNextWave`, `DebugWipeWave`, `DebugSpawnBurst`, weapon/draft controls), the `EnemyZoo` gallery scene.
+- How to reach the state fast: DevConsole cheats (threat override, Wipe Wave, spawn picker and +N bursts, weapon/draft controls), the `EnemyZoo` gallery scene.
 
 ## Rules
 

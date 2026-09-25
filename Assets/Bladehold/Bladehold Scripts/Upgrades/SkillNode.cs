@@ -37,11 +37,9 @@ public struct SkillEffect
 }
 
 /// <summary>
-///     One node in the skill tree, parsed from a row of the CSV by <see cref="SkillTreeSO" />. A node is a
-///     single skill that can be upgraded through <see cref="maxLevel" /> levels by purchasing it repeatedly
-///     (each purchase re-applies the node's <see cref="effects" /> at the newly reached level). Buying the
-///     first level reveals linked nodes. A node may instead be a pure connector/unlock node
-///     (effect columns blank).
+///     A draft card as the card UI sees it, built from a <see cref="DraftUpgradeDefinition" /> by
+///     <see cref="DraftUpgradeService.ConvertToSkillNode" />. (The name is left over from the deleted gold
+///     skill tree, whose nodes had the same shape; the tree-only fields below are unused by drafts.)
 /// </summary>
 public class SkillNode
 {
@@ -60,10 +58,9 @@ public class SkillNode
     public string upgradeText = "";
 
     /// <summary>
-    ///     <see cref="Loc" /> key prefix for this node's text, stamped by <see cref="SkillTreeSO" /> from
-    ///     its own key prefix + the node id (e.g. <c>skill.gold.sword_dmg</c>). The UI appends
-    ///     <c>.name</c>/<c>.desc</c>/<c>.upgrade</c> — see the Localized* properties below. Empty when the
-    ///     owning tree has no prefix configured (then everything falls back to the CSV English).
+    ///     <see cref="Loc" /> key prefix for this card's text. The UI appends
+    ///     <c>.name</c>/<c>.desc</c>/<c>.upgrade</c> — see the Localized* properties below. Empty = no
+    ///     localization (everything falls back to the CSV English).
     /// </summary>
     public string locKey = "";
 
@@ -80,8 +77,8 @@ public class SkillNode
         string.IsNullOrEmpty(locKey) || string.IsNullOrEmpty(upgradeText) ? upgradeText : Loc.Get(locKey + ".upgrade", upgradeText);
 
     /// <summary>
-    ///     Name of this node's icon sprite, resolved against the owning <see cref="SkillTreeSO" />'s icon
-    ///     list by <see cref="SkillTreeSO.GetIcon" />. Empty = no icon.
+    ///     Name of this card's icon sprite, resolved by <see cref="DraftUpgradeService.GetIcon" />
+    ///     (Resources/SkillTreeIcons). Empty = no icon.
     /// </summary>
     public string iconName = "";
 
@@ -89,8 +86,7 @@ public class SkillNode
     public int maxLevel = 1;
 
     /// <summary>
-    ///     Cost of each level, precomputed by <see cref="SkillTreeSO" /> from the authored base cost and
-    ///     growth multiplier. Index 0 = level 1. Length == <see cref="maxLevel" />.
+    ///     Cost of each level (tree-era field; drafts are free). Index 0 = level 1.
     /// </summary>
     public int[] costPerLevel = { 0 };
 
@@ -118,8 +114,7 @@ public class SkillNode
     ///     True if this node is unlocked from the start — a tree entry point. Set from the CSV's <c>root</c>
     ///     column. This is the <b>only</b> thing that makes a node a root; an empty <see cref="prereqs" />
     ///     list no longer implies rootness, so a linked node can never become an accidental root. A tree may
-    ///     have any number of roots (the gold tree has one, <c>sword_dmg</c>; the Reincarnate tree has one
-    ///     per independent branch).
+    ///     have any number of roots (tree-era field).
     /// </summary>
     public bool isRoot;
 
@@ -127,9 +122,7 @@ public class SkillNode
     ///     Ids of the nodes this one is linked to. Links are <b>symmetric and stored on both ends</b> (the
     ///     editor writes each link into both nodes' lists), so this list is the node's full set of
     ///     neighbours. A non-root node is revealed once ANY linked node reaches level 1. There's no arrow on
-    ///     the connector — buying either endpoint's first level unlocks the other. (Reveal also honours a
-    ///     one-sided link via <see cref="SkillTreeSO.GetDependents" />, in case a link was hand-authored on
-    ///     only one end.)
+    ///     the connector — buying either endpoint's first level unlocks the other. (Tree-era field.)
     /// </summary>
     public List<string> prereqs = new List<string>();
 

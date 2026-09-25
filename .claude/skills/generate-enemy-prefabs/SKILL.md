@@ -102,7 +102,7 @@ re-applies structure/wiring, never overwrites existing SO assets, and refreshes 
 2. Read `Enemies/EnemyPrefabMap.asset`: the id → prefab entry exists.
 3. Re-run the generator: `git status` shows no changes (idempotency).
 4. Play-mode behaviour checks go in the plan's `plans/editor/` checklist (`/editor-wiring-todo`):
-   DevConsole `DebugSetNextWave` to the unlock wave, or the EnemyZoo gallery.
+   DevConsole spawn-type picker / threat override, or the EnemyZoo gallery.
 
 ## Finish protocol
 

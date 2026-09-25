@@ -155,7 +155,7 @@ public class EnemyRow
 }
 
 /// <summary>
-///     CSV read/write for the Enemy Manager, mirroring <see cref="SkillTreeCsvIO" />: reads the
+///     CSV read/write for the Enemy Manager: reads the
 ///     roster's private csv/hasHeaderRow via SerializedObject, and saves by rewriting the file,
 ///     reimporting it, and calling <see cref="EnemyRosterSO.Reload" /> so parse errors surface in the
 ///     console immediately. The original header line is preserved verbatim (it is hand-aligned).
@@ -246,7 +246,7 @@ public static class EnemyCsvIO
                 {
                     sb.Append(',');
                 }
-                sb.Append(SkillTreeCsvIO.Escape(row.cells[c]));
+                sb.Append(Escape(row.cells[c]));
             }
             sb.Append(newline);
         }
@@ -255,5 +255,19 @@ public static class EnemyCsvIO
         AssetDatabase.ImportAsset(path);
         roster.Reload();
         return true;
+    }
+
+    /// <summary>Quotes a field only when it contains a comma, quote or newline (quotes doubled).</summary>
+    private static string Escape(string field)
+    {
+        if (string.IsNullOrEmpty(field))
+        {
+            return "";
+        }
+        if (field.IndexOf(',') < 0 && field.IndexOf('"') < 0 && field.IndexOf('\n') < 0)
+        {
+            return field;
+        }
+        return "\"" + field.Replace("\"", "\"\"") + "\"";
     }
 }

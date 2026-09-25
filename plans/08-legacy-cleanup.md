@@ -12,7 +12,7 @@
   - Keep `RunTelemetry`: real playtest CSVs replace the sim as the balance source.
   - Delete the `balance-sim` skill from `.claude/skills/` and `.agents/skills/`, and drop its mentions from the root `CLAUDE.md` skill list, `plans/README.md`, `AI_HARNESS_HANDOFF.md`, and the `add-enemy-type` / `generate-enemy-prefabs` / `unity-editor-mcp` / `add-skill-line` skills.
   - Its replacement (a spawn-budget report) is in plan 11.
-- [ ] **Gold skill tree + Reincarnate:** `SkillTreeService`, `SkillTreeView`, `SkillNodeView`, `SkillTreeSO` and assets, `ReincarnateService`, `Reincarnate/`, `SkillTreeCsvEditorWindow`, `DeathScreen` reincarnate bits. Mark the `SaveData` fields `[Obsolete]` or drop them; old saves tolerate missing fields.
+- [x] **Gold skill tree + Reincarnate:** `SkillTreeService`, `SkillTreeView`, `SkillNodeView`, `SkillTreeSO` and assets, `ReincarnateService`, `Reincarnate/`, `SkillTreeCsvEditorWindow`, `DeathScreen` reincarnate bits. Mark the `SaveData` fields `[Obsolete]` or drop them; old saves tolerate missing fields.
   - Check `Player/` components that were gold-tree lines (VampiricBlade, DamageBlocker, Parry, Counterstrike, DeathNova, GoldOnDeathCollector, GoldenGoblin stats): some may be reused by drafts or perks, so keep whatever `DraftUpgrades.csv`/perks reference.
 - [ ] **`HoldTheLineBonus`** (in every sector, inert).
 - [ ] **`GameLoopManager`:** rest-gate path (`HandleGateInteracted`, `OnRestGateOpened`, gate `CanInteract`), `SpawnEndgameBoss`, `siegebreakerBossPrefab`, the Second Wind stub. Note that Second Wind is a real meta perk: implement it via `Health.TryPreventDeath` if it isn't elsewhere, rather than just deleting it.
