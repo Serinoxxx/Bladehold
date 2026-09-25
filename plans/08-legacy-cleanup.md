@@ -7,8 +7,12 @@
 - [ ] **`Waves/WaveSpawner.cs`** and its satellites (`WaveUI`, `GateAssaultSpawner`, `WaveIntermissionUI`, `ElementNodeSpawner` if dead):
   - First move the static `ApplyDefinition` (used by `SurvivorsSpawner`) somewhere sensible.
   - Replace the ~20 `WaveSpawner.Instance` null-checks (DeathScreen, DevConsole, MinionSpawner, RunTelemetry, …) with `GameLoopManager`/`SurvivorsSpawner` equivalents or delete them.
+- [ ] **Balance sim** (decided 2026-09-25: retire it, don't port it). Do this **before or with** the gold skill tree below, because the sim's `UpgradePolicy` spends gold on `SkillTreeSO` and won't compile without it.
+  - Delete `Editor/BalanceSim/` (all of it, including `CalibrationLoader`), `Config/SimProfiles.csv`, `Config/SimPacingRules.csv`, `Config/SimSectorPacingRules.csv` (and their `.meta`s), and the `BalanceReports/` line in `.gitignore`.
+  - Keep `RunTelemetry`: real playtest CSVs replace the sim as the balance source.
+  - Delete the `balance-sim` skill from `.claude/skills/` and `.agents/skills/`, and drop its mentions from the root `CLAUDE.md` skill list, `plans/README.md`, `AI_HARNESS_HANDOFF.md`, and the `add-enemy-type` / `generate-enemy-prefabs` / `unity-editor-mcp` / `add-skill-line` skills.
+  - Its replacement (a spawn-budget report) is in plan 11.
 - [ ] **Gold skill tree + Reincarnate:** `SkillTreeService`, `SkillTreeView`, `SkillNodeView`, `SkillTreeSO` and assets, `ReincarnateService`, `Reincarnate/`, `SkillTreeCsvEditorWindow`, `DeathScreen` reincarnate bits. Mark the `SaveData` fields `[Obsolete]` or drop them; old saves tolerate missing fields.
-  - **The balance sim depends on it:** `Editor/BalanceSim/UpgradePolicy.cs`, `SimWorld` (`goldTree`, `prePurchasedNodes`) and the `node.<id>` override spend gold on `SkillTreeSO`. Swap in a stand-in for drafts/towers or strip the upgrade policy in the same change, or the sim stops compiling (noted by plan 06).
   - Check `Player/` components that were gold-tree lines (VampiricBlade, DamageBlocker, Parry, Counterstrike, DeathNova, GoldOnDeathCollector, GoldenGoblin stats): some may be reused by drafts or perks, so keep whatever `DraftUpgrades.csv`/perks reference.
 - [ ] **`HoldTheLineBonus`** (in every sector, inert).
 - [ ] **`GameLoopManager`:** rest-gate path (`HandleGateInteracted`, `OnRestGateOpened`, gate `CanInteract`), `SpawnEndgameBoss`, `siegebreakerBossPrefab`, the Second Wind stub. Note that Second Wind is a real meta perk: implement it via `Health.TryPreventDeath` if it isn't elsewhere, rather than just deleting it.

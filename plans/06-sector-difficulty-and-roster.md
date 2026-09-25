@@ -35,6 +35,8 @@ Also changed: row `maxConcurrent` caps now always apply. The spawner's `ignoreRo
 
 ## Balance sim
 
+> **Retired after this run** (2026-09-25): it models a dead economy and no current player kit, and porting it isn't worth the effort. Plan 08 deletes it; plan 11 replaces it with a spawn-budget report that computes the numbers directly. Future balance comes from playtests + RunTelemetry.
+
 Run 2026-09-25: `balance-sim` in the new **sector mode** (`-simSectors`), seed 12345, 300 trials, each tier simmed on its own from full HP (`-simStartTier N -simWaves 5`). "Today" is a what-if approximating the old spawner: no floor, no quota growth, no row caps, only the original five types. Reports are in `BalanceReports/p06/` (git-ignored).
 
 **Read these as relative numbers only.** The sim's player is a naked 50-HP swordsman: it spends gold on the dead gold skill tree (no CSV, so nothing is bought) and has no drafts, towers, bow, dash, armour or perks. So every `SimSectorPacingRules.csv` verdict fails or warns: bad/average profiles die on waves 2-3 at every tier, and good fails `good_clears_tier1` (0.57 vs 0.95). Those are sim-calibration failures, not curve findings.

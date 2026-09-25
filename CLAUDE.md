@@ -115,7 +115,7 @@ Still in the codebase, not reachable in live build scenes:
 
 ## Project skills
 
-Recipes in `.claude/skills/`; invoke the matching one before starting: `add-enemy-type`, `generate-enemy-prefabs`, `balance-sim`, `compile-check`, `unity-editor-mcp`, `editor-wiring-todo` (writes a plan's `plans/editor/` checklist), `editor-wire` (executes one via MCP). (`add-player-class` and `add-skill-line` target removed/dead systems and are due for retirement or rewrite.) `.agents/skills/` has more (changelog, maintain-mechanic-tests, test-mechanic, add-ultimate-handler, …) that haven't been ported yet.
+Recipes in `.claude/skills/`; invoke the matching one before starting: `add-enemy-type`, `generate-enemy-prefabs`, `compile-check`, `unity-editor-mcp`, `editor-wiring-todo` (writes a plan's `plans/editor/` checklist), `editor-wire` (executes one via MCP). (`add-player-class`, `add-skill-line` and `balance-sim` target removed/dead systems and are due for retirement or rewrite; don't use them. The balance sim is retired and deleted in plan 08.) `.agents/skills/` has more (changelog, maintain-mechanic-tests, test-mechanic, add-ultimate-handler, …) that haven't been ported yet.
 
 ## Plans
 

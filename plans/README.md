@@ -31,14 +31,14 @@ About 22 weeks at roughly 10 hrs/week, so around 220 hours of your time. AI mult
 1. **Stabilise** (plans 01, 02, 03, 04, 08, 10, 11, 12). Make the loop work end to end with no broken systems. Exit test: you play Meta → map → 3 sectors → die → Meta, and nothing is broken or confusing.
 2. **Demo slice** (plans 05, 06, 07). Demo gating, difficulty curve, the full enemy roster in waves. Exit test: a demo build (a real player build, not the Editor) where a friend can play 30-45 min unassisted.
 3. **Readability pass** (plan 09 plus new UI plans). UI polish with human review, text readability, controller support, localization plumbing. Exit test: whole demo playable on a controller, every string localized, UI signed off by you.
-4. **Content + balance.** Draft cards, shop items, tower upgrades/synergies, enemy and pacing balance using the `balance-sim` skill plus real playtests. Exit test: 5+ external playtesters, balance changes driven by their data (RunTelemetry CSVs).
+4. **Content + balance.** Draft cards, shop items, tower upgrades/synergies, enemy and pacing balance from real playtests, sanity-checked by the spawn-budget report (plan 11). Exit test: 5+ external playtesters, balance changes driven by their data (RunTelemetry CSVs).
 5. **Ship prep.** Store page, trailer, capsule art, press/creator outreach, Steam build pipeline, final bug bash. Check Valve's Feb 2027 Next Fest dates for the registration, press-preview and final-asset cutoffs; they land weeks before the event, so this phase starts no later than early January.
 
 ## Who does what
 
 - **Give to AI:**
   - Bug fixes, refactors, code reviews, legacy removal.
-  - Tests, data plumbing (CSV/SO/`RunSession`), balance-sim runs.
+  - Tests, data plumbing (CSV/SO/`RunSession`), spawn-budget reports.
   - Draft first versions of card/shop/upgrade *text and numbers* for you to edit.
   - UI mockups (prefab-based, flagged for review).
   - Editor wiring via Unity MCP when connected.
