@@ -44,7 +44,7 @@ public enum StatType
     GoldenGoblinGoldBonusPercent,
     /// <summary>Fraction (0-1) of the gold currently on the ground that's auto-collected when the player dies.</summary>
     GoldOnDeathPickupPercent,
-    /// <summary>Extra gold-drop bonus banked per consecutive "Hold the Line" wave (0.05 = +5% per wave, added as a Percent modifier on GoldDropMultiplier). Base 0.05 registered by HoldTheLineBonus; the Reincarnate "Greedy Stand" node raises it.</summary>
+    /// <summary>Unused: HoldTheLineBonus was deleted in plan 08. Kept so serialized StatType values don't shift.</summary>
     HoldTheLineGoldPerWave,
 
     /// <summary>Per-spawn chance (0-1) that a goblin spawns as an Impulse Goblin (drops an Impulse Orb on death). 0 = the Impulse feature locked.</summary>

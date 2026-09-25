@@ -439,19 +439,10 @@ public class SetupSurvivorsSceneTool : EditorWindow
         Health portalHealth = portalGo != null ? portalGo.GetComponent<Health>() : null;
         Interactable portalInteractable = portalGo != null ? portalGo.GetComponent<Interactable>() : null;
         SurvivorsSpawner spawnerComp = enemySpawnerGo != null ? enemySpawnerGo.GetComponent<SurvivorsSpawner>() : null;
-        HoldTheLineBonus htlBonus = enemySpawnerGo != null ? enemySpawnerGo.GetComponent<HoldTheLineBonus>() : null;
         SurvivorsObjectiveManager objManagerComp = objectivesGo != null ? objectivesGo.GetComponent<SurvivorsObjectiveManager>() : null;
 
         Light dirLight = Object.FindAnyObjectByType<Light>();
         UnityEngine.Rendering.Volume globalVol = Object.FindAnyObjectByType<UnityEngine.Rendering.Volume>();
-
-        // 1. Spawner & HoldTheLineBonus
-        if (htlBonus != null && sidekickT != null)
-        {
-            var htlSo = new SerializedObject(htlBonus);
-            htlSo.FindProperty("stats").objectReferenceValue = sidekickT.GetComponent<PlayerStats>();
-            htlSo.ApplyModifiedProperties();
-        }
 
         // 2. DefeatSlayerObjective
         if (objectivesGo != null && enemySpawnerGo != null)

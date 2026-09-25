@@ -6,7 +6,7 @@ using UnityEngine;
 ///     (range + dot-product test — the <see cref="Parry" /> facing-cone shape, pointed the other
 ///     way), their <see cref="StatType.MoveSpeed" /> is slowed by a Percent modifier. There is no
 ///     <c>RemoveModifier</c> on <see cref="PlayerStats" />, so leaving the gaze adds the exact
-///     negative back (the <c>HoldTheLineBonus</c> idiom); <see cref="PlayerMoveSpeedBinder" /> picks
+///     negative back; <see cref="PlayerMoveSpeedBinder" /> picks
 ///     the change up live via <c>OnStatChanged</c>.
 ///
 ///     A <b>static refcount</b> guards the modifier so two Medusas can't stack the player to a
@@ -207,7 +207,7 @@ public class MedusaGazeAura : MonoBehaviour
         activeGazeCount--;
         if (activeGazeCount == 0 && stats != null)
         {
-            // Add the exact negative back — the HoldTheLineBonus cancellation idiom.
+            // Add the exact negative back to cancel the modifier.
             stats.AddModifier(StatType.MoveSpeed, ModifierKind.Percent, appliedSlowPercent);
         }
 
