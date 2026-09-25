@@ -36,7 +36,7 @@ Unity 6 game, codenamed **Bladehold**. A 3D action roguelite: one hero, a melee 
 - **Loadout** (`Player/PlayerWeaponManager.cs`, `WeaponDefinitionSO` assets in `Bladehold Config/Weapons/`): 1 melee (sword, axe, mace) + 1 ranged (bow, throwing axe). Sword + bow are free; the rest cost Orcish Metal. Wand/staff are `isLockedForDemo`.
 - Hold-to-charge attacks (`PlayerAttack`), dash with charges (`PlayerDodge`), shared ranged ammo pool (`PlayerAmmo`, synced through `RunSession.CurrentAmmo`), armour sets (`PlayerArmourManager` + `ArmourSetSO`).
 - **Ultimates** (`PlayerUltimateController` + `IUltimateHandler` implementations): locked until the weapon's ultimate draft card is picked, one per run.
-- **Mounts** (`Player/PlayerSummonMount.cs`, `Horse/MountDefinitionSO`): summon is gated by `StatType.SummonMountUnlocked`, which nothing raises yet.
+- **Mounts** (`Player/PlayerSummonMount.cs`, `Horse/MountDefinitionSO`): summon is gated by `StatType.SummonMountUnlocked`, which nothing raises yet, and it's bound to the Synty `Dismount` action (Q / pad East), not X.
 - **Interaction** is `[E]` / gamepad west via `Player/PlayerInteraction.cs` + `IInteractable`.
 
 ### In-run progression
@@ -54,7 +54,8 @@ Build towards these; don't "fix" code back to the old behaviour.
 - **Towers don't carry between sectors.** On leaving a sector, refund each tower's remaining supply to the player instead of restoring towers by plot index (`TowerPlotManager` + `RunSession.SavedDefenses` currently transfer them).
 - **Sectors get harder deeper into the campaign.** Stronger enemy types spawn in later sectors, but basic goblin fodder keeps spawning alongside them for the power fantasy. Today every sector resets to waves 1-5 with the same pacing asset.
 - **The newer enemies belong in sector waves**: Bulwark, Bannerman, Powder Keg and co. Today `SurvivorsSpawner` only admits goblin/brute/big_ork/bubbler/bomber via each wave's `allowedEnemyIds`.
-- **Mounts** show on pedestals but are locked for the demo.
+- **Mount summon is available from the start** on **X**, keeping the cast time, ride duration and cooldown. The *variants* (Frost Strider etc.) show on pedestals but are locked for the demo.
+- **Fishing Pond is just you and your bow:** no mount summon and no ultimate there.
 - **Demo scope (not final):** the full loop, but restricted to limited weapons/armours/mounts and **tier-1 meta perks only**, with the campaign cut off before the final battles (roughly halfway through the map). The aim is for players to die a few times and go round the meta loop.
 
 ## Building, running, testing
@@ -72,12 +73,7 @@ Build towards these; don't "fix" code back to the old behaviour.
 - **Commit and push directly to `main`.** Solo project, no feature branches or PRs unless asked. This overrides the global "never work on main" rule.
 - Commit as **`serinoxxx <lancemclachlan@gmail.com>`** (set in the repo's local git config).
 - `CHANGELOG.md` holds player-facing release notes per `bundleVersion` (`ProjectSettings/ProjectSettings.asset`), grouped as New Features / Fixes / Balance Changes / General Changes. Plain language, no internal names.
-- **Pushing headless**: GitHub auth routes through `gh auth git-credential` (Git Credential Manager pops a GUI and hangs). If `gh` isn't on PATH or the token expired, pushes fail. Re-auth with `gh auth login`. To re-apply the config:
-  ```
-  git config --global --unset-all "credential.https://github.com.helper"
-  git config --global --add "credential.https://github.com.helper" ""
-  git config --global --add "credential.https://github.com.helper" "!gh auth git-credential"
-  ```
+- **Pushing headless**: GitHub auth routes through the `gh` CLI (Git Credential Manager pops a GUI and hangs). `gh` is installed at `C:\Program Files\GitHub CLI\gh.exe`; a session started before the install won't have it on PATH, so restart or use the full path. Setup/repair: `gh auth login --hostname github.com --git-protocol https --web` (as **Serinoxxx**), then `gh auth setup-git`.
 
 ## Unity Editor wiring tasks
 
@@ -128,7 +124,7 @@ Recipes in `.claude/skills/`; invoke the matching one before starting: `add-enem
 
 ## Plans
 
-`plans/` (gitignored, local) holds the work queue. `plans/README.md` is the index and roadmap; each numbered plan is sized for one agent session. `plans/PARKING_LOT.md` collects new ideas during the feature freeze.
+`plans/` (tracked in git) holds the work queue. `plans/README.md` is the index and roadmap; each numbered plan is sized for one agent session. `plans/PARKING_LOT.md` collects new ideas during the feature freeze.
 
 ## Nested docs
 
