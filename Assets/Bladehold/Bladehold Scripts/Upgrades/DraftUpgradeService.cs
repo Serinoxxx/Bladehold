@@ -346,12 +346,6 @@ public class DraftUpgradeService : MonoBehaviour
                 if (hasUltimate) continue;
             }
 
-            // Fortress upgrades are built via battlefield Tower Plots, not random draft cards
-            if (def.category == DraftCategory.Fortress)
-            {
-                continue;
-            }
-
             candidates.Add(def);
         }
 
@@ -412,15 +406,6 @@ public class DraftUpgradeService : MonoBehaviour
                     ConfigureUltimateHandler(player, def.id);
                 }
                 Debug.Log($"[DraftUpgradeService] Unlocked Weapon Ultimate: '{def.displayName}' (ID: {def.id})!");
-            }
-        }
-
-        // Handle Fortress Upgrades
-        if (def.category == DraftCategory.Fortress)
-        {
-            if (FortDefenseManager.Instance != null)
-            {
-                FortDefenseManager.Instance.HandleSkillNodePurchased(def.id);
             }
         }
 
@@ -548,7 +533,7 @@ public class DraftUpgradeService : MonoBehaviour
 
     /// <summary>
     ///     Debug/Cheat method: directly sets a draft upgrade's level, accurately applying
-    ///     or reverting stat modifiers and updating RunSession / Ultimate / Fortress state.
+    ///     or reverting stat modifiers and updating RunSession / Ultimate state.
     /// </summary>
     public void DebugSetDraftLevel(DraftUpgradeDefinition def, int targetLevel)
     {
@@ -604,14 +589,6 @@ public class DraftUpgradeService : MonoBehaviour
             {
                 RunSession.ActiveUltimateId = null;
                 player.Stats.SetBase(StatType.UltimateUnlocked, 0f);
-            }
-        }
-
-        if (def.category == DraftCategory.Fortress && targetLevel > 0)
-        {
-            if (FortDefenseManager.Instance != null)
-            {
-                FortDefenseManager.Instance.HandleSkillNodePurchased(def.id);
             }
         }
     }

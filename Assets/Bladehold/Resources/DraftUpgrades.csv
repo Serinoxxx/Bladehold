@@ -25,18 +25,6 @@ mace_heavy_stun,Concussive Impact,Weapon,mace,,0,4,Mace attacks stun enemies wit
 mace_seismic_shock,Earthshaker,Weapon,mace,,0,4,Fully charged strikes unleash a radial ground shockwave.,Increases shockwave damage,MaceShockwaveDamage,Flat,15|30|45|60,shockwave,,,
 mace_colossal_force,Colossal Force,Weapon,mace,,0,4,Attacks launch enemies with massive knockback force.,Increases knockback multiplier,MaceKnockbackMultiplier,Percent,0.5|1.0|1.5|2.0,knockback_plus,,,
 mace_earthshaker_ult,Seismic Quake,Weapon,mace,,1,1,Slam the earth to stun and crush surrounding enemies in a 10m quake. Press Q at 100% charge.,,UltimateUnlocked;UltimateMaceEarthquakeUnlocked,Flat;Flat,1;1,shockwave,,,
-fort_arrow_slits,Arrow Slits,Fortress,,,0,1,Adds automated arrow slits to the fortress.,,FortArrowSlitsUnlocked,Flat,1,fort_arrow_slit,,,
-fort_reinforced_slits,Reinforced Slits,Fortress,,,0,4,Adds more automated arrow slits to the fortress.,Adds more automated arrow slits,FortArrowSlitsCount,Flat,1|2|3|4,fort_arrow_slit,,,
-fort_sniper_nest,Sniper Nest,Fortress,,,0,1,Fires heavy long-range arrows for 200% damage when no foes are near.,,FortSniperNestUnlocked,Flat,1,fort_arrow_slit,,,
-fort_focus_fire,Focus Fire,Fortress,,,0,4,Targets hit by player ranged attacks take bonus damage from arrow slits.,Increases arrow slit focus damage,FortFocusFireBonus,Percent,0.5|0.7|0.9|1.1,precision,,,
-fort_boiling_oil,Boiling Oil,Fortress,,,0,1,Pours boiling oil on enemies near the walls.,,FortBurningOilUnlocked,Flat,1,fort_burning_oil,,,
-fort_fiery_pitch,Fiery Pitch,Fortress,,,0,1,Boiling oil ignites all enemies caught in its pool.,,FortFieryPitchUnlocked,Flat,1,fort_burning_oil,,,
-fort_scalding_heat,Scalding Heat,Fortress,,,0,4,Enemies within boiling oil take increased damage from all sources.,Increases oil damage vulnerability,FortScaldingHeatBonus,Percent,0.5|0.7|0.9|1.1,fort_burning_oil,,,
-fort_expanded_vats,Expanded Vats,Fortress,,,0,4,Increases boiling oil pool radius.,Further expands oil pool radius,FortExpandedVatsPercent,Percent,0.8|1.2|1.6|2.0,fort_burning_oil,,,
-fort_spike_barricades,Spike Barricades,Fortress,,,0,1,Surrounds the fortress with spike barricades.,,FortSpikesUnlocked,Flat,1,fort_spikes,,,
-fort_concussive_spikes,Concussive Spikes,Fortress,,,0,4,Barricade impacts stun enemies.,Increases stun duration,FortConcussiveSpikesDuration,Flat,0.5|1.0|1.5|2.0,fort_spikes,,,
-fort_shove,Shove,Fortress,,,0,4,Knocks enemies back 2m toward their spawn point periodically.,Decreases shove interval,FortShoveInterval,Flat,7|6|5|4,fort_spikes,,,
-fort_vulnerability_field,Vulnerability Field,Fortress,,,0,4,Enemies within the barricade zone take increased damage from all sources.,Increases barricade zone damage vulnerability,FortVulnerabilityFieldBonus,Percent,0.5|1.0|1.5|2.0,fort_spikes,,,
 elem_fire_blazing_trail,Blazing Trail,Elemental,,Fire,0,4,Dashing leaves a fire trail dealing DPS.,Increases fire trail DPS,FireBlazingTrailDPS,Flat,2|3|4|5,flamearrow,SLOT_MOBILITY,,
 elem_fire_combustion,Combustion,Elemental,,Fire,0,4,Attacks ignite enemies for continuous burn DPS.,Increases ignition burn DPS,FireCombustionDPS,Flat,2|3|4|5,imbue_fire,SLOT_MELEE,,
 elem_fire_kindling,Kindling,Elemental,,Fire,0,4,Ignited targets take bonus damage from all sources.,Increases damage bonus against ignited foes,FireKindlingDamageBonus,Percent,0.5|0.7|0.9|1.1,imbue_fire,,,
@@ -54,8 +42,6 @@ elem_ice_ice_shards,Ice Shards,Elemental,,Ice,0,4,Ranged kills shatter enemies i
 duo_thermal_shock,Thermal Shock,Elemental,,,0,1,Enemies afflicted by Fire and Ice take massive burst damage.,,DuoThermalShock,Flat,1,icebreaker,,TRUE,Fire|Ice
 duo_plasma_overload,Plasma Overload,Elemental,,,0,1,Fire and Lightning cause explosions.,,DuoPlasmaOverload,Flat,1,explodeheads,,TRUE,Fire|Lightning
 duo_superconductor,Superconductor,Elemental,,,0,1,Ice and Lightning create larger chain lightning.,,DuoSuperconductor,Flat,1,imbue_lightning,,TRUE,Ice|Lightning
-fort_electrified_oil,Electrified Oil,Fortress,,,0,1,Boiling Oil combined with Lightning electrifies the oil.,,FortElectrifiedOil,Flat,1,fort_burning_oil,,TRUE,Lightning
-fort_permafrost_spikes,Permafrost Spikes,Fortress,,,0,1,Spiked Barricades combined with Ice chill enemies.,,FortPermafrostSpikes,Flat,1,fort_spikes,,TRUE,Ice
 elem_frost_arrows,Frost Arrows,Elemental,,Ice,0,1,Arrow Towers fire frost arrows that chill and slow enemies.,,TowerFrostArrows,Flat,1,freezedraw,SLOT_FORTRESS,,
 elem_glacial_catapult,Glacial Catapult,Elemental,,Ice,0,1,Catapults create slippery ground that makes enemies slip over. Players slide with boosted speed and agility.,,TowerSlipperyGround,Flat,1,icebreaker,SLOT_FORTRESS,,
 elem_lightning_arrows,Lightning Arrows,Elemental,,Lightning,0,1,Lightning arrows make Arrow Towers fire 50% faster.,,TowerLightningArrows;TowerArrowFireRateBonus,Flat;Percent,1;0.50,swiftarrow,SLOT_FORTRESS,,

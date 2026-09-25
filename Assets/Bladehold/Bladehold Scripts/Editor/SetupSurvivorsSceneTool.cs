@@ -151,14 +151,12 @@ public class SetupSurvivorsSceneTool : EditorWindow
         GameObject cameraRigGo = EnsurePrefabInstance("CameraRig", "Assets/Bladehold/Bladehold Prefabs/Camera/CameraRig.prefab", activeScene);
         GameObject enemySpawnerGo = EnsurePrefabInstance("EnemySpawner", "Assets/Bladehold/Bladehold Prefabs/Waves/EnemySpawner.prefab", activeScene);
         GameObject objectivesGo = EnsurePrefabInstance("SurvivorsObjectives", "Assets/Bladehold/Bladehold Prefabs/Objectives/SurvivorsObjectives.prefab", activeScene);
-        GameObject fortSocketsGo = EnsurePrefabInstance("Fort Defense Sockets", "Assets/Bladehold/Bladehold Prefabs/Fort/FortDefenseSockets.prefab", activeScene);
 
         GameObject gameLoopGo = EnsurePrefabInstance("GameLoopManager", "Assets/Bladehold/Bladehold Prefabs/Managers/GameLoopManager.prefab", activeScene);
         GameObject survivorsGameMgrGo = EnsurePrefabInstance("SurvivorsGameManager", "Assets/Bladehold/Bladehold Prefabs/Managers/SurvivorsGameManager.prefab", activeScene);
         GameObject gameStatsGo = EnsurePrefabInstance("GameStats", "Assets/Bladehold/Bladehold Prefabs/Managers/GameStats.prefab", activeScene);
         GameObject draftServiceGo = EnsurePrefabInstance("DraftUpgradeService", "Assets/Bladehold/Bladehold Prefabs/Managers/DraftUpgradeService.prefab", activeScene);
         GameObject enemyIntroGo = EnsurePrefabInstance("EnemyIntroController", "Assets/Bladehold/Bladehold Prefabs/Managers/EnemyIntroController.prefab", activeScene);
-        GameObject fortManagerGo = EnsurePrefabInstance("FortDefenseManager", "Assets/Bladehold/Bladehold Prefabs/Managers/FortDefenseManager.prefab", activeScene);
         GameObject mmTimeMgrGo = EnsurePrefabInstance("MMTimeManager", "Assets/Bladehold/Bladehold Prefabs/Managers/MMTimeManager.prefab", activeScene);
 
         // 5. Intermission Anchors
@@ -170,7 +168,7 @@ public class SetupSurvivorsSceneTool : EditorWindow
 
         // 6. NavMesh Layout for Spawner, Objectives, and Intermission
         Vector3 mapCenter = playerGo != null ? playerGo.transform.position : clearingCenter;
-        LayoutSpatialPoints(enemySpawnerGo, objectivesGo, portalGo, mapCenter, powerupSpawnGo, banner0Go, banner1Go, banner2Go, intermissionCamGo, fortSocketsGo);
+        LayoutSpatialPoints(enemySpawnerGo, objectivesGo, portalGo, mapCenter, powerupSpawnGo, banner0Go, banner1Go, banner2Go, intermissionCamGo);
 
         // 7. Wire Cross-Object References
         WireAllDependencies(playerGo, portalGo, hudGo, gameMenuGo, pauseMenuCanvasGo, deathScreenGo,
@@ -310,7 +308,7 @@ public class SetupSurvivorsSceneTool : EditorWindow
     }
 
     private static void LayoutSpatialPoints(GameObject spawnerGo, GameObject objectivesGo, GameObject portalGo, Vector3 center,
-        GameObject powerupSpawnGo, GameObject banner0Go, GameObject banner1Go, GameObject banner2Go, GameObject intermissionCamGo, GameObject fortSocketsGo)
+        GameObject powerupSpawnGo, GameObject banner0Go, GameObject banner1Go, GameObject banner2Go, GameObject intermissionCamGo)
     {
         // 1. Spawner Points
         if (spawnerGo != null)
@@ -413,29 +411,6 @@ public class SetupSurvivorsSceneTool : EditorWindow
             }
         }
 
-        // 4. Fort Defense Sockets
-        if (fortSocketsGo != null && portalGo != null)
-        {
-            Vector3 pPos = portalGo.transform.position;
-            Vector3 pFwd = portalGo.transform.forward;
-            Vector3 pRight = portalGo.transform.right;
-
-            Transform sBoil = fortSocketsGo.transform.Find("Socket_Gate_BoilingOil");
-            if (sBoil != null) sBoil.position = pPos + Vector3.up * 4.5f + pFwd * 0.5f;
-
-            SetNavPoint(fortSocketsGo.transform.Find("Socket_Ground_Spikes_1"), pPos + pFwd * 3.0f - pRight * 2.5f);
-            SetNavPoint(fortSocketsGo.transform.Find("Socket_Ground_Spikes_2"), pPos + pFwd * 3.0f);
-            SetNavPoint(fortSocketsGo.transform.Find("Socket_Ground_Spikes_3"), pPos + pFwd * 3.0f + pRight * 2.5f);
-
-            Transform sWall1 = fortSocketsGo.transform.Find("Socket_Wall_ArrowSlit_1");
-            if (sWall1 != null) sWall1.position = pPos + Vector3.up * 3.0f - pRight * 4.0f;
-
-            Transform sWall2 = fortSocketsGo.transform.Find("Socket_Wall_ArrowSlit_2");
-            if (sWall2 != null) sWall2.position = pPos + Vector3.up * 3.0f + pRight * 4.0f;
-
-            Transform sWall3 = fortSocketsGo.transform.Find("Socket_Wall_ArrowSlit_3");
-            if (sWall3 != null) sWall3.position = pPos + Vector3.up * 5.5f;
-        }
     }
 
     private static void SetNavPoint(Transform t, Vector3 targetPos)

@@ -52,7 +52,7 @@ public class BallistaBoltProjectile : MonoBehaviour
         {
             if (hit.collider == null) continue;
             if (Player.Instance != null && hit.collider.transform.root == Player.Instance.transform.root) continue;
-            if (hit.collider.GetComponentInParent<FortDefense>() != null || hit.collider.GetComponentInParent<FortDefenseSocket>() != null) continue;
+            if (hit.collider.GetComponentInParent<DefenseStructure>() != null || hit.collider.GetComponentInParent<TowerPlot>() != null) continue;
 
             Health targetHealth = hit.collider.GetComponentInParent<Health>();
             if (targetHealth != null && !targetHealth.IsDead && !hitTargets.Contains(targetHealth))

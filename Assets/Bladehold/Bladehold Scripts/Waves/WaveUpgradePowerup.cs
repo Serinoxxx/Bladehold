@@ -4,7 +4,7 @@ using UnityEngine;
 /// <summary>
 ///     Interactable world powerup that materializes in the arena between waves.
 ///     When interacted with via [E], opens the 3-card draft system filtered to a randomly selected
-///     DraftCategory (Weapon, Elemental, or Fortress). Selecting a card consumes the powerup and
+///     DraftCategory (Weapon or Elemental). Selecting a card consumes the powerup and
 ///     signals the game loop to proceed to the next wave.
 /// </summary>
 [RequireComponent(typeof(Interactable))]
@@ -102,7 +102,7 @@ public class WaveUpgradePowerup : MonoBehaviour
         {
             BannerBountyType.WeaponDraft => "Weapon Upgrade",
             BannerBountyType.ElementDraft => "Elemental Upgrade",
-            BannerBountyType.FortressDraft => "Fortress Upgrade",
+            BannerBountyType.FortressDraft => "Supply Cache",
             BannerBountyType.GoldCache => "Gold Cache",
             BannerBountyType.OrcishMetal => "Orcish Metal",
             BannerBountyType.GoblinBlood => "Goblin Blood",

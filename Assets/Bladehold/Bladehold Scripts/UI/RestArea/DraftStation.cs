@@ -3,7 +3,7 @@ using UnityEngine;
 
 /// <summary>
 ///     Station 3 in the Rest Area: The Draft Station.
-///     Awards a 3-card draft for a randomly selected category (Weapon, Fortress, or Elemental).
+///     Awards a 3-card draft for a randomly selected category (Weapon or Elemental).
 ///     The plinth, light, and interaction prompt dynamically reflect the chosen category.
 ///     Enforces Targeted Weapon Pool (only equipped weapons) and Elemental Lock.
 /// </summary>
@@ -60,7 +60,6 @@ public class DraftStation : MonoBehaviour
         {
             DraftCategory.Weapon => new Color(1f, 0.4f, 0.1f, 1f),      // Fiery Orange
             DraftCategory.Elemental => new Color(0.2f, 0.8f, 1f, 1f),   // Cyan / Ice Lightning
-            DraftCategory.Fortress => new Color(0.9f, 0.8f, 0.2f, 1f),  // Golden Amber
             _ => Color.white
         };
 

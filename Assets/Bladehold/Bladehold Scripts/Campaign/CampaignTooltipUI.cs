@@ -268,7 +268,7 @@ public class CampaignTooltipUI : MonoBehaviour
         {
             case BannerBountyType.WeaponDraft: return "Weapon Upgrade Draft";
             case BannerBountyType.ElementDraft: return "Elemental Powerup Draft";
-            case BannerBountyType.FortressDraft: return "Fortress Wall Upgrade";
+            case BannerBountyType.FortressDraft: return "Supply Cache";
             case BannerBountyType.GoldCache: return "Gold Cache Bounty";
             case BannerBountyType.OrcishMetal: return "Orcish Metal Cache";
             case BannerBountyType.GoblinBlood: return "Goblin Blood Phials";

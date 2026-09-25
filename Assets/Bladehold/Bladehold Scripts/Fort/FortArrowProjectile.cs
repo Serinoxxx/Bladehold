@@ -109,8 +109,8 @@ public class FortArrowProjectile : MonoBehaviour
         {
             // Check if player or fort defense structure
             if ((Player.Instance != null && hit.collider.transform.root == Player.Instance.transform.root) ||
-                hit.collider.GetComponentInParent<FortDefense>() != null ||
-                hit.collider.GetComponentInParent<FortDefenseSocket>() != null)
+                hit.collider.GetComponentInParent<DefenseStructure>() != null ||
+                hit.collider.GetComponentInParent<TowerPlot>() != null)
             {
                 transform.position = nextPos;
                 return;

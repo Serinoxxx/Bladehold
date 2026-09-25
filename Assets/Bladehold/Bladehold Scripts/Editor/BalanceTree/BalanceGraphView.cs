@@ -261,7 +261,7 @@ public class BalanceGraphNode : Node
             case BalanceNodeKind.Card:
                 if (n.Elements.Count > 1) return new Color(0.45f, 0.25f, 0.5f);
                 if (n.Elements.Count == 1) return ElementColor(n.Elements.First());
-                return n.Category.Equals("Fortress", StringComparison.OrdinalIgnoreCase) ? new Color(0.35f, 0.28f, 0.2f) : new Color(0.28f, 0.28f, 0.34f);
+                return new Color(0.28f, 0.28f, 0.34f);
             default: return Color.gray;
         }
     }

@@ -1,16 +1,37 @@
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
 ///     Coordinates all TowerPlots across the battlefield scene.
 ///     Towers never leave their sector: on victory they're dismantled for a supply refund
 ///     (<see cref="DismantleAllForRefund" />), on player death they're simply cleared.
+///
+///     Also runs the two tower-wide Elemental draft effects: Tesla Spire
+///     (<see cref="StatType.LightningTeslaSpireDamage" />, a lightning bolt every few seconds from the
+///     built tower nearest an enemy) and Permafrost (<see cref="StatType.IcePermafrostUnlocked" />, a
+///     chilling aura around every built tower). Both need at least one built tower.
 /// </summary>
 public class TowerPlotManager : MonoBehaviour
 {
     public static TowerPlotManager Instance { get; private set; }
 
     [SerializeField] private List<TowerPlot> plots = new List<TowerPlot>();
+
+    [Header("Elemental Tower Effects")]
+    [SerializeField] private float teslaInterval = 5f;
+    [SerializeField] private float teslaRange = 35f;
+    [SerializeField] private float permafrostInterval = 1f;
+    [SerializeField] private float permafrostRadius = 8f;
+    [SerializeField] private float permafrostSlowAmount = 0.35f;
+    [SerializeField] private float permafrostSlowDuration = 2f;
+    [Tooltip("Optional: played at the struck enemy's position when Tesla Spire fires (VFX/SFX).")]
+    [SerializeField] private MMF_Player teslaStrikeFeedback;
+
+    private float nextTeslaTime;
+    private float nextPermafrostTime;
+    private readonly Collider[] overlapBuffer = new Collider[64];
+    private readonly HashSet<Health> processedTargets = new HashSet<Health>();
 
     public IReadOnlyList<TowerPlot> Plots => plots;
 
@@ -132,5 +153,110 @@ public class TowerPlotManager : MonoBehaviour
     private void HandlePlayerDied()
     {
         ClearAllDefenses();
+    }
+
+    private void Update()
+    {
+        PlayerStats stats = Player.Instance != null ? Player.Instance.Stats : null;
+        if (stats == null || Player.Instance.Health == null || Player.Instance.Health.IsDead)
+        {
+            return;
+        }
+
+        if (Time.time >= nextTeslaTime && stats.GetValue(StatType.LightningTeslaSpireDamage) > 0f)
+        {
+            nextTeslaTime = Time.time + teslaInterval;
+            FireTeslaSpire(stats);
+        }
+
+        if (Time.time >= nextPermafrostTime && stats.GetValue(StatType.IcePermafrostUnlocked) > 0f)
+        {
+            nextPermafrostTime = Time.time + permafrostInterval;
+            processedTargets.Clear();
+            foreach (TowerPlot p in plots)
+            {
+                if (p != null && p.CurrentDefense != null)
+                {
+                    ApplyPermafrostAura(p.CurrentDefense.transform.position);
+                }
+            }
+        }
+    }
+
+    /// <summary>One lightning bolt from whichever built tower is nearest an enemy in range.</summary>
+    private void FireTeslaSpire(PlayerStats stats)
+    {
+        Health target = null;
+        Vector3 origin = Vector3.zero;
+        float bestSqr = float.MaxValue;
+        foreach (TowerPlot p in plots)
+        {
+            if (p == null || p.CurrentDefense == null) continue;
+            Vector3 towerPos = p.CurrentDefense.transform.position;
+            processedTargets.Clear();
+            int count = Physics.OverlapSphereNonAlloc(towerPos, teslaRange, overlapBuffer);
+            for (int i = 0; i < count; i++)
+            {
+                Health h = EnemyHealthFrom(overlapBuffer[i]);
+                overlapBuffer[i] = null;
+                if (h == null) continue;
+                float sqr = (h.transform.position - towerPos).sqrMagnitude;
+                if (sqr < bestSqr)
+                {
+                    bestSqr = sqr;
+                    target = h;
+                    origin = towerPos;
+                }
+            }
+        }
+        if (target == null) return;
+
+        float damage = stats.GetValue(StatType.LightningTeslaSpireDamage);
+        float allMult = stats.GetValue(StatType.AllDamageMultiplier);
+        if (allMult > 0f) damage *= allMult;
+        float pyreBonus = stats.GetValue(StatType.FireFortressPyreBonus);
+        if (pyreBonus > 0f && target.GetComponent<EnemyStatusManager>()?.HasStatus("Fire") == true)
+        {
+            damage *= 1f + pyreBonus;
+        }
+
+        target.ReceiveDamage(new Damage
+        {
+            value = damage,
+            type = DamageType.elemental,
+            elementId = "Lightning",
+            isPlayerDamage = true,
+            sourcePosition = origin,
+            source = Player.Instance.Damageable
+        });
+        EnemyStatusManager.GetOrAdd(target)?.ApplyStatus("Lightning");
+        if (teslaStrikeFeedback != null)
+        {
+            teslaStrikeFeedback.PlayFeedbacks(target.transform.position);
+        }
+    }
+
+    private void ApplyPermafrostAura(Vector3 center)
+    {
+        int count = Physics.OverlapSphereNonAlloc(center, permafrostRadius, overlapBuffer);
+        for (int i = 0; i < count; i++)
+        {
+            Health h = EnemyHealthFrom(overlapBuffer[i]);
+            overlapBuffer[i] = null;
+            if (h == null) continue;
+            SlowStatus.GetOrAdd(h)?.ApplySlow(permafrostSlowAmount, permafrostSlowDuration);
+            EnemyStatusManager.GetOrAdd(h)?.ApplyStatus("Ice");
+        }
+    }
+
+    /// <summary>The live enemy Health behind a collider, once per sweep (<see cref="processedTargets" />).</summary>
+    private Health EnemyHealthFrom(Collider hit)
+    {
+        if (hit == null) return null;
+        Health h = hit.GetComponentInParent<Health>();
+        if (h == null || h.IsDead || !processedTargets.Add(h)) return null;
+        if (h == Player.Instance.Health || h.CompareTag("Player")) return null;
+        if (h.GetComponentInParent<DefenseStructure>() != null || h.GetComponentInParent<Gate>() != null) return null;
+        return h;
     }
 }

@@ -141,9 +141,6 @@ public static class DefensesRevampSetup
             GameObject spikesModel = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/Fort/Fort_Spikes.prefab");
             GameObject spikeObj = spikesModel != null ? Object.Instantiate(spikesModel) : new GameObject("Defense_SpikeTrap");
             spikeObj.name = "Defense_SpikeTrap";
-            // Remove legacy FortDefense / SpikeDefense
-            FortDefense legacyFd = spikeObj.GetComponent<FortDefense>();
-            if (legacyFd != null) Object.DestroyImmediate(legacyFd);
             SpikeTrapDefense std = spikeObj.AddComponent<SpikeTrapDefense>();
             SetSerializedField(std, "repairSfx", repairSfx);
             SetSerializedField(std, "upgradeSfx", upgradeSfx);
@@ -162,8 +159,6 @@ public static class DefensesRevampSetup
             GameObject oilModel = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/Fort/Fort_BoilingOil.prefab");
             GameObject oilObj = oilModel != null ? Object.Instantiate(oilModel) : new GameObject("Defense_OilVat");
             oilObj.name = "Defense_OilVat";
-            FortDefense legacyFd = oilObj.GetComponent<FortDefense>();
-            if (legacyFd != null) Object.DestroyImmediate(legacyFd);
             OilVatDefense ovd = oilObj.AddComponent<OilVatDefense>();
             SetSerializedField(ovd, "repairSfx", repairSfx);
             SetSerializedField(ovd, "upgradeSfx", upgradeSfx);

@@ -537,7 +537,6 @@ public class BalanceTreeEditorWindow : EditorWindow
         {
             TableRow(false, category, Count(cards), Count(picks));
         }
-        EditorGUILayout.LabelField("Fortress cards are never drafted (towers replaced them).", EditorStyles.wordWrappedMiniLabel);
     }
 
     private static string Count(int n) => n == 0 ? "<color=#FFA500>0</color>" : n.ToString();

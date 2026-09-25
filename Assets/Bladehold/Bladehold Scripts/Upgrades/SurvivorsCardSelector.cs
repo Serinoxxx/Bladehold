@@ -39,18 +39,13 @@ public class SurvivorsCardSelector : MonoBehaviour
     private SkillTreeService TreeService => SkillTreeService.Instance != null ? SkillTreeService.Instance : UnityEngine.Object.FindAnyObjectByType<SkillTreeService>();
 
     /// <summary>
-    ///     Classifies a skill tree node into a DraftCategory (Fortress, Elemental, or Weapon).
+    ///     Classifies a skill tree node into a DraftCategory (Elemental or Weapon).
     /// </summary>
     public static DraftCategory GetNodeCategory(SkillNode node)
     {
         if (node == null || string.IsNullOrEmpty(node.id)) return DraftCategory.Weapon;
 
         string id = node.id.ToLowerInvariant();
-
-        if (id.StartsWith("fort_") || id.Contains("barricade") || id.Contains("gate"))
-        {
-            return DraftCategory.Fortress;
-        }
 
         if (id.StartsWith("imbue_") || id.Contains("flame") || id.Contains("freeze") || id.Contains("ice") || id.Contains("lightning") || id.Contains("fire") || id == "imbue_impulse")
         {
@@ -296,11 +291,6 @@ public class SurvivorsCardSelector : MonoBehaviour
                 success = service.ApplyFreePurchase(node.id);
                 Debug.Log($"[SurvivorsCardSelector] Selected card: '{node.displayName}' (ID: {node.id}). Granted level {service.GetLevel(node)}.");
             }
-        }
-
-        if (FortDefenseManager.Instance != null)
-        {
-            FortDefenseManager.Instance.HandleSkillNodePurchased(node.id);
         }
 
         if (SurvivorsGameManager.Instance != null)

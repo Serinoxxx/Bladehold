@@ -4,6 +4,5 @@
 public enum DraftCategory
 {
     Weapon,
-    Fortress,
     Elemental
 }

@@ -93,7 +93,7 @@ public class SurvivorsCardSelectUI : MonoBehaviour
 
     /// <summary>
     ///     Opens the card selection modal, pauses gameplay, and populates 3 card choices.
-    ///     Can be targeted to a specific DraftCategory (Weapon, Elemental, Fortress).
+    ///     Can be targeted to a specific DraftCategory (Weapon or Elemental).
     /// </summary>
     public void OpenDraft(DraftCategory? category = null, Action onComplete = null)
     {
@@ -131,7 +131,6 @@ public class SurvivorsCardSelectUI : MonoBehaviour
                 {
                     DraftCategory.Weapon => "WEAPON UPGRADE",
                     DraftCategory.Elemental => "ELEMENTAL UPGRADE",
-                    DraftCategory.Fortress => "FORTRESS UPGRADE",
                     _ => "UPGRADE DRAFT"
                 };
                 headerText.text = $"<color=#FFD700>{catName}</color>\n<size=20>Choose 1 of 3 upgrades</size>";
@@ -318,11 +317,6 @@ public class SurvivorsCardSelectUI : MonoBehaviour
         {
             SkillTreeService.Instance.ApplyFreePurchase(chosenNode.id);
             Debug.Log($"[SurvivorsCardSelectUI] Selected skill: '{chosenNode.displayName}' (ID: {chosenNode.id}). Granted level {SkillTreeService.Instance.GetLevel(chosenNode)}.");
-        }
-
-        if (FortDefenseManager.Instance != null)
-        {
-            FortDefenseManager.Instance.HandleSkillNodePurchased(chosenNode.id);
         }
 
         // Consume one draft

@@ -50,7 +50,6 @@ public class DraftTester : MonoBehaviour
         GUILayout.BeginHorizontal();
         if (GUILayout.Button("Weapon")) currentCategoryFilter = DraftCategory.Weapon;
         if (GUILayout.Button("Elemental")) currentCategoryFilter = DraftCategory.Elemental;
-        if (GUILayout.Button("Fortress")) currentCategoryFilter = DraftCategory.Fortress;
         GUILayout.EndHorizontal();
 
         GUILayout.Space(10);

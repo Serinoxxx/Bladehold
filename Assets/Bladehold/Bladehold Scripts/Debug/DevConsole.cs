@@ -197,11 +197,6 @@ public class DevConsole : MonoBehaviour
             filterAllDrafts = false;
             draftFilter = DraftCategory.Elemental;
         }
-        if (GUILayout.Toggle(!filterAllDrafts && draftFilter == DraftCategory.Fortress, "Fort", GUI.skin.button, GUILayout.Height(24f)))
-        {
-            filterAllDrafts = false;
-            draftFilter = DraftCategory.Fortress;
-        }
         GUILayout.EndHorizontal();
 
         GUILayout.Space(4f);

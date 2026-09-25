@@ -117,13 +117,13 @@ public class ArrowTowerDefense : DefenseStructure
         if (!ConsumeSupply()) return;
 
         Vector3 spawnPos = firePoint != null ? firePoint.position : transform.position + Vector3.up * 2.5f;
-        Vector3 targetCenter = ArrowSlitDefense.GetTargetAimPosition(target);
+        Vector3 targetCenter = TargetLead.GetTargetAimPosition(target);
         Vector3 aimPoint = targetCenter;
 
         if (leadTarget)
         {
-            Vector3 targetVelocity = ArrowSlitDefense.GetTargetVelocity(target);
-            if (ArrowSlitDefense.TryCalculateIntercept(spawnPos, arrowSpeed, targetCenter, targetVelocity, maxPredictionTime, out Vector3 predictedPoint))
+            Vector3 targetVelocity = TargetLead.GetTargetVelocity(target);
+            if (TargetLead.TryCalculateIntercept(spawnPos, arrowSpeed, targetCenter, targetVelocity, maxPredictionTime, out Vector3 predictedPoint))
             {
                 aimPoint = predictedPoint;
             }

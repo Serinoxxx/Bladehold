@@ -1201,28 +1201,6 @@ public static class WeaponReachBenchmark
             }
 
             UnityEngine.Object.DestroyImmediate(dummyTarget);
-
-            // 10G: Draft Upgrades Filtering (Zero Fortress Cards in Random Draft)
-            if (DraftUpgradeService.Instance != null)
-            {
-                List<DraftUpgradeDefinition> eligible = DraftUpgradeService.Instance.GetCandidateUpgrades(DraftCategory.Fortress, 50);
-                int fortressInDraft = eligible != null ? eligible.Count : 0;
-
-                if (fortressInDraft == 0)
-                {
-                    sb.AppendLine("  - Fortress Draft Exclusion: 0 Fortress cards returned by GetCandidateUpgrades (re-routed to battlefield plots). [PASSED]");
-                    passedCount++;
-                }
-                else
-                {
-                    sb.AppendLine($"  - [FAIL] Found {fortressInDraft} Fortress cards returned by GetCandidateUpgrades!");
-                    failedCount++;
-                }
-            }
-            else
-            {
-                sb.AppendLine("  - DraftUpgradeService Instance not found, skipped draft pool query assertion.");
-            }
         }
         catch (Exception ex)
         {
@@ -2158,7 +2136,7 @@ public static class WeaponReachBenchmark
             float arrowSpeed = 26f;
             Vector3 targetPos = new Vector3(10f, 0f, 0f);
             Vector3 targetVel = new Vector3(0f, 0f, 4f); // Moving perpendicular
-            bool hasIntercept = ArrowSlitDefense.TryCalculateIntercept(shooterPos, arrowSpeed, targetPos, targetVel, 2.0f, out Vector3 predictedAim);
+            bool hasIntercept = TargetLead.TryCalculateIntercept(shooterPos, arrowSpeed, targetPos, targetVel, 2.0f, out Vector3 predictedAim);
 
             if (hasIntercept && predictedAim.z > 0.5f && predictedAim.x == targetPos.x)
             {

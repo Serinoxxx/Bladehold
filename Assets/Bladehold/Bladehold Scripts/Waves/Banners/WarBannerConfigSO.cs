@@ -15,7 +15,7 @@ public enum BannerBountyType
 {
     None,
     WeaponDraft,
-    FortressDraft,
+    FortressDraft, // Pays a Supply Cache now; the name stays because the value is serialized.
     ElementDraft,
     GoldCache,
     OrcishMetal,

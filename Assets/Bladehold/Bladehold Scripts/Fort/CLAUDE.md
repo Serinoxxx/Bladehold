@@ -10,7 +10,7 @@
   - `[E]` on a tower refills it from the player's pool. Once it's full, `[E]` upgrades it instead (max level 3). Refill and upgrade work any time, not just during prep.
 - **`DefenseAssemblyAnimation`**: ghost preview plus the piece-drop / ground-emerge build animation.
 - **`TowerPlotManager`**: owns the plots. Towers **never carry between sectors**. On victory, `GameLoopManager.TriggerVictory` calls `DismantleAllForRefund()`, which pays each tower's `DismantleRefund` (remaining supply + supply spent upgrading it) into `RunSession.InRunSupply`; the victory screen shows the total. On player death the towers are just cleared. Every sector starts with empty plots.
+  - It also runs the two tower-wide Elemental cards: **Tesla Spire** (a bolt every 5s from the built tower nearest an enemy) and **Permafrost** (a chilling aura around every built tower). Both need a built tower.
+- `TargetLead`: shared projectile-leading maths (aim point, target velocity, intercept).
 
-## Legacy
-
-`FortDefense`, `FortDefenseManager`, `FortDefenseSocket`, `ArrowSlitDefense`, `BurningOilDefense`, `SpikeDefense` are the old socketed fortress. They're still in scenes, and some draft cards still apply to them (`DraftUpgradeService`, `SurvivorsCardSelectUI`), but plots replaced them. The Fortress draft category is excluded from drafts for the same reason.
+The old socketed fortress (`FortDefense*`, `ArrowSlitDefense`, …) and the Fortress draft category were deleted in plan 08.
