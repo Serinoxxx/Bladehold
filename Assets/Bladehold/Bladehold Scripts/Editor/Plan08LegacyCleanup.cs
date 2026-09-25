@@ -16,6 +16,7 @@ using UnityEngine;
 ///        that have tower plots but no manager. Each scene is re-saved, which also rewrites the old
 ///        binary castle scenes as text (the project is Force Text).
 ///     3. Deletes the legacy prefab assets once nothing instances them.
+///     MainMenu also loses its dead character-select, level-select and upgrades screens.
 /// </summary>
 public static class Plan08LegacyCleanup
 {
@@ -29,6 +30,13 @@ public static class Plan08LegacyCleanup
         "Assets/Bladehold/Bladehold Prefabs/UI/SkillNode.prefab",
         "Assets/Bladehold/Bladehold Prefabs/UI/SkillNode Reincarnate.prefab",
         "Assets/Bladehold/Bladehold Prefabs/UI/SkillNodeConnector.prefab",
+        "Assets/Bladehold/Bladehold Prefabs/UI/MetaSkillCard.prefab",
+    };
+
+    /// <summary>MainMenu objects for the deleted character select, level select and gold-tree upgrades screens.</summary>
+    private static readonly string[] DeadMainMenuObjects =
+    {
+        "CharacterSelectScreen", "CharacterSelectScreen_OLD", "LevelSelectScreen", "Screen_Upgrades", "Button_Upgrades",
     };
 
     [MenuItem("Bladehold/Maintenance/Plan 08 Legacy Cleanup")]
@@ -85,6 +93,10 @@ public static class Plan08LegacyCleanup
             var scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
 
             int removedInstances = 0, removedScripts = 0;
+            if (Path.GetFileNameWithoutExtension(path) == "MainMenu")
+            {
+                removedInstances += RemoveDeadMainMenuObjects(scene, report, ref problems);
+            }
             foreach (GameObject root in scene.GetRootGameObjects())
             {
                 removedInstances += RemoveLegacyInstances(root, legacy, report, ref problems);
@@ -119,6 +131,29 @@ public static class Plan08LegacyCleanup
         report.AppendLine(problems == 0 ? "Done, no problems." : $"Done with {problems} problem(s); see the !! lines.");
         if (problems == 0) Debug.Log(report.ToString());
         else Debug.LogError(report.ToString());
+    }
+
+    private static int RemoveDeadMainMenuObjects(UnityEngine.SceneManagement.Scene scene, StringBuilder report, ref int problems)
+    {
+        int removed = 0;
+        foreach (GameObject root in scene.GetRootGameObjects())
+        {
+            foreach (Transform t in root.GetComponentsInChildren<Transform>(true).Where(t => DeadMainMenuObjects.Contains(t.name)).ToArray())
+            {
+                if (t == null) continue; // already gone with a destroyed parent
+                try
+                {
+                    Object.DestroyImmediate(t.gameObject);
+                    removed++;
+                }
+                catch (System.Exception e)
+                {
+                    problems++;
+                    report.AppendLine($"  !! couldn't remove MainMenu object '{t.name}': {e.Message}");
+                }
+            }
+        }
+        return removed;
     }
 
     /// <summary>Destroys every outermost instance of a legacy prefab under <paramref name="root" />.</summary>

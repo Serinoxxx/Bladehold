@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Bladehold/Bladehold Scenes/MainMenu.unity
+    guid: bf8df976c17c4d544b4105f5c71faabc
+  - enabled: 1
     path: Assets/Bladehold/Bladehold Scenes/Bladehold Rest Area Scene.unity
     guid: 3b7b951e57e8aab44af1e330cf4af0dc
   - enabled: 1
