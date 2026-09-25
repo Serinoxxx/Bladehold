@@ -152,23 +152,6 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
             }
         }
 
-        // Also check for endgame Siegebreaker boss
-        var sgm = SurvivorsGameManager.Instance;
-        if (sgm != null && sgm.HasSurvivedSiege && sgm.SpawnedSiegebreaker != null)
-        {
-            var bossHealth = sgm.SpawnedSiegebreaker.GetComponent<Health>();
-            if (bossHealth != null && !bossHealth.IsDead)
-            {
-                targetBuffer.Add(new ObjectiveWaypointTarget(
-                    sgm.SpawnedSiegebreaker.transform,
-                    worldOffset: new Vector3(0f, 3.0f, 0f),
-                    customIcon: slayerBossIcon,
-                    tintColor: new Color(1f, 0.2f, 0.2f, 1f),
-                    label: "Siegebreaker"
-                ));
-            }
-        }
-
         // Check for depleted defenses (NO SUPPLY)
         foreach (var def in DefenseStructure.AllActive)
         {

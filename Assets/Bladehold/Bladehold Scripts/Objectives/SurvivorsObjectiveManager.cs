@@ -339,7 +339,7 @@ public class SurvivorsObjectiveManager : MonoBehaviour
         OnObjectiveFailed?.Invoke(obj);
     }
 
-    /// <summary>Stops and cleans up all rotating sub-objectives (e.g. when Siegebreaker arrives or game ends).</summary>
+    /// <summary>Stops and cleans up all rotating sub-objectives (e.g. when the game ends).</summary>
     public void StopAllObjectives()
     {
         StopAllCoroutines();

@@ -7,10 +7,9 @@ using UnityEngine.SceneManagement;
 using Unity.Cinemachine;
 
 /// <summary>
-///     Master controller for the overhauled 4-round / 12-wave game loop.
-///     Coordinates round-based enemy unlocks, per-wave random objectives, kill quotas,
-///     30s intermissions with reward drops, 3-wave rest breaks at the gate,
-///     the Round 4 Slayer/Siegebreaker boss, level victory, and death transitions to the Meta Area.
+///     Master controller for a combat sector's 5-wave loop: war-banner pick + tower prep before each
+///     wave, per-wave objectives and kill quotas, bounty rewards, captains on harder tiers, and
+///     victory after wave 5 (towers dismantled for supply, then back to the Campaign Map).
 /// </summary>
 public class GameLoopManager : MonoBehaviour
 {

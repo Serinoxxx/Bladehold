@@ -117,10 +117,6 @@ public class ObjectiveTrackerUI : MonoBehaviour
             {
                 objectiveProgressText.text = $"[Wave Cleared!]\nClaim {GameLoopManager.Instance.ActivePowerup.BountyName} in the arena.";
             }
-            else if (sgm.HasSurvivedSiege)
-            {
-                objectiveProgressText.text = "The Siegebreaker has arrived! Defend the fortress gate!";
-            }
             else if (objectiveManager != null)
             {
                 if (objectiveManager.Phase == SurvivorsObjectivePhase.Cleanup || objectiveManager.CurrentObjective is KillRemainingEnemiesObjective)
@@ -143,18 +139,10 @@ public class ObjectiveTrackerUI : MonoBehaviour
                     var cur = objectiveManager.CurrentObjective;
                     objectiveProgressText.text = $"[{cur.Title}]\n{cur.ProgressText}";
                 }
-                else if (sgm.IsInFinalCountdown)
-                {
-                    objectiveProgressText.text = "Prepare for the final assault! The Siegebreaker approaches...";
-                }
                 else
                 {
                     objectiveProgressText.text = "Prepare for incoming siege objective...";
                 }
-            }
-            else if (sgm.IsInFinalCountdown)
-            {
-                objectiveProgressText.text = "Prepare for the final assault! The Siegebreaker approaches...";
             }
             else
             {

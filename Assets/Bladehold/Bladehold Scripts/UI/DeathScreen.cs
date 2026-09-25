@@ -202,11 +202,7 @@ public class DeathScreen : MonoBehaviour
     private void HandlePlayerDied()
     {
         bool isSurvivorsMode = SurvivorsGameManager.Instance != null;
-        if (isSurvivorsMode && SurvivorsGameManager.Instance.HasSurvivedSiege)
-        {
-            ShowRunOver("SIEGE SURVIVED!", "You survived the 20-minute siege! The next stage is unlocked!");
-        }
-        else if (isSurvivorsMode)
+        if (isSurvivorsMode)
         {
             ShowRunOver("YOU DIDN'T HOLD THE DOOR", "You didn't hold the door...");
         }
@@ -221,15 +217,7 @@ public class DeathScreen : MonoBehaviour
         // Unlike a player death, the player is still alive and controllable — freeze time so the
         // run visibly ends behind the screen. ReturnToMetaScene() restores the timescale.
         Time.timeScale = 0f;
-        bool isSurvivorsMode = SurvivorsGameManager.Instance != null;
-        if (isSurvivorsMode && SurvivorsGameManager.Instance.HasSurvivedSiege)
-        {
-            ShowRunOver("SIEGE SURVIVED!", "You survived the 20-minute siege! The next stage is unlocked!");
-        }
-        else
-        {
-            ShowRunOver(Loc.Get(gateFellTitleKey), Loc.Get(gateFellReasonKey));
-        }
+        ShowRunOver(Loc.Get(gateFellTitleKey), Loc.Get(gateFellReasonKey));
     }
 
     private void ShowRunOver(string title, string failureReason, bool isVictory = false)

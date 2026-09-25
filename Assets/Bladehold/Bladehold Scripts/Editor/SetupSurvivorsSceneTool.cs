@@ -631,26 +631,6 @@ public class SetupSurvivorsSceneTool : EditorWindow
             }
         }
 
-        // 7. SurvivorsGameManager
-        if (survivorsGameMgrGo != null)
-        {
-            var sgm = survivorsGameMgrGo.GetComponent<SurvivorsGameManager>();
-            if (sgm != null)
-            {
-                var sgmSo = new SerializedObject(sgm);
-                if (deathScreenGo != null) sgmSo.FindProperty("deathScreen").objectReferenceValue = deathScreenGo;
-                if (enemySpawnerGo != null)
-                {
-                    Transform spT = enemySpawnerGo.transform.Find("Spawnpoints");
-                    if (spT != null && spT.childCount > 8)
-                    {
-                        sgmSo.FindProperty("bossSpawnPoint").objectReferenceValue = spT.GetChild(8);
-                    }
-                }
-                sgmSo.ApplyModifiedProperties();
-            }
-        }
-
         // 8. EnemyIntroController
         if (enemyIntroGo != null)
         {
