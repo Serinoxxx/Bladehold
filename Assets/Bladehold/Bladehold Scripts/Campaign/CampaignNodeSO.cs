@@ -71,7 +71,23 @@ public class CampaignNodeSO : ScriptableObject
     [Tooltip("Connected forward child nodes available after completing this node.")]
     public List<CampaignNodeSO> nextNodes = new List<CampaignNodeSO>();
 
+    [Tooltip("Clearing this node ends the campaign (end screen, run wiped, back to the Meta Area) even if it has next nodes. Used for the demo cutoff. Nodes with no next nodes always end the campaign.")]
+    public bool endsCampaign = false;
+
     public bool HasCaptain => !string.IsNullOrEmpty(captainName);
     public bool HasClanBuff => clanBuff != null;
     public bool HasRewards => goldReward > 0 || bloodReward > 0 || metalReward > 0 || bountyType != BannerBountyType.None;
+
+    public bool EndsCampaign
+    {
+        get
+        {
+            if (endsCampaign || nextNodes == null) return true;
+            for (int i = 0; i < nextNodes.Count; i++)
+            {
+                if (nextNodes[i] != null) return false;
+            }
+            return true;
+        }
+    }
 }

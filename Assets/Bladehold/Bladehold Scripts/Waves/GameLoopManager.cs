@@ -942,7 +942,7 @@ public class GameLoopManager : MonoBehaviour
         if (CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive)
         {
             Debug.Log("[GameLoopManager] Castle Campaign active: completing sector node and opening Campaign Overview Map...");
-            CampaignManager.Instance.CompleteCurrentNodeAndOpenMap();
+            CampaignManager.Instance.CompleteCurrentNodeAndContinue();
             return;
         }
 

@@ -207,7 +207,7 @@ public class VictoryScreenUI : MonoBehaviour
         if (CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive)
         {
             Debug.Log("[VictoryScreenUI] Proceeding to Campaign Map...");
-            CampaignManager.Instance.CompleteCurrentNodeAndOpenMap();
+            CampaignManager.Instance.CompleteCurrentNodeAndContinue();
         }
         else
         {

@@ -56,57 +56,6 @@ public class CampaignTooltipUI : MonoBehaviour
     }
 
     /// <summary>
-    ///     Allows procedural/editor construction to wire all child text and containers cleanly.
-    /// </summary>
-    public void InitializeReferences(
-        GameObject root,
-        RectTransform rect,
-        CanvasGroup cg,
-        TMP_Text title,
-        TMP_Text subtitle,
-        TMP_Text badgeText,
-        Image badgeBg,
-        GameObject captainSec,
-        TMP_Text captainName,
-        TMP_Text diffTier,
-        TMP_Text diffSkulls,
-        TMP_Text clanBuff,
-        GameObject rewardsSec,
-        TMP_Text rewardsSummary,
-        GameObject goldBox,
-        TMP_Text goldText,
-        GameObject bloodBox,
-        TMP_Text bloodText,
-        GameObject metalBox,
-        TMP_Text metalText,
-        TMP_Text lore,
-        TMP_Text actionPrompt)
-    {
-        rootContainer = root;
-        tooltipRect = rect;
-        canvasGroup = cg;
-        titleText = title;
-        subtitleText = subtitle;
-        nodeTypeBadgeText = badgeText;
-        nodeTypeBadgeBg = badgeBg;
-        captainSection = captainSec;
-        captainNameText = captainName;
-        difficultyTierText = diffTier;
-        difficultySkullsText = diffSkulls;
-        clanBuffText = clanBuff;
-        rewardsSection = rewardsSec;
-        rewardsSummaryText = rewardsSummary;
-        goldContainer = goldBox;
-        goldRewardText = goldText;
-        bloodContainer = bloodBox;
-        bloodRewardText = bloodText;
-        metalContainer = metalBox;
-        metalRewardText = metalText;
-        loreDescriptionText = lore;
-        actionPromptText = actionPrompt;
-    }
-
-    /// <summary>
     ///     Populates and renders the tooltip at the target screen/anchored position.
     /// </summary>
     public void Show(CampaignNodeSO node, CampaignNodeButtonUI.NodeVisualStatus status, Vector2 targetScreenPos)

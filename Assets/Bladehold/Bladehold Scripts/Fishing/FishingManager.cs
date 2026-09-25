@@ -359,14 +359,15 @@ public class FishingManager : MonoBehaviour
         if (sessionMetal > 0) RunSession.AddOrcishMetal(sessionMetal);
         if (sessionDiamondBones > 0) RunSession.AddDiamondFishBones(sessionDiamondBones);
 
-        // 3. Complete campaign node
-        if (CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive)
+        // 3. Complete the campaign node and head back to the map (through the loading screen)
+        if (CampaignManager.Instance.IsCampaignActive)
         {
-            CampaignManager.Instance.CompleteCurrentNode();
+            CampaignManager.Instance.CompleteCurrentNodeAndContinue();
         }
-
-        // 4. Load Campaign Map scene
-        SceneManager.LoadScene("Bladehold Campaign Map Scene");
+        else
+        {
+            CampaignManager.Instance.OpenOverviewMap();
+        }
     }
 
     private void SetState(FishingState state)

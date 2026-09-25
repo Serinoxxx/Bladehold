@@ -78,7 +78,7 @@ public class RestAreaGate : MonoBehaviour
         if (CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive)
         {
             Debug.Log("[RestAreaGate] Castle Campaign active: completing stop scene and opening Campaign Overview Map...");
-            CampaignManager.Instance.CompleteCurrentNodeAndOpenMap();
+            CampaignManager.Instance.CompleteCurrentNodeAndContinue();
             return;
         }
 

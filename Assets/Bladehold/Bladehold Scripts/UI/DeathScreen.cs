@@ -72,12 +72,17 @@ public class DeathScreen : MonoBehaviour
     [SerializeField] private string victoryButtonText = "PROCEED TO CAMPAIGN MAP";
     [Tooltip("Label for the button when returning to meta scene upon defeat.")]
     [SerializeField] private string defeatButtonText = "RETURN TO META AREA";
+    [Tooltip("Headline when the cleared node ends the campaign (final boss or demo cutoff).")]
+    [SerializeField] private string campaignCompleteTitle = "CAMPAIGN COMPLETE!";
+    [Tooltip("Victory button label when the campaign is over: it wipes the run and returns to the Meta Area.")]
+    [SerializeField] private string campaignCompleteButtonText = "RETURN TO SANCTUARY";
 
     public static DeathScreen Instance { get; private set; }
 
     private Health playerHealth;
     private bool shown = false;   // latch: the run only ends once, whichever signal fires first
     private bool anyError = false;
+    private bool isCampaignComplete = false;
 
     private void Awake()
     {
@@ -174,12 +179,16 @@ public class DeathScreen : MonoBehaviour
     }
 
     /// <summary>
-    ///     Public entrypoint to display the victory screen when all waves are cleared.
+    ///     Public entrypoint to display the victory screen when a sector or boss is cleared.
     ///     <paramref name="towerRefund" /> is the supply already refunded for dismantled towers.
+    ///     If the current campaign node ends the campaign, this shows the campaign-complete version,
+    ///     whose button wipes the run and returns to the Meta Area.
     /// </summary>
     public void ShowVictory(string title = null, int towerRefund = 0)
     {
-        string t = !string.IsNullOrEmpty(title) ? title : victoryTitle;
+        isCampaignComplete = CampaignManager.Instance.CurrentNodeEndsCampaign;
+        string defaultTitle = isCampaignComplete ? campaignCompleteTitle : victoryTitle;
+        string t = !string.IsNullOrEmpty(title) ? title : defaultTitle;
         if (towerRefundText != null)
         {
             towerRefundText.gameObject.SetActive(towerRefund > 0);
@@ -296,7 +305,7 @@ public class DeathScreen : MonoBehaviour
             returnToMetaButton.gameObject.SetActive(false);
             nextStageButton.gameObject.SetActive(true);
             TMP_Text lbl = nextStageButton.GetComponentInChildren<TMP_Text>();
-            if (lbl != null) lbl.text = victoryButtonText;
+            if (lbl != null) lbl.text = isCampaignComplete ? campaignCompleteButtonText : victoryButtonText;
         }
         else
         {
@@ -434,7 +443,8 @@ public class DeathScreen : MonoBehaviour
             return;
         }
 
-        CampaignManager.Instance.CompleteCurrentNodeAndOpenMap();
+        // Returns to the map, or ends the campaign (run wiped, back to Meta) if this node was the last.
+        CampaignManager.Instance.CompleteCurrentNodeAndContinue();
     }
 
     private void ReturnToMetaScene()

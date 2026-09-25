@@ -44,6 +44,20 @@ public class NecromancerConfrontationUI : MonoBehaviour
     [SerializeField] private float typewriterCharDelay = 0.025f;
     [SerializeField] private float fadeDuration = 0.4f;
 
+    [Header("Scene Start")]
+    [Tooltip("Open the confrontation automatically once the scene has loaded.")]
+    [SerializeField] private bool openOnSceneStart = true;
+    [Tooltip("Seconds after scene start before the confrontation opens.")]
+    [SerializeField] private float openDelay = 0.4f;
+    [Tooltip("The Necromancer in this scene. Auto-found if left empty.")]
+    [SerializeField] private NecromancerBossController boss;
+
+    [Header("Campaign Branches")]
+    [Tooltip("Campaign node deployed to on Obey (loads its scene).")]
+    [SerializeField] private string obeyNodeId = "tier8_princess_boss";
+    [Tooltip("Campaign node entered on Defy (the fight stays in this scene).")]
+    [SerializeField] private string defyNodeId = "tier8_necromancer_boss";
+
     private NecromancerBossController activeBoss;
     private Coroutine typewriterRoutine;
     private Coroutine fadeRoutine;
@@ -79,6 +93,11 @@ public class NecromancerConfrontationUI : MonoBehaviour
             dialogueCanvasGroup = GetComponent<CanvasGroup>();
         }
 
+        if (boss == null)
+        {
+            boss = FindAnyObjectByType<NecromancerBossController>();
+        }
+
         SetupButtonListeners();
     }
 
@@ -90,6 +109,22 @@ public class NecromancerConfrontationUI : MonoBehaviour
             dialogueCanvasGroup.blocksRaycasts = false;
             dialogueCanvasGroup.interactable = false;
         }
+
+        if (openOnSceneStart)
+        {
+            if (boss == null)
+            {
+                Debug.LogError("[NecromancerConfrontationUI] No NecromancerBossController in the scene; can't open the confrontation.");
+                return;
+            }
+            StartCoroutine(OpenAfterDelay());
+        }
+    }
+
+    private IEnumerator OpenAfterDelay()
+    {
+        yield return new WaitForSeconds(openDelay);
+        OpenConfrontation(boss);
     }
 
     private void OnDestroy()
@@ -238,24 +273,8 @@ public class NecromancerConfrontationUI : MonoBehaviour
 
         FadeCanvasGroup(0f, 0.3f);
 
-        // Transition via CampaignManager
-        if (CampaignManager.Instance != null)
-        {
-            CampaignManager.Instance.DeployToNode("tier8_princess_boss");
-        }
-        else if (Bladehold.UI.LoadingScreenManager.Instance != null)
-        {
-            Bladehold.UI.LoadingScreenManager.Instance.LoadScene(
-                "Bladehold Princess Sanctuary",
-                "Princess Sanctuary",
-                "Inner Royal Bower",
-                "Confront Princess Katherine in her sanctuary."
-            );
-        }
-        else
-        {
-            SceneManager.LoadScene("Bladehold Princess Sanctuary");
-        }
+        // Completes the Crypt node, then deploys to the Princess node.
+        CampaignManager.Instance.EnterBranchNode(obeyNodeId, loadScene: true);
     }
 
     private void HandleDefyClicked()
@@ -271,6 +290,9 @@ public class NecromancerConfrontationUI : MonoBehaviour
         OnDefyChosen?.Invoke();
 
         FadeCanvasGroup(0f, 0.35f);
+
+        // Completes the Crypt node; the Necromancer node becomes current and his death completes it.
+        CampaignManager.Instance.EnterBranchNode(defyNodeId, loadScene: false);
 
         if (activeBoss != null)
         {

@@ -34,7 +34,14 @@ public static class SetupCampaignPrefabsAndAssets
     public static void ExecuteAll()
     {
         Debug.Log("[SetupCampaignPrefabsAndAssets] === Starting Campaign Prefabs & Assets Setup ===");
-        var graph = CreateOrUpdateCampaignGraph();
+        // Regenerating copies BuildDefaultGraph() over every node asset, wiping inspector edits
+        // (rewards, endsCampaign demo cutoffs, ...), so only do it when asked.
+        CampaignGraphSO existingGraph = AssetDatabase.LoadAssetAtPath<CampaignGraphSO>(GraphAssetPath);
+        bool regenerateGraph = existingGraph == null || EditorUtility.DisplayDialog(
+            "Regenerate campaign graph?",
+            "Overwrite every node asset in Resources/CampaignNodes with the defaults from CampaignGraphSO.BuildDefaultGraph()? Hand edits to nodes will be lost.",
+            "Regenerate", "Keep current graph");
+        var graph = regenerateGraph ? CreateOrUpdateCampaignGraph() : existingGraph;
         var nodePrefab = CreateOrUpdateNodeButtonPrefab();
         var pathPrefab = CreateOrUpdatePathLinePrefab();
         UpdateCampaignMapScene(graph, nodePrefab, pathPrefab);
@@ -108,6 +115,19 @@ public static class SetupCampaignPrefabsAndAssets
                 }
             }
             EditorUtility.SetDirty(node);
+        }
+
+        // Re-link tier lists too, or they keep pointing at the unsaved temp nodes from BuildDefaultGraph()
+        for (int t = 0; t < graph.tiers.Count; t++)
+        {
+            List<CampaignNodeSO> tierNodes = graph.tiers[t].nodes;
+            for (int n = 0; n < tierNodes.Count; n++)
+            {
+                if (tierNodes[n] == null) continue;
+                string targetId = tierNodes[n].nodeId;
+                CampaignNodeSO persistentTarget = graph.allNodes.Find(x => x != null && x.nodeId == targetId);
+                if (persistentTarget != null) tierNodes[n] = persistentTarget;
+            }
         }
 
         EditorUtility.SetDirty(graph);
@@ -276,9 +296,20 @@ public static class SetupCampaignPrefabsAndAssets
         checkGo.SetActive(false);
 
         CampaignNodeButtonUI btnComp = root.GetComponent<CampaignNodeButtonUI>();
-        btnComp.InitializeReferences(
-            rt, btn, bgImg, borderImg, titleTmp, tierTmp, captTmp,
-            lockGo, checkGo, glowGo, iconImg, fishingSprite);
+        SerializedObject btnSo = new SerializedObject(btnComp);
+        btnSo.FindProperty("rectTransform").objectReferenceValue = rt;
+        btnSo.FindProperty("button").objectReferenceValue = btn;
+        btnSo.FindProperty("backgroundImage").objectReferenceValue = bgImg;
+        btnSo.FindProperty("borderImage").objectReferenceValue = borderImg;
+        btnSo.FindProperty("titleText").objectReferenceValue = titleTmp;
+        btnSo.FindProperty("tierText").objectReferenceValue = tierTmp;
+        btnSo.FindProperty("captainBadgeText").objectReferenceValue = captTmp;
+        btnSo.FindProperty("lockOverlay").objectReferenceValue = lockGo;
+        btnSo.FindProperty("completedCheckmark").objectReferenceValue = checkGo;
+        btnSo.FindProperty("activePulseGlow").objectReferenceValue = glowGo;
+        if (iconImg != null) btnSo.FindProperty("nodeIconImage").objectReferenceValue = iconImg;
+        if (fishingSprite != null) btnSo.FindProperty("fishingIcon").objectReferenceValue = fishingSprite;
+        btnSo.ApplyModifiedPropertiesWithoutUndo();
 
         GameObject savedPrefab = PrefabUtility.SaveAsPrefabAsset(root, NodePrefabPath);
         UnityEngine.Object.DestroyImmediate(root);

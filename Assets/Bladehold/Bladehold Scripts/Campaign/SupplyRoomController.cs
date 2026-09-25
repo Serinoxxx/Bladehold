@@ -152,7 +152,7 @@ public class SupplyRoomController : MonoBehaviour
         // Complete current campaign node and return to overview map
         if (CampaignManager.Instance != null)
         {
-            CampaignManager.Instance.CompleteCurrentNodeAndOpenMap();
+            CampaignManager.Instance.CompleteCurrentNodeAndContinue();
         }
         else
         {

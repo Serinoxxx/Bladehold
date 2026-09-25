@@ -33,11 +33,18 @@ public class CampaignManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    ///     True when a manager exists, without auto-creating one. Use from OnDestroy/teardown code so
+    ///     unsubscribing doesn't spawn a fresh manager while scenes unload or the app quits.
+    /// </summary>
+    public static bool HasInstance => instance != null;
+
     [Header("Campaign Graph")]
     [SerializeField] private CampaignGraphSO activeGraph;
 
     [Header("Scene Configuration")]
     [SerializeField] private string campaignMapSceneName = "Bladehold Campaign Map Scene";
+    [SerializeField] private string metaAreaSceneName = "Bladehold Meta Area Scene";
 
     public CampaignGraphSO ActiveGraph
     {
@@ -48,7 +55,7 @@ public class CampaignManager : MonoBehaviour
                 activeGraph = Resources.Load<CampaignGraphSO>("CampaignGraph");
                 if (activeGraph == null)
                 {
-                    activeGraph = CampaignGraphSO.CreateDefaultCampaignGraph();
+                    Debug.LogError("[CampaignManager] No CampaignGraph asset found in Resources/. Run Bladehold/Campaign/Setup All Campaign Prefabs & Scene.");
                 }
             }
             return activeGraph;
@@ -61,6 +68,9 @@ public class CampaignManager : MonoBehaviour
     public HashSet<string> AvailableNodeIds { get; private set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
     public CampaignNodeSO CurrentNode => GetNode(CurrentNodeId);
+
+    /// <summary>True when clearing the current node ends the campaign (final boss or demo cutoff).</summary>
+    public bool CurrentNodeEndsCampaign => IsCampaignActive && CurrentNode != null && CurrentNode.EndsCampaign;
     public bool IsCampaignActive => RunSession.IsCampaignRun;
 
     public event Action<CampaignNodeSO> OnNodeSelected;
@@ -82,6 +92,14 @@ public class CampaignManager : MonoBehaviour
         }
 
         RestoreFromRunSession();
+    }
+
+    private void OnDestroy()
+    {
+        if (instance == this)
+        {
+            instance = null;
+        }
     }
 
     /// <summary>
@@ -215,52 +233,69 @@ public class CampaignManager : MonoBehaviour
     public void DeployToNode(string nodeId)
     {
         CampaignNodeSO node = GetNode(nodeId);
-        if (node != null)
+        if (node == null)
         {
-            if (!AvailableNodeIds.Contains(node.nodeId))
-            {
-                AvailableNodeIds.Add(node.nodeId);
-            }
-            SelectNode(node);
+            Debug.LogError($"[CampaignManager] DeployToNode could not find node '{nodeId}' in the campaign graph.");
+            return;
         }
-        else
-        {
-            Debug.LogWarning($"[CampaignManager] DeployToNode could not find node '{nodeId}'. Attempting direct scene fallback.");
-            string targetScene = nodeId.Contains("princess") ? "Bladehold Princess Sanctuary" : "Bladehold Survivors Scene";
-            if (Bladehold.UI.LoadingScreenManager.Instance != null)
-            {
-                Bladehold.UI.LoadingScreenManager.Instance.LoadScene(
-                    targetScene,
-                    "Princess Sanctuary",
-                    "Royal Bower",
-                    "Confront Princess Katherine in her sanctuary."
-                );
-            }
-            else
-            {
-                SceneManager.LoadScene(targetScene);
-            }
-        }
+
+        AvailableNodeIds.Add(node.nodeId);
+        SelectNode(node);
     }
 
+    /// <summary>
+    ///     Resolves a branching choice made inside a node's scene (the Crypt's Obey/Defy): completes the
+    ///     current node, then makes <paramref name="nodeId" /> the current node. With
+    ///     <paramref name="loadScene" /> it deploys there; without, the fight happens in the scene
+    ///     that's already loaded, and whatever ends it completes the new node.
+    /// </summary>
+    public void EnterBranchNode(string nodeId, bool loadScene)
+    {
+        CampaignNodeSO node = GetNode(nodeId);
+        if (node == null)
+        {
+            Debug.LogError($"[CampaignManager] EnterBranchNode could not find node '{nodeId}' in the campaign graph.");
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(CurrentNodeId))
+        {
+            CompleteCurrentNode();
+        }
+
+        if (loadScene)
+        {
+            DeployToNode(nodeId);
+            return;
+        }
+
+        RunSession.IsCampaignRun = true;
+        AvailableNodeIds.Add(node.nodeId);
+        CurrentNodeId = node.nodeId;
+        SyncToRunSession();
+        OnNodeSelected?.Invoke(node);
+        OnCampaignStateChanged?.Invoke();
+        Debug.Log($"[CampaignManager] Entered branch node in place: {node.nodeTitle}");
+    }
 
     /// <summary>
     ///     Marks the current active node as completed, unlocks forward connected child nodes,
-    ///     awards currency bounties, and syncs with RunSession.
+    ///     awards currency bounties, and syncs with RunSession. Returns the completed node, or null
+    ///     if there was no current node.
     /// </summary>
-    public void CompleteCurrentNode()
+    public CampaignNodeSO CompleteCurrentNode()
     {
         if (string.IsNullOrEmpty(CurrentNodeId))
         {
             Debug.LogWarning("[CampaignManager] CompleteCurrentNode called but CurrentNodeId is null or empty.");
-            return;
+            return null;
         }
 
         CampaignNodeSO completedNode = CurrentNode;
         if (completedNode == null)
         {
             Debug.LogWarning($"[CampaignManager] Could not find node with ID '{CurrentNodeId}' to complete.");
-            return;
+            return null;
         }
 
         CompletedNodeIds.Add(completedNode.nodeId);
@@ -303,15 +338,50 @@ public class CampaignManager : MonoBehaviour
 
         OnNodeCompleted?.Invoke(completedNode);
         OnCampaignStateChanged?.Invoke();
+        return completedNode;
     }
 
     /// <summary>
-    ///     Completes current node and navigates player back to the Campaign Overview Map scene.
+    ///     The one exit from every node: completes the current node, then either returns to the
+    ///     Campaign Map or, if that node ends the campaign (final boss, demo cutoff), ends the run.
     /// </summary>
-    public void CompleteCurrentNodeAndOpenMap()
+    public void CompleteCurrentNodeAndContinue()
     {
-        CompleteCurrentNode();
+        CampaignNodeSO completed = CompleteCurrentNode();
+        if (completed != null && completed.EndsCampaign)
+        {
+            EndCampaign();
+            return;
+        }
+
         OpenOverviewMap();
+    }
+
+    /// <summary>
+    ///     Ends the campaign: wipes the run (permanent currencies are already banked) and returns to
+    ///     the Meta Area. Show the end screen before calling this.
+    /// </summary>
+    public void EndCampaign()
+    {
+        Debug.Log("[CampaignManager] Campaign complete. Clearing the run and returning to the Meta Area.");
+        Time.timeScale = 1f;
+        RunSession.ClearRun();
+        RestoreFromRunSession();
+        OnCampaignStateChanged?.Invoke();
+
+        if (Bladehold.UI.LoadingScreenManager.Instance != null)
+        {
+            Bladehold.UI.LoadingScreenManager.Instance.LoadScene(
+                metaAreaSceneName,
+                "Sanctuary",
+                "Safe Haven",
+                "Prepare upgrades, forge weapons, and plan your next assault."
+            );
+        }
+        else
+        {
+            SceneManager.LoadScene(metaAreaSceneName);
+        }
     }
 
     /// <summary>

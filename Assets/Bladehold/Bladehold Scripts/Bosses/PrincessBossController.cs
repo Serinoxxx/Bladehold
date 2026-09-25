@@ -774,11 +774,8 @@ public class PrincessBossController : MonoBehaviour
             }
         }
 
-        // Complete campaign node
-        if (CampaignManager.Instance != null)
-        {
-            CampaignManager.Instance.CompleteCurrentNode();
-        }
+        // Campaign end: the end screen's button completes the boss node, wipes the run and returns to Meta.
+        ShowCampaignEndScreen();
 
         OnPrincessDefeated?.Invoke();
     }
@@ -789,6 +786,21 @@ public class PrincessBossController : MonoBehaviour
         {
             float speed = (agent.isOnNavMesh && !agent.isStopped) ? agent.velocity.magnitude : 0f;
             animator.SetFloat(HashMoveSpeed, speed);
+        }
+    }
+
+    private void ShowCampaignEndScreen()
+    {
+        if (DeathScreen.Instance != null)
+        {
+            DeathScreen.Instance.ShowVictory();
+            return;
+        }
+
+        Debug.LogError("[PrincessBossController] No DeathScreen in this scene, so there's no campaign end screen. Add DeathScreen.prefab to the scene. Ending the campaign without it.");
+        if (CampaignManager.Instance.IsCampaignActive)
+        {
+            CampaignManager.Instance.CompleteCurrentNodeAndContinue();
         }
     }
 }

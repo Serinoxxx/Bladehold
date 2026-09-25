@@ -615,11 +615,8 @@ public class NecromancerBossController : MonoBehaviour
             }
         }
 
-        // Unlock campaign victory node
-        if (CampaignManager.Instance != null)
-        {
-            CampaignManager.Instance.CompleteCurrentNode();
-        }
+        // Campaign end: the end screen's button completes the boss node, wipes the run and returns to Meta.
+        ShowCampaignEndScreen();
 
         OnBossDefeated?.Invoke();
     }
@@ -642,5 +639,20 @@ public class NecromancerBossController : MonoBehaviour
         }
 
         cam.transform.localPosition = originalPos;
+    }
+
+    private void ShowCampaignEndScreen()
+    {
+        if (DeathScreen.Instance != null)
+        {
+            DeathScreen.Instance.ShowVictory();
+            return;
+        }
+
+        Debug.LogError("[NecromancerBossController] No DeathScreen in this scene, so there's no campaign end screen. Add DeathScreen.prefab to the scene. Ending the campaign without it.");
+        if (CampaignManager.Instance.IsCampaignActive)
+        {
+            CampaignManager.Instance.CompleteCurrentNodeAndContinue();
+        }
     }
 }

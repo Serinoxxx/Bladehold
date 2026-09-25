@@ -31,4 +31,5 @@ MonoBehaviour:
   bloodReward: 0
   metalReward: 0
   rewardIcon: {fileID: 0}
-  nextNodes: []
+  nextNodes:
+  - {fileID: 11400000, guid: ca588e7157050724e86bb28ad5ac3319, type: 2}

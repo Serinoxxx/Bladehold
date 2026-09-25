@@ -608,20 +608,13 @@ public static class BuildNecromancerCryptScene
         uiSo.FindProperty("defyButton").objectReferenceValue = defyBtn;
         uiSo.FindProperty("obeyButtonText").objectReferenceValue = obeyText;
         uiSo.FindProperty("defyButtonText").objectReferenceValue = defyText;
+        // The UI opens itself on scene start (openOnSceneStart) and needs the boss to hand over to.
+        if (bossCtrl != null) uiSo.FindProperty("boss").objectReferenceValue = bossCtrl;
 
         AudioClip laughClip = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/voice_male_b_laugh_short_02.wav");
         if (laughClip != null) uiSo.FindProperty("defyLaughSfx").objectReferenceValue = laughClip;
 
         uiSo.ApplyModifiedProperties();
-
-        // Auto trigger monologue on scene start
-        if (bossCtrl != null)
-        {
-            var triggerObj = new GameObject("ConfrontationTrigger");
-            var trigger = triggerObj.AddComponent<DelayedConfrontationStarter>();
-            trigger.confrontationUI = confrontationUI;
-            trigger.boss = bossCtrl;
-        }
     }
 
     private static GameObject EnsurePrefabInstance(string name, string prefabPath, Scene scene)
@@ -670,29 +663,6 @@ public static class BuildNecromancerCryptScene
             scenesList.Add(new EditorBuildSettingsScene(scenePath, true));
             EditorBuildSettings.scenes = scenesList.ToArray();
             Debug.Log($"[BuildNecromancerCryptScene] Added {scenePath} to EditorBuildSettings!");
-        }
-    }
-}
-
-/// <summary>
-///     Helper script attached to scene to trigger the Necromancer revelation dialogue smoothly after loading.
-/// </summary>
-public class DelayedConfrontationStarter : MonoBehaviour
-{
-    public NecromancerConfrontationUI confrontationUI;
-    public NecromancerBossController boss;
-
-    private void Start()
-    {
-        StartCoroutine(StartRoutine());
-    }
-
-    private System.Collections.IEnumerator StartRoutine()
-    {
-        yield return new WaitForSeconds(0.4f);
-        if (confrontationUI != null && boss != null)
-        {
-            confrontationUI.OpenConfrontation(boss);
         }
     }
 }

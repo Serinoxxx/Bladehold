@@ -509,6 +509,7 @@ public class CampaignGraphSO : ScriptableObject
 
         // Tier 7 leads into Tier 8
         nodeTier7.nextNodes.Add(nodeTier8);
+        nodeTier7Fishing.nextNodes.Add(nodeTier8);
         nodeTier8.nextNodes.Add(nodeTier8Princess);
         nodeTier8.nextNodes.Add(nodeTier8NecroBoss);
 

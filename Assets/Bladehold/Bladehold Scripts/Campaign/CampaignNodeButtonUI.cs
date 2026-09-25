@@ -9,7 +9,7 @@ using UnityEngine.UI;
 ///     Displays state visuals (Locked, Available, Completed), difficulty indicators,
 ///     handles hover tooltips, and initiates sector deployment.
 /// </summary>
-public class CampaignNodeButtonUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
+public class CampaignNodeButtonUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     public enum NodeVisualStatus
     {
@@ -59,52 +59,25 @@ public class CampaignNodeButtonUI : MonoBehaviour, IPointerEnterHandler, IPointe
     public CampaignNodeSO NodeData => nodeData;
     public NodeVisualStatus CurrentStatus => currentStatus;
 
-    private void Awake()
+    private void OnValidate()
     {
         if (rectTransform == null) rectTransform = GetComponent<RectTransform>();
-        originalScale = transform.localScale;
-
-        if (button != null)
-        {
-            button.onClick.AddListener(HandleButtonClick);
-        }
+        if (button == null) button = GetComponent<Button>();
     }
 
-    /// <summary>
-    ///     Allows procedural/editor instantiation to inject all visual references cleanly.
-    /// </summary>
-    public void InitializeReferences(
-        RectTransform rt,
-        Button btn,
-        Image bgImg,
-        Image borderImg,
-        TMP_Text titleTxt,
-        TMP_Text tierTxt,
-        TMP_Text captainTxt,
-        GameObject lockObj,
-        GameObject checkmarkObj,
-        GameObject glowObj,
-        Image iconImg = null,
-        Sprite fishIcon = null)
+    private void Awake()
     {
-        rectTransform = rt;
-        button = btn;
-        backgroundImage = bgImg;
-        borderImage = borderImg;
-        titleText = titleTxt;
-        tierText = tierTxt;
-        captainBadgeText = captainTxt;
-        lockOverlay = lockObj;
-        completedCheckmark = checkmarkObj;
-        activePulseGlow = glowObj;
-        if (iconImg != null) nodeIconImage = iconImg;
-        if (fishIcon != null) fishingIcon = fishIcon;
+        originalScale = transform.localScale;
 
-        if (button != null)
+        if (button == null)
         {
-            button.onClick.RemoveAllListeners();
-            button.onClick.AddListener(HandleButtonClick);
+            Debug.LogError($"[CampaignNodeButtonUI] '{name}' has no Button assigned; the node can't be clicked.", this);
+            return;
         }
+
+        // Clicks come only through the Button (it also handles keyboard/gamepad submit). Don't add an
+        // IPointerClickHandler here too, or a mouse click deploys twice.
+        button.onClick.AddListener(HandleButtonClick);
     }
 
     /// <summary>
@@ -236,11 +209,6 @@ public class CampaignNodeButtonUI : MonoBehaviour, IPointerEnterHandler, IPointe
     {
         isHovered = false;
         onHoverExitedCallback?.Invoke();
-    }
-
-    public void OnPointerClick(PointerEventData eventData)
-    {
-        HandleButtonClick();
     }
 
     private void HandleButtonClick()
