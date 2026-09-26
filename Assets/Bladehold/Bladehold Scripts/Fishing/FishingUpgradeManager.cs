@@ -1,9 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-///     Manages the active session upgrade levels for the 6 fishing minigame draft cards.
+///     Manages the active session upgrade levels for the fishing minigame draft cards.
 ///     Resets on each visit to the Fishing Pond.
 /// </summary>
 public class FishingUpgradeManager : MonoBehaviour
@@ -66,6 +67,19 @@ public class FishingUpgradeManager : MonoBehaviour
 
     public int FishsploshionDamage => GetLevel(FishingUpgradeType.Fishsploshion);
     public float FishsploshionRadius => FishsploshionDamage > 0 ? 3.5f : 0f;
+    // Gap between a fish dying and its blast going off, so a chain reads as a visible cascade.
+    public float FishsploshionDelay => 0.1f;
+
+    // How many links a Fishsploshion chain may run past the first blast. Without Chain Reaction a fish
+    // killed by a blast doesn't explode at all.
+    public int ChainReactionMaxChains => GetLevel(FishingUpgradeType.ChainReaction) switch
+    {
+        1 => 2,
+        2 => 3,
+        3 => 4,
+        4 => 5,
+        _ => 0
+    };
 
     public float IceyWaterSlowRatio => GetLevel(FishingUpgradeType.IceyWater) switch
     {
@@ -114,6 +128,9 @@ public class FishingUpgradeManager : MonoBehaviour
         List<FishingUpgradeType> pool = new List<FishingUpgradeType>();
         foreach (FishingUpgradeType type in Enum.GetValues(typeof(FishingUpgradeType)))
         {
+            // Chain Reaction only does anything once Fishsploshion is owned.
+            if (type == FishingUpgradeType.ChainReaction && FishsploshionDamage == 0) continue;
+
             if (GetLevel(type) < 4)
             {
                 pool.Add(type);
@@ -154,6 +171,7 @@ public class FishingUpgradeManager : MonoBehaviour
         FishingUpgradeType.FishSkewer => "Fish Skewer",
         FishingUpgradeType.Bleed => "Bleed",
         FishingUpgradeType.FatFish => "Fat Fish",
+        FishingUpgradeType.ChainReaction => "Chain Reaction",
         _ => type.ToString()
     };
 
@@ -171,6 +189,34 @@ public class FishingUpgradeManager : MonoBehaviour
         },
         FishingUpgradeType.Bleed => $"Damaging a fish causes it to bleed for 1 DPS for 5s (stacks up to {level + 1}x).",
         FishingUpgradeType.FatFish => $"Fish are {level * 2.5f:0.#}% larger, yielding more resources.",
+        FishingUpgradeType.ChainReaction => $"Fish killed by a Fishsploshion explode too, chaining up to {level + 1} times.",
         _ => ""
     };
+
+    /// <summary>
+    ///     Sets off a Fishsploshion at <paramref name="position" /> after <see cref="FishsploshionDelay" />.
+    ///     Runs here rather than on the fish because the fish is destroyed the moment it dies.
+    ///     <paramref name="chainDepth" /> is 0 for a fish the player killed; each blast-killed fish is one deeper.
+    /// </summary>
+    public void QueueFishsploshion(Vector3 position, int chainDepth)
+    {
+        StartCoroutine(DetonateFishsploshion(position, chainDepth));
+    }
+
+    private IEnumerator DetonateFishsploshion(Vector3 position, int chainDepth)
+    {
+        yield return new WaitForSeconds(FishsploshionDelay);
+
+        int dmg = FishsploshionDamage;
+        Collider[] hits = Physics.OverlapSphere(position, FishsploshionRadius);
+        for (int i = 0; i < hits.Length; i++)
+        {
+            FishController neighbor = hits[i].GetComponentInParent<FishController>();
+            if (neighbor != null && !neighbor.IsDead)
+            {
+                Damage d = new Damage { value = dmg, type = DamageType.sharp, isPlayerDamage = true };
+                neighbor.ReceiveFishsploshionDamage(d, chainDepth + 1);
+            }
+        }
+    }
 }

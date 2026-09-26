@@ -2378,7 +2378,17 @@ public static class WeaponReachBenchmark
             FishingUpgradeManager fum = upgradeMgrObj.AddComponent<FishingUpgradeManager>();
             fum.ResetUpgrades();
 
-            bool baselineZero = (fum.BounceCount == 0 && fum.FishsploshionDamage == 0 && fum.IceyWaterSlowRatio == 0f && fum.PierceCount == 0 && fum.BleedMaxStacks == 0 && fum.FatFishBonusPercent == 0f);
+            bool baselineZero = (fum.BounceCount == 0 && fum.FishsploshionDamage == 0 && fum.IceyWaterSlowRatio == 0f && fum.PierceCount == 0 && fum.BleedMaxStacks == 0 && fum.FatFishBonusPercent == 0f && fum.ChainReactionMaxChains == 0);
+
+            // Chain Reaction must stay out of the pool until Fishsploshion is owned.
+            bool chainHiddenWithoutSploshion = true;
+            for (int roll = 0; roll < 50; roll++)
+            {
+                foreach (var c in fum.RollDraftChoices(3))
+                {
+                    if (c.type == FishingUpgradeType.ChainReaction) chainHiddenWithoutSploshion = false;
+                }
+            }
 
             // Apply 4 upgrades to all types
             for (int i = 0; i < 4; i++)
@@ -2389,21 +2399,22 @@ public static class WeaponReachBenchmark
                 fum.ApplyUpgrade(FishingUpgradeType.FishSkewer);
                 fum.ApplyUpgrade(FishingUpgradeType.Bleed);
                 fum.ApplyUpgrade(FishingUpgradeType.FatFish);
+                fum.ApplyUpgrade(FishingUpgradeType.ChainReaction);
             }
 
-            bool maxedStats = (fum.BounceCount == 4 && fum.FishsploshionDamage == 4 && Mathf.Approximately(fum.IceyWaterSlowRatio, 0.50f) && fum.PierceCount == 999 && fum.BleedMaxStacks == 5 && Mathf.Approximately(fum.FatFishBonusPercent, 0.10f));
+            bool maxedStats = (fum.BounceCount == 4 && fum.FishsploshionDamage == 4 && Mathf.Approximately(fum.IceyWaterSlowRatio, 0.50f) && fum.PierceCount == 999 && fum.BleedMaxStacks == 5 && Mathf.Approximately(fum.FatFishBonusPercent, 0.10f) && fum.ChainReactionMaxChains == 5);
 
             var emptyChoices = fum.RollDraftChoices(3); // Should be empty since all are level 4
             bool noMoreChoicesWhenMaxed = (emptyChoices.Count == 0);
 
-            if (baselineZero && maxedStats && noMoreChoicesWhenMaxed)
+            if (baselineZero && chainHiddenWithoutSploshion && maxedStats && noMoreChoicesWhenMaxed)
             {
-                sb.AppendLine("  - Fishing Upgrade Manager: 6 draft cards correctly scale from tier 1 to 4 with proper stat equations and pool exhaustion. [PASSED]");
+                sb.AppendLine("  - Fishing Upgrade Manager: 7 draft cards correctly scale from tier 1 to 4 with proper stat equations, Chain Reaction gating and pool exhaustion. [PASSED]");
                 passedCount++;
             }
             else
             {
-                sb.AppendLine($"  - [FAIL] Fishing upgrade manager scaling failed (baselineZero={baselineZero}, maxedStats={maxedStats}, emptyChoicesCount={emptyChoices.Count})");
+                sb.AppendLine($"  - [FAIL] Fishing upgrade manager scaling failed (baselineZero={baselineZero}, chainHidden={chainHiddenWithoutSploshion}, maxedStats={maxedStats}, emptyChoicesCount={emptyChoices.Count})");
                 failedCount++;
             }
             UnityEngine.Object.DestroyImmediate(upgradeMgrObj);

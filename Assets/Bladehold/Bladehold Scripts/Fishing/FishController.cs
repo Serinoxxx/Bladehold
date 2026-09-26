@@ -33,6 +33,8 @@ public class FishController : MonoBehaviour, IDamageable
     private readonly List<Coroutine> activeBleedRoutines = new List<Coroutine>();
     private int currentBleedStacks = 0;
     private Vector3 baseScale = Vector3.one;
+    // Fishsploshion chain link that is dealing the current hit: 0 unless mid-ReceiveFishsploshionDamage.
+    private int incomingChainDepth = 0;
 
     public bool IsDead => isDead;
     public float CurrentHp => currentHp;
@@ -145,6 +147,19 @@ public class FishController : MonoBehaviour, IDamageable
         }
     }
 
+    /// <summary>
+    ///     A hit from a Fishsploshion blast. If it kills, the fish's own blast is link
+    ///     <paramref name="chainDepth" /> of the chain, and only goes off within Chain Reaction's limit.
+    /// </summary>
+    public void ReceiveFishsploshionDamage(Damage damage, int chainDepth)
+    {
+        if (isDead) return;
+
+        incomingChainDepth = chainDepth;
+        ReceiveDamage(damage);
+        incomingChainDepth = 0;
+    }
+
     private void ApplyBleed()
     {
         int maxStacks = FishingUpgradeManager.Instance.BleedMaxStacks;
@@ -201,10 +216,11 @@ public class FishController : MonoBehaviour, IDamageable
 
         StopAllCoroutines();
 
-        // Fishsploshion upgrade logic
-        if (FishingUpgradeManager.Instance != null && FishingUpgradeManager.Instance.FishsploshionDamage > 0)
+        // Fishsploshion upgrade logic: player kills always blast; blast kills only within Chain Reaction's limit.
+        FishingUpgradeManager upgrades = FishingUpgradeManager.Instance;
+        if (upgrades != null && upgrades.FishsploshionDamage > 0 && incomingChainDepth <= upgrades.ChainReactionMaxChains)
         {
-            TriggerFishsploshion();
+            upgrades.QueueFishsploshion(transform.position, incomingChainDepth);
         }
 
         // Notify FishingManager
@@ -221,20 +237,4 @@ public class FishController : MonoBehaviour, IDamageable
         Destroy(gameObject);
     }
 
-    private void TriggerFishsploshion()
-    {
-        float radius = FishingUpgradeManager.Instance.FishsploshionRadius;
-        int dmg = FishingUpgradeManager.Instance.FishsploshionDamage;
-
-        Collider[] hits = Physics.OverlapSphere(transform.position, radius);
-        for (int i = 0; i < hits.Length; i++)
-        {
-            FishController neighbor = hits[i].GetComponentInParent<FishController>();
-            if (neighbor != null && neighbor != this && !neighbor.IsDead)
-            {
-                Damage d = new Damage { value = dmg, type = DamageType.sharp, isPlayerDamage = true };
-                neighbor.ReceiveDamage(d);
-            }
-        }
-    }
 }

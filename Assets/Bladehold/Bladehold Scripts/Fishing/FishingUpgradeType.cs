@@ -10,7 +10,8 @@ public enum FishingUpgradeType
     IceyWater,
     FishSkewer,
     Bleed,
-    FatFish
+    FatFish,
+    ChainReaction
 }
 
 [Serializable]
