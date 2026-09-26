@@ -150,6 +150,8 @@
 - Fixed tower effects (catapult impacts, rolling fireball bursts, wood splinters when a tower breaks) staying in the level after they faded
 - Fixed the Fishing Frenzy countdown thumps and start horn never playing
 - Fixed the battering ram's splinters and the prisoner cage's dust cloud staying in the level after they faded
+- Fixed the Necromancer's shield break and scythe hits not shaking the screen
+- Fixed the Necromancer's summoning circles staying in the crypt for the rest of the fight
 
 ### Balance Changes
 

@@ -442,20 +442,13 @@ public static class BuildNecromancerCryptScene
         bSo.FindProperty("metalReward").intValue = 6;
 
         if (scytheGo != null) bSo.FindProperty("scytheWeaponObject").objectReferenceValue = scytheGo;
-        if (summonCirclePrefab != null) bSo.FindProperty("summoningCirclePrefab").objectReferenceValue = summonCirclePrefab;
-
-        // Audio Clips
-        AudioClip laughClip = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/voice_male_b_laugh_short_02.wav");
-        AudioClip whooshClip = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Wooshes/whoosh_slow_deep_06.wav");
-        AudioClip bubbleClip = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/GORE_Splat_Hit_Bubbles_mono.wav");
-        AudioClip victoryClip = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/Triumphant Victory.wav");
-        GameObject shatterVfx = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Synty/PolygonParticleFX/Prefabs/FX_Fire_Explosion_01.prefab");
-
-        if (laughClip != null) bSo.FindProperty("laughVoiceSfx").objectReferenceValue = laughClip;
-        if (whooshClip != null) bSo.FindProperty("sweepWhooshSfx").objectReferenceValue = whooshClip;
-        if (bubbleClip != null) bSo.FindProperty("bubbleDeflectSfx").objectReferenceValue = bubbleClip;
-        if (victoryClip != null) bSo.FindProperty("victoryMusicSfx").objectReferenceValue = victoryClip;
-        if (shatterVfx != null) bSo.FindProperty("shieldShatterVfxPrefab").objectReferenceValue = shatterVfx;
+        // Feedback (authored MMF prefabs in Bladehold Prefabs/Bosses/)
+        NestFeedback(bSo, "deflectFeedback", "NecromancerDeflectMMF", bossCtrl.transform);
+        NestFeedback(bSo, "shatterFeedback", "NecromancerShatterMMF", bossCtrl.transform);
+        NestFeedback(bSo, "summonFeedback", "NecromancerSummonMMF", bossCtrl.transform);
+        NestFeedback(bSo, "sweepFeedback", "NecromancerSweepMMF", bossCtrl.transform);
+        NestFeedback(bSo, "sweepHitFeedback", "NecromancerSweepHitMMF", bossCtrl.transform);
+        NestFeedback(bSo, "victoryFeedback", "BossVictoryMMF", bossCtrl.transform);
 
         // Serialized Spawn Points
         var spProp = bSo.FindProperty("skeletonSpawnPoints");
@@ -629,10 +622,24 @@ public static class BuildNecromancerCryptScene
         // The UI opens itself on scene start (openOnSceneStart) and needs the boss to hand over to.
         if (bossCtrl != null) uiSo.FindProperty("boss").objectReferenceValue = bossCtrl;
 
-        AudioClip laughClip = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/voice_male_b_laugh_short_02.wav");
-        if (laughClip != null) uiSo.FindProperty("defyLaughSfx").objectReferenceValue = laughClip;
+        NestFeedback(uiSo, "defyLaughFeedback", "NecromancerDefyLaughMMF", ((Component)uiSo.targetObject).transform);
 
         uiSo.ApplyModifiedProperties();
+    }
+
+    /// <summary>Instances a boss feedback prefab under the parent and wires it into the field.</summary>
+    private static void NestFeedback(SerializedObject so, string field, string prefabName, Transform parent)
+    {
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/Bosses/" + prefabName + ".prefab");
+        if (prefab == null)
+        {
+            Debug.LogError("[BuildNecromancerCryptScene] Missing feedback prefab " + prefabName + ".");
+            return;
+        }
+        Transform old = parent.Find(prefab.name);
+        if (old != null) UnityEngine.Object.DestroyImmediate(old.gameObject);
+        GameObject go = (GameObject)PrefabUtility.InstantiatePrefab(prefab, parent);
+        so.FindProperty(field).objectReferenceValue = go.GetComponent<MoreMountains.Feedbacks.MMF_Player>();
     }
 
     private static GameObject EnsurePrefabInstance(string name, string prefabPath, Scene scene)

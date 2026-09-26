@@ -122,6 +122,21 @@ public static class BuildPrincessSanctuaryScene
         Debug.Log($"[BuildPrincessSanctuaryScene] === Bladehold Princess Sanctuary Successfully Created at {ScenePath}! ===");
     }
 
+    /// <summary>Instances a boss feedback prefab under the parent (replacing an old copy) and wires it into the field.</summary>
+    private static void NestFeedback(SerializedObject so, string field, string prefabName, Transform parent)
+    {
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/Bosses/" + prefabName + ".prefab");
+        if (prefab == null)
+        {
+            Debug.LogError("[BuildPrincessSanctuaryScene] Missing feedback prefab " + prefabName + ".");
+            return;
+        }
+        Transform old = parent.Find(prefab.name);
+        if (old != null) UnityEngine.Object.DestroyImmediate(old.gameObject);
+        GameObject go = (GameObject)PrefabUtility.InstantiatePrefab(prefab, parent);
+        so.FindProperty(field).objectReferenceValue = go.GetComponent<MoreMountains.Feedbacks.MMF_Player>();
+    }
+
     private static void SetupAtmosphere(Color ambientColor, Color fogColor, float fogDensity, Color sunColor, float sunIntensity, Quaternion sunRot)
     {
         RenderSettings.ambientLight = ambientColor;
@@ -398,15 +413,7 @@ public static class BuildPrincessSanctuaryScene
             aiSo.FindProperty("moveSpeed").floatValue = 4.2f;
             aiSo.FindProperty("maxHealth").floatValue = 180f;
 
-            AudioClip swingSfx = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Blade Impacts/Sword_Whoosh_01.wav");
-            AudioClip hitClip = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Impacts/Metal/Sword_Clash_01.wav");
-            AudioClip downedClip = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Thuds/Body_Fall_Armor_01.wav");
-            AudioClip reviveClip = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Ultimate/Fantasy_Game_Magic_Light Magic_5_Blast_Holy_Priest_Spell.wav");
-
-            if (swingSfx != null) aiSo.FindProperty("attackSwingSfx").objectReferenceValue = swingSfx;
-            if (hitClip != null) aiSo.FindProperty("hitSfx").objectReferenceValue = hitClip;
-            if (downedClip != null) aiSo.FindProperty("downedSfx").objectReferenceValue = downedClip;
-            if (reviveClip != null) aiSo.FindProperty("reviveSfx").objectReferenceValue = reviveClip;
+            NestFeedback(aiSo, "reviveFeedback", "KnightReviveMMF", knightGo.transform);
 
             // Downed soul beacon (authored prefab, hidden until the knight is downed)
             GameObject beaconPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/VFX/HolySoulBeacon.prefab");
@@ -526,14 +533,9 @@ public static class BuildPrincessSanctuaryScene
             kProp.GetArrayElementAtIndex(i).objectReferenceValue = knights[i];
         }
 
-        // Audio & FX
-        AudioClip completeClip = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Ultimate/Fantasy_Game_Magic_Light Magic_5_Blast_Holy_Priest_Spell.wav");
-        AudioClip victoryClip = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/Triumphant Victory.wav");
-        AudioClip interruptClip = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Impacts/Metal/Sword_Clash_01.wav");
-
-        if (completeClip != null) pSo.FindProperty("spellCompleteSfx").objectReferenceValue = completeClip;
-        if (victoryClip != null) pSo.FindProperty("victoryMusicSfx").objectReferenceValue = victoryClip;
-        if (interruptClip != null) pSo.FindProperty("spellHitInterruptSfx").objectReferenceValue = interruptClip;
+        // Feedback (authored MMF prefabs in Bladehold Prefabs/Bosses/)
+        NestFeedback(pSo, "spellCompleteFeedback", "PrincessSpellCompleteMMF", princessGo.transform);
+        NestFeedback(pSo, "victoryFeedback", "BossVictoryMMF", princessGo.transform);
 
         // Revive-channel magic circle (authored prefab, hidden until she channels)
         GameObject circlePrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/VFX/PrincessMagicCircle.prefab");

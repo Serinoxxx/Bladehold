@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -19,11 +20,13 @@ public class CryptSkeletonAI : MonoBehaviour
     [SerializeField] private float windupTime = 0.35f;
     [SerializeField] private float knockbackForce = 4.0f;
 
-    [Header("Audio & FX")]
-    [SerializeField] private AudioClip attackSwingSfx;
-    [SerializeField] private AudioClip hitSfx;
-    [SerializeField] private AudioClip deathSfx;
-    [SerializeField] private GameObject hitVfxPrefab;
+    [Header("Feedback (optional)")]
+    [Tooltip("Optional: played at the skeleton as it swings. The Necromancer adds this component at runtime unless the skeleton prefab carries it, so nothing is authored yet.")]
+    [SerializeField] private MMF_Player attackSwingFeedback;
+    [Tooltip("Optional: played at the player when a strike lands. Nothing is authored yet.")]
+    [SerializeField] private MMF_Player hitFeedback;
+    [Tooltip("Optional: played at the skeleton when it dies. Nothing is authored yet.")]
+    [SerializeField] private MMF_Player deathFeedback;
 
     [Header("Despawn")]
     [SerializeField] private float sinkDelay = 2.5f;
@@ -153,9 +156,9 @@ public class CryptSkeletonAI : MonoBehaviour
             animator.SetTrigger(HashAttack);
         }
 
-        if (attackSwingSfx != null)
+        if (attackSwingFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(attackSwingSfx, transform.position, 0.7f);
+            attackSwingFeedback.PlayFeedbacks(transform.position);
         }
 
         yield return new WaitForSeconds(windupTime);
@@ -177,14 +180,9 @@ public class CryptSkeletonAI : MonoBehaviour
 
                 player.Damageable.ReceiveDamage(dmg);
 
-                if (hitSfx != null)
+                if (hitFeedback != null)
                 {
-                    AudioSource.PlayClipAtPoint(hitSfx, player.transform.position, 0.8f);
-                }
-
-                if (hitVfxPrefab != null)
-                {
-                    Instantiate(hitVfxPrefab, player.transform.position + Vector3.up * 1f, Quaternion.identity);
+                    hitFeedback.PlayFeedbacks(player.transform.position);
                 }
             }
         }
@@ -216,9 +214,9 @@ public class CryptSkeletonAI : MonoBehaviour
             animator.SetTrigger(HashDeath);
         }
 
-        if (deathSfx != null)
+        if (deathFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(deathSfx, transform.position, 0.85f);
+            deathFeedback.PlayFeedbacks(transform.position);
         }
 
         OnDiedEvent?.Invoke(this);

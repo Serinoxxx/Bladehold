@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -21,10 +22,12 @@ public class NecromancerBossController : MonoBehaviour
     [Header("Phase 1: Bubble Shield & Summoning")]
     [SerializeField] private GameObject bubbleShieldVisual;
     [SerializeField] private float bubbleRadius = 2.4f;
-    [SerializeField] private AudioClip bubbleDeflectSfx;
-    [SerializeField] private AudioClip shieldShatterSfx;
-    [SerializeField] private GameObject shieldShatterVfxPrefab;
-    [SerializeField] private GameObject summoningCirclePrefab;
+    [Tooltip("Played at the boss when the bubble deflects a player hit.")]
+    [SerializeField] private MMF_Player deflectFeedback;
+    [Tooltip("Played at the boss when the last skeleton falls: shatter blast, laugh and camera impulse.")]
+    [SerializeField] private MMF_Player shatterFeedback;
+    [Tooltip("Played at each skeleton spawn point (summoning circle).")]
+    [SerializeField] private MMF_Player summonFeedback;
     [SerializeField] private Transform[] skeletonSpawnPoints;
     [SerializeField] private GameObject[] skeletonPrefabs;
     [SerializeField] private int targetSkeletonCount = 8;
@@ -39,11 +42,13 @@ public class NecromancerBossController : MonoBehaviour
     [SerializeField] private float sweepWindup = 0.65f;
     [SerializeField] private float attackCooldown = 2.2f;
 
-    [Header("Audio")]
-    [SerializeField] private AudioClip laughVoiceSfx;
-    [SerializeField] private AudioClip sweepWhooshSfx;
-    [SerializeField] private AudioClip sweepImpactSfx;
-    [SerializeField] private AudioClip victoryMusicSfx;
+    [Header("Phase 2 Feedback")]
+    [Tooltip("Played at the boss as the scythe sweeps (whoosh).")]
+    [SerializeField] private MMF_Player sweepFeedback;
+    [Tooltip("Played at the player when a sweep lands (camera impulse; add an impact sound here).")]
+    [SerializeField] private MMF_Player sweepHitFeedback;
+    [Tooltip("Played when the boss dies (victory music, 2D).")]
+    [SerializeField] private MMF_Player victoryFeedback;
 
     [Header("Telegraph Arc")]
     [SerializeField] private GameObject sweepTelegraphArc;
@@ -107,6 +112,7 @@ public class NecromancerBossController : MonoBehaviour
     private void Start()
     {
         EnsureComponents();
+        ValidateFeedbackReferences();
 
         if (health != null)
         {
@@ -194,9 +200,9 @@ public class NecromancerBossController : MonoBehaviour
         // Block all player attacks while skeletons live
         if (damage != null && damage.IsPlayerOwned)
         {
-            if (bubbleDeflectSfx != null)
+            if (deflectFeedback != null)
             {
-                AudioSource.PlayClipAtPoint(bubbleDeflectSfx, transform.position, 0.8f);
+                deflectFeedback.PlayFeedbacks(transform.position);
             }
 
             // Pulse bubble visual scale
@@ -236,10 +242,9 @@ public class NecromancerBossController : MonoBehaviour
                 spawnPos = hit.position;
             }
 
-            // Summoning FX
-            if (summoningCirclePrefab != null)
+            if (summonFeedback != null)
             {
-                Instantiate(summoningCirclePrefab, spawnPos, Quaternion.identity);
+                summonFeedback.PlayFeedbacks(spawnPos);
             }
 
             yield return new WaitForSeconds(0.15f);
@@ -305,15 +310,9 @@ public class NecromancerBossController : MonoBehaviour
             health.TryBlockDamage -= HandleTryBlockDamage;
         }
 
-        // Shield Shatter Effects
-        if (shieldShatterSfx != null)
+        if (shatterFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(shieldShatterSfx, transform.position, 1.0f);
-        }
-
-        if (shieldShatterVfxPrefab != null)
-        {
-            Instantiate(shieldShatterVfxPrefab, transform.position + Vector3.up * 1.2f, Quaternion.identity);
+            shatterFeedback.PlayFeedbacks(transform.position);
         }
 
         if (bubbleShieldVisual != null)
@@ -323,15 +322,6 @@ public class NecromancerBossController : MonoBehaviour
                 bubbleShieldVisual.SetActive(false);
             });
         }
-
-        // Laugh / Scream
-        if (laughVoiceSfx != null)
-        {
-            AudioSource.PlayClipAtPoint(laughVoiceSfx, transform.position, 1.0f);
-        }
-
-        // Camera Shake
-        StartCoroutine(CameraShakeRoutine(0.4f, 0.35f));
 
         // Draw Scythe
         if (scytheWeaponObject != null)
@@ -455,9 +445,9 @@ public class NecromancerBossController : MonoBehaviour
             animator.SetTrigger(HashAttack);
         }
 
-        if (sweepWhooshSfx != null)
+        if (sweepFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(sweepWhooshSfx, transform.position, 0.9f);
+            sweepFeedback.PlayFeedbacks(transform.position);
         }
 
         // Perform 180 degree sweep check
@@ -486,12 +476,10 @@ public class NecromancerBossController : MonoBehaviour
 
                     player.Damageable.ReceiveDamage(dmg);
 
-                    if (sweepImpactSfx != null)
+                    if (sweepHitFeedback != null)
                     {
-                        AudioSource.PlayClipAtPoint(sweepImpactSfx, player.transform.position, 1.0f);
+                        sweepHitFeedback.PlayFeedbacks(player.transform.position);
                     }
-
-                    StartCoroutine(CameraShakeRoutine(0.2f, 0.25f));
                 }
             }
         }
@@ -525,9 +513,9 @@ public class NecromancerBossController : MonoBehaviour
             bubbleShieldVisual.SetActive(false);
         }
 
-        if (victoryMusicSfx != null)
+        if (victoryFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(victoryMusicSfx, transform.position, 1.0f);
+            victoryFeedback.PlayFeedbacks();
         }
 
         // Drop massive rewards
@@ -558,24 +546,14 @@ public class NecromancerBossController : MonoBehaviour
         OnBossDefeated?.Invoke();
     }
 
-    private IEnumerator CameraShakeRoutine(float duration, float magnitude)
+    private void ValidateFeedbackReferences()
     {
-        Camera cam = Camera.main;
-        if (cam == null) yield break;
-
-        Vector3 originalPos = cam.transform.localPosition;
-        float elapsed = 0f;
-
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            float x = UnityEngine.Random.Range(-1f, 1f) * magnitude;
-            float y = UnityEngine.Random.Range(-1f, 1f) * magnitude;
-            cam.transform.localPosition = originalPos + new Vector3(x, y, 0f);
-            yield return null;
-        }
-
-        cam.transform.localPosition = originalPos;
+        if (deflectFeedback == null) Debug.LogError("[NecromancerBossController] deflectFeedback is not assigned.", this);
+        if (shatterFeedback == null) Debug.LogError("[NecromancerBossController] shatterFeedback is not assigned.", this);
+        if (summonFeedback == null) Debug.LogError("[NecromancerBossController] summonFeedback is not assigned.", this);
+        if (sweepFeedback == null) Debug.LogError("[NecromancerBossController] sweepFeedback is not assigned.", this);
+        if (sweepHitFeedback == null) Debug.LogError("[NecromancerBossController] sweepHitFeedback is not assigned.", this);
+        if (victoryFeedback == null) Debug.LogError("[NecromancerBossController] victoryFeedback is not assigned.", this);
     }
 
     private void ShowCampaignEndScreen()

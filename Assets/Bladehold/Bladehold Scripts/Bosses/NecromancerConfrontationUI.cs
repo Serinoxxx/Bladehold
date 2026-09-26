@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using MoreMountains.Feedbacks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -35,10 +36,13 @@ public class NecromancerConfrontationUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI obeyButtonText;
     [SerializeField] private TextMeshProUGUI defyButtonText;
 
-    [Header("Audio")]
-    [SerializeField] private AudioClip monologueVoiceSfx;
-    [SerializeField] private AudioClip defyLaughSfx;
-    [SerializeField] private AudioClip buttonClickSfx;
+    [Header("Feedback (2D, unscaled)")]
+    [Tooltip("Played when the player chooses Defy (the Necromancer laughs).")]
+    [SerializeField] private MMF_Player defyLaughFeedback;
+    [Tooltip("Optional: played as the monologue starts typing. Nothing is authored yet.")]
+    [SerializeField] private MMF_Player monologueFeedback;
+    [Tooltip("Optional: played on the Obey/Defy button press. Nothing is authored yet.")]
+    [SerializeField] private MMF_Player buttonClickFeedback;
 
     [Header("Tuning")]
     [SerializeField] private float typewriterCharDelay = 0.025f;
@@ -103,6 +107,7 @@ public class NecromancerConfrontationUI : MonoBehaviour
 
     private void Start()
     {
+        if (defyLaughFeedback == null) Debug.LogError("[NecromancerConfrontationUI] defyLaughFeedback is not assigned.", this);
         if (dialogueCanvasGroup != null && !dialogueCanvasGroup.gameObject.activeInHierarchy)
         {
             dialogueCanvasGroup.alpha = 0f;
@@ -247,9 +252,9 @@ public class NecromancerConfrontationUI : MonoBehaviour
         isTyping = true;
         if (dialogueBodyText != null) dialogueBodyText.text = "";
 
-        if (monologueVoiceSfx != null)
+        if (monologueFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(monologueVoiceSfx, Camera.main != null ? Camera.main.transform.position : transform.position, 0.7f);
+            monologueFeedback.PlayFeedbacks();
         }
 
         for (int i = 0; i < text.Length; i++)
@@ -282,9 +287,9 @@ public class NecromancerConfrontationUI : MonoBehaviour
         PlayButtonSfx();
         Debug.Log("[NecromancerConfrontationUI] Player chose: DEFY. Starting Necromancer Boss Battle in the Crypt!");
 
-        if (defyLaughSfx != null)
+        if (defyLaughFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(defyLaughSfx, Camera.main != null ? Camera.main.transform.position : transform.position, 1.0f);
+            defyLaughFeedback.PlayFeedbacks();
         }
 
         OnDefyChosen?.Invoke();
@@ -307,9 +312,9 @@ public class NecromancerConfrontationUI : MonoBehaviour
 
     private void PlayButtonSfx()
     {
-        if (buttonClickSfx != null)
+        if (buttonClickFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(buttonClickSfx, Camera.main != null ? Camera.main.transform.position : transform.position, 0.8f);
+            buttonClickFeedback.PlayFeedbacks();
         }
     }
 

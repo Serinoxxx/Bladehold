@@ -18,7 +18,8 @@ This plan audits and migrates the existing violations. Split it into several ses
 | 6 | Batch C: common enemies + spawner → MMF | **Done 2026-09-26** (feel awaits tuning) |
 | 7 | Batch D: towers → MMF | **Done 2026-09-26** (feel awaits tuning) |
 | 8 | Batch E: waves, objectives, hub UI → MMF | **Done 2026-09-26** (feel awaits tuning) |
-| 9+ | Direct audio/VFX/shake → MMF, one batch per session (ranked list below) | Next: batch F |
+| 9 | Batch F: bosses → MMF | **Done 2026-09-26** (feel awaits tuning) |
+| 10 | Batch G (proposed): one-shot VFX the audio grep missed | Not started, see "Batch G" below |
 
 **Session 1 done:**
 - Deleted the Editor-only duplicate pickup sounds from `AmmoPickup`, `Coin`, `HealthPack`, `ImpulseOrb`, `LightningOrb` and `PlayerSummonMount`. Their MMF players already carry the sound; AmmoPickup's player existed but wasn't wired, so it's wired now.
@@ -108,6 +109,24 @@ This plan audits and migrates the existing violations. Split it into several ses
 - **Trap found:** the mechanic benchmark runs in edit mode in the active scene and can't `Destroy` what it spawns, so it leaves `Benchmark_*`/`Test*` objects (and MMF bursts) behind. Saving that scene afterwards commits them; it happened once this session and was reverted. Plan-11 ticket.
 - Editor work: [`plans/editor/09-visuals-mmf.md`](editor/09-visuals-mmf.md) §10.
 
+**Session 9 done** (batch F, Unity MCP connected). No `PlayClipAtPoint`, one-shot `Instantiate(vfx)` or hand-rolled shake is left in the 5 boss scripts. Every boss feedback is a prefab in `Bladehold Prefabs/Bosses/`, nested in the Crypt/Sanctuary scenes, and `BuildNecromancerCryptScene`/`BuildPrincessSanctuaryScene` nest the same prefabs (`NestFeedback`).
+- **Necromancer:** `NecromancerDeflectMMF`, `NecromancerShatterMMF` (fire blast + laugh + Cinemachine impulse), `NecromancerSummonMMF` (`VFX/SkeletonSpawnBurst`, 2.5 s), `NecromancerSweepMMF` (whoosh), `NecromancerSweepHitMMF` (impulse), `BossVictoryMMF` (shared with the Princess, 2D on the Music track). `CameraShakeRoutine` is deleted. It moved `Camera.main` directly, which the Cinemachine brain overwrites every frame, so it most likely never showed. The impulses are copies of the mace slam's.
+- **Confrontation UI:** `NecromancerDefyLaughMMF` (2D, unscaled). Monologue and button-click players are optional (never set).
+- **Knights/Princess:** `KnightReviveMMF` ×4, `PrincessSpellCompleteMMF` (played at the revived knight), `BossVictoryMMF`. The Princess's channel loop is an optional looping MMF (`channelFeedback`, stopped with `StopFeedbacks`), which removed her `AddComponent<AudioSource>`.
+- **`CryptSkeletonAI`** is added at runtime by the Necromancer, so its clip fields were always empty. It now has optional players, which only work if a skeleton prefab carries the component.
+- **Optional, never authored:** knight swing/hit/downed, Princess channel/interrupt, skeleton swing/hit/death, confrontation monologue/click. Deleted: `fleeVoiceSfx` (never read), `holyBurstVfxPrefab`/`reviveBurstVfxPrefab` (empty everywhere), the empty `shieldShatterSfx`/`sweepImpactSfx`.
+- **Bug fixed on the way:** `FX_SkeletonSpawn_01` loops, so every summoning circle stayed for the rest of the fight.
+- Play-checked in both scenes: deflect, summon, shatter, sweep, sweep hit, defy laugh, victory, knight revive, spell complete. Pre-existing logs seen: `GameLoopManager.bannerSpawnPoints` unassigned (Crypt and Sanctuary), no DeathScreen in either boss scene (so no campaign end screen), and one `Invalid AABB` in the Sanctuary during the death sequence.
+- Editor work: [`plans/editor/09-visuals-mmf.md`](editor/09-visuals-mmf.md) §11.
+
+**After batch F** the direct-audio grep (`PlayOneShot|PlayClipAtPoint|MMSoundManagerSoundPlayEvent|MMCameraShakeEvent`, non-Editor) returns only `TrainingDummy` (debug, skipped). The temporary `Editor/Plan09MmfBuilder.cs` helper used for sessions 7-9 is deleted.
+
+### Batch G (proposed): one-shot VFX the audio grep missed
+
+The ranked list was built from an audio grep, so these one-shot `Instantiate(vfx)` calls were never in a batch. Same house pattern; check first which are live (the Mage/imbuement scripts may belong to removed classes):
+`Chests/Chest` (break), `Enemies/BomberAttack` and `PowderKeg/PowderKegAttack` (explosions), `LeapSlamAttack`/`TrollSlamAttack` (impacts), `Fishing/FishController` (death), `Player/ChainLightning` (bounce), `DraftWeaponElementEffects`, `MageImbuement`, `MagicMissileProjectile` ×2, `PeriodicImbuementController` ×2.
+Parented state visuals (Assassin whirlwind/stun, Kombusta aura, `EnemyStatusManager`, `BerserkerUltimate` whirlwind, `FireTrailSegment`, war-banner fire, fireball/ice-zone status) stay, as documented above.
+
 ## Refreshed audit (2026-09-26, after session 3)
 
 Sessions 2 (code-built UI) and 3 (code-built world visuals) are done; the visuals grep below now returns only the documented exceptions.
@@ -129,7 +148,7 @@ Highest traffic first. The counts come from a grep, so a few `.Play()` hits may 
 | ~~C~~ | Common enemies + spawner, **done session 6** | `SurvivorsSpawner`, `GoldenGoblin`(+`Flee`), `ImpulseGoblin`, `AssassinAttack`, `HookProjectile`, `BoulderProjectile`, `LightningBall`, `LightningOrbDropper`, `LightningStormZone`, `ToxicPoolZone`, `HomingOrb`, `SlayerDashAttack`, `SlayerStompCrusher`, `EnemyIntroController`, `SpecialEnemyIntro`, `DestructibleBanner`, `CaptainKombustaController`, `DynamiteProjectile`, `ArrowBarrageZone`, `BubbleShield` |
 | ~~D~~ | Towers, **done session 7** | `DefenseStructure`, `BuildWheelUI`, `ArrowTowerDefense`, `FortArrowProjectile`, `BallistaDefense`, `CatapultDefense`, `CatapultProjectile` (**direct shake**), `NetThrowerDefense`, `NetProjectile`, `OilVatDefense`, `BurningOilZone`, `SpikeTrapDefense`, `RollingFireball`, `SlipperyIceZone`, `CatapultStormCloud` |
 | ~~E~~ | Waves, objectives, hub UI, **done session 8** | `GameLoopManager`, `WaveClearedBannerUI`, `WarBannerController`, `Gate`, `WaveUpgradePowerup`, `BatteringRam`, `DestructibleSiegeEngine`, `PrisonerCage`, `RescuedPrisoner`, `SupplyWagonEscort`, `SurvivorsStatsPanelUI`, `DraftStation`, `WellStation`, `HorseHoofbeatAudio`, `FishingBowController`, `FishingManager` |
-| F | Bosses (once per run) | `ArmoredKnightAI`, `CryptSkeletonAI`, `NecromancerBossController` (**hand-rolled shake coroutine**), `NecromancerConfrontationUI`, `PrincessBossController` |
+| ~~F~~ | Bosses (once per run), **done session 9** | `ArmoredKnightAI`, `CryptSkeletonAI`, `NecromancerBossController` (**hand-rolled shake coroutine**), `NecromancerConfrontationUI`, `PrincessBossController` |
 
 Skip `TrainingDummy` (debug).
 
@@ -154,6 +173,8 @@ Grep used: `CreatePrimitive|AddComponent<(MeshRenderer|MeshFilter|LineRenderer|P
 ## Acceptance
 
 The grep returns only documented exceptions, and new code reviews reject direct audio/VFX/shake.
+
+**Status (2026-09-26, after session 9):** met for audio and shake: only `TrainingDummy` remains. One-shot VFX still has the batch G list. Looping state audio shaped per frame (`HorseHoofbeatAudio`, ram and wagon rolling loops) is a documented exception.
 
 ## Needs Lance in the Editor
 

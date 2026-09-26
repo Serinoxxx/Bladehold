@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -26,13 +27,16 @@ public class ArmoredKnightAI : MonoBehaviour
 
     [Header("Downed & Soul Beacon")]
     [SerializeField] private GameObject holySoulBeaconVisual;
-    [SerializeField] private GameObject reviveBurstVfxPrefab;
 
-    [Header("Audio")]
-    [SerializeField] private AudioClip attackSwingSfx;
-    [SerializeField] private AudioClip hitSfx;
-    [SerializeField] private AudioClip downedSfx;
-    [SerializeField] private AudioClip reviveSfx;
+    [Header("Feedback")]
+    [Tooltip("Played at the knight when the Princess revives it (holy blast sound; add a burst here).")]
+    [SerializeField] private MMF_Player reviveFeedback;
+    [Tooltip("Optional: played at the knight as it swings. Nothing is authored yet.")]
+    [SerializeField] private MMF_Player attackSwingFeedback;
+    [Tooltip("Optional: played at the player when a swing lands. Nothing is authored yet.")]
+    [SerializeField] private MMF_Player hitFeedback;
+    [Tooltip("Optional: played at the knight when it goes down. Nothing is authored yet.")]
+    [SerializeField] private MMF_Player downedFeedback;
 
     private Health health;
     private NavMeshAgent agent;
@@ -95,6 +99,7 @@ public class ArmoredKnightAI : MonoBehaviour
 
     private void Start()
     {
+        if (reviveFeedback == null) Debug.LogError("[ArmoredKnightAI] reviveFeedback is not assigned on " + name + ".", this);
         EnsureComponents();
         SubscribeEvents();
 
@@ -194,9 +199,9 @@ public class ArmoredKnightAI : MonoBehaviour
             animator.SetTrigger(HashAttack);
         }
 
-        if (attackSwingSfx != null)
+        if (attackSwingFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(attackSwingSfx, transform.position, 0.85f);
+            attackSwingFeedback.PlayFeedbacks(transform.position);
         }
 
         yield return new WaitForSeconds(windupTime);
@@ -219,9 +224,9 @@ public class ArmoredKnightAI : MonoBehaviour
 
                 player.Damageable.ReceiveDamage(dmg);
 
-                if (hitSfx != null)
+                if (hitFeedback != null)
                 {
-                    AudioSource.PlayClipAtPoint(hitSfx, player.transform.position, 1.0f);
+                    hitFeedback.PlayFeedbacks(player.transform.position);
                 }
             }
         }
@@ -284,9 +289,9 @@ public class ArmoredKnightAI : MonoBehaviour
             holySoulBeaconVisual.SetActive(true);
         }
 
-        if (downedSfx != null)
+        if (downedFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(downedSfx, transform.position, 1.0f);
+            downedFeedback.PlayFeedbacks(transform.position);
         }
 
         if (health != null)
@@ -324,14 +329,9 @@ public class ArmoredKnightAI : MonoBehaviour
             health.Revive(health.MaxHealth * Mathf.Clamp01(healthPercent));
         }
 
-        if (reviveBurstVfxPrefab != null)
+        if (reviveFeedback != null)
         {
-            Instantiate(reviveBurstVfxPrefab, transform.position, Quaternion.identity);
-        }
-
-        if (reviveSfx != null)
-        {
-            AudioSource.PlayClipAtPoint(reviveSfx, transform.position, 1.0f);
+            reviveFeedback.PlayFeedbacks(transform.position);
         }
 
         if (animator != null)

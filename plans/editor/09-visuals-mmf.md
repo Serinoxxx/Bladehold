@@ -115,3 +115,14 @@ Wired through MCP. Play-checked in the Survivors scene: bounty reward, wave-clea
 - [ ] **Supply wagon arrival** `Objectives/SupplyWagonArrivalMMF` is just the coin burst. `arrivalSound` was never set, so add a fanfare here if the moment wants one.
 - [ ] **Never authored (optional, empty = silent, as before):** chest appear/claim (`WaveUpgradePowerup.spawnFeedback`/`claimFeedback`), Rest Area draft station open, fishing bow shot, fishing time-up and fish-caught sounds.
 - [ ] **Benchmark junk trap (plan 11):** running the mechanic benchmark leaves `Benchmark_*`/`Test*` objects in whatever scene is open. Don't save the scene after running it; reopen it instead.
+
+## 11. Session 9: boss MMFs (feel tuning, 00 §D)
+
+Wired through MCP and play-checked in the Crypt and the Sanctuary. All boss feedbacks are prefabs in `Bladehold Prefabs/Bosses/`, so tune them there; the scenes and both scene builders nest the same ones.
+
+- [ ] **Necromancer shake is new on screen.** `NecromancerShatterMMF` and `NecromancerSweepHitMMF` carry a copy of the mace slam's Cinemachine impulse (velocity 5). The old code shook `Camera.main` directly, which Cinemachine overwrites every frame, so the shake most likely never showed. Tune the impulse: the old intent was a 0.4 s strong shake on shatter and a 0.2 s lighter one per scythe hit. Verify: Crypt → Defy → kill the skeletons (shatter), then take a scythe hit.
+- [ ] **Victory music** `BossVictoryMMF` is now 2D on the Music track. It was a `PlayClipAtPoint` at the boss (3D). Verify: beat either boss.
+- [ ] **Summoning circles** `VFX/SkeletonSpawnBurst` (2.5 s). Before, every circle stayed for the whole fight because the source loops. The altar's decorative circle is separate and untouched.
+- [ ] **Knight revive** plays two holy blasts at once (the knight's `KnightReviveMMF` and the Princess's `PrincessSpellCompleteMMF`, same clip), as before. Drop one or give the spell-complete player a burst (the old `holyBurstVfxPrefab` was never set).
+- [ ] **Never authored (optional, empty = silent, as before):** knight swing/hit/downed, Princess channel loop (make its sound Loop + Stop Sound On Feedback Stop) and hit-interrupt, confrontation monologue and button click, Crypt skeleton swing/hit/death (only authorable if a skeleton prefab carries `CryptSkeletonAI`, since the Necromancer adds it at runtime). The builder's knight/interrupt clip paths don't exist either.
+- [ ] **Pre-existing, seen during the check:** neither boss scene has a DeathScreen, so beating a boss skips the campaign end screen ("Add DeathScreen.prefab to the scene"). Also `GameLoopManager.bannerSpawnPoints` is unassigned in both (§5 noted this), and one `Invalid AABB` log appears during the Sanctuary death sequence.

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
@@ -52,15 +53,17 @@ public class PrincessBossController : MonoBehaviour
     [SerializeField] private GameObject floatingCastBarRoot;
     [SerializeField] private Image castBarFillImage;
     [SerializeField] private TMP_Text castBarTimeText;
-    [SerializeField] private GameObject holyBurstVfxPrefab;
     [SerializeField] private DamageNumbersPro.DamageNumber delayPopupPrefab;
 
-    [Header("Audio")]
-    [SerializeField] private AudioClip spellChannelLoopSfx;
-    [SerializeField] private AudioClip spellHitInterruptSfx;
-    [SerializeField] private AudioClip spellCompleteSfx;
-    [SerializeField] private AudioClip victoryMusicSfx;
-    [SerializeField] private AudioClip fleeVoiceSfx;
+    [Header("Feedback")]
+    [Tooltip("Played at the revived knight when the spell completes (holy blast sound; add a burst here).")]
+    [SerializeField] private MMF_Player spellCompleteFeedback;
+    [Tooltip("Played when the Princess is defeated (victory music, 2D).")]
+    [SerializeField] private MMF_Player victoryFeedback;
+    [Tooltip("Optional: a looping channel sound, started with the revival channel and stopped when it ends (set the sound to Loop + Stop Sound On Feedback Stop). Nothing is authored yet.")]
+    [SerializeField] private MMF_Player channelFeedback;
+    [Tooltip("Optional: played when a hit delays the channel. Nothing is authored yet.")]
+    [SerializeField] private MMF_Player interruptFeedback;
 
     [Header("Campaign Rewards")]
     [SerializeField] private int goldReward = 500;
@@ -72,7 +75,6 @@ public class PrincessBossController : MonoBehaviour
     private NavMeshAgent agent;
     private Animator animator;
     private Collider princessCollider;
-    private AudioSource audioSource;
 
     private PrincessState currentState = PrincessState.Idle;
     private ArmoredKnightAI targetKnight = null;
@@ -133,19 +135,15 @@ public class PrincessBossController : MonoBehaviour
         if (agent == null) agent = GetComponent<NavMeshAgent>();
         if (animator == null) animator = GetComponentInChildren<Animator>();
         if (princessCollider == null) princessCollider = GetComponent<Collider>();
-
-        if (audioSource == null)
-        {
-            audioSource = GetComponent<AudioSource>();
-            if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
-            audioSource.playOnAwake = false;
-        }
     }
 
     private void Start()
     {
         EnsureComponents();
         SubscribeEvents();
+
+        if (spellCompleteFeedback == null) Debug.LogError("[PrincessBossController] spellCompleteFeedback is not assigned.", this);
+        if (victoryFeedback == null) Debug.LogError("[PrincessBossController] victoryFeedback is not assigned.", this);
 
         if (floatingCastBarRoot == null || castBarFillImage == null || castBarTimeText == null)
         {
@@ -395,11 +393,9 @@ public class PrincessBossController : MonoBehaviour
             UpdateCastBarVisual();
         }
 
-        if (audioSource != null && spellChannelLoopSfx != null)
+        if (channelFeedback != null)
         {
-            audioSource.clip = spellChannelLoopSfx;
-            audioSource.loop = true;
-            audioSource.Play();
+            channelFeedback.PlayFeedbacks(transform.position);
         }
 
         Debug.Log($"[PrincessBossController] Princess Katherine started channeling revival on {knight.name} (5.0s)!");
@@ -456,9 +452,9 @@ public class PrincessBossController : MonoBehaviour
 
                 Debug.Log($"[PrincessBossController] Princess struck while channeling! +{hitDelayPenalty}s delay added (Remaining: {currentChannelTimeRemaining:F1}s)");
 
-                if (spellHitInterruptSfx != null)
+                if (interruptFeedback != null)
                 {
-                    AudioSource.PlayClipAtPoint(spellHitInterruptSfx, transform.position, 1.0f);
+                    interruptFeedback.PlayFeedbacks(transform.position);
                 }
 
                 // Show popup or flash cast bar
@@ -505,15 +501,9 @@ public class PrincessBossController : MonoBehaviour
             targetKnight.Revive(1.0f);
         }
 
-        if (holyBurstVfxPrefab != null)
+        if (spellCompleteFeedback != null)
         {
-            Vector3 burstPos = targetKnight != null ? targetKnight.transform.position : transform.position;
-            Instantiate(holyBurstVfxPrefab, burstPos, Quaternion.identity);
-        }
-
-        if (spellCompleteSfx != null)
-        {
-            AudioSource.PlayClipAtPoint(spellCompleteSfx, transform.position, 1.0f);
+            spellCompleteFeedback.PlayFeedbacks(targetKnight != null ? targetKnight.transform.position : transform.position);
         }
 
         StopChannelingVisuals();
@@ -556,9 +546,9 @@ public class PrincessBossController : MonoBehaviour
 
     private void StopChannelingVisuals()
     {
-        if (audioSource != null && audioSource.isPlaying)
+        if (channelFeedback != null)
         {
-            audioSource.Stop();
+            channelFeedback.StopFeedbacks();
         }
 
         if (magicCircleVisual != null)
@@ -646,9 +636,9 @@ public class PrincessBossController : MonoBehaviour
             }
         }
 
-        if (victoryMusicSfx != null)
+        if (victoryFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(victoryMusicSfx, transform.position, 1.0f);
+            victoryFeedback.PlayFeedbacks();
         }
 
         // Grant massive campaign rewards
