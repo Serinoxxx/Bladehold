@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -14,7 +15,8 @@ public class CatapultDefense : DefenseStructure
     [SerializeField] private float splashRadius = 4.5f;
     [SerializeField] private GameObject projectilePrefab;
     [SerializeField] private Transform launchPoint;
-    [SerializeField] private AudioClip fireSfx;
+    [Tooltip("Optional: played at the launch point on each shot. Nothing is authored yet.")]
+    [SerializeField] private MMF_Player fireFeedback;
     [SerializeField] private LayerMask enemyLayers = ~0;
 
     [Header("Aim & Animation")]
@@ -198,9 +200,9 @@ public class CatapultDefense : DefenseStructure
             Debug.LogError($"[CatapultDefense] projectilePrefab '{projectilePrefab.name}' has no CatapultProjectile.", this);
         }
 
-        if (fireSfx != null)
+        if (fireFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(fireSfx, spawnPos);
+            fireFeedback.PlayFeedbacks(spawnPos);
         }
     }
 

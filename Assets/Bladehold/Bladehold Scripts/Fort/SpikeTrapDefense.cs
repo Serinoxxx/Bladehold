@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -10,10 +11,16 @@ public class SpikeTrapDefense : DefenseStructure
     [SerializeField] private float triggerRadius = 2.6f;
     [SerializeField] private float impaleDamage = 85f;
     [SerializeField] private float triggerCooldown = 1.2f;
-    [SerializeField] private AudioClip impaleSfx;
-    [SerializeField] private GameObject impaleVfxPrefab;
+    [Tooltip("Played at the trap when the spikes fire (chop sound + blood splat).")]
+    [SerializeField] private MMF_Player impaleFeedback;
 
     private float nextTriggerTime = 0f;
+
+    protected override void ValidateFeedbackReferences()
+    {
+        base.ValidateFeedbackReferences();
+        if (impaleFeedback == null) Debug.LogError($"{name}: SpikeTrapDefense.impaleFeedback is not assigned.", this);
+    }
 
     protected override void Awake()
     {
@@ -69,14 +76,9 @@ public class SpikeTrapDefense : DefenseStructure
     {
         if (!ConsumeSupply()) return;
 
-        if (impaleSfx != null)
+        if (impaleFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(impaleSfx, transform.position);
-        }
-
-        if (impaleVfxPrefab != null)
-        {
-            Instantiate(impaleVfxPrefab, transform.position, Quaternion.identity);
+            impaleFeedback.PlayFeedbacks(transform.position);
         }
 
         foreach (Health target in targets)

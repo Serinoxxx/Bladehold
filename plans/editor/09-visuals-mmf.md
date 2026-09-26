@@ -6,7 +6,7 @@ From [plan 09](../09-visuals-and-mmf-audit.md). Sections 1-3 are from session 1 
 
 - [ ] **Let Unity import.** Check the Console for compile errors, and that `Bladehold Prefabs/Defenses/DefenseAssemblyAnimation.prefab` opens: a root with `DefenseAssemblyAnimation` and three children (`PieceLandFeedback`, `RiseDustFeedback`, `SlamFeedback`), each with an empty `MMF_Player`. It was written by hand as YAML. If it fails to import, delete it and recreate it the same way, then drag it into `TowerPlot.prefab` → `TowerPlot.assemblyAnimationPrefab`.
 - [ ] **Run the benchmark** (**Bladehold/Benchmarks/Run Weapon Reach & Damage Benchmark**). Check 20D now reads "TowerPlot prefab references an authored assembly prefab. [PASSED]".
-- [ ] **Binary castle scenes don't override the new wiring.** In any castle scene, select the HUD's `BuildWheelUI`: `supplyPopupPrefab` = Gold, `buildSfx` = HAMMER_Hit_Wood_Shield_stereo, `buildVfxPrefab` = FX_Impact_Wood_01, none of them bold (overridden). Likewise `ObjectiveWaypointTrackerUI.noSupplyIcon` / `cleanupEnemySkullIcon`. *(MCP-able)*
+- [ ] **Binary castle scenes don't override the new wiring.** In any castle scene, select the HUD's `BuildWheelUI`: `supplyPopupPrefab` = Gold, `buildFeedback` = its `BuildMMF` child (session 7 replaced `buildSfx`/`buildVfxPrefab`), neither bold (overridden). Likewise `ObjectiveWaypointTrackerUI.noSupplyIcon` / `cleanupEnemySkullIcon`. *(MCP-able)*
 
 ## 2. Prefab wiring
 
@@ -92,3 +92,14 @@ All wired and play-checked through MCP in the Survivors scene. Lightning ball, h
 - [ ] **Enemy Zoo** still has old unpacked enemy copies (disabled `GoldenGoblin` components). They weren't rewired, same as session 5. Re-drop fresh prefabs there if the zoo matters.
 
 **Benchmark after this session: 108 passed, 4 failed** (Bulwark attack, Bannerman rig, skull waypoints, objective-completion flip: all pre-existing). The edit-mode `Destroy may not be called` errors now come only from `DynamiteProjectile.Detonate` destroying its telegraph and itself during test 13A, not from sounds.
+
+## 9. Session 7: tower MMFs (feel tuning, 00 §D)
+
+Wired through MCP and play-checked in the Survivors scene: all six towers' repair/upgrade/break, the fire/net/spill/impale players, the boulder explosion (with its elemental payloads), the net impact, and the fireball strike and burn-out. No errors, and the bursts clean themselves up. What's left is taste.
+
+- [ ] **Tower sounds are 3D now** (they were `PlayClipAtPoint`, so they always were). That includes the build hammer, repair and upgrade chimes, which play at the tower rather than on the hero. Lower their spatial blend if refilling a far tower sounds too quiet. Verify: build a tower, refill it, upgrade it.
+- [ ] **Upgrade burst on every upgrade.** `UpgradeMMF` (chime + wood burst at 1 m) now plays whenever a tower levels up, including DevConsole level-ups. Before, the burst only came with a paid `[E]` upgrade.
+- [ ] **Catapult impact shake** `CatapultBoulder → Feedbacks/ExplosionMMF` Camera Shake (0.32 s, amplitude 0.45, frequency 35, 0.35 per axis) copies the old direct call. It needs an `MMCameraShaker` on the camera, the same as before. Verify: a catapult hit near you shakes the screen.
+- [ ] **Timed VFX lifetimes** in `VFX/`: `WoodImpactBurst` 2.5 s, `CatapultExplosionBurst` 4 s (the old lifetimes), and `FireBurst` 2 s / `FireballBurst` 1.5 s (new: these looped forever before). Tune them there.
+- [ ] **Never authored (optional, empty = silent, as before):** `Defense_Catapult → CatapultDefense.fireFeedback` (launch thunk), `Fort/BurningOilZone → sizzleFeedback`, `Fort/SlipperyIceZone → slipFeedback`, and a sound for the storm cloud's lightning (`CatapultStormCloud → StrikeMMF` is just the bolt). Add MMF sounds where they deserve one.
+- [ ] **Net impact plays two sounds** (the projectile's wood break and the thrower's cloth/metal thud). It always did; drop one if it's muddy.

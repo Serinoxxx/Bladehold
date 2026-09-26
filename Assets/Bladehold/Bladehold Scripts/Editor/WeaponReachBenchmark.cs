@@ -2271,15 +2271,14 @@ public static class WeaponReachBenchmark
             CatapultProjectile boulderProj = boulderPrefab != null ? boulderPrefab.GetComponent<CatapultProjectile>() : null;
 
             var bSo = boulderProj != null ? new UnityEditor.SerializedObject(boulderProj) : null;
-            var explosionVfxProp = bSo?.FindProperty("explosionVfxPrefab");
-            var explosionSfxProp = bSo?.FindProperty("explosionSfx");
+            var explosionFeedback = bSo?.FindProperty("explosionFeedback")?.objectReferenceValue as MoreMountains.Feedbacks.MMF_Player;
 
-            bool hasExplosionVfx = explosionVfxProp?.objectReferenceValue != null;
-            bool hasExplosionSfx = explosionSfxProp?.objectReferenceValue != null;
+            bool hasExplosionVfx = explosionFeedback != null && explosionFeedback.FeedbacksList.Exists(f => f is MoreMountains.Feedbacks.MMF_ParticlesInstantiation);
+            bool hasExplosionSfx = explosionFeedback != null && explosionFeedback.FeedbacksList.Exists(f => f is MoreMountains.Feedbacks.MMF_MMSoundManagerSound);
 
             if (hasExplosionVfx && hasExplosionSfx)
             {
-                sb.AppendLine("  - Catapult Detonation Config: Boulder has dedicated explosion VFX prefab and booming explosion SFX wired. [PASSED]");
+                sb.AppendLine("  - Catapult Detonation Config: Boulder explosionFeedback carries the explosion VFX and booming SFX. [PASSED]");
                 passedCount++;
             }
             else

@@ -1,3 +1,4 @@
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -12,7 +13,8 @@ public class ArrowTowerDefense : DefenseStructure
     [SerializeField] private float arrowDamage = 18f;
     [SerializeField] private GameObject arrowPrefab;
     [SerializeField] private Transform firePoint;
-    [SerializeField] private AudioClip fireSfx;
+    [Tooltip("Played at the fire point on each shot.")]
+    [SerializeField] private MMF_Player fireFeedback;
     [SerializeField] private LayerMask enemyLayers = ~0;
 
     [Header("Prediction & Intercept")]
@@ -22,6 +24,12 @@ public class ArrowTowerDefense : DefenseStructure
     [SerializeField] private float maxPredictionTime = 2.0f;
 
     private float nextFireTime = 0f;
+
+    protected override void ValidateFeedbackReferences()
+    {
+        base.ValidateFeedbackReferences();
+        if (fireFeedback == null) Debug.LogError($"{name}: ArrowTowerDefense.fireFeedback is not assigned.", this);
+    }
 
     protected override void Awake()
     {
@@ -168,9 +176,9 @@ public class ArrowTowerDefense : DefenseStructure
             if (isLightning) EnemyStatusManager.GetOrAdd(target)?.ApplyStatus("Lightning");
         }
 
-        if (fireSfx != null)
+        if (fireFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(fireSfx, spawnPos);
+            fireFeedback.PlayFeedbacks(spawnPos);
         }
     }
 

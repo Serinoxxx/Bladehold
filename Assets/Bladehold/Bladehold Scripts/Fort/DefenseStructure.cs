@@ -1,4 +1,5 @@
 using System;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -26,10 +27,12 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
     [SerializeField] protected float rotationSpeed = 160f;
 
     [Header("Audio & Feedback")]
-    [SerializeField] protected AudioClip repairSfx;
-    [SerializeField] protected AudioClip upgradeSfx;
-    [SerializeField] protected AudioClip breakSfx;
-    [SerializeField] protected GameObject breakVfxPrefab;
+    [Tooltip("Played at the tower when the player resupplies it (sound + wood burst).")]
+    [SerializeField] protected MMF_Player repairFeedback;
+    [Tooltip("Played at the tower when it levels up (sound + wood burst).")]
+    [SerializeField] protected MMF_Player upgradeFeedback;
+    [Tooltip("Played at the tower when it runs out of supply (break sound + wood burst).")]
+    [SerializeField] protected MMF_Player breakFeedback;
     [SerializeField] protected DamageNumbersPro.DamageNumber supplyPopupPrefab;
     [SerializeField] protected float interactionRadius = 3.5f;
 
@@ -100,11 +103,12 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
         OnSupplyChanged?.Invoke(currentSupply, maxSupply);
     }
 
-    private void ValidateFeedbackReferences()
+    protected virtual void ValidateFeedbackReferences()
     {
         if (supplyPopupPrefab == null) Debug.LogError($"{name}: DefenseStructure.supplyPopupPrefab is not assigned.", this);
-        if (repairSfx == null) Debug.LogError($"{name}: DefenseStructure.repairSfx is not assigned.", this);
-        if (breakVfxPrefab == null) Debug.LogError($"{name}: DefenseStructure.breakVfxPrefab is not assigned.", this);
+        if (repairFeedback == null) Debug.LogError($"{name}: DefenseStructure.repairFeedback is not assigned.", this);
+        if (upgradeFeedback == null) Debug.LogError($"{name}: DefenseStructure.upgradeFeedback is not assigned.", this);
+        if (breakFeedback == null) Debug.LogError($"{name}: DefenseStructure.breakFeedback is not assigned.", this);
     }
 
     public virtual void InitState(int level, int supply, int maxSup)
@@ -137,9 +141,9 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
         currentSupply = maxSupply;
         ApplyLevelStats(currentLevel);
 
-        if (upgradeSfx != null)
+        if (upgradeFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(upgradeSfx, transform.position);
+            upgradeFeedback.PlayFeedbacks(transform.position);
         }
 
         UpdatePrompt();
@@ -173,14 +177,9 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
     {
         Debug.Log($"[DefenseStructure] {defenseType} ran out of Supply and stopped firing!");
 
-        if (breakSfx != null)
+        if (breakFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(breakSfx, transform.position);
-        }
-
-        if (breakVfxPrefab != null)
-        {
-            Instantiate(breakVfxPrefab, transform.position, Quaternion.identity);
+            breakFeedback.PlayFeedbacks(transform.position);
         }
     }
 
@@ -196,15 +195,9 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
             if (toProvide > 0 && RunSession.TrySpendInRunSupply(toProvide))
             {
                 currentSupply += toProvide;
-                if (repairSfx != null)
+                if (repairFeedback != null)
                 {
-                    AudioSource.PlayClipAtPoint(repairSfx, transform.position);
-                }
-
-                if (breakVfxPrefab != null)
-                {
-                    GameObject vfx = Instantiate(breakVfxPrefab, transform.position + Vector3.up * 0.8f, Quaternion.identity);
-                    Destroy(vfx, 2.5f);
+                    repairFeedback.PlayFeedbacks(transform.position);
                 }
 
                 if (supplyPopupPrefab != null)
@@ -225,12 +218,6 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
             {
                 upgradeSupplySpent += upgradeCost;
                 Upgrade();
-
-                if (breakVfxPrefab != null)
-                {
-                    GameObject vfx = Instantiate(breakVfxPrefab, transform.position + Vector3.up * 1.0f, Quaternion.identity);
-                    Destroy(vfx, 2.5f);
-                }
 
                 if (supplyPopupPrefab != null)
                 {

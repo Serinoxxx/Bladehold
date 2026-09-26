@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -15,8 +16,9 @@ public class BurningOilZone : MonoBehaviour
     [SerializeField] private float slowFraction = 0.5f;
     [SerializeField] private LayerMask enemyLayers = ~0;
 
-    [Header("Audio")]
-    [SerializeField] private AudioClip sizzleSound;
+    [Header("Feedback")]
+    [Tooltip("Optional: played once when the pool appears. Nothing is authored yet.")]
+    [SerializeField] private MMF_Player sizzleFeedback;
 
     private float lifetimeTimer;
     private float tickTimer;
@@ -41,9 +43,9 @@ public class BurningOilZone : MonoBehaviour
 
     private void Start()
     {
-        if (sizzleSound != null)
+        if (sizzleFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(sizzleSound, transform.position, 0.7f);
+            sizzleFeedback.PlayFeedbacks(transform.position);
         }
     }
 
@@ -129,19 +131,7 @@ public class BurningOilZone : MonoBehaviour
 
                     if (ElementalEffectsManager.Instance != null)
                     {
-                        Vector3 shockPos = health.transform.position;
-                        if (ElementalEffectsManager.Instance.superconductorVfx != null)
-                        {
-                            Instantiate(ElementalEffectsManager.Instance.superconductorVfx, shockPos, Quaternion.identity);
-                        }
-
-                        AudioClip zapClip = ElementalEffectsManager.Instance.superconductorSfx != null
-                            ? ElementalEffectsManager.Instance.superconductorSfx
-                            : ElementalEffectsManager.Instance.statusAppliedSfx;
-                        if (zapClip != null)
-                        {
-                            AudioSource.PlayClipAtPoint(zapClip, shockPos);
-                        }
+                        ElementalEffectsManager.Instance.PlayAt(ElementalEffectsManager.Instance.superconductorFeedback, health.transform.position);
                     }
                 }
             }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -44,8 +45,8 @@ public class BuildWheelUI : MonoBehaviour
 
     [Header("Build Feedback")]
     [SerializeField] private DamageNumbersPro.DamageNumber supplyPopupPrefab;
-    [SerializeField] private AudioClip buildSfx;
-    [SerializeField] private GameObject buildVfxPrefab;
+    [Tooltip("Played at the plot when a tower is bought (hammer sound + wood burst).")]
+    [SerializeField] private MMF_Player buildFeedback;
 
     [Header("Defense Slices / Buttons")]
     [SerializeField] private GameObject sliceButtonPrefab;
@@ -132,8 +133,7 @@ public class BuildWheelUI : MonoBehaviour
     private void ValidateFeedbackReferences()
     {
         if (supplyPopupPrefab == null) Debug.LogError("BuildWheelUI: supplyPopupPrefab is not assigned.", this);
-        if (buildSfx == null) Debug.LogError("BuildWheelUI: buildSfx is not assigned.", this);
-        if (buildVfxPrefab == null) Debug.LogError("BuildWheelUI: buildVfxPrefab is not assigned.", this);
+        if (buildFeedback == null) Debug.LogError("BuildWheelUI: buildFeedback is not assigned.", this);
     }
 
     private void Start()
@@ -335,15 +335,9 @@ public class BuildWheelUI : MonoBehaviour
             Vector3 plotPos = targetPlot != null ? targetPlot.BuildPosition : transform.position;
             Close();
 
-            if (buildSfx != null)
+            if (buildFeedback != null)
             {
-                AudioSource.PlayClipAtPoint(buildSfx, plotPos, 1.0f);
-            }
-
-            if (buildVfxPrefab != null)
-            {
-                GameObject vfx = Instantiate(buildVfxPrefab, plotPos + Vector3.up * 0.2f, Quaternion.identity);
-                Destroy(vfx, 2.5f);
+                buildFeedback.PlayFeedbacks(plotPos);
             }
 
             if (supplyPopupPrefab != null)

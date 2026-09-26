@@ -16,7 +16,8 @@ This plan audits and migrates the existing violations. Split it into several ses
 | 4 | Batch A: player weapons → MMF | **Done 2026-09-26** (feel awaits tuning) |
 | 5 | Batch B: hit feedback → MMF | **Done 2026-09-26** (feel awaits tuning) |
 | 6 | Batch C: common enemies + spawner → MMF | **Done 2026-09-26** (feel awaits tuning) |
-| 7+ | Direct audio/VFX/shake → MMF, one batch per session (ranked list below) | Next: batch D |
+| 7 | Batch D: towers → MMF | **Done 2026-09-26** (feel awaits tuning) |
+| 8+ | Direct audio/VFX/shake → MMF, one batch per session (ranked list below) | Next: batch E |
 
 **Session 1 done:**
 - Deleted the Editor-only duplicate pickup sounds from `AmmoPickup`, `Coin`, `HealthPack`, `ImpulseOrb`, `LightningOrb` and `PlayerSummonMount`. Their MMF players already carry the sound; AmmoPickup's player existed but wasn't wired, so it's wired now.
@@ -81,6 +82,18 @@ This plan audits and migrates the existing violations. Split it into several ses
 - Benchmark: 108 passed, 4 failed (same known set).
 - Editor work: [`plans/editor/09-visuals-mmf.md`](editor/09-visuals-mmf.md) §8.
 
+**Session 7 done** (batch D, Unity MCP connected). No `PlayClipAtPoint`, direct camera shake or one-shot `Instantiate(vfx)` is left in the 15 batch-D scripts. Same house pattern, all sounds 3D.
+- **Towers** (`Defenses/Defense_*.prefab`): each has `Feedbacks/RepairMMF`, `UpgradeMMF` and `BreakMMF` (`DefenseStructure.repairFeedback`/`upgradeFeedback`/`breakFeedback`), plus `FireMMF` (arrow, ballista, net thrower), `NetImpactMMF`, `SpillMMF` and `ImpaleMMF`. `ValidateFeedbackReferences` is now `protected virtual`, so each subclass logs its own missing players. The catapult's `fireFeedback` is optional (it never had a sound).
+- **Projectiles/payloads**: `CatapultBoulder → ExplosionMMF` (boom + fire burst + the old `MMCameraShakeEvent` values as an MMF Camera Shake), `NetProjectile → ImpactMMF`, `RollingFireball → StrikeMMF`/`ExplodeMMF`, `CatapultStormCloud → StrikeMMF`. HUD `BuildWheelModal/BuildMMF` (`BuildWheelUI.buildFeedback`).
+- **Timed VFX variants** (the source prefabs loop): `VFX/WoodImpactBurst` 2.5 s, `CatapultExplosionBurst` 4 s, `FireBurst` 2 s, `FireballBurst` 1.5 s.
+- **Optional, never authored (empty = silent, as before):** `CatapultDefense.fireFeedback`, `BurningOilZone.sizzleFeedback`, `SlipperyIceZone.slipFeedback`.
+- **`ElementalEffectsManager`**: `plasmaOverloadVfx`, `statusAppliedSfx` and `superconductorSfx` are deleted. `superconductorVfx` became `lightningTrailVfx` (`FormerlySerializedAs`), a state visual on lightning tower arrows. `BurningOilZone`'s shock plays `superconductorFeedback`. The remaining VFX fields are all state visuals (enemy status, arrow trails, the fireball's fire, the ice zone's frost, the dash trail).
+- **Dead code deleted:** `FortArrowProjectile`'s hit sound (no caller ever passed one), `RollingFireball.rollLoopSfx`/`rollAudioSource`, `NetProjectile.groundNetVfxPrefab` and `NetThrowerDefense.netVfxPrefab` (both empty everywhere), `TowerPlot.holyLightVfxPrefab`/`woodImpactSfx` (never read). `DefensesRevampSetup` no longer sets removed fields. Benchmark 20C checks `explosionFeedback`.
+- **Left on purpose:** `OilVatDefense.oilPoolVfxPrefab` is the damaging `BurningOilZone`, a gameplay spawn despite its name. `RollingFireball`'s `FireTrailSegment` (a code-built damage object with no visuals).
+- **Bugs fixed on the way:** tower break, rolling-fireball strike (plasma fireball) and burn-out (fire) bursts loop and were never destroyed.
+- Benchmark: 106 passed, 6 failed (the known set, with both flaky ones failing). BuildWheel open/close fails whenever the Survivors scene is open: the test creates its own wheel but reads the static `Instance`, which finds the scene HUD's wheel first. Plan-11 ticket.
+- Editor work: [`plans/editor/09-visuals-mmf.md`](editor/09-visuals-mmf.md) §9.
+
 ## Refreshed audit (2026-09-26, after session 3)
 
 Sessions 2 (code-built UI) and 3 (code-built world visuals) are done; the visuals grep below now returns only the documented exceptions.
@@ -100,7 +113,7 @@ Highest traffic first. The counts come from a grep, so a few `.Play()` hits may 
 | ~~A~~ | Player (every second of play), **done session 4** | `PlayerAttack`, `PlayerBow`, `PlayerDodge`, `PlayerAmmo`, `AxeProjectile`, `MaceCombatController`, `MaceUltimate`, `PlayerUltimateController`, `FlameZone`, `PlayerArmourManager` |
 | ~~B~~ | Hit feedback, **done session 5** | `SwordHitFeedback`, `BowHitFeedback`, `DamageTrigger`, `KnockbackReceiver`, `RagdollBloodImpact`, ~~`RagdollImpactAudio`~~ (deleted), `EnemyStatusManager`, + `ImpulseHitFeedback` |
 | ~~C~~ | Common enemies + spawner, **done session 6** | `SurvivorsSpawner`, `GoldenGoblin`(+`Flee`), `ImpulseGoblin`, `AssassinAttack`, `HookProjectile`, `BoulderProjectile`, `LightningBall`, `LightningOrbDropper`, `LightningStormZone`, `ToxicPoolZone`, `HomingOrb`, `SlayerDashAttack`, `SlayerStompCrusher`, `EnemyIntroController`, `SpecialEnemyIntro`, `DestructibleBanner`, `CaptainKombustaController`, `DynamiteProjectile`, `ArrowBarrageZone`, `BubbleShield` |
-| D | Towers | `DefenseStructure`, `BuildWheelUI`, `ArrowTowerDefense`, `FortArrowProjectile`, `BallistaDefense`, `CatapultDefense`, `CatapultProjectile` (**direct shake**), `NetThrowerDefense`, `NetProjectile`, `OilVatDefense`, `BurningOilZone`, `SpikeTrapDefense`, `RollingFireball`, `SlipperyIceZone`, `CatapultStormCloud` |
+| ~~D~~ | Towers, **done session 7** | `DefenseStructure`, `BuildWheelUI`, `ArrowTowerDefense`, `FortArrowProjectile`, `BallistaDefense`, `CatapultDefense`, `CatapultProjectile` (**direct shake**), `NetThrowerDefense`, `NetProjectile`, `OilVatDefense`, `BurningOilZone`, `SpikeTrapDefense`, `RollingFireball`, `SlipperyIceZone`, `CatapultStormCloud` |
 | E | Waves, objectives, hub UI | `GameLoopManager`, `WaveClearedBannerUI`, `WarBannerController`, `Gate`, `WaveUpgradePowerup`, `BatteringRam`, `DestructibleSiegeEngine`, `PrisonerCage`, `RescuedPrisoner`, `SupplyWagonEscort`, `SurvivorsStatsPanelUI`, `DraftStation`, `WellStation`, `HorseHoofbeatAudio`, `FishingBowController`, `FishingManager` |
 | F | Bosses (once per run) | `ArmoredKnightAI`, `CryptSkeletonAI`, `NecromancerBossController` (**hand-rolled shake coroutine**), `NecromancerConfrontationUI`, `PrincessBossController` |
 

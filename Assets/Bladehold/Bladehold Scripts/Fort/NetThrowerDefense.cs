@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -13,9 +14,10 @@ public class NetThrowerDefense : DefenseStructure
     [SerializeField] private float rootDuration = 3.5f;
     [SerializeField] private GameObject netProjectilePrefab;
     [SerializeField] private Transform launchPoint;
-    [SerializeField] private GameObject netVfxPrefab;
-    [SerializeField] private AudioClip fireSfx;
-    [SerializeField] private AudioClip netImpactSfx;
+    [Tooltip("Played at the launch point on each throw.")]
+    [SerializeField] private MMF_Player fireFeedback;
+    [Tooltip("Played where the net lands and roots enemies.")]
+    [SerializeField] private MMF_Player netImpactFeedback;
     [SerializeField] private LayerMask enemyLayers = ~0;
 
     [Header("Aim & Animation")]
@@ -26,6 +28,13 @@ public class NetThrowerDefense : DefenseStructure
     private Transform barrelTransform;
     private Quaternion barrelInitialLocalRot;
     private Vector3 barrelInitialLocalPos;
+
+    protected override void ValidateFeedbackReferences()
+    {
+        base.ValidateFeedbackReferences();
+        if (fireFeedback == null) Debug.LogError($"{name}: NetThrowerDefense.fireFeedback is not assigned.", this);
+        if (netImpactFeedback == null) Debug.LogError($"{name}: NetThrowerDefense.netImpactFeedback is not assigned.", this);
+    }
 
     protected override void Awake()
     {
@@ -170,9 +179,9 @@ public class NetThrowerDefense : DefenseStructure
         Vector3 spawnPos = launchPoint != null ? launchPoint.position
             : (barrelTransform != null ? barrelTransform.position + barrelTransform.forward * 0.75f : transform.position + Vector3.up * 1.5f);
 
-        if (fireSfx != null)
+        if (fireFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(fireSfx, spawnPos);
+            fireFeedback.PlayFeedbacks(spawnPos);
         }
 
         if (netProjectilePrefab != null)
@@ -192,14 +201,9 @@ public class NetThrowerDefense : DefenseStructure
 
     public void ApplyNetImpact(Vector3 targetPos)
     {
-        if (netImpactSfx != null)
+        if (netImpactFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(netImpactSfx, targetPos);
-        }
-
-        if (netVfxPrefab != null)
-        {
-            Instantiate(netVfxPrefab, targetPos, Quaternion.identity);
+            netImpactFeedback.PlayFeedbacks(targetPos);
         }
 
         // Apply root in radius

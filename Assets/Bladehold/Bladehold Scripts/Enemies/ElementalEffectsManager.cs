@@ -1,11 +1,11 @@
 using MoreMountains.Feedbacks;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 /// <summary>
 ///     Shared elemental effects on the Player prefab. The burst feedbacks are MMF players (sound + VFX)
 ///     played at a world position via <see cref="PlayAt" />. The status VFX prefabs are state visuals,
-///     parented to an enemy for as long as its status lasts. The legacy burst VFX/clip fields still serve
-///     tower callers that haven't moved to MMF yet (plan 09 batch D), then get deleted.
+///     parented to an enemy (or a tower arrow, fireball or ice zone) for as long as the effect lasts.
 /// </summary>
 public class ElementalEffectsManager : MonoBehaviour
 {
@@ -34,14 +34,9 @@ public class ElementalEffectsManager : MonoBehaviour
     public GameObject iceStatusVfx;
     public GameObject frozenStatusVfx;
     public GameObject discordRingVfx;
-
-    [Header("Legacy burst VFX (see summary)")]
-    public GameObject plasmaOverloadVfx;
-    public GameObject superconductorVfx;
-
-    [Header("Audio (legacy, see summary)")]
-    public AudioClip statusAppliedSfx;
-    public AudioClip superconductorSfx;
+    [Tooltip("Lightning crackle riding on lightning-upgraded tower arrows.")]
+    [FormerlySerializedAs("superconductorVfx")]
+    public GameObject lightningTrailVfx;
 
     private void Awake()
     {

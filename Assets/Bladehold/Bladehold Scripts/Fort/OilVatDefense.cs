@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -11,12 +12,20 @@ public class OilVatDefense : DefenseStructure
     [SerializeField] private float spillCooldown = 6.0f;
     [SerializeField] private float poolDuration = 4.5f;
     [SerializeField] private float damagePerSecond = 20f;
+    [Tooltip("The burning oil pool spawned on each spill (a gameplay zone, not feedback).")]
     [SerializeField] private GameObject oilPoolVfxPrefab;
-    [SerializeField] private AudioClip spillSfx;
+    [Tooltip("Played at the vat each time it spills (splash sound).")]
+    [SerializeField] private MMF_Player spillFeedback;
 
     private float nextSpillTime = 0f;
     private float activePoolRemaining = 0f;
     private float tickTimer = 0f;
+
+    protected override void ValidateFeedbackReferences()
+    {
+        base.ValidateFeedbackReferences();
+        if (spillFeedback == null) Debug.LogError($"{name}: OilVatDefense.spillFeedback is not assigned.", this);
+    }
 
     protected override void Awake()
     {
@@ -92,9 +101,9 @@ public class OilVatDefense : DefenseStructure
         activePoolRemaining = poolDuration;
         tickTimer = 0f;
 
-        if (spillSfx != null)
+        if (spillFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(spillSfx, transform.position);
+            spillFeedback.PlayFeedbacks(transform.position);
         }
 
         if (oilPoolVfxPrefab != null)

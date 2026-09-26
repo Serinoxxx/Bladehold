@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -11,7 +12,8 @@ public class SlipperyIceZone : MonoBehaviour
     [SerializeField] private float radius = 5.5f;
     [SerializeField] private float duration = 10.0f;
     [SerializeField] private float enemySlipCooldown = 3.5f;
-    [SerializeField] private AudioClip slipSfx;
+    [Tooltip("Optional: played at an enemy when it slips over. Nothing is authored yet.")]
+    [SerializeField] private MMF_Player slipFeedback;
     [Tooltip("The ice pad child, authored for a 1m radius; x/z are scaled to the zone radius.")]
     [SerializeField] private Transform visualRoot;
 
@@ -117,9 +119,9 @@ public class SlipperyIceZone : MonoBehaviour
                     // Apply Ice status as well
                     EnemyStatusManager.GetOrAdd(enemyHealth)?.ApplyStatus("Ice", 0.5f);
 
-                    if (slipSfx != null)
+                    if (slipFeedback != null)
                     {
-                        AudioSource.PlayClipAtPoint(slipSfx, receiver.transform.position, 0.7f);
+                        slipFeedback.PlayFeedbacks(receiver.transform.position);
                     }
                 }
             }

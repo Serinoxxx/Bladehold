@@ -1,4 +1,5 @@
 using System;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -15,15 +16,22 @@ public class NetProjectile : MonoBehaviour
     [SerializeField] private Transform netMeshTransform;
 
     [Header("Impact Feedback")]
-    [SerializeField] private GameObject impactVfxPrefab;
-    [SerializeField] private GameObject groundNetVfxPrefab;
-    [SerializeField] private AudioClip impactSfx;
+    [Tooltip("Played where the net lands (sound + wood/dust puff). Add a ground-net visual here too if one gets made.")]
+    [SerializeField] private MMF_Player impactFeedback;
 
     private Vector3 startPoint;
     private Vector3 targetPoint;
     private float elapsedTime = 0f;
     private bool hasImpacted = false;
     private Action<Vector3> onImpactCallback;
+
+    private void Start()
+    {
+        if (impactFeedback == null)
+        {
+            Debug.LogError("[NetProjectile] impactFeedback is not assigned on " + gameObject.name + ".", this);
+        }
+    }
 
     public void Launch(Vector3 start, Vector3 target, float duration, Action<Vector3> onImpact)
     {
@@ -75,24 +83,9 @@ public class NetProjectile : MonoBehaviour
 
         Vector3 hitPos = targetPoint;
 
-        // Play impact sound
-        if (impactSfx != null)
+        if (impactFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(impactSfx, hitPos, 1.0f);
-        }
-
-        // Spawn dust/wood impact puff
-        if (impactVfxPrefab != null)
-        {
-            GameObject impactVfx = Instantiate(impactVfxPrefab, hitPos + Vector3.up * 0.1f, Quaternion.identity);
-            Destroy(impactVfx, 2.5f);
-        }
-
-        // Spawn ground net visual ring if assigned
-        if (groundNetVfxPrefab != null)
-        {
-            GameObject groundNet = Instantiate(groundNetVfxPrefab, hitPos + Vector3.up * 0.05f, Quaternion.identity);
-            Destroy(groundNet, 3.5f);
+            impactFeedback.PlayFeedbacks(hitPos);
         }
 
         onImpactCallback?.Invoke(hitPos);

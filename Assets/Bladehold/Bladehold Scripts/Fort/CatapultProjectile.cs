@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -10,8 +11,8 @@ public class CatapultProjectile : MonoBehaviour
     [SerializeField] private float arcHeight = 6f;
     [SerializeField] private float flightDuration = 1.2f;
     [SerializeField] private float splashRadius = 4.5f;
-    [SerializeField] private GameObject explosionVfxPrefab;
-    [SerializeField] private AudioClip explosionSfx;
+    [Tooltip("Played at the impact point: explosion sound, fire burst and camera shake.")]
+    [SerializeField] private MMF_Player explosionFeedback;
 
     [Header("Elemental Payloads (tower upgrades)")]
     [SerializeField] private SlipperyIceZone slipperyIceZonePrefab;
@@ -27,6 +28,14 @@ public class CatapultProjectile : MonoBehaviour
     private bool isSlipperyGround = false;
     private bool isStormCloud = false;
     private bool isRollingFireball = false;
+
+    private void Start()
+    {
+        if (explosionFeedback == null)
+        {
+            Debug.LogError("[CatapultProjectile] explosionFeedback is not assigned on " + gameObject.name + ".", this);
+        }
+    }
 
     public void SetElementalUpgrades(bool slipperyGround, bool stormCloud, bool rollingFireball)
     {
@@ -79,23 +88,10 @@ public class CatapultProjectile : MonoBehaviour
 
         Vector3 impactPos = targetPoint;
 
-        // Visual and Sound effects
-        if (explosionVfxPrefab != null)
+        if (explosionFeedback != null)
         {
-            GameObject vfx = Instantiate(explosionVfxPrefab, impactPos, Quaternion.identity);
-            Destroy(vfx, 4.0f);
+            explosionFeedback.PlayFeedbacks(impactPos);
         }
-        else if (ElementalEffectsManager.Instance != null && ElementalEffectsManager.Instance.fireStatusVfx != null)
-        {
-            Instantiate(ElementalEffectsManager.Instance.fireStatusVfx, impactPos, Quaternion.identity);
-        }
-
-        if (explosionSfx != null)
-        {
-            AudioSource.PlayClipAtPoint(explosionSfx, impactPos);
-        }
-
-        MoreMountains.Feedbacks.MMCameraShakeEvent.Trigger(0.32f, 0.45f, 35f, 0.35f, 0.35f, 0.35f);
 
         // Damage & Ignite in splash radius
         Collider[] hits = Physics.OverlapSphere(impactPos, splashRadius);

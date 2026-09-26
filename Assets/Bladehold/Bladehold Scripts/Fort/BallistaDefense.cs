@@ -1,3 +1,4 @@
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -13,7 +14,8 @@ public class BallistaDefense : DefenseStructure
     [SerializeField] private int pierceCount = 3;
     [SerializeField] private GameObject boltPrefab;
     [SerializeField] private Transform firePoint;
-    [SerializeField] private AudioClip fireSfx;
+    [Tooltip("Played at the fire point on each shot.")]
+    [SerializeField] private MMF_Player fireFeedback;
     [SerializeField] private LayerMask enemyLayers = ~0;
 
     [Header("Aim & Animation")]
@@ -25,6 +27,12 @@ public class BallistaDefense : DefenseStructure
     private Transform loaderTransform;
     private Vector3 stringInitialLocalPos;
     private Vector3 loaderInitialLocalPos;
+
+    protected override void ValidateFeedbackReferences()
+    {
+        base.ValidateFeedbackReferences();
+        if (fireFeedback == null) Debug.LogError($"{name}: BallistaDefense.fireFeedback is not assigned.", this);
+    }
 
     protected override void Awake()
     {
@@ -191,9 +199,9 @@ public class BallistaDefense : DefenseStructure
             }
         }
 
-        if (fireSfx != null)
+        if (fireFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(fireSfx, spawnPos);
+            fireFeedback.PlayFeedbacks(spawnPos);
         }
     }
 

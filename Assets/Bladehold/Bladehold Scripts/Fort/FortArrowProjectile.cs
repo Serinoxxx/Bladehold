@@ -13,7 +13,6 @@ public class FortArrowProjectile : MonoBehaviour
     private Vector3 direction;
     private float speed;
     private float damageAmount;
-    private AudioClip hitSound;
     private bool hasHit = false;
     private float aliveTime = 0f;
 
@@ -23,12 +22,11 @@ public class FortArrowProjectile : MonoBehaviour
     private string infusedElement = "";
     private GameObject visualFxInstance;
 
-    public void Init(Vector3 dir, float spd, float dmg, AudioClip hitSfx = null)
+    public void Init(Vector3 dir, float spd, float dmg)
     {
         direction = dir.normalized;
         speed = spd;
         damageAmount = dmg;
-        hitSound = hitSfx;
         transform.forward = direction;
     }
 
@@ -60,7 +58,7 @@ public class FortArrowProjectile : MonoBehaviour
         else if (isLightning)
         {
             tint = new Color(1f, 0.95f, 0.2f);
-            if (ElementalEffectsManager.Instance != null) fxPrefab = ElementalEffectsManager.Instance.superconductorVfx;
+            if (ElementalEffectsManager.Instance != null) fxPrefab = ElementalEffectsManager.Instance.lightningTrailVfx;
         }
         else if (isFrost)
         {
@@ -165,11 +163,6 @@ public class FortArrowProjectile : MonoBehaviour
                 if (isLightning)
                 {
                     EnemyStatusManager.GetOrAdd(targetHealth)?.ApplyStatus("Lightning");
-                }
-
-                if (hitSound != null)
-                {
-                    AudioSource.PlayClipAtPoint(hitSound, hit.point, 0.8f);
                 }
 
                 hasHit = true;

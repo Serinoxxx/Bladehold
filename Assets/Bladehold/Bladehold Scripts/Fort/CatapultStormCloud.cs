@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -13,8 +14,8 @@ public class CatapultStormCloud : MonoBehaviour
     [SerializeField] private float strikeDamage = 35f;
     [Tooltip("The cloud child, authored for a 1m radius; x/z are scaled to the strike radius.")]
     [SerializeField] private Transform visualRoot;
-    [SerializeField] private GameObject strikeVfxPrefab;
-    [SerializeField] private AudioClip strikeSfx;
+    [Tooltip("Played at each lightning strike point (bolt burst, plus a sound if one gets added).")]
+    [SerializeField] private MMF_Player strikeFeedback;
 
     private readonly Collider[] hitBuffer = new Collider[32];
     private float aliveTime = 0f;
@@ -58,6 +59,10 @@ public class CatapultStormCloud : MonoBehaviour
         {
             // Still strikes, just invisible.
             Debug.LogError("[CatapultStormCloud] visualRoot is not assigned (the cloud child, authored for a 1m radius).", this);
+        }
+        if (strikeFeedback == null)
+        {
+            Debug.LogError("[CatapultStormCloud] strikeFeedback is not assigned.", this);
         }
         ScaleVisual();
         nextStrikeTime = Time.time + 0.3f; // quick initial strike
@@ -149,20 +154,9 @@ public class CatapultStormCloud : MonoBehaviour
         target.ReceiveDamage(damage);
         EnemyStatusManager.GetOrAdd(target)?.ApplyStatus("Lightning");
 
-        // Visual lightning bolt
-        if (strikeVfxPrefab != null)
+        if (strikeFeedback != null)
         {
-            Instantiate(strikeVfxPrefab, strikePoint, Quaternion.identity);
-        }
-        else if (ElementalEffectsManager.Instance != null && ElementalEffectsManager.Instance.superconductorVfx != null)
-        {
-            Instantiate(ElementalEffectsManager.Instance.superconductorVfx, strikePoint, Quaternion.identity);
-        }
-
-        // SFX
-        if (strikeSfx != null)
-        {
-            AudioSource.PlayClipAtPoint(strikeSfx, strikePoint, 0.8f);
+            strikeFeedback.PlayFeedbacks(strikePoint);
         }
     }
 

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -23,16 +24,16 @@ public class RollingFireball : MonoBehaviour, IDamageable
     [Tooltip("The rolling mesh child; spun by code as the ball rolls. The prefab root also carries the trigger SphereCollider melee hits register on.")]
     [SerializeField] private Transform visualChild;
     [SerializeField] private GameObject trailVfxPrefab;
-    [SerializeField] private GameObject hitBurstVfxPrefab;
-    [SerializeField] private AudioClip strikeRedirectSfx;
-    [SerializeField] private AudioClip rollLoopSfx;
+    [Tooltip("Played at the ball when the player strikes it to redirect it (fire burst).")]
+    [SerializeField] private MMF_Player strikeFeedback;
+    [Tooltip("Played at the ball when it burns out and bursts (fire burst).")]
+    [SerializeField] private MMF_Player explodeFeedback;
 
     private Vector3 moveDirection = Vector3.forward;
     private float aliveTime = 0f;
     private float nextTrailTime = 0f;
     private readonly Dictionary<Health, float> hitCooldowns = new Dictionary<Health, float>();
     private readonly Collider[] hitBuffer = new Collider[16];
-    private AudioSource rollAudioSource;
 
     public float CurrentSpeed => currentSpeed;
     public Vector3 MoveDirection => moveDirection;
@@ -68,8 +69,10 @@ public class RollingFireball : MonoBehaviour, IDamageable
             // Still rolls and burns, just invisible.
             Debug.LogError("[RollingFireball] visualChild is not assigned (the rolling mesh child).", this);
         }
+        if (strikeFeedback == null) Debug.LogError("[RollingFireball] strikeFeedback is not assigned.", this);
+        if (explodeFeedback == null) Debug.LogError("[RollingFireball] explodeFeedback is not assigned.", this);
 
-        // Attach fire status particles if available
+        // Fire status particles ride on the ball for its whole life (a state visual, not a one-shot).
         if (ElementalEffectsManager.Instance != null && ElementalEffectsManager.Instance.fireStatusVfx != null)
         {
             GameObject fireParticles = Instantiate(ElementalEffectsManager.Instance.fireStatusVfx, transform.position, Quaternion.identity, transform);
@@ -211,19 +214,9 @@ public class RollingFireball : MonoBehaviour, IDamageable
         // Boost speed
         currentSpeed = Mathf.Min(maxSpeed, currentSpeed * speedBoostMultiplier);
 
-        // Feedback
-        if (hitBurstVfxPrefab != null)
+        if (strikeFeedback != null)
         {
-            Instantiate(hitBurstVfxPrefab, transform.position, Quaternion.identity);
-        }
-        else if (ElementalEffectsManager.Instance != null && ElementalEffectsManager.Instance.plasmaOverloadVfx != null)
-        {
-            Instantiate(ElementalEffectsManager.Instance.plasmaOverloadVfx, transform.position, Quaternion.identity);
-        }
-
-        if (strikeRedirectSfx != null)
-        {
-            AudioSource.PlayClipAtPoint(strikeRedirectSfx, transform.position, 1.0f);
+            strikeFeedback.PlayFeedbacks(transform.position);
         }
     }
 
@@ -253,9 +246,9 @@ public class RollingFireball : MonoBehaviour, IDamageable
             }
         }
 
-        if (ElementalEffectsManager.Instance != null && ElementalEffectsManager.Instance.fireStatusVfx != null)
+        if (explodeFeedback != null)
         {
-            Instantiate(ElementalEffectsManager.Instance.fireStatusVfx, transform.position, Quaternion.identity);
+            explodeFeedback.PlayFeedbacks(transform.position);
         }
 
         Destroy(gameObject);

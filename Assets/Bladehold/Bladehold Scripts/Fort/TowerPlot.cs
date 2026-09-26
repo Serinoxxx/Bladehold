@@ -12,8 +12,6 @@ public class TowerPlot : MonoBehaviour, IInteractable
     [SerializeField] private int plotIndex = 0;
     [SerializeField] private float interactionRadius = 4.0f;
     [SerializeField] private Transform buildAnchor;
-    [SerializeField] private GameObject holyLightVfxPrefab;
-    [SerializeField] private AudioClip woodImpactSfx;
     [Tooltip("Authored prefab that plays the build animation and its MMF feedbacks.")]
     [SerializeField] private DefenseAssemblyAnimation assemblyAnimationPrefab;
 

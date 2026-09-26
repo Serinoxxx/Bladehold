@@ -27,11 +27,6 @@ public static class DefensesRevampSetup
             sb.AppendLine("- Created folder: " + DEFENSES_FOLDER);
         }
 
-        AudioClip woodImpactSfx = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Impacts/HAMMER_Hit_Wood_Shield_stereo.wav");
-        AudioClip woodBreakSfx = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Impacts/HAMMER_Hit_Wood_Shield_Break_stereo.wav");
-        AudioClip repairSfx = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Skill Tree/Upgrade Mid Tier Item A.wav");
-        AudioClip upgradeSfx = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Skill Tree/Upgrade Legendary Tier Item A.wav");
-        GameObject holyLightPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Piloto Studio/Ultimate Loot VFX Pack/VFX Prefabs/Thematic Lootbeams/Lootbeam_Holy.prefab");
 
         // 1. Create Catapult Boulder Projectile
         string catProjPath = $"{DEFENSES_FOLDER}/CatapultBoulder.prefab";
@@ -70,9 +65,6 @@ public static class DefensesRevampSetup
             GameObject towerObj = towerModel != null ? Object.Instantiate(towerModel) : new GameObject("Defense_ArrowTower");
             towerObj.name = "Defense_ArrowTower";
             ArrowTowerDefense atd = towerObj.AddComponent<ArrowTowerDefense>();
-            SetSerializedField(atd, "repairSfx", repairSfx);
-            SetSerializedField(atd, "upgradeSfx", upgradeSfx);
-            SetSerializedField(atd, "breakSfx", woodBreakSfx);
             GameObject arrowProj = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/Fort/FortArrowProjectile.prefab");
             SetSerializedField(atd, "arrowPrefab", arrowProj);
             arrowTowerPrefab = PrefabUtility.SaveAsPrefabAsset(towerObj, arrowTowerPath);
@@ -89,9 +81,6 @@ public static class DefensesRevampSetup
             GameObject catObj = catModel != null ? Object.Instantiate(catModel) : new GameObject("Defense_Catapult");
             catObj.name = "Defense_Catapult";
             CatapultDefense cd = catObj.AddComponent<CatapultDefense>();
-            SetSerializedField(cd, "repairSfx", repairSfx);
-            SetSerializedField(cd, "upgradeSfx", upgradeSfx);
-            SetSerializedField(cd, "breakSfx", woodBreakSfx);
             SetSerializedField(cd, "projectilePrefab", catProjPrefab);
             catapultPrefab = PrefabUtility.SaveAsPrefabAsset(catObj, catapultPath);
             Object.DestroyImmediate(catObj);
@@ -107,9 +96,6 @@ public static class DefensesRevampSetup
             GameObject balObj = balModel != null ? Object.Instantiate(balModel) : new GameObject("Defense_Ballista");
             balObj.name = "Defense_Ballista";
             BallistaDefense bd = balObj.AddComponent<BallistaDefense>();
-            SetSerializedField(bd, "repairSfx", repairSfx);
-            SetSerializedField(bd, "upgradeSfx", upgradeSfx);
-            SetSerializedField(bd, "breakSfx", woodBreakSfx);
             SetSerializedField(bd, "boltPrefab", balProjPrefab);
             ballistaPrefab = PrefabUtility.SaveAsPrefabAsset(balObj, ballistaPath);
             Object.DestroyImmediate(balObj);
@@ -125,9 +111,6 @@ public static class DefensesRevampSetup
             GameObject netObj = mortarModel != null ? Object.Instantiate(mortarModel) : new GameObject("Defense_NetThrower");
             netObj.name = "Defense_NetThrower";
             NetThrowerDefense ntd = netObj.AddComponent<NetThrowerDefense>();
-            SetSerializedField(ntd, "repairSfx", repairSfx);
-            SetSerializedField(ntd, "upgradeSfx", upgradeSfx);
-            SetSerializedField(ntd, "breakSfx", woodBreakSfx);
             netThrowerPrefab = PrefabUtility.SaveAsPrefabAsset(netObj, netThrowerPath);
             Object.DestroyImmediate(netObj);
             sb.AppendLine("- Created Defense_NetThrower prefab");
@@ -142,10 +125,6 @@ public static class DefensesRevampSetup
             GameObject spikeObj = spikesModel != null ? Object.Instantiate(spikesModel) : new GameObject("Defense_SpikeTrap");
             spikeObj.name = "Defense_SpikeTrap";
             SpikeTrapDefense std = spikeObj.AddComponent<SpikeTrapDefense>();
-            SetSerializedField(std, "repairSfx", repairSfx);
-            SetSerializedField(std, "upgradeSfx", upgradeSfx);
-            SetSerializedField(std, "breakSfx", woodBreakSfx);
-            SetSerializedField(std, "impaleSfx", woodImpactSfx);
             spikeTrapPrefab = PrefabUtility.SaveAsPrefabAsset(spikeObj, spikeTrapPath);
             Object.DestroyImmediate(spikeObj);
             sb.AppendLine("- Created Defense_SpikeTrap prefab");
@@ -160,9 +139,6 @@ public static class DefensesRevampSetup
             GameObject oilObj = oilModel != null ? Object.Instantiate(oilModel) : new GameObject("Defense_OilVat");
             oilObj.name = "Defense_OilVat";
             OilVatDefense ovd = oilObj.AddComponent<OilVatDefense>();
-            SetSerializedField(ovd, "repairSfx", repairSfx);
-            SetSerializedField(ovd, "upgradeSfx", upgradeSfx);
-            SetSerializedField(ovd, "breakSfx", woodBreakSfx);
             GameObject oilZone = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/Fort/BurningOilZone.prefab");
             SetSerializedField(ovd, "oilPoolVfxPrefab", oilZone);
             oilVatPrefab = PrefabUtility.SaveAsPrefabAsset(oilObj, oilVatPath);
@@ -191,8 +167,6 @@ public static class DefensesRevampSetup
 
             TowerPlot tp = plotObj.AddComponent<TowerPlot>();
             tp.SetPrefabs(arrowTowerPrefab, catapultPrefab, ballistaPrefab, netThrowerPrefab, spikeTrapPrefab, oilVatPrefab);
-            SetSerializedField(tp, "holyLightVfxPrefab", holyLightPrefab);
-            SetSerializedField(tp, "woodImpactSfx", woodImpactSfx);
 
             plotPrefab = PrefabUtility.SaveAsPrefabAsset(plotObj, plotPrefabPath);
             Object.DestroyImmediate(plotObj);
@@ -204,8 +178,6 @@ public static class DefensesRevampSetup
             if (tp != null)
             {
                 tp.SetPrefabs(arrowTowerPrefab, catapultPrefab, ballistaPrefab, netThrowerPrefab, spikeTrapPrefab, oilVatPrefab);
-                SetSerializedField(tp, "holyLightVfxPrefab", holyLightPrefab);
-                SetSerializedField(tp, "woodImpactSfx", woodImpactSfx);
                 EditorUtility.SetDirty(plotPrefab);
             }
         }
