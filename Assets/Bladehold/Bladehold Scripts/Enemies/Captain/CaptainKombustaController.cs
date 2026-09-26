@@ -1,7 +1,8 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Collections;
+using System;
 using HighlightPlus;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -29,6 +30,10 @@ public class CaptainKombustaController : MonoBehaviour
 
     [Header("Attack Configuration")]
     [SerializeField] private CaptainKombustaSO attackData;
+
+    [Header("Feedbacks")]
+    [Tooltip("Optional: played when Kombusta sets himself on fire. Nothing is authored yet.")]
+    [SerializeField] private MMF_Player igniteFeedback;
 
     private float? damageOverride;
     private float meleeTimer = 0f;
@@ -325,9 +330,6 @@ public class CaptainKombustaController : MonoBehaviour
             }
 
             GameObject telegraphPrefab = attackData != null ? attackData.telegraphPrefab : null;
-            GameObject vfxPrefab = attackData != null ? attackData.explosionVfxPrefab : null;
-            AudioClip sfxExplosion = attackData != null ? attackData.explosionSfx : null;
-            AudioClip sfxFuse = attackData != null ? attackData.fuseSfx : null;
 
             projectile.Launch(
                 spawnPos,
@@ -339,9 +341,6 @@ public class CaptainKombustaController : MonoBehaviour
                 knockback,
                 health,
                 telegraphPrefab,
-                vfxPrefab,
-                sfxExplosion,
-                sfxFuse,
                 groundNormal
             );
 
@@ -382,9 +381,9 @@ public class CaptainKombustaController : MonoBehaviour
             highlightEffect.Refresh();
         }
 
-        if (attackData != null && attackData.igniteSfx != null)
+        if (igniteFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(attackData.igniteSfx, transform.position, 1.0f);
+            igniteFeedback.PlayFeedbacks(transform.position);
         }
     }
 

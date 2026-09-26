@@ -13,13 +13,4 @@ public class GoldenGoblinFleeSO : ScriptableObject
     [Tooltip("Seconds between destination re-calculations.")]
     public float repathInterval = 0.2f;
 
-    [Header("Audio & Visual Feedback")]
-    [Tooltip("VFX instantiated at the goblin's location when it dies.")]
-    public GameObject deathVfxPrefab;
-
-    [Tooltip("SFX played when the goblin dies.")]
-    public AudioClip deathSfx;
-
-    [Tooltip("Optional SFX played when the goblin detects player close by.")]
-    public AudioClip fleeSfx;
 }

@@ -1,3 +1,4 @@
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -22,9 +23,8 @@ public class ImpulseGoblin : MonoBehaviour
     [Tooltip("Renderer(s) swapped to impulseAuraMaterial when this goblin is marked. Mirror GoldenGoblin's list.")]
     [SerializeField] private Renderer[] bodyRenderers;
     [SerializeField] private Material impulseAuraMaterial;
-    [Tooltip("Instantiated at this goblin's position on death.")]
-    [SerializeField] private GameObject deathVfxPrefab;
-    [SerializeField] private AudioClip deathSfx;
+    [Tooltip("Optional: played at this goblin's position when a marked goblin dies. Nothing is authored yet.")]
+    [SerializeField] private MMF_Player deathFeedback;
 
     private bool isImpulse;
     private bool anyError = false;
@@ -98,13 +98,9 @@ public class ImpulseGoblin : MonoBehaviour
             return;
         }
 
-        if (deathVfxPrefab != null)
+        if (deathFeedback != null)
         {
-            Instantiate(deathVfxPrefab, transform.position, Quaternion.identity);
-        }
-        if (deathSfx != null)
-        {
-            AudioSource.PlayClipAtPoint(deathSfx, transform.position);
+            deathFeedback.PlayFeedbacks(transform.position);
         }
 
         if (Player.Instance != null)

@@ -16,7 +16,3 @@ MonoBehaviour:
   bubbleVisualPrefab: {fileID: 986342527312571590, guid: 72255ad7c3e6ae440b5504b2f2c063b7, type: 3}
   shieldHealth: 40
   reShieldCooldown: 10
-  blockSfx: {fileID: 8300000, guid: 1d1fe0699bad33242b15b76d1f9a08ef, type: 3}
-  shieldBreakSfx: {fileID: 0}
-  shieldBreakVfxPrefab: {fileID: 0}
-  blockSfxVolume: 0.8

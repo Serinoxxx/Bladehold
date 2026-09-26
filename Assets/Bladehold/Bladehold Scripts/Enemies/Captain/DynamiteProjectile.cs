@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -8,6 +9,12 @@ using UnityEngine;
 /// </summary>
 public class DynamiteProjectile : MonoBehaviour
 {
+    [Header("Feedbacks")]
+    [Tooltip("Played at the throw position when the stick is launched (fuse hiss).")]
+    [SerializeField] private MMF_Player fuseFeedback;
+    [Tooltip("Played at the blast centre on detonation (explosion burst + sound).")]
+    [SerializeField] private MMF_Player explosionFeedback;
+
     private Vector3 startPosition;
     private Vector3 targetPosition;
     private float flightTime = 0.8f;
@@ -17,13 +24,23 @@ public class DynamiteProjectile : MonoBehaviour
     private float knockbackForce = 8.0f;
     private IDamageable owner;
 
-    private GameObject explosionVfxPrefab;
-    private AudioClip explosionSfx;
     private GameObject telegraphInstance;
 
     private float elapsedTime = 0f;
     private bool isLaunched = false;
     private bool hasDetonated = false;
+
+    private void Awake()
+    {
+        if (fuseFeedback == null)
+        {
+            Debug.LogError("[DynamiteProjectile] fuseFeedback is not assigned on " + gameObject.name + ".", this);
+        }
+        if (explosionFeedback == null)
+        {
+            Debug.LogError("[DynamiteProjectile] explosionFeedback is not assigned on " + gameObject.name + ".", this);
+        }
+    }
 
     /// <summary>
     ///     Initializes and launches the dynamite toward the targeted ground location.
@@ -38,9 +55,6 @@ public class DynamiteProjectile : MonoBehaviour
         float knockback,
         IDamageable sourceOwner,
         GameObject telegraphPrefab,
-        GameObject vfxPrefab,
-        AudioClip sfxExplosion,
-        AudioClip sfxFuse = null,
         Vector3 groundNormal = default)
     {
         startPosition = start;
@@ -51,8 +65,6 @@ public class DynamiteProjectile : MonoBehaviour
         explosionDamage = damage;
         knockbackForce = knockback;
         owner = sourceOwner;
-        explosionVfxPrefab = vfxPrefab;
-        explosionSfx = sfxExplosion;
 
         if (groundNormal == Vector3.zero) groundNormal = Vector3.up;
 
@@ -72,9 +84,9 @@ public class DynamiteProjectile : MonoBehaviour
             Debug.LogError("[DynamiteProjectile] No telegraph prefab: assign CaptainKombustaSO.telegraphPrefab.", this);
         }
 
-        if (sfxFuse != null)
+        if (fuseFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(sfxFuse, transform.position, 0.6f);
+            fuseFeedback.PlayFeedbacks(transform.position);
         }
 
         isLaunched = true;
@@ -117,17 +129,9 @@ public class DynamiteProjectile : MonoBehaviour
 
         Vector3 blastCenter = targetPosition;
 
-        // Spawn explosion VFX
-        if (explosionVfxPrefab != null)
+        if (explosionFeedback != null)
         {
-            GameObject vfx = Instantiate(explosionVfxPrefab, blastCenter, Quaternion.identity);
-            Destroy(vfx, 2.5f);
-        }
-
-        // Play explosion sound
-        if (explosionSfx != null)
-        {
-            AudioSource.PlayClipAtPoint(explosionSfx, blastCenter, 0.9f);
+            explosionFeedback.PlayFeedbacks(blastCenter);
         }
 
         // Overlap sphere dealing 20 unparryable elemental damage in 2m radius

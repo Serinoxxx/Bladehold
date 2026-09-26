@@ -20,13 +20,9 @@ public class SlayerStompCrusher : MonoBehaviour
     [SerializeField] private float minMoveSpeed = 0.2f;
 
     [Header("Juice & Feedback")]
-    [Tooltip("Optional blood splatter / impact prefab spawned on crushed enemies.")]
-    [SerializeField] private GameObject crushVfxPrefab;
 
-    [Tooltip("Heavy stomp / crunch audio clip played on crushing.")]
-    [SerializeField] private AudioClip crushSfx;
 
-    [Tooltip("Optional MMF_Player feedback played on crush.")]
+    [Tooltip("Played on each crushed enemy (blood burst + crunch; the sound has its own cooldown).")]
     [SerializeField] private MMF_Player crushFeedback;
 
     [SerializeField] private NavMeshAgent agent;
@@ -38,7 +34,6 @@ public class SlayerStompCrusher : MonoBehaviour
     private IDamageable myDamageable;
     private bool anyError = false;
     private bool isDead = false;
-    private float lastCrushSoundTime = -999f;
 
    
 
@@ -71,6 +66,11 @@ public class SlayerStompCrusher : MonoBehaviour
         }
 
         if (anyError) return;
+
+        if (crushFeedback == null)
+        {
+            Debug.LogError("[SlayerStompCrusher] crushFeedback is not assigned on " + gameObject.name + ".", this);
+        }
 
         myDamageable = GetComponent<IDamageable>();
         health.OnDied += HandleDied;
@@ -138,20 +138,9 @@ public class SlayerStompCrusher : MonoBehaviour
 
             targetHealth.ReceiveDamage(damage);
 
-            // Spawn crush feedback / VFX
-            if (crushVfxPrefab != null)
-            {
-                Instantiate(crushVfxPrefab, col.transform.position + Vector3.up * 0.5f, Quaternion.identity);
-            }
-
             if (crushFeedback != null)
             {
-                crushFeedback.PlayFeedbacks(col.transform.position);
-            }
-            else if (crushSfx != null && Time.time - lastCrushSoundTime > 0.15f)
-            {
-                AudioSource.PlayClipAtPoint(crushSfx, col.transform.position, 1.0f);
-                lastCrushSoundTime = Time.time;
+                crushFeedback.PlayFeedbacks(col.transform.position + Vector3.up * 0.5f);
             }
         }
     }

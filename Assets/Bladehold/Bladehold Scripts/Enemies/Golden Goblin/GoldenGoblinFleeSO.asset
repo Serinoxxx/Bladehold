@@ -15,6 +15,3 @@ MonoBehaviour:
   fleeDistance: 15
   fleeSampleRadius: 8
   repathInterval: 0.2
-  deathVfxPrefab: {fileID: 0}
-  deathSfx: {fileID: 0}
-  fleeSfx: {fileID: 0}

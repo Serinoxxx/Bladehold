@@ -1,3 +1,4 @@
+using MoreMountains.Feedbacks;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -24,6 +25,12 @@ public class BubblerCaster : MonoBehaviour
 
     [Tooltip("Offset from the target enemy's origin for the beam anchor.")]
     [SerializeField] private Vector3 lightningTargetOffset = new Vector3(0, 1.2f, 0);
+
+    [Header("Shield Feedbacks (played at the shielded ally)")]
+    [Tooltip("Played each time the bubble absorbs a player hit.")]
+    [SerializeField] private MMF_Player shieldBlockFeedback;
+    [Tooltip("Optional: played when the bubble pops. Falls back to the block feedback.")]
+    [SerializeField] private MMF_Player shieldBreakFeedback;
 
     private Transform lightningTargetTransform;
     private Health currentTargetHealth;
@@ -93,6 +100,11 @@ public class BubblerCaster : MonoBehaviour
         {
             Debug.LogError("[BubblerCaster] NavMeshAgent component is not assigned or found.");
             anyError = true;
+        }
+        if (shieldBlockFeedback == null)
+        {
+            // Non-fatal: shields still block, just silently.
+            Debug.LogError("[BubblerCaster] shieldBlockFeedback is not assigned on " + gameObject.name + ".", this);
         }
 
         if (anyError) return;
@@ -278,7 +290,7 @@ public class BubblerCaster : MonoBehaviour
 
         currentTargetHealth = allyHealth;
         currentShield = allyHealth.gameObject.AddComponent<BubbleShield>();
-        currentShield.Initialize(shieldData, transform, HandleShieldBroken);
+        currentShield.Initialize(shieldData, transform, HandleShieldBroken, shieldBlockFeedback, shieldBreakFeedback);
 
         if (lightningTargetTransform == null)
         {

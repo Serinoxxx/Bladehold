@@ -5,7 +5,7 @@ using UnityEngine;
 ///     Shared elemental effects on the Player prefab. The burst feedbacks are MMF players (sound + VFX)
 ///     played at a world position via <see cref="PlayAt" />. The status VFX prefabs are state visuals,
 ///     parented to an enemy for as long as its status lasts. The legacy burst VFX/clip fields still serve
-///     tower and spawner callers that haven't moved to MMF yet (plan 09 batches C-D), then get deleted.
+///     tower callers that haven't moved to MMF yet (plan 09 batch D), then get deleted.
 /// </summary>
 public class ElementalEffectsManager : MonoBehaviour
 {

@@ -1,4 +1,5 @@
 using System.Collections;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -10,9 +11,8 @@ using UnityEngine;
 /// </summary>
 public class LightningStormZone : MonoBehaviour
 {
-    [Tooltip("Instantiated at this zone's position each time it strikes anything.")]
-    [SerializeField] private GameObject strikeVfxPrefab;
-    [SerializeField] private AudioClip strikeSfx;
+    [Tooltip("Played at this zone's position each time it strikes anything (sound + bolt).")]
+    [SerializeField] private MMF_Player strikeFeedback;
 
     private const int MaxOverlapResults = 8;
     private readonly Collider[] overlapBuffer = new Collider[MaxOverlapResults];
@@ -29,6 +29,11 @@ public class LightningStormZone : MonoBehaviour
         damage = strikeDamage;
         damageType = type;
         owner = ownerDamageable;
+
+        if (strikeFeedback == null)
+        {
+            Debug.LogError("[LightningStormZone] strikeFeedback is not assigned on " + gameObject.name + ".", this);
+        }
 
         StartCoroutine(RunStorm(duration, strikeInterval));
     }
@@ -75,13 +80,9 @@ public class LightningStormZone : MonoBehaviour
             return;
         }
 
-        if (strikeVfxPrefab != null)
+        if (strikeFeedback != null)
         {
-            Instantiate(strikeVfxPrefab, transform.position, Quaternion.identity);
-        }
-        if (strikeSfx != null)
-        {
-            AudioSource.PlayClipAtPoint(strikeSfx, transform.position);
+            strikeFeedback.PlayFeedbacks(transform.position);
         }
     }
 }

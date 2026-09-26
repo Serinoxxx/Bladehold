@@ -145,6 +145,8 @@
 - Fixed the light flash on Impulse hits never showing; it now pulses where the hit lands
 - Fixed Plasma Overload leaving a fireball burning forever where it went off
 - Fixed blood splashes from sword hits sometimes coming out the wrong size after a ragdoll had bled nearby
+- Fixed the fleeing Golden Goblin dying silently; it now bursts into coins with a jingle like other golden enemies
+- Fixed finished enemy effects (lightning, boulder and dynamite blasts, gold bursts) staying in the level after they faded, slowly piling up over a sector
 
 ### Balance Changes
 

@@ -31,10 +31,10 @@ public class AssassinAttack : MonoBehaviour
     [SerializeField] private GameObject stunVfxPrefab;
 
     [Header("Audio & Feedbacks")]
+    [Tooltip("Optional: played when the spin winds up.")]
     [SerializeField] private MMF_Player windupFeedback;
+    [Tooltip("Played on every spin damage tick (slash sound).")]
     [SerializeField] private MMF_Player slashFeedback;
-    [SerializeField] private AudioClip slashAudioClip;
-    [SerializeField] private AudioSource audioSource;
 
     private const int MaxOverlapResults = 128;
     private readonly Collider[] overlapBuffer = new Collider[MaxOverlapResults];
@@ -83,10 +83,6 @@ public class AssassinAttack : MonoBehaviour
         {
             targetSelector = GetComponent<AITargetSelector>();
         }
-        if (audioSource == null)
-        {
-            audioSource = GetComponent<AudioSource>();
-        }
     }
 
     private void Start()
@@ -115,6 +111,11 @@ public class AssassinAttack : MonoBehaviour
         {
             Debug.LogError("[AssassinAttack] Telegraph prefab is not assigned in the inspector.", this);
             anyError = true;
+        }
+        if (slashFeedback == null)
+        {
+            // Non-fatal: the spin still hits, just silently.
+            Debug.LogError("[AssassinAttack] slashFeedback is not assigned on " + gameObject.name + ".", this);
         }
 
         if (anyError)
@@ -281,8 +282,6 @@ public class AssassinAttack : MonoBehaviour
                 slashFeedback.PlayFeedbacks();
             }
 
-            PlaySlashAudio();
-
             // Rotate model while waiting for the next damage tick
             float elapsed = 0f;
             while (elapsed < tickInterval)
@@ -349,20 +348,6 @@ public class AssassinAttack : MonoBehaviour
         movement.SetMovementPaused(false);
         lastAttackTime = Time.time;
         isAttacking = false;
-    }
-
-    private void PlaySlashAudio()
-    {
-        if (slashAudioClip == null) return;
-
-        if (audioSource != null)
-        {
-            audioSource.PlayOneShot(slashAudioClip);
-        }
-        else
-        {
-            AudioSource.PlayClipAtPoint(slashAudioClip, transform.position);
-        }
     }
 
     private void ApplySpinDamagePulse()

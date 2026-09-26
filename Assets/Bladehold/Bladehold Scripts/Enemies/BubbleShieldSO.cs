@@ -14,16 +14,4 @@ public class BubbleShieldSO : ScriptableObject
 
     [Tooltip("Cooldown in seconds before a Bubbler can re-apply a shield to an enemy whose shield was broken.")]
     public float reShieldCooldown = 10.0f;
-
-    [Tooltip("Optional audio clip played when the bubble absorbs/blocks an incoming attack.")]
-    public AudioClip blockSfx;
-
-    [Tooltip("Optional audio clip played when the bubble shield pops/breaks.")]
-    public AudioClip shieldBreakSfx;
-
-    [Tooltip("Optional prefab spawned when the bubble shield breaks.")]
-    public GameObject shieldBreakVfxPrefab;
-
-    [Tooltip("Optional volume for block SFX.")]
-    [Range(0f, 1f)] public float blockSfxVolume = 0.8f;
 }

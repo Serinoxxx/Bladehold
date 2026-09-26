@@ -108,7 +108,19 @@ MonoBehaviour:
   aiMovement: {fileID: 4024451391317116201}
   fleeData: {fileID: 11400000, guid: 4f2a48e8a4801f04d82beec10d024672, type: 2}
   coinPrefab: {fileID: 0}
+  deathFeedback: {fileID: 5060922275698451096}
   dropOffset: {x: 0, y: 0.5, z: 0}
+--- !u!114 &5060922275698451096 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 349994607283774659, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+  m_PrefabInstance: {fileID: 4820944811021141595}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6da43522623d4704e979466dc7650b65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MoreMountains.Tools::MoreMountains.Feedbacks.MMF_Player
 --- !u!114 &7165174351961407572 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2416392165065999887, guid: 64b407995d56642478ea2b02984a62f8, type: 3}

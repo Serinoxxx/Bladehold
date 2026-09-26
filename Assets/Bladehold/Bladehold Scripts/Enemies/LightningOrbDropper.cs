@@ -1,18 +1,18 @@
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
 ///     Drops a <see cref="LightningOrb" /> when this enemy's <see cref="Health" /> dies. Unlike
 ///     <see cref="ImpulseGoblin" />'s orb drop (a chance-rolled variant of a regular goblin), the Storm
 ///     Witch is her own roster type, so the drop always happens — no marked-instance flag needed.
-///     Listens to <see cref="Health.OnDied" />; Health stays unaware of loot. VFX/SFX are optional and
-///     purely cosmetic: a missing prefab/clip never blocks the orb drop.
+///     Listens to <see cref="Health.OnDied" />; Health stays unaware of loot. The death feedback is optional and
+///     purely cosmetic: a missing one never blocks the orb drop.
 /// </summary>
 public class LightningOrbDropper : MonoBehaviour
 {
     [SerializeField] private Health health;
-    [Tooltip("Instantiated at this enemy's position on death.")]
-    [SerializeField] private GameObject deathVfxPrefab;
-    [SerializeField] private AudioClip deathSfx;
+    [Tooltip("Optional: played at this enemy's position on death. Nothing is authored yet.")]
+    [SerializeField] private MMF_Player deathFeedback;
 
     private bool anyError = false;
 
@@ -49,13 +49,9 @@ public class LightningOrbDropper : MonoBehaviour
 
     private void HandleDied()
     {
-        if (deathVfxPrefab != null)
+        if (deathFeedback != null)
         {
-            Instantiate(deathVfxPrefab, transform.position, Quaternion.identity);
-        }
-        if (deathSfx != null)
-        {
-            AudioSource.PlayClipAtPoint(deathSfx, transform.position);
+            deathFeedback.PlayFeedbacks(transform.position);
         }
 
         if (Player.Instance != null)

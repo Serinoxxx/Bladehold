@@ -65,25 +65,13 @@ public class CaptainKombustaSO : ScriptableObject
     [Tooltip("Duration in seconds that Captain Kombusta remains on fire before extinguishing.")]
     public float burnDuration = 8.0f;
 
-    [Header("Visual & Audio Assets")]
+    [Header("Visual Assets")]
     [Tooltip("Ground telegraph prefab scaled to dynamiteExplosionRadius * 2.")]
     public GameObject telegraphPrefab;
-
-    [Tooltip("Explosion particle effect prefab spawned on detonation.")]
-    public GameObject explosionVfxPrefab;
 
     [Tooltip("Fire particle effect prefab attached to captain while on fire.")]
     public GameObject fireAuraVfxPrefab;
 
-    [Tooltip("Optional 3D dynamite stick model or projectile prefab.")]
+    [Tooltip("Dynamite stick projectile prefab. Its fuse and explosion feedbacks live on the prefab.")]
     public GameObject dynamitePrefab;
-
-    [Tooltip("Sound played on dynamite explosion.")]
-    public AudioClip explosionSfx;
-
-    [Tooltip("Sound played while fuse is burning or throwing.")]
-    public AudioClip fuseSfx;
-
-    [Tooltip("Sound played when Captain Kombusta ignites himself.")]
-    public AudioClip igniteSfx;
 }

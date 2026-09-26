@@ -1,4 +1,5 @@
 using System;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -10,8 +11,8 @@ public class DestructibleBanner : MonoBehaviour, IDamageable
 {
     [SerializeField] private float maxHealth = 25f;
     [SerializeField] private GameObject bannerVisual;
-    [SerializeField] private GameObject destructionVfxPrefab;
-    [SerializeField] private AudioClip breakSound;
+    [Tooltip("Optional: played at the banner when it breaks. Nothing is authored yet.")]
+    [SerializeField] private MMF_Player breakFeedback;
 
     public event Action OnBannerDestroyed;
 
@@ -68,14 +69,9 @@ public class DestructibleBanner : MonoBehaviour, IDamageable
             bannerVisual.SetActive(false);
         }
 
-        if (destructionVfxPrefab != null)
+        if (breakFeedback != null)
         {
-            Instantiate(destructionVfxPrefab, transform.position, Quaternion.identity);
-        }
-
-        if (breakSound != null)
-        {
-            AudioSource.PlayClipAtPoint(breakSound, transform.position);
+            breakFeedback.PlayFeedbacks(transform.position);
         }
 
         OnBannerDestroyed?.Invoke();

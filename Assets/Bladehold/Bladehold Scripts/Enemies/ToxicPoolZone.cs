@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -11,9 +12,8 @@ using UnityEngine;
 /// </summary>
 public class ToxicPoolZone : MonoBehaviour
 {
-    [Tooltip("Optional VFX instantiated at the pool's position on any tick that damaged something.")]
-    [SerializeField] private GameObject tickVfxPrefab;
-    [SerializeField] private AudioClip tickSfx;
+    [Tooltip("Optional: played at the pool's position on any tick that damaged something. Nothing is authored yet.")]
+    [SerializeField] private MMF_Player tickFeedback;
 
     private const int MaxOverlapResults = 32;
 
@@ -81,13 +81,9 @@ public class ToxicPoolZone : MonoBehaviour
             return;
         }
 
-        if (tickVfxPrefab != null)
+        if (tickFeedback != null)
         {
-            Instantiate(tickVfxPrefab, transform.position, Quaternion.identity);
-        }
-        if (tickSfx != null)
-        {
-            AudioSource.PlayClipAtPoint(tickSfx, transform.position);
+            tickFeedback.PlayFeedbacks(transform.position);
         }
     }
 }

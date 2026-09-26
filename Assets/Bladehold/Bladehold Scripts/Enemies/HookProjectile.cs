@@ -1,4 +1,5 @@
 using System;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -16,9 +17,8 @@ using UnityEngine;
 public class HookProjectile : MonoBehaviour
 {
     [SerializeField] private Rigidbody body;
-    [Tooltip("Instantiated at the impact point when the hook hits something.")]
-    [SerializeField] private GameObject impactVfxPrefab;
-    [SerializeField] private AudioClip impactSfx;
+    [Tooltip("Optional: played at the impact point when the hook hits something. Nothing is authored yet.")]
+    [SerializeField] private MMF_Player impactFeedback;
 
     private Vector3 direction;
     private float speed;
@@ -127,13 +127,9 @@ public class HookProjectile : MonoBehaviour
             }
         }
 
-        if (impactVfxPrefab != null)
+        if (impactFeedback != null)
         {
-            Instantiate(impactVfxPrefab, transform.position, Quaternion.identity);
-        }
-        if (impactSfx != null)
-        {
-            AudioSource.PlayClipAtPoint(impactSfx, transform.position);
+            impactFeedback.PlayFeedbacks(transform.position);
         }
 
         Destroy(gameObject);

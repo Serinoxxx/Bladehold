@@ -1,3 +1,4 @@
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -14,9 +15,8 @@ using UnityEngine;
 public class HomingOrb : MonoBehaviour
 {
     [SerializeField] private Rigidbody body;
-    [Tooltip("Instantiated at the impact point when the orb hits something.")]
-    [SerializeField] private GameObject impactVfxPrefab;
-    [SerializeField] private AudioClip impactSfx;
+    [Tooltip("Played at the impact point when the orb hits something (sound + burst).")]
+    [SerializeField] private MMF_Player impactFeedback;
 
     private Vector3 direction;
     private float speed;
@@ -47,6 +47,11 @@ public class HomingOrb : MonoBehaviour
 
         body.isKinematic = true;
         body.useGravity = false;
+
+        if (impactFeedback == null)
+        {
+            Debug.LogError("[HomingOrb] impactFeedback is not assigned on " + gameObject.name + ".", this);
+        }
     }
 
     /// <summary>Sets this orb in motion. Call right after Instantiate.</summary>
@@ -113,13 +118,9 @@ public class HomingOrb : MonoBehaviour
             sourcePosition = transform.position,
         });
 
-        if (impactVfxPrefab != null)
+        if (impactFeedback != null)
         {
-            Instantiate(impactVfxPrefab, transform.position, Quaternion.identity);
-        }
-        if (impactSfx != null)
-        {
-            AudioSource.PlayClipAtPoint(impactSfx, transform.position);
+            impactFeedback.PlayFeedbacks(transform.position);
         }
 
         Destroy(gameObject);

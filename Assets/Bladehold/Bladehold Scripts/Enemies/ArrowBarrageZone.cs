@@ -1,4 +1,5 @@
 using System.Collections;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -7,8 +8,8 @@ using UnityEngine;
 /// </summary>
 public class ArrowBarrageZone : MonoBehaviour
 {
-    [SerializeField] private GameObject hitVfxPrefab;
-    [SerializeField] private AudioClip hitSfx;
+    [Tooltip("Optional: played at the zone's position on any volley that hit something. Nothing is authored yet.")]
+    [SerializeField] private MMF_Player hitFeedback;
 
     private const int MaxOverlapResults = 16;
     private readonly Collider[] overlapBuffer = new Collider[MaxOverlapResults];
@@ -68,7 +69,6 @@ public class ArrowBarrageZone : MonoBehaviour
 
         if (!struckAnything) return;
 
-        if (hitVfxPrefab != null) Instantiate(hitVfxPrefab, transform.position, Quaternion.identity);
-        if (hitSfx != null) AudioSource.PlayClipAtPoint(hitSfx, transform.position);
+        if (hitFeedback != null) hitFeedback.PlayFeedbacks(transform.position);
     }
 }

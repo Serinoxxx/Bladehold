@@ -1,10 +1,11 @@
 using System;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
 ///     Attached to an enemy while shielded by a Bubbler.
-///     Intercepts incoming damage via Health.TryBlockDamage, plays deflection SFX,
-///     and manages a visual 2m-radius sphere around the shielded enemy.
+///     Intercepts incoming damage via Health.TryBlockDamage, plays the caster's block/break
+///     feedbacks, and manages a visual 2m-radius sphere around the shielded enemy.
 ///     If an arrow projectile or melee sweep hits inside the bubble sphere, damage is negated.
 /// </summary>
 public class BubbleShield : MonoBehaviour
@@ -14,6 +15,8 @@ public class BubbleShield : MonoBehaviour
 
     private GameObject bubbleVisualObj;
     private Transform caster;
+    private MMF_Player blockFeedback;
+    private MMF_Player breakFeedback;
     private Action onShieldBroken;
     private bool isAttached;
 
@@ -31,12 +34,17 @@ public class BubbleShield : MonoBehaviour
     private float currentShieldHp;
 
     /// <summary>
-    ///     Initializes and activates the bubble shield on this target.
+    ///     Initializes and activates the bubble shield on this target. This component is added at
+    ///     runtime, so its feedbacks live on the caster's prefab and are handed in here. With no
+    ///     break feedback, a break plays the block feedback.
     /// </summary>
-    public void Initialize(BubbleShieldSO shieldData, Transform casterTransform, Action onBrokenCallback)
+    public void Initialize(BubbleShieldSO shieldData, Transform casterTransform, Action onBrokenCallback,
+        MMF_Player blockFeedbackPlayer = null, MMF_Player breakFeedbackPlayer = null)
     {
         data = shieldData;
         caster = casterTransform;
+        blockFeedback = blockFeedbackPlayer;
+        breakFeedback = breakFeedbackPlayer;
         onShieldBroken = onBrokenCallback;
         currentShieldHp = data != null ? data.shieldHealth : 40f;
 
@@ -81,21 +89,12 @@ public class BubbleShield : MonoBehaviour
         {
             currentShieldHp -= damage.value;
 
-            // Deflection sound or break sound
             if (currentShieldHp <= 0f)
             {
-                if (data != null && data.shieldBreakSfx != null)
+                MMF_Player popFeedback = breakFeedback != null ? breakFeedback : blockFeedback;
+                if (popFeedback != null)
                 {
-                    AudioSource.PlayClipAtPoint(data.shieldBreakSfx, transform.position, data.blockSfxVolume);
-                }
-                else if (data != null && data.blockSfx != null)
-                {
-                    AudioSource.PlayClipAtPoint(data.blockSfx, transform.position, data.blockSfxVolume);
-                }
-
-                if (data != null && data.shieldBreakVfxPrefab != null)
-                {
-                    Instantiate(data.shieldBreakVfxPrefab, transform.position + Vector3.up * 1f, Quaternion.identity);
+                    popFeedback.PlayFeedbacks(transform.position + Vector3.up * 1f);
                 }
 
                 // Shield broken! Destroy shield and notify caster
@@ -103,10 +102,9 @@ public class BubbleShield : MonoBehaviour
                 return true;
             }
 
-            // Play deflection sound
-            if (data != null && data.blockSfx != null)
+            if (blockFeedback != null)
             {
-                AudioSource.PlayClipAtPoint(data.blockSfx, transform.position, data.blockSfxVolume);
+                blockFeedback.PlayFeedbacks(transform.position + Vector3.up * 1f);
             }
 
             // Punch scale animation on the bubble visual to give juicy impact feel

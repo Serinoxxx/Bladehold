@@ -1,9 +1,9 @@
-using System.Collections;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
 ///     Identifies a boss or special enemy that triggers a cinematic introduction when spawning.
-///     Configures the display name, animation trigger, optional camera framing point, and roar/intro sound.
+///     Configures the display name, animation trigger, optional camera framing point, and roar feedback.
 /// </summary>
 public class SpecialEnemyIntro : MonoBehaviour
 {
@@ -21,18 +21,8 @@ public class SpecialEnemyIntro : MonoBehaviour
     [SerializeField] private bool autoTriggerOnStart = false;
 
     [Header("Intro Audio")]
-    [Tooltip("Optional roar or audio clip played during the intro cinematic.")]
-    [SerializeField] private AudioClip roarSound;
-
-    [Tooltip("Volume scale for the roar audio clip (0 to 1).")]
-    [Range(0f, 1f)]
-    [SerializeField] private float roarVolume = 1f;
-
-    [Tooltip("Delay in unscaled seconds after the intro starts before playing the roar sound.")]
-    [SerializeField] private float roarDelay = 0f;
-
-    [Tooltip("Optional AudioSource component to play the roar sound through. If not assigned, uses one on this GameObject or plays at position.")]
-    [SerializeField] private AudioSource audioSource;
+    [Tooltip("Optional: the roar played when the intro starts. The intro freezes time, so any delay on it must use unscaled time. Leave empty to use EnemyIntroController's default roar.")]
+    [SerializeField] private MMF_Player roarFeedback;
 
     [Header("Component References")]
     [SerializeField] private Health health;
@@ -41,10 +31,7 @@ public class SpecialEnemyIntro : MonoBehaviour
     public string EnemyDisplayName => enemyDisplayName;
     public string TauntTriggerName => tauntTriggerName;
     public Transform CameraFocusTransform => cameraFocusTransform != null ? cameraFocusTransform : transform;
-    public AudioClip RoarSound => roarSound;
-    public float RoarVolume => roarVolume;
-    public float RoarDelay => roarDelay;
-    public AudioSource AudioSource => audioSource;
+    public bool HasRoar => roarFeedback != null;
     public Health Health => health;
     public Animator Animator => animator;
 
@@ -58,19 +45,11 @@ public class SpecialEnemyIntro : MonoBehaviour
         {
             animator = GetComponentInChildren<Animator>();
         }
-        if (audioSource == null)
-        {
-            audioSource = GetComponent<AudioSource>();
-        }
         AutoFindFocusTransform();
     }
 
     private void Awake()
     {
-        if (audioSource == null)
-        {
-            audioSource = GetComponent<AudioSource>();
-        }
         AutoFindFocusTransform();
     }
 
@@ -83,10 +62,6 @@ public class SpecialEnemyIntro : MonoBehaviour
         if (animator == null)
         {
             animator = GetComponentInChildren<Animator>();
-        }
-        if (audioSource == null)
-        {
-            audioSource = GetComponent<AudioSource>();
         }
         AutoFindFocusTransform();
 
@@ -136,41 +111,13 @@ public class SpecialEnemyIntro : MonoBehaviour
     }
 
     /// <summary>
-    ///     Plays the configured roar sound for this special enemy intro.
+    ///     Plays this special enemy's intro roar, if it has one.
     /// </summary>
-    public void PlayRoarSound()
+    public void PlayRoar()
     {
-        if (roarSound == null) return;
-
-        if (roarDelay > 0f && gameObject.activeInHierarchy)
+        if (roarFeedback != null)
         {
-            StartCoroutine(PlayRoarDelayedRoutine());
-        }
-        else
-        {
-            ExecutePlayRoar();
-        }
-    }
-
-    private IEnumerator PlayRoarDelayedRoutine()
-    {
-        yield return new WaitForSecondsRealtime(roarDelay);
-        ExecutePlayRoar();
-    }
-
-    private void ExecutePlayRoar()
-    {
-        if (roarSound == null) return;
-
-        AudioSource source = audioSource != null ? audioSource : GetComponent<AudioSource>();
-        if (source != null)
-        {
-            source.PlayOneShot(roarSound, roarVolume);
-        }
-        else
-        {
-            AudioSource.PlayClipAtPoint(roarSound, transform.position, roarVolume);
+            roarFeedback.PlayFeedbacks(transform.position);
         }
     }
 }
-

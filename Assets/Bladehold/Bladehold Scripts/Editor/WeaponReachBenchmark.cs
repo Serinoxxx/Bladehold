@@ -1473,9 +1473,7 @@ public static class WeaponReachBenchmark
                 damage: 20f,
                 knockback: 5f,
                 sourceOwner: null,
-                telegraphPrefab: dynamiteSO != null ? dynamiteSO.telegraphPrefab : null,
-                vfxPrefab: null,
-                sfxExplosion: null
+                telegraphPrefab: dynamiteSO != null ? dynamiteSO.telegraphPrefab : null
             );
 
             // Detonate the dynamite

@@ -1,3 +1,4 @@
+using MoreMountains.Feedbacks;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -13,6 +14,8 @@ public class GoldenGoblinFlee : MonoBehaviour
     [SerializeField] private AIMovement aiMovement;
     [SerializeField] private GoldenGoblinFleeSO fleeData;
     [SerializeField] private Coin coinPrefab;
+    [Tooltip("Played at the goblin's position when it dies (coin burst + jingle).")]
+    [SerializeField] private MMF_Player deathFeedback;
 
     [Tooltip("World-space offset from this transform where bonus coins spawn on death.")]
     [SerializeField] private Vector3 dropOffset = new Vector3(0f, 0.5f, 0f);
@@ -61,6 +64,10 @@ public class GoldenGoblinFlee : MonoBehaviour
             Debug.LogError("[GoldenGoblinFlee] GoldenGoblinFleeSO is not assigned on " + gameObject.name);
             anyError = true;
         }
+        if (deathFeedback == null)
+        {
+            Debug.LogError("[GoldenGoblinFlee] deathFeedback is not assigned on " + gameObject.name + ".", this);
+        }
 
         if (anyError) return;
 
@@ -107,16 +114,9 @@ public class GoldenGoblinFlee : MonoBehaviour
         isDead = true;
         StopAgent();
 
-        if (fleeData != null)
+        if (deathFeedback != null)
         {
-            if (fleeData.deathVfxPrefab != null)
-            {
-                Instantiate(fleeData.deathVfxPrefab, transform.position, Quaternion.identity);
-            }
-            if (fleeData.deathSfx != null)
-            {
-                AudioSource.PlayClipAtPoint(fleeData.deathSfx, transform.position);
-            }
+            deathFeedback.PlayFeedbacks(transform.position);
         }
 
         // Drop bonus coins if player has GoldenGoblinGoldBonusPercent stat

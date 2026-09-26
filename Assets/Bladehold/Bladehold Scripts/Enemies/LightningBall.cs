@@ -1,3 +1,4 @@
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -12,9 +13,8 @@ using UnityEngine;
 public class LightningBall : MonoBehaviour
 {
     [SerializeField] private Rigidbody body;
-    [Tooltip("Instantiated at the impact point when the ball hits something.")]
-    [SerializeField] private GameObject impactVfxPrefab;
-    [SerializeField] private AudioClip impactSfx;
+    [Tooltip("Played at the impact point when the ball hits something (sound + burst).")]
+    [SerializeField] private MMF_Player impactFeedback;
 
     private Vector3 direction;
     private float speed;
@@ -43,6 +43,11 @@ public class LightningBall : MonoBehaviour
 
         body.isKinematic = true;
         body.useGravity = false;
+
+        if (impactFeedback == null)
+        {
+            Debug.LogError("[LightningBall] impactFeedback is not assigned on " + gameObject.name + ".", this);
+        }
     }
 
     /// <summary>Sets this ball in motion. Call right after Instantiate.</summary>
@@ -117,13 +122,9 @@ public class LightningBall : MonoBehaviour
             sourcePosition = transform.position,
         });
 
-        if (impactVfxPrefab != null)
+        if (impactFeedback != null)
         {
-            Instantiate(impactVfxPrefab, transform.position, Quaternion.identity);
-        }
-        if (impactSfx != null)
-        {
-            AudioSource.PlayClipAtPoint(impactSfx, transform.position);
+            impactFeedback.PlayFeedbacks(transform.position);
         }
 
         Destroy(gameObject);

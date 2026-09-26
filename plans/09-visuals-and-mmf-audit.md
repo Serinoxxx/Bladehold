@@ -15,7 +15,8 @@ This plan audits and migrates the existing violations. Split it into several ses
 | 3 | Code-built world visuals (primitives, telegraph LineRenderers, lights) | **Done 2026-09-26** (mockups await art review) |
 | 4 | Batch A: player weapons → MMF | **Done 2026-09-26** (feel awaits tuning) |
 | 5 | Batch B: hit feedback → MMF | **Done 2026-09-26** (feel awaits tuning) |
-| 6+ | Direct audio/VFX/shake → MMF, one batch per session (ranked list below) | Next: batch C |
+| 6 | Batch C: common enemies + spawner → MMF | **Done 2026-09-26** (feel awaits tuning) |
+| 7+ | Direct audio/VFX/shake → MMF, one batch per session (ranked list below) | Next: batch D |
 
 **Session 1 done:**
 - Deleted the Editor-only duplicate pickup sounds from `AmmoPickup`, `Coin`, `HealthPack`, `ImpulseOrb`, `LightningOrb` and `PlayerSummonMount`. Their MMF players already carry the sound; AmmoPickup's player existed but wasn't wired, so it's wired now.
@@ -68,6 +69,18 @@ This plan audits and migrates the existing violations. Split it into several ses
 - Benchmark: 107 passed, 5 failed. It's the same 5 as session 3: Bulwark attack, Bannerman rig and skull waypoints, plus BuildWheel open/close, which flips between runs (the objective-completion check flipped once too). The console's `Destroy may not be called from edit mode` comes from `BubbleShield`'s `PlayClipAtPoint` during the edit-mode benchmark (batch C).
 - Editor work: [`plans/editor/09-visuals-mmf.md`](editor/09-visuals-mmf.md) §7.
 
+**Session 6 done** (batch C, Unity MCP connected). No `PlayOneShot`, `PlayClipAtPoint` or one-shot `Instantiate(vfx)` is left in the 20 batch-C scripts (plus `BubblerCaster`, which now owns the bubble's feedbacks). Every clip/VFX pair became one `MMF_Player` field, played with `PlayFeedbacks(worldPos)`, using the session-4 house pattern. All sounds are 3D, like `PlayClipAtPoint`.
+- **Required (LogError if empty, gameplay unaffected), authored and wired:** `LightningBall`/`HomingOrb`/`BoulderProjectile.impactFeedback`, `LightningStormZone.strikeFeedback` (an `*MMF` child on each prefab); `DynamiteProjectile.fuseFeedback`/`explosionFeedback`; `GoldenGoblin.deathFeedback` (`Feedbacks/GoldenDeathMMF` on the goblin base + the two standalone goblins, and `GoldenGoblinFlee` points at the inherited one); `AssassinAttack.slashFeedback`; `SlayerDashAttack.smashFeedback`, `SlayerStompCrusher.crushFeedback`; `BubblerCaster.shieldBlockFeedback`; `SurvivorsSpawner.cleanupLightningFeedback`; `EnemyIntroController.defaultRoarFeedback` (the prefab + the Survivors scene's standalone spawner/controller).
+- **Optional (empty = silent, as before, because nothing was ever wired):** hook, toxic pool, arrow barrage, Storm Witch orb drop, impulse goblin death, Bannerman banner break, Kombusta ignite, bubble break, Assassin windup, spawner horn.
+- **Config moved off SOs**: `CaptainKombustaSO` lost `explosionVfxPrefab`/`explosionSfx`/`fuseSfx`/`igniteSfx` (`DynamiteProjectile.Launch` lost those params), `BubbleShieldSO` lost its block/break audio + VFX, `GoldenGoblinFleeSO` its death/flee audio + VFX, `WaveConfigSO` the horn. `EnemyManifest` no longer wires any of them.
+- **`BubbleShield`** is added at runtime, so it can't own authored players. `BubblerCaster` holds them and passes them to `Initialize` (optional params; the benchmark passes none, which also removed the edit-mode `Destroy` spam session 5 traced to it).
+- **`SpecialEnemyIntro`**: `roarSound`/`roarVolume`/`roarDelay`/`audioSource` became `roarFeedback` (`HasRoar`, `PlayRoar()`). Roar players force unscaled time because the intro freezes the timescale. The Slayer's `RoarAudio` child is deleted.
+- **`ElementalEffectsManager`**: `SurvivorsSpawner` no longer falls back to `superconductorVfx`/`superconductorSfx`/`statusAppliedSfx`. The remaining legacy readers are all batch D (`BurningOilZone`, `CatapultProjectile`, `CatapultStormCloud`, `FortArrowProjectile`, `RollingFireball`, `SlipperyIceZone`) plus `PlayerDodge`'s `fireStatusVfx` trail.
+- **Left in batch-C scripts on purpose (state visuals / gameplay objects):** Kombusta's fire aura, Assassin whirlwind/stun VFX, Slayer dash trail, and the telegraphs. They're parented for their duration, like the `EnemyStatusManager` visuals.
+- **Bug fixed on the way:** none of these one-shot bursts set a stop action, so every lightning, boulder, gold and blast effect stayed in the scene forever after it faded. The `ForceStopAction = Destroy` particles clean up now. The fleeing Golden Goblin (its SO was empty) now gets the golden coin burst.
+- Benchmark: 108 passed, 4 failed (same known set).
+- Editor work: [`plans/editor/09-visuals-mmf.md`](editor/09-visuals-mmf.md) §8.
+
 ## Refreshed audit (2026-09-26, after session 3)
 
 Sessions 2 (code-built UI) and 3 (code-built world visuals) are done; the visuals grep below now returns only the documented exceptions.
@@ -86,7 +99,7 @@ Highest traffic first. The counts come from a grep, so a few `.Play()` hits may 
 |---|---|---|
 | ~~A~~ | Player (every second of play), **done session 4** | `PlayerAttack`, `PlayerBow`, `PlayerDodge`, `PlayerAmmo`, `AxeProjectile`, `MaceCombatController`, `MaceUltimate`, `PlayerUltimateController`, `FlameZone`, `PlayerArmourManager` |
 | ~~B~~ | Hit feedback, **done session 5** | `SwordHitFeedback`, `BowHitFeedback`, `DamageTrigger`, `KnockbackReceiver`, `RagdollBloodImpact`, ~~`RagdollImpactAudio`~~ (deleted), `EnemyStatusManager`, + `ImpulseHitFeedback` |
-| C | Common enemies + spawner | `SurvivorsSpawner`, `GoldenGoblin`(+`Flee`), `ImpulseGoblin`, `AssassinAttack`, `HookProjectile`, `BoulderProjectile`, `LightningBall`, `LightningOrbDropper`, `LightningStormZone`, `ToxicPoolZone`, `HomingOrb`, `SlayerDashAttack`, `SlayerStompCrusher`, `EnemyIntroController`, `SpecialEnemyIntro`, `DestructibleBanner`, `CaptainKombustaController`, `DynamiteProjectile`, `ArrowBarrageZone`, `BubbleShield` |
+| ~~C~~ | Common enemies + spawner, **done session 6** | `SurvivorsSpawner`, `GoldenGoblin`(+`Flee`), `ImpulseGoblin`, `AssassinAttack`, `HookProjectile`, `BoulderProjectile`, `LightningBall`, `LightningOrbDropper`, `LightningStormZone`, `ToxicPoolZone`, `HomingOrb`, `SlayerDashAttack`, `SlayerStompCrusher`, `EnemyIntroController`, `SpecialEnemyIntro`, `DestructibleBanner`, `CaptainKombustaController`, `DynamiteProjectile`, `ArrowBarrageZone`, `BubbleShield` |
 | D | Towers | `DefenseStructure`, `BuildWheelUI`, `ArrowTowerDefense`, `FortArrowProjectile`, `BallistaDefense`, `CatapultDefense`, `CatapultProjectile` (**direct shake**), `NetThrowerDefense`, `NetProjectile`, `OilVatDefense`, `BurningOilZone`, `SpikeTrapDefense`, `RollingFireball`, `SlipperyIceZone`, `CatapultStormCloud` |
 | E | Waves, objectives, hub UI | `GameLoopManager`, `WaveClearedBannerUI`, `WarBannerController`, `Gate`, `WaveUpgradePowerup`, `BatteringRam`, `DestructibleSiegeEngine`, `PrisonerCage`, `RescuedPrisoner`, `SupplyWagonEscort`, `SurvivorsStatsPanelUI`, `DraftStation`, `WellStation`, `HorseHoofbeatAudio`, `FishingBowController`, `FishingManager` |
 | F | Bosses (once per run) | `ArmoredKnightAI`, `CryptSkeletonAI`, `NecromancerBossController` (**hand-rolled shake coroutine**), `NecromancerConfrontationUI`, `PrincessBossController` |

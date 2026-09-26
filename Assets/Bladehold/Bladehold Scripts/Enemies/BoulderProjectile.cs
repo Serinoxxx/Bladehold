@@ -1,11 +1,12 @@
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
 public class BoulderProjectile : MonoBehaviour, IDamageable
 {
     [SerializeField] private Rigidbody body;
-    [SerializeField] private GameObject impactVfxPrefab;
-    [SerializeField] private AudioClip impactSfx;
+    [Tooltip("Played at the blast centre when the boulder explodes (sound + burst).")]
+    [SerializeField] private MMF_Player impactFeedback;
 
     private float damage;
     private DamageType damageType;
@@ -28,6 +29,11 @@ public class BoulderProjectile : MonoBehaviour, IDamageable
             return;
         }
         body.isKinematic = true;
+
+        if (impactFeedback == null)
+        {
+            Debug.LogError("[BoulderProjectile] impactFeedback is not assigned on " + gameObject.name + ".", this);
+        }
     }
 
     private float customGravity = 20f;
@@ -176,8 +182,7 @@ public class BoulderProjectile : MonoBehaviour, IDamageable
             }
         }
 
-        if (impactVfxPrefab != null) Instantiate(impactVfxPrefab, transform.position, Quaternion.identity);
-        if (impactSfx != null) AudioSource.PlayClipAtPoint(impactSfx, transform.position);
+        if (impactFeedback != null) impactFeedback.PlayFeedbacks(transform.position);
 
         Destroy(gameObject);
     }

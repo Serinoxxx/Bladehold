@@ -1,3 +1,4 @@
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -24,9 +25,8 @@ public class GoldenGoblin : MonoBehaviour
     [Tooltip("Renderer(s) swapped to goldenMaterial when this goblin is marked golden.")]
     [SerializeField] private Renderer[] bodyRenderers;
     [SerializeField] private Material goldenMaterial;
-    [Tooltip("Instantiated at this goblin's position on death.")]
-    [SerializeField] private GameObject deathVfxPrefab;
-    [SerializeField] private AudioClip deathSfx;
+    [Tooltip("Played at this goblin's position when a golden goblin dies (coin burst + jingle).")]
+    [SerializeField] private MMF_Player deathFeedback;
 
     private PlayerStats stats;
     private bool isGolden;
@@ -72,6 +72,11 @@ public class GoldenGoblin : MonoBehaviour
         {
             Debug.LogError("Health component is not assigned or found on the GameObject.");
             anyError = true;
+        }
+
+        if (deathFeedback == null)
+        {
+            Debug.LogError("[GoldenGoblin] deathFeedback is not assigned on " + gameObject.name + ".", this);
         }
 
         stats = Player.Instance != null ? Player.Instance.Stats : null;
@@ -129,13 +134,9 @@ public class GoldenGoblin : MonoBehaviour
             return;
         }
 
-        if (deathVfxPrefab != null)
+        if (deathFeedback != null)
         {
-            Instantiate(deathVfxPrefab, transform.position, Quaternion.identity);
-        }
-        if (deathSfx != null)
-        {
-            AudioSource.PlayClipAtPoint(deathSfx, transform.position);
+            deathFeedback.PlayFeedbacks(transform.position);
         }
 
         float bonusPercent = stats != null ? stats.GetValue(StatType.GoldenGoblinGoldBonusPercent) : 0f;

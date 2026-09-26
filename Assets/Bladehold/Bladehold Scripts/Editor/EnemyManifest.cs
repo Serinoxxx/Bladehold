@@ -632,7 +632,6 @@ internal static class EnemyManifest
                     {
                         EnemyPrefabGenerator.SetReference(so, "agent", ctx.Root.GetComponent<UnityEngine.AI.NavMeshAgent>());
                         EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
-                        EnemyPrefabGenerator.SetReference(so, "crushVfxPrefab", LoadPrefab("Assets/Synty/PolygonParticleFX/Prefabs/FX_BloodSplat_01.prefab"));
                     },
                 },
                 new ComponentSpec
@@ -661,7 +660,6 @@ internal static class EnemyManifest
                         EnemyPrefabGenerator.SetReference(so, "targetSelector", ctx.Root.GetComponent<AITargetSelector>());
                         EnemyPrefabGenerator.SetReference(so, "telegraphPrefab", LoadPrefab("Assets/Bladehold/Bladehold Prefabs/ChargeTelegraph.prefab"));
                         EnemyPrefabGenerator.SetReference(so, "trailPrefab", LoadPrefab("Assets/Synty/PolygonParticleFX/Prefabs/FX_Trail_Debris_01.prefab"));
-                        EnemyPrefabGenerator.SetReference(so, "impactVfxPrefab", LoadPrefab("Assets/Synty/PolygonParticleFX/Prefabs/FX_ShardRock_Explosion_01_NoLoop.prefab"));
                     },
                 },
                 new ComponentSpec
@@ -917,8 +915,6 @@ internal static class EnemyManifest
                         var bso = (BubbleShieldSO)so;
                         bso.radius = 2.0f;
                         bso.bubbleVisualPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/VFX/BubbleShieldVisual.prefab");
-                        bso.blockSfx = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Impacts/Fantasy_Game_Weapons_Wood Shield_1_Block_Defend_Buckler_Deflect.wav");
-                        bso.blockSfxVolume = 0.8f;
                     }
                 }
             },
@@ -996,12 +992,6 @@ internal static class EnemyManifest
                         EnemyPrefabGenerator.SetReference(so, "telegraphPrefab", LoadPrefab("Assets/Bladehold/Bladehold Prefabs/SlamTelegraph.prefab"));
                         EnemyPrefabGenerator.SetReference(so, "whirlwindVfxPrefab", LoadPrefab("Assets/Synty/PolygonParticleFX/Prefabs/FX_Swirl_Fast_01.prefab"));
                         EnemyPrefabGenerator.SetReference(so, "stunVfxPrefab", LoadPrefab("Assets/Synty/PolygonParticleFX/Prefabs/FX_StarStunned_01.prefab"));
-
-                        var audioClip = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Blade Impacts/SwordOnFlesh_100.wav");
-                        if (audioClip != null)
-                        {
-                            EnemyPrefabGenerator.SetReference(so, "slashAudioClip", audioClip);
-                        }
                     }
                 }
             }
@@ -1046,10 +1036,7 @@ internal static class EnemyManifest
                         data.burnTickInterval = 0.5f;
                         data.burnDuration = 8.0f;
                         data.telegraphPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/SlamTelegraph.prefab");
-                        data.explosionVfxPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Synty/PolygonParticleFX/Prefabs/FX_Explosion_01.prefab");
                         data.fireAuraVfxPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Synty/PolygonParticleFX/Prefabs/FX_Fire_01.prefab");
-                        data.explosionSfx = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Audio/Enemies/Bomber/explosion_large_01.wav");
-                        data.fuseSfx = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Audio/Enemies/Bomber/fuse_burning_bomb_dynamite_loop_01.wav");
                     }
                 }
             },

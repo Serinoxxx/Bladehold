@@ -27,13 +27,9 @@ public class SlayerDashAttack : MonoBehaviour
     [SerializeField] private GameObject telegraphPrefab;
     [Tooltip("Optional debris/particle trail prefab spawned on the slayer during the dash lerp.")]
     [SerializeField] private GameObject trailPrefab;
-    [Tooltip("Massive ground smash / impact VFX spawned when the dash lands.")]
-    [SerializeField] private GameObject impactVfxPrefab;
-    [Tooltip("Massive smash audio clip played on dash landing.")]
-    [SerializeField] private AudioClip smashSfx;
     [SerializeField] private MMF_Player windupFeedback;
     [SerializeField] private MMF_Player dashFeedback;
-    [Tooltip("Optional camera shake / Feel feedback played on dash landing.")]
+    [Tooltip("Played at the landing point when the dash lands (ground smash burst, sound, shake).")]
     [SerializeField] private MMF_Player smashFeedback;
 
     // Animator trigger for the dash wind-up. Wire a crouch/ready state driven by this in the Animator.
@@ -126,6 +122,12 @@ public class SlayerDashAttack : MonoBehaviour
         if (anyError)
         {
             return;
+        }
+
+        if (smashFeedback == null)
+        {
+            // Non-fatal: the dash still lands, just without feedback.
+            Debug.LogError("[SlayerDashAttack] smashFeedback is not assigned on " + gameObject.name + ".", this);
         }
 
         attackTriggerHash = Animator.StringToHash(attackTrigger);
@@ -295,17 +297,9 @@ public class SlayerDashAttack : MonoBehaviour
         if (!isDead)
         {
             transform.position = end;
-            if (impactVfxPrefab != null)
-            {
-                Instantiate(impactVfxPrefab, end, Quaternion.identity);
-            }
             if (smashFeedback != null)
             {
                 smashFeedback.PlayFeedbacks(end);
-            }
-            else if (smashSfx != null)
-            {
-                AudioSource.PlayClipAtPoint(smashSfx, end, 1.0f);
             }
             ApplyLaneDamage(start, end, direction);
         }

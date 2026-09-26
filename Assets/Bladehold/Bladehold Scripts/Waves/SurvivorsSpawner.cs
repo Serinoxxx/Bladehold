@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -63,12 +64,9 @@ public class SurvivorsSpawner : MonoBehaviour
     [Tooltip("Maximum alive enemies permitted on field simultaneously.")]
     [SerializeField] private int maxConcurrentEnemies = 20;
 
-    [Header("Audio")]
-    [Tooltip("Battle horn sound played when a periodic group wave batch spawns.")]
-    [SerializeField] private AudioClip groupSpawnHornSound;
-
-    [Tooltip("Volume multiplier for the group spawn horn sound.")]
-    [Range(0f, 1f)] [SerializeField] private float hornVolume = 1f;
+    [Header("Feedbacks")]
+    [Tooltip("Optional: battle horn played when a periodic group batch spawns. Nothing is authored yet.")]
+    [SerializeField] private MMF_Player groupSpawnHornFeedback;
 
     [Header("Spawn Positioning Points")]
     [Tooltip("Scene spawn points. Goblins spawn at a random spawnpoint. If empty, auto-discovers scene spawnpoints or falls back to ring around player.")]
@@ -92,11 +90,8 @@ public class SurvivorsSpawner : MonoBehaviour
     [SerializeField] private int maxConcurrentShielders = 2;
 
     [Header("Catch-all Cleanup Lightning")]
-    [Tooltip("Optional override for the lightning strike VFX prefab. If null, falls back to ElementalEffectsManager.superconductorVfx.")]
-    [SerializeField] private GameObject cleanupLightningVfx;
-
-    [Tooltip("Optional override for the lightning strike SFX clip. If null, falls back to ElementalEffectsManager.superconductorSfx.")]
-    [SerializeField] private AudioClip cleanupLightningSfx;
+    [Tooltip("Played at every enemy the catch-all cleanup lightning strikes (bolt + crack).")]
+    [SerializeField] private MMF_Player cleanupLightningFeedback;
 
     private readonly List<SpawnType> spawnTypes = new List<SpawnType>();
     private readonly HashSet<Health> aliveEnemies = new HashSet<Health>();
@@ -172,6 +167,12 @@ public class SurvivorsSpawner : MonoBehaviour
             Debug.LogError("[SurvivorsSpawner] Roster or PrefabMap SO is not assigned!");
             anyError = true;
             return;
+        }
+
+        if (cleanupLightningFeedback == null)
+        {
+            // Non-fatal: the cleanup strike still kills, just without the bolt.
+            Debug.LogError("[SurvivorsSpawner] cleanupLightningFeedback is not assigned on " + gameObject.name + ".", this);
         }
 
         spawnTypes.Clear();
@@ -345,32 +346,15 @@ public class SurvivorsSpawner : MonoBehaviour
             }
         }
 
-        GameObject vfxPrefab = cleanupLightningVfx != null
-            ? cleanupLightningVfx
-            : (ElementalEffectsManager.Instance != null ? ElementalEffectsManager.Instance.superconductorVfx : null);
-
-        AudioClip sfxClip = cleanupLightningSfx != null
-            ? cleanupLightningSfx
-            : (ElementalEffectsManager.Instance != null
-                ? (ElementalEffectsManager.Instance.superconductorSfx != null
-                    ? ElementalEffectsManager.Instance.superconductorSfx
-                    : ElementalEffectsManager.Instance.statusAppliedSfx)
-                : null);
-
         foreach (Health health in toKill)
         {
             if (health != null && !health.IsDead && health.gameObject != null)
             {
                 Vector3 targetPos = health.transform.position;
 
-                if (vfxPrefab != null)
+                if (cleanupLightningFeedback != null)
                 {
-                    Instantiate(vfxPrefab, targetPos, Quaternion.identity);
-                }
-
-                if (sfxClip != null)
-                {
-                    AudioSource.PlayClipAtPoint(sfxClip, targetPos);
+                    cleanupLightningFeedback.PlayFeedbacks(targetPos);
                 }
 
                 Damage dmg = new Damage
@@ -486,19 +470,9 @@ public class SurvivorsSpawner : MonoBehaviour
 
     private void PlayGroupSpawnHorn()
     {
-        AudioClip clip = config != null && config.groupSpawnHornSound != null ? config.groupSpawnHornSound : groupSpawnHornSound;
-        float volume = config != null ? config.hornVolume : hornVolume;
-
-        if (clip == null) return;
-
-        if (TryGetComponent(out AudioSource audioSource))
+        if (groupSpawnHornFeedback != null)
         {
-            audioSource.PlayOneShot(clip, volume);
-        }
-        else
-        {
-            Vector3 pos = Camera.main != null ? Camera.main.transform.position : transform.position;
-            AudioSource.PlayClipAtPoint(clip, pos, volume);
+            groupSpawnHornFeedback.PlayFeedbacks();
         }
     }
 
