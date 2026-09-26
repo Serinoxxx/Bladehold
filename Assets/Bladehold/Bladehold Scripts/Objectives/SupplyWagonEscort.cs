@@ -50,14 +50,8 @@ public class SupplyWagonEscort : MonoBehaviour
     [Tooltip("Delay in seconds after reaching the destination before playing the burst feedback and dropping gold.")]
     [SerializeField] private float burstDelay = 0.5f;
 
-    [Tooltip("MMF_Player played when wagon reaches the destination and bursts.")]
+    [Tooltip("MMF_Player played when the wagon reaches the destination and bursts (gold coin burst; add a fanfare here).")]
     [SerializeField] private MMF_Player arrivalFeedback;
-
-    [Tooltip("Arrival fanfare / celebration SFX.")]
-    [SerializeField] private AudioClip arrivalSound;
-
-    [Tooltip("Optional burst VFX prefab spawned at the wagon position when it bursts.")]
-    [SerializeField] private GameObject goldBurstVfxPrefab;
 
     [Tooltip("Coin / Gold Bag pickup prefab dropped on arrival burst.")]
     [SerializeField] private Coin goldBagPrefab;
@@ -114,6 +108,7 @@ public class SupplyWagonEscort : MonoBehaviour
     private void Start()
     {
         UpdateCircleScale();
+        if (arrivalFeedback == null) Debug.LogError("[SupplyWagonEscort] arrivalFeedback is not assigned.", this);
     }
 
     /// <summary>Sets the destination gate point and starts pathfinding.</summary>
@@ -251,21 +246,7 @@ public class SupplyWagonEscort : MonoBehaviour
 
         if (arrivalFeedback != null)
         {
-            arrivalFeedback.PlayFeedbacks();
-        }
-
-        if (arrivalSound != null)
-        {
-            MMSoundManagerPlayOptions options = MMSoundManagerPlayOptions.Default;
-            options.MmSoundManagerTrack = MMSoundManager.MMSoundManagerTracks.Sfx;
-            options.Location = transform.position;
-            options.Volume = 1.0f;
-            MMSoundManagerSoundPlayEvent.Trigger(arrivalSound, options);
-        }
-
-        if (goldBurstVfxPrefab != null)
-        {
-            Instantiate(goldBurstVfxPrefab, transform.position + dropOffset, Quaternion.identity);
+            arrivalFeedback.PlayFeedbacks(transform.position + dropOffset);
         }
 
         SpawnGoldBags();

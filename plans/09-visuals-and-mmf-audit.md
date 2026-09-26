@@ -17,7 +17,8 @@ This plan audits and migrates the existing violations. Split it into several ses
 | 5 | Batch B: hit feedback → MMF | **Done 2026-09-26** (feel awaits tuning) |
 | 6 | Batch C: common enemies + spawner → MMF | **Done 2026-09-26** (feel awaits tuning) |
 | 7 | Batch D: towers → MMF | **Done 2026-09-26** (feel awaits tuning) |
-| 8+ | Direct audio/VFX/shake → MMF, one batch per session (ranked list below) | Next: batch E |
+| 8 | Batch E: waves, objectives, hub UI → MMF | **Done 2026-09-26** (feel awaits tuning) |
+| 9+ | Direct audio/VFX/shake → MMF, one batch per session (ranked list below) | Next: batch F |
 
 **Session 1 done:**
 - Deleted the Editor-only duplicate pickup sounds from `AmmoPickup`, `Coin`, `HealthPack`, `ImpulseOrb`, `LightningOrb` and `PlayerSummonMount`. Their MMF players already carry the sound; AmmoPickup's player existed but wasn't wired, so it's wired now.
@@ -94,13 +95,26 @@ This plan audits and migrates the existing violations. Split it into several ses
 - Benchmark: 106 passed, 6 failed (the known set, with both flaky ones failing). BuildWheel open/close fails whenever the Survivors scene is open: the test creates its own wheel but reads the static `Instance`, which finds the scene HUD's wheel first. Plan-11 ticket.
 - Editor work: [`plans/editor/09-visuals-mmf.md`](editor/09-visuals-mmf.md) §9.
 
+**Session 8 done** (batch E, Unity MCP connected). No `PlayClipAtPoint`, `PlayOneShot`, `MMSoundManagerSoundPlayEvent` or one-shot `Instantiate(vfx)` is left in the 16 batch-E scripts, apart from the looping state audio below. Sounds keep their old spatialisation: the old MMSoundManager calls were 2D (`MMSoundManagerPlayOptions.Default`), the old `PlayClipAtPoint` calls 3D.
+- **Folded into existing players:** the objectives already had MMF players next to their raw clips. `BatteringRam.impactFeedback` gained the boom + splinters, `DestructibleCatapult → DeadFeedback` the explosion sound + dark blast, `PrisonerCage → BreakFeedback` the dust burst.
+- **New players:** `BatteringRam → Feedbacks/DeathMMF`, `RescuedPrisoner → CheerMMF`/`PoofMMF`, HUD `Wave Cleared Text → WaveClearedMMF` (random chime) / `NewQuestMMF` (horn), Rest Area `Station_1_Well → DrinkMMF`, Fishing Pond `FishingMinigameManagers → CountdownMMF`/`FrenzyStartMMF`.
+- **Feedback prefabs** (nested wherever a scene holds its own copy, so tuning is in one place): `Waves/GateDestructionMMF` (every gate, 12 scenes including the binary castles), `Banners/WarBannerBurnMMF` (the banner prefab + Ancient Garden's unpacked banners), `Objectives/SupplyWagonArrivalMMF`, `Managers/BountyRewardMMF` (the manager prefab + the Survivors scene's own manager), `UI/StatCountTickMMF` and `StatRowCompleteMMF` (the death screen + the Survivors scene's own panel). `BuildCastleLevels` and `SetupSurvivorsSceneTool` nest the gate one.
+- **VFX variants:** `VFX/FireExplosionUnscaled`, `ExplosionLargeDarkUnscaled`, `ImpactLargeUnscaled`, `WoodImpactBurstUnscaled` (2.5 s) replace the code that switched each spawned system to unscaled time; the gate/ram death players also run unscaled. `DustBigBurst` (3 s) because `FX_Dust_Big_01` loops.
+- **`SurvivorsStatsPanelUI`**: the count-up's rising pitch is kept by setting the tick player's sound pitch before each play. Its `AudioSource` `AddComponent` fallback is gone.
+- **Optional, never authored (empty = silent, as before):** `WaveUpgradePowerup.spawnFeedback`/`claimFeedback`, `DraftStation.openDraftFeedback`, `FishingBowController.shootFeedback`, `FishingManager.timeUpFeedback`/`catchFeedback`.
+- **Dead code/fallbacks deleted:** `Gate`'s `Reset`/`OnValidate` `LoadAssetAtPath` (so the audit exception is gone), `FishingManager`'s `Resources.Load` clip fallbacks (the paths don't exist, so the countdown and horn were always silent) and its `AddComponent<AudioSource>`, the never-set siege-engine hit sound and cage hit/break sounds, `GameLoopManager`'s `#if UNITY_EDITOR` duplicate. `AutoWireGameLoopManager`, `BatteringRamSetup` and `BatteringRamTest` follow the new fields.
+- **Left on purpose (looping state audio shaped per frame):** `HorseHoofbeatAudio`'s gallop bed, `BatteringRam`/`SupplyWagonEscort` rolling loops, and the wagon's wheel dust. `WarBannerController.burnVfxPrefab` is parented fire for the 3 s teardown (state visual); its sound moved.
+- **Bugs fixed on the way:** the ram's impact splinters and the cage's break dust looped and never left the level; the Fishing Frenzy countdown and horn never played.
+- **Trap found:** the mechanic benchmark runs in edit mode in the active scene and can't `Destroy` what it spawns, so it leaves `Benchmark_*`/`Test*` objects (and MMF bursts) behind. Saving that scene afterwards commits them; it happened once this session and was reverted. Plan-11 ticket.
+- Editor work: [`plans/editor/09-visuals-mmf.md`](editor/09-visuals-mmf.md) §10.
+
 ## Refreshed audit (2026-09-26, after session 3)
 
 Sessions 2 (code-built UI) and 3 (code-built world visuals) are done; the visuals grep below now returns only the documented exceptions.
 
 **Documented exceptions (leave):**
 - `DefenseAssemblyAnimation` proxy `MeshFilter`/`MeshRenderer`: re-uses the tower prefab's own meshes to animate them.
-- `Waves/Gate` `LoadAssetAtPath` in `Reset`/`OnValidate`: edit-time auto-wire that's saved into the asset, so builds are fine. Its sound/VFX still need MMF (batch E).
+- ~~`Waves/Gate` `LoadAssetAtPath` in `Reset`/`OnValidate`~~: deleted in session 8 (the gate plays `GateDestructionMMF`).
 - `Debug/DiegeticDraftTester`: debug tool. `Editor/`: editor code.
 - No longer hits (deleted or fixed since the first grep): `MetaProgressionGridUI`, `VictoryScreenUI`, `SurvivorsGameManager`, `CampaignMapUI`, all `Economy/` pickups.
 
@@ -114,7 +128,7 @@ Highest traffic first. The counts come from a grep, so a few `.Play()` hits may 
 | ~~B~~ | Hit feedback, **done session 5** | `SwordHitFeedback`, `BowHitFeedback`, `DamageTrigger`, `KnockbackReceiver`, `RagdollBloodImpact`, ~~`RagdollImpactAudio`~~ (deleted), `EnemyStatusManager`, + `ImpulseHitFeedback` |
 | ~~C~~ | Common enemies + spawner, **done session 6** | `SurvivorsSpawner`, `GoldenGoblin`(+`Flee`), `ImpulseGoblin`, `AssassinAttack`, `HookProjectile`, `BoulderProjectile`, `LightningBall`, `LightningOrbDropper`, `LightningStormZone`, `ToxicPoolZone`, `HomingOrb`, `SlayerDashAttack`, `SlayerStompCrusher`, `EnemyIntroController`, `SpecialEnemyIntro`, `DestructibleBanner`, `CaptainKombustaController`, `DynamiteProjectile`, `ArrowBarrageZone`, `BubbleShield` |
 | ~~D~~ | Towers, **done session 7** | `DefenseStructure`, `BuildWheelUI`, `ArrowTowerDefense`, `FortArrowProjectile`, `BallistaDefense`, `CatapultDefense`, `CatapultProjectile` (**direct shake**), `NetThrowerDefense`, `NetProjectile`, `OilVatDefense`, `BurningOilZone`, `SpikeTrapDefense`, `RollingFireball`, `SlipperyIceZone`, `CatapultStormCloud` |
-| E | Waves, objectives, hub UI | `GameLoopManager`, `WaveClearedBannerUI`, `WarBannerController`, `Gate`, `WaveUpgradePowerup`, `BatteringRam`, `DestructibleSiegeEngine`, `PrisonerCage`, `RescuedPrisoner`, `SupplyWagonEscort`, `SurvivorsStatsPanelUI`, `DraftStation`, `WellStation`, `HorseHoofbeatAudio`, `FishingBowController`, `FishingManager` |
+| ~~E~~ | Waves, objectives, hub UI, **done session 8** | `GameLoopManager`, `WaveClearedBannerUI`, `WarBannerController`, `Gate`, `WaveUpgradePowerup`, `BatteringRam`, `DestructibleSiegeEngine`, `PrisonerCage`, `RescuedPrisoner`, `SupplyWagonEscort`, `SurvivorsStatsPanelUI`, `DraftStation`, `WellStation`, `HorseHoofbeatAudio`, `FishingBowController`, `FishingManager` |
 | F | Bosses (once per run) | `ArmoredKnightAI`, `CryptSkeletonAI`, `NecromancerBossController` (**hand-rolled shake coroutine**), `NecromancerConfrontationUI`, `PrincessBossController` |
 
 Skip `TrainingDummy` (debug).

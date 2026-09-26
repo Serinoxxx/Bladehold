@@ -336,10 +336,6 @@ public static class BatteringRamSetup
         }
 
         // 12. Load sound & VFX assets
-        AudioClip impactSfx = AssetDatabase.LoadAssetAtPath<AudioClip>(AssetDatabase.GUIDToAssetPath("886dd441091c1974ead974fbbefa1324")); // cinematic_deep_boom_impact_01
-        GameObject impactVfx = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath("2b28f2fdc5a65964f96ea4d2b9d6ca63")); // FX_Impact_Wood_01
-        AudioClip deathSfx = AssetDatabase.LoadAssetAtPath<AudioClip>(AssetDatabase.GUIDToAssetPath("456c4d2a40621f847ac0204e9ab2d521")); // Wood Break Large A
-        GameObject deathVfx = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath("101d62f0a3e4fef4eab61adb79c845df")); // FX_Impact_Large_01
 
         // 13. BatteringRam component
         BatteringRam ramComp = instance.GetComponent<BatteringRam>();
@@ -356,14 +352,10 @@ public static class BatteringRamSetup
         so.FindProperty("impactPoint").objectReferenceValue = impactPoint;
         so.FindProperty("impactFeedback").objectReferenceValue = mmf;
         so.FindProperty("hitFeedback").objectReferenceValue = hitMmf;
-        so.FindProperty("impactSound").objectReferenceValue = impactSfx;
-        so.FindProperty("impactVfxPrefab").objectReferenceValue = impactVfx;
         so.FindProperty("rangeCircleTransform").objectReferenceValue = rangeCircle;
         so.FindProperty("rangeCircleRenderer").objectReferenceValue = rangeCircleRenderer;
         so.FindProperty("wheelRotationSpeed").floatValue = 120f;
         so.FindProperty("movementAudioSource").objectReferenceValue = audioSource;
-        so.FindProperty("deathVfxPrefab").objectReferenceValue = deathVfx;
-        so.FindProperty("deathSound").objectReferenceValue = deathSfx;
         so.FindProperty("destroyDelay").floatValue = 0.5f;
 
         SerializedProperty wheelsProp = so.FindProperty("wheels");

@@ -39,12 +39,6 @@ public static class AutoWireGameLoopManager
             manager.bloodPopupPrefab = AssetDatabase.LoadAssetAtPath<DamageNumber>("Assets/Third Party/DamageNumbersPro/Demo/Prefabs/3D/Blood Text.prefab");
             if (manager.bloodPopupPrefab != null) changed = true;
         }
-        if (manager.rewardSfx == null)
-        {
-            manager.rewardSfx = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Fantasy_Game_Item_Organic_Coin_Collect_A.wav");
-            if (manager.rewardSfx == null) manager.rewardSfx = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Bladehold Audio/SFX/Coins.wav");
-            if (manager.rewardSfx != null) changed = true;
-        }
 
         if (changed)
         {

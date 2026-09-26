@@ -1,4 +1,5 @@
 using System;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -10,7 +11,8 @@ using UnityEngine;
 [RequireComponent(typeof(Interactable))]
 public class DraftStation : MonoBehaviour
 {
-    [SerializeField] private AudioClip openDraftSfx;
+    [Tooltip("Optional: played at the station when a draft opens. Nothing is authored yet.")]
+    [SerializeField] private MMF_Player openDraftFeedback;
     [SerializeField] private Light stationLight;
 
     private Interactable interactable;
@@ -94,9 +96,9 @@ public class DraftStation : MonoBehaviour
     {
         if (usedThisVisit) return;
 
-        if (openDraftSfx != null)
+        if (openDraftFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(openDraftSfx, transform.position, 1.0f);
+            openDraftFeedback.PlayFeedbacks(transform.position);
         }
 
         // Open Card Select UI

@@ -29,7 +29,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 4229120727378871524}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &8972233930406780696
@@ -51,13 +52,15 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+  enableGameLoopManageStateDebug: 0
+  captainPrefab: {fileID: 0}
+  captainKombustaPrefab: {fileID: 0}
+  captainSpawnPoint: {fileID: 0}
   intermissionVirtualCamera: {fileID: 0}
   intermissionStatsPanel: {fileID: 0}
   spawner: {fileID: 0}
-  castleGateInteractable: {fileID: 0}
   objectiveManager: {fileID: 0}
   bossSpawnPoint: {fileID: 0}
-  siegebreakerBossPrefab: {fileID: 0}
   upgradePowerupSpawnPoint: {fileID: 0}
   upgradePowerupPrefab: {fileID: 0}
   waveAnnouncementText: {fileID: 0}
@@ -68,4 +71,77 @@ MonoBehaviour:
   goldPopupPrefab: {fileID: 5445448510257546009, guid: 0c337af341cc6e840986619c86ca00fb, type: 3}
   metalPopupPrefab: {fileID: 7212774677060581359, guid: daf7aed4cdbc39d4f82ca1db658db4ee, type: 3}
   bloodPopupPrefab: {fileID: 1192120745535362886, guid: 93673a9b375f96a4ca575e11f2d5a90c, type: 3}
-  rewardSfx: {fileID: 8300000, guid: 774311a6c62694c269df1de5a61a42f7, type: 3}
+  rewardFeedback: {fileID: 794285159541780461}
+--- !u!1001 &4084411401187932942
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 7136255850546618526}
+    m_Modifications:
+    - target: {fileID: 152669811459260394, guid: 888d37b212a7f974b811821ece957ec2, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 152669811459260394, guid: 888d37b212a7f974b811821ece957ec2, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 152669811459260394, guid: 888d37b212a7f974b811821ece957ec2, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 152669811459260394, guid: 888d37b212a7f974b811821ece957ec2, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 152669811459260394, guid: 888d37b212a7f974b811821ece957ec2, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 152669811459260394, guid: 888d37b212a7f974b811821ece957ec2, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 152669811459260394, guid: 888d37b212a7f974b811821ece957ec2, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 152669811459260394, guid: 888d37b212a7f974b811821ece957ec2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 152669811459260394, guid: 888d37b212a7f974b811821ece957ec2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 152669811459260394, guid: 888d37b212a7f974b811821ece957ec2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1696276226371803333, guid: 888d37b212a7f974b811821ece957ec2, type: 3}
+      propertyPath: m_Name
+      value: BountyRewardMMF
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 888d37b212a7f974b811821ece957ec2, type: 3}
+--- !u!114 &794285159541780461 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3723175772505412835, guid: 888d37b212a7f974b811821ece957ec2, type: 3}
+  m_PrefabInstance: {fileID: 4084411401187932942}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6da43522623d4704e979466dc7650b65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MoreMountains.Tools::MoreMountains.Feedbacks.MMF_Player
+--- !u!4 &4229120727378871524 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 152669811459260394, guid: 888d37b212a7f974b811821ece957ec2, type: 3}
+  m_PrefabInstance: {fileID: 4084411401187932942}
+  m_PrefabAsset: {fileID: 0}

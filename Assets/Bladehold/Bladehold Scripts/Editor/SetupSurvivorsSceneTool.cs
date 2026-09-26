@@ -218,7 +218,7 @@ public class SetupSurvivorsSceneTool : EditorWindow
     private static void ConfigureGateOrPortal(GameObject portalGo)
     {
         HealthSO doorSo = AssetDatabase.LoadAssetAtPath<HealthSO>("Assets/Bladehold/Bladehold Scripts/DamageSystem/DoorSO.asset");
-        GameObject explosionVfx = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Synty/PolygonParticleFX/Prefabs/FX_Fire_Explosion_01.prefab");
+        GameObject gateDeathFeedbackPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/Waves/GateDestructionMMF.prefab");
 
         Health portalHealth = portalGo.GetComponent<Health>();
         if (portalHealth == null) portalHealth = portalGo.AddComponent<Health>();
@@ -246,7 +246,11 @@ public class SetupSurvivorsSceneTool : EditorWindow
         var pGateSo = new SerializedObject(portalGate);
         pGateSo.FindProperty("health").objectReferenceValue = portalHealth;
         pGateSo.FindProperty("attackPoint").objectReferenceValue = attackPointT;
-        if (explosionVfx != null) pGateSo.FindProperty("explosionVfxPrefab").objectReferenceValue = explosionVfx;
+        if (gateDeathFeedbackPrefab != null)
+        {
+            GameObject gateFeedback = (GameObject)PrefabUtility.InstantiatePrefab(gateDeathFeedbackPrefab, portalGate.transform);
+            pGateSo.FindProperty("deathFeedback").objectReferenceValue = gateFeedback.GetComponent<MoreMountains.Feedbacks.MMF_Player>();
+        }
         pGateSo.ApplyModifiedProperties();
 
         Interactable portalInteractable = portalGo.GetComponent<Interactable>();

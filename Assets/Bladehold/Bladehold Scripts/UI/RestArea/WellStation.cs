@@ -1,3 +1,4 @@
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -8,8 +9,8 @@ using UnityEngine;
 public class WellStation : MonoBehaviour
 {
     [SerializeField] private float healAmount = 20f;
-    [SerializeField] private AudioClip drinkSfx;
-    [SerializeField] private GameObject splashVfxPrefab;
+    [Tooltip("Played at the well when the player drinks (healing sound + heal burst).")]
+    [SerializeField] private MMF_Player drinkFeedback;
 
     private Interactable interactable;
     private bool usedThisVisit = false;
@@ -25,6 +26,11 @@ public class WellStation : MonoBehaviour
                 interactable.OnInteractedEvent += HandleDrink;
             }
         }
+    }
+
+    private void Start()
+    {
+        if (drinkFeedback == null) Debug.LogError("[WellStation] drinkFeedback is not assigned.", this);
     }
 
     private void Awake()
@@ -56,14 +62,9 @@ public class WellStation : MonoBehaviour
             h.Heal(healAmount);
         }
 
-        if (drinkSfx != null)
+        if (drinkFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(drinkSfx, transform.position, 1.0f);
-        }
-
-        if (splashVfxPrefab != null)
-        {
-            Instantiate(splashVfxPrefab, transform.position + Vector3.up * 1f, Quaternion.identity);
+            drinkFeedback.PlayFeedbacks(transform.position);
         }
 
         interactable.PromptText = "Well is Dry (Depleted)";

@@ -65,9 +65,9 @@ public static class BatteringRamTest
         float interval = ramSo.FindProperty("ramInterval").floatValue;
         Transform logTrans = ramSo.FindProperty("ramLogTransform").objectReferenceValue as Transform;
         Transform ipTrans = ramSo.FindProperty("impactPoint").objectReferenceValue as Transform;
-        AudioClip sound = ramSo.FindProperty("impactSound").objectReferenceValue as AudioClip;
-        GameObject vfx = ramSo.FindProperty("impactVfxPrefab").objectReferenceValue as GameObject;
         MMF_Player mmf = ramSo.FindProperty("impactFeedback").objectReferenceValue as MMF_Player;
+        bool hasSound = mmf != null && mmf.FeedbacksList.Exists(f => f is MMF_MMSoundManagerSound);
+        bool hasVfx = mmf != null && mmf.FeedbacksList.Exists(f => f is MMF_ParticlesInstantiation);
 
         if (gateDmg != 50f)
         {
@@ -89,14 +89,14 @@ public static class BatteringRamTest
             Debug.LogError("[BatteringRamTest] FAILED: impactPoint is null!");
             return;
         }
-        if (sound == null)
+        if (!hasSound)
         {
-            Debug.LogError("[BatteringRamTest] FAILED: impactSound is null!");
+            Debug.LogError("[BatteringRamTest] FAILED: impactFeedback has no sound!");
             return;
         }
-        if (vfx == null)
+        if (!hasVfx)
         {
-            Debug.LogError("[BatteringRamTest] FAILED: impactVfxPrefab is null!");
+            Debug.LogError("[BatteringRamTest] FAILED: impactFeedback has no particles!");
             return;
         }
         if (mmf == null)

@@ -1,3 +1,4 @@
+using MoreMountains.Feedbacks;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Synty.AnimationBaseLocomotion.Samples.InputSystem;
@@ -13,8 +14,8 @@ public class FishingBowController : MonoBehaviour
     [SerializeField] private Camera aimCamera;
     [SerializeField] private Transform arrowSpawnPoint;
     [SerializeField] private GameObject arrowPrefab;
-    [SerializeField] private AudioSource audioSource;
-    [SerializeField] private AudioClip shootSfx;
+    [Tooltip("Optional: played on each shot. Nothing is authored yet.")]
+    [SerializeField] private MMF_Player shootFeedback;
 
     [Header("Tuning")]
     [SerializeField] private float fireCooldown = 0.35f;
@@ -25,7 +26,6 @@ public class FishingBowController : MonoBehaviour
     {
         if (aimCamera == null) aimCamera = Camera.main;
         if (inputReader == null) inputReader = GetComponentInParent<InputReader>();
-        if (audioSource == null) audioSource = GetComponent<AudioSource>();
     }
 
     private void OnEnable()
@@ -120,9 +120,9 @@ public class FishingBowController : MonoBehaviour
             Debug.LogError($"[FishingBowController] arrowPrefab '{arrowPrefab.name}' has no FishingBowArrow.", this);
         }
 
-        if (audioSource != null && shootSfx != null)
+        if (shootFeedback != null)
         {
-            audioSource.PlayOneShot(shootSfx);
+            shootFeedback.PlayFeedbacks(spawnPos);
         }
     }
 }

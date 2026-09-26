@@ -2,7 +2,6 @@ using System.Collections;
 using MoreMountains.Feedbacks;
 using TMPro;
 using UnityEngine;
-using MoreMountains.Tools;
 
 /// <summary>
 ///     Listens for objective start/complete/fail events (via <see cref="SurvivorsObjectiveManager"/>)
@@ -37,9 +36,10 @@ public class WaveClearedBannerUI : MonoBehaviour
     [SerializeField] private float activeOutLeadTime = 0.5f;
     [Tooltip("Played when the banner appears. Should handle its own reset/outro or be paired with a separate outro if needed.")]
     [SerializeField] private MMF_Player bannerAnimationFeedback;
-    [SerializeField] private AudioClip[] waveClearedSounds;
-    [Tooltip("Sound played when announcing a new quest/challenge.")]
-    [SerializeField] private AudioClip[] newQuestSounds;
+    [Tooltip("Played when the banner announces a cleared wave (random chime, UI track).")]
+    [SerializeField] private MMF_Player waveClearedFeedback;
+    [Tooltip("Played when the banner announces a new quest/challenge (horn, UI track).")]
+    [SerializeField] private MMF_Player newQuestFeedback;
     [Tooltip("How long the banner stays on screen before hiding itself.")]
     [SerializeField] private float displayDuration = 3f;
 
@@ -104,6 +104,8 @@ public class WaveClearedBannerUI : MonoBehaviour
     private void Start()
     {
         EnsureTextReferences();
+        if (waveClearedFeedback == null) Debug.LogError("WaveClearedBannerUI: waveClearedFeedback is not assigned.", this);
+        if (newQuestFeedback == null) Debug.LogError("WaveClearedBannerUI: newQuestFeedback is not assigned.", this);
 
         if (objectiveManager == null)
         {
@@ -238,28 +240,10 @@ public class WaveClearedBannerUI : MonoBehaviour
             bannerAnimationFeedback.PlayFeedbacks();
         }
 
-        AudioClip clipToPlay = null;
-        if (isNewQuest && newQuestSounds != null && newQuestSounds.Length > 0)
+        MMF_Player sound = isNewQuest ? newQuestFeedback : waveClearedFeedback;
+        if (sound != null)
         {
-            clipToPlay = newQuestSounds[Random.Range(0, newQuestSounds.Length)];
-        }
-        else if (!isNewQuest && waveClearedSounds != null && waveClearedSounds.Length > 0)
-        {
-            clipToPlay = waveClearedSounds[Random.Range(0, waveClearedSounds.Length)];
-        }
-        if (clipToPlay == null && waveClearedSounds != null && waveClearedSounds.Length > 0)
-        {
-            clipToPlay = waveClearedSounds[Random.Range(0, waveClearedSounds.Length)];
-        }
-
-        if (clipToPlay != null)
-        {
-            MMSoundManagerPlayOptions options = MMSoundManagerPlayOptions.Default;
-            options.MmSoundManagerTrack = MMSoundManager.MMSoundManagerTracks.UI;
-            options.Location = transform.position;
-            options.Volume = 0.9f;
-            options.Pitch = Random.Range(0.95f, 1.05f);
-            MMSoundManagerSoundPlayEvent.Trigger(clipToPlay, options);
+            sound.PlayFeedbacks(transform.position);
         }
 
         if (hideRoutine != null)

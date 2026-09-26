@@ -695,6 +695,7 @@ MonoBehaviour:
   - rid: 3583623160260722858
   - rid: 3583623160260722859
   - rid: 3583623160260722860
+  - rid: 1018131859913048385
   KeepPlayModeChanges: 0
   PerformanceMode: 0
   RestoreInitialValuesOnDisable: 0
@@ -706,6 +707,103 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
+    - rid: 1018131859913048385
+      type: {class: MMF_ParticlesInstantiation, ns: MoreMountains.Feedbacks, asm: MoreMountains.Tools}
+      data:
+        Active: 1
+        UniqueID: -970178879
+        Label: Particles
+        OriginalLabel: 
+        ChannelMode: 0
+        Channel: 0
+        MMChannelDefinition: {fileID: 0}
+        Chance: 100
+        Timing:
+          TimescaleMode: 0
+          ExcludeFromHoldingPauses: 0
+          ContributeToTotalDuration: 1
+          InitialDelay: 0
+          CooldownDuration: 0
+          InterruptsOnStop: 1
+          NumberOfRepeats: 0
+          RepeatForever: 0
+          DelayBetweenRepeats: 1
+          PlayCount: 0
+          LimitPlayCount: 0
+          MaxPlayCount: 3
+          SetPlayCountToZeroOnReset: 0
+          MMFeedbacksDirectionCondition: 0
+          PlayDirection: 0
+          ConstantIntensity: 0
+          UseIntensityInterval: 0
+          IntensityIntervalMin: 0
+          IntensityIntervalMax: 0
+          Sequence: {fileID: 0}
+          TrackID: 0
+          Quantized: 0
+          TargetBPM: 120
+        AutomatedTargetAcquisition:
+          Mode: 0
+          ChildIndex: 0
+        RandomizeOutput: 0
+        RandomMultiplier: {x: 0.8, y: 1}
+        RandomizeDuration: 0
+        RandomDurationMultiplier: {x: 0.5, y: 2}
+        UseRange: 0
+        RangeDistance: 5
+        UseRangeFalloff: 0
+        RangeFalloff:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 1
+            value: 0
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        RemapRangeFalloff: {x: 0, y: 1}
+        AutomaticShakerSetupButton:
+          ButtonText: 
+        Owner: {fileID: 679183192249577768}
+        DebugActive: 0
+        Mode: 1
+        ObjectPoolSize: 5
+        MutualizePools: 0
+        ParentTransform: {fileID: 0}
+        CachedRecycle: 0
+        ParticlesPrefab: {fileID: 4697399898887576740, guid: 77185ad4d8d400f41b68e4ffc304e035, type: 3}
+        RandomParticlePrefabs: []
+        MainParticlesPrefabWeight: 1
+        RandomParticleWeights: 
+        ForceSetActiveOnPlay: 0
+        StopOnReset: 0
+        DeclaredDuration: 0
+        ForceStopAction: 1
+        StopAction: 2
+        PositionMode: 3
+        InstantiateParticlesPosition: {fileID: 0}
+        TargetWorldPosition: {x: 0, y: 0, z: 0}
+        Offset: {x: 0, y: 0.5, z: 0}
+        NestParticles: 0
+        ApplyRotation: 0
+        ApplyScale: 0
+        ForceSimulationSpeed: 0
+        ForcedSimulationSpeed: {x: 0.1, y: 1}
     - rid: 3583623160260722858
       type: {class: MMF_MMSoundManagerSound, ns: MoreMountains.Feedbacks, asm: MoreMountains.Tools}
       data:
@@ -1312,9 +1410,6 @@ MonoBehaviour:
   prisoner: {fileID: 1069157808934696578}
   hitFeedback: {fileID: 6064213658420230323}
   breakFeedback: {fileID: 679183192249577768}
-  cageBreakVfxPrefab: {fileID: 1443446328578528, guid: 2b7b429ef7f8c2346bd520ebe1693543, type: 3}
-  cageBreakSound: {fileID: 0}
-  cageHitSound: {fileID: 0}
   cageVisualRoots:
   - {fileID: 544052888780450190}
 --- !u!65 &6257794750158929585
@@ -1352,7 +1447,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HealthBarUI
   health: {fileID: 3765418572529284184}
   healthBar: {fileID: 2007339895656633004}
-  ragdoll: {fileID: 0}
+  followHead: 0
+  headBone: {fileID: 0}
+  heightAboveHead: 0.2
 --- !u!114 &2007339895656633004
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -45,17 +45,11 @@ public class BatteringRam : MonoBehaviour
     [SerializeField] private Transform impactPoint;
 
     [Header("Feedbacks & Juiciness")]
-    [Tooltip("MMF_Player played at point of impact (camera impulse, screen shake, rumble).")]
+    [Tooltip("MMF_Player played at point of impact (boom, wood splinters, camera impulse, screen shake).")]
     [SerializeField] private MMF_Player impactFeedback;
 
     [Tooltip("MMF_Player played when taking damage (red flicker, shield bash sfx, wood splinters).")]
     [SerializeField] private MMF_Player hitFeedback;
-
-    [Tooltip("Audio clip played at impact (heavy wood/iron boom).")]
-    [SerializeField] private AudioClip impactSound;
-
-    [Tooltip("VFX prefab instantiated at impact point (wood splinters / impact dust).")]
-    [SerializeField] private GameObject impactVfxPrefab;
 
     [Header("Visual Range Indicator")]
     [Tooltip("Transform of the range circle indicator.")]
@@ -76,11 +70,8 @@ public class BatteringRam : MonoBehaviour
     [SerializeField] private AudioSource movementAudioSource;
 
     [Header("Destruction Effects")]
-    [Tooltip("Explosion VFX prefab instantiated when destroyed.")]
-    [SerializeField] private GameObject deathVfxPrefab;
-
-    [Tooltip("Audio clip played when destroyed.")]
-    [SerializeField] private AudioClip deathSound;
+    [Tooltip("MMF_Player played when the ram is destroyed (wood break + debris burst, on unscaled time).")]
+    [SerializeField] private MMF_Player deathFeedback;
 
     [Tooltip("Seconds before despawning GameObject after destruction.")]
     [SerializeField] private float destroyDelay = 0.5f;
@@ -178,6 +169,8 @@ public class BatteringRam : MonoBehaviour
     {
         UpdateCircleScale();
         UpdateVisualState();
+        if (impactFeedback == null) Debug.LogError("[BatteringRam] impactFeedback is not assigned.", this);
+        if (deathFeedback == null) Debug.LogError("[BatteringRam] deathFeedback is not assigned.", this);
     }
 
     private void OnDisable()
@@ -495,33 +488,10 @@ public class BatteringRam : MonoBehaviour
             targetGate.Damageable.ReceiveDamage(ramDamage);
         }
 
-        // 2. Play MMF_Player (camera impulse, screen shake, etc.)
+        // 2. Play MMF_Player (boom, splinters, camera impulse, screen shake)
         if (impactFeedback != null)
         {
             impactFeedback.PlayFeedbacks(pos);
-        }
-
-        // 3. Play impact sound
-        if (impactSound != null)
-        {
-            MMSoundManagerPlayOptions options = MMSoundManagerPlayOptions.Default;
-            options.MmSoundManagerTrack = MMSoundManager.MMSoundManagerTracks.Sfx;
-            options.Location = pos;
-            options.Volume = 1.0f;
-            options.Pitch = UnityEngine.Random.Range(0.92f, 1.05f);
-            MMSoundManagerSoundPlayEvent.Trigger(impactSound, options);
-        }
-
-        // 4. Instantiate impact VFX
-        if (impactVfxPrefab != null)
-        {
-            Quaternion rot = Quaternion.LookRotation(-transform.forward);
-            GameObject vfx = Instantiate(impactVfxPrefab, pos, rot);
-            foreach (ParticleSystem ps in vfx.GetComponentsInChildren<ParticleSystem>())
-            {
-                var main = ps.main;
-                main.useUnscaledTime = true;
-            }
         }
     }
 
@@ -557,25 +527,9 @@ public class BatteringRam : MonoBehaviour
             movementAudioSource.Stop();
         }
 
-        // Death VFX
-        if (deathVfxPrefab != null)
+        if (deathFeedback != null)
         {
-            GameObject vfx = Instantiate(deathVfxPrefab, transform.position + Vector3.up * 1.5f, Quaternion.identity);
-            foreach (ParticleSystem ps in vfx.GetComponentsInChildren<ParticleSystem>())
-            {
-                var main = ps.main;
-                main.useUnscaledTime = true;
-            }
-        }
-
-        // Death SFX
-        if (deathSound != null)
-        {
-            MMSoundManagerPlayOptions options = MMSoundManagerPlayOptions.Default;
-            options.MmSoundManagerTrack = MMSoundManager.MMSoundManagerTracks.Sfx;
-            options.Location = transform.position;
-            options.Volume = 1.0f;
-            MMSoundManagerSoundPlayEvent.Trigger(deathSound, options);
+            deathFeedback.PlayFeedbacks(transform.position);
         }
 
         // Hide visuals and disable colliders

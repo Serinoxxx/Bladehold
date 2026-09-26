@@ -992,6 +992,7 @@ Transform:
   m_Children:
   - {fileID: 518048500483550188}
   - {fileID: 8323938320942277481}
+  - {fileID: 2484580251754610099}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &327876931962295277
@@ -1012,7 +1013,9 @@ MonoBehaviour:
   highlightEffect: {fileID: 2283642365893082445}
   slamFeedback: {fileID: -7883509679806603031}
   burnVfxPrefab: {fileID: 1392961458021664, guid: 7c2d45330a7b1894ca1aacb0ebd30599, type: 3}
-  burnSfx: {fileID: 8300000, guid: c2cec3c7b9be74a018a3a461857be353, type: 3}
+  burnFeedback: {fileID: 5015225328028213044}
+  difficultySkullsText: {fileID: 0}
+  difficultyTagText: {fileID: 0}
   clanSigilImage: {fileID: 1003003}
   clanNameText: {fileID: 1004003}
   quickFactText: {fileID: 1005003}
@@ -2185,3 +2188,76 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 411370, guid: 1c757b8a6a985284aa7fd4a80e427dd9, type: 3}
   m_PrefabInstance: {fileID: 518048500483140870}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &6682216842624558192
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 7633163458895657357}
+    m_Modifications:
+    - target: {fileID: 861717502145632285, guid: 89e3098f581d547499a71d94fa5a747b, type: 3}
+      propertyPath: m_Name
+      value: WarBannerBurnMMF
+      objectReference: {fileID: 0}
+    - target: {fileID: 9135270660011743683, guid: 89e3098f581d547499a71d94fa5a747b, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9135270660011743683, guid: 89e3098f581d547499a71d94fa5a747b, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9135270660011743683, guid: 89e3098f581d547499a71d94fa5a747b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9135270660011743683, guid: 89e3098f581d547499a71d94fa5a747b, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9135270660011743683, guid: 89e3098f581d547499a71d94fa5a747b, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9135270660011743683, guid: 89e3098f581d547499a71d94fa5a747b, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9135270660011743683, guid: 89e3098f581d547499a71d94fa5a747b, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9135270660011743683, guid: 89e3098f581d547499a71d94fa5a747b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9135270660011743683, guid: 89e3098f581d547499a71d94fa5a747b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9135270660011743683, guid: 89e3098f581d547499a71d94fa5a747b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 89e3098f581d547499a71d94fa5a747b, type: 3}
+--- !u!4 &2484580251754610099 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 9135270660011743683, guid: 89e3098f581d547499a71d94fa5a747b, type: 3}
+  m_PrefabInstance: {fileID: 6682216842624558192}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &5015225328028213044 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1812039201851259716, guid: 89e3098f581d547499a71d94fa5a747b, type: 3}
+  m_PrefabInstance: {fileID: 6682216842624558192}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6da43522623d4704e979466dc7650b65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MoreMountains.Tools::MoreMountains.Feedbacks.MMF_Player

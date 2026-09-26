@@ -19,18 +19,8 @@ public class DestructibleSiegeEngine : MonoBehaviour
     [Tooltip("MMF_Player played when the siege engine takes damage (e.g. scale punch, sound, sparks).")]
     [SerializeField] private MMF_Player hitFeedback;
 
-    [Tooltip("MMF_Player played when the siege engine is destroyed (e.g. camera shake, explosion, sound).")]
+    [Tooltip("MMF_Player played when the siege engine is destroyed (explosion sound + fire burst, on unscaled time).")]
     [SerializeField] private MMF_Player deathFeedback;
-
-    [Header("Visual Effects & Audio")]
-    [Tooltip("Prefab spawned at destruction position (e.g. fire/debris explosion).")]
-    [SerializeField] private GameObject explosionVfxPrefab;
-
-    [Tooltip("Optional SFX played on destruction.")]
-    [SerializeField] private AudioClip deathSound;
-
-    [Tooltip("Optional SFX played when taking damage.")]
-    [SerializeField] private AudioClip hitSound;
 
     [Tooltip("Delay in seconds before the GameObject is destroyed after death. Set to 0 to destroy immediately.")]
     [SerializeField] private float postDeathDespawnDelay = 0f;
@@ -53,6 +43,9 @@ public class DestructibleSiegeEngine : MonoBehaviour
 
     private void Start()
     {
+        if (hitFeedback == null) Debug.LogError("[DestructibleSiegeEngine] hitFeedback is not assigned.", this);
+        if (deathFeedback == null) Debug.LogError("[DestructibleSiegeEngine] deathFeedback is not assigned.", this);
+
         if (health != null)
         {
             health.OnDamaged += HandleDamaged;
@@ -77,16 +70,6 @@ public class DestructibleSiegeEngine : MonoBehaviour
         {
             hitFeedback.PlayFeedbacks();
         }
-
-        if (hitSound != null)
-        {
-            MMSoundManagerPlayOptions options = MMSoundManagerPlayOptions.Default;
-            options.MmSoundManagerTrack = MMSoundManager.MMSoundManagerTracks.Sfx;
-            options.Location = transform.position;
-            options.Volume = 0.8f;
-            options.Pitch = UnityEngine.Random.Range(0.9f, 1.1f);
-            MMSoundManagerSoundPlayEvent.Trigger(hitSound, options);
-        }
     }
 
     private void HandleDied()
@@ -96,26 +79,7 @@ public class DestructibleSiegeEngine : MonoBehaviour
 
         if (deathFeedback != null)
         {
-            deathFeedback.PlayFeedbacks();
-        }
-
-        if (explosionVfxPrefab != null)
-        {
-            GameObject vfx = Instantiate(explosionVfxPrefab, transform.position + Vector3.up * 1f, Quaternion.identity);
-            foreach (ParticleSystem ps in vfx.GetComponentsInChildren<ParticleSystem>())
-            {
-                var main = ps.main;
-                main.useUnscaledTime = true;
-            }
-        }
-
-        if (deathSound != null)
-        {
-            MMSoundManagerPlayOptions options = MMSoundManagerPlayOptions.Default;
-            options.MmSoundManagerTrack = MMSoundManager.MMSoundManagerTracks.Sfx;
-            options.Location = transform.position;
-            options.Volume = 1.0f;
-            MMSoundManagerSoundPlayEvent.Trigger(deathSound, options);
+            deathFeedback.PlayFeedbacks(transform.position);
         }
 
         // Disable colliders and renderers so the catapult immediately disappears

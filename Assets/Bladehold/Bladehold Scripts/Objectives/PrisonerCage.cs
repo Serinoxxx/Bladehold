@@ -22,19 +22,10 @@ public class PrisonerCage : MonoBehaviour
     [Tooltip("MMF_Player played when the cage takes a hit.")]
     [SerializeField] private MMF_Player hitFeedback;
 
-    [Tooltip("MMF_Player played when the cage is destroyed.")]
+    [Tooltip("MMF_Player played when the cage is destroyed (break sound, flicker, splinters, dust burst).")]
     [SerializeField] private MMF_Player breakFeedback;
 
-    [Header("Visual Effects & Audio")]
-    [Tooltip("Wood splinter / debris VFX spawned when the cage breaks.")]
-    [SerializeField] private GameObject cageBreakVfxPrefab;
-
-    [Tooltip("Audio clip played when the cage is destroyed.")]
-    [SerializeField] private AudioClip cageBreakSound;
-
-    [Tooltip("Audio clip played when the cage takes damage.")]
-    [SerializeField] private AudioClip cageHitSound;
-
+    [Header("Visuals")]
     [Tooltip("Optional visual mesh roots to disable upon breaking so the open prisoner is clearly visible.")]
     [SerializeField] private GameObject[] cageVisualRoots;
 
@@ -61,6 +52,9 @@ public class PrisonerCage : MonoBehaviour
 
     private void Start()
     {
+        if (hitFeedback == null) Debug.LogError("[PrisonerCage] hitFeedback is not assigned.", this);
+        if (breakFeedback == null) Debug.LogError("[PrisonerCage] breakFeedback is not assigned.", this);
+
         if (health != null)
         {
             health.OnDamaged += HandleDamaged;
@@ -85,15 +79,6 @@ public class PrisonerCage : MonoBehaviour
         {
             hitFeedback.PlayFeedbacks();
         }
-
-        if (cageHitSound != null)
-        {
-            MMSoundManagerPlayOptions options = MMSoundManagerPlayOptions.Default;
-            options.MmSoundManagerTrack = MMSoundManager.MMSoundManagerTracks.Sfx;
-            options.Location = transform.position;
-            options.Volume = 0.7f;
-            MMSoundManagerSoundPlayEvent.Trigger(cageHitSound, options);
-        }
     }
 
     private void HandleDied()
@@ -103,21 +88,7 @@ public class PrisonerCage : MonoBehaviour
 
         if (breakFeedback != null)
         {
-            breakFeedback.PlayFeedbacks();
-        }
-
-        if (cageBreakVfxPrefab != null)
-        {
-            Instantiate(cageBreakVfxPrefab, transform.position + Vector3.up * 0.5f, Quaternion.identity);
-        }
-
-        if (cageBreakSound != null)
-        {
-            MMSoundManagerPlayOptions options = MMSoundManagerPlayOptions.Default;
-            options.MmSoundManagerTrack = MMSoundManager.MMSoundManagerTracks.Sfx;
-            options.Location = transform.position;
-            options.Volume = 1.0f;
-            MMSoundManagerSoundPlayEvent.Trigger(cageBreakSound, options);
+            breakFeedback.PlayFeedbacks(transform.position);
         }
 
         // Disable cage colliders and visuals

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -44,12 +45,15 @@ public class FishingManager : MonoBehaviour
     [SerializeField] private Material sparkFishMat;
     [SerializeField] private Material savageFishMat;
 
-    [Header("Audio")]
-    [SerializeField] private AudioSource audioSource;
-    [SerializeField] private AudioClip countdownThumpSfx;
-    [SerializeField] private AudioClip frenzyStartHornSfx;
-    [SerializeField] private AudioClip timeUpSfx;
-    [SerializeField] private AudioClip catchFishSfx;
+    [Header("Feedback (2D sounds)")]
+    [Tooltip("Played on each 3-2-1 countdown beat (deep thump).")]
+    [SerializeField] private MMF_Player countdownFeedback;
+    [Tooltip("Played when the frenzy starts (horn).")]
+    [SerializeField] private MMF_Player frenzyStartFeedback;
+    [Tooltip("Optional: played when the timer runs out. Nothing is authored yet.")]
+    [SerializeField] private MMF_Player timeUpFeedback;
+    [Tooltip("Optional: played on every fish caught. Nothing is authored yet.")]
+    [SerializeField] private MMF_Player catchFeedback;
 
     [Header("UI Controllers")]
     [SerializeField] private FishingHUDUI hudUI;
@@ -98,9 +102,6 @@ public class FishingManager : MonoBehaviour
     {
         if (Instance == null) Instance = this;
         else if (Instance != this) { Destroy(gameObject); return; }
-
-        if (audioSource == null) audioSource = GetComponent<AudioSource>();
-        if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
     }
 
     private void Start()
@@ -108,21 +109,14 @@ public class FishingManager : MonoBehaviour
         // Missing HUD/draft UI degrades the pond; missing tally or CampaignManager would strand the player, so block.
         if (hudUI == null) Debug.LogError("[FishingManager] hudUI is not assigned.", this);
         if (draftUI == null) Debug.LogError("[FishingManager] draftUI is not assigned: level-ups give no cards.", this);
+        if (countdownFeedback == null) Debug.LogError("[FishingManager] countdownFeedback is not assigned.", this);
+        if (frenzyStartFeedback == null) Debug.LogError("[FishingManager] frenzyStartFeedback is not assigned.", this);
         if (tallyUI == null) { Debug.LogError("[FishingManager] tallyUI is not assigned: the pond can't be left without it.", this); anyError = true; }
         if (CampaignManager.Instance == null) { Debug.LogError("[FishingManager] No CampaignManager: can't return to the map.", this); anyError = true; }
 
         frenzyTimeRemaining = totalFrenzyDuration;
         SetupPlayerFishingBow();
         SetState(FishingState.WaitingToStart);
-
-        if (countdownThumpSfx == null)
-        {
-            countdownThumpSfx = Resources.Load<AudioClip>("Audio/SFX/Impacts/cinematic_deep_boom_impact_01");
-        }
-        if (frenzyStartHornSfx == null)
-        {
-            frenzyStartHornSfx = Resources.Load<AudioClip>("Audio/battle_viking_horn_call_far_03");
-        }
     }
 
     private void SetupPlayerFishingBow()
@@ -194,12 +188,12 @@ public class FishingManager : MonoBehaviour
         for (int i = 3; i >= 1; i--)
         {
             OnCountdownTick?.Invoke(i);
-            PlaySfx(countdownThumpSfx);
+            Play(countdownFeedback);
             yield return new WaitForSeconds(1f);
         }
 
         OnCountdownTick?.Invoke(0); // 0 = "FISHING FRENZY!"
-        PlaySfx(frenzyStartHornSfx);
+        Play(frenzyStartFeedback);
         yield return new WaitForSeconds(0.6f);
 
         // Pre-populate pond
@@ -214,7 +208,7 @@ public class FishingManager : MonoBehaviour
     private void FinishFrenzy()
     {
         SetState(FishingState.Finished);
-        PlaySfx(timeUpSfx);
+        Play(timeUpFeedback);
 
         if (draftUI != null) draftUI.CancelPendingDrafts();
 
@@ -263,7 +257,7 @@ public class FishingManager : MonoBehaviour
             }
         }
 
-        PlaySfx(catchFishSfx);
+        Play(catchFeedback);
     }
 
     private void AddXp(int amount)
@@ -388,11 +382,11 @@ public class FishingManager : MonoBehaviour
         OnStateChanged?.Invoke();
     }
 
-    private void PlaySfx(AudioClip clip)
+    private void Play(MMF_Player feedback)
     {
-        if (audioSource != null && clip != null)
+        if (feedback != null)
         {
-            audioSource.PlayOneShot(clip);
+            feedback.PlayFeedbacks();
         }
     }
 }

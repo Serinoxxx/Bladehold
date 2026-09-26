@@ -36,22 +36,16 @@ public class SurvivorsStatsPanelUI : MonoBehaviour
     [SerializeField] private StatRow critsRow = new StatRow { statName = "Critical Hits" };
 
     [Header("Audio Settings")]
-    [Tooltip("AudioSource used to play the count-up dings.")]
-    [SerializeField] private AudioSource audioSource;
-    [Tooltip("AudioClip played rapidly on each count-up tick.")]
-    [SerializeField] private AudioClip countUpTickSound;
-    [Tooltip("AudioClip played when a stat row finishes counting up.")]
-    [SerializeField] private AudioClip rowCompleteSound;
+    [Tooltip("Played rapidly on each count-up tick (2D, unscaled). Its sound pitch is set per tick from the fields below.")]
+    [SerializeField] private MMF_Player tickFeedback;
+    [Tooltip("Played when a stat row finishes counting up (2D, unscaled). Its sound pitch is set per row.")]
+    [SerializeField] private MMF_Player rowCompleteFeedback;
     [Tooltip("Base audio pitch for the first stat row.")]
     [SerializeField] private float basePitch = 0.9f;
     [Tooltip("Pitch increment applied per tick during count-up.")]
     [SerializeField] private float pitchStepPerTick = 0.025f;
     [Tooltip("Pitch increment applied per sequential stat row.")]
     [SerializeField] private float pitchStepPerRow = 0.08f;
-    [Tooltip("Volume multiplier for tick sounds.")]
-    [Range(0f, 1f)]
-    [SerializeField] private float sfxVolume = 0.7f;
-
     [Header("Timing")]
     [Tooltip("Duration in unscaled seconds for counting up a single stat row.")]
     [SerializeField] private float countUpDuration = 0.35f;
@@ -63,19 +57,10 @@ public class SurvivorsStatsPanelUI : MonoBehaviour
 
     public bool IsPlaying => isPlaying;
 
-    private void Awake()
+    private void Start()
     {
-        if (audioSource == null)
-        {
-            audioSource = GetComponent<AudioSource>();
-            if (audioSource == null)
-            {
-                audioSource = gameObject.AddComponent<AudioSource>();
-                audioSource.playOnAwake = false;
-                audioSource.spatialBlend = 0f; // 2D UI sound
-                audioSource.ignoreListenerPause = true;
-            }
-        }
+        if (tickFeedback == null) Debug.LogError("[SurvivorsStatsPanelUI] tickFeedback is not assigned.", this);
+        if (rowCompleteFeedback == null) Debug.LogError("[SurvivorsStatsPanelUI] rowCompleteFeedback is not assigned.", this);
     }
 
     private void OnValidate()
@@ -311,19 +296,24 @@ public class SurvivorsStatsPanelUI : MonoBehaviour
 
     private void PlayTickSound(float pitch)
     {
-        if (audioSource == null || countUpTickSound == null) return;
-        audioSource.pitch = Mathf.Clamp(pitch, 0.5f, 2.5f);
-        audioSource.PlayOneShot(countUpTickSound, sfxVolume);
+        PlayAtPitch(tickFeedback, pitch);
     }
 
     private void PlayCompleteSound(float pitch)
     {
-        if (audioSource == null) return;
-        AudioClip clip = rowCompleteSound != null ? rowCompleteSound : countUpTickSound;
-        if (clip == null) return;
+        PlayAtPitch(rowCompleteFeedback, pitch);
+    }
 
-        audioSource.pitch = Mathf.Clamp(pitch, 0.5f, 2.5f);
-        audioSource.PlayOneShot(clip, sfxVolume * 1.1f);
+    /// <summary>Sets the player's sound feedback to one pitch, then plays it. The rising pitch is the count-up's whole effect.</summary>
+    private static void PlayAtPitch(MMF_Player feedback, float pitch)
+    {
+        if (feedback == null) return;
+        MMF_MMSoundManagerSound sound = feedback.GetFeedbackOfType<MMF_MMSoundManagerSound>();
+        if (sound != null)
+        {
+            sound.MinPitch = sound.MaxPitch = Mathf.Clamp(pitch, 0.5f, 2.5f);
+        }
+        feedback.PlayFeedbacks();
     }
 
     /// <summary>

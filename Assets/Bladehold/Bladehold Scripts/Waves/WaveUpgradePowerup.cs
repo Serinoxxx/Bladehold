@@ -1,4 +1,5 @@
 using System;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -21,9 +22,11 @@ public class WaveUpgradePowerup : MonoBehaviour
     [Tooltip("If true, overrides child renderer material colors with the bounty type color. Recommended false for prefabs with their own textures.")]
     [SerializeField] private bool tintMaterialsWithBountyColor = false;
 
-    [Header("Audio")]
-    [SerializeField] private AudioClip spawnSfx;
-    [SerializeField] private AudioClip interactSfx;
+    [Header("Feedback")]
+    [Tooltip("Optional: played at the chest when it appears. Nothing is authored yet.")]
+    [SerializeField] private MMF_Player spawnFeedback;
+    [Tooltip("Optional: played at the chest when it is claimed. Nothing is authored yet.")]
+    [SerializeField] private MMF_Player claimFeedback;
 
     private Interactable interactable;
     private Vector3 initialVisualPosition;
@@ -50,9 +53,9 @@ public class WaveUpgradePowerup : MonoBehaviour
     {
         InitializeBounty(bountyType);
 
-        if (spawnSfx != null)
+        if (spawnFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(spawnSfx, transform.position, 1.0f);
+            spawnFeedback.PlayFeedbacks(transform.position);
         }
     }
 
@@ -159,9 +162,9 @@ public class WaveUpgradePowerup : MonoBehaviour
             interactable.CanInteract = false;
         }
 
-        if (interactSfx != null)
+        if (claimFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(interactSfx, transform.position, 1.0f);
+            claimFeedback.PlayFeedbacks(transform.position);
         }
 
         OnClaimed?.Invoke(this);

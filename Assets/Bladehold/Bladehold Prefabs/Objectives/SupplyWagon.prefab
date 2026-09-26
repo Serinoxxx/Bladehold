@@ -290,6 +290,79 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4885001493786356, guid: 2966910701d40974c87f0338bb5694e3, type: 3}
   m_PrefabInstance: {fileID: 3641280547068735169}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &5607870393865895446
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 5963302006864290677}
+    m_Modifications:
+    - target: {fileID: 388725166455615729, guid: 0e8f4b8caa2779742abe47b368008229, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 388725166455615729, guid: 0e8f4b8caa2779742abe47b368008229, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 388725166455615729, guid: 0e8f4b8caa2779742abe47b368008229, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 388725166455615729, guid: 0e8f4b8caa2779742abe47b368008229, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 388725166455615729, guid: 0e8f4b8caa2779742abe47b368008229, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 388725166455615729, guid: 0e8f4b8caa2779742abe47b368008229, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 388725166455615729, guid: 0e8f4b8caa2779742abe47b368008229, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 388725166455615729, guid: 0e8f4b8caa2779742abe47b368008229, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 388725166455615729, guid: 0e8f4b8caa2779742abe47b368008229, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 388725166455615729, guid: 0e8f4b8caa2779742abe47b368008229, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8776543726707937826, guid: 0e8f4b8caa2779742abe47b368008229, type: 3}
+      propertyPath: m_Name
+      value: SupplyWagonArrivalMMF
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 0e8f4b8caa2779742abe47b368008229, type: 3}
+--- !u!4 &5239426978919550695 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 388725166455615729, guid: 0e8f4b8caa2779742abe47b368008229, type: 3}
+  m_PrefabInstance: {fileID: 5607870393865895446}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7292821528066364105 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2947156132285246687, guid: 0e8f4b8caa2779742abe47b368008229, type: 3}
+  m_PrefabInstance: {fileID: 5607870393865895446}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6da43522623d4704e979466dc7650b65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MoreMountains.Tools::MoreMountains.Feedbacks.MMF_Player
 --- !u!1001 &5967437761341798927
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -354,6 +427,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4924242273671546, guid: 441e6888d5131344a95748f25c4588cb, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8032188720997413029}
+    - targetCorrespondingSourceObject: {fileID: 4924242273671546, guid: 441e6888d5131344a95748f25c4588cb, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5239426978919550695}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1122691666720918, guid: 441e6888d5131344a95748f25c4588cb, type: 3}
       insertIndex: -1
@@ -432,9 +508,7 @@ MonoBehaviour:
   wheelDustParticles: {fileID: 3474427432898547227}
   movementAudioSource: {fileID: 9005905103563062158}
   burstDelay: 0.5
-  arrivalFeedback: {fileID: 0}
-  arrivalSound: {fileID: 0}
-  goldBurstVfxPrefab: {fileID: 1919543859444104, guid: 0796b331004a84744a609063dc845137, type: 3}
+  arrivalFeedback: {fileID: 7292821528066364105}
   goldBagPrefab: {fileID: 8493665466631301938, guid: 26ebce2f78526014da0d1b69d835b6e9, type: 3}
   minGoldBags: 4
   maxGoldBags: 5

@@ -32,13 +32,7 @@ public class Gate : MonoBehaviour
     [SerializeField] private Transform attackPoint;
 
     [Header("Destruction Effects & Feedbacks")]
-    [Tooltip("Prefab spawned at gate position when destroyed (e.g. large fire/debris explosion).")]
-    [SerializeField] private GameObject explosionVfxPrefab;
-
-    [Tooltip("Optional SFX played on destruction.")]
-    [SerializeField] private AudioClip deathSound;
-
-    [Tooltip("Optional MMF_Player feedback played on destruction (e.g. camera shake).")]
+    [Tooltip("Played at the attack point when the gate falls: explosion sound and fire burst, on unscaled time.")]
     [SerializeField] private MMF_Player deathFeedback;
 
     [Tooltip("Optional specific visual GameObjects to deactivate on destruction. If empty, all Renderers and Colliders in children are disabled.")]
@@ -99,14 +93,6 @@ public class Gate : MonoBehaviour
         {
             health = GetComponent<Health>();
         }
-        if (explosionVfxPrefab == null)
-        {
-            explosionVfxPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Synty/PolygonParticleFX/Prefabs/FX_Fire_Explosion_01.prefab");
-        }
-        if (deathSound == null)
-        {
-            deathSound = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Audio/Enemies/Bomber/explosion_large_01.wav");
-        }
     }
 #endif
 
@@ -120,16 +106,6 @@ public class Gate : MonoBehaviour
         {
             health.ImmuneToPlayerDamage = true;
         }
-#if UNITY_EDITOR
-        if (explosionVfxPrefab == null)
-        {
-            explosionVfxPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Synty/PolygonParticleFX/Prefabs/FX_Fire_Explosion_01.prefab");
-        }
-        if (deathSound == null)
-        {
-            deathSound = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Bladehold/Audio/Enemies/Bomber/explosion_large_01.wav");
-        }
-#endif
     }
 
     private void Awake()
@@ -153,6 +129,10 @@ public class Gate : MonoBehaviour
             Debug.LogError("Health component is not assigned or found on the Gate.");
             anyError = true;
             return;
+        }
+        if (deathFeedback == null)
+        {
+            Debug.LogError("[Gate] deathFeedback is not assigned on " + name + ".", this);
         }
 
         // Restore or initialize gate health across scene loads via RunSession
@@ -200,30 +180,10 @@ public class Gate : MonoBehaviour
             return;
         }
 
+        Vector3 spawnPos = attackPoint != null ? attackPoint.position : transform.position + Vector3.up * 1.5f;
         if (deathFeedback != null)
         {
-            deathFeedback.PlayFeedbacks();
-        }
-
-        Vector3 spawnPos = attackPoint != null ? attackPoint.position : transform.position + Vector3.up * 1.5f;
-
-        if (explosionVfxPrefab != null)
-        {
-            GameObject vfx = Instantiate(explosionVfxPrefab, spawnPos, Quaternion.identity);
-            foreach (ParticleSystem ps in vfx.GetComponentsInChildren<ParticleSystem>())
-            {
-                var main = ps.main;
-                main.useUnscaledTime = true;
-            }
-        }
-
-        if (deathSound != null)
-        {
-            MMSoundManagerPlayOptions options = MMSoundManagerPlayOptions.Default;
-            options.MmSoundManagerTrack = MMSoundManager.MMSoundManagerTracks.Sfx;
-            options.Location = spawnPos;
-            options.Volume = 1.0f;
-            MMSoundManagerSoundPlayEvent.Trigger(deathSound, options);
+            deathFeedback.PlayFeedbacks(spawnPos);
         }
 
         // Disable all colliders and renderers on the gate immediately

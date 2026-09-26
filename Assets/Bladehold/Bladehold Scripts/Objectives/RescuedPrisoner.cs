@@ -17,18 +17,11 @@ public class RescuedPrisoner : MonoBehaviour
     [Tooltip("Animator trigger parameter for cheering (e.g. 'Cheer').")]
     [SerializeField] private string cheerTriggerName = "Cheer";
 
-    [Tooltip("MMF_Player played when released (e.g. spring scale bounce, celebratory glow).")]
+    [Tooltip("MMF_Player played when released (cheering voice).")]
     [SerializeField] private MMF_Player cheerFeedback;
 
-    [Header("Visual Effects & Audio")]
-    [Tooltip("Prefab spawned when the prisoner disappears (e.g. Loot_Poof / dust cloud).")]
-    [SerializeField] private GameObject smokePoofPrefab;
-
-    [Tooltip("Audio clip played when cheer animation begins.")]
-    [SerializeField] private AudioClip cheerSound;
-
-    [Tooltip("Audio clip played when the prisoner disappears in smoke.")]
-    [SerializeField] private AudioClip poofSound;
+    [Tooltip("MMF_Player played when the prisoner vanishes (poof sound + smoke puff).")]
+    [SerializeField] private MMF_Player poofFeedback;
 
     [Tooltip("Seconds the prisoner cheers before vanishing in smoke.")]
     [SerializeField] private float cheerDuration = 2.5f;
@@ -46,6 +39,12 @@ public class RescuedPrisoner : MonoBehaviour
         }
     }
 
+    private void Start()
+    {
+        if (cheerFeedback == null) Debug.LogError("[RescuedPrisoner] cheerFeedback is not assigned.", this);
+        if (poofFeedback == null) Debug.LogError("[RescuedPrisoner] poofFeedback is not assigned.", this);
+    }
+
     /// <summary>Called when the surrounding cage is broken.</summary>
     public void Release()
     {
@@ -61,18 +60,7 @@ public class RescuedPrisoner : MonoBehaviour
         // Trigger MMF feedback
         if (cheerFeedback != null)
         {
-            cheerFeedback.PlayFeedbacks();
-        }
-
-        // Play cheering voice / audio
-        if (cheerSound != null)
-        {
-            MMSoundManagerPlayOptions options = MMSoundManagerPlayOptions.Default;
-            options.MmSoundManagerTrack = MMSoundManager.MMSoundManagerTracks.Sfx;
-            options.Location = transform.position;
-            options.Volume = 0.9f;
-            options.Pitch = UnityEngine.Random.Range(0.95f, 1.05f);
-            MMSoundManagerSoundPlayEvent.Trigger(cheerSound, options);
+            cheerFeedback.PlayFeedbacks(transform.position);
         }
 
         OnReleased?.Invoke(this);
@@ -83,20 +71,9 @@ public class RescuedPrisoner : MonoBehaviour
     {
         yield return new WaitForSeconds(cheerDuration);
 
-        // Spawn puff of smoke VFX
-        if (smokePoofPrefab != null)
+        if (poofFeedback != null)
         {
-            Instantiate(smokePoofPrefab, transform.position + Vector3.up * 0.8f, Quaternion.identity);
-        }
-
-        // Play puff of smoke sound
-        if (poofSound != null)
-        {
-            MMSoundManagerPlayOptions options = MMSoundManagerPlayOptions.Default;
-            options.MmSoundManagerTrack = MMSoundManager.MMSoundManagerTracks.Sfx;
-            options.Location = transform.position;
-            options.Volume = 1.0f;
-            MMSoundManagerSoundPlayEvent.Trigger(poofSound, options);
+            poofFeedback.PlayFeedbacks(transform.position);
         }
 
         Destroy(gameObject);

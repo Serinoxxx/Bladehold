@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -73,7 +74,8 @@ public class GameLoopManager : MonoBehaviour
     public DamageNumbersPro.DamageNumber goldPopupPrefab;
     public DamageNumbersPro.DamageNumber metalPopupPrefab;
     public DamageNumbersPro.DamageNumber bloodPopupPrefab;
-    public AudioClip rewardSfx;
+    [Tooltip("Played above the player when a war-banner bounty pays out (coin sound, UI track).")]
+    public MMF_Player rewardFeedback;
 
     public IReadOnlyList<WarBannerController> ActiveBanners => activeBanners;
 
@@ -115,6 +117,8 @@ public class GameLoopManager : MonoBehaviour
 
     private void Start()
     {
+        if (rewardFeedback == null) Debug.LogError("[GameLoopManager] rewardFeedback is not assigned.", this);
+
         if (Player.Instance != null && Player.Instance.Health != null)
         {
             Player.Instance.Health.OnDied += HandlePlayerDied;
@@ -634,24 +638,9 @@ public class GameLoopManager : MonoBehaviour
         if (Player.Instance == null) return;
         Vector3 pos = Player.Instance.transform.position + new Vector3(0, 2f, 0);
 
-        if (rewardSfx != null)
+        if (rewardFeedback != null)
         {
-#if UNITY_EDITOR
-            if (Application.isPlaying)
-            {
-                MoreMountains.Tools.MMSoundManagerPlayOptions options = MoreMountains.Tools.MMSoundManagerPlayOptions.Default;
-                options.MmSoundManagerTrack = MoreMountains.Tools.MMSoundManager.MMSoundManagerTracks.UI;
-                options.Location = pos;
-                options.Volume = 1f;
-                MoreMountains.Tools.MMSoundManagerSoundPlayEvent.Trigger(rewardSfx, options);
-            }
-#else
-            MoreMountains.Tools.MMSoundManagerPlayOptions options = MoreMountains.Tools.MMSoundManagerPlayOptions.Default;
-            options.MmSoundManagerTrack = MoreMountains.Tools.MMSoundManager.MMSoundManagerTracks.UI;
-            options.Location = pos;
-            options.Volume = 1f;
-            MoreMountains.Tools.MMSoundManagerSoundPlayEvent.Trigger(rewardSfx, options);
-#endif
+            rewardFeedback.PlayFeedbacks(pos);
         }
 
         DamageNumbersPro.DamageNumber prefab = null;

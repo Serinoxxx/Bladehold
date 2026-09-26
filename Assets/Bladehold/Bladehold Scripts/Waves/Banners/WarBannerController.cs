@@ -22,8 +22,10 @@ public class WarBannerController : MonoBehaviour
     [Header("Cinematic Effects")]
     [SerializeField] private HighlightEffect highlightEffect;
     [SerializeField] private MMF_Player slamFeedback;
+    [Tooltip("Fire parented to the banner while it burns and shrinks away (a state visual, not a one-shot).")]
     [SerializeField] private GameObject burnVfxPrefab;
-    [SerializeField] private AudioClip burnSfx;
+    [Tooltip("Played at the banner when it burns down (fire sound).")]
+    [SerializeField] private MMF_Player burnFeedback;
 
     [Header("Difficulty Quick Facts UI")]
     [Tooltip("Display text for skulls, e.g. '💀 💀'.")]
@@ -86,6 +88,7 @@ public class WarBannerController : MonoBehaviour
 
     private void Start()
     {
+        if (burnFeedback == null) Debug.LogError("[WarBannerController] burnFeedback is not assigned.", this);
         interactable.OnInteractedEvent -= HandleInteracted;
         interactable.OnInteractedEvent += HandleInteracted;
     }
@@ -304,9 +307,9 @@ public class WarBannerController : MonoBehaviour
             // offset slightly up
             fire.transform.localPosition = new Vector3(0, 1.5f, 0);
         }
-        if (burnSfx != null)
+        if (burnFeedback != null)
         {
-            AudioSource.PlayClipAtPoint(burnSfx, transform.position, 1.0f);
+            burnFeedback.PlayFeedbacks(transform.position);
         }
         
         // Simple dissolve simulation: fade out or scale over 3 seconds
