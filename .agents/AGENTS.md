@@ -4,4 +4,4 @@
 
 Don't add project knowledge here; update `CLAUDE.md` instead.
 
-Project skills live in `.agents/skills/` (Antigravity) and `.claude/skills/` (Claude Code).
+Project skills live in `.claude/skills/`. `.agents/skills` is a directory junction to it, so edit skills there (see the "Project skills" section of `CLAUDE.md`).

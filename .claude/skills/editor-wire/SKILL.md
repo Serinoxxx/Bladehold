@@ -10,7 +10,7 @@ description: Use when a plans/editor/ checklist has unchecked items to actually 
 ## Ground truth first
 
 1. Read the whole target checklist **including its Verify and Playtest sections** — the verification items tell you what the wiring is supposed to make true.
-2. Read `/unity-editor-mcp` (bridge preconditions, layer-picker table, play-mode pattern) — this skill is that one applied to a specific checklist.
+2. Read `/unity-editor-mcp` (bridge preconditions, layer-picker table, execute_code techniques, dialog/benchmark traps, play-mode pattern) — this skill is that one applied to a specific checklist.
 3. Skim the C# files the entry's blurb points at; the checklist was written against that code and the code may have moved since. **Code wins over the checklist** — if they disagree, update the checklist item, then do what the code needs.
 
 ## Step 1 — Triage the checklist
@@ -26,7 +26,7 @@ For each item: do it → verify it stuck (re-query the asset/ref) → edit the c
 
 ## Step 3 — Verify and hand off the rest
 
-1. Run the checklist's **Verify/Playtest** items that are automatable: Play mode + DevConsole cheats / EnemyZoo via MCP; tick what passes.
+1. Run the checklist's **Verify/Playtest** items that are automatable: Play mode + DevConsole cheats / the `Enemy Zoo` scene via MCP; tick what passes.
 2. For human-only leftovers, edit the item in place to make the humanness explicit: `- [ ] **HUMAN:** bake the OneHandedSwordAttack event on the clip import settings — a missing event = silent no-hit swings`.
 3. If any wiring revealed a code bug, fix it in C# (`/compile-check`), then re-verify.
 
@@ -36,6 +36,7 @@ For each item: do it → verify it stuck (re-query the asset/ref) → edit the c
 - Wiring in Play mode (lost on exit) — edit mode only, verify in Play mode.
 - Forgetting that MCP edits are working-tree changes: the scene/prefab/asset/meta diffs belong in the commit.
 - Doing enemy-prefab work by hand that `/generate-enemy-prefabs` owns — check `Editor/EnemyManifest.cs` first.
+- Saving a scene the mechanic benchmark ran in, or closing a dirty prefab stage without saving (native modal = hung bridge). See `/unity-editor-mcp`.
 
 ## Finish protocol
 

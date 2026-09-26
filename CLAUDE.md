@@ -80,7 +80,7 @@ Build towards these; don't "fix" code back to the old behaviour.
 - First-party code lives **only** in `Assets/Bladehold/Bladehold Scripts/` (note the space). Key folders: `Campaign/`, `Waves/` (incl. `Banners/`), `Objectives/`, `Fort/`, `Economy/`, `Player/`, `Horse/`, `Enemies/`, `Bosses/`, `DamageSystem/`, `Upgrades/`, `Stats/`, `Fishing/`, `UI/` (incl. `Meta/`, `RestArea/`, `Transitions/`), `Save/`, `Debug/`, `Editor/`.
 - Designer data: `Assets/Bladehold/Config/Enemies.csv`, `Assets/Bladehold/Resources/DraftUpgrades.csv`, SO assets under `Assets/Bladehold/Bladehold Config/`.
 - No `.asmdef` for game code; everything compiles into `Assembly-CSharp`.
-- Vendored, don't modify: `Assets/Third Party/` (Synty incl. the active player controller, StarterAssets (unused), Wingman, Kevin Iglesias), `Assets/LeanTween/`, `Assets/DamageNumbersPro/`, `Assets/Feel/` (`MMF_Player`), `Assets/AssetInventory/`.
+- Vendored, don't modify: `Assets/Third Party/` (Synty incl. the active player controller, Feel (`MMF_Player`), LeanTween, DamageNumbersPro, Wingman, Kevin Iglesias), `Assets/Synty/`, `Assets/AssetInventory/`.
 - **Player controller** is Synty's `SamplePlayerAnimationController` + `InputReader`, not StarterAssets. New gameplay inputs go in the Synty map (`Assets/Third Party/Synty/AnimationBaseLocomotion/Samples/Scripts/InputSystem/Controls.inputactions`), then satisfy the new interface methods in `InputReader.cs`. Don't use `Assets/InputSystem_Actions.inputactions` for gameplay.
 
 ## Conventions
@@ -112,7 +112,11 @@ Plan 08 (2026-09-25) deleted the old WaveSpawner loop, the gold skill tree + Rei
 
 ## Project skills
 
-Recipes in `.claude/skills/`; invoke the matching one before starting: `add-enemy-type`, `generate-enemy-prefabs`, `compile-check`, `unity-editor-mcp`, `editor-wiring-todo` (writes a plan's `plans/editor/` checklist), `editor-wire` (executes one via MCP). (`add-player-class` and `add-skill-line` target removed/dead systems and are due for retirement or rewrite; don't use them.) `.agents/skills/` has more (changelog, maintain-mechanic-tests, test-mechanic, add-ultimate-handler, …) that haven't been ported yet.
+Recipes in `.claude/skills/`, the one canonical copy. `.agents/skills` (Antigravity) is a gitignored directory junction to it; on a fresh clone recreate it with `cmd /c mklink /J .agents\skills .claude\skills`. Invoke the matching skill before starting:
+- **Content:** `add-draft-card`, `add-ultimate-handler`, `add-meta-perk`, `add-shop-item`, `add-enemy-type`, `generate-enemy-prefabs`, `add-captain`, `add-objective`, `add-campaign-node`, `add-defense-type`.
+- **UI and feedback:** `ui-mockup` (new UI), `modify-ui` (existing UI), `mm-progress-bars`, `feel-integration` (MMF).
+- **Workflow:** `compile-check`, `test-mechanic`, `changelog`, `editor-wiring-todo` (writes a plan's `plans/editor/` checklist), `editor-wire` (executes one via MCP), `unity-editor-mcp` (incl. a hung bridge or modal dialog).
+- **Assets and misc:** `find-and-import-assets`, `generate-sprite-variants`, `telemetry-analytics`, `translate-game-name`.
 
 ## Plans
 

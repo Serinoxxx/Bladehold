@@ -28,6 +28,10 @@ For every file you created this session:
 
 This temporary hand-edit is safe despite CLAUDE.md's "don't hand-edit generated csprojs" rule — that rule means *don't treat them as durable*; Unity overwrites them on its next refresh anyway. Do **not** commit csproj/slnx changes; they're not tracked deliverables. If the Editor is open in the background it auto-regenerates csprojs and creates `.meta` files for new scripts on focus.
 
+## Then let Unity compile it (if the Editor is open)
+
+After a clean `dotnet build`, if Unity MCP is connected: `refresh_unity` (`compile: "request"`), then `read_console` (errors). Unity's compile is the real one (asmdefs, defines, `.meta` creation), so a new error there is yours even when `dotnet build` passed. If MCP isn't connected, skip this step and say so.
+
 ## Interpreting results
 
 - Fix every **error**; ignore pre-existing warnings you didn't introduce.
