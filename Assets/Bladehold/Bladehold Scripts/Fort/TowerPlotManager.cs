@@ -169,15 +169,18 @@ public class TowerPlotManager : MonoBehaviour
             FireTeslaSpire(stats);
         }
 
-        if (Time.time >= nextPermafrostTime && stats.GetValue(StatType.IcePermafrostUnlocked) > 0f)
+        float permafrost = stats.GetValue(StatType.IcePermafrostUnlocked);
+        if (Time.time >= nextPermafrostTime && permafrost > 0f)
         {
+            // The unlock stat doubles as the card's level scaling: the aura reaches further per level.
+            float radius = permafrostRadius * Mathf.Max(1f, permafrost);
             nextPermafrostTime = Time.time + permafrostInterval;
             processedTargets.Clear();
             foreach (TowerPlot p in plots)
             {
                 if (p != null && p.CurrentDefense != null)
                 {
-                    ApplyPermafrostAura(p.CurrentDefense.transform.position);
+                    ApplyPermafrostAura(p.CurrentDefense.transform.position, radius);
                 }
             }
         }
@@ -236,9 +239,9 @@ public class TowerPlotManager : MonoBehaviour
         }
     }
 
-    private void ApplyPermafrostAura(Vector3 center)
+    private void ApplyPermafrostAura(Vector3 center, float radius)
     {
-        int count = Physics.OverlapSphereNonAlloc(center, permafrostRadius, overlapBuffer);
+        int count = Physics.OverlapSphereNonAlloc(center, radius, overlapBuffer);
         for (int i = 0; i < count; i++)
         {
             Health h = EnemyHealthFrom(overlapBuffer[i]);

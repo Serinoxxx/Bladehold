@@ -21,6 +21,8 @@ public class DraftUpgradeDefinition
     public string targetSlot;
     public bool isDuo;
     public List<string> prerequisiteElements = new List<string>();
+    // Tokens from the "requires" column: ultimate, slot:<Element>, card:<id>. See DraftUpgradeService.MeetsRequirements.
+    public List<string> requires = new List<string>();
 
     public string GetDescriptionForLevel(int currentLevel)
     {

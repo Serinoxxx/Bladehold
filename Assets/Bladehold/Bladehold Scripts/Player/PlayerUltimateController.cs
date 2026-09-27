@@ -403,6 +403,8 @@ public class PlayerUltimateController : MonoBehaviour
         {
             float allMult = player.Stats.GetValue(StatType.AllDamageMultiplier);
             if (allMult > 0f) damageMultiplier = allMult;
+            // The unlock stat doubles as the card's level scaling: 1 at level 1, higher per level.
+            damageMultiplier *= Mathf.Max(1f, player.Stats.GetValue(StatType.FireInfernoBurstUnlocked));
         }
 
         float blastDamage = 25f * damageMultiplier;

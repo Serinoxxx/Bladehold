@@ -102,6 +102,17 @@ public class DraftUpgradeService : MonoBehaviour
             }
         }
 
+        foreach (DraftUpgradeDefinition def in allDefinitions)
+        {
+            foreach (string token in def.requires)
+            {
+                if (token.StartsWith("card:", StringComparison.OrdinalIgnoreCase) && !byId.ContainsKey(token.Substring(5)))
+                {
+                    Debug.LogError($"[DraftUpgradeService] Draft '{def.id}' requires unknown card '{token.Substring(5)}', so it can never be offered.");
+                }
+            }
+        }
+
         Debug.Log($"[DraftUpgradeService] Successfully loaded {allDefinitions.Count} draft upgrades from CSV.");
     }
 
@@ -120,7 +131,7 @@ public class DraftUpgradeService : MonoBehaviour
         List<string> cols = ParseCsvRow(row);
         if (cols.Count < 10) return null;
 
-        // Columns: id,displayName,category,weapon,element,isUltimate,maxLevel,description,upgradeText,stat,kind,amount,icon,targetSlot,isDuo,prerequisiteElements
+        // Columns: id,displayName,category,weapon,element,isUltimate,maxLevel,description,upgradeText,stat,kind,amount,icon,targetSlot,isDuo,prerequisiteElements,requires
         DraftUpgradeDefinition def = new DraftUpgradeDefinition
         {
             id = cols[0].Trim(),
@@ -139,6 +150,21 @@ public class DraftUpgradeService : MonoBehaviour
         if (cols.Count > 15 && !string.IsNullOrEmpty(cols[15]))
         {
             def.prerequisiteElements.AddRange(cols[15].Split('|', StringSplitOptions.RemoveEmptyEntries));
+        }
+
+        if (cols.Count > 16 && !string.IsNullOrWhiteSpace(cols[16]))
+        {
+            foreach (string raw in cols[16].Split(';', StringSplitOptions.RemoveEmptyEntries))
+            {
+                string token = raw.Trim();
+                if (token.Length == 0) continue;
+                if (!IsValidRequirement(token))
+                {
+                    Report($"Draft '{def.id}' has unknown requirement '{token}'. Expected ultimate, slot:<Element> or card:<id>. Requirement ignored.");
+                    continue;
+                }
+                def.requires.Add(token);
+            }
         }
 
         string categoryStr = cols.Count > 2 ? cols[2].Trim() : "";
@@ -342,6 +368,9 @@ public class DraftUpgradeService : MonoBehaviour
                 continue;
             }
 
+            // Requirements: the card only does something once these hold (Shatter needs Deep Freeze, etc.).
+            if (!MeetsRequirements(def, out _)) continue;
+
             // Ultimate exclusivity rule: You can't have more than one ultimate per run!
             if (def.isUltimate)
             {
@@ -508,6 +537,52 @@ public class DraftUpgradeService : MonoBehaviour
             }
         }
         return active;
+    }
+
+    private static readonly string[] RequirementElements = { "Fire", "Lightning", "Ice" };
+
+    private static bool IsValidRequirement(string token)
+    {
+        if (token.Equals("ultimate", StringComparison.OrdinalIgnoreCase)) return true;
+        if (token.StartsWith("card:", StringComparison.OrdinalIgnoreCase)) return token.Length > 5;
+        if (token.StartsWith("slot:", StringComparison.OrdinalIgnoreCase))
+        {
+            string element = token.Substring(5);
+            return Array.Exists(RequirementElements, e => e.Equals(element, StringComparison.OrdinalIgnoreCase));
+        }
+        return false;
+    }
+
+    /// <summary>
+    ///     True when every token in <see cref="DraftUpgradeDefinition.requires" /> holds for the current run:
+    ///     <c>ultimate</c> (an ultimate is owned), <c>slot:Fire</c> (Fire is imbued on at least one slot, so hits
+    ///     apply its status) and <c>card:&lt;id&gt;</c> (that card is owned). <paramref name="missing" /> names the
+    ///     first one that fails, for debug tools.
+    /// </summary>
+    public static bool MeetsRequirements(DraftUpgradeDefinition def, out string missing)
+    {
+        missing = "";
+        if (def == null || def.requires.Count == 0) return true;
+
+        HashSet<string> slotElements = RunSession.GetActiveElements();
+        foreach (string token in def.requires)
+        {
+            if (token.Equals("ultimate", StringComparison.OrdinalIgnoreCase))
+            {
+                if (string.IsNullOrEmpty(RunSession.ActiveUltimateId)) { missing = "Needs an ultimate"; return false; }
+            }
+            else if (token.StartsWith("slot:", StringComparison.OrdinalIgnoreCase))
+            {
+                string element = token.Substring(5);
+                if (!slotElements.Contains(element)) { missing = $"Needs {element} on a slot"; return false; }
+            }
+            else if (token.StartsWith("card:", StringComparison.OrdinalIgnoreCase))
+            {
+                string cardId = token.Substring(5);
+                if (RunSession.GetUpgradeLevel(cardId) <= 0) { missing = $"Needs {cardId}"; return false; }
+            }
+        }
+        return true;
     }
 
     public static bool MeetsDuoPrerequisites(DraftUpgradeDefinition def, HashSet<string> activeElements)

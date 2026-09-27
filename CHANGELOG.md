@@ -4,6 +4,7 @@
 
 ### New Features
 
+- Added upgrade levels to Lunge Mastery, ShieldBreaker, Vampire Blade, Inferno Burst, Permafrost, Fire Arrows, Lightning Arrows, Thermal Shock, Plasma Overload and Superconductor, so drafting them again makes them stronger
 - Added supply refund on sector victory: towers are dismantled and their remaining supply plus upgrade costs return to you
 - Unified victory and defeat presentation using the customizable End Game Screen prefab, displaying triumphant victory titling upon clearing all sector waves
 - Added automated behavioral benchmark tests verifying end game screen victory mode, defeat routing, and live currency updates
@@ -186,6 +187,7 @@
 
 ### General Changes
 
+- Updated the draft so cards only show up once they can work: Kindling needs Fire on a slot, Deep Freeze needs Ice on a slot, Shatter needs Deep Freeze, Inferno Burst and Eye of the Storm need an ultimate, and each duo card needs both of its elements on slots (Superconductor needs Deep Freeze instead of Ice)
 - Updated the Battle Portal to start a new run straight on the campaign map
 - Removed Retry Level from the defeat screen; dying always returns you to the Meta Area
 - Removed the Return to Stronghold button from the campaign map

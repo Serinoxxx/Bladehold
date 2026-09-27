@@ -174,6 +174,13 @@ public class DiegeticDraftTester : MonoBehaviour
             }
         }
 
+        // 3b. Card requirements (Shatter needs Deep Freeze, Kindling needs Fire on a slot, ...)
+        if (!DraftUpgradeService.MeetsRequirements(def, out string missingRequirement))
+        {
+            reason = missingRequirement;
+            return false;
+        }
+
         // 4. Weapon match
         if (def.category == DraftCategory.Weapon && !string.IsNullOrEmpty(def.weapon))
         {

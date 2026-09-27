@@ -277,15 +277,16 @@ public class EnemyStatusManager : MonoBehaviour
         // Check Synergies FIRST before applying new status
         if (damage.isPlayerDamage && Player.Instance != null && Player.Instance.Stats != null)
         {
-            // Thermal Shock
-            if (Player.Instance.Stats.GetValue(StatType.DuoThermalShock) > 0f)
+            // Thermal Shock (the stat's value scales the burst: 1 at level 1, higher per level)
+            float thermalShock = Player.Instance.Stats.GetValue(StatType.DuoThermalShock);
+            if (thermalShock > 0f)
             {
                 if (isFire && (HasStatus("Ice") || HasStatus("Frozen")))
                 {
                     RemoveStatus("Ice");
                     RemoveStatus("Frozen");
                     
-                    float burstDamage = damage.value * 1.5f;
+                    float burstDamage = damage.value * 1.5f * thermalShock;
                     Damage burst = new Damage { value = burstDamage, type = DamageType.elemental, source = Player.Instance.Damageable, isPlayerDamage = true };
                     health.ReceiveDamage(burst);
                     
@@ -307,13 +308,14 @@ public class EnemyStatusManager : MonoBehaviour
                 }
             }
 
-            // Plasma Overload
-            if (Player.Instance.Stats.GetValue(StatType.DuoPlasmaOverload) > 0f)
+            // Plasma Overload (the stat's value scales the explosion)
+            float plasmaOverload = Player.Instance.Stats.GetValue(StatType.DuoPlasmaOverload);
+            if (plasmaOverload > 0f)
             {
                 if (isLightning && HasStatus("Fire"))
                 {
                     float remainingTicks = Mathf.Max(1f, activeStatuses["Fire"]);
-                    float dotDamage = Player.Instance.Stats.GetValue(StatType.SwordDamage) * 0.15f * remainingTicks;
+                    float dotDamage = Player.Instance.Stats.GetValue(StatType.SwordDamage) * 0.15f * remainingTicks * plasmaOverload;
                     
                     RemoveStatus("Fire");
                     
@@ -336,12 +338,13 @@ public class EnemyStatusManager : MonoBehaviour
                 }
             }
 
-            // Superconductor
-            if (Player.Instance.Stats.GetValue(StatType.DuoSuperconductor) > 0f)
+            // Superconductor (the stat's value scales the chain damage)
+            float superconductor = Player.Instance.Stats.GetValue(StatType.DuoSuperconductor);
+            if (superconductor > 0f)
             {
                 if (isLightning && HasStatus("Frozen"))
                 {
-                    float clDamage = 40f; 
+                    float clDamage = 40f * superconductor;
                     
                     if (ElementalEffectsManager.Instance != null)
                     {

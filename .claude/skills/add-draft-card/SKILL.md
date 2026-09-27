@@ -14,7 +14,7 @@ Fishing Frenzy cards are **not** in this CSV; they're `Fishing/FishingUpgradeTyp
 ## 1. The row
 
 Header (the code wins if this drifts; read `ParseRow`):
-`id,displayName,category,weapon,element,isUltimate,maxLevel,description,upgradeText,stat,kind,amount,icon,targetSlot,isDuo,prerequisiteElements`
+`id,displayName,category,weapon,element,isUltimate,maxLevel,description,upgradeText,stat,kind,amount,icon,targetSlot,isDuo,prerequisiteElements,requires`
 
 | Column | Rules |
 |---|---|
@@ -29,6 +29,9 @@ Header (the code wins if this drifts; read `ParseRow`):
 | `icon` | Sprite name in `Resources/SkillTreeIcons.asset` (`SkillTreeIconsSO.icons`). Blank = no icon. |
 | `targetSlot` | Elemental only: `SLOT_MELEE`, `SLOT_RANGED`, `SLOT_MOBILITY`, `SLOT_ULTIMATE`, `SLOT_FORTRESS` (`RunSession.KnownElementalSlots`). Picking it imbues that slot; a different element already there is overwritten, and its cards are stripped for `ElementOverwriteGold` each. |
 | `isDuo` / `prerequisiteElements` | Duo = `isDuo=1`, **no** `targetSlot`, and 2+ `\|`-separated elements (`fire\|ice`). It only enters the pool once all of those elements are active. |
+| `requires` | Optional `;`-separated tokens, all of which must hold before the card enters the pool (`DraftUpgradeService.MeetsRequirements`): `ultimate` (an ultimate is owned), `slot:Fire` (that element is imbued on a slot, so hits apply its status) or `card:<id>` (that card is owned). Use it when the card does nothing without something else, e.g. Shatter `card:elem_ice_deep_freeze`, Kindling `slot:Fire`. Don't gate on per-sector state such as built towers. |
+
+**Levels:** give a card `maxLevel` 4 whenever a number in it can meaningfully grow. For an on/off stat (`XUnlocked`, the duo flags), have the consumer treat the value as a strength multiplier (`1|1.5|2|2.5`) rather than `> 0` only, as `TriggerInfernoBurst`, Permafrost and the duos do. Leave pure mechanic switches (Nimble Strike, Auto-Shot, Boomerang, Deep Freeze, ultimates) at 1.
 
 Copy the closest existing row as your template: `sword_lunge_mastery` (multi-effect weapon card), a `fire_*` slot card, or an existing duo.
 
