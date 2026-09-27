@@ -476,24 +476,17 @@ public class DevConsole : MonoBehaviour
 
     private void UnlockSelectedUltimate(string ultId)
     {
-        Player player = Player.Instance;
-        if (player != null && player.Stats != null)
+        DraftUpgradeService draftService = DraftUpgradeService.GetOrCreateInstance();
+        DraftUpgradeDefinition def = draftService != null ? draftService.GetById(ultId) : null;
+        if (def == null)
         {
-            player.Stats.SetBase(StatType.UltimateUnlocked, 1f);
-            RunSession.ActiveUltimateId = ultId;
-            DraftUpgradeService.ConfigureUltimateHandler(player, ultId);
-
-            DraftUpgradeService draftService = DraftUpgradeService.GetOrCreateInstance();
-            if (draftService != null)
-            {
-                var def = draftService.GetById(ultId);
-                if (def != null)
-                {
-                    RunSession.SetUpgradeLevel(def.id, 1);
-                }
-            }
-            Debug.Log($"[DevConsole] Unlocked and configured ultimate: {ultId}");
+            Debug.LogError($"[DevConsole] No ultimate '{ultId}' in the draft catalog.");
+            return;
         }
+
+        // Fills the melee or ranged slot (ranged when it's the equipped ranged weapon's ultimate).
+        draftService.DebugSetDraftLevel(def, 1);
+        Debug.Log($"[DevConsole] Unlocked {DraftUpgradeService.SlotForUltimate(def)} ultimate: {ultId}");
     }
 
     private void FillUltimateCharge()
@@ -501,21 +494,17 @@ public class DevConsole : MonoBehaviour
         Player player = Player.Instance != null ? Player.Instance : FindFirstObjectByType<Player>();
         PlayerUltimateController ultCtrl = GetUltimateController();
 
-        if (player != null && player.Stats != null)
+        if (player != null && player.Stats != null && !RunSession.HasAnyUltimate)
         {
-            player.Stats.SetBase(StatType.UltimateUnlocked, 1f);
-            if (string.IsNullOrEmpty(RunSession.ActiveUltimateId))
-            {
-                selectedUltimateIndex = Mathf.Clamp(selectedUltimateIndex, 0, AvailableUltimates.Length - 1);
-                RunSession.ActiveUltimateId = AvailableUltimates[selectedUltimateIndex].id;
-            }
-            DraftUpgradeService.ConfigureUltimateHandler(player, RunSession.ActiveUltimateId);
+            selectedUltimateIndex = Mathf.Clamp(selectedUltimateIndex, 0, AvailableUltimates.Length - 1);
+            UnlockSelectedUltimate(AvailableUltimates[selectedUltimateIndex].id);
         }
 
         if (ultCtrl != null)
         {
-            ultCtrl.SetCharge(PlayerUltimateController.MaxCharge);
-            Debug.Log($"[DevConsole] Ultimate charge set to {PlayerUltimateController.MaxCharge:F0}%. Active ult: {RunSession.ActiveUltimateId}. Press Q to unleash!");
+            ultCtrl.SetCharge(UltimateSlot.Melee, PlayerUltimateController.MaxCharge);
+            ultCtrl.SetCharge(UltimateSlot.Ranged, PlayerUltimateController.MaxCharge);
+            Debug.Log($"[DevConsole] Ultimate bars filled. Melee: '{RunSession.MeleeUltimateId}', ranged: '{RunSession.RangedUltimateId}'. Press Q (aim first for the ranged one)!");
         }
         else
         {

@@ -4,6 +4,9 @@
 
 ### New Features
 
+- Added ultimates to the Rest Area shop: every shop offers the ultimate of your melee weapon and your ranged weapon until you own one (100 gold)
+- Added separate ultimate bars for your melee and ranged weapon: each fills from hits with that weapon, and towers, burns and combos fill both at half rate
+- Added the Twin Fury meta perk (tier 3, 50 Goblin Blood): the shop can sell a second ultimate for your other weapon (400 gold)
 - Added upgrade levels to Lunge Mastery, ShieldBreaker, Vampire Blade, Inferno Burst, Permafrost, Fire Arrows, Lightning Arrows, Thermal Shock, Plasma Overload and Superconductor, so drafting them again makes them stronger
 - Added supply refund on sector victory: towers are dismantled and their remaining supply plus upgrade costs return to you
 - Unified victory and defeat presentation using the customizable End Game Screen prefab, displaying triumphant victory titling upon clearing all sector waves
@@ -187,6 +190,8 @@
 
 ### General Changes
 
+- Updated the ultimate button: press it while aiming your ranged weapon to use the ranged ultimate, otherwise it uses your melee ultimate
+- Removed ultimates from the draft cards; they are now bought at the shop
 - Updated the draft so cards only show up once they can work: Kindling needs Fire on a slot, Deep Freeze needs Ice on a slot, Shatter needs Deep Freeze, Inferno Burst and Eye of the Storm need an ultimate, and each duo card needs both of its elements on slots (Superconductor needs Deep Freeze instead of Ice)
 - Updated the Battle Portal to start a new run straight on the campaign map
 - Removed Retry Level from the defeat screen; dying always returns you to the Meta Area

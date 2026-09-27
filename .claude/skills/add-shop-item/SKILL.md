@@ -16,6 +16,7 @@ Items are `ShopItemSO` assets (`UI/RestArea/ShopItemSO.cs`) in `Assets/Bladehold
 | `WaveEndHealTemporary` | `special_herbs` | Sets `RunSession.SpecialHerbsWavesRemaining`; `GameLoopManager` heals at wave end; `RunSession.OnWaveCompleted` counts it down. |
 | `AmmoRefill` | `ammo_bundle` | `RunSession.AddInRunAmmo` + `PlayerAmmo.AddAmmo`. |
 | `MoveSpeedTemporary` | `crystal_water` | **Broken:** sets `CrystalWaterWavesRemaining`, but nothing applies the speed bonus. Fix this before copying it. |
+| `UnlockUltimate` | *(no asset)* | Built at runtime by `ShopUI.GenerateUltimateStock` from `DraftUpgradeService.GetShopUltimates`; `itemId` is the ultimate's draft id and `ApplyUpgrade` unlocks it. Offered on top of the item slots (own row if `ultimateSlotsContainer` is set), prices from `UltimateShopConfigSO`. See `/add-ultimate-handler`. |
 
 ## Steps
 

@@ -310,31 +310,14 @@ public class DraftUpgradeService : MonoBehaviour
     }
 
     /// <summary>
-    ///     Generates 3 filtered draft candidates adhering to category, equipped weapons,
-    ///     elemental lock, and ultimate exclusivity.
+    ///     Generates 3 filtered draft candidates adhering to category, equipped weapons, duo prerequisites
+    ///     and card requirements. Ultimates never appear: they are sold at the Rest Area shop.
     /// </summary>
     public List<DraftUpgradeDefinition> GetCandidateUpgrades(DraftCategory category, int count = 3, HashSet<string> banishedIds = null)
     {
         EnsureInitialized();
 
-        string equippedMelee = "sword";
-        string equippedRanged = "bow";
-        if (PlayerWeaponManager.Instance != null)
-        {
-            equippedMelee = PlayerWeaponManager.Instance.CurrentMeleeId.ToLowerInvariant();
-            equippedRanged = PlayerWeaponManager.Instance.CurrentRangedId.ToLowerInvariant();
-        }
-        else
-        {
-            SaveData save = SaveSystem.Load();
-            if (save != null)
-            {
-                if (!string.IsNullOrEmpty(save.equippedMeleeWeapon)) equippedMelee = save.equippedMeleeWeapon.ToLowerInvariant();
-                if (!string.IsNullOrEmpty(save.equippedRangedWeapon)) equippedRanged = save.equippedRangedWeapon.ToLowerInvariant();
-            }
-        }
-
-        bool hasUltimate = !string.IsNullOrEmpty(RunSession.ActiveUltimateId);
+        GetEquippedWeaponIds(out string equippedMelee, out string equippedRanged);
         HashSet<string> activeElements = GetActiveElements();
 
         List<DraftUpgradeDefinition> candidates = new List<DraftUpgradeDefinition>();
@@ -343,6 +326,9 @@ public class DraftUpgradeService : MonoBehaviour
         {
             if (def == null) continue;
             if (def.category != category) continue;
+
+            // Ultimates are bought at the Rest Area shop (GetShopUltimates), never drafted.
+            if (def.isUltimate) continue;
 
             if (banishedIds != null && banishedIds.Contains(def.id)) continue;
 
@@ -370,12 +356,6 @@ public class DraftUpgradeService : MonoBehaviour
 
             // Requirements: the card only does something once these hold (Shatter needs Deep Freeze, etc.).
             if (!MeetsRequirements(def, out _)) continue;
-
-            // Ultimate exclusivity rule: You can't have more than one ultimate per run!
-            if (def.isUltimate)
-            {
-                if (hasUltimate) continue;
-            }
 
             candidates.Add(def);
         }
@@ -424,20 +404,18 @@ public class DraftUpgradeService : MonoBehaviour
                 if (previousLevel > 0) player.Stats.AddModifier(effect.stat, effect.kind, -effect.AmountForLevel(previousLevel));
                 player.Stats.AddModifier(effect.stat, effect.kind, effect.AmountForLevel(nextLevel));
             }
+        }
 
-            // Handle Ultimate Draft
-            if (def.isUltimate)
+        if (def.isUltimate)
+        {
+            UltimateSlot slot = SlotForUltimate(def);
+            RunSession.SetUltimateId(slot, def.id);
+            if (player != null && player.Stats != null)
             {
-                RunSession.ActiveUltimateId = def.id;
                 player.Stats.SetBase(StatType.UltimateUnlocked, 1f);
-
-                PlayerUltimateController ultCtrl = player.transform.root.GetComponentInChildren<PlayerUltimateController>(true);
-                if (ultCtrl != null)
-                {
-                    ConfigureUltimateHandler(player, def.id);
-                }
-                Debug.Log($"[DraftUpgradeService] Unlocked Weapon Ultimate: '{def.displayName}' (ID: {def.id})!");
+                ConfigureUltimateHandlers(player);
             }
+            Debug.Log($"[DraftUpgradeService] Unlocked {slot} ultimate: '{def.displayName}' (ID: {def.id})!");
         }
 
         Debug.Log($"[DraftUpgradeService] Applied Upgrade: '{def.displayName}' (Level {nextLevel}/{def.maxLevel}).");
@@ -569,7 +547,7 @@ public class DraftUpgradeService : MonoBehaviour
         {
             if (token.Equals("ultimate", StringComparison.OrdinalIgnoreCase))
             {
-                if (string.IsNullOrEmpty(RunSession.ActiveUltimateId)) { missing = "Needs an ultimate"; return false; }
+                if (!RunSession.HasAnyUltimate) { missing = "Needs an ultimate"; return false; }
             }
             else if (token.StartsWith("slot:", StringComparison.OrdinalIgnoreCase))
             {
@@ -654,18 +632,25 @@ public class DraftUpgradeService : MonoBehaviour
             RunSession.ClearElementalSlot(def.targetSlot);
         }
 
-        if (def.isUltimate && player != null && player.Stats != null)
+        if (def.isUltimate)
         {
+            UltimateSlot slot = SlotForUltimate(def);
             if (targetLevel > 0)
             {
-                RunSession.ActiveUltimateId = def.id;
-                player.Stats.SetBase(StatType.UltimateUnlocked, 1f);
-                ConfigureUltimateHandler(player, def.id);
+                string previous = RunSession.GetUltimateId(slot);
+                DraftUpgradeDefinition previousDef = !string.IsNullOrEmpty(previous) && !previous.Equals(def.id, StringComparison.OrdinalIgnoreCase) ? GetById(previous) : null;
+                if (previousDef != null) DebugSetDraftLevel(previousDef, 0);
+                RunSession.SetUltimateId(slot, def.id);
             }
-            else if (string.Equals(RunSession.ActiveUltimateId, def.id, StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(RunSession.GetUltimateId(slot), def.id, StringComparison.OrdinalIgnoreCase))
             {
-                RunSession.ActiveUltimateId = null;
-                player.Stats.SetBase(StatType.UltimateUnlocked, 0f);
+                RunSession.SetUltimateId(slot, null);
+            }
+
+            if (player != null && player.Stats != null)
+            {
+                player.Stats.SetBase(StatType.UltimateUnlocked, RunSession.HasAnyUltimate ? 1f : 0f);
+                ConfigureUltimateHandlers(player);
             }
         }
     }
@@ -695,16 +680,10 @@ public class DraftUpgradeService : MonoBehaviour
     /// </summary>
     public void UnlockDefaultWeaponUltimate()
     {
-        string ultId = RunSession.ActiveUltimateId;
-        if (string.IsNullOrEmpty(ultId))
-        {
-            string meleeId = PlayerWeaponManager.Instance != null ? PlayerWeaponManager.Instance.CurrentMeleeId : "sword";
-            if (meleeId.Contains("mace")) ultId = "mace_earthshaker_ult";
-            else if (meleeId.Contains("axe")) ultId = "axe_bladestorm_ult";
-            else ultId = "sword_blade_tempest";
-        }
+        if (RunSession.HasAnyUltimate) return;
 
-        DraftUpgradeDefinition ultDef = GetById(ultId);
+        GetEquippedWeaponIds(out string melee, out _);
+        DraftUpgradeDefinition ultDef = GetUltimateForWeapon(melee);
         if (ultDef != null)
         {
             DebugSetDraftLevel(ultDef, 1);
@@ -728,16 +707,80 @@ public class DraftUpgradeService : MonoBehaviour
         {
             RunSession.ClearElementalSlot(slot);
         }
-        RunSession.ActiveUltimateId = null;
+        RunSession.SetUltimateId(UltimateSlot.Melee, null);
+        RunSession.SetUltimateId(UltimateSlot.Ranged, null);
         if (Player.Instance != null && Player.Instance.Stats != null)
         {
             Player.Instance.Stats.SetBase(StatType.UltimateUnlocked, 0f);
         }
     }
 
-    public static void ConfigureUltimateHandler(Player player, string ultimateId)
+    /// <summary>The equipped melee and ranged weapon ids (lowercase), falling back to the save and then sword/bow.</summary>
+    public static void GetEquippedWeaponIds(out string melee, out string ranged)
     {
-        if (player == null || string.IsNullOrEmpty(ultimateId)) return;
+        melee = "sword";
+        ranged = "bow";
+        if (PlayerWeaponManager.Instance != null)
+        {
+            if (!string.IsNullOrEmpty(PlayerWeaponManager.Instance.CurrentMeleeId)) melee = PlayerWeaponManager.Instance.CurrentMeleeId.ToLowerInvariant();
+            if (!string.IsNullOrEmpty(PlayerWeaponManager.Instance.CurrentRangedId)) ranged = PlayerWeaponManager.Instance.CurrentRangedId.ToLowerInvariant();
+            return;
+        }
+
+        SaveData save = SaveSystem.Load();
+        if (save != null)
+        {
+            if (!string.IsNullOrEmpty(save.equippedMeleeWeapon)) melee = save.equippedMeleeWeapon.ToLowerInvariant();
+            if (!string.IsNullOrEmpty(save.equippedRangedWeapon)) ranged = save.equippedRangedWeapon.ToLowerInvariant();
+        }
+    }
+
+    /// <summary>Ranged when the ultimate belongs to the equipped ranged weapon, melee otherwise.</summary>
+    public static UltimateSlot SlotForUltimate(DraftUpgradeDefinition def)
+    {
+        GetEquippedWeaponIds(out _, out string ranged);
+        return def != null && string.Equals(def.weapon, ranged, StringComparison.OrdinalIgnoreCase) ? UltimateSlot.Ranged : UltimateSlot.Melee;
+    }
+
+    /// <summary>The ultimate row in the catalog for a weapon id, or null.</summary>
+    public DraftUpgradeDefinition GetUltimateForWeapon(string weaponId)
+    {
+        EnsureInitialized();
+        if (string.IsNullOrEmpty(weaponId)) return null;
+        foreach (DraftUpgradeDefinition def in allDefinitions)
+        {
+            if (def.isUltimate && string.Equals(def.weapon, weaponId, StringComparison.OrdinalIgnoreCase)) return def;
+        }
+        return null;
+    }
+
+    /// <summary>
+    ///     Ultimates the Rest Area shop can sell right now: one per equipped weapon whose slot is still empty,
+    ///     while the run has a free ultimate slot (one, or two with the second_ultimate meta perk).
+    /// </summary>
+    public List<DraftUpgradeDefinition> GetShopUltimates()
+    {
+        List<DraftUpgradeDefinition> result = new List<DraftUpgradeDefinition>();
+        if (RunSession.OwnedUltimateCount >= RunSession.MaxUltimateSlots) return result;
+
+        GetEquippedWeaponIds(out string melee, out string ranged);
+        if (string.IsNullOrEmpty(RunSession.MeleeUltimateId) && !DemoConfigSO.IsWeaponIdLocked(melee))
+        {
+            DraftUpgradeDefinition def = GetUltimateForWeapon(melee);
+            if (def != null) result.Add(def);
+        }
+        if (string.IsNullOrEmpty(RunSession.RangedUltimateId) && !DemoConfigSO.IsWeaponIdLocked(ranged))
+        {
+            DraftUpgradeDefinition def = GetUltimateForWeapon(ranged);
+            if (def != null) result.Add(def);
+        }
+        return result;
+    }
+
+    /// <summary>Enables the handlers for the owned melee and ranged ultimates and disables every other one.</summary>
+    public static void ConfigureUltimateHandlers(Player player)
+    {
+        if (player == null) return;
 
         // Ensure we search the entire player hierarchy (both root Player and child SidekickSyntyCharacter)
         Transform rootTr = player.transform.root;
@@ -746,52 +789,44 @@ public class DraftUpgradeService : MonoBehaviour
             if (h is MonoBehaviour mb) mb.enabled = false;
         }
 
-        // Attach or enable handler on the GameObject holding PlayerUltimateController if present, otherwise player.gameObject
-        PlayerUltimateController controller = rootTr.GetComponentInChildren<PlayerUltimateController>();
+        foreach (string ultimateId in new[] { RunSession.MeleeUltimateId, RunSession.RangedUltimateId })
+        {
+            if (string.IsNullOrEmpty(ultimateId)) continue;
+            if (GetUltimateHandler(player, ultimateId) is MonoBehaviour handler) handler.enabled = true;
+        }
+    }
+
+    /// <summary>
+    ///     The handler component for an ultimate id, routed on the id prefix. Adds one to the Player root if the
+    ///     prefab lacks it (that fallback has no serialized refs, so the prefab should carry every handler).
+    /// </summary>
+    public static IUltimateHandler GetUltimateHandler(Player player, string ultimateId)
+    {
+        if (player == null || string.IsNullOrEmpty(ultimateId)) return null;
+
+        Transform rootTr = player.transform.root;
+        PlayerUltimateController controller = rootTr.GetComponentInChildren<PlayerUltimateController>(true);
         GameObject targetGo = controller != null ? controller.gameObject : player.gameObject;
 
-        if (ultimateId.StartsWith("sword_blade", StringComparison.OrdinalIgnoreCase))
+        T FindOrAdd<T>() where T : MonoBehaviour
         {
-            SwordBladeTempestUltimate swordUlt = rootTr.GetComponentInChildren<SwordBladeTempestUltimate>(true);
-            if (swordUlt == null) swordUlt = targetGo.AddComponent<SwordBladeTempestUltimate>();
-            swordUlt.enabled = true;
+            T found = rootTr.GetComponentInChildren<T>(true);
+            return found != null ? found : targetGo.AddComponent<T>();
         }
-        else if (ultimateId.StartsWith("sword_mount", StringComparison.OrdinalIgnoreCase))
+
+        if (ultimateId.StartsWith("sword_blade", StringComparison.OrdinalIgnoreCase)) return FindOrAdd<SwordBladeTempestUltimate>();
+        if (ultimateId.StartsWith("sword_mount", StringComparison.OrdinalIgnoreCase)) return FindOrAdd<SwordMountUltimate>();
+        if (ultimateId.StartsWith("axe_bladestorm", StringComparison.OrdinalIgnoreCase)) return FindOrAdd<BerserkerUltimate>();
+        if (ultimateId.StartsWith("bow_stream", StringComparison.OrdinalIgnoreCase)) return FindOrAdd<RangerUltimate>();
+        if (ultimateId.StartsWith("taxe_vortex", StringComparison.OrdinalIgnoreCase)) return FindOrAdd<ThrowingAxeUltimate>();
+        if (ultimateId.StartsWith("mace_earthshaker", StringComparison.OrdinalIgnoreCase)) return FindOrAdd<MaceUltimate>();
+        if (ultimateId.StartsWith("mage", StringComparison.OrdinalIgnoreCase) || ultimateId.StartsWith("staff", StringComparison.OrdinalIgnoreCase) || ultimateId.StartsWith("wand", StringComparison.OrdinalIgnoreCase))
         {
-            SwordMountUltimate mountUlt = rootTr.GetComponentInChildren<SwordMountUltimate>(true);
-            if (mountUlt == null) mountUlt = targetGo.AddComponent<SwordMountUltimate>();
-            mountUlt.enabled = true;
+            return FindOrAdd<MageUltimate>();
         }
-        else if (ultimateId.StartsWith("axe_bladestorm", StringComparison.OrdinalIgnoreCase))
-        {
-            BerserkerUltimate axeUlt = rootTr.GetComponentInChildren<BerserkerUltimate>(true);
-            if (axeUlt == null) axeUlt = targetGo.AddComponent<BerserkerUltimate>();
-            axeUlt.enabled = true;
-        }
-        else if (ultimateId.StartsWith("bow_stream", StringComparison.OrdinalIgnoreCase))
-        {
-            RangerUltimate bowUlt = rootTr.GetComponentInChildren<RangerUltimate>(true);
-            if (bowUlt == null) bowUlt = targetGo.AddComponent<RangerUltimate>();
-            bowUlt.enabled = true;
-        }
-        else if (ultimateId.StartsWith("taxe_vortex", StringComparison.OrdinalIgnoreCase))
-        {
-            ThrowingAxeUltimate taxeUlt = rootTr.GetComponentInChildren<ThrowingAxeUltimate>(true);
-            if (taxeUlt == null) taxeUlt = targetGo.AddComponent<ThrowingAxeUltimate>();
-            taxeUlt.enabled = true;
-        }
-        else if (ultimateId.StartsWith("mace_earthshaker", StringComparison.OrdinalIgnoreCase))
-        {
-            MaceUltimate maceUlt = rootTr.GetComponentInChildren<MaceUltimate>(true);
-            if (maceUlt == null) maceUlt = targetGo.AddComponent<MaceUltimate>();
-            maceUlt.enabled = true;
-        }
-        else if (ultimateId.StartsWith("mage", StringComparison.OrdinalIgnoreCase) || ultimateId.StartsWith("staff", StringComparison.OrdinalIgnoreCase) || ultimateId.StartsWith("wand", StringComparison.OrdinalIgnoreCase))
-        {
-            MageUltimate mageUlt = rootTr.GetComponentInChildren<MageUltimate>(true);
-            if (mageUlt == null) mageUlt = targetGo.AddComponent<MageUltimate>();
-            mageUlt.enabled = true;
-        }
+
+        Debug.LogError($"[DraftUpgradeService] No ultimate handler routes id '{ultimateId}'.");
+        return null;
     }
 
     /// <summary>

@@ -5,21 +5,24 @@ description: Use when adding or changing a weapon ultimate in Bladehold — the 
 
 # Add a weapon ultimate
 
-Ultimates belong to **weapons**, not classes (classes are gone). A run gets at most one: picking a weapon's `isUltimate` draft card sets `RunSession.ActiveUltimateId`, sets `StatType.UltimateUnlocked` to 1, and `DraftUpgradeService.ConfigureUltimateHandler` disables every `IUltimateHandler` on the player and enables the matching one. `PlayerUltimateController` (Player root) fills charge from damage dealt, and at 100% the `Ultimate` input calls `Activate` on the enabled handler.
+Ultimates belong to **weapons**, not classes (classes are gone). They are **bought at the Rest Area shop, never drafted**: `DraftUpgradeService.GetShopUltimates` offers the `isUltimate` row of each equipped weapon whose slot is empty, and `ShopUI` builds the offers at runtime (no `ShopItemSO` asset per ultimate) priced by `UltimateShopConfigSO` (`Bladehold Config/ShopItems/UltimateShopConfig.asset`: 100 first, 400 second). A run has **one ultimate slot, two with the `second_ultimate` meta perk** (Twin Fury, tier 3), one per weapon: `RunSession.MeleeUltimateId` / `RangedUltimateId` (slot from `DraftUpgradeService.SlotForUltimate`: ranged if it's the equipped ranged weapon's). Buying runs `ApplyUpgrade`, which sets the slot, `UltimateUnlocked` = 1, and `ConfigureUltimateHandlers` enables both owned handlers (every other `IUltimateHandler` is disabled).
+
+`PlayerUltimateController` (Player root) keeps **one charge bar per slot**: melee hits (`DamageTrigger.OnHit`) fill the melee bar, bow / throwing axe / wand hits fill the ranged bar, and any other damage enemies take (towers, burns, duos) fills both at half rate, settled in `LateUpdate`. The `Ultimate` input fires the **ranged ultimate while aiming** (`PlayerWeaponManager.ActiveAimWeapon.IsAiming`) and the melee one otherwise, or whichever one you own. One ultimate runs at a time (`ActiveSlot`), and no bar charges meanwhile. The HUD has one `UltimateBarUI` per slot (`slot` field; hidden through its `CanvasGroup` until owned).
 
 Existing handlers in `Player/` (names are class-era leftovers): `SwordBladeTempestUltimate` (sword), `BerserkerUltimate` (axe), `RangerUltimate` (bow), `ThrowingAxeUltimate`, `MaceUltimate` (the cleanest model), plus `MageUltimate` and `SwordMountUltimate`, which no draft card reaches.
 
 ## 1. Draft card (`Assets/Bladehold/Resources/DraftUpgrades.csv`)
 
-One row: `category` = `Weapon`, `weapon` = the weapon id (`sword`, `axe`, `mace`, `bow`, `throwing_axe`, ...), `isUltimate` = `1`, `maxLevel` = `1`, `stat` = `UltimateUnlocked`, `kind` = `Flat`, `amount` = `1`. Extra unlock stats go `;`-separated in `stat`/`kind`/`amount` (see `taxe_vortex_ult`). `icon` is a sprite name resolved through `Resources/SkillTreeIcons` (`SkillTreeIconsSO`).
+One row per weapon (the catalog is shared with draft cards, but the draft pool skips `isUltimate` rows): `category` = `Weapon`, `weapon` = the weapon id (`sword`, `axe`, `mace`, `bow`, `throwing_axe`, ...), `isUltimate` = `1`, `maxLevel` = `1`, `stat` = `UltimateUnlocked`, `kind` = `Flat`, `amount` = `1`. Extra unlock stats go `;`-separated in `stat`/`kind`/`amount` (see `taxe_vortex_ult`). `icon` is a sprite name resolved through `Resources/SkillTreeIcons` (`SkillTreeIconsSO`); the shop card shows it. `displayName`/`description` are the shop card's text (ranged ones say "Aim and press Q"). `GetUltimateForWeapon` takes the first `isUltimate` row for a weapon, so keep **one per weapon**.
 
-The **id prefix is the routing key** (next step), so pick a unique one, e.g. `spear_<name>_ult`. The pool only offers cards for equipped weapons and hides every ultimate once one is owned; demo-locked weapons (`DemoConfigSO`) are filtered too.
+The **id prefix is the routing key** (next step), so pick a unique one, e.g. `spear_<name>_ult`. The shop only offers ultimates for equipped, non-demo-locked weapons (`DemoConfigSO`).
 
 ## 2. Routing (hardcoded, update all three)
 
-- `Upgrades/DraftUpgradeService.cs` → `ConfigureUltimateHandler`: add an `ultimateId.StartsWith("<prefix>")` branch that finds your component with `rootTr.GetComponentInChildren<T>(true)` and enables it. Its `AddComponent` fallback creates a handler with **no serialized refs**; don't rely on it (put the component on the prefab, step 4).
-- `Player/PlayerUltimateController.cs` → `GetDefaultUltimateIdForEquippedWeapons`, if this is the default ultimate for a weapon.
-- `Debug/DevConsole.cs` → `AvailableUltimates`, so Cycle Ult / Unlock Ult / 100% Ult Unleash can reach it.
+- `Upgrades/DraftUpgradeService.cs` → `GetUltimateHandler`: add an `ultimateId.StartsWith("<prefix>")` line returning `FindOrAdd<YourUltimate>()`. Its `AddComponent` fallback creates a handler with **no serialized refs**; don't rely on it (put the component on the prefab, step 4).
+- `Debug/DevConsole.cs` → `AvailableUltimates`, so Cycle Ult / Unlock Ult / Fill Charge can reach it.
+
+Handlers must stay idle while enabled but not activated (both owned handlers are enabled at once): do nothing in `Update`/`LateUpdate` until `Activate`.
 
 ## 3. The handler
 

@@ -150,14 +150,11 @@ public class DiegeticDraftTester : MonoBehaviour
             return false;
         }
 
-        // 2. Ultimate exclusivity
-        if (def.isUltimate && !string.IsNullOrEmpty(RunSession.ActiveUltimateId))
+        // 2. Ultimates are bought at the Rest Area shop, never drafted
+        if (def.isUltimate)
         {
-            if (RunSession.ActiveUltimateId != def.id)
-            {
-                reason = "Already have Ultimate";
-                return false;
-            }
+            reason = "Shop only";
+            return false;
         }
 
         // 3. Elemental Duo Prereq

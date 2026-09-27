@@ -6,7 +6,8 @@ public enum ShopItemEffectType
     MaxHealthRun,
     MoveSpeedTemporary,
     WaveEndHealTemporary,
-    AmmoRefill
+    AmmoRefill,
+    UnlockUltimate // itemId is the ultimate's draft id; ShopUI builds these at runtime, no asset needed
 }
 
 /// <summary>

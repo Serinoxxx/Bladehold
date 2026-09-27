@@ -22,7 +22,7 @@ Header (the code wins if this drifts; read `ParseRow`):
 | `category` | `Weapon` or `Elemental` (`Upgrades/DraftCategory.cs`). Anything else skips the row. |
 | `weapon` | A `WeaponDefinitionSO` id (`sword`, `axe`, `mace`, `bow`, `throwing_axe`), or empty. A Weapon card only enters the pool when that weapon is equipped and not demo-locked (`DemoConfigSO.IsWeaponIdLocked`). |
 | `element` | `fire`, `lightning`, `ice`. Required on non-duo Elemental cards. |
-| `isUltimate` | `1` = one per run; see `/add-ultimate-handler`. |
+| `isUltimate` | `1` = a weapon ultimate. These rows are **never drafted**: the Rest Area shop sells them. See `/add-ultimate-handler`. |
 | `maxLevel` | Picks until the card leaves the pool (min 1). |
 | `description` / `upgradeText` | Level 1 text / text shown when you already own it. Player-facing, plain language. Quote fields that contain commas. |
 | `stat` / `kind` / `amount` | `;`-separated parallel lists, one entry per effect. `kind` is `Flat` or `Percent`. `amount` can hold `\|`-separated per-level values (`0.1\|0.2\|0.3`). **Per-level amounts are absolute, not cumulative**: level 2 swaps level 1's value for level 2's (`ApplyUpgrade` and `RunSession.RestoreInRunUpgrades` both work this way). An unknown `StatType` name skips that effect with an error. |

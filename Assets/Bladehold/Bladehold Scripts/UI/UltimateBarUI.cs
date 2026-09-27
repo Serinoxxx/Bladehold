@@ -4,8 +4,16 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 
+/// <summary>
+///     HUD bar for one ultimate slot (melee or ranged). The HUD carries one bar per slot; a bar stays hidden
+///     (CanvasGroup alpha 0) until the run owns that slot's ultimate.
+/// </summary>
 public class UltimateBarUI : MonoBehaviour
 {
+    [Tooltip("Which ultimate this bar tracks. The ranged one fires while aiming the ranged weapon.")]
+    [SerializeField] private UltimateSlot slot = UltimateSlot.Melee;
+    [Tooltip("Hides the bar while this slot has no ultimate. Auto-wired from this GameObject.")]
+    [SerializeField] private CanvasGroup canvasGroup;
     [SerializeField] private PlayerUltimateController ultimateController;
     [SerializeField] private MoreMountains.Tools.MMProgressBar progressBar;
     [SerializeField] private Image glowImage;
@@ -25,9 +33,25 @@ public class UltimateBarUI : MonoBehaviour
     private bool isFull;
     private bool isSubscribed;
 
+    private void OnValidate()
+    {
+        if (canvasGroup == null) canvasGroup = GetComponent<CanvasGroup>();
+    }
+
     private void Awake()
     {
+        if (canvasGroup == null) canvasGroup = GetComponent<CanvasGroup>();
         TryBindController();
+    }
+
+    private bool IsThisSlotActive => ultimateController != null && ultimateController.IsUltimateActive && ultimateController.ActiveSlot == slot;
+
+    private void RefreshVisibility()
+    {
+        if (canvasGroup == null) return;
+        bool owned = !string.IsNullOrEmpty(RunSession.GetUltimateId(slot));
+        canvasGroup.alpha = owned ? 1f : 0f;
+        canvasGroup.blocksRaycasts = owned;
     }
 
     private void OnEnable()
@@ -46,8 +70,14 @@ public class UltimateBarUI : MonoBehaviour
             return;
         }
 
+        if (canvasGroup == null)
+        {
+            Debug.LogError($"[UltimateBarUI] '{name}' has no CanvasGroup, so it can't hide while the {slot} ultimate isn't owned.");
+        }
+
         TryBindController();
         UpdateInputText();
+        RefreshVisibility();
     }
 
     private void OnDisable()
@@ -73,15 +103,14 @@ public class UltimateBarUI : MonoBehaviour
 
         if (ultimateController != null)
         {
-            ultimateController.OnChargeChanged -= UpdateBar;
-            ultimateController.OnChargeChanged += UpdateBar;
+            ultimateController.OnChargeChanged -= HandleChargeChanged;
+            ultimateController.OnChargeChanged += HandleChargeChanged;
             ultimateController.OnUltimateActivated -= HandleActivated;
             ultimateController.OnUltimateActivated += HandleActivated;
             ultimateController.OnUltimateDeactivated -= HandleDeactivated;
             ultimateController.OnUltimateDeactivated += HandleDeactivated;
             isSubscribed = true;
-            Debug.Log($"[UltimateBarUI] Successfully bound to PlayerUltimateController on '{ultimateController.gameObject.name}'. Initial charge={ultimateController.CurrentCharge}, progressBar={(progressBar != null ? progressBar.name : "NULL")}");
-            UpdateBar(ultimateController.CurrentCharge);
+            UpdateBar(ultimateController.GetCharge(slot));
         }
     }
 
@@ -89,20 +118,25 @@ public class UltimateBarUI : MonoBehaviour
     {
         if (ultimateController != null && isSubscribed)
         {
-            ultimateController.OnChargeChanged -= UpdateBar;
+            ultimateController.OnChargeChanged -= HandleChargeChanged;
             ultimateController.OnUltimateActivated -= HandleActivated;
             ultimateController.OnUltimateDeactivated -= HandleDeactivated;
             isSubscribed = false;
         }
     }
 
+    private void HandleChargeChanged(UltimateSlot changedSlot, float charge)
+    {
+        if (changedSlot == slot) UpdateBar(charge);
+    }
+
     private void UpdateBar(float charge)
     {
-        if (ultimateController != null && ultimateController.IsUltimateActive) return;
+        RefreshVisibility();
+        if (IsThisSlotActive) return;
 
         float fraction = charge / PlayerUltimateController.MaxCharge;
-        Debug.Log($"[UltimateBarUI] UpdateBar(charge={charge:F1}) -> fraction={fraction:P0}, progressBar={(progressBar != null ? progressBar.name : "NULL")}");
-        
+
         if (progressBar != null)
         {
             progressBar.UpdateBar(charge, 0f, PlayerUltimateController.MaxCharge);
@@ -131,6 +165,8 @@ public class UltimateBarUI : MonoBehaviour
 
     private void HandleActivated()
     {
+        if (!IsThisSlotActive) return;
+
         if (progressBar != null)
         {
             progressBar.SetBar(PlayerUltimateController.MaxCharge, 0f, PlayerUltimateController.MaxCharge);
@@ -145,7 +181,7 @@ public class UltimateBarUI : MonoBehaviour
         isFull = false;
         if (glowImage != null) glowImage.gameObject.SetActive(false);
         if (inputKeyText != null) inputKeyText.gameObject.SetActive(false);
-        UpdateBar(ultimateController != null ? ultimateController.CurrentCharge : 0f);
+        UpdateBar(ultimateController != null ? ultimateController.GetCharge(slot) : 0f);
     }
 
     private void Update()
@@ -155,7 +191,9 @@ public class UltimateBarUI : MonoBehaviour
             TryBindController();
         }
 
-        if (ultimateController != null && ultimateController.IsUltimateActive)
+        RefreshVisibility();
+
+        if (IsThisSlotActive)
         {
             float remaining = ultimateController.ActiveUltimateRemainingTime;
             float total = ultimateController.ActiveUltimateDuration;
@@ -212,19 +250,13 @@ public class UltimateBarUI : MonoBehaviour
                 if (action != null)
                 {
                     int bindIndex = action.GetBindingIndexForControl(action.controls.Count > 0 ? action.controls[0] : null);
-                    if (bindIndex >= 0)
-                    {
-                        inputKeyText.text = action.GetBindingDisplayString(bindIndex);
-                    }
-                    else
-                    {
-                        inputKeyText.text = "Q/Y";
-                    }
+                    string key = bindIndex >= 0 ? action.GetBindingDisplayString(bindIndex) : "Q/Y";
+                    inputKeyText.text = slot == UltimateSlot.Ranged ? $"Aim + {key}" : key;
                     return;
                 }
             }
         }
         
-        inputKeyText.text = "Q";
+        inputKeyText.text = slot == UltimateSlot.Ranged ? "Aim + Q" : "Q";
     }
 }

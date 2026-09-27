@@ -245,12 +245,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84ace766ca945ef49b9d1abc8496b0b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WaveClearedBannerUI
-  spawner: {fileID: 0}
+  objectiveManager: {fileID: 0}
   bannerRoot: {fileID: 1637090232}
-  waveClearedText: {fileID: 1637090231}
+  questNameText: {fileID: 1637090231}
+  waveClearedText: {fileID: 1637090227}
   goldEarnedText: {fileID: 1637090230}
   enemiesKilledText: {fileID: 1637090229}
+  newQuestHeader: NEW QUEST
+  questCompletedHeader: QUEST COMPLETE
+  questFailedHeader: OBJECTIVE FAILED
+  textAnimator: {fileID: 2140199903}
+  activeParamName: Active
+  activeOutLeadTime: 0.5
   bannerAnimationFeedback: {fileID: 894906289}
+  waveClearedFeedback: {fileID: 0}
+  newQuestFeedback: {fileID: 0}
   displayDuration: 3
 --- !u!114 &1027195810
 MonoBehaviour:
@@ -266,7 +275,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HealthBarUI
   health: {fileID: 0}
   healthBar: {fileID: 0}
-  ragdoll: {fileID: 0}
+  followHead: 0
+  headBone: {fileID: 0}
+  heightAboveHead: 0.2
 --- !u!1 &1184657854
 GameObject:
   m_ObjectHideFlags: 0
@@ -764,18 +775,6 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 5741053116408488354, guid: b7b1623129186884eb3f2419ca4ed3b5, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1637090244}
-    - targetCorrespondingSourceObject: {fileID: 7098064514786624320, guid: b7b1623129186884eb3f2419ca4ed3b5, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1637090243}
-    - targetCorrespondingSourceObject: {fileID: 2713580461428423036, guid: b7b1623129186884eb3f2419ca4ed3b5, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1637090242}
-    - targetCorrespondingSourceObject: {fileID: 3443178724733594763, guid: b7b1623129186884eb3f2419ca4ed3b5, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1637090241}
     - targetCorrespondingSourceObject: {fileID: 2482113360840978075, guid: b7b1623129186884eb3f2419ca4ed3b5, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1637090240}
@@ -785,18 +784,24 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6497254365825002125, guid: b7b1623129186884eb3f2419ca4ed3b5, type: 3}
       insertIndex: -1
       addedObject: {fileID: 894906289}
+    - targetCorrespondingSourceObject: {fileID: 5741053116408488354, guid: b7b1623129186884eb3f2419ca4ed3b5, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1637090244}
     - targetCorrespondingSourceObject: {fileID: 3092782675645595286, guid: b7b1623129186884eb3f2419ca4ed3b5, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1027195810}
-    - targetCorrespondingSourceObject: {fileID: 4206006416746777360, guid: b7b1623129186884eb3f2419ca4ed3b5, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1728087282}
   m_SourcePrefab: {fileID: 100100000, guid: b7b1623129186884eb3f2419ca4ed3b5, type: 3}
---- !u!1 &1637090227 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 4206006416746777360, guid: b7b1623129186884eb3f2419ca4ed3b5, type: 3}
+--- !u!114 &1637090227 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4279999656818972928, guid: b7b1623129186884eb3f2419ca4ed3b5, type: 3}
   m_PrefabInstance: {fileID: 1637090226}
   m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1637090228 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3092782675645595286, guid: b7b1623129186884eb3f2419ca4ed3b5, type: 3}
@@ -867,21 +872,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 2482113360840978075, guid: b7b1623129186884eb3f2419ca4ed3b5, type: 3}
   m_PrefabInstance: {fileID: 1637090226}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1637090236 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3443178724733594763, guid: b7b1623129186884eb3f2419ca4ed3b5, type: 3}
-  m_PrefabInstance: {fileID: 1637090226}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &1637090237 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 2713580461428423036, guid: b7b1623129186884eb3f2419ca4ed3b5, type: 3}
-  m_PrefabInstance: {fileID: 1637090226}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &1637090238 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 7098064514786624320, guid: b7b1623129186884eb3f2419ca4ed3b5, type: 3}
-  m_PrefabInstance: {fileID: 1637090226}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1637090239 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5741053116408488354, guid: b7b1623129186884eb3f2419ca4ed3b5, type: 3}
@@ -899,54 +889,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ede3cf1a80b1bde44948b77ece5b6fde, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ObjectiveTrackerUI
-  spawner: {fileID: 0}
+  objectiveManager: {fileID: 0}
   objectiveHeaderText: {fileID: 1637090234}
   objectiveProgressText: {fileID: 1637090233}
---- !u!114 &1637090241
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1637090236}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 434d49fc9c29a2d48a22ee9114c907b4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CoinUI
-  label: {fileID: 0}
-  gainFeedback: {fileID: 0}
---- !u!114 &1637090242
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1637090237}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f1e3aaa3d4122da4ca89ff8fde3c7260, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HorseStaminaUI
-  mount: {fileID: 0}
-  progressBar: {fileID: 0}
-  fillImage: {fileID: 0}
-  normalColor: {r: 0.25, g: 0.8, b: 0.35, a: 1}
-  exhaustedColor: {r: 0.85, g: 0.3, b: 0.15, a: 1}
---- !u!114 &1637090243
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1637090238}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a23ac86cebd3a0b40a01eef77b3d64ea, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HorseHealthBarUI
-  mount: {fileID: 0}
-  progressBar: {fileID: 0}
+  guidanceObjectiveText: 
 --- !u!114 &1637090244
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -962,26 +908,11 @@ MonoBehaviour:
   health: {fileID: 0}
   progressBar: {fileID: 0}
   healthText: {fileID: 0}
---- !u!114 &1728087282
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
+--- !u!95 &2140199903 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 470952280270334072, guid: b7b1623129186884eb3f2419ca4ed3b5, type: 3}
+  m_PrefabInstance: {fileID: 1637090226}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1637090227}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1142337456c2d004cb54442462cef665, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UltimateBarUI
-  ultimateController: {fileID: 0}
-  progressBar: {fileID: 0}
-  glowImage: {fileID: 0}
-  inputKeyText: {fileID: 0}
-  fullColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  glowSpeed: 2
-  glowAlphaMin: 0.2
-  glowAlphaMax: 0.8
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

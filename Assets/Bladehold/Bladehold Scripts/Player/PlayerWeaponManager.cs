@@ -348,9 +348,9 @@ public class PlayerWeaponManager : MonoBehaviour
         EquipMelee(meleeId);
         EquipRanged(rangedId);
 
-        if (!RunSession.RunUpgradesSuspended && !string.IsNullOrEmpty(RunSession.ActiveUltimateId))
+        if (!RunSession.RunUpgradesSuspended && RunSession.HasAnyUltimate)
         {
-            DraftUpgradeService.ConfigureUltimateHandler(GetComponent<Player>() ?? Player.Instance, RunSession.ActiveUltimateId);
+            DraftUpgradeService.ConfigureUltimateHandlers(GetComponent<Player>() ?? Player.Instance);
         }
     }
 

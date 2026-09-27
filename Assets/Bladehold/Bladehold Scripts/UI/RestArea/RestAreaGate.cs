@@ -70,7 +70,8 @@ public class RestAreaGate : MonoBehaviour
             var ult = player.transform.root.GetComponentInChildren<PlayerUltimateController>(true);
             if (ult != null)
             {
-                RunSession.PlayerUltimateCharge = ult.CurrentCharge;
+                RunSession.MeleeUltimateCharge = ult.GetCharge(UltimateSlot.Melee);
+                RunSession.RangedUltimateCharge = ult.GetCharge(UltimateSlot.Ranged);
             }
         }
 

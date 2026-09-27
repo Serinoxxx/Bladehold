@@ -105,9 +105,36 @@ public static class RunSession
     }
 
     public static readonly Dictionary<string, int> InRunUpgradeLevels = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-    public static string ActiveUltimateId { get; set; } = null;
     public static bool SecondWindUsed { get; set; } = false;
-    public static float PlayerUltimateCharge { get; set; } = 0f;
+
+    // Ultimates are bought at the Rest Area shop, one per weapon slot. Each slot has its own charge bar.
+    public static string MeleeUltimateId { get; set; } = null;
+    public static string RangedUltimateId { get; set; } = null;
+    public static float MeleeUltimateCharge { get; set; } = 0f;
+    public static float RangedUltimateCharge { get; set; } = 0f;
+
+    /// <summary>Meta perk id that lets the shop sell a second ultimate (one per weapon).</summary>
+    public const string SecondUltimatePerkId = "second_ultimate";
+
+    public static bool HasAnyUltimate => !string.IsNullOrEmpty(MeleeUltimateId) || !string.IsNullOrEmpty(RangedUltimateId);
+    public static int OwnedUltimateCount => (string.IsNullOrEmpty(MeleeUltimateId) ? 0 : 1) + (string.IsNullOrEmpty(RangedUltimateId) ? 0 : 1);
+    public static int MaxUltimateSlots => HasMetaPerk(SecondUltimatePerkId) ? 2 : 1;
+
+    public static string GetUltimateId(UltimateSlot slot) => slot == UltimateSlot.Melee ? MeleeUltimateId : RangedUltimateId;
+
+    public static void SetUltimateId(UltimateSlot slot, string ultimateId)
+    {
+        if (slot == UltimateSlot.Melee) MeleeUltimateId = ultimateId;
+        else RangedUltimateId = ultimateId;
+    }
+
+    public static float GetUltimateCharge(UltimateSlot slot) => slot == UltimateSlot.Melee ? MeleeUltimateCharge : RangedUltimateCharge;
+
+    public static void SetUltimateCharge(UltimateSlot slot, float charge)
+    {
+        if (slot == UltimateSlot.Melee) MeleeUltimateCharge = charge;
+        else RangedUltimateCharge = charge;
+    }
     public static float FortressGateCurrentHealth { get; set; } = -1f;
     public static float FortressGateMaxHealth { get; set; } = -1f;
 
@@ -137,13 +164,15 @@ public static class RunSession
         SpecialHerbsWavesRemaining = 0;
         PlayerBonusMaxHealth = 0f;
         PlayerHealthRatio = 1f;
-        PlayerUltimateCharge = 0f;
+        MeleeUltimateCharge = 0f;
+        RangedUltimateCharge = 0f;
         FortressGateCurrentHealth = -1f;
         FortressGateMaxHealth = -1f;
         DraftRerollsRemaining = HasMetaPerk("master_tactician") ? 1 : 0;
         SecondWindUsed = false;
         InRunUpgradeLevels.Clear();
-        ActiveUltimateId = null;
+        MeleeUltimateId = null;
+        RangedUltimateId = null;
         ConsumedBuffFish.Clear();
 
         // War Chest perk grants 75 starting gold
@@ -242,22 +271,20 @@ public static class RunSession
             }
         }
 
-        // 5. Reapply Active Ultimate
-        if (!string.IsNullOrEmpty(ActiveUltimateId) && player.Stats != null)
+        // 5. Reapply owned ultimates (melee and/or ranged)
+        if (HasAnyUltimate && player.Stats != null)
         {
             player.Stats.SetBase(StatType.UltimateUnlocked, 1f);
-            DraftUpgradeService.ConfigureUltimateHandler(player, ActiveUltimateId);
-            Debug.Log($"[RunSession] Restored Active Ultimate: {ActiveUltimateId}");
+            DraftUpgradeService.ConfigureUltimateHandlers(player);
+            Debug.Log($"[RunSession] Restored ultimates: melee '{MeleeUltimateId}', ranged '{RangedUltimateId}'");
         }
 
-        // 6. Reapply preserved Ultimate Charge
-        if (PlayerUltimateCharge > 0f)
+        // 6. Reapply preserved charge on each bar
+        PlayerUltimateController ult = player.transform.root.GetComponentInChildren<PlayerUltimateController>(true);
+        if (ult != null)
         {
-            PlayerUltimateController ult = player.transform.root.GetComponentInChildren<PlayerUltimateController>(true);
-            if (ult != null)
-            {
-                ult.SetCharge(PlayerUltimateCharge);
-            }
+            if (MeleeUltimateCharge > 0f) ult.SetCharge(UltimateSlot.Melee, MeleeUltimateCharge);
+            if (RangedUltimateCharge > 0f) ult.SetCharge(UltimateSlot.Ranged, RangedUltimateCharge);
         }
 
         Debug.Log($"[RunSession] Restored {InRunUpgradeLevels.Count} in-run upgrades on player in {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}.");

@@ -11,7 +11,7 @@ Perks are `MetaPerkDefinitionSO` assets (`UI/Meta/MetaPerkDefinitionSO.cs`) in `
 |---|---|---|
 | 1 | 10 | `agility`, `backstab`, `deep_quiver`, `regeneration` |
 | 2 | 25 | `executioner`, `greed`, `second_wind` |
-| 3 | 50 | `deep_pockets`, `master_tactician`, `war_chest` |
+| 3 | 50 | `deep_pockets`, `master_tactician`, `war_chest`, `second_ultimate` (Twin Fury: the shop can sell a second ultimate, `RunSession.MaxUltimateSlots`) |
 
 ## How perks work
 

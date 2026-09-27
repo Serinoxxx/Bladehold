@@ -7,7 +7,9 @@ using UnityEngine.UI;
 /// <summary>
 ///     Controller for the Rest Area Shop UI modal.
 ///     Displays player's in-run gold, generates 3 (or 4 with Deep Pockets) items,
-///     and processes item purchases.
+///     and processes item purchases. On top of those it always offers the ultimates of the equipped
+///     weapons while the run has a free ultimate slot (<see cref="DraftUpgradeService.GetShopUltimates" />),
+///     priced by <see cref="UltimateShopConfigSO" />. Ultimate offers never take one of the item slots.
 /// </summary>
 public class ShopUI : MonoBehaviour
 {
@@ -15,6 +17,7 @@ public class ShopUI : MonoBehaviour
 
     [Header("Shop Stock Config")]
     [SerializeField] private List<ShopItemSO> itemPool = new List<ShopItemSO>();
+    [SerializeField] private UltimateShopConfigSO ultimateConfig;
 
     [Header("UI References")]
     [SerializeField] private GameObject shopPanel;
@@ -22,8 +25,15 @@ public class ShopUI : MonoBehaviour
     [SerializeField] private Button closeButton;
     [SerializeField] private Transform slotsContainer;
     [SerializeField] private GameObject slotPrefab;
+    [Tooltip("Optional row for ultimate offers. Empty = they follow the item slots in Slots Container.")]
+    [SerializeField] private Transform ultimateSlotsContainer;
+
+    // Ultimate offers use slot indices from here up, so HandleBuyAttempt can tell them from item slots.
+    private const int UltimateSlotIndexBase = 1000;
 
     private readonly List<ShopItemSO> currentStock = new List<ShopItemSO>();
+    private readonly List<ShopItemSO> ultimateStock = new List<ShopItemSO>();
+    private bool anyError;
     private readonly HashSet<int> purchasedSlotIndices = new HashSet<int>();
     private bool isStockGenerated = false;
 
@@ -34,10 +44,20 @@ public class ShopUI : MonoBehaviour
         if (shopPanel != null) shopPanel.SetActive(false);
     }
 
+    private void Start()
+    {
+        if (ultimateConfig == null)
+        {
+            Debug.LogError("[ShopUI] No UltimateShopConfigSO assigned, so the shop can't sell ultimates.");
+            anyError = true;
+        }
+    }
+
     private void OnDestroy()
     {
         if (Instance == this) Instance = null;
         if (closeButton != null) closeButton.onClick.RemoveListener(CloseShop);
+        ClearUltimateStock();
     }
 
     public void OpenShop()
@@ -47,6 +67,7 @@ public class ShopUI : MonoBehaviour
             GenerateStock();
             isStockGenerated = true;
         }
+        GenerateUltimateStock();
 
         if (shopPanel != null) shopPanel.SetActive(true);
         CursorLockManager.SetUnlock("RestShop", true);
@@ -78,6 +99,42 @@ public class ShopUI : MonoBehaviour
         }
     }
 
+    /// <summary>
+    ///     Rebuilds the ultimate offers from the current run state. They're runtime ShopItemSO instances built
+    ///     from the draft catalog's ultimate rows, so no per-ultimate asset exists.
+    /// </summary>
+    private void GenerateUltimateStock()
+    {
+        ClearUltimateStock();
+        if (anyError || ultimateConfig == null) return;
+
+        DraftUpgradeService drafts = DraftUpgradeService.GetOrCreateInstance();
+        int cost = ultimateConfig.CostForNextUltimate(RunSession.OwnedUltimateCount);
+        foreach (DraftUpgradeDefinition def in drafts.GetShopUltimates())
+        {
+            string slotLabel = DraftUpgradeService.SlotForUltimate(def) == UltimateSlot.Ranged ? "Ranged" : "Melee";
+            ShopItemSO offer = ScriptableObject.CreateInstance<ShopItemSO>();
+            offer.hideFlags = HideFlags.DontSave;
+            offer.name = def.id;
+            offer.itemId = def.id;
+            offer.displayName = def.displayName;
+            offer.description = $"{slotLabel} ultimate. {def.description}";
+            offer.icon = drafts.GetIcon(def.iconName);
+            offer.goldCost = cost;
+            offer.effectType = ShopItemEffectType.UnlockUltimate;
+            ultimateStock.Add(offer);
+        }
+    }
+
+    private void ClearUltimateStock()
+    {
+        foreach (ShopItemSO offer in ultimateStock)
+        {
+            if (offer != null) Destroy(offer);
+        }
+        ultimateStock.Clear();
+    }
+
     public void RefreshUI()
     {
         if (goldLabel != null)
@@ -87,30 +144,47 @@ public class ShopUI : MonoBehaviour
 
         if (slotsContainer == null) return;
 
-        // Clear or populate slots
-        for (int i = 0; i < currentStock.Count; i++)
+        bool sharedRow = ultimateSlotsContainer == null || ultimateSlotsContainer == slotsContainer;
+        int used = PopulateSlots(slotsContainer, 0, currentStock, 0);
+        if (sharedRow) used = PopulateSlots(slotsContainer, used, ultimateStock, UltimateSlotIndexBase);
+        HideSlotsFrom(slotsContainer, used);
+
+        if (!sharedRow)
         {
-            int slotIndex = i;
-            ShopItemSO item = currentStock[i];
-            bool isPurchased = purchasedSlotIndices.Contains(slotIndex);
+            int usedUltimate = PopulateSlots(ultimateSlotsContainer, 0, ultimateStock, UltimateSlotIndexBase);
+            HideSlotsFrom(ultimateSlotsContainer, usedUltimate);
+        }
+    }
+
+    /// <summary>Fills container children from <paramref name="firstChild" /> on; returns the next free child index.</summary>
+    private int PopulateSlots(Transform container, int firstChild, List<ShopItemSO> items, int indexBase)
+    {
+        for (int i = 0; i < items.Count; i++)
+        {
+            int slotIndex = indexBase + i;
+            int child = firstChild + i;
+            bool isPurchased = indexBase == 0 && purchasedSlotIndices.Contains(slotIndex);
 
             // Re-use or instantiate slot
-            Transform slotTransform = i < slotsContainer.childCount ? slotsContainer.GetChild(i) : null;
+            Transform slotTransform = child < container.childCount ? container.GetChild(child) : null;
             if (slotTransform == null && slotPrefab != null)
             {
-                slotTransform = Instantiate(slotPrefab, slotsContainer).transform;
+                slotTransform = Instantiate(slotPrefab, container).transform;
             }
 
             if (slotTransform != null)
             {
-                ConfigureSlotUI(slotTransform, item, slotIndex, isPurchased);
+                ConfigureSlotUI(slotTransform, items[i], slotIndex, isPurchased);
             }
         }
+        return firstChild + items.Count;
+    }
 
-        // Hide extra unused child slots
-        for (int i = currentStock.Count; i < slotsContainer.childCount; i++)
+    private static void HideSlotsFrom(Transform container, int firstChild)
+    {
+        for (int i = firstChild; i < container.childCount; i++)
         {
-            slotsContainer.GetChild(i).gameObject.SetActive(false);
+            container.GetChild(i).gameObject.SetActive(false);
         }
     }
 
@@ -169,18 +243,23 @@ public class ShopUI : MonoBehaviour
 
     private void HandleBuyAttempt(int slotIndex, ShopSlotUI slotUI)
     {
-        if (slotIndex < 0 || slotIndex >= currentStock.Count) return;
-        if (purchasedSlotIndices.Contains(slotIndex)) return;
+        bool isUltimate = slotIndex >= UltimateSlotIndexBase;
+        List<ShopItemSO> stock = isUltimate ? ultimateStock : currentStock;
+        int stockIndex = isUltimate ? slotIndex - UltimateSlotIndexBase : slotIndex;
+        if (stockIndex < 0 || stockIndex >= stock.Count) return;
+        if (!isUltimate && purchasedSlotIndices.Contains(slotIndex)) return;
 
-        ShopItemSO item = currentStock[slotIndex];
+        ShopItemSO item = stock[stockIndex];
         if (item == null) return;
 
         if (RunSession.InRunGold >= item.goldCost)
         {
             if (RunSession.TrySpendInRunGold(item.goldCost))
             {
-                purchasedSlotIndices.Add(slotIndex);
+                if (!isUltimate) purchasedSlotIndices.Add(slotIndex);
                 ApplyItemEffect(item);
+                // Owning an ultimate removes the other weapon's offer or re-prices it (second_ultimate perk).
+                if (isUltimate) GenerateUltimateStock();
                 if (goldLabel != null)
                 {
                     goldLabel.text = $"Gold: {RunSession.InRunGold}";
@@ -238,6 +317,19 @@ public class ShopUI : MonoBehaviour
 
             case ShopItemEffectType.WaveEndHealTemporary:
                 RunSession.SpecialHerbsWavesRemaining = item.durationWaves;
+                break;
+
+            case ShopItemEffectType.UnlockUltimate:
+                DraftUpgradeService drafts = DraftUpgradeService.GetOrCreateInstance();
+                DraftUpgradeDefinition ultimate = drafts.GetById(item.itemId);
+                if (ultimate != null && ultimate.isUltimate)
+                {
+                    drafts.ApplyUpgrade(ultimate);
+                }
+                else
+                {
+                    Debug.LogError($"[ShopUI] '{item.itemId}' is not an ultimate in the draft catalog.");
+                }
                 break;
 
             case ShopItemEffectType.AmmoRefill:

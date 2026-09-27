@@ -401,7 +401,8 @@ public class DeathScreen : MonoBehaviour
             var ult = Player.Instance.transform.root.GetComponentInChildren<PlayerUltimateController>(true);
             if (ult != null)
             {
-                RunSession.PlayerUltimateCharge = ult.CurrentCharge;
+                RunSession.MeleeUltimateCharge = ult.GetCharge(UltimateSlot.Melee);
+                RunSession.RangedUltimateCharge = ult.GetCharge(UltimateSlot.Ranged);
             }
         }
 
