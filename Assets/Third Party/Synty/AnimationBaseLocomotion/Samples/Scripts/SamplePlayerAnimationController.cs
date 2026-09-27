@@ -430,6 +430,12 @@ namespace Synty.AnimationBaseLocomotion.Samples
 
         private void ActivateAttack()
         {
+            // Bladehold: scenes whose SceneAbilityRules block melee (the Fishing Pond) never swing.
+            if (!SceneAbilityRules.MeleeAllowed)
+            {
+                return;
+            }
+
             if (_isAiming)
             {
                 return;

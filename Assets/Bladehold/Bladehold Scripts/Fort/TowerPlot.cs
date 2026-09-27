@@ -169,7 +169,8 @@ public class TowerPlot : MonoBehaviour, IInteractable
     {
         if (CurrentDefense != null)
         {
-            Destroy(CurrentDefense.gameObject);
+            if (Application.isPlaying) Destroy(CurrentDefense.gameObject);
+            else DestroyImmediate(CurrentDefense.gameObject);
             CurrentDefense = null;
         }
         IsBuilding = false;

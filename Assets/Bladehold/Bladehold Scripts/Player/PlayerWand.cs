@@ -5,7 +5,7 @@ using Synty.AnimationBaseLocomotion.Samples.InputSystem;
 using UnityEngine;
 
 /// <summary>
-///     The Mage's wand — the class's ranged option, the <see cref="PlayerThrownAxe" /> skeleton with
+///     The wand — an equippable ranged weapon, the <see cref="PlayerThrownAxe" /> skeleton with
 ///     the spinning axe swapped for a fast magic-missile bolt. Holding aim (the Synty
 ///     <see cref="InputReader" />'s <c>onAimActivated</c>/<c>onAimDeactivated</c> events) charges the
 ///     shot in discrete levels (the bow-draw convention, tuned on <see cref="WandSO" />); pressing

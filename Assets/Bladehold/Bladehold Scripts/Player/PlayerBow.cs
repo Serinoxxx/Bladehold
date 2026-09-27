@@ -308,6 +308,14 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
             aimCamera = Camera.main;
         }
 
+        // PlayerBarrier colliders only keep the player out (the Fishing Pond's water dome):
+        // arrows and the aim ray fly through them.
+        int playerBarrierLayer = LayerMask.NameToLayer("PlayerBarrier");
+        if (playerBarrierLayer >= 0)
+        {
+            hitLayers &= ~(1 << playerBarrierLayer);
+        }
+
         startAttackHash = Animator.StringToHash("StartAttack");
         isHoldingAttackHash = Animator.StringToHash("IsHoldingAttack");
         isAimingHash = Animator.StringToHash("IsAiming");
@@ -1156,14 +1164,27 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
             source = ownerDamageable,
             isProjectile = true,
             isPlayerDamage = true,
-            elementId = RunSession.ElementalSlots.GetValueOrDefault(effectiveSlot, "")
+            elementId = RunSession.GetActiveElement(effectiveSlot)
         };
     }
 
     /// <summary>Bounce Shot: the arrow arcs from its hit to nearby enemies in range for the same damage.</summary>
     private void TryBounce(IDamageable initialTarget, Damage damage, Vector3 initialHitPoint)
     {
-        int maxBounces = Mathf.Max(1, Mathf.RoundToInt(stats.GetValue(StatType.BowBounceCount)));
+        BounceFrom(initialTarget, damage, initialHitPoint, Mathf.Max(1, Mathf.RoundToInt(stats.GetValue(StatType.BowBounceCount))));
+    }
+
+    /// <summary>
+    ///     Arcs a landed hit on to up to <paramref name="maxBounces" /> nearby targets for the same
+    ///     damage, with a tracer per hop. Bounce Shot's roll ends here; the Fishing Pond's own
+    ///     Bounce Shot card calls it directly (from <see cref="OnArrowImpact" />) for a fixed count.
+    /// </summary>
+    public void BounceFrom(IDamageable initialTarget, Damage damage, Vector3 initialHitPoint, int maxBounces)
+    {
+        if (anyError || damage == null)
+        {
+            return;
+        }
 
         HashSet<IDamageable> hitTargets = new HashSet<IDamageable>();
         if (initialTarget != null)

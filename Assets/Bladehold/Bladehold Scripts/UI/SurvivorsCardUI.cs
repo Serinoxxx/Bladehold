@@ -28,6 +28,9 @@ public class SurvivorsCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     [Tooltip("Level badge text component.")]
     [SerializeField] private TextMeshProUGUI levelText;
 
+    [Tooltip("Icon colour for cards with no element (weapon cards, duos). Elemental cards take their element's tint from SkillTreeIconsSO.")]
+    [SerializeField] private Color defaultIconColor = new Color(0.24f, 0.17f, 0.11f, 1f);
+
     [Header("Banish UI Reference (optional)")]
     [Tooltip("Banish button above or on the card.")]
     [SerializeField] private Button banishButton;
@@ -108,7 +111,7 @@ public class SurvivorsCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     /// <summary>
     /// Populates the card with skill node data, level badge info, icon, click handler, and banish handler.
     /// </summary>
-    public void SetData(SkillNode node, int currentLevel, Sprite icon, Action onClicked, Action onBanish = null, bool canBanish = false)
+    public void SetData(SkillNode node, int currentLevel, Sprite icon, Action onClicked, Action onBanish = null, bool canBanish = false, Color? iconTint = null)
     {
         onClickedCallback = onClicked;
         onBanishCallback = onBanish;
@@ -140,7 +143,7 @@ public class SurvivorsCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             if (icon != null)
             {
                 iconImage.sprite = icon;
-                iconImage.color = new Color(0.24f, 0.17f, 0.11f, 1f);
+                iconImage.color = iconTint ?? defaultIconColor;
                 iconImage.gameObject.SetActive(true);
             }
             else

@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-///     Base tunables for the Berserker's throwing axe, registered as <see cref="PlayerStats" /> bases
+///     Base tunables for the throwing axe, registered as <see cref="PlayerStats" /> bases
 ///     by <see cref="PlayerThrownAxe" /> in <c>Start</c> (the <see cref="BowSO" /> convention).
 ///     Skill-tree upgrades layer modifiers on top of these without ever mutating this asset. Like the
 ///     bow's draw, the charge works out of the box — winding up while aiming *is* the weapon — so the

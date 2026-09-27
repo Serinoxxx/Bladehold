@@ -2,17 +2,17 @@
 
 From [plan 07](../07-demo-gating.md), 2026-09-25. Unity MCP was not connected. Tick items off as you go and delete the file when it's empty.
 
-**Blocking: until the demo end panel is in the Campaign Map scene, clearing a tier-4 node logs an error and drops you straight back to the Meta Area with no Thanks for playing screen (section 2).**
+**The demo end panel is in the Campaign Map scene (2026-09-26), so clearing tier 4 now ends on it. Its UI review (§3) is still yours.**
 
 ## 1. Verify first
 
-- [ ] **Unity imports the hand-written demo config.** `Assets/Bladehold/Resources/DemoConfig.asset` should show as a `DemoConfigSO` with `Demo Enabled` ticked, Allowed Weapons = sword, bow, mace; Allowed Armour Sets = HeroArmourSet, IronVanguardArmourSet; Allowed Mounts = Mount_BasicWarhorse; Max Meta Perk Tier 1; Campaign Cutoff Tier 4. If the fields are empty or the script is missing, the asset/meta GUIDs didn't take, so recreate it via *Create → Scriptable Objects → Demo Config* at the same path. A missing asset logs `[DemoConfigSO] No DemoConfig asset…` and runs as the full game.
+- [x] **Unity imports the hand-written demo config.** Checked by an agent via MCP 2026-09-26: all values as listed. `Assets/Bladehold/Resources/DemoConfig.asset` should show as a `DemoConfigSO` with `Demo Enabled` ticked, Allowed Weapons = sword, bow, mace; Allowed Armour Sets = HeroArmourSet, IronVanguardArmourSet; Allowed Mounts = Mount_BasicWarhorse; Max Meta Perk Tier 1; Campaign Cutoff Tier 4. If the fields are empty or the script is missing, the asset/meta GUIDs didn't take, so recreate it via *Create → Scriptable Objects → Demo Config* at the same path. A missing asset logs `[DemoConfigSO] No DemoConfig asset…` and runs as the full game.
 - [ ] **Set `Steam Store Url`** on the same asset once the store page exists. The Wishlist button stays hidden while it's blank.
 
 ## 2. Wiring (Campaign Map scene)
 
-- [ ] **Build a `DemoEndScreen` prefab** (`Bladehold Prefabs/UI/DemoEndScreen.prefab`): full-screen raycast-blocking panel with a "Thanks for playing" header, a short line ("The full campaign continues in Bladehold — wishlist on Steam"), a **Wishlist** button and a **Continue** button. Add `DemoEndScreenUI` on the root and assign `Panel Root` (the panel child, *not* the root holding the script), `Continue Button`, `Wishlist Button`, and optionally `Show Feedback` (MMF_Player: open sound + fade). None auto-wire. *(MCP-able as a mockup.)*
-- [ ] **Place it in `Bladehold Campaign Map Scene`** under the map canvas (drawn on top of the nodes and the tooltip) and assign it to `CampaignMapUI` → `Demo End Screen`. Verify: DevConsole → complete nodes up to tier 4 → back on the map the panel appears, Continue loads the Meta Area.
+- [x] **Build a `DemoEndScreen` prefab** (done by an agent via MCP 2026-09-26: Panel + parchment box, header, body, Wishlist + Continue (MenuButton instances), MenuFocusController on Continue; no Show Feedback yet) (`Bladehold Prefabs/UI/DemoEndScreen.prefab`): full-screen raycast-blocking panel with a "Thanks for playing" header, a short line ("The full campaign continues in Bladehold — wishlist on Steam"), a **Wishlist** button and a **Continue** button. Add `DemoEndScreenUI` on the root and assign `Panel Root` (the panel child, *not* the root holding the script), `Continue Button`, `Wishlist Button`, and optionally `Show Feedback` (MMF_Player: open sound + fade). None auto-wire. *(MCP-able as a mockup.)*
+- [x] **Place it in `Bladehold Campaign Map Scene`** (done 2026-09-26, last child of the map canvas; checked it shows over the map with Wishlist hidden while the URL is blank) under the map canvas (drawn on top of the nodes and the tooltip) and assign it to `CampaignMapUI` → `Demo End Screen`. Verify: DevConsole → complete nodes up to tier 4 → back on the map the panel appears, Continue loads the Meta Area.
 
 ## 3. UI review
 

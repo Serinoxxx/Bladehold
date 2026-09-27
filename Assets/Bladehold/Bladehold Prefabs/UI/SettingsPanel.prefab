@@ -2192,6 +2192,8 @@ MonoBehaviour:
   postProcessingTabContent: {fileID: 0}
   tabSelectedColor: {r: 0.3, g: 0.45, b: 0.55, a: 1}
   tabUnselectedColor: {r: 0.2, g: 0.2, b: 0.24, a: 1}
+  tabSelectedTextColor: {r: 0.22, g: 0.18, b: 0.14, a: 1}
+  tabUnselectedTextColor: {r: 0.774, g: 0.745, b: 0.66, a: 1}
   masterVolumeSlider: {fileID: 2765851490949534759}
   musicVolumeSlider: {fileID: 6171747730989553299}
   sfxVolumeSlider: {fileID: 7203126493246079647}
@@ -8455,9 +8457,6 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 4556459917223592359, guid: 28e3379ef43a69e44a2f5d344bdd4df1, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 5963516134372592864}
     - targetCorrespondingSourceObject: {fileID: 9130580472408137579, guid: 28e3379ef43a69e44a2f5d344bdd4df1, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1017958872188196420}
@@ -8467,7 +8466,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6308240325386139351, guid: 28e3379ef43a69e44a2f5d344bdd4df1, type: 3}
   m_PrefabInstance: {fileID: 5097440768005231420}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8756813486041911963}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
@@ -8496,25 +8495,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
   key: common.cancel
---- !u!1 &8756813486041911963 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 4556459917223592359, guid: 28e3379ef43a69e44a2f5d344bdd4df1, type: 3}
-  m_PrefabInstance: {fileID: 5097440768005231420}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &5963516134372592864
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8756813486041911963}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: be6985d6aec21d348ade096d7b2cfcde, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UIClickFeedback
-  button: {fileID: 1240425554610791915}
-  clickFeedback: {fileID: 0}
 --- !u!1001 &5565389961482575961
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9285,9 +9265,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4556459917223592359, guid: 28e3379ef43a69e44a2f5d344bdd4df1, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7713819888933496559}
-    - targetCorrespondingSourceObject: {fileID: 4556459917223592359, guid: 28e3379ef43a69e44a2f5d344bdd4df1, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 8420567503240881438}
     - targetCorrespondingSourceObject: {fileID: 9130580472408137579, guid: 28e3379ef43a69e44a2f5d344bdd4df1, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5386540829991677}
@@ -9315,17 +9292,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
   key: settings.back
---- !u!114 &3996148093425404262 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6308240325386139351, guid: 28e3379ef43a69e44a2f5d344bdd4df1, type: 3}
-  m_PrefabInstance: {fileID: 6989151919215656881}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6901124884269481494}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!1 &6901124884269481494 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4556459917223592359, guid: 28e3379ef43a69e44a2f5d344bdd4df1, type: 3}
@@ -9351,20 +9317,6 @@ MonoBehaviour:
   m_FlexibleWidth: 1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
---- !u!114 &8420567503240881438
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6901124884269481494}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: be6985d6aec21d348ade096d7b2cfcde, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UIClickFeedback
-  button: {fileID: 3996148093425404262}
-  clickFeedback: {fileID: 0}
 --- !u!1001 &7602648175842911931
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9480,10 +9432,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 4556459917223592359, guid: 28e3379ef43a69e44a2f5d344bdd4df1, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 5246533338740527864}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 28e3379ef43a69e44a2f5d344bdd4df1, type: 3}
 --- !u!224 &434732212606241672 stripped
 RectTransform:
@@ -9495,31 +9444,12 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6308240325386139351, guid: 28e3379ef43a69e44a2f5d344bdd4df1, type: 3}
   m_PrefabInstance: {fileID: 7602648175842911931}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6249241578431866652}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
---- !u!1 &6249241578431866652 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 4556459917223592359, guid: 28e3379ef43a69e44a2f5d344bdd4df1, type: 3}
-  m_PrefabInstance: {fileID: 7602648175842911931}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &5246533338740527864
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6249241578431866652}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: be6985d6aec21d348ade096d7b2cfcde, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UIClickFeedback
-  button: {fileID: 4470199878769447020}
-  clickFeedback: {fileID: 0}
 --- !u!1001 &7649444617164971047
 PrefabInstance:
   m_ObjectHideFlags: 0

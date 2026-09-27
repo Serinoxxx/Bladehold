@@ -175,7 +175,7 @@ public class MageImbuement : MonoBehaviour
 
         bool isMage = true;
 
-        // Register authored SO values as stat bases. Non-Mage classes start with 0 runestone charges until unlocked in skill tree.
+        // Register authored SO values as stat bases. Runestone charges start at 0 until unlocked.
         stats.SetBase(StatType.MageImbuementDuration, config.imbuementDurationSeconds);
         stats.SetBase(StatType.MageImbuementMaxCharges, config.maxCharges);
         stats.SetBase(StatType.MageImbuementBonusPerCharge, config.bonusDamagePercentPerCharge);
@@ -256,7 +256,7 @@ public class MageImbuement : MonoBehaviour
     /// <summary>
     ///     Grants one element node's worth of imbuement: same element = +1 charge (capped) and a
     ///     timer reset; a different element (or an inactive buff) replaces the imbuement at one
-    ///     charge. Returns false when this component can't accept it (another class's disabled
+    ///     charge. Returns false when this component can't accept it (a disabled
     ///     imbuement — <c>GetComponentInParent</c> finds disabled components, so the node stays
     ///     uncollected on the ground).
     /// </summary>

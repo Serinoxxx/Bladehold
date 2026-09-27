@@ -72,7 +72,8 @@ public class FireTrailSegment : MonoBehaviour
             float damageAmount = dps * interval;
             if (Player.Instance != null && Player.Instance.Stats != null)
             {
-                damageAmount *= Player.Instance.Stats.GetValue(StatType.AllDamageMultiplier);
+                damageAmount *= Player.Instance.Stats.GetValue(StatType.AllDamageMultiplier)
+                    * (1f + Mathf.Max(0f, Player.Instance.Stats.GetValue(StatType.FireDamageBonus)));
             }
 
             enemyHealth.ReceiveDamage(new Damage

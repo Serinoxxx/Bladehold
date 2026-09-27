@@ -728,7 +728,7 @@ public class DevConsole : MonoBehaviour
     }
 
     /// <summary>
-    ///     Live readout of the Berserker's rage meter (and any banked Pain-into-Power bonus) so the
+    ///     Live readout of the rage meter (and any banked Pain-into-Power bonus) so the
     ///     loop is verifiable before the HUD rage bar exists. Hidden for classes without a RageBuff.
     /// </summary>
     private void DrawRageReadout()

@@ -58,6 +58,7 @@ public class CampaignNodeButtonUI : MonoBehaviour, IPointerEnterHandler, IPointe
 
     public CampaignNodeSO NodeData => nodeData;
     public NodeVisualStatus CurrentStatus => currentStatus;
+    public RectTransform Rect => rectTransform;
 
     private void OnValidate()
     {
@@ -190,12 +191,29 @@ public class CampaignNodeButtonUI : MonoBehaviour, IPointerEnterHandler, IPointe
 
     private void Update()
     {
-        // Smooth scale lerp on hover
-        Vector3 targetScale = (isHovered && currentStatus == NodeVisualStatus.Available)
-            ? originalScale * 1.08f
-            : originalScale;
+        // Smooth scale lerp on hover / keyboard-gamepad focus. Unplayable nodes grow less so focus still reads.
+        Vector3 targetScale = originalScale;
+        if (isHovered)
+        {
+            targetScale = originalScale * (currentStatus == NodeVisualStatus.Available ? 1.08f : 1.04f);
+        }
 
         transform.localScale = Vector3.Lerp(transform.localScale, targetScale, Time.unscaledDeltaTime * 14f);
+    }
+
+    /// <summary>
+    ///     Keyboard/gamepad focus from <see cref="CampaignMapUI" />: same visuals and tooltip as a mouse hover.
+    /// </summary>
+    public void SetFocused(bool focused)
+    {
+        if (focused)
+        {
+            OnPointerEnter(null);
+        }
+        else
+        {
+            OnPointerExit(null);
+        }
     }
 
     public void OnPointerEnter(PointerEventData eventData)

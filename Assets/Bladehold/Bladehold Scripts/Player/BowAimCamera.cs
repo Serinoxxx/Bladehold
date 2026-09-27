@@ -2,13 +2,13 @@ using Unity.Cinemachine;
 using UnityEngine;
 
 /// <summary>
-///     Over-the-shoulder aim camera for the active class's hold-aim weapon (bow / thrown axe). While
+///     Over-the-shoulder aim camera for the equipped hold-aim weapon (bow / thrown axe / wand). While
 ///     <see cref="IChargedAimWeapon.IsAiming" /> (polled, the <see cref="SwordChargeFeedback" />
 ///     pattern) the gameplay <see cref="CinemachineCamera" />'s Third Person Follow boom is blended
 ///     in close and off to the side, and its lens field of view scales by the weapon's
 ///     <see cref="IChargedAimWeapon.AimFieldOfViewPercent" /> (1 = unchanged) — the framing values
 ///     live on each weapon's own SO and surface through the interface. The weapon is the serialized
-///     bow when it's the active class's (enabled), else
+///     bow when it's equipped (enabled), else
 ///     <see cref="PlayerWeaponManager.ActiveAimWeapon" />. Everything goes through Cinemachine's
 ///     public fields, so the reflection the old Synty-controller version needed is gone. The resting
 ///     framing is captured once in <c>Start</c>; releasing aim blends everything back to it. This
@@ -18,7 +18,7 @@ using UnityEngine;
 /// </summary>
 public class BowAimCamera : MonoBehaviour
 {
-    [Tooltip("The player's bow, used while it's the active class's aim weapon. When benched (disabled), the class controller's ActiveAimWeapon takes over.")]
+    [Tooltip("The player's bow, used while it's the equipped aim weapon. When unequipped (disabled), PlayerWeaponManager's ActiveAimWeapon takes over.")]
     [SerializeField] private PlayerBow bow;
     [Tooltip("The gameplay CinemachineCamera whose Third Person Follow boom and lens the aim blend drives. Auto-found in children.")]
     [SerializeField] private CinemachineCamera aimCamera;
@@ -51,7 +51,7 @@ public class BowAimCamera : MonoBehaviour
         weapon = AimWeaponResolver.Resolve(bow);
         if (weapon == null)
         {
-            Debug.LogError("BowAimCamera found no aim weapon (assign the bow, or ensure the class controller's active class carries an IChargedAimWeapon).");
+            Debug.LogError("BowAimCamera found no aim weapon (assign the bow, or ensure PlayerWeaponManager has an IChargedAimWeapon equipped).");
             anyError = true;
         }
         if (aimCamera == null)

@@ -82,6 +82,12 @@ public class SkillNode
     /// </summary>
     public string iconName = "";
 
+    /// <summary>
+    ///     The card's element (<c>Fire</c>/<c>Ice</c>/<c>Lightning</c>) for elemental drafts, empty otherwise.
+    ///     The UI tints the icon from it (<see cref="SkillTreeIconsSO.TryGetElementTint" />).
+    /// </summary>
+    public string element = "";
+
     /// <summary>How many times this node can be purchased (levels). 1 = a single-purchase node.</summary>
     public int maxLevel = 1;
 

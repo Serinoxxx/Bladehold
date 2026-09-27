@@ -265,6 +265,7 @@ public class PlayerUltimateController : MonoBehaviour
     {
         if (IsUltimateActive || CurrentCharge < MaxCharge || player == null || player.Stats == null) return;
         if (player.Stats.GetValue(StatType.UltimateUnlocked) <= 0f) return;
+        if (!SceneAbilityRules.UltimateAllowed) return;
 
         ActivateUltimate();
     }

@@ -51,6 +51,10 @@ namespace Synty.AnimationBaseLocomotion.Samples.InputSystem
         // Bladehold addition: interact action (E / gamepad West).
         public Action onInteractPerformed;
 
+        // Bladehold addition: summon-mount action (X / gamepad D-pad Up). Shares X with Dismount on
+        // keyboard: on foot it summons, while riding PlayerSummonMount ignores it and Dismount fires.
+        public Action onSummonMountPerformed;
+
         public bool IsAimPressed => _controls != null && _controls.Player.Aim.IsPressed();
         public bool IsAttackPressed => _controls != null && _controls.Player.Attack.IsPressed();
 
@@ -237,6 +241,16 @@ namespace Synty.AnimationBaseLocomotion.Samples.InputSystem
             }
 
             onInteractPerformed?.Invoke();
+        }
+
+        public void OnSummonMount(InputAction.CallbackContext context)
+        {
+            if (!context.performed)
+            {
+                return;
+            }
+
+            onSummonMountPerformed?.Invoke();
         }
     }
 }

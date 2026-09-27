@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-///     Radial reload indicator for the active class's hold-aim weapon (bow / thrown axe). While a
+///     Radial reload indicator for the equipped hold-aim weapon (bow / thrown axe / wand). While a
 ///     shot's fire cooldown is running, fades a <see cref="CanvasGroup" /> in and drives a
 ///     radial-filled <see cref="Image" /> from empty to full as
 ///     <see cref="IChargedAimWeapon.CooldownFraction" /> recovers (polled, the
@@ -13,7 +13,7 @@ using UnityEngine.UI;
 /// </summary>
 public class BowReloadUI : MonoBehaviour
 {
-    [Tooltip("The player's bow, used while it's the active class's aim weapon. When benched (disabled), the class controller's ActiveAimWeapon takes over. Defaults to the one on Player.Instance.")]
+    [Tooltip("The player's bow, used while it's the equipped aim weapon. When unequipped (disabled), PlayerWeaponManager's ActiveAimWeapon takes over. Defaults to the one on Player.Instance.")]
     [SerializeField] private PlayerBow bow;
     [Tooltip("Faded in while the fire cooldown is running. Usually on this object.")]
     [SerializeField] private CanvasGroup canvasGroup;
@@ -46,7 +46,7 @@ public class BowReloadUI : MonoBehaviour
 
         if (weapon == null)
         {
-            Debug.LogError("No aim weapon found: assign the bow, or ensure the class controller's active class carries an IChargedAimWeapon.");
+            Debug.LogError("No aim weapon found: assign the bow, or ensure PlayerWeaponManager has an IChargedAimWeapon equipped.");
             anyError = true;
         }
         if (canvasGroup == null)

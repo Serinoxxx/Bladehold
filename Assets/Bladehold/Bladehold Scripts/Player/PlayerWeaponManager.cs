@@ -63,6 +63,9 @@ public class PlayerWeaponManager : MonoBehaviour
     private string currentMeleeId = "sword";
     private string currentRangedId = "bow";
 
+    // A temporary element glow on the melee weapon that wins over the SLOT_MELEE element (Chain Dash's charged blade).
+    private string meleeGlowOverride = "";
+
     public string CurrentMeleeId => currentMeleeId;
     public string CurrentRangedId => currentRangedId;
     public DamageTrigger ActiveMeleeTrigger { get; private set; }
@@ -201,12 +204,16 @@ public class PlayerWeaponManager : MonoBehaviour
 
     private void HandleElementalSlotChanged(string slotName, string elementId)
     {
+        // No weapon glow/VFX where the run's elements don't apply (the Fishing Pond).
+        if (RunSession.RunUpgradesSuspended) elementId = "";
+
         if (string.Equals(slotName, "SLOT_MELEE", StringComparison.OrdinalIgnoreCase))
         {
+            string glowElement = string.IsNullOrEmpty(meleeGlowOverride) ? elementId : meleeGlowOverride;
             foreach (var slot in meleeWeapons)
             {
                 bool equipped = slot.definition != null && string.Equals(slot.definition.id, currentMeleeId, StringComparison.OrdinalIgnoreCase);
-                SetWeaponHighlight(slot.elementalHighlight, equipped ? elementId : "");
+                SetWeaponHighlight(slot.elementalHighlight, equipped ? glowElement : "");
             }
             if (activeMeleeVfxInstance != null) Destroy(activeMeleeVfxInstance);
             GameObject prefab = GetVfxPrefabForElement(elementId);
@@ -258,6 +265,23 @@ public class PlayerWeaponManager : MonoBehaviour
                     activeRangedVfxInstance.transform.localRotation = Quaternion.identity;
                 }
             }
+        }
+    }
+
+    /// <summary>
+    ///     Shows <paramref name="elementId" />'s glow on the equipped melee weapon regardless of its slot
+    ///     element (a temporary charge, e.g. Chain Dash). Null/empty restores the SLOT_MELEE glow.
+    /// </summary>
+    public void SetMeleeGlowOverride(string elementId)
+    {
+        meleeGlowOverride = elementId ?? "";
+        string shown = !string.IsNullOrEmpty(meleeGlowOverride)
+            ? meleeGlowOverride
+            : RunSession.GetActiveElement(RunSession.SlotMelee);
+        foreach (var slot in meleeWeapons)
+        {
+            bool equipped = slot.definition != null && string.Equals(slot.definition.id, currentMeleeId, StringComparison.OrdinalIgnoreCase);
+            SetWeaponHighlight(slot.elementalHighlight, equipped ? shown : "");
         }
     }
 
@@ -318,10 +342,13 @@ public class PlayerWeaponManager : MonoBehaviour
         if (DemoConfigSO.IsWeaponIdLocked(meleeId)) meleeId = "sword";
         if (DemoConfigSO.IsWeaponIdLocked(rangedId)) rangedId = "bow";
 
+        // The Fishing Pond is bow-only; the saved choice is untouched and returns next scene.
+        if (RunSession.RunUpgradesSuspended) rangedId = "bow";
+
         EquipMelee(meleeId);
         EquipRanged(rangedId);
 
-        if (!string.IsNullOrEmpty(RunSession.ActiveUltimateId))
+        if (!RunSession.RunUpgradesSuspended && !string.IsNullOrEmpty(RunSession.ActiveUltimateId))
         {
             DraftUpgradeService.ConfigureUltimateHandler(GetComponent<Player>() ?? Player.Instance, RunSession.ActiveUltimateId);
         }
@@ -540,6 +567,9 @@ public class PlayerWeaponManager : MonoBehaviour
     /// </summary>
     public void CycleRangedWeapon(int direction = 1, bool updateSave = true)
     {
+        // Locked to the bow in the Fishing Pond.
+        if (RunSession.RunUpgradesSuspended) return;
+
         if (rangedWeapons == null || rangedWeapons.Length == 0)
         {
             var valid = GetInstance();

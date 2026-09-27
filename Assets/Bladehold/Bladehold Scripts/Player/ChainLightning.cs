@@ -32,6 +32,10 @@ public class ChainLightning : MonoBehaviour
     [SerializeField] private ChainLightningVfx chainVfx;
     [Tooltip("Optional: played once whenever a chain actually fires (crackle/zap).")]
     [SerializeField] private MMF_Player chainFeedback;
+    [Tooltip("Optional: played at the player when a dash charges the blade with Chain Dash (crackle on the blade).")]
+    [SerializeField] private MMF_Player chainDashChargedFeedback;
+    [Tooltip("Defaults to the PlayerWeaponManager on the player root. Shows the Lightning glow on the blade while a Chain Dash charge is held.")]
+    [SerializeField] private PlayerWeaponManager weaponManager;
 
     private const int MaxOverlapResults = 32;
     private readonly Collider[] overlapBuffer = new Collider[MaxOverlapResults];
@@ -48,8 +52,13 @@ public class ChainLightning : MonoBehaviour
     /// </summary>
     public void SetSwordTrigger(DamageTrigger trigger)
     {
+        // After Start the old trigger is subscribed; move the subscription to the new weapon (runtime loadout swaps).
+        if (isSubscribed && swordTrigger != null) swordTrigger.OnHit -= HandleHit;
         swordTrigger = trigger;
+        if (isSubscribed && swordTrigger != null) swordTrigger.OnHit += HandleHit;
     }
+
+    private bool isSubscribed;
 
     private int chainDashCharges = 0;
     private PlayerDodge playerDodge;
@@ -91,9 +100,18 @@ public class ChainLightning : MonoBehaviour
         }
 
         swordTrigger.OnHit += HandleHit;
+        isSubscribed = true;
 
-        playerDodge = Player.Instance != null ? Player.Instance.GetComponentInChildren<PlayerDodge>() : null;
-        if (playerDodge != null)
+        // PlayerDodge and PlayerWeaponManager live on the prefab root, while Player.Instance is the
+        // child SidekickSyntyCharacter, so search from the root.
+        Transform root = Player.Instance != null ? Player.Instance.transform.root : transform.root;
+        playerDodge = root.GetComponentInChildren<PlayerDodge>(true);
+        if (weaponManager == null) weaponManager = root.GetComponentInChildren<PlayerWeaponManager>(true);
+        if (playerDodge == null)
+        {
+            Debug.LogError("ChainLightning could not find the player's PlayerDodge; Chain Dash will not charge the blade.", this);
+        }
+        else
         {
             playerDodge.OnDodgeStarted += HandleDodge;
         }
@@ -101,7 +119,7 @@ public class ChainLightning : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (swordTrigger != null)
+        if (swordTrigger != null && isSubscribed)
         {
             swordTrigger.OnHit -= HandleHit;
         }
@@ -111,21 +129,41 @@ public class ChainLightning : MonoBehaviour
         }
     }
 
+    /// <summary>
+    ///     Chain Dash (<see cref="StatType.LightningChainDashTargets" />): a dash charges the blade, and
+    ///     the next melee hit arcs Chain Lightning to that many extra enemies. The blade shows the
+    ///     Lightning glow while the charge is held.
+    /// </summary>
     private void HandleDodge()
     {
-        if (stats != null && stats.GetValue(StatType.LightningChainDashTargets) > 0)
+        if (anyError || stats == null || stats.GetValue(StatType.LightningChainDashTargets) <= 0f)
         {
-            chainDashCharges = 1;
+            return;
+        }
+
+        bool wasCharged = chainDashCharges > 0;
+        chainDashCharges = 1;
+        if (!wasCharged && weaponManager != null)
+        {
+            weaponManager.SetMeleeGlowOverride("Lightning");
+        }
+        if (chainDashChargedFeedback != null)
+        {
+            chainDashChargedFeedback.PlayFeedbacks(transform.position);
         }
     }
 
     private void HandleHit(IDamageable target, Damage damage, Vector3 hitPoint)
     {
         TryChain(target, damage.value, hitPoint);
-        
+
         if (chainDashCharges > 0)
         {
             chainDashCharges--;
+            if (weaponManager != null)
+            {
+                weaponManager.SetMeleeGlowOverride(null);
+            }
             int dashBounces = Mathf.RoundToInt(stats.GetValue(StatType.LightningChainDashTargets));
             ForceChain(damage.value, hitPoint, target, dashBounces);
         }

@@ -196,7 +196,7 @@ public class RunTelemetry : MonoBehaviour
         playerMount = player.GetComponentInChildren<PlayerMount>(true);
 
         swordTrigger = null;
-        // Exclude inactive children: with per-class weapons, the benched class's weapon still carries
+        // Exclude inactive children: with several melee weapons on the rig, an unequipped one still carries
         // a ReadsPlayerStats trigger — bind the live one only. (Still binds "first found" if a third
         // active ReadsPlayerStats trigger ever appears.)
         foreach (DamageTrigger trigger in player.GetComponentsInChildren<DamageTrigger>(false))
@@ -226,7 +226,7 @@ public class RunTelemetry : MonoBehaviour
         {
             swordTrigger.OnHit += HandleSwordHit;
         }
-        // The Berserker's thrown axe feeds the same damage-dealt accumulators (note: bow damage is
+        // The thrown axe feeds the same damage-dealt accumulators (note: bow damage is
         // not telemetered today — the axe is included deliberately, since face-tank balance can't
         // be read without its share of the damage).
         thrownAxe = player.GetComponentInChildren<PlayerThrownAxe>(true);

@@ -124,7 +124,8 @@ public class DynamiteProjectile : MonoBehaviour
 
         if (telegraphInstance != null)
         {
-            Destroy(telegraphInstance);
+            if (Application.isPlaying) Destroy(telegraphInstance);
+            else DestroyImmediate(telegraphInstance);
         }
 
         Vector3 blastCenter = targetPosition;
@@ -166,7 +167,8 @@ public class DynamiteProjectile : MonoBehaviour
             }
         }
 
-        Destroy(gameObject);
+        if (Application.isPlaying) Destroy(gameObject);
+        else DestroyImmediate(gameObject);
     }
 
     private void OnDestroy()

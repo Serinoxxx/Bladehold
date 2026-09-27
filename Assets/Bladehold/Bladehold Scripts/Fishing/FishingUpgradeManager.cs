@@ -66,7 +66,9 @@ public class FishingUpgradeManager : MonoBehaviour
     public int BounceCount => GetLevel(FishingUpgradeType.BounceShot);
 
     public int FishsploshionDamage => GetLevel(FishingUpgradeType.Fishsploshion);
-    public float FishsploshionRadius => FishsploshionDamage > 0 ? 3.5f : 0f;
+    // Was 3.5 m: at the pond's fish density every blast caught several 1-HP fish, whose own blasts
+    // chained through the whole pond. At 1 m a blast usually catches zero or one neighbour.
+    public float FishsploshionRadius => FishsploshionDamage > 0 ? 1f : 0f;
     // Gap between a fish dying and its blast going off, so a chain reads as a visible cascade.
     public float FishsploshionDelay => 0.1f;
 

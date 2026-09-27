@@ -5,7 +5,7 @@ using Synty.AnimationBaseLocomotion.Samples.InputSystem;
 using UnityEngine;
 
 /// <summary>
-///     The Berserker's throwing axe — the class's ranged option, the <see cref="PlayerBow" /> skeleton
+///     The throwing axe — an equippable ranged weapon, the <see cref="PlayerBow" /> skeleton
 ///     with the arrow swapped for a piercing line. Holding aim (the Synty <see cref="InputReader" />'s
 ///     <c>onAimActivated</c>/<c>onAimDeactivated</c> events) winds the throw up in discrete charge
 ///     levels (the bow-draw convention, tuned on <see cref="ThrownAxeSO" />); pressing attack while
@@ -66,9 +66,9 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
     [SerializeField] private MMF_Player throwFeedback;
 
     [Header("Class mechanics (optional)")]
-    [Tooltip("Optional: the Berserker's Rage buff. While raging, throw damage scales by its multiplier. Defaults to the one on this GameObject.")]
+    [Tooltip("Optional: the Rage buff. While raging, throw damage scales by its multiplier. Defaults to the one on this GameObject.")]
     [SerializeField] private RageBuff rageBuff;
-    [Tooltip("Optional: the Berserker's Pain into Power. Damage banked from hits taken mid-wind-up is consumed per throw and added flat to every enemy pierced. Defaults to the one on this GameObject.")]
+    [Tooltip("Optional: the Pain into Power skill line. Damage banked from hits taken mid-wind-up is consumed per throw and added flat to every enemy pierced. Defaults to the one on this GameObject.")]
     [SerializeField] private PainIntoPower painIntoPower;
 
     [Tooltip("Optional: the player's mount. There is no mounted throwing — aiming from the saddle does nothing.")]
@@ -238,7 +238,7 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
         rangedWeaponTypeHash = Animator.StringToHash("RangedWeaponType");
         weaponTypeHash = Animator.StringToHash("WeaponType");
 
-        // The aim animator states are optional wiring, shared with the bow (the berserker's
+        // The aim animator states are optional wiring, shared with the bow (the axe's
         // override controller re-skins them) — without the params the axe still works, the rig just
         // keeps its melee pose (checked once so missing params don't spam warnings every aim).
         bool hasIsAiming = false;
@@ -493,7 +493,7 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
         }
         OnThrown?.Invoke();
 
-        // Pain into Power (Berserker): the pool banked from hits taken mid-wind-up fuels this whole
+        // Pain into Power: the pool banked from hits taken mid-wind-up fuels this whole
         // throw — consumed once, so every enemy pierced shares the same flat bonus.
         float painBonus = painIntoPower != null ? painIntoPower.ConsumeBonus() : 0f;
         float width = Mathf.Max(0.05f, stats.GetValue(StatType.AxeThrowWidth));
@@ -629,7 +629,7 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
             value *= allDamage;
         }
 
-        // Rage (Berserker): more damage the angrier the player is (the DamageTrigger read pattern).
+        // Rage: more damage the angrier the player is (the DamageTrigger read pattern).
         if (rageBuff != null && rageBuff.IsActive)
         {
             value *= rageBuff.DamageMultiplier;
@@ -649,7 +649,7 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
             source = ownerDamageable != null ? ownerDamageable : (Player.Instance != null ? Player.Instance.Damageable : null),
             isProjectile = true,
             isPlayerDamage = true,
-            elementId = RunSession.ElementalSlots.GetValueOrDefault("SLOT_RANGED", "")
+            elementId = RunSession.GetActiveElement("SLOT_RANGED")
         };
     }
 

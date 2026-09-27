@@ -27,6 +27,8 @@ public class PlayerDodge : MonoBehaviour
     [SerializeField] private GameObject iceDashVfxPrefab;
     [SerializeField] private GameObject lightningDashVfxPrefab;
     [SerializeField] private GameObject poisonDashVfxPrefab;
+    [Tooltip("Blazing Trail: looping fire VFX parented to each stationary ground segment the dash leaves behind. Must emit over time (a rate-over-distance trail such as FX_Trail_Fire_01 shows nothing once it stops moving). Empty = ElementalEffectsManager.fireStatusVfx.")]
+    [SerializeField] private GameObject fireTrailSegmentVfxPrefab;
     
     [Tooltip("MMF_Player played at the player on dodge initiation (whoosh).")]
     [SerializeField] private MMF_Player dodgeFeedback;
@@ -49,6 +51,7 @@ public class PlayerDodge : MonoBehaviour
     private bool anyError;
     private float lastDodgeEndTime = -999f;
     private int attackTriggerHash;
+    private bool loggedMissingTrailVfx;
 
 #if UNITY_EDITOR
     private float lastCachedConfigCooldown = -1f;
@@ -235,7 +238,7 @@ public class PlayerDodge : MonoBehaviour
 
         GameObject activeVfx = null;
         GameObject prefabToUse = dashVfxPrefab;
-        string elementId = RunSession.ElementalSlots.GetValueOrDefault("SLOT_MOBILITY", "");
+        string elementId = RunSession.GetActiveElement("SLOT_MOBILITY");
         switch (elementId?.ToUpper())
         {
             case "FIRE": if (fireDashVfxPrefab != null) prefabToUse = fireDashVfxPrefab; break;
@@ -366,7 +369,7 @@ public class PlayerDodge : MonoBehaviour
                             sourcePosition = transform.position,
                             source = player.Damageable,
                             isPlayerDamage = true,
-                            elementId = RunSession.ElementalSlots.GetValueOrDefault("SLOT_MOBILITY", "")
+                            elementId = RunSession.GetActiveElement("SLOT_MOBILITY")
                         });
 
                         if (enemyHealth.IsDead && chainReduction > 0f)
@@ -431,10 +434,16 @@ public class PlayerDodge : MonoBehaviour
 
     private void SpawnFireTrailSegment(float fireDPS)
     {
-        GameObject vfxToUse = fireDashVfxPrefab;
+        // Not fireDashVfxPrefab: that's a moving trail (emits by distance), so a parked segment copy is invisible.
+        GameObject vfxToUse = fireTrailSegmentVfxPrefab;
         if (vfxToUse == null && ElementalEffectsManager.Instance != null)
         {
             vfxToUse = ElementalEffectsManager.Instance.fireStatusVfx;
+        }
+        if (vfxToUse == null && !loggedMissingTrailVfx)
+        {
+            loggedMissingTrailVfx = true;
+            Debug.LogError("[PlayerDodge] Blazing Trail has no VFX: assign fireTrailSegmentVfxPrefab (or ElementalEffectsManager.fireStatusVfx).", this);
         }
 
         GameObject segmentObj = new GameObject("FireTrailSegment");

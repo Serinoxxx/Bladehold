@@ -51,7 +51,13 @@ public class PlayerAmmo : MonoBehaviour
         }
     }
 
-    public bool HasAmmo => CurrentAmmo > 0;
+    public bool HasAmmo => InfiniteAmmo || CurrentAmmo > 0;
+
+    /// <summary>
+    ///     While true, <see cref="TryConsumeAmmo" /> always succeeds without spending anything (the
+    ///     Fishing Pond's free arrows). Per player instance, so it resets with the next scene's player.
+    /// </summary>
+    public bool InfiniteAmmo { get; set; }
 
     private void Awake()
     {
@@ -128,7 +134,7 @@ public class PlayerAmmo : MonoBehaviour
     /// </summary>
     public bool TryConsumeAmmo(int amount = 1)
     {
-        if (amount <= 0) return true;
+        if (amount <= 0 || InfiniteAmmo) return true;
 
         if (RunSession.CurrentAmmo < amount)
         {

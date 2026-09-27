@@ -32,5 +32,6 @@ The macro run structure: an 8-tier branching node map between the Meta Area and 
 
 ## Map UI status
 
-- Node/path prefabs are Synty-art mockups awaiting human UI review (one label still uses LiberationSans; no Texturina header).
+- Node/path prefabs are Synty-art mockups. Their roots are anchored at (0, 0.5): `mapPosition` is measured from the content's left edge, so a centre anchor pushes the whole graph off-screen.
+- The map unlocks the cursor itself (`CursorLockManager`, owner `CampaignMap`). Keyboard/gamepad focus is custom in `CampaignMapUI.Update` (WASD/arrows/d-pad/stick pick the nearest node in that direction, Enter/Space/E/pad A deploys), not EventSystem selection, because locked nodes are non-interactable Buttons and could never be selected. Hovering with the mouse moves the focus.
 - Campaign progress isn't saved to disk; quitting mid-run loses it.

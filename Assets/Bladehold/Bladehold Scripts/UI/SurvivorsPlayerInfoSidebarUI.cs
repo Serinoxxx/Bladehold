@@ -174,6 +174,13 @@ public class SurvivorsPlayerInfoSidebarUI : MonoBehaviour
             GameObject itemGO = Instantiate(skillItemPrefab, skillsListContainer);
             spawnedSkillItems.Add(itemGO);
             SetupSkillItemData(itemGO, node, level, icon);
+
+            // Elemental skills show their element's icon colour, matching the draft cards.
+            Image itemIcon = itemGO.transform.Find("Icon")?.GetComponent<Image>();
+            if (itemIcon != null && icon != null && draftService.TryGetElementIconTint(node.element, out Color tint))
+            {
+                itemIcon.color = tint;
+            }
         }
     }
 

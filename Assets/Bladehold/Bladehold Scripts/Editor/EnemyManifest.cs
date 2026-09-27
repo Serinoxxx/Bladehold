@@ -310,6 +310,14 @@ internal static class EnemyManifest
                             }
                         }
 
+                        // The mesh DestructibleBanner hides when the banner is destroyed.
+                        if (bannerChild.transform.childCount > 0)
+                        {
+                            var bannerSo = new SerializedObject(destBanner);
+                            bannerSo.FindProperty("bannerVisual").objectReferenceValue = bannerChild.transform.GetChild(0).gameObject;
+                            bannerSo.ApplyModifiedPropertiesWithoutUndo();
+                        }
+
                         EnemyPrefabGenerator.SetReference(so, "banner", destBanner);
                     },
                 },

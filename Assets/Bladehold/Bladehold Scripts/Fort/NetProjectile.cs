@@ -89,6 +89,7 @@ public class NetProjectile : MonoBehaviour
         }
 
         onImpactCallback?.Invoke(hitPos);
-        Destroy(gameObject);
+        if (Application.isPlaying) Destroy(gameObject);
+        else DestroyImmediate(gameObject);
     }
 }

@@ -63,11 +63,12 @@ public class PlayerSummonMount : MonoBehaviour
 
         if (anyError) return;
 
-        player.Stats.SetBase(StatType.SummonMountUnlocked, 0f);
+        // Unlocked from the start of every run (1); kept as a stat so something could still lock it.
+        player.Stats.SetBase(StatType.SummonMountUnlocked, 1f);
         player.Stats.SetBase(StatType.SummonMountDuration, 20f);
         player.Stats.SetBase(StatType.SummonMountCooldown, 45f);
 
-        inputReader.onDismountPerformed += HandleDismountAction;
+        inputReader.onSummonMountPerformed += HandleSummonAction;
         player.Health.OnDamaged += HandleDamaged;
     }
 
@@ -75,7 +76,7 @@ public class PlayerSummonMount : MonoBehaviour
     {
         if (inputReader != null)
         {
-            inputReader.onDismountPerformed -= HandleDismountAction;
+            inputReader.onSummonMountPerformed -= HandleSummonAction;
         }
         if (player != null && player.Health != null)
         {
@@ -91,13 +92,14 @@ public class PlayerSummonMount : MonoBehaviour
         }
     }
 
-    private void HandleDismountAction()
+    private void HandleSummonAction()
     {
         if (anyError || player.Health.IsDead) return;
 
+        // Riding: the same X press is the Dismount action, handled by PlayerMount.
         if (playerMount.IsMounted) return;
 
-        if (player.Stats.GetValue(StatType.SummonMountUnlocked) <= 0f) return;
+        if (!IsAbilityUnlocked) return;
 
         if (spawnedHorse != null)
         {
@@ -236,7 +238,8 @@ public class PlayerSummonMount : MonoBehaviour
         }
     }
 
-    public bool IsAbilityUnlocked => player != null && player.Stats != null && player.Stats.GetValue(StatType.SummonMountUnlocked) > 0f;
+    /// <summary>True when the mount can be summoned here: unlocked and allowed by the scene's <see cref="SceneAbilityRules" />. SummonMountUI hides the slot when false.</summary>
+    public bool IsAbilityUnlocked => SceneAbilityRules.MountAllowed && player != null && player.Stats != null && player.Stats.GetValue(StatType.SummonMountUnlocked) > 0f;
     public bool IsHorseActive => spawnedHorse != null;
     public bool IsCooldownActive => isCooldownActive;
 }

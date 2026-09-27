@@ -173,6 +173,11 @@ public class Player : MonoBehaviour
             // Fire fortress pyre bonus base (0 = locked, >0 = fortress attacks deal bonus damage to ignited foes)
             Stats.SetBase(StatType.FireFortressPyreBonus, 0f);
 
+            // Elemental damage bonus bases (0 = no bonus; elemental buff fish raise them)
+            Stats.SetBase(StatType.FireDamageBonus, 0f);
+            Stats.SetBase(StatType.LightningDamageBonus, 0f);
+            Stats.SetBase(StatType.ChilledDamageBonus, 0f);
+
             // Lightning static edge damage base (0 = locked, >0 = first hit of melee chain deals bonus lightning damage)
             Stats.SetBase(StatType.LightningStaticEdgeDamage, 0f);
 

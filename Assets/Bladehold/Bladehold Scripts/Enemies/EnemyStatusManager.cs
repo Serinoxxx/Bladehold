@@ -102,7 +102,8 @@ public class EnemyStatusManager : MonoBehaviour
                 ignitedTickTimer -= 1f;
                 float combustionDPS = (Player.Instance != null && Player.Instance.Stats != null) ? Player.Instance.Stats.GetValue(StatType.FireCombustionDPS) : 0f;
                 float baseTick = (Player.Instance != null && Player.Instance.Stats != null) ? Player.Instance.Stats.GetValue(StatType.SwordDamage) * 0.15f : 10f;
-                float dotDamage = baseTick + combustionDPS;
+                float fireBonus = (Player.Instance != null && Player.Instance.Stats != null) ? Player.Instance.Stats.GetValue(StatType.FireDamageBonus) : 0f;
+                float dotDamage = (baseTick + combustionDPS) * (1f + Mathf.Max(0f, fireBonus));
                 Damage dot = new Damage { value = dotDamage, type = DamageType.elemental, source = Player.Instance?.Damageable, isPlayerDamage = true };
                 health.ReceiveDamage(dot);
             }
@@ -218,6 +219,15 @@ public class EnemyStatusManager : MonoBehaviour
             if (kindling > 0f)
             {
                 mult *= (1f + kindling);
+            }
+        }
+
+        if (damage.isPlayerDamage && (HasStatus("Ice") || HasStatus("Frozen")))
+        {
+            float chilled = (Player.Instance != null && Player.Instance.Stats != null) ? Player.Instance.Stats.GetValue(StatType.ChilledDamageBonus) : 0f;
+            if (chilled > 0f)
+            {
+                mult *= (1f + chilled);
             }
         }
 

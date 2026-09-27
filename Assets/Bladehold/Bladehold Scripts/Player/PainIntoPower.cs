@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-///     The Berserker's "Pain into Power" skill line: damage taken while charging a melee swing
+///     The "Pain into Power" skill line: damage taken while charging a melee swing
 ///     (<see cref="PlayerAttack.IsCharging" />) or winding up a throw
 ///     (<see cref="PlayerThrownAxe.IsAiming" />) is banked at
 ///     <see cref="StatType.PainIntoPowerPercent" /> (base 0 = locked) and added <b>flat</b> to that
@@ -11,7 +11,7 @@ using UnityEngine;
 ///     per melee activation by <see cref="DamageTrigger" /> and once per throw by
 ///     <see cref="PlayerThrownAxe" />, so every target of that one attack shares the same bonus.
 ///
-///     Lives on the player root, enabled only in the Berserker's class slot (a disabled component
+///     Lives on the player root; while disabled (a disabled component
 ///     banks nothing and returns 0).
 /// </summary>
 public class PainIntoPower : MonoBehaviour

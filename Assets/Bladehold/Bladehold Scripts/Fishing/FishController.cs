@@ -29,6 +29,8 @@ public class FishController : MonoBehaviour, IDamageable
     [Header("Visuals")]
     [SerializeField] private Renderer meshRenderer;
     [SerializeField] private GameObject deathVfxPrefab;
+    [Tooltip("Outline/glow that marks the fish's type. FishingManager loads the pond's profile into it and tints it per type.")]
+    [SerializeField] private HighlightPlus.HighlightEffect typeHighlight;
 
     private readonly List<Coroutine> activeBleedRoutines = new List<Coroutine>();
     private int currentBleedStacks = 0;
@@ -47,6 +49,36 @@ public class FishController : MonoBehaviour, IDamageable
         {
             meshRenderer = GetComponentInChildren<Renderer>();
         }
+    }
+
+    private void OnValidate()
+    {
+        if (typeHighlight == null) typeHighlight = GetComponentInChildren<HighlightPlus.HighlightEffect>(true);
+    }
+
+    /// <summary>
+    ///     Outlines the fish in its type colour; <paramref name="glow" /> adds a halo for the special ones
+    ///     (buff and Diamond fish) so they stand out in a busy pond.
+    /// </summary>
+    public void ApplyTypeHighlight(HighlightPlus.HighlightProfile profile, Color color, bool glow)
+    {
+        if (typeHighlight == null)
+        {
+            Debug.LogError($"[FishController] '{name}' has no HighlightEffect (typeHighlight); fish types can't be told apart.", this);
+            return;
+        }
+        if (profile == null)
+        {
+            Debug.LogError("[FishController] No fish highlight profile passed in (FishingManager.fishHighlightProfile).", this);
+            return;
+        }
+
+        typeHighlight.profile = profile;
+        typeHighlight.ProfileReload();
+        typeHighlight.outlineColor = color;
+        typeHighlight.glowHQColor = color;
+        if (!glow) typeHighlight.glow = 0f;
+        typeHighlight.SetHighlighted(true);
     }
 
     public void Setup(
@@ -132,8 +164,11 @@ public class FishController : MonoBehaviour, IDamageable
         float dmgVal = damage != null ? damage.value : 1f;
         currentHp -= dmgVal;
 
-        // Damage flash
-        StartCoroutine(HitFlashRoutine());
+        // Damage flash (Highlight Plus hit effect: no per-fish material instance, works on any shader)
+        if (typeHighlight != null)
+        {
+            typeHighlight.HitFX(Color.white, 0.15f, 1f);
+        }
 
         // Bleed upgrade logic
         if (FishingUpgradeManager.Instance != null && FishingUpgradeManager.Instance.BleedMaxStacks > 0)
@@ -195,20 +230,6 @@ public class FishController : MonoBehaviour, IDamageable
         currentBleedStacks = Mathf.Max(0, currentBleedStacks - 1);
     }
 
-    private IEnumerator HitFlashRoutine()
-    {
-        if (meshRenderer != null && meshRenderer.material != null)
-        {
-            Color origColor = meshRenderer.material.color;
-            meshRenderer.material.color = Color.white;
-            yield return new WaitForSeconds(0.08f);
-            if (meshRenderer != null && meshRenderer.material != null)
-            {
-                meshRenderer.material.color = origColor;
-            }
-        }
-    }
-
     private void Die()
     {
         if (isDead) return;
@@ -236,5 +257,4 @@ public class FishController : MonoBehaviour, IDamageable
 
         Destroy(gameObject);
     }
-
 }

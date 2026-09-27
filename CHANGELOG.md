@@ -107,6 +107,13 @@
 - Added defense icons to the defensive build wheel for Arrow Tower, Catapult, Ballista, Net Thrower, Spike Trap, and Oil Vat
 - Added automated behavioral benchmark tests verifying decoupled reticle visual scaling, ammo counter font size, and build wheel button prefab dimensions
 - Sectors now get harder the deeper you go into the campaign: new enemy types join the horde tier by tier (Bannermen and Powder Kegs, then Bulwarks and Assassins, then Storm Witches, then Trolls), while goblins still make up most of every wave
+- Added keyboard and gamepad navigation to the campaign map: move between sectors with WASD, the arrow keys, the d-pad or the left stick, and deploy with Enter or A
+- Added coloured outlines to fish at the Fishing Pond so you can tell each type apart at a glance, with a glow on buff fish and the Diamond Fish
+- Added floating reward popups when you catch a fish, such as +12 Gold
+- Added the Fishing Pond's level-up card picks, end-of-frenzy reward tally and on-screen fishing stats
+- Added a Thanks for Playing screen at the end of the demo campaign
+- Added element colours to elemental card icons: orange for fire, light blue for ice, purple for lightning
+- Added summoning your mount from the start of every run with [X] (D-pad Up on a controller)
 
 ### Fixes
 
@@ -152,6 +159,19 @@
 - Fixed the battering ram's splinters and the prisoner cage's dust cloud staying in the level after they faded
 - Fixed the Necromancer's shield break and scythe hits not shaking the screen
 - Fixed the Necromancer's summoning circles staying in the crypt for the rest of the fight
+- Fixed the campaign map appearing mostly off-screen and the mouse cursor staying locked on it
+- Fixed arrows at the Fishing Pond stopping at an invisible wall instead of reaching the fish
+- Fixed fish swimming outside the pond, under the ground
+- Fixed Chain Dash showing a lightning strike instead of charging your blade, and its chain lightning never triggering
+- Fixed Blazing Trail leaving no visible flames
+- Fixed Kindling, Frost Step, Shatter, Fortress Pyre, Lunge Mastery, Shieldbreaker, Power Dash, First Strike, Armor Shatter, Colossal Force and Vampire Blade's drawback having no effect
+- Fixed your ultimate ignoring the element you drafted for it
+- Fixed dying in the boss fights showing no defeat screen, and the pause menu missing there
+- Fixed menu buttons that made no click sound
+- Fixed weapon pedestals in the hub showing an extra sword
+- Fixed Captain Kombusta spawning far outside the arena in Frozen Pass and Ancient Garden
+- Fixed the Bannerman's banner staying visible after it was destroyed
+- Fixed Fire, Frost and Spark buff fish doing nothing: Fire and Spark now add +25% Fire or Lightning damage each, and Frost adds +25% damage against chilled or frozen enemies
 
 ### Balance Changes
 
@@ -162,6 +182,7 @@
 - Adjusted defense level pacing to 5 waves per combat node with staged enemy roster progression from goblins to heavy siege units
 - Configured hero health ratio to persist across campaign nodes
 - Standardized basic warhorse to 30-second duration and 90-second cooldown with a 1.5-second summon cast time
+- Reduced Fishing Pond fish swimming speed by about half
 
 ### General Changes
 
@@ -180,6 +201,10 @@
 - Removed runtime asset-path fallbacks from Net Thrower defense and Net projectile scripts
 - Added project rule prohibiting procedural visual creation in code and runtime asset-path fallbacks
 - Added automated editor setup script to regenerate campaign UI prefabs and persistent graph data
+- Added tower building spots to Frozen Pass and Ancient Garden
+- Added sound, dust and a light screen shake when a tower is built, and a neigh when you summon or dismiss your horse
+- Updated the death screen to show the wave you reached
+- Updated the Fishing Pond so it's just you and your bow: no mount, no ultimate and no sword swings, and their HUD is hidden
 
 ## [0.1.20] - 2026-09-08
 

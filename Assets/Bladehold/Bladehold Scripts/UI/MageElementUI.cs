@@ -5,8 +5,8 @@ using UnityEngine.UI;
 /// <summary>
 ///     HUD widget for the Mage's elemental imbuement. Polls <see cref="MageImbuement" /> every frame
 ///     (the timer decays continuously — the <see cref="RageBarUI" /> polling pattern): an element
-///     icon tinted per element, a charge-count label, and a remaining-time fill. Class-conditional
-///     by design: when the player has no enabled <see cref="MageImbuement" /> (any non-Mage class),
+///     icon tinted per element, a charge-count label, and a remaining-time fill. Conditional
+///     by design: when the player has no enabled <see cref="MageImbuement" />,
 ///     the whole object hides itself — that's the feature working, not an error. Lives under the HUD
 ///     canvas; the fill Image should be set to type Filled in the inspector (the
 ///     <see cref="BowReloadUI" /> convention).

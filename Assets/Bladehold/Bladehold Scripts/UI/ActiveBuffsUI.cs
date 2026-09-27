@@ -14,7 +14,7 @@ public class ActiveBuffsUI : MonoBehaviour
     [SerializeField] private Sprite impulseIcon;
     [Tooltip("Sprite for the Chain Lightning buff.")]
     [SerializeField] private Sprite lightningIcon;
-    [Tooltip("Sprite for the Berserker Rage buff.")]
+    [Tooltip("Sprite for the Rage buff.")]
     [SerializeField] private Sprite rageIcon;
     [Tooltip("Sprite for Fire Runestone imbuement (optional fallback).")]
     [SerializeField] private Sprite fireRuneIcon;

@@ -160,7 +160,7 @@ public class Health : MonoBehaviour, IDamageable
     ///     in place — each hit is a fresh <see cref="Damage" /> instance — so <see cref="OnDamaged" />
     ///     listeners (damage numbers, telemetry, knockback) all see the mitigated value. Unlike the
     ///     two negate-hooks above this one shapes damage rather than cancelling it (e.g. the
-    ///     Berserker's rage damage reduction).
+    ///     Rage buff's damage reduction).
     /// </summary>
     public event Func<Damage, float> ScaleDamageTaken;
 

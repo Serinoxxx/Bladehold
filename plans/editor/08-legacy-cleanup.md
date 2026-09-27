@@ -9,15 +9,15 @@ From [plan 08](../08-legacy-cleanup.md), 2026-09-25. Unity MCP wasn't connected,
 
 ## 2. Scene wiring
 
-- [ ] **Frozen Pass is now a tier-3 campaign node (inside the demo):** `Bladehold Frozen Pass Scene` needs 6 `TowerPlot` prefab instances (`Bladehold Prefabs/Defenses/TowerPlot.prefab`), a `TowerPlotManager`, and the build wheel + supply HUD. The castle scenes got these from `BuildCastleLevels.SetupBattlefieldTowerPlots` / `EnsureDefensesHUD`, which an agent could reuse via an editor script.
+- [x] **Frozen Pass is now a tier-3 campaign node (inside the demo):** done by an agent via MCP 2026-09-26: `Battlefield Tower Plots` root with `TowerPlotManager` + 6 `TowerPlot` prefab instances, spread along the approach from the enemy spawns to the gate and snapped to the NavMesh; the HUD prefab already carries the build wheel + supply counter. Play-checked: all 6 register, building works with no errors. **Check the placement** (agent guess). Original item: `Bladehold Frozen Pass Scene` needs 6 `TowerPlot` prefab instances (`Bladehold Prefabs/Defenses/TowerPlot.prefab`), a `TowerPlotManager`, and the build wheel + supply HUD. The castle scenes got these from `BuildCastleLevels.SetupBattlefieldTowerPlots` / `EnsureDefensesHUD`, which an agent could reuse via an editor script.
   - Verify: prep phase, `[E]` on a plot opens the build wheel, and clearing wave 5 shows a supply refund.
   - Its old Rest Area exit gate (`Station_5_ExitGate (Alpine)`) is switched off (Interactable + RestAreaGate disabled). Delete the object if it's not scenery you want.
-- [ ] **Ancient Garden is now a tier-6 node:** same wiring as Frozen Pass in `Bladehold Ancient Garden`.
-- [ ] **Both scenes:** check `GameLoopManager` has a `captainSpawnPoint`/`bossSpawnPoint` so Captain Kombusta spawns somewhere sensible (both nodes name him).
+- [x] **Ancient Garden is now a tier-6 node:** done the same way 2026-09-26. **Check the placement:** plots 1 and 3 landed on raised NavMesh (y 4.3 and 7.4). The scene also has a second, inactive `Bladehold HUD (1)`; delete it. Original item: same wiring as Frozen Pass in `Bladehold Ancient Garden`.
+- [x] **Both scenes:** done 2026-09-26: new `CaptainSpawnPoint` at the enemy spawn centroid, facing the gate, assigned to `GameLoopManager.captainSpawnPoint` (the manager sits at the origin, so the old fallback spawned him far off the map). Original: check `GameLoopManager` has a `captainSpawnPoint`/`bossSpawnPoint` so Captain Kombusta spawns somewhere sensible (both nodes name him).
 
 ## 3. UI review
 
-- [ ] **Death screen "Level Reached" row now shows the wave reached.** In `DeathScreen.prefab` → `SurvivorsStatsPanelUI`, relabel the `Level Reached` row's label text to "Wave Reached" (or hide the row).
+- [x] **Death screen "Level Reached" row now shows the wave reached.** Relabelled to "Wave Reached" 2026-09-26 (the row object keeps its name; code finds it by name). In `DeathScreen.prefab` → `SurvivorsStatsPanelUI`, relabel the `Level Reached` row's label text to "Wave Reached" (or hide the row).
 - [ ] **Empty panels left behind:** `DeathScreen.prefab` still has the old gold/Reincarnate skill-tree panel objects (now script-less and hidden), and `Bladehold HUD.prefab` still has the XP bar / level badge objects that `SurvivorsHUDUI` drove. Delete them if they're still visible or just dead weight.
 - [ ] **Sidebar tooltips** (pause-menu / death-screen acquired-skills list) now actually show on hover: name + card description. Check they read well.
 

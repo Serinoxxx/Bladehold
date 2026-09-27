@@ -35,6 +35,7 @@ public class KnockbackReceiver : MonoBehaviour
     [SerializeField] private EnemyRagdoll ragdoll;
     [SerializeField] private Animator animator;
     [SerializeField] private CapsuleCollider rootCollider;
+    [Tooltip("Optional: stationary targets (training dummies) have none; knockback just skips pausing its turning.")]
     [SerializeField] private AIMovement aiMovement;
     [SerializeField] private AIAnimation aiAnimation;
     [SerializeField] private AIAttack aiAttack;
@@ -97,9 +98,9 @@ public class KnockbackReceiver : MonoBehaviour
 
     private void Start()
     {
-        if (health == null || agent == null || ragdoll == null || animator == null || rootCollider == null || aiMovement == null || aiAnimation == null || config == null)
+        if (health == null || agent == null || ragdoll == null || animator == null || rootCollider == null || aiAnimation == null || config == null)
         {
-            Debug.LogError($"[KnockbackReceiver] Essential dependency missing on {gameObject.name} (health: {health != null}, agent: {agent != null}, ragdoll: {ragdoll != null}, animator: {animator != null}, rootCollider: {rootCollider != null}, aiMovement: {aiMovement != null}, aiAnimation: {aiAnimation != null}, config: {config != null}). Incapacitation and death reactions will not run.");
+            Debug.LogError($"[KnockbackReceiver] Essential dependency missing on {gameObject.name} (health: {health != null}, agent: {agent != null}, ragdoll: {ragdoll != null}, animator: {animator != null}, rootCollider: {rootCollider != null}, aiAnimation: {aiAnimation != null}, config: {config != null}). Incapacitation and death reactions will not run.");
             anyError = true;
             return;
         }

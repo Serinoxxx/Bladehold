@@ -179,6 +179,17 @@ public static class RunSession
     {
         if (player == null) return;
 
+        if (RunUpgradesSuspended)
+        {
+            // Base kit only (the Fishing Pond): keep the HP ratio so leaving captures the same one.
+            if (player.Health != null && PlayerHealthRatio > 0f && PlayerHealthRatio <= 1f)
+            {
+                player.Health.SetCurrentHealth(player.Health.MaxHealth * PlayerHealthRatio);
+            }
+            Debug.Log("[RunSession] Run upgrades suspended in this scene: the player keeps only the base kit.");
+            return;
+        }
+
         // 1. Reapply bonus health from Troll Hearts/shop and Armored buff fish, then the health ratio
         if (player.Health != null)
         {
@@ -387,6 +398,8 @@ public static class RunSession
     public static bool CanConsumeBuffFish => ConsumedBuffFish.Count < 3;
 
     private const float ArmoredFishMaxHealth = 10f;
+    /// <summary>Per-fish bonus from a Fire, Frost or Spark fish (0.25 = +25% of that element's own damage; Frost: vs chilled/frozen foes).</summary>
+    public const float ElementalFishDamageBonus = 0.25f;
 
     /// <summary>Max HP granted by every Armored fish eaten this run; folded in by <see cref="RestoreInRunUpgrades" />.</summary>
     public static float BuffFishBonusMaxHealth
@@ -406,7 +419,8 @@ public static class RunSession
     {
         if (ConsumedBuffFish.Count >= 3) return false;
         ConsumedBuffFish.Add(type);
-        ApplyBuffFishBonus(type, player, justEaten: true);
+        // Eaten at the pond's tally: recorded now, felt from the next scene's rehydrate on.
+        if (!RunUpgradesSuspended) ApplyBuffFishBonus(type, player, justEaten: true);
         return true;
     }
 
@@ -434,14 +448,15 @@ public static class RunSession
                     player.Health.SetCurrentHealth(current + ArmoredFishMaxHealth);
                 }
                 break;
+            // Flat, not Percent: the bonus stats have base 0, so a percent modifier would scale nothing.
             case BuffFishType.Fire:
-                stats.AddModifier(StatType.MageFireDamagePercent, ModifierKind.Percent, 0.10f);
+                stats.AddModifier(StatType.FireDamageBonus, ModifierKind.Flat, ElementalFishDamageBonus);
                 break;
             case BuffFishType.Frost:
-                stats.AddModifier(StatType.IceBreakerDamageBonus, ModifierKind.Percent, 0.10f);
+                stats.AddModifier(StatType.ChilledDamageBonus, ModifierKind.Flat, ElementalFishDamageBonus);
                 break;
             case BuffFishType.Spark:
-                stats.AddModifier(StatType.ChainLightningDamagePercent, ModifierKind.Percent, 0.10f);
+                stats.AddModifier(StatType.LightningDamageBonus, ModifierKind.Flat, ElementalFishDamageBonus);
                 break;
             case BuffFishType.Savage:
                 stats.AddModifier(StatType.AllDamageMultiplier, ModifierKind.Percent, 0.05f);
@@ -451,11 +466,26 @@ public static class RunSession
 
     public static void ReapplyBuffFishBonuses(Player player)
     {
-        if (player == null || player.Stats == null) return;
+        if (player == null || player.Stats == null || RunUpgradesSuspended) return;
         for (int i = 0; i < ConsumedBuffFish.Count; i++)
         {
             ApplyBuffFishBonus(ConsumedBuffFish[i], player);
         }
+    }
+
+    /// <summary>
+    ///     True while the loaded scene keeps the run's upgrades off the player: the Fishing Pond,
+    ///     whose <see cref="FishingManager" /> sets it in Awake and clears it in OnDestroy. The pond
+    ///     player is the bare base kit (bow forced, free arrows) plus the pond's own fishing cards;
+    ///     draft cards, elemental slots, the ultimate, combat meta perks, armour stats and eaten buff
+    ///     fish are skipped there. Nothing in RunSession is touched, so they all come back next scene.
+    /// </summary>
+    public static bool RunUpgradesSuspended { get; set; }
+
+    /// <summary>The element a player hit should carry from <paramref name="slotName" />: none while <see cref="RunUpgradesSuspended" />.</summary>
+    public static string GetActiveElement(string slotName)
+    {
+        return RunUpgradesSuspended ? "" : GetElementInSlot(slotName);
     }
 
     public static string GetElementInSlot(string slotName)

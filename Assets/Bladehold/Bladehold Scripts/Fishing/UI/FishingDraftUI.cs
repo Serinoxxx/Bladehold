@@ -20,6 +20,7 @@ public class FishingDraftUI : MonoBehaviour
         public TMP_Text levelText;
         public TMP_Text descText;
         public Button selectButton;
+        public Image iconImage;
     }
 
     private const string CursorOwner = "FishingDraft";
@@ -27,6 +28,9 @@ public class FishingDraftUI : MonoBehaviour
     [Header("Modal Overlay")]
     [SerializeField] private GameObject modalPanel;
     [SerializeField] private CardSlotUI[] cardSlots = new CardSlotUI[3];
+
+    [Header("Icons")]
+    [SerializeField] private SkillTreeIconsSO iconsConfig;
 
     private List<FishingUpgradeCardInfo> currentChoices = new List<FishingUpgradeCardInfo>();
     private int pendingDrafts;
@@ -51,6 +55,11 @@ public class FishingDraftUI : MonoBehaviour
 
     private void Start()
     {
+        if (iconsConfig == null)
+        {
+            iconsConfig = Resources.Load<SkillTreeIconsSO>("SkillTreeIcons");
+        }
+
         if (modalPanel == null)
         {
             Debug.LogError("[FishingDraftUI] modalPanel is not assigned.", this);
@@ -63,6 +72,14 @@ public class FishingDraftUI : MonoBehaviour
             {
                 Debug.LogError($"[FishingDraftUI] Card slot {i} is missing its root or selectButton.", this);
                 anyError = true;
+            }
+            else if (cardSlots[i].iconImage == null)
+            {
+                Transform iconT = cardSlots[i].root.transform.Find("Icon");
+                if (iconT != null)
+                {
+                    cardSlots[i].iconImage = iconT.GetComponent<Image>();
+                }
             }
         }
     }
@@ -115,6 +132,14 @@ public class FishingDraftUI : MonoBehaviour
                 if (cardSlots[i].titleText != null) cardSlots[i].titleText.text = choice.title;
                 if (cardSlots[i].levelText != null) cardSlots[i].levelText.text = $"Tier {choice.currentLevel + 1}/{choice.maxLevel}";
                 if (cardSlots[i].descText != null) cardSlots[i].descText.text = choice.description;
+
+                if (cardSlots[i].iconImage != null)
+                {
+                    string iconName = GetUpgradeIconName(choice.type);
+                    Sprite iconSprite = iconsConfig != null ? iconsConfig.GetIcon(iconName) : null;
+                    cardSlots[i].iconImage.sprite = iconSprite;
+                    cardSlots[i].iconImage.gameObject.SetActive(iconSprite != null);
+                }
             }
             else
             {
@@ -156,4 +181,16 @@ public class FishingDraftUI : MonoBehaviour
         CursorLockManager.SetUnlock(CursorOwner, false);
         Time.timeScale = 1f;
     }
+
+    public static string GetUpgradeIconName(FishingUpgradeType type) => type switch
+    {
+        FishingUpgradeType.BounceShot => "bounce_shot",
+        FishingUpgradeType.Fishsploshion => "fishsploshion",
+        FishingUpgradeType.IceyWater => "icey_water",
+        FishingUpgradeType.FishSkewer => "fish_skewer",
+        FishingUpgradeType.Bleed => "bleed",
+        FishingUpgradeType.FatFish => "fat_fish",
+        FishingUpgradeType.ChainReaction => "chain_reaction",
+        _ => null
+    };
 }

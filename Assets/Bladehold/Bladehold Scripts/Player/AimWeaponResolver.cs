@@ -1,9 +1,9 @@
 /// <summary>
 ///     Shared resolution for which hold-aim weapon the aim presentation (<see cref="BowAimCamera" />,
 ///     <see cref="BowCrosshairUI" />, <see cref="BowReloadUI" />) should poll: the serialized bow
-///     while it's the active class's weapon (still enabled), else whatever
-///     <see cref="IChargedAimWeapon" /> the class controller activated (the Berserker's thrown axe),
-///     else the bow found on the player — legacy wiring without a class controller, where even a
+///     while it's the equipped ranged weapon (still enabled), else whatever
+///     <see cref="IChargedAimWeapon" /> <see cref="PlayerWeaponManager" /> equipped (the thrown axe or wand),
+///     else the bow found on the player — legacy wiring without a weapon manager, where even a
 ///     disabled bow is a valid poll target (its IsAiming just stays false).
 /// </summary>
 public static class AimWeaponResolver

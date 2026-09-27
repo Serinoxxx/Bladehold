@@ -201,7 +201,8 @@ public class PlayerArmourManager : MonoBehaviour
 
     private void ApplyModifiers(ArmourSetSO set)
     {
-        if (stats == null || set == null || set.statModifiers == null) return;
+        // The armour is worn in the Fishing Pond, but its stats stay off (RemoveCurrentModifiers only undoes what was applied).
+        if (stats == null || set == null || set.statModifiers == null || RunSession.RunUpgradesSuspended) return;
         foreach (var mod in set.statModifiers)
         {
             stats.AddModifier(mod.stat, mod.kind, mod.amount);

@@ -31,6 +31,10 @@ dotnet run --project "C:/Users/lance/source/repos/My project/.claude/skills/gene
 
 The output is `<baseName>_Clean.png` (transparent white, the default card/HUD sprite), `_Stroke` (dark outline ribbon), `_Underlay` (soft drop shadow), `_Embossed` (raised), `_Sunken` (inset, e.g. locked states) and `<baseName>.svg`. Match existing names: lowercase snake_case like `axe_boomerang`, with the draft card's `icon` value as the base name.
 
+## Step 2.5: Present to Lance via `/present-icon-gallery`
+
+Never present icons to Lance using raw markdown image links (`![...](C:\...)`) because mobile clients cannot resolve local Windows desktop paths. Always build a mobile-ready, self-contained Base64 HTML gallery via the `present-icon-gallery` skill (`python ".claude/skills/present-icon-gallery/scripts/build_icon_gallery.py" ...`) and embed it in chat with `<agent-embed>`. Wait for Lance's review and approval before proceeding to Step 3.
+
 ## Step 3: import and register
 
 1. Copy the variants you need into the project: `_Clean.png` → `Assets/Bladehold/Art/Icons/Skills/Base/<baseName>.png` (existing files there carry no suffix), SVG → `.../Skills/SVG/`. Don't write into `Assets/Synty/` (vendored).

@@ -165,9 +165,9 @@ public class FishingTallyUI : MonoBehaviour
     {
         BuffFishType.Speedy => "+10% Move Speed",
         BuffFishType.Armored => "+10 Max HP",
-        BuffFishType.Fire => "+10% Fire Damage",
-        BuffFishType.Frost => "+10% Frost Damage",
-        BuffFishType.Spark => "+10% Lightning Damage",
+        BuffFishType.Fire => $"+{RunSession.ElementalFishDamageBonus * 100f:0}% Fire Damage",
+        BuffFishType.Frost => $"+{RunSession.ElementalFishDamageBonus * 100f:0}% Damage vs Chilled",
+        BuffFishType.Spark => $"+{RunSession.ElementalFishDamageBonus * 100f:0}% Lightning Damage",
         BuffFishType.Savage => "+5% ALL Damage",
         _ => ""
     };

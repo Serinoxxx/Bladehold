@@ -163,6 +163,12 @@ public class WeaponPedestal : MonoBehaviour
         spawnedModel = Instantiate(weaponData.modelPrefab, modelMountPoint);
         spawnedModel.transform.localPosition = Vector3.zero;
         spawnedModel.transform.localRotation = Quaternion.identity;
+
+        // modelPrefab is the equippable weapon, so it carries combat components that expect a wielder.
+        // Switch them off before their Start runs; the pedestal only needs the renderers.
+        foreach (DamageTrigger trigger in spawnedModel.GetComponentsInChildren<DamageTrigger>(true)) trigger.enabled = false;
+        foreach (SwordChargeFeedback charge in spawnedModel.GetComponentsInChildren<SwordChargeFeedback>(true)) charge.enabled = false;
+        foreach (Collider col in spawnedModel.GetComponentsInChildren<Collider>(true)) col.enabled = false;
     }
 
     public void RefreshPedestal()

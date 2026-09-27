@@ -264,7 +264,7 @@ public class BatteringRam : MonoBehaviour
                 // Ensure it's an enemy (not player, horse, or friendly structure)
                 if (enemyHealth.GetComponent<AITargetSelector>() != null ||
                     enemyHealth.GetComponent<AIMovement>() != null ||
-                    col.CompareTag("Enemy"))
+                    col.gameObject.layer == LayerMask.NameToLayer("Enemy"))
                 {
                     pusherCount++;
                 }

@@ -261,6 +261,14 @@ public class DraftUpgradeService : MonoBehaviour
     /// <summary>
     ///     Resolves a sprite icon for the given icon asset name.
     /// </summary>
+    /// <summary>Icon tint for an elemental card's element (see <see cref="SkillTreeIconsSO.TryGetElementTint" />).</summary>
+    public bool TryGetElementIconTint(string element, out Color tint)
+    {
+        EnsureInitialized();
+        tint = Color.white;
+        return iconsConfig != null && iconsConfig.TryGetElementTint(element, out tint);
+    }
+
     public Sprite GetIcon(string iconName)
     {
         if (string.IsNullOrEmpty(iconName)) return null;
@@ -394,7 +402,7 @@ public class DraftUpgradeService : MonoBehaviour
                 RunSession.ActiveUltimateId = def.id;
                 player.Stats.SetBase(StatType.UltimateUnlocked, 1f);
 
-                PlayerUltimateController ultCtrl = player.GetComponentInChildren<PlayerUltimateController>();
+                PlayerUltimateController ultCtrl = player.transform.root.GetComponentInChildren<PlayerUltimateController>(true);
                 if (ultCtrl != null)
                 {
                     ConfigureUltimateHandler(player, def.id);
@@ -726,6 +734,7 @@ public class DraftUpgradeService : MonoBehaviour
             upgradeText = def.upgradeText,
             maxLevel = def.maxLevel,
             iconName = def.iconName,
+            element = def.category == DraftCategory.Elemental ? def.element ?? "" : "",
             isCard = true,
             isMeta = false,
             isActiveWeapon = def.isUltimate,

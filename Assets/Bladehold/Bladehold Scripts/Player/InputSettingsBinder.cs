@@ -96,7 +96,8 @@ public class InputSettingsBinder : MonoBehaviour
     /// <summary>The vendored Controls asset's Player action map, for enumerating/rebinding bindings.</summary>
     public InputActionMap GetRebindableActionMap()
     {
-        if (anyError) return null;
+        // Callers on the Player root can run OnEnable before this child's Awake; they retry from Start.
+        if (anyError || controlsField == null || inputReader == null) return null;
         Controls controls = (Controls)controlsField.GetValue(inputReader);
         return controls?.Player.Get();
     }

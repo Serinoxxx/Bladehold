@@ -56,7 +56,7 @@ Reviewed from code and the scene YAML. There was no Unity MCP this session, so n
   - Prefab-based draft card (×3 from data) and tally modal with a buff-fish button prefab (Synty UI, Texturina/Grenze).
   - MMF players for thump/horn/time-up/catch/shoot/hit-flash/death/countdown punch.
   - Then delete every fallback in finding 15.
-- [ ] **B. Buff fish stats:** Lance picks what Fire/Frost/Spark boost in the draft element system; point `RunSession.ApplyBuffFishBonus` at those stats.
+- [x] **B. Buff fish stats** (2026-09-27, Lance): each Fire/Frost/Spark fish adds +25% (`RunSession.ElementalFishDamageBonus`) as a flat modifier on new `FireDamageBonus` / `ChilledDamageBonus` / `LightningDamageBonus` stats (base 0, `Player.cs`). Fire scales only the damage Fire adds (draft charge explosion, burn ticks, Blazing Trail); Spark scales the draft lightning chain and Static Edge; Frost raises all player damage to chilled or frozen enemies (`EnemyStatusManager.HandleScaleDamageTaken`). The old targets (Mage imbuement, a zero-base Ice Breaker, the legacy chain buff) did nothing.
 - [ ] **C. Controller:** move the pond start onto an `InputReader` action (or an `[E]` `IInteractable` start post), and drop the raw mouse polling in `FishingBowController`.
 
 ## Needs Lance in the Editor

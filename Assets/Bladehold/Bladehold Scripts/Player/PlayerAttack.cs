@@ -318,12 +318,12 @@ public class PlayerAttack : MonoBehaviour
 
     private void HandlePressed()
     {
-        if (anyError) return;
+        if (anyError || !SceneAbilityRules.MeleeAllowed) return;
 
         // While whirlwind is active on the equipped melee weapon, melee hold-to-charge is skipped
         if (PlayerWeaponManager.Instance != null && PlayerWeaponManager.Instance.ActiveMeleeTrigger != null && PlayerWeaponManager.Instance.ActiveMeleeTrigger.IsWhirlwindActive) return;
 
-        // While the active class's aim weapon (bow/axe/wand) is drawn, this press fires it instead
+        // While the equipped aim weapon (bow/axe/wand) is drawn, this press fires it instead
         IChargedAimWeapon aimWeapon = PlayerWeaponManager.Instance != null ? PlayerWeaponManager.Instance.ActiveAimWeapon : null;
         if (aimWeapon != null && aimWeapon.IsAiming) return;
 

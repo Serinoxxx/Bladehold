@@ -207,6 +207,28 @@ public class SurvivorsCardSelectUI : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    ///     The icon tint for a card's element (Fire/Ice/Lightning) from the icons asset, or null to keep the
+    ///     card's default icon colour.
+    /// </summary>
+    public Color? ResolveIconTint(string element)
+    {
+        if (string.IsNullOrEmpty(element)) return null;
+
+        if (iconsConfig != null)
+        {
+            return iconsConfig.TryGetElementTint(element, out Color tint) ? tint : (Color?)null;
+        }
+
+        DraftUpgradeService draftService = DraftUpgradeService.Instance ?? DraftUpgradeService.GetOrCreateInstance();
+        if (draftService != null && draftService.TryGetElementIconTint(element, out Color serviceTint))
+        {
+            return serviceTint;
+        }
+
+        return null;
+    }
+
     private void PopulateCards(List<SkillNode> offeredNodes)
     {
         for (int i = 0; i < cards.Length; i++)
@@ -230,7 +252,8 @@ public class SurvivorsCardSelectUI : MonoBehaviour
                     icon,
                     () => OnCardClicked(index),
                     () => OnCardBanished(index),
-                    canBanish: !hasBanishedThisDraft);
+                    canBanish: !hasBanishedThisDraft,
+                    iconTint: ResolveIconTint(node.element));
             }
             else
             {

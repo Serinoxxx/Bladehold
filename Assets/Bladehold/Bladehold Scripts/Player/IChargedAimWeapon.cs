@@ -1,8 +1,8 @@
 /// <summary>
-///     A hold-aim, charge-up, fire-on-attack weapon — the Swordsman's <see cref="PlayerBow" /> and the
-///     Berserker's <see cref="PlayerThrownAxe" />. Lets the shared aim presentation
+///     A hold-aim, charge-up, fire-on-attack ranged weapon — <see cref="PlayerBow" />,
+///     <see cref="PlayerThrownAxe" /> and <see cref="PlayerWand" />. Lets the shared aim presentation
 ///     (<see cref="BowAimCamera" />, <see cref="BowCrosshairUI" />, <see cref="BowReloadUI" />) poll
-///     whichever weapon the active class carries without knowing its concrete type; they resolve it
+///     whichever ranged weapon is equipped without knowing its concrete type; they resolve it
 ///     from a serialized <see cref="PlayerBow" /> (legacy wiring) or
 ///     <see cref="PlayerWeaponManager.ActiveAimWeapon" />. The aim-camera framing values live on
 ///     each weapon's own SO and are surfaced here so the camera needs no per-weapon config reference.

@@ -38,6 +38,14 @@ public class UltimateBarUI : MonoBehaviour
 
     private void Start()
     {
+        // Scenes whose SceneAbilityRules block the ultimate (the Fishing Pond) hide the bar; the
+        // charge itself is untouched and shows again next scene.
+        if (!SceneAbilityRules.UltimateAllowed)
+        {
+            gameObject.SetActive(false);
+            return;
+        }
+
         TryBindController();
         UpdateInputText();
     }

@@ -4,7 +4,7 @@ From [plan 05](../05-balance-tree-editor-review.md), 2026-09-25. Unity MCP wasn'
 
 ## 1. Verify first (10 min)
 
-- [ ] **It opens.** **Bladehold > Balance Tree Editor** (F1). You should see lanes, left to right: weapons/elements/towers | weapon cards | elemental cards | fortress cards | stats | armour/mounts/perks. The console should stay clean.
+- [x] **It opens.** Checked by an agent via MCP 2026-09-26: opens, no console errors. **Bladehold > Balance Tree Editor** (F1). You should see lanes, left to right: weapons/elements/towers | weapon cards | elemental cards | fortress cards | stats | armour/mounts/perks. The console should stay clean.
 - [ ] **Acceptance: sword + fire.**
   - Set **Weapon: sword** and **Element: Fire**. You should get the 5 sword cards, the Fire cards (including Thermal Shock and Plasma Overload), their stats, and the Arrow Tower and Catapult on the fire tower cards.
   - Select Lunge Mastery, change `amount` `2.0;0.40` → `2.5;0.40`, press Enter, then **Save**.

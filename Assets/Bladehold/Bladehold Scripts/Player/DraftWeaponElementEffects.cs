@@ -75,14 +75,15 @@ public class DraftWeaponElementEffects : MonoBehaviour
         {
             chainLightning.ForceChain(damage.value, hitPoint, target,
                 Mathf.Max(0, Mathf.RoundToInt(stats.GetValue(StatType.WeaponLightningBounces))),
-                Mathf.Max(0f, stats.GetValue(StatType.WeaponLightningDamagePercent)));
+                Mathf.Max(0f, stats.GetValue(StatType.WeaponLightningDamagePercent)) * (1f + Mathf.Max(0f, stats.GetValue(StatType.LightningDamageBonus))));
         }
     }
 
     private void Explode(IDamageable target, Damage damage, Vector3 hitPoint)
     {
         float radius = stats.GetValue(StatType.WeaponFireExplosionRadius);
-        float value = damage.value * stats.GetValue(StatType.WeaponFireExplosionDamagePercent);
+        float value = damage.value * stats.GetValue(StatType.WeaponFireExplosionDamagePercent)
+            * (1f + Mathf.Max(0f, stats.GetValue(StatType.FireDamageBonus)));
         if (radius <= 0f || value <= 0f) return;
 
         int count;

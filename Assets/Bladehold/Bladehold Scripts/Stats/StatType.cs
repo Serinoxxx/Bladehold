@@ -166,7 +166,7 @@ public enum StatType
     /// <summary>Seconds of cooldown recovered per enemy killed by the dodge dash.</summary>
     DodgeChainCooldownReduction,
 
-    /// <summary>1 = the Berserker's throwing axe is unlocked and can be wound up (hold aim); 0 = locked (aiming does nothing, melee stays out). Gated by the "Throwing Axe" node — the BowUnlocked convention.</summary>
+    /// <summary>1 = the throwing axe is unlocked and can be wound up (hold aim); 0 = locked (aiming does nothing, melee stays out). Gated by the "Throwing Axe" node — the BowUnlocked convention.</summary>
     AxeThrowUnlocked,
     /// <summary>Damage of one throw per enemy hit, before charge/crit/multipliers. Base comes from ThrownAxeSO.baseDamage.</summary>
     AxeThrowDamage,
@@ -180,12 +180,12 @@ public enum StatType
     AxeThrowPierceCount,
     /// <summary>Width of the throw's flight path in metres — the projectile's swept damage diameter; enemies within it count as hit (the "Wide Arc" area line).</summary>
     AxeThrowWidth,
-    /// <summary>1 = the thrown axe boomerangs: after striking terrain, spending its pierce, or reaching max range it flies back to the Berserker, damaging enemies on the return leg too (fresh pierce budget). 0 = locked — the axe lodges where it stops. Gated by the "Boomerang" node.</summary>
+    /// <summary>1 = the thrown axe boomerangs: after striking terrain, spending its pierce, or reaching max range it flies back to the player, damaging enemies on the return leg too (fresh pierce budget). 0 = locked — the axe lodges where it stops. Gated by the "Boomerang" node.</summary>
     AxeBoomerangUnlocked,
 
-    /// <summary>Fraction of damage taken while charging a melee swing or winding up a throw that's banked and added flat to that attack's damage (the Berserker's "Pain into Power" line). 0 = locked.</summary>
+    /// <summary>Fraction of damage taken while charging a melee swing or winding up a throw that's banked and added flat to that attack's damage (the "Pain into Power" line). 0 = locked.</summary>
     PainIntoPowerPercent,
-    /// <summary>Unitless multiplier on how fast the Berserker's rage builds from dealing/taking damage (base 1.0, the MoveSpeed convention — see RageBuff).</summary>
+    /// <summary>Unitless multiplier on how fast rage builds from dealing/taking damage (base 1.0, the MoveSpeed convention — see RageBuff).</summary>
     RageGainMultiplier,
     /// <summary>Unitless multiplier on how long rage lingers: scales the decay grace window up and the drain rate down (base 1.0).</summary>
     RageRetentionMultiplier,
@@ -238,9 +238,9 @@ public enum StatType
     UltimateMageMeteorDamageMultiplier,
     /// <summary>Mage Ultimate landing explosion radius.</summary>
     UltimateMageLandingExplosionRadius,
-    /// <summary>Berserker Ultimate size multiplier (base 1.5).</summary>
+    /// <summary>Whirlwind ultimate (BerserkerUltimate) size multiplier (base 1.5).</summary>
     UltimateBerserkerSizeMultiplier,
-    /// <summary>Berserker Ultimate damage reduction fraction (0-1).</summary>
+    /// <summary>Whirlwind ultimate (BerserkerUltimate) damage reduction fraction (0-1).</summary>
     UltimateBerserkerDamageReduction,
     /// <summary>Amount of ultimate charge gained passively per second.</summary>
     UltimatePassiveChargeRate,
@@ -395,6 +395,14 @@ public enum StatType
     TowerFireArrows,
     TowerArrowDamageBonus,
     TowerRollingFireball,
+
+    // --- Elemental damage bonuses (base 0; raised by elemental buff fish) ---
+    /// <summary>Extra fraction of the damage Fire itself adds: draft charge explosions, burn ticks and Blazing Trail (0.25 = +25%).</summary>
+    FireDamageBonus,
+    /// <summary>Extra fraction of the damage Lightning itself adds: draft charge chains and Static Edge (0.25 = +25%).</summary>
+    LightningDamageBonus,
+    /// <summary>Extra fraction of all player damage dealt to enemies that are chilled or frozen (0.25 = +25%).</summary>
+    ChilledDamageBonus,
 }
 
 /// <summary>

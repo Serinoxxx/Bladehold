@@ -98,7 +98,7 @@ public class KillRemainingEnemiesObjective : MonoBehaviour, ISurvivorsObjective
                 bool isEnemy = h.GetComponent<AIMovement>() != null ||
                                h.GetComponent<AITargetSelector>() != null ||
                                h.GetComponent<UnityEngine.AI.NavMeshAgent>() != null ||
-                               h.CompareTag("Enemy") ||
+                               h.gameObject.layer == LayerMask.NameToLayer("Enemy") ||
                                h.gameObject.name.StartsWith("Test_RemainingEnemy");
 
                 if (isEnemy)

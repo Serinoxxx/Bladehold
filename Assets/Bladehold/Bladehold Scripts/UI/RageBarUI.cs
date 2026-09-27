@@ -4,7 +4,7 @@ using TMPro;
 using UnityEngine;
 
 /// <summary>
-///     HUD bar for the Berserker's rage meter. Polls <see cref="RageBuff.RageFraction" /> every frame
+///     HUD bar for the rage meter. Polls <see cref="RageBuff.RageFraction" /> every frame
 ///     (rage decays continuously — the <see cref="SwordChargeFeedback" /> polling pattern) and drives
 ///     an <see cref="MMProgressBar" /> plus an optional TMP label. Class-conditional by design: when the
 ///     player has no enabled <see cref="RageBuff" /> (the Swordsman), the whole object hides itself.

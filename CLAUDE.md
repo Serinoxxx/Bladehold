@@ -1,135 +1,65 @@
 # CLAUDE.md
 
-**Source of truth for all coding agents on this repo.** `.agents/AGENTS.md` (Antigravity) points here. Update this file, not that one.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Overview
 
-Unity 6 game, codenamed **Bladehold**. A 3D action roguelite: one hero, a melee + ranged loadout, fighting goblin hordes across a branching castle campaign while building tower defences between waves. URP, new Input System, NavMesh AI. Editor version is pinned in `ProjectSettings/ProjectVersion.txt` (currently `6000.3.10f1`), open with exactly that.
+Unity 6 game project, codenamed **Bladehold**. A 3D action game built on Unity's Universal Render Pipeline (URP) with the new Input System and NavMesh-based AI. The player fights waves of melee goblins, earns gold, and dies/restarts. Unity Editor version is pinned in `ProjectSettings/ProjectVersion.txt` (currently `6000.3.10f1`) â€” open with exactly this version.
 
-**Target: Steam Next Fest, Feb 27 2027** (moved from Oct 2026; `STEAM_NEXT_FEST_PLAN.md` still has the old dates).
+## Building, running, and testing
 
-> This doc is a map, not an inventory. Grep `Assets/Bladehold/Bladehold Scripts/` before concluding something doesn't exist, and trust code over docs. Deeper notes live in nested `CLAUDE.md` files next to the code (see the list at the bottom).
+There is no command-line build script. Day-to-day work happens in the Unity Editor:
 
-## The game loop (current)
+- **Open the project**: open the project folder in Unity Hub with the matching Editor version.
+- **Play / run**: enter Play mode in the Editor. The actual gameplay scene is `Assets/Bladehold/Bladehold Scenes/Bladehold Test Scene.unity` (renamed/moved 2026-07-08 from the vendored Synty `Demo_01_Sidekick.unity` sample â€” same scene GUID, contains `WaveSpawner`, the Player prefab instance, HUD canvas, and baked NavMesh). `ProjectSettings/EditorBuildSettings.asset` still points at the old, now-deleted `Assets/Scenes/SampleScene.unity` and needs re-pointing at the new scene in File > Build Profiles.
+- **Build a player**: File > Build Profiles / Build Settings. URP renderers are pre-configured for two targets â€” `Assets/Settings/PC_Renderer.asset` and `Assets/Settings/Mobile_Renderer.asset`.
+- **Tests**: `com.unity.test-framework` is installed. Run via the Editor's **Test Runner** window (Window > General > Test Runner). There are no test assemblies in `Assets/` yet â€” a new one needs its own `.asmdef` to be picked up.
 
-0. **Main Menu** (`MainMenu`, build index 0, `UI/MainMenu/MainMenuManager.cs`): Start → Meta Area, Settings, Quit. Pause → Quit returns here.
-1. **Meta Area** (`Bladehold Meta Area Scene`) is the hub. Spend permanent currencies:
-   - **Goblin Blood** on 3-tier perks at the Spirit NPC (`UI/Meta/MetaUpgradesUI.cs`, `MetaPerkDefinitionSO` assets in `Bladehold Config/MetaPerks/`). Tier 2/3 unlock with Orcish Metal.
-   - **Orcish Metal** on weapon and armour pedestals (`UI/Meta/WeaponPedestal.cs`, `ArmourPedestal.cs`). Mount pedestals (`MountPedestal.cs`) are **not implemented yet**.
-   - **Battle Portal** (`UI/Meta/BattlePortal.cs`) wipes run state, starts a fresh campaign run and opens the Campaign Map.
-2. **Campaign Map** (`Bladehold Campaign Map Scene`, `Campaign/`): an 8-tier branching node graph. Node types: Combat sectors (castle scenes, each with a difficulty tier + named captain), Fishing Ponds, Rest Areas, a PreBoss sector, then the Crypt (Necromancer choice: Obey → Princess boss, Defy → Necromancer boss). See `Campaign/CLAUDE.md`.
-3. **Combat sector** (any battle scene: the castle scenes, `Frozen Pass` (tier 3), `Ancient Garden` (tier 6) and `Bladehold Survivors Scene`, which despite the name is just one of the battles). 5 waves, each preceded by a war-banner pick + tower-building prep phase. Sectors deeper in the campaign (node `tierIndex` = threat level) unlock more enemy types via the roster's `minThreat` column and grow kill quotas, with goblins kept at 60%+ of every wave. Clear wave 5 → towers are dismantled for supply (remaining supply + upgrade spend) → victory screen → back to the map. Towers never carry between sectors. See `Waves/CLAUDE.md` and `Fort/CLAUDE.md`.
-4. **Between sectors**, run state rides in the static `Economy/RunSession.cs`: HP ratio, in-run gold, supply, ammo, draft levels, ultimate + charge, buff fish, campaign node state.
-5. **Death** → defeat screen (one button) → back to the Meta Area; the run is wiped (`RunSession.ClearRun()`). Permanent currencies are kept. No retry, and no voluntary exit from the map: the only ways home are death or campaign end.
-
-### Currencies
-
-| Currency | Where | Persistence | Spent on |
-|---|---|---|---|
-| Gold | `RunSession.InRunGold` | Run only | Rest Area shop |
-| Supply | `RunSession.InRunSupply` | Run only | Building/refilling/upgrading towers |
-| Goblin Blood | `SaveData.goblinBlood` | Permanent | Meta perks |
-| Orcish Metal | `SaveData.orcishMetal` | Permanent | Weapon/armour/mount unlocks, perk tiers |
-| Diamond Fish Bones | `SaveData.diamondFishBones` | Permanent, rare (fishing) | Planned: fishing spear weapon + fisherman's armour set (not implemented) |
-
-### Player kit
-
-- **Loadout** (`Player/PlayerWeaponManager.cs`, `WeaponDefinitionSO` assets in `Bladehold Config/Weapons/`): 1 melee (sword, axe, mace) + 1 ranged (bow, throwing axe). Sword + bow are free; the rest cost Orcish Metal.
-- Hold-to-charge attacks (`PlayerAttack`), dash with charges (`PlayerDodge`), shared ranged ammo pool (`PlayerAmmo`, synced through `RunSession.CurrentAmmo`), armour sets (`PlayerArmourManager` + `ArmourSetSO`).
-- **Ultimates** (`PlayerUltimateController` + `IUltimateHandler` implementations): locked until the weapon's ultimate draft card is picked, one per run.
-- **Mounts** (`Player/PlayerSummonMount.cs`, `Horse/MountDefinitionSO`): summon is gated by `StatType.SummonMountUnlocked`, which nothing raises yet, and it's bound to the Synty `Dismount` action (Q / pad East), not X.
-- **Interaction** is `[E]` / gamepad west via `Player/PlayerInteraction.cs` + `IInteractable`.
-
-### In-run progression
-
-- **Drafts** (`Upgrades/DraftUpgradeService.cs`, `Assets/Bladehold/Resources/DraftUpgrades.csv`): 3-card picks. Categories are `Weapon` (only cards for your equipped weapons, including `isUltimate` cards) and `Elemental`. Triggered by the war-banner wave bounty and the Rest Area Draft Station. Cards reach the UI as `SkillNode`s (a name left over from the deleted gold tree).
-- **Rest Area** (`Bladehold Rest Area Scene`, `UI/RestArea/`): Well, Shop (`ShopUI`, items in `Bladehold Config/ShopItems/`), Draft Station, gate back to the map.
-- **Fishing Pond** (`Fishing/`, spec in `docs/FishingMinigameSpec.md`): 60s Fishing Frenzy with its own draft cards; pays currencies and lets you eat buff fish (max 3 per run).
-
-## Design direction (decided, not yet built)
-
-Build towards these; don't "fix" code back to the old behaviour.
-
-- **Mount summon is available from the start** on **X**, keeping the cast time, ride duration and cooldown. The *variants* (Frost Strider etc.) show on pedestals but are locked for the demo.
-- **Fishing Pond is just you and your bow:** no mount summon and no ultimate there.
-- **Demo scope:** the full loop, but restricted to limited weapons/armours/mounts and **tier-1 meta perks only**, with the campaign cut off after tier 4. The aim is for players to die a few times and go round the meta loop. All of it is driven by `Demo/DemoConfigSO` (`Resources/DemoConfig.asset`); untick `demoEnabled` for the full game. Gate new content through its static helpers, never with per-asset flags.
-
-## Building, running, testing
-
-- No command-line build. Work in the Editor; enter Play mode from `MainMenu` (or `Bladehold Meta Area Scene`) for the real flow, or open any battle scene directly.
-- All live scenes are in `Assets/Bladehold/Bladehold Scenes/` and registered in `ProjectSettings/EditorBuildSettings.asset`. New scenes go there. The castle, crypt and sanctuary scenes are **binary-serialized** (can't be grepped); they were generated by `Editor/BuildCastleLevels.cs`, `BuildNecromancerCryptScene.cs` and `BuildPrincessSanctuaryScene.cs`.
-- `.csproj`/`.slnx` are generated by Unity. Never hand-edit them.
-- **Compile check**: run `dotnet build` after C# changes (the `compile-check` skill covers the new-file registration trap). Lance runs tests himself unless he asks.
-- **Mechanic regression suite**: `Editor/WeaponReachBenchmark.cs`, menu **Bladehold/Benchmarks/Run Weapon Reach & Damage Benchmark**, logs `N PASSED | M FAILED`.
-- **DevConsole** (`Debug/DevConsole.cs`, backquote key): draft cards, currencies, loadout cycling, wave/objective controls, enemy spawns, scene loads, combat scenarios.
-- **Unity MCP** (CoplayDev unity-mcp) can drive the live Editor when connected. See the `unity-editor-mcp` skill.
+The `.csproj` and `.slnx` files are **generated by Unity** for IDE integration (Rider / Visual Studio). Do not hand-edit them; edit code under `Assets/` and let Unity regenerate. C# compiles automatically on focus/save in the Editor.
 
 ## Source control
 
-- **Commit and push directly to `main`.** Solo project, no feature branches or PRs unless asked. This overrides the global "never work on main" rule.
-- Commit as **`serinoxxx <lancemclachlan@gmail.com>`** (set in the repo's local git config).
-- `CHANGELOG.md` holds player-facing release notes per `bundleVersion` (`ProjectSettings/ProjectSettings.asset`), grouped as New Features / Fixes / Balance Changes / General Changes. Plain language, no internal names.
-- **Pushing headless**: GitHub auth routes through the `gh` CLI (Git Credential Manager pops a GUI and hangs). `gh` is installed at `C:\Program Files\GitHub CLI\gh.exe`; a session started before the install won't have it on PATH, so restart or use the full path. Setup/repair: `gh auth login --hostname github.com --git-protocol https --web` (as **Serinoxxx**), then `gh auth setup-git`.
+**Commit and push directly to `main`.** This is a solo project â€” do not create feature branches or open PRs unless explicitly asked. When the user says "commit and push" (or similar), commit straight onto `main` and push to `origin/main`.
+
+**Pushing from a non-interactive session:** Git Credential Manager (`credential.helper=manager`) is the global default and pops a GUI, so a plain `git push` will **hang** in a headless/agent session. This is worked around by a github.com-specific helper chain in global config â€” an empty reset entry followed by `!gh auth git-credential` â€” so GitHub auth routes through the `gh` CLI's keyring token (no GUI) while other hosts still use GCM. Plain `git push` should just work. If it starts hanging again (e.g. the gh token expired), re-auth with `gh auth login`. To re-apply the config from scratch:
+```
+git config --global --unset-all "credential.https://github.com.helper"
+git config --global --add "credential.https://github.com.helper" ""
+git config --global --add "credential.https://github.com.helper" "!gh auth git-credential"
+```
+One-off bypass without touching config: `git -c credential.helper= -c credential.helper='!gh auth git-credential' push origin main`.
 
 ## Unity Editor wiring tasks
 
-**`TODO.md` is Lance's personal list. Agents never write to it.** When a change needs Editor-only work (SO assets, prefab/scene wiring, animator/clip work, art/audio, UI review), do it via Unity MCP if connected. Anything left over goes in a **"Needs Lance in the Editor"** section at the end of your session summary, and in that plan's own checklist file **`plans/editor/NN-<topic>.md`** (one file per plan; the plan's "Needs Lance in the Editor" section just links to it). Keep it short: what, where, and how to verify. Lance ticks items off and deletes the file when it's empty.
-
-## Code layout
-
-- First-party code lives **only** in `Assets/Bladehold/Bladehold Scripts/` (note the space). Key folders: `Campaign/`, `Waves/` (incl. `Banners/`), `Objectives/`, `Fort/`, `Economy/`, `Player/`, `Horse/`, `Enemies/`, `Bosses/`, `DamageSystem/`, `Upgrades/`, `Stats/`, `Fishing/`, `UI/` (incl. `Meta/`, `RestArea/`, `Transitions/`), `Save/`, `Debug/`, `Editor/`.
-- Designer data: `Assets/Bladehold/Config/Enemies.csv`, `Assets/Bladehold/Resources/DraftUpgrades.csv`, SO assets under `Assets/Bladehold/Bladehold Config/`.
-- No `.asmdef` for game code; everything compiles into `Assembly-CSharp`.
-- Vendored, don't modify: `Assets/Third Party/` (Synty incl. the active player controller, Feel (`MMF_Player`), LeanTween, DamageNumbersPro, Wingman, Kevin Iglesias), `Assets/Synty/`, `Assets/AssetInventory/`.
-- **Player controller** is Synty's `SamplePlayerAnimationController` + `InputReader`, not StarterAssets. New gameplay inputs go in the Synty map (`Assets/Third Party/Synty/AnimationBaseLocomotion/Samples/Scripts/InputSystem/Controls.inputactions`), then satisfy the new interface methods in `InputReader.cs`. Don't use `Assets/InputSystem_Actions.inputactions` for gameplay.
-
-## Conventions
-
-- **`Health` is the hub; dependencies point inward.** `Health` raises `OnDied` (once) and `OnDamaged(Damage)` and knows nothing about listeners. Reactions (death anims, loot, scoring, UI, wave tracking) are separate components that subscribe, and unsubscribe in `OnDestroy`. Only three hooks may alter what `Health` does: `TryPreventDeath`, `TryBlockDamage`, `ScaleDamageTaken`. Details in `DamageSystem/CLAUDE.md`.
-- **Death is signalled, not destruction.** Detect death via `Health.OnDied` / `IsDead`, never via `OnDestroy` or object counts. Corpses despawn much later.
-- **Validate dependencies in `Start`.** Auto-wire in `OnValidate`/`Awake`, null-check in `Start`, `Debug.LogError` + set an `anyError` flag, early-return from `Update`/handlers. No silent failures.
-- **Don't assume hierarchy.** Check the actual prefab/scene hierarchy before `GetComponent*` calls. On the Player prefab, `Player.cs` (`Player.Instance`) is on the child `SidekickSyntyCharacter`, while `PlayerWeaponManager`/`PlayerUltimateController` are on the root, so `Player.Instance.GetComponentInChildren<T>()` won't find root components. Use `transform.root.GetComponentInChildren<T>(true)` or explicit serialized refs.
-- **Never build visuals in code, and no runtime asset fallbacks.** Meshes, indicators, UI elements and VFX are authored prefabs wired via serialized fields/SOs. No `AddComponent<MeshRenderer>`-style assembly, no `EnsureVisuals()`/`CreateProceduralX()` fallback methods, no `AssetDatabase.LoadAssetAtPath` fallbacks in gameplay code. If a prefab or reference is missing, `Debug.LogError` and flag it as **human intervention** or **agent mockup** under "Needs Lance in the Editor". Don't paper over it in production code. About 40 older scripts still do this (tracked in `plans/`); don't copy them.
-- **UI work: AI mockups are OK, humans sign off.** Agents may build a simple UI mockup, either live through Unity MCP or with a temporary editor build script that gets deleted afterwards, never with runtime code. Mockups must:
-  - Be **prefab-based and data-driven**: one prefab per repeated element, populated from data. Never copy-paste a UI element and tweak the copies.
-  - Use **Synty UI assets as placeholder art** (`Assets/Synty/InterfaceFantasyWarriorHUD/`, `Assets/Synty/InterfaceCore/`) to stay in style.
-  - Use the house fonts: **Texturina** for headers, **Grenze** for all other text (TMP assets in `Assets/Synty/InterfaceFantasyWarriorHUD/Fonts/`).
-  - Get **flagged for human UI review** under "Needs Lance in the Editor".
-- **All feedback goes through MMF (Feel).** Audio/SFX, particles/VFX, screenshake, flashes, hitstop and tweens are `MMF_Player` feedbacks on the prefab, triggered from code with `PlayFeedbacks()`. No direct `AudioSource.PlayOneShot`, `Instantiate(vfxPrefab)` or camera-shake calls in gameplay code. Older scripts that do this get migrated when touched.
-- **Tunables go on a `ScriptableObject`** (`*SO`, `[CreateAssetMenu]` under `Scriptable Objects/…`).
-- **Upgrade-able numbers are `StatType` bases**, registered by the owning system via `PlayerStats.SetBase` and read via `GetValue`, even when the base is 0 ("locked"). `final = (base + Σflat) × (1 + Σpercent)`.
-- **Scene singletons** (`Player.Instance`, `GameLoopManager`, `GameStats.Instance`, …) are set in `Awake` and cleared in `OnDestroy`. `CampaignManager` and `LoadingScreenManager` are `DontDestroyOnLoad`.
-- **Persistence tiers**: permanent progress → `Save/SaveData.cs` via `SaveSystem` (a single cached instance; add fields, old saves load defaults). Run state → static `RunSession`. Campaign progress is **not** saved to disk.
-- **Scene loads go through `Bladehold.UI.LoadingScreenManager`** when present.
-
-## Legacy / dead code (don't build on it)
-
-Plan 08 (2026-09-25) deleted the old WaveSpawner loop, the gold skill tree + Reincarnate, the socket fortress + Fortress cards, the XP level-up path, the siege timer, the rest-gate path, and the Supply Room. The MainMenu came back (2026-09-26) as the boot scene, minus its old character/level select and upgrades screens. What's left:
-- `Bladehold Demo Scene`, `Bladehold Test Scene` and `Assets/_Recovery/0.unity` aren't in the build and reference deleted scripts.
-- Dormant, stat-gated player mechanics nothing grants any more: `Parry`, `Counterstrike`, `DeathNova`, `StartMountedSpawner`. Fine to reuse for draft cards; don't treat them as live.
-- Unused enum values kept so serialized ints don't shift: `CampaignNodeType.SupplyRoom`, `StatType.HoldTheLineGoldPerWave`, and `BannerBountyType.FortressDraft` (which now pays a Supply Cache). **Never remove or reorder `StatType`/enum values that assets serialize.**
-- `SaveData.runsAttempted`: banner difficulty reads it, nothing increments it; pending a decision.
+Whenever a change needs manual steps in the Unity Editor that can't be done by editing files headlessly (creating `ScriptableObject` asset instances, wiring prefab/scene references, animator/clip work, art/audio), record them in **`TODO.md`** at the project root â€” not a scratch/plan file â€” since that's the durable, cross-session record of what's done in code versus what still needs Editor wiring. Follow the existing format already used there (Reincarnate system, Sword combat overhaul, Skill icons, Storm Witch): a short "what's done in C#" blurb with file pointers, a wiring checklist, and a "Manual verification" checklist.
 
 ## Project skills
 
-Recipes in `.claude/skills/`, the one canonical copy. `.agents/skills` (Antigravity) is a gitignored directory junction to it; on a fresh clone recreate it with `cmd /c mklink /J .agents\skills .claude\skills`. Invoke the matching skill before starting:
-- **Content:** `add-draft-card`, `add-ultimate-handler`, `add-meta-perk`, `add-shop-item`, `add-enemy-type`, `generate-enemy-prefabs`, `add-captain`, `add-objective`, `add-campaign-node`, `add-defense-type`.
-- **UI and feedback:** `ui-mockup` (new UI), `modify-ui` (existing UI), `mm-progress-bars`, `feel-integration` (MMF).
-- **Workflow:** `compile-check`, `test-mechanic`, `changelog`, `editor-wiring-todo` (writes a plan's `plans/editor/` checklist), `editor-wire` (executes one via MCP), `unity-editor-mcp` (incl. a hung bridge or modal dialog).
-- **Assets and misc:** `find-and-import-assets`, `generate-sprite-variants`, `telemetry-analytics`, `translate-game-name`.
+Recurring expansion work has step-by-step recipes in `.claude/skills/` â€” **invoke the matching skill before starting** rather than working from this doc alone (they encode the exemplars, pitfalls, and *current* CSV formats, which this doc lags): `add-skill-line` (skill-tree nodes / player mechanics), `add-enemy-type`, `generate-enemy-prefabs` (manifest-driven enemy prefab variants â€” no hand wiring), `compile-check` (headless C# verification via `dotnet build`), `editor-wiring-todo` (the TODO.md entry format).
 
-## Plans
+## Code layout
 
-`plans/` (tracked in git) holds the work queue. `plans/README.md` is the index and roadmap; each numbered plan is sized for one agent session. `plans/PARKING_LOT.md` collects new ideas during the feature freeze.
+First-party game code lives **only** in `Assets/Bladehold/Bladehold Scripts/` (note the space in the folder name), organized into subfolders: `Player/`, `Enemies/`, `DamageSystem/`, `Economy/`, `Chests/`, `Save/`, `UI/`, `Waves/`, `Stats/`, `Upgrades/`, `Reincarnate/`, `Analytics/`, plus `Editor/` for editor-only tooling (compiled out of builds by Unity's special-folder rule). Designer-editable data that isn't a `ScriptableObject` lives in `Assets/Bladehold/Config/` (`SkillTree.csv`, `Reincarnate.csv`, `Enemies.csv`). All first-party scenes live in `Assets/Bladehold/Bladehold Scenes/` (currently `Bladehold Test Scene.unity`, the real gameplay scene, and `SkillTreePreview.unity`) â€” new scenes go here, not under the old `Assets/Scenes/` (removed) or a vendored sample's folder.
 
-## Nested docs
+Everything else under `Assets/` is vendored and should generally **not** be modified:
+- `Assets/Third Party/` â€” Synty animations (incl. the **active player movement controller**, see below), Unity StarterAssets (present but **not** the controller in use), Wingman (editor tool), Kevin Iglesias animations.
+- `Assets/LeanTween/`, `Assets/DamageNumbersPro/`, `Assets/Feel/` (MoreMountains Feel/Feedbacks â€” `MMF_Player`), `Assets/AssetInventory/` â€” vendored asset-store packages used by game code.
 
-- `Assets/Bladehold/Bladehold Scripts/Campaign/CLAUDE.md`: graph, nodes, map UI, boss routing.
-- `Assets/Bladehold/Bladehold Scripts/Waves/CLAUDE.md`: sector phases, banners, spawning, objectives, rewards.
-- `Assets/Bladehold/Bladehold Scripts/Fort/CLAUDE.md`: tower plots, build wheel, supply.
-- `Assets/Bladehold/Bladehold Scripts/DamageSystem/CLAUDE.md`: combat core.
-- `Assets/Bladehold/Bladehold Scripts/Enemies/CLAUDE.md`: AI, roster CSV, captains.
+There are **no `.asmdef` files for game code**, so all first-party scripts compile into the default `Assembly-CSharp`. The only first-party-adjacent assembly definition is `Assets/Third Party/Wingman/Wingman.asmdef` (an editor productivity tool, not game logic).
+
+## Conventions observed in this codebase
+
+- **`Health` is the hub; dependencies point inward.** `Health` raises `OnDied` (once) and `OnDamaged(Damage)` and knows nothing about its listeners. Reactive behaviour (death animation, stopping movement/attacks, disabling colliders, dropping loot, scoring, damage numbers, UI, wave tracking) lives in separate components that **subscribe** to those events. When adding a reaction to damage or death, add a listener â€” don't reach into `Health`. Always **unsubscribe in `OnDestroy`**. The one exception is **`TryPreventDeath`**, an `event Func<bool>` checked right before a lethal hit latches â€” a handler that wants to *cancel* death (not just react to it), like `DeathNova`'s revive, returns `true` and calls `Health.Revive` itself. Its sibling **`TryBlockDamage`** (an `event Func<Damage, bool>`, checked before any health is lost) is the equivalent for negating a hit entirely, used by `DamageBlocker`. The third sibling, **`ScaleDamageTaken`** (an `event Func<Damage, float>`, checked after `TryBlockDamage` and before health is lost), *shapes* damage rather than cancelling it: each handler returns a multiplier, all handlers' returns multiply together (clamped â‰¥ 0), and `Damage.value` is scaled in place so every `OnDamaged` listener (damage numbers, telemetry, knockback) sees the mitigated value â€” used by `RageBuff`'s damage reduction. These three are the only hooks that can alter what `Health` does; everything else stays a normal reactive listener.
+- **Death is signalled, not destruction.** Dead enemies become corpses (colliders disabled, death/cheer animation). Detect death via `Health.OnDied` / `Health.IsDead`, **never** via `OnDestroy` or object-count. Corpses do eventually despawn â€” `CorpseDespawner` sinks and destroys them after `CorpseConfigSO.corpseLifetime`, with `CorpseManager` capping how many linger â€” but that is long after every `OnDied` listener has reacted; no logic may depend on a corpse's destruction.
+- **Validate dependencies in `Start`.** Auto-wire sibling/serialized references in `OnValidate` (`GetComponent<â€¦>()`, or `GetComponentInChildren<Animator>()` since Synty rigs keep the Animator on a child), then in `Start` null-check, `Debug.LogError`, and set an `anyError` flag; `Update`/handlers early-return `if (anyError)`. Follow this for any new component.
+- **Per-scene ability limits are data, not scene-name checks.** A `SceneAbilityRules` component in a scene (`allowMount` / `allowUltimate` / `allowMelee`) restricts the player kit there; no component means everything is allowed. The Fishing Pond turns all three off (just you and your bow). Read it through `SceneAbilityRules.MountAllowed` etc.; blocking never touches run state, so ultimate charge and cooldowns carry on to the next scene.
+- **Scene singletons**: `Player.Instance`, `GameStats.Instance`, `WaveSpawner.Instance` â€” assigned in `Awake`, cleared in `OnDestroy`, and they reset naturally on scene reload. Reach other objects through these rather than `FindObjectOfType`.
+- **Tunables go on a `ScriptableObject`** (`*SO`, `[CreateAssetMenu]` under `Scriptable Objects/â€¦`). Components read shared config from an asset rather than per-instance fields. Tune behaviour by editing the asset, not the script.
+- **Numbers that might plausibly become upgrade-modifiable are registered as `StatType` bases, not hardcoded literals** â€” even when the current value is 0/off (e.g. `GoldenGoblinChance` starts at 0 until a Reincarnate node raises it; `DeathNovaCharges` starts at 0 to mean "locked"). This mirrors the existing `SwordDamage`/`MoveSpeed` pattern: whichever system owns the value registers the base via `PlayerStats.SetBase` and reads it back via `GetValue`, so any future skill/Reincarnate node can layer a modifier on top without that system's code changing at all.
+- **Animator integration by trigger name**: death/cheer/attack states are driven by string triggers (`Death`, `Cheer`, `Attack`) hashed in `Start`; timing-critical hits use either a tuned wind-up delay or a Unity animation event routed through `AnimationEvents`.
+- **Persistence has two tiers**: cross-run progress (gold) goes through `SaveSystem`/`SaveData` to disk; within-session run state that must survive a scene reload (current wave) goes in a static like `RunState`. Restarting = `SceneManager.LoadScene` of the active scene, which resets scene singletons.
 
 ## Key packages
 
-URP 17.3, Input System 1.18, AI Navigation 2.0 (baked NavMesh required per battle scene), Cinemachine 3.1, Timeline, Visual Scripting. Full list in `Packages/manifest.json`.
+URP 17.3 (`com.unity.render-pipelines.universal`), new Input System 1.18 (`com.unity.inputsystem`) with actions in `Assets/InputSystem_Actions.inputactions`, AI Navigation 2.0, Cinemachine 3.1, Timeline, and Visual Scripting. Full list in `Packages/manifest.json`. Notable vendored asset-store dependencies referenced by game code: **DamageNumbersPro** (floating damage/pickup numbers), **MoreMountains Feel** (`MMF_Player` feedbacks), **LeanTween** (tweening), and **Synty** (goblin/player rigs and animations).
+

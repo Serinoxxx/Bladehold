@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-///     Tunables for the Berserker's rage meter, consumed by <see cref="RageBuff" />. Rage is
+///     Tunables for the rage meter, consumed by <see cref="RageBuff" />. Rage is
 ///     <b>innate</b> to the class — the effect magnitudes below are authored here rather than being
 ///     base-0-locked stats — while how fast rage builds and how long it lingers go through
 ///     <see cref="StatType.RageGainMultiplier" />/<see cref="StatType.RageRetentionMultiplier" />
@@ -18,10 +18,10 @@ public class RageSO : ScriptableObject
     [Tooltip("Icon shown on the buff bar.")]
     public Sprite icon;
 
-    [Tooltip("Rage gained per point of damage the Berserker deals (melee and thrown axe).")]
+    [Tooltip("Rage gained per point of damage the player deals (melee and thrown axe).")]
     public float ragePerDamageDealt = 1f;
 
-    [Tooltip("Rage gained per point of damage the Berserker takes — higher than dealing, the take-damage-to-deal-damage fantasy.")]
+    [Tooltip("Rage gained per point of damage the player takes — higher than dealing, the take-damage-to-deal-damage fantasy.")]
     public float ragePerDamageTaken = 4f;
 
     [Header("Decay")]

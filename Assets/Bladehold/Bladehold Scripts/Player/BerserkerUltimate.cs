@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 /// <summary>
-///     The Berserker's Whirlwind Ultimate:
+///     The Whirlwind Ultimate (the type name is left over from the old classes):
 ///     - Unleashes a continuous spinning whirlwind attack using the equipped weapon (2H Axe).
 ///     - Weapon remains active for the full duration, dealing fully-charged melee damage and knockback.
 ///     - Drives an override animation layer via start and stop triggers.

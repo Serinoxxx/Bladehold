@@ -143,7 +143,8 @@ public class NetRootStatus : MonoBehaviour
     {
         if (captureVisual != null)
         {
-            Destroy(captureVisual);
+            if (Application.isPlaying) Destroy(captureVisual);
+            else DestroyImmediate(captureVisual);
             captureVisual = null;
         }
     }

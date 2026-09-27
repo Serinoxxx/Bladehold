@@ -55,10 +55,10 @@ public class DamageTrigger : MonoBehaviour
     [Tooltip("Optional: the player's Impulse buff. When set and active, hits are stamped with impulse force/power (flinging enemies — see ImpulseReceiver) and gain the buff's stack damage multiplier. Falls back to the Player's own ImpulseBuff when left empty. Only used when 'Reads Player Stats' is on.")]
     [SerializeField] ImpulseBuff impulseBuff;
 
-    [Tooltip("Optional: the Berserker's Rage buff. While raging, damage scales by its multiplier. Falls back to the Player's own RageBuff when left empty. Only used when 'Reads Player Stats' is on.")]
+    [Tooltip("Optional: the Rage buff. While raging, damage scales by its multiplier. Falls back to the Player's own RageBuff when left empty. Only used when 'Reads Player Stats' is on.")]
     [SerializeField] RageBuff rageBuff;
 
-    [Tooltip("Optional: the Berserker's Pain into Power. Damage banked from hits taken mid-charge is consumed on Activate and added flat to every target of that swing. Falls back to the Player's own PainIntoPower when left empty. Only used when 'Reads Player Stats' is on.")]
+    [Tooltip("Optional: the Pain into Power skill line. Damage banked from hits taken mid-charge is consumed on Activate and added flat to every target of that swing. Falls back to the Player's own PainIntoPower when left empty. Only used when 'Reads Player Stats' is on.")]
     [SerializeField] PainIntoPower painIntoPower;
 
     [Header("Visual Effects")]
@@ -169,8 +169,8 @@ public class DamageTrigger : MonoBehaviour
             ApplyRangeScale();
 
             // Missing buff is not an error — the Impulse feature is optional (the DeathNova
-            // stats-fallback idiom). Same for the Berserker's rage/pain components: on the
-            // Swordsman they're disabled and stay permanently neutral.
+            // stats-fallback idiom). Same for the Rage/Pain into Power components: while
+            // they're disabled they stay permanently neutral.
             if (impulseBuff == null && Player.Instance != null)
             {
                 impulseBuff = Player.Instance.GetComponentInChildren<ImpulseBuff>();
@@ -268,7 +268,7 @@ public class DamageTrigger : MonoBehaviour
             weaponTrail.emitting = true;
         }
 
-        // Pain into Power (Berserker): the pool banked from hits taken mid-charge fuels this whole
+        // Pain into Power: the pool banked from hits taken mid-charge fuels this whole
         // activation — consumed once, so every target of the swing shares the same flat bonus.
         activationPainBonus = readsPlayerStats && painIntoPower != null ? painIntoPower.ConsumeBonus() : 0f;
 
@@ -307,7 +307,7 @@ public class DamageTrigger : MonoBehaviour
             weaponTrail.emitting = true;
         }
 
-        // Pain into Power (Berserker): consume bonus if banked
+        // Pain into Power: consume bonus if banked
         activationPainBonus = readsPlayerStats && painIntoPower != null ? painIntoPower.ConsumeBonus() : 0f;
 
         if (detectionMode == DetectionMode.BladeSweep)
@@ -465,14 +465,14 @@ public class DamageTrigger : MonoBehaviour
                 Vector3.Dot(playerFwd.normalized, targetFwd.normalized) > 0.4f)
             {
                 damage.isBackstab = true;
-                if (RunSession.HasMetaPerk("backstab"))
+                if (!RunSession.RunUpgradesSuspended && RunSession.HasMetaPerk("backstab"))
                 {
                     damage.value *= 1.20f;
                 }
             }
 
             // Executioner permanent meta perk (+50% bonus damage to targets below 50% HP)
-            if (RunSession.HasMetaPerk("executioner"))
+            if (!RunSession.RunUpgradesSuspended && RunSession.HasMetaPerk("executioner"))
             {
                 Health targetHealth = targetComponent.GetComponentInParent<Health>();
                 if (targetHealth != null && targetHealth.MaxHealth > 0f && targetHealth.CurrentHealth <= targetHealth.MaxHealth * 0.5f)
@@ -529,7 +529,7 @@ public class DamageTrigger : MonoBehaviour
                 float staticEdge = stats.GetValue(StatType.LightningStaticEdgeDamage);
                 if (staticEdge > 0f)
                 {
-                    damage.value += staticEdge;
+                    damage.value += staticEdge * (1f + Mathf.Max(0f, stats.GetValue(StatType.LightningDamageBonus)));
                     EnemyStatusManager.GetOrAdd(targetComponent)?.ApplyStatus("Lightning");
                     if (ElementalEffectsManager.Instance != null)
                     {
@@ -603,7 +603,9 @@ public class DamageTrigger : MonoBehaviour
 
         float value = stats.GetValue(StatType.SwordDamage) * GlobalDamageMultiplier();
 
-        bool isLungeWindow = Player.Instance != null && Player.Instance.GetComponent<PlayerDodge>()?.IsLungeWindowActive == true;
+        // PlayerDodge and PlayerUltimateController sit on the prefab root; Player.Instance is the child character.
+        Transform playerRoot = Player.Instance != null ? Player.Instance.transform.root : null;
+        bool isLungeWindow = playerRoot != null && playerRoot.GetComponentInChildren<PlayerDodge>()?.IsLungeWindowActive == true;
         float lungeCritBonus = isLungeWindow ? stats.GetValue(StatType.SwordLungeCritBonus) : 0f;
         float lungeDmgBonus = isLungeWindow ? stats.GetValue(StatType.SwordLungeDamageBonus) : 0f;
 
@@ -644,23 +646,26 @@ public class DamageTrigger : MonoBehaviour
             knockback *= impulseBuff.KnockbackMultiplier;
         }
 
-        // Rage (Berserker): more damage the angrier the player is (the ImpulseBuff read pattern).
+        // Rage: more damage the angrier the player is (the ImpulseBuff read pattern).
         if (rageBuff != null && rageBuff.IsActive)
         {
             value *= rageBuff.DamageMultiplier;
         }
 
-        // Pain into Power (Berserker): damage tanked mid-charge comes back flat, on top of every
+        // Pain into Power: damage tanked mid-charge comes back flat, on top of every
         // multiplier — "adds to the damage of that attack".
         value += activationPainBonus;
 
+        // During the ultimate, hits carry the ultimate slot's element, if one is imbued; otherwise they
+        // keep this trigger's own slot element (an empty ultimate slot mustn't strip the blade's element).
         string effectiveSlot = elementSlot;
-        if (isPlayer && Player.Instance != null)
+        if (isPlayer && playerRoot != null)
         {
-            var ultCtrl = Player.Instance.GetComponentInChildren<PlayerUltimateController>();
-            if (ultCtrl != null && ultCtrl.IsUltimateActive)
+            var ultCtrl = playerRoot.GetComponentInChildren<PlayerUltimateController>();
+            if (ultCtrl != null && ultCtrl.IsUltimateActive
+                && !string.IsNullOrEmpty(RunSession.GetActiveElement(RunSession.SlotUltimate)))
             {
-                effectiveSlot = "SLOT_ULTIMATE";
+                effectiveSlot = RunSession.SlotUltimate;
             }
         }
 
@@ -675,7 +680,7 @@ public class DamageTrigger : MonoBehaviour
             // receives, and this trigger never damages its owner.
             source = ownerDamageable,
             isPlayerDamage = isPlayer,
-            elementId = isPlayer ? RunSession.ElementalSlots.GetValueOrDefault(effectiveSlot, "") : "",
+            elementId = isPlayer ? RunSession.GetActiveElement(effectiveSlot) : "",
         };
     }
 }

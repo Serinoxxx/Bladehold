@@ -47,9 +47,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DestructibleBanner
   maxHealth: 25
-  bannerVisual: {fileID: 0}
-  destructionVfxPrefab: {fileID: 0}
-  breakSound: {fileID: 0}
+  bannerVisual: {fileID: 8585319242448975890}
+  breakFeedback: {fileID: 0}
 --- !u!65 &3120126682934375875
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -255,5 +254,10 @@ PrefabInstance:
 --- !u!4 &8585319242448540768 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 411370, guid: 1c757b8a6a985284aa7fd4a80e427dd9, type: 3}
+  m_PrefabInstance: {fileID: 8585319242448949898}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &8585319242448975890 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 125592, guid: 1c757b8a6a985284aa7fd4a80e427dd9, type: 3}
   m_PrefabInstance: {fileID: 8585319242448949898}
   m_PrefabAsset: {fileID: 0}

@@ -2,21 +2,21 @@ using System;
 using UnityEngine;
 
 /// <summary>
-///     The Berserker's rage meter — the class's core loop: dealing and (especially) taking damage
-///     fills it, idleness drains it, and the fuller it is the harder the Berserker hits
+///     The rage meter: dealing and (especially) taking damage
+///     fills it, idleness drains it, and the fuller it is the harder the player hits
 ///     (<see cref="DamageMultiplier" />, read by <see cref="DamageTrigger" /> and
-///     <see cref="PlayerThrownAxe" /> the way they read <see cref="ImpulseBuff" />), the faster he
+///     <see cref="PlayerThrownAxe" /> the way they read <see cref="ImpulseBuff" />), the faster they
 ///     moves (a quantized <see cref="StatType.MoveSpeed" /> percent modifier —
 ///     <see cref="PlayerStats" /> has no modifier removal, so changes are applied as signed deltas),
-///     and the less damage he takes (a <see cref="Health.ScaleDamageTaken" /> handler).
+///     and the less damage they take (a <see cref="Health.ScaleDamageTaken" /> handler).
 ///
 ///     Effect magnitudes are innate, tuned on <see cref="RageSO" />; the skill tree improves
 ///     <see cref="StatType.RageGainMultiplier" /> (build faster) and
 ///     <see cref="StatType.RageRetentionMultiplier" /> (linger longer — scales the decay delay up and
 ///     the drain rate down), both base 1.0 registered here.
 ///
-///     Lives on the player root, enabled only in the Berserker's class slot — a disabled component
-///     never runs Start, so the Swordsman pays nothing. Gain sources resolve through
+///     Lives on the player root — a disabled component
+///     never runs Start, so it costs nothing while off. Gain sources resolve through
 ///     <see cref="PlayerWeaponManager.ActiveMeleeTrigger" /> and the sibling
 ///     <see cref="PlayerThrownAxe" />; cosmetic listeners (the HUD rage bar) poll
 ///     <see cref="RageFraction" /> (the <see cref="SwordChargeFeedback" /> pattern).
@@ -28,7 +28,7 @@ public class RageBuff : MonoBehaviour
     [SerializeField] private Health health;
     [Tooltip("Optional; defaults to the PlayerStats on this GameObject.")]
     [SerializeField] private PlayerStats stats;
-    [Tooltip("Optional: the melee trigger whose hits build rage. Defaults to the class controller's active melee trigger.")]
+    [Tooltip("Optional: the melee trigger whose hits build rage. Defaults to PlayerWeaponManager's active melee trigger.")]
     [SerializeField] private DamageTrigger meleeTrigger;
     [Tooltip("Optional: the thrown axe whose hits build rage. Defaults to the one on this GameObject.")]
     [SerializeField] private PlayerThrownAxe thrownAxe;
@@ -53,7 +53,7 @@ public class RageBuff : MonoBehaviour
     /// <summary>True while any rage is banked (and effects are non-neutral).</summary>
     public bool IsActive => !anyError && rage > 0f;
 
-    /// <summary>Damage multiplier for the Berserker's attacks: 1 at empty, 1 + damageBonusAtFullRage at full.</summary>
+    /// <summary>Damage multiplier for the player's attacks: 1 at empty, 1 + damageBonusAtFullRage at full.</summary>
     public float DamageMultiplier => 1f + RageFraction * (config != null ? config.damageBonusAtFullRage : 0f);
 
     public Sprite Icon => config != null ? config.icon : null;

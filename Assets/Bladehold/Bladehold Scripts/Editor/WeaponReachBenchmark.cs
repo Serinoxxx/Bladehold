@@ -11,6 +11,22 @@ using UnityEngine;
 /// </summary>
 public static class WeaponReachBenchmark
 {
+    // SendMessage asserts (ShouldRunBehaviour) on non-ExecuteInEditMode components in edit mode, so the
+    // benchmark calls Unity lifecycle methods by reflection, walking base classes for inherited private ones.
+    private static void InvokeLifecycle(Component target, string methodName)
+    {
+        const System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.DeclaredOnly;
+        for (System.Type t = target.GetType(); t != null && t != typeof(MonoBehaviour); t = t.BaseType)
+        {
+            System.Reflection.MethodInfo method = t.GetMethod(methodName, flags, null, System.Type.EmptyTypes, null);
+            if (method != null)
+            {
+                method.Invoke(target, null);
+                return;
+            }
+        }
+    }
+
     [MenuItem("Bladehold/Benchmarks/Run Weapon Reach & Damage Benchmark")]
     public static void RunBenchmarkMenuItem()
     {
@@ -1933,7 +1949,7 @@ public static class WeaponReachBenchmark
         {
             GameObject plotGo = new GameObject("TestPlot");
             TowerPlot testPlot = plotGo.AddComponent<TowerPlot>();
-            testPlot.SendMessage("OnEnable", SendMessageOptions.DontRequireReceiver);
+            InvokeLifecycle(testPlot, "OnEnable");
 
             // 17A: Verify registration in InteractableRegistry
             bool isRegistered = false;
@@ -2156,7 +2172,7 @@ public static class WeaponReachBenchmark
 
             GameObject towerObj = new GameObject("Benchmark_ArrowTower");
             ArrowTowerDefense towerDef = towerObj.AddComponent<ArrowTowerDefense>();
-            towerDef.SendMessage("OnEnable", SendMessageOptions.DontRequireReceiver);
+            InvokeLifecycle(towerDef, "OnEnable");
 
             // Reflection check for private FindClosestEnemy
             var findEnemyMethod = typeof(ArrowTowerDefense).GetMethod("FindClosestEnemy", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
@@ -2527,6 +2543,16 @@ public static class WeaponReachBenchmark
             bool wave1ClearedNoGate = true; // the rest gate is gone (plan 08); kept so the report line is unchanged
 
             // Start wave 5 (final wave)
+            // Wave 5 spawns a captain: give the bare test manager a stand-in template for both captain slots
+            // so the spawn path runs without the "no prefab" errors (the real prefabs are scene wiring).
+            GameObject captainTemplate = new GameObject("Benchmark_CaptainTemplate");
+            captainTemplate.AddComponent<Health>();
+            captainTemplate.AddComponent<CaptainKombustaController>();
+            captainTemplate.AddComponent<CaptainEnemyController>();
+            SerializedObject glmSo = new SerializedObject(testGlm);
+            glmSo.FindProperty("captainPrefab").objectReferenceValue = captainTemplate;
+            glmSo.FindProperty("captainKombustaPrefab").objectReferenceValue = captainTemplate;
+            glmSo.ApplyModifiedPropertiesWithoutUndo();
             testGlm.StartWave(5);
             bool wave5Active = testGlm.IsWaveActive;
             testGlm.DebugCompleteObjective();
@@ -2549,6 +2575,13 @@ public static class WeaponReachBenchmark
             // Cleanup test objects
             UnityEngine.Object.DestroyImmediate(glmTestObj);
             UnityEngine.Object.DestroyImmediate(playerTestObj);
+            foreach (CaptainKombustaController spawnedCaptain in UnityEngine.Object.FindObjectsByType<CaptainKombustaController>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (spawnedCaptain != null && spawnedCaptain.gameObject.name.StartsWith("Benchmark_CaptainTemplate"))
+                {
+                    UnityEngine.Object.DestroyImmediate(spawnedCaptain.gameObject);
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -2652,6 +2685,8 @@ public static class WeaponReachBenchmark
             // 24B: Objective Lifecycle, Progress Text & Skull Waypoint Generation
             GameObject cleanupTestGo = new GameObject("Test_CleanupManager");
             KillRemainingEnemiesObjective testCleanup = cleanupTestGo.AddComponent<KillRemainingEnemiesObjective>();
+            // No HUD tracker in edit mode, so hand it a throwaway icon (the real one is prefab wiring).
+            testCleanup.SetSkullIcon(Sprite.Create(Texture2D.whiteTexture, new Rect(0f, 0f, 4f, 4f), new Vector2(0.5f, 0.5f)));
 
             GameObject enemy1 = new GameObject("Test_RemainingEnemy_1");
             Health h1 = enemy1.AddComponent<Health>();
