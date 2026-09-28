@@ -52,6 +52,10 @@ public class PlayerDodge : MonoBehaviour
     private float lastDodgeEndTime = -999f;
     private int attackTriggerHash;
     private bool loggedMissingTrailVfx;
+    private float invulnerableUntilTime = -999f;
+    private int dodgeAnimTriggerHash;
+    private int isMountedHash;
+    private bool subscribedIFrames;
 
 #if UNITY_EDITOR
     private float lastCachedConfigCooldown = -1f;
@@ -70,6 +74,8 @@ public class PlayerDodge : MonoBehaviour
     public bool CanDodge => !isDodging && currentCharges > 0 && (player == null || !player.Health.IsDead) && (player == null || player.Stats.GetValue(StatType.DodgeUnlocked) > 0f);
 
     public bool IsDodging => isDodging;
+    /// <summary>True during a dodge's i-frames (<see cref="StatType.DodgeIFrameDuration" /> from the dash start): all incoming damage is ignored.</summary>
+    public bool IsInvulnerable => Time.time < invulnerableUntilTime;
     public float TimeSinceDodge => Time.time - lastDodgeEndTime;
     public bool IsLungeWindowActive => isDodging || (TimeSinceDodge <= 1.0f);
 
@@ -109,6 +115,7 @@ public class PlayerDodge : MonoBehaviour
             player.Stats.SetBase(StatType.DodgeCooldown, config.baseCooldown);
             player.Stats.SetBase(StatType.DodgeMaxCharges, config.baseMaxCharges);
             player.Stats.SetBase(StatType.DodgeDistance, config.baseDistance);
+            player.Stats.SetBase(StatType.DodgeIFrameDuration, config.iFrameDuration);
             dashDuration = config.dashDuration;
 #if UNITY_EDITOR
             lastCachedConfigCooldown = config.baseCooldown;
@@ -119,6 +126,45 @@ public class PlayerDodge : MonoBehaviour
         currentCharges = MaxCharges;
         chargeRechargeTimer = 0f;
         InitAttackTriggerHash();
+        InitDodgeAnimTrigger();
+
+        if (player.Health != null)
+        {
+            player.Health.TryBlockDamage += BlockDuringIFrames;
+            subscribedIFrames = true;
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (subscribedIFrames && player != null && player.Health != null)
+        {
+            player.Health.TryBlockDamage -= BlockDuringIFrames;
+        }
+    }
+
+    /// <summary>Health.TryBlockDamage hook: a dodge's i-frames negate every hit (attacks, hazards, DoT ticks).</summary>
+    private bool BlockDuringIFrames(Damage damage) => IsInvulnerable;
+
+    /// <summary>Hashes the SO's dodge trigger if the animator has it. A missing parameter is logged once, not every dash.</summary>
+    private void InitDodgeAnimTrigger()
+    {
+        dodgeAnimTriggerHash = 0;
+        string triggerName = config != null ? config.dodgeAnimTrigger : "Dodge";
+        if (animator == null || string.IsNullOrEmpty(triggerName)) return;
+        foreach (var param in animator.parameters)
+        {
+            if (param.name == "IsMounted" && param.type == AnimatorControllerParameterType.Bool) isMountedHash = param.nameHash;
+        }
+        foreach (var param in animator.parameters)
+        {
+            if (param.name == triggerName && param.type == AnimatorControllerParameterType.Trigger)
+            {
+                dodgeAnimTriggerHash = param.nameHash;
+                return;
+            }
+        }
+        Debug.LogError($"[PlayerDodge] The player animator has no '{triggerName}' trigger, so dashes play no animation. Run Bladehold/Captains/Build Captain Mogra Assets (it adds the Dodge layer).", this);
     }
 
     private void InitAttackTriggerHash()
@@ -230,6 +276,14 @@ public class PlayerDodge : MonoBehaviour
         float maxCd = MaxCooldown;
         OnChargesChanged?.Invoke(currentCharges, maxCharges);
         OnDodgeStarted?.Invoke();
+
+        invulnerableUntilTime = Time.time + Mathf.Max(0f, player.Stats.GetValue(StatType.DodgeIFrameDuration));
+        // Nimble Strike swings out of the dash, so it keeps its attack animation; a mounted dash keeps the riding pose.
+        if (animator != null && dodgeAnimTriggerHash != 0 && player.Stats.GetValue(StatType.SwordNimbleStrike) <= 0f &&
+            (isMountedHash == 0 || !animator.GetBool(isMountedHash)))
+        {
+            animator.SetTrigger(dodgeAnimTriggerHash);
+        }
 
         if (dodgeFeedback != null)
         {

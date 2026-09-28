@@ -20,7 +20,7 @@ Every battle scene runs the same loop: `GameLoopManager` + `SurvivorsSpawner` + 
    - `SurvivorsSpawner` spawns the kill quota: the pacing asset's base × `quotaGrowthPerThreat`, then × the card's skull quota multiplier.
      - It spawns in batches of 10, at most 20 alive, each with a 3 s telegraph (`SpawnIndicator`).
      - Every spawn goes through `GameLoopManager.ApplyWaveModifiers`: skull HP multiplier, then `EnemyBuffController` with the card's clan buff.
-   - A 3-skull card also spawns a captain (`SpawnCaptainForWave(card.CaptainTier)`: skulls 1/2/3 → Standard/Enraged/Nightmare).
+   - A 3-skull card also spawns a captain (`SpawnCaptainForWave(card.CaptainTier)`: skulls 1/2/3 → Standard/Enraged/Nightmare). Which captain is the card's `captainName`: the node's, or (35%, `WaveChoiceConfigSO.wanderingCaptainChance`) the wandering Captain Mogra Hexfang. The same roll applies to wave 5's Captain Assault card.
 
    **Sector difficulty (threat).** `SectorThreat.Current` is the campaign node's `tierIndex` (1-8), or 1 outside a campaign run; the DevConsole can override it. Deeper sectors get more enemy types and bigger quotas:
    - A roster row spawns when `threat >= minThreat` **and** `wave >= unlockWave` (both CSV columns). `minThreat` 0/blank keeps a row out of sector waves entirely (golden goblin, captains, unfinished enemies).

@@ -123,6 +123,8 @@
 - Added a Thanks for Playing screen at the end of the demo campaign
 - Added element colours to elemental card icons: orange for fire, light blue for ice, purple for lightning
 - Added summoning your mount from the start of every run with [X] (D-pad Up on a controller)
+- Added Captain Mogra Hexfang, a goblin shaman captain who can turn up in place of any sector's captain: dodge his ground rune patterns and hex bolts, break his bone totems to stun him, and interrupt his Bonefire Ritual or shelter in a safe circle
+- Added a dodge animation and a brief moment of invulnerability to the dash
 
 ### Fixes
 

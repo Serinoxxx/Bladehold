@@ -136,6 +136,24 @@ public static class EnemyPrefabGenerator
         Debug.Log($"EnemyPrefabGenerator: {created} variant(s) created, {updated} updated, map at '{MapAssetPath}'.");
     }
 
+    /// <summary>Builds or re-syncs the single manifest entry <paramref name="id" /> (e.g. from an asset builder).</summary>
+    public static void GenerateById(string id)
+    {
+        var basePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(BasePrefabPath);
+        if (basePrefab == null)
+        {
+            throw new InvalidOperationException($"Goblin base prefab not found at '{BasePrefabPath}'.");
+        }
+        EnemyManifest.EnemySpec spec = Array.Find(EnemyManifest.Entries, e => e.id == id);
+        if (spec == null)
+        {
+            throw new InvalidOperationException($"No manifest entry with id '{id}'.");
+        }
+        Generate(spec, basePrefab);
+        AssetDatabase.SaveAssets();
+        WarnOnRosterMismatches();
+    }
+
     /// <summary>Builds or re-syncs one variant. Returns true when the prefab was newly created.</summary>
     private static bool Generate(EnemyManifest.EnemySpec spec, GameObject basePrefab)
     {

@@ -3071,10 +3071,219 @@ public static class WeaponReachBenchmark
             }
         }
 
+        // 28. CAPTAIN MOGRA HEXFANG (also its own menu item: Bladehold/Tests/Captain Mogra Checks)
+        {
+            sb.Append(RunCaptainMograChecks(out int mograPassed, out int mograFailed));
+            passedCount += mograPassed;
+            failedCount += mograFailed;
+        }
+
         sb.AppendLine("\n=================================================");
         sb.AppendLine($"BENCHMARK COMPLETE: {passedCount} PASSED | {failedCount} FAILED");
         sb.AppendLine("=================================================");
 
+        return sb.ToString();
+    }
+
+    [MenuItem("Bladehold/Tests/Captain Mogra Checks (Edit Mode)")]
+    public static void RunCaptainMograChecksMenuItem()
+    {
+        string report = RunCaptainMograChecks(out int passed, out int failed);
+        Debug.Log(report + $"\nCAPTAIN MOGRA CHECKS: {passed} PASSED | {failed} FAILED");
+    }
+
+    /// <summary>Section 28: Captain Mogra Hexfang. Spawns only prefab instances it destroys, so it's safe in any scene.</summary>
+    public static string RunCaptainMograChecks(out int passedResult, out int failedResult)
+    {
+        StringBuilder sb = new StringBuilder();
+        int passedCount = 0;
+        int failedCount = 0;
+        // 28. CAPTAIN MOGRA HEXFANG: readable telegraphs, safe gaps, breakable ritual, dash i-frames
+        sb.AppendLine("\n### 28. CAPTAIN MOGRA HEXFANG: TELEGRAPHS, SAFE GAPS, RITUAL & DASH I-FRAMES");
+        {
+            var spawned = new List<GameObject>();
+            WaveChoiceConfigSO waveCfg = null;
+            float savedWanderChance = 0f;
+            try
+            {
+                void Check(bool ok, string pass, string fail)
+                {
+                    sb.AppendLine(ok ? $"  - {pass} [PASSED]" : $"  - [FAIL] {fail}");
+                    if (ok) passedCount++; else failedCount++;
+                }
+
+                // Reference player numbers: jog speed and a mid-run sword DPS (base swing ~5, upgraded ~12, ~1.6 swings/s).
+                const float playerSpeed = 5f;
+                const float referenceDps = 18f;
+
+                // 28A. Data, roster and registry.
+                CaptainMograSO data = AssetDatabase.LoadAssetAtPath<CaptainMograSO>(CaptainMograBuilder.SoPath);
+                Check(data != null, "CaptainMograSO asset exists", $"No CaptainMograSO at {CaptainMograBuilder.SoPath}");
+                if (data != null)
+                {
+                    Check(data.boltPrefab != null && data.runeBlastPrefab != null && data.totemPrefab != null && data.shockwaveRingPrefab != null &&
+                          data.ritualSafeCirclePrefab != null && data.ritualDangerPrefab != null,
+                        "Every spell prefab is assigned on CaptainMograSO", "CaptainMograSO has an empty spell prefab slot (run Bladehold/Captains/Build Captain Mogra Assets)");
+
+                    string csvRow = null;
+                    foreach (string line in System.IO.File.ReadAllLines("Assets/Bladehold/Config/Enemies.csv"))
+                    {
+                        if (line.StartsWith("captain_mogra,")) csvRow = line;
+                    }
+                    string[] cols = csvRow != null ? csvRow.Split(',') : new string[0];
+                    Check(cols.Length >= 15 && cols[13].Trim() == "TRUE" && cols[14].Trim() == "0",
+                        "Enemies.csv has an enabled captain_mogra row with minThreat 0 (never in regular waves)",
+                        $"captain_mogra row missing or wrong: '{csvRow}'");
+
+                    Check(CaptainRegistry.Find(CaptainRegistry.MograName) == CaptainRegistry.Mogra &&
+                          CaptainRegistry.Find("Captain Kombusta") == CaptainRegistry.Kombusta &&
+                          CaptainRegistry.Find("") == null,
+                        "CaptainRegistry maps Mogra/Kombusta names and ignores blanks", "CaptainRegistry lookup is wrong");
+
+                    // 28B. Readability.
+                    bool telegraphsOk = true;
+                    for (int phase = 1; phase <= 3; phase++)
+                    {
+                        if (data.RuneTelegraphSeconds(phase) < 0.9f) telegraphsOk = false;
+                    }
+                    Check(telegraphsOk, $"Rune telegraphs {data.RuneTelegraphSeconds(1):0.00}/{data.RuneTelegraphSeconds(2):0.00}/{data.RuneTelegraphSeconds(3):0.00}s are all ≥ 0.9s",
+                        "A rune telegraph is under 0.9s");
+                    Check(data.hexStepBlastDelay >= 0.6f, $"Hex Step blast is telegraphed for {data.hexStepBlastDelay:0.00}s (≥ 0.6)", "Hex Step blast telegraph is under 0.6s");
+                    float boltFlight = data.preferredRange / Mathf.Max(0.1f, data.boltSpeed);
+                    Check(boltFlight >= 0.6f, $"A bolt takes {boltFlight:0.00}s to cross his casting range (≥ 0.6s to sidestep)", $"Bolts arrive in {boltFlight:0.00}s");
+                    Check(data.phase3HealthFraction < data.phase2HealthFraction && data.phase2HealthFraction < 1f,
+                        "Phase thresholds are ordered (phase 3 below phase 2)", "Phase thresholds are out of order");
+
+                    // 28C. Every pattern leaves somewhere safe, close enough to reach before the first runes go off.
+                    float fastestTelegraph = data.RuneTelegraphSeconds(3);
+                    foreach (HexRunePattern pattern in (HexRunePattern[])Enum.GetValues(typeof(HexRunePattern)))
+                    {
+                        for (int patternVariant = 0; patternVariant < 2; patternVariant++)
+                        {
+                            List<HexRuneSpot> spots = HexRunePatterns.Build(pattern, Vector3.forward, data.runeRadius, data.runeStepSeconds, fastestTelegraph, patternVariant);
+                            Vector3? safe = HexRunePatterns.NearestSafePoint(spots, data.runeRadius, 12f);
+                            float reach = safe.HasValue ? safe.Value.magnitude / playerSpeed : float.MaxValue;
+                            Check(safe.HasValue && reach <= fastestTelegraph,
+                                $"{pattern} (variant {patternVariant}): {spots.Count} runes, safe spot {(safe.HasValue ? safe.Value.magnitude : 0f):0.0}m from the target, {reach:0.00}s away",
+                                $"{pattern} (variant {patternVariant}) has no safe spot reachable in {fastestTelegraph:0.00}s");
+                        }
+                    }
+
+                    // 28D. Overlapping pieces of one cast hit once.
+                    HexHitGroup group = new HexHitGroup();
+                    bool first = group.TryConsume();
+                    bool second = group.TryConsume();
+                    Check(first && !second, "A hit group lets one rune/bolt of a cast hit and blocks the rest", "HexHitGroup allowed a second hit");
+
+                    // 28E. Totem rings: the dash's i-frames cover crossing the band; the band sweep can't skip on a slow frame.
+                    PlayerDodgeSO dodge = AssetDatabase.LoadAssetAtPath<PlayerDodgeSO>("Assets/Bladehold/Bladehold Config/PlayerDodgeSO.asset");
+                    if (dodge != null)
+                    {
+                        float dashSpeed = dodge.baseDistance / Mathf.Max(0.01f, dodge.dashDuration);
+                        float bandCrossSeconds = (data.ringWidth + 1f) / (dashSpeed + data.ringSpeed);
+                        Check(dodge.iFrameDuration >= dodge.dashDuration && bandCrossSeconds <= dodge.iFrameDuration,
+                            $"Dash i-frames {dodge.iFrameDuration:0.00}s cover the {dodge.dashDuration:0.00}s dash and a {bandCrossSeconds:0.00}s ring crossing",
+                            $"Dash i-frames {dodge.iFrameDuration:0.00}s don't cover the dash ({dodge.dashDuration:0.00}s) or ring crossing ({bandCrossSeconds:0.00}s)");
+                    }
+                    else
+                    {
+                        Check(false, "", "PlayerDodgeSO asset not found at Bladehold Config/PlayerDodgeSO.asset");
+                    }
+
+                    GameObject ringObj = (GameObject)PrefabUtility.InstantiatePrefab(data.shockwaveRingPrefab);
+                    spawned.Add(ringObj);
+                    ringObj.transform.position = Vector3.zero;
+                    HexShockwaveRing ring = ringObj.GetComponent<HexShockwaveRing>();
+                    var flags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
+                    typeof(HexShockwaveRing).GetMethod("Awake", flags)?.Invoke(ring, null);
+                    ring.Launch(data.ringSpeed, data.ringMaxRadius, data.ringWidth, 1f, null);
+                    typeof(HexShockwaveRing).GetField("previousRadius", flags).SetValue(ring, 2f);
+                    typeof(HexShockwaveRing).GetField("radius", flags).SetValue(ring, 4f);
+                    Check(ring.IsOnBand(new Vector3(3f, 0f, 0f)) && !ring.IsOnBand(new Vector3(1f, 0f, 0f)) && !ring.IsOnBand(new Vector3(6f, 0f, 0f)),
+                        "A ring that jumped 2m→4m in one frame still hits at 3m (swept band), not at 1m or 6m",
+                        "Ring band sweep is wrong");
+
+                    // 28F. The ritual can be broken and survived.
+                    for (int t = 0; t < 3; t++)
+                    {
+                        BannerDifficultyTier tier = t == 0 ? BannerDifficultyTier.Enraged : t == 1 ? BannerDifficultyTier.Nightmare : BannerDifficultyTier.Omega;
+                        float hp = data.baseMaxHealth * BannerDifficultyHelper.GetStatMultiplier(tier);
+                        float breakDps = hp * data.ritualBreakHealthFraction / Mathf.Max(0.1f, data.ritualChannelSeconds);
+                        // Staggered he takes more, but the ritual isn't a stagger; count raw damage.
+                        Check(breakDps <= referenceDps,
+                            $"{tier}: breaking the ritual needs {breakDps:0.0} DPS for {data.ritualChannelSeconds:0}s (reference {referenceDps}); fight ≈ {hp / referenceDps:0}s of pure damage",
+                            $"{tier}: the ritual needs {breakDps:0.0} DPS to break, above the {referenceDps} reference");
+                    }
+                    float worstRun = (data.ritualBlastRadius + data.ritualSafeCircleMaxDistance) / playerSpeed;
+                    Check(worstRun < data.ritualChannelSeconds,
+                        $"From anywhere in the blast, a safe circle is at most {worstRun:0.0}s away (channel {data.ritualChannelSeconds:0.0}s)",
+                        $"A safe circle can be {worstRun:0.0}s away, longer than the {data.ritualChannelSeconds:0.0}s channel");
+
+                    // 28G. The prefab: Initialize scales HP and names him.
+                    GameObject variant = AssetDatabase.LoadAssetAtPath<GameObject>(CaptainMograBuilder.VariantPath);
+                    Check(variant != null && variant.GetComponent<CaptainMograController>() != null, "Captain Mogra variant has its controller",
+                        $"No Mogra variant/controller at {CaptainMograBuilder.VariantPath}");
+                    if (variant != null && variant.GetComponent<CaptainMograController>() != null)
+                    {
+                        GameObject mogra = (GameObject)PrefabUtility.InstantiatePrefab(variant);
+                        spawned.Add(mogra);
+                        CaptainMograController controller = mogra.GetComponent<CaptainMograController>();
+                        controller.Initialize(BannerDifficultyTier.Nightmare, CaptainRegistry.MograName);
+                        Health mograHealth = mogra.GetComponent<Health>();
+                        float expected = data.baseMaxHealth * BannerDifficultyHelper.GetStatMultiplier(BannerDifficultyTier.Nightmare);
+                        Check(Mathf.Approximately(mograHealth.MaxHealth, expected) && controller.CaptainName == CaptainRegistry.MograName && controller.DifficultyTier == BannerDifficultyTier.Nightmare,
+                            $"Initialize(Nightmare): {mograHealth.MaxHealth:0} HP, named {controller.CaptainName}",
+                            $"Initialize gave {mograHealth.MaxHealth} HP (expected {expected}), name {controller.CaptainName}");
+                        Check(Mathf.Approximately(controller.ScaledDamage(10f), 10f * BannerDifficultyHelper.GetStatMultiplier(BannerDifficultyTier.Nightmare)),
+                            "Spell damage scales by the tier multiplier", "ScaledDamage ignores the tier");
+                        mograHealth.SetCurrentHealth(expected * 0.5f);
+                        int midPhase = controller.PhaseForHealth();
+                        mograHealth.SetCurrentHealth(expected * 0.2f);
+                        int lowPhase = controller.PhaseForHealth();
+                        Check(midPhase == 2 && lowPhase == 3, "50% HP → phase 2, 20% HP → phase 3", $"Phases for 50%/20% HP were {midPhase}/{lowPhase}");
+                        if (BossHealthBarUI.Instance != null) BossHealthBarUI.Instance.HideImmediate();
+                    }
+
+                    // 28H. Wave cards: the wandering captain replaces the node's at its chance, only on cards that bring a captain.
+                    waveCfg = AssetDatabase.LoadAssetAtPath<WaveChoiceConfigSO>("Assets/Bladehold/Resources/WaveChoiceConfig.asset");
+                    if (waveCfg != null) savedWanderChance = waveCfg.wanderingCaptainChance;
+                    if (waveCfg != null && waveCfg.Catalog != null)
+                    {
+                        WaveObjectiveDefinition captainObj = waveCfg.Catalog.Get(DefeatCaptainObjective.Id);
+                        WaveObjectiveDefinition holdObj = waveCfg.Catalog.Get("kill_enemies");
+                        var ctx = new WaveCardRollContext { wave = 3, threat = 2, captainName = "Captain Kombusta" };
+                        var rng = new System.Random(7);
+                        waveCfg.wanderingCaptainChance = 1f;
+                        string onThree = WaveCardGenerator.RollCaptainName(waveCfg, holdObj, 3, ctx, rng);
+                        string onAssault = WaveCardGenerator.RollCaptainName(waveCfg, captainObj, 1, ctx, rng);
+                        string onOne = WaveCardGenerator.RollCaptainName(waveCfg, holdObj, 1, ctx, rng);
+                        waveCfg.wanderingCaptainChance = 0f;
+                        string never = WaveCardGenerator.RollCaptainName(waveCfg, holdObj, 3, ctx, rng);
+                        Check(onThree == CaptainRegistry.MograName && onAssault == CaptainRegistry.MograName && onOne == "Captain Kombusta" && never == "Captain Kombusta",
+                            $"Wandering captain: 3-skull → {onThree}, Captain Assault → {onAssault}, 1-skull → {onOne}, chance 0 → {never}",
+                            $"Wandering captain roll wrong: {onThree} / {onAssault} / {onOne} / {never}");
+                        Check(savedWanderChance > 0f && savedWanderChance < 1f, $"Configured wandering-captain chance is {savedWanderChance:P0}",
+                            $"Wandering-captain chance is {savedWanderChance}");
+                    }
+                    else
+                    {
+                        Check(false, "", "WaveChoiceConfig asset or its catalog is missing");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                sb.AppendLine($"  - Section 28 Benchmark exception: {ex.Message} [FAILED]");
+                failedCount++;
+            }
+            finally
+            {
+                if (waveCfg != null) waveCfg.wanderingCaptainChance = savedWanderChance;
+                foreach (var go in spawned) if (go != null) UnityEngine.Object.DestroyImmediate(go);
+            }
+        }
+        passedResult = passedCount;
+        failedResult = failedCount;
         return sb.ToString();
     }
 }

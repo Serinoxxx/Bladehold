@@ -14,7 +14,7 @@ using UnityEngine;
 ///        he sets himself on fire, burning the player over time as long as they stay in range.
 ///     3. Clan Captain Hierarchy: Scales with War Banner difficulty tier, Morale Break on defeat, bonus rewards.
 /// </summary>
-public class CaptainKombustaController : MonoBehaviour
+public class CaptainKombustaController : MonoBehaviour, ICaptain
 {
     [Header("Captain Identity")]
     [SerializeField] private string captainName = "Captain Kombusta";

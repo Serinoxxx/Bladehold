@@ -15,19 +15,19 @@ Read these before starting:
 - `Waves/Banners/WarBannerDifficulty.cs` (`BannerDifficultyHelper`).
 - `Campaign/CampaignNodeSO.cs`.
 
-There is **no captain registry** (no SO list, no CSV). Captain data is spread over four places:
+Captains are listed in `Enemies/Captain/ICaptain.cs`: `CaptainRegistry` maps a display name (by substring `matchKey`) to its roster id, and every controller implements `ICaptain` (`CaptainName`, `DifficultyTier`, `Initialize`). The rest of a captain's data is spread over:
 
 | Piece | Where |
 |---|---|
 | Identity on the map | `CampaignNodeSO.captainName` (string) + `captainIcon` (sprite) on the node assets in `Assets/Bladehold/Resources/CampaignNodes/` (text YAML) |
-| Which prefab spawns | Hard-coded name match in `GameLoopManager.SpawnCaptainForWave` |
+| Which prefab spawns | `CaptainRegistry` entry → `GameLoopManager.SpawnCaptainObject` (roster id via the spawner; Fraglob and an optional Kombusta prefab slot are the direct-Instantiate exceptions) |
 | Behaviour + tunables | `<Name>Controller` + `<Name>SO` under `Enemies/Captain/` |
 | Prefab + CSV-overridable stats | `EnemyManifest` entry + `Config/Enemies.csv` row `captain_<name>` |
 
 ## How it works today
 
 - **When**: `StartWave` always spawns a captain on wave 5 (`totalWaves`), at the banner's tier but at least **Enraged**. On waves 1-4 it spawns one only if the picked war banner is Enraged or higher.
-- **Which**: `preferredCaptainName` = the current campaign node's `captainName`. If that contains `"Kombusta"` you get Kombusta, anything else gets Fraglob, and blank is a coin flip. Fraglob's `captainPrefab` slot is empty, so it logs an error and falls back to Kombusta.
+- **Which**: the wave card's `captainName` (rolled by `WaveCardGenerator.RollCaptainName`: the node's captain, or at `WaveChoiceConfigSO.wanderingCaptainChance` (35%) the wandering captain, Captain Mogra Hexfang), falling back to the node's. `CaptainRegistry.Find` matches it; blank or unknown picks a random spawnable captain. A captain that can't spawn (Fraglob's `captainPrefab` slot is empty) logs an error and falls back to Kombusta.
 - **Spawn path**: `captainKombustaPrefab` is empty on the prefab and in the scene, so Kombusta spawns through `SurvivorsSpawner.DebugSpawnEnemyType("captain_kombusta")`. That applies the CSV row, puts it in the spawner's alive set (so the `KillRemainingEnemiesObjective` cleanup and wave clear wait for it), and **doesn't** count it toward the kill quota. It spawns at a random spawn point; `captainSpawnPoint` is only used on the direct-`Instantiate` path.
 - **Scaling**: `Initialize(tier, name)` → `ApplyDifficultyScaling`. HP = `SO.baseMaxHealth × GetStatMultiplier(tier)` (1 / 1.25 / 1.5 / 2). Speed is scaled from `SO.baseMoveSpeed`. Melee damage = (`SetDamage` override ?? `SO.baseMeleeDamage`) × multiplier. The `HighlightEffect` outline takes the tier colour. **This overwrites the CSV `health`/`speed` columns**; only `damage` survives (via `damageOverride`).
 - **Death** (`Health.OnDied` → `HandleDeath`): Morale Break (pauses every `AIMovement` within 15 m for 2 s), then `RunSession.AddInRunGold(50 × reward)` and `RunSession.AddGoblinBlood(3 × reward)`. `reward` is `GetRewardMultiplier` = 1/2/4/8, and Blood goes straight to `SaveData`, so it's permanent. `OnCaptainDied` has no subscribers yet.
@@ -58,11 +58,10 @@ There is **no captain registry** (no SO list, no CSV). Captain data is spread ov
 3. **Override routing**: add `enemy.GetComponent<Captain<Name>Controller>()?.SetDamage(...)` to `Enemies/EnemyDefinitionApplier.cs`.
 4. **Roster row** in `Config/Enemies.csv`: `captain_<name>`, `enabled` `TRUE`, **`minThreat` 0** so it never joins normal waves. `health`/`speed` are overwritten by the SO scaling (leave them matching the SO). `damage`, `minGold`/`maxGold`, `scale` and `knockbackResistance` do apply. Kombusta's row: `350,20,50,100,3.8,1.35,...,6,TRUE,0`.
 5. **Prefab**: a manifest entry modelled on `captain_kombusta` (`soFolder = "Captain"`, `removeComponents` golden/impulse, fire-point child, controller wiring incl. `highlightEffect`), then run the generator (`/generate-enemy-prefabs`). Keep `rootScale` equal to the CSV `scale`.
-6. **Spawn routing**: `SpawnCaptainForWave` only knows two captains by substring. Add a branch for the new name that spawns via `spawner.DebugSpawnEnemyType("captain_<name>")`. Keep that path so cleanup tracking and CSV overrides work, then call `Initialize(tier, captainName)`.
+6. **Spawn routing**: implement `ICaptain` on the controller and add a `CaptainRegistry` entry (display name, match key, `captain_<name>` roster id) to `All`. `SpawnCaptainForWave` then spawns it through `spawner.DebugSpawnEnemyType` (so cleanup tracking and CSV overrides work) and calls `Initialize(tier, captainName)`.
    - Check `Roster.Find(id)` first. It ignores `enabled` and map presence, and `DebugSpawnEnemyType` silently spawns a **goblin** for an unknown id.
-   - With a third captain, consider replacing the substring branches with a name → roster-id lookup plus a shared captain interface. That's a design change, so confirm it with Lance first.
 7. **Assign** it to nodes (section above). Nodes past `DemoConfigSO.campaignCutoffTier` (4) are never reached in the demo. If a captain must be demo-gated, add a static helper on `Demo/DemoConfigSO` (like `IsCampaignNodeLocked`), never a per-asset flag.
-8. **Test**: add a `WeaponReachBenchmark` section per `/test-mechanic`. Section 13 (Kombusta: SO values, `Initialize` name/tier, ability states) and 8D (Fraglob tier HP scaling + shield absorb) are the models. Lance runs the suite himself unless he asks.
+8. **Test**: add a `WeaponReachBenchmark` section per `/test-mechanic`. Section 13 (Kombusta: SO values, `Initialize` name/tier, ability states), 8D (Fraglob tier HP scaling + shield absorb) and 28 (Mogra: telegraph floors, pattern safe spots, ritual breakability; also its own menu item) are the models. Lance runs the suite himself unless he asks.
 
 ## Test in Play mode
 

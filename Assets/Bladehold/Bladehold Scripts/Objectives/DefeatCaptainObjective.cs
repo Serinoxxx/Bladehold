@@ -126,7 +126,11 @@ public class DefeatCaptainObjective : MonoBehaviour, ISurvivorsObjective
         }
 
         BannerDifficultyTier tier = TierForThreat(SectorThreat.Current);
-        spawnedCaptain = GameLoopManager.Instance.SpawnCaptainForWave(tier, PreferredCaptainName());
+        GameLoopManager loop = GameLoopManager.Instance;
+        string preferred = loop.CurrentWaveCard != null && !string.IsNullOrEmpty(loop.CurrentWaveCard.captainName)
+            ? loop.CurrentWaveCard.captainName
+            : PreferredCaptainName();
+        spawnedCaptain = loop.SpawnCaptainForWave(tier, preferred);
         if (spawnedCaptain == null)
         {
             Debug.LogError("[DefeatCaptainObjective] GameLoopManager.SpawnCaptainForWave returned no captain. Completing so the wave can end.", this);
@@ -134,9 +138,7 @@ public class DefeatCaptainObjective : MonoBehaviour, ISurvivorsObjective
             return;
         }
 
-        CaptainKombustaController kombusta = spawnedCaptain.GetComponent<CaptainKombustaController>();
-        CaptainEnemyController fraglob = kombusta == null ? spawnedCaptain.GetComponent<CaptainEnemyController>() : null;
-        captainName = kombusta != null ? kombusta.CaptainName : fraglob != null ? fraglob.CaptainName : null;
+        captainName = spawnedCaptain.GetComponent<ICaptain>()?.CaptainName;
 
         captainHealth = spawnedCaptain.GetComponent<Health>();
         if (captainHealth == null) captainHealth = spawnedCaptain.GetComponentInChildren<Health>();

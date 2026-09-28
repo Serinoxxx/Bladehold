@@ -1,0 +1,81 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 776886c633be5614b8ad742630465df8, type: 3}
+  m_Name: CaptainMograSO
+  m_EditorClassIdentifier: Assembly-CSharp::CaptainMograSO
+  baseMaxHealth: 500
+  baseMoveSpeed: 3.2
+  preferredRange: 9
+  phase2HealthFraction: 0.66
+  phase3HealthFraction: 0.33
+  phaseRoarSeconds: 1.6
+  recoveryByPhase:
+  - 1.4
+  - 1.1
+  - 0.8
+  boltCountByPhase: 030000000300000005000000
+  boltFanDegrees: 44
+  boltWindupSeconds: 0.55
+  boltSpeed: 9
+  boltDamage: 8
+  boltLifetime: 3.5
+  boltVolleysByPhase: 010000000200000002000000
+  runeTelegraphByPhase:
+  - 1.3
+  - 1.1
+  - 0.95
+  minReadableTelegraphSeconds: 0.9
+  runeStepSeconds: 0.4
+  runeRadius: 1.6
+  runeDamage: 12
+  runeWindupSeconds: 0.5
+  phase1Patterns: 0000000001000000
+  phase2Patterns: 000000000100000002000000
+  phase3Patterns: 010000000200000003000000
+  hexStepTriggerRange: 3.5
+  hexStepDwellSeconds: 2.5
+  hexStepBlinkDistance: 8
+  hexStepBlastRadius: 3
+  hexStepBlastDelay: 0.8
+  hexStepBlastDamage: 10
+  hexStepCooldown: 6
+  totemCountByPhase: 000000000200000003000000
+  totemSummonSeconds: 1.2
+  totemPlacementRadius: 6
+  totemBaseHealth: 45
+  totemPulseInterval: 4.5
+  totemFirstPulseDelay: 2
+  ringSpeed: 5
+  ringMaxRadius: 13
+  ringWidth: 0.8
+  ringDamage: 8
+  totemResummonCooldown: 14
+  totemBacklashStaggerSeconds: 2.5
+  staggerDamageTakenMultiplier: 1.5
+  ritualCooldown: 22
+  ritualChannelSeconds: 6
+  ritualBreakHealthFraction: 0.1
+  ritualBrokenStaggerSeconds: 4
+  ritualBlastRadius: 16
+  ritualBlastDamage: 25
+  ritualSafeCircleCount: 3
+  ritualSafeCircleRadius: 2.2
+  ritualSafeCircleMinDistance: 5
+  ritualSafeCircleMaxDistance: 11
+  bonusGold: 60
+  bonusGoblinBlood: 4
+  boltPrefab: {fileID: 4977042627968930089, guid: c470d8bd0a4527a4fa54a7f6f369c83e, type: 3}
+  runeBlastPrefab: {fileID: 1915010334512514050, guid: b106f729f4d21f64e9b9af5fca34c686, type: 3}
+  totemPrefab: {fileID: 4899113579375605343, guid: 290bd76b9b7e864469112adc6b12b43e, type: 3}
+  shockwaveRingPrefab: {fileID: 2314714389260448403, guid: 0d2df60835431d945a1b43b86cb2ef49, type: 3}
+  ritualSafeCirclePrefab: {fileID: 2995358114191944129, guid: 9b2eac004fe45eb4fa61ac22fc3fcfa8, type: 3}
+  ritualDangerPrefab: {fileID: 3276077909021593320, guid: f851118a0519a374ab5def1c8f44aa37, type: 3}

@@ -13,7 +13,7 @@ using UnityEngine;
 ///     - Bulwark Stance (Shield barrier triggered on high difficulty tiers)
 ///     - Morale Break on defeat (stuns nearby goblins)
 /// </summary>
-public class CaptainEnemyController : MonoBehaviour
+public class CaptainEnemyController : MonoBehaviour, ICaptain
 {
     [Header("Captain Identity")]
     [SerializeField] private string captainName = "Captain Fraglob";

@@ -92,7 +92,7 @@ public static class WaveCardGenerator
             enemyHealthMultiplier = WaveChoiceConfigSO.BySkulls(config.enemyHealthMultiplierBySkulls, skulls),
             killQuotaMultiplier = WaveChoiceConfigSO.BySkulls(config.killQuotaMultiplierBySkulls, skulls),
             hasCaptain = config.captainOnThreeSkulls && skulls >= 3,
-            captainName = ctx.captainName,
+            captainName = RollCaptainName(config, objective, skulls, ctx, rng),
             isFresh = config.varietyBonusPercent > 0f && !string.IsNullOrEmpty(ctx.lastObjectiveId) &&
                       !string.Equals(ctx.lastObjectiveId, objective.id, StringComparison.OrdinalIgnoreCase)
         };
@@ -114,6 +114,22 @@ public static class WaveCardGenerator
         card.bonusType = option != null ? option.type : WaveBonusType.None;
         card.bonusAmount = BonusAmount(config, option, skulls, multiplier);
         return card;
+    }
+
+    /// <summary>
+    ///     The captain a card names: the node's, or (at <see cref="WaveChoiceConfigSO.wanderingCaptainChance" />)
+    ///     the wandering captain, on any card that brings one (3 skulls, or the Captain Assault). Rolled here so
+    ///     the card and the spawn can't disagree.
+    /// </summary>
+    public static string RollCaptainName(WaveChoiceConfigSO config, WaveObjectiveDefinition objective, int skulls, WaveCardRollContext ctx, System.Random rng)
+    {
+        bool bringsCaptain = (config.captainOnThreeSkulls && skulls >= 3) ||
+                             (objective != null && string.Equals(objective.id, DefeatCaptainObjective.Id, StringComparison.OrdinalIgnoreCase));
+        if (!bringsCaptain || rng == null || string.IsNullOrEmpty(config.wanderingCaptainName) || config.wanderingCaptainChance <= 0f)
+        {
+            return ctx.captainName;
+        }
+        return rng.NextDouble() < config.wanderingCaptainChance ? config.wanderingCaptainName : ctx.captainName;
     }
 
     public static List<WaveObjectiveDefinition> EligibleObjectives(WaveChoiceConfigSO config, WaveCardRollContext ctx)

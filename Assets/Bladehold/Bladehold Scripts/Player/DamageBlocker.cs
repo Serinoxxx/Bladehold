@@ -13,6 +13,8 @@ public class DamageBlocker : MonoBehaviour
     [SerializeField] private Health health;
     [Tooltip("Optional; defaults to Player.Instance.Stats.")]
     [SerializeField] private PlayerStats stats;
+    [Tooltip("Optional; defaults to the player's PlayerDodge. Hits during dodge i-frames never reach this block, so it doesn't spend itself on them.")]
+    [SerializeField] private PlayerDodge dodge;
     [Tooltip("Optional: played when a hit is blocked.")]
     [SerializeField] private MMF_Player blockFeedback;
 
@@ -57,6 +59,7 @@ public class DamageBlocker : MonoBehaviour
         }
 
         stats.SetBase(StatType.BlockCooldown, 0f);
+        if (dodge == null) dodge = Player.Instance != null ? Player.Instance.GetComponent<PlayerDodge>() : GetComponentInParent<PlayerDodge>();
         health.TryBlockDamage += HandleIncomingDamage;
     }
 
@@ -70,6 +73,11 @@ public class DamageBlocker : MonoBehaviour
 
     private bool HandleIncomingDamage(Damage damage)
     {
+        if (dodge != null && dodge.IsInvulnerable)
+        {
+            return false;
+        }
+
         if (!IsAvailable)
         {
             return false;

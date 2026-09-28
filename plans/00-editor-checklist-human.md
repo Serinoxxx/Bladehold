@@ -13,6 +13,7 @@ Things that need your hands, eyes or judgement in the Unity Editor. Items marked
 - [09: Visuals + MMF](editor/09-visuals-mmf.md) (tower build feedbacks empty until wired)
 - [15: Wave choice draft](editor/15-wave-choice.md) (wave card UI review; flow still uses banners until Phase C)
 - [Ammo chest + Hold the Gate top-up](editor/ammo-chest.md) (chest prefab not built or placed yet)
+- [Captain Mogra Hexfang + dash i-frames](editor/captain-mogra.md) (built and play-checked; needs your audio, animation and balance pass)
 
 ## A. Triage first (biggest win)
 

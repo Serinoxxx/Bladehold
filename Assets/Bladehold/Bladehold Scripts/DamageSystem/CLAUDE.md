@@ -10,7 +10,7 @@
   - The static `OnAnyHealthDamaged`.
 - Per-instance overrides: `SetMaxHealth(value[, preserveFraction])`, `ScaleMaxHealth`. Spawners call these right after `Instantiate`, before `Start`.
 - **The only three hooks that change what Health does** (all are invocation-list events):
-  - `TryBlockDamage` (`Func<Damage,bool>`): checked first; `true` negates the hit entirely (no loss, feedback or events).
+  - `TryBlockDamage` (`Func<Damage,bool>`): checked first; `true` negates the hit entirely (no loss, feedback or events). Player users: `PlayerDodge` i-frames (`StatType.DodgeIFrameDuration`, 0.3 s from the dash start), `DamageBlocker`, `Parry`, `PlayerMount`. The block and parry skip hits during i-frames so they don't spend themselves on a hit the dash already dodged.
   - `ScaleDamageTaken` (`Func<Damage,float>`): every handler's multiplier is multiplied together (clamped ≥ 0) and applied to `Damage.value` in place, so listeners see the mitigated value. Used for damage-reduction buffs.
   - `TryPreventDeath` (`Func<bool>`): checked before a lethal hit latches; `true` cancels the death (the handler calls `Revive` itself). Second Wind is the intended user.
 - Everything else is a reactive listener that unsubscribes in `OnDestroy`.

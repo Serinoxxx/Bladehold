@@ -114,6 +114,10 @@ public class WaveChoiceConfigSO : ScriptableObject
     public float[] modifierMagnitudeBySkulls = { 0.6f, 1f, 1.4f };
     [Tooltip("A 3-skull card brings a clan captain.")]
     public bool captainOnThreeSkulls = true;
+    [Tooltip("A captain not tied to any campaign node, who can turn up in place of the node's captain.")]
+    public string wanderingCaptainName = CaptainRegistry.MograName;
+    [Tooltip("Chance (0-1) that a card with a captain (3 skulls, or the Captain Assault) brings the wandering captain instead of the node's.")]
+    [Range(0f, 1f)] public float wanderingCaptainChance = 0.35f;
 
     [Header("Skull Odds")]
     public List<WaveSkullRollRow> skullRollTable = new List<WaveSkullRollRow>

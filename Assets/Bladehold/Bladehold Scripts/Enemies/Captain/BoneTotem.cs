@@ -1,0 +1,157 @@
+using System;
+using MoreMountains.Feedbacks;
+using UnityEngine;
+
+/// <summary>
+///     A bone totem raised by Captain Mogra (phase 2+). It sends out a <see cref="HexShockwaveRing" />
+///     every pulse interval and is tethered to Mogra by a visible beam. Breaking it backlashes onto him:
+///     <see cref="OnBroken" /> tells the controller, which staggers him. Totems are an opportunity, not a
+///     gate: he never becomes immune while they stand. Death is signalled via <see cref="Health.OnDied" />
+///     and the totem crumbles itself; no kill credit or gold.
+/// </summary>
+[RequireComponent(typeof(Health))]
+public class BoneTotem : MonoBehaviour
+{
+    [SerializeField] private Health health;
+    [Tooltip("Where rings start and the tether attaches (near the base / the skull).")]
+    [SerializeField] private Transform ringOrigin;
+    [SerializeField] private Transform tetherAnchor;
+    [Tooltip("Beam from this totem to Mogra. Its two positions are set every frame.")]
+    [SerializeField] private LineRenderer tether;
+    [Tooltip("Visuals hidden when the totem breaks.")]
+    [SerializeField] private GameObject visualRoot;
+    [Tooltip("Played when the totem rises.")]
+    [SerializeField] private MMF_Player riseFeedback;
+    [Tooltip("Played on each pulse (a hum or thump as the ring leaves).")]
+    [SerializeField] private MMF_Player pulseFeedback;
+    [Tooltip("Played when the totem is broken.")]
+    [SerializeField] private MMF_Player breakFeedback;
+
+    private GameObject ringPrefab;
+    private Transform ownerTether;
+    private IDamageable ownerDamageable;
+    private float pulseInterval;
+    private float nextPulseTime;
+    private float ringSpeed;
+    private float ringMaxRadius;
+    private float ringWidth;
+    private float ringDamage;
+    private bool initialized;
+    private bool broken;
+
+    /// <summary>Raised once when the player breaks the totem (not when it crumbles with Mogra).</summary>
+    public event Action<BoneTotem> OnBroken;
+
+    public Health Health => health;
+    public bool IsBroken => broken;
+
+    private void OnValidate()
+    {
+        if (health == null) health = GetComponent<Health>();
+    }
+
+    private void Awake()
+    {
+        if (health == null) health = GetComponent<Health>();
+    }
+
+    private void Start()
+    {
+        if (health == null) Debug.LogError($"{name}: BoneTotem needs a Health.", this);
+        if (tether == null) Debug.LogError($"{name}: tether LineRenderer is not assigned.", this);
+        if (breakFeedback == null) Debug.LogError($"{name}: breakFeedback is not assigned.", this);
+        if (health != null) health.OnDied += HandleDied;
+    }
+
+    private void OnDestroy()
+    {
+        if (health != null) health.OnDied -= HandleDied;
+    }
+
+    /// <summary>Configures the totem. Call right after Instantiate (before Start).</summary>
+    public void Init(float maxHealth, GameObject shockwaveRingPrefab, float firstPulseDelay, float interval,
+        float speed, float maxRadius, float width, float damage, Transform ownerTetherPoint, IDamageable owner)
+    {
+        if (health == null) health = GetComponent<Health>();
+        if (health != null) health.SetMaxHealth(maxHealth);
+        ringPrefab = shockwaveRingPrefab;
+        pulseInterval = Mathf.Max(0.5f, interval);
+        nextPulseTime = Time.time + Mathf.Max(0f, firstPulseDelay);
+        ringSpeed = speed;
+        ringMaxRadius = maxRadius;
+        ringWidth = width;
+        ringDamage = damage;
+        ownerTether = ownerTetherPoint;
+        ownerDamageable = owner;
+        initialized = true;
+        if (riseFeedback != null) riseFeedback.PlayFeedbacks(transform.position);
+    }
+
+    private void Update()
+    {
+        if (!initialized || broken) return;
+
+        UpdateTether();
+
+        if (Time.time >= nextPulseTime)
+        {
+            nextPulseTime = Time.time + pulseInterval;
+            Pulse();
+        }
+    }
+
+    private void UpdateTether()
+    {
+        if (tether == null) return;
+        bool show = ownerTether != null;
+        tether.enabled = show;
+        if (!show) return;
+        tether.positionCount = 2;
+        tether.SetPosition(0, tetherAnchor != null ? tetherAnchor.position : transform.position + Vector3.up * 1.5f);
+        tether.SetPosition(1, ownerTether.position);
+    }
+
+    private void Pulse()
+    {
+        if (ringPrefab == null)
+        {
+            Debug.LogError($"{name}: no shockwave ring prefab (CaptainMograSO.shockwaveRingPrefab).", this);
+            return;
+        }
+        Vector3 origin = ringOrigin != null ? ringOrigin.position : transform.position;
+        GameObject ringObj = Instantiate(ringPrefab, origin, ringPrefab.transform.rotation);
+        HexShockwaveRing ring = ringObj.GetComponent<HexShockwaveRing>();
+        if (ring == null)
+        {
+            Debug.LogError($"{name}: shockwave ring prefab '{ringPrefab.name}' has no HexShockwaveRing.", this);
+            Destroy(ringObj);
+            return;
+        }
+        ring.Launch(ringSpeed, ringMaxRadius, ringWidth, ringDamage, ownerDamageable);
+        if (pulseFeedback != null) pulseFeedback.PlayFeedbacks(origin);
+    }
+
+    private void HandleDied()
+    {
+        if (broken) return;
+        Break();
+        OnBroken?.Invoke(this);
+    }
+
+    /// <summary>Mogra died or left: the totem falls apart without a backlash.</summary>
+    public void Crumble()
+    {
+        if (broken) return;
+        Break();
+    }
+
+    private void Break()
+    {
+        broken = true;
+        if (tether != null) tether.enabled = false;
+        if (breakFeedback != null) breakFeedback.PlayFeedbacks(transform.position);
+        if (visualRoot != null) visualRoot.SetActive(false);
+        foreach (Collider c in GetComponentsInChildren<Collider>()) c.enabled = false;
+        Destroy(gameObject, 2f);
+    }
+}

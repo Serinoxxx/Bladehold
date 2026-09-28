@@ -403,6 +403,10 @@ public enum StatType
     LightningDamageBonus,
     /// <summary>Extra fraction of all player damage dealt to enemies that are chilled or frozen (0.25 = +25%).</summary>
     ChilledDamageBonus,
+
+    // --- Dodge i-frames (appended so existing serialized values keep their indices) ---
+    /// <summary>Seconds of invulnerability from the start of a dodge (covers the dash plus a short grace).</summary>
+    DodgeIFrameDuration,
 }
 
 /// <summary>

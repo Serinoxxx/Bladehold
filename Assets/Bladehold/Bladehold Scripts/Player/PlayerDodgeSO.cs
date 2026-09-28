@@ -22,6 +22,14 @@ public class PlayerDodgeSO : ScriptableObject
     [Tooltip("Duration in seconds of the dash movement.")]
     public float dashDuration = 0.2f;
 
+    [Header("Invulnerability")]
+    [Tooltip("Seconds the player ignores all damage from the start of a dash (the dash itself plus a short grace). Registered as the DodgeIFrameDuration stat base.")]
+    public float iFrameDuration = 0.3f;
+
+    [Header("Animation")]
+    [Tooltip("Animator trigger fired when a dash starts (the Player AC's Dodge layer).")]
+    public string dodgeAnimTrigger = "Dodge";
+
     [Header("Input Buffering")]
     [Tooltip("Window in seconds during which a dash input pressed while dashing will buffer and fire immediately upon completion.")]
     public float inputBufferDuration = 0.15f;

@@ -20,6 +20,8 @@ public class Parry : MonoBehaviour
     [SerializeField] private Health health;
     [Tooltip("Optional; defaults to Player.Instance.Stats.")]
     [SerializeField] private PlayerStats stats;
+    [Tooltip("Optional; defaults to the player's PlayerDodge. Hits during dodge i-frames never reach this block, so it doesn't spend itself on them.")]
+    [SerializeField] private PlayerDodge dodge;
     [Tooltip("Optional: played when a hit is parried.")]
     [SerializeField] private MMF_Player parryFeedback;
     [Tooltip("Minimum dot product between facing and the direction to the attacker required to parry. 0 = anywhere in the front hemisphere, 1 = dead-on only.")]
@@ -62,6 +64,7 @@ public class Parry : MonoBehaviour
         }
 
         stats.SetBase(StatType.ParryChance, 0f);
+        if (dodge == null) dodge = Player.Instance != null ? Player.Instance.GetComponent<PlayerDodge>() : GetComponentInParent<PlayerDodge>();
         health.TryBlockDamage += HandleIncomingDamage;
     }
 
@@ -75,6 +78,11 @@ public class Parry : MonoBehaviour
 
     private bool HandleIncomingDamage(Damage damage)
     {
+        if (dodge != null && dodge.IsInvulnerable)
+        {
+            return false;
+        }
+
         if (damage.type == DamageType.elemental || damage.unparryable)
         {
             return false;

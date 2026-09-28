@@ -1075,6 +1075,66 @@ internal static class EnemyManifest
                 }
             }
         },
+
+        // Captain Mogra Hexfang: goblin shaman captain — rune patterns, hex bolts, bone totems, ritual.
+        // Model (Goblin Shaman), the Mogra AC, spell prefabs, MMF feedbacks and the cast bar come from
+        // Bladehold/Captains/Build Captain Mogra Assets (CaptainMograBuilder), which runs this entry too.
+        new EnemySpec
+        {
+            id = "captain_mogra",
+            soFolder = "Captain",
+            prefabName = "Captain Mogra Enemy Variant",
+            rootScale = 1.3f,
+            animatorOverridePath = CaptainMograBuilder.ControllerPath,
+            disableBaseAIAttack = true,
+            removeComponents = new[] { typeof(GoldenGoblin), typeof(ImpulseGoblin) },
+            navStoppingDistance = 8f,
+            children = new[]
+            {
+                new ChildSpec { name = "Hex Cast Point", localPosition = new Vector3(0f, 1.3f, 0.55f) }
+            },
+            assets = new[]
+            {
+                new SoSpec
+                {
+                    soType = typeof(CaptainMograSO),
+                    assetName = "CaptainMograSO",
+                    initDefaults = so =>
+                    {
+                        var data = (CaptainMograSO)so;
+                        data.boltPrefab = LoadPrefab(CaptainMograBuilder.BoltPrefabPath);
+                        data.runeBlastPrefab = LoadPrefab(CaptainMograBuilder.RuneBlastPrefabPath);
+                        data.totemPrefab = LoadPrefab(CaptainMograBuilder.TotemPrefabPath);
+                        data.shockwaveRingPrefab = LoadPrefab(CaptainMograBuilder.RingPrefabPath);
+                        data.ritualSafeCirclePrefab = LoadPrefab(CaptainMograBuilder.SafeCirclePrefabPath);
+                        data.ritualDangerPrefab = LoadPrefab(CaptainMograBuilder.DangerPrefabPath);
+                    }
+                }
+            },
+            components = new[]
+            {
+                new ComponentSpec
+                {
+                    type = typeof(CaptainMograController),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "data", ctx.LoadedAsset("CaptainMograSO"));
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                        EnemyPrefabGenerator.SetReference(so, "movement", ctx.Movement);
+                        EnemyPrefabGenerator.SetReference(so, "agent", ctx.Root.GetComponent<UnityEngine.AI.NavMeshAgent>());
+                        EnemyPrefabGenerator.SetReference(so, "targetSelector", ctx.Root.GetComponent<AITargetSelector>());
+                        EnemyPrefabGenerator.SetReference(so, "animator", ctx.ChildAnimator);
+                        var hl = ctx.Root.GetComponentInChildren<HighlightEffect>();
+                        if (hl != null)
+                        {
+                            EnemyPrefabGenerator.SetReference(so, "highlightEffect", hl);
+                        }
+                        GameObject castPointChild = ctx.FindOrCreateChild("Hex Cast Point", new Vector3(0f, 1.3f, 0.55f));
+                        EnemyPrefabGenerator.SetReference(so, "castPoint", castPointChild.transform);
+                    }
+                }
+            }
+        },
     };
 
     /// <summary>Loads a projectile prefab's component for wiring, throwing when the prefab is

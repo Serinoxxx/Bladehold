@@ -465,7 +465,7 @@ public class GameLoopManager : MonoBehaviour
         bool objectiveSpawnsCaptain = currentObjective != null && currentObjective.ObjectiveId == CaptainObjectiveId;
         if (!objectiveSpawnsCaptain && card != null && card.hasCaptain)
         {
-            activeCaptain = SpawnCaptainForWave(card.CaptainTier, CurrentCampaignNode != null ? CurrentCampaignNode.captainName : null);
+            activeCaptain = SpawnCaptainForWave(card.CaptainTier, CaptainNameFor(card));
         }
 
         if (waveAnnouncementText != null)
@@ -507,13 +507,20 @@ public class GameLoopManager : MonoBehaviour
             // Captain Assault is missing from the scene: keep wave 5's captain the old way.
             if (card != null && card.ObjectiveId == CaptainObjectiveId)
             {
-                activeCaptain = SpawnCaptainForWave(CaptainTierForThreat(SectorThreat.Current), CurrentCampaignNode != null ? CurrentCampaignNode.captainName : null);
+                activeCaptain = SpawnCaptainForWave(CaptainTierForThreat(SectorThreat.Current), CaptainNameFor(card));
             }
         }
 
         currentObjective = objectiveManager.CurrentObjective;
         if (currentObjective != null) lastObjectiveId = currentObjective.ObjectiveId;
         Debug.Log($"[GameLoopManager] Wave {waveNumber} Objective: {currentObjective?.Title ?? "None"}");
+    }
+
+    /// <summary>The captain a wave card named (it may have rolled a wandering captain), else the campaign node's.</summary>
+    public string CaptainNameFor(WaveCard card)
+    {
+        if (card != null && !string.IsNullOrEmpty(card.captainName)) return card.captainName;
+        return CurrentCampaignNode != null ? CurrentCampaignNode.captainName : null;
     }
 
     /// <summary>The captain tier the final wave uses at a sector threat (mirrors DefeatCaptainObjective).</summary>
@@ -772,8 +779,9 @@ public class GameLoopManager : MonoBehaviour
     }
 
     /// <summary>
-    ///     Spawns a Clan Captain (e.g. Captain Kombusta or Captain Fraglob) for Enraged, Nightmare, or Omega difficulty tiers,
-    ///     plays the cinematic EnemyIntroUI with difficulty skulls, and initializes the captain controller.
+    ///     Spawns a Clan Captain, plays the cinematic EnemyIntroUI with difficulty skulls, and initializes its
+    ///     <see cref="ICaptain" /> controller. <paramref name="preferredCaptainName" /> is matched through
+    ///     <see cref="CaptainRegistry" />; blank or unknown picks a random spawnable captain.
     /// </summary>
     public GameObject SpawnCaptainForWave(BannerDifficultyTier tier, string preferredCaptainName = null)
     {
@@ -782,60 +790,38 @@ public class GameLoopManager : MonoBehaviour
         Quaternion spawnRot = captainSpawnPoint != null ? captainSpawnPoint.rotation :
                              (bossSpawnPoint != null ? bossSpawnPoint.rotation : Quaternion.identity);
 
-        bool pickKombusta;
-        if (!string.IsNullOrEmpty(preferredCaptainName))
+        CaptainRegistry.CaptainEntry entry = CaptainRegistry.Find(preferredCaptainName);
+        if (entry == null)
         {
-            pickKombusta = preferredCaptainName.IndexOf("Kombusta", StringComparison.OrdinalIgnoreCase) >= 0;
-        }
-        else
-        {
-            pickKombusta = UnityEngine.Random.value < 0.5f;
-        }
-
-        if (!pickKombusta && captainPrefab == null)
-        {
-            Debug.LogError("[GameLoopManager] Captain Fraglob has no prefab assigned (captainPrefab). Spawning Captain Kombusta instead. Needs Lance in the Editor.");
-            pickKombusta = true;
-        }
-
-        GameObject captainGo;
-        string captainName;
-        if (pickKombusta)
-        {
-            captainName = "Captain Kombusta";
-            // The roster's captain_kombusta row is the same authored prefab when the slot is empty.
-            captainGo = captainKombustaPrefab != null
-                ? Instantiate(captainKombustaPrefab, spawnPos, spawnRot)
-                : spawner != null && spawner.Roster != null && spawner.Roster.Find("captain_kombusta") != null
-                    ? spawner.DebugSpawnEnemyType("captain_kombusta")
-                    : null;
-            if (captainGo == null)
+            List<CaptainRegistry.CaptainEntry> spawnable = new List<CaptainRegistry.CaptainEntry>();
+            foreach (CaptainRegistry.CaptainEntry candidate in CaptainRegistry.All)
             {
-                Debug.LogError("[GameLoopManager] Captain Kombusta has no prefab (captainKombustaPrefab empty and no captain_kombusta roster row). No captain spawned.");
-                return null;
+                if (CanSpawnCaptain(candidate)) spawnable.Add(candidate);
             }
-
-            CaptainKombustaController kombusta = captainGo.GetComponent<CaptainKombustaController>();
-            if (kombusta == null)
-            {
-                Debug.LogError($"[GameLoopManager] Captain Kombusta prefab '{captainGo.name}' has no CaptainKombustaController.");
-                return captainGo;
-            }
-            kombusta.Initialize(tier, captainName);
+            entry = spawnable.Count > 0 ? spawnable[UnityEngine.Random.Range(0, spawnable.Count)] : CaptainRegistry.Kombusta;
         }
-        else
+
+        if (!CanSpawnCaptain(entry))
         {
-            captainName = "Captain Fraglob";
-            captainGo = Instantiate(captainPrefab, spawnPos, spawnRot);
-
-            CaptainEnemyController fraglob = captainGo.GetComponent<CaptainEnemyController>();
-            if (fraglob == null)
-            {
-                Debug.LogError($"[GameLoopManager] Captain Fraglob prefab '{captainGo.name}' has no CaptainEnemyController.");
-                return captainGo;
-            }
-            fraglob.Initialize(tier, captainName);
+            Debug.LogError($"[GameLoopManager] {entry.displayName} can't spawn (no prefab slot or '{entry.rosterId}' roster row). Spawning Captain Kombusta instead. Needs Lance in the Editor.");
+            entry = CaptainRegistry.Kombusta;
         }
+
+        GameObject captainGo = SpawnCaptainObject(entry, spawnPos, spawnRot);
+        if (captainGo == null)
+        {
+            Debug.LogError($"[GameLoopManager] {entry.displayName} has no prefab (no prefab slot and no '{entry.rosterId}' roster row). No captain spawned.");
+            return null;
+        }
+
+        string captainName = entry.displayName;
+        ICaptain captain = captainGo.GetComponent<ICaptain>();
+        if (captain == null)
+        {
+            Debug.LogError($"[GameLoopManager] Captain prefab '{captainGo.name}' has no ICaptain controller.");
+            return captainGo;
+        }
+        captain.Initialize(tier, captainName);
 
         Health captainHealth = captainGo.GetComponent<Health>();
         if (captainHealth != null)
@@ -860,6 +846,34 @@ public class GameLoopManager : MonoBehaviour
 
         Debug.Log($"[GameLoopManager] Spawned {captainName} at Tier {tier} ({BannerDifficultyHelper.GetRewardMultiplier(tier)}x rewards)!");
         return captainGo;
+    }
+
+    private bool CanSpawnCaptain(CaptainRegistry.CaptainEntry entry)
+    {
+        if (entry == CaptainRegistry.Fraglob) return captainPrefab != null;
+        if (entry == CaptainRegistry.Kombusta && captainKombustaPrefab != null) return true;
+        return !string.IsNullOrEmpty(entry.rosterId) && spawner != null && spawner.Roster != null && spawner.Roster.Find(entry.rosterId) != null;
+    }
+
+    /// <summary>
+    ///     Roster captains spawn through the spawner, so the CSV row applies and the rout/cleanup track them
+    ///     (they don't count toward the kill quota). Prefab slots are the direct-Instantiate path.
+    /// </summary>
+    private GameObject SpawnCaptainObject(CaptainRegistry.CaptainEntry entry, Vector3 spawnPos, Quaternion spawnRot)
+    {
+        if (entry == CaptainRegistry.Fraglob)
+        {
+            return captainPrefab != null ? Instantiate(captainPrefab, spawnPos, spawnRot) : null;
+        }
+        if (entry == CaptainRegistry.Kombusta && captainKombustaPrefab != null)
+        {
+            return Instantiate(captainKombustaPrefab, spawnPos, spawnRot);
+        }
+        if (string.IsNullOrEmpty(entry.rosterId) || spawner == null || spawner.Roster == null || spawner.Roster.Find(entry.rosterId) == null)
+        {
+            return null;
+        }
+        return spawner.DebugSpawnEnemyType(entry.rosterId);
     }
 
     private void TriggerVictory()
