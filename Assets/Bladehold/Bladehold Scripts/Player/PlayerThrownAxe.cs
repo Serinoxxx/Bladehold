@@ -191,6 +191,9 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
 
     private void Start()
     {
+        // PlayerBarrier colliders only keep the player out: axes and the aim ray fly through them.
+        hitLayers = PlayerBarrier.Exclude(hitLayers);
+
         if (inputReader == null)
         {
             Debug.LogError("InputReader is not assigned or found; the thrown axe can't read aim/fire input.");

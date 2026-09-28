@@ -21,6 +21,7 @@ Every plan follows `/CLAUDE.md` (source of truth). Key rules: no visuals or fall
 | 10 | [Skills refresh](10-skills-refresh.md) | Tooling | none |
 | 11 | [Test strategy](11-test-strategy.md) | Tooling | 08 |
 | 12 | [Mount from start + fishing restrictions](12-mount-and-fishing-restrictions.md) | Fix | none |
+| 15 | [Wave choice draft (replaces war banners)](15-wave-choice-draft.md) | Feature (core loop) | 01, 06 |
 
 ## Roadmap to Next Fest (Feb 27 2027)
 

@@ -1,0 +1,132 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45f12cab1be73c842851cc94ef2b8c82, type: 3}
+  m_Name: WaveChoiceConfig
+  m_EditorClassIdentifier: Assembly-CSharp::WaveChoiceConfigSO
+  objectivesCsv: {fileID: 4900000, guid: b0f2390cd0ff98048be88c6ad731dff6, type: 3}
+  clans:
+  - {fileID: 11400000, guid: ebc776cb20154ac08293fbb577228b84, type: 2}
+  - {fileID: 11400000, guid: a886375df93f45d892b94beae8fb75be, type: 2}
+  - {fileID: 11400000, guid: 082212e3a9e547f787c5936df350e777, type: 2}
+  - {fileID: 11400000, guid: c9be40d36a484cc4a2f6efc11aed7a98, type: 2}
+  - {fileID: 11400000, guid: 60b8c4dc54304c3d917021f9ee90c404, type: 2}
+  nodeClanWeight: 2
+  cardsPerDraw: 3
+  lastObjectiveWeight: 0.25
+  maxOffenceCards: 2
+  rewardBaseByWave:
+  - gold: 80
+    supply: 40
+  - gold: 80
+    supply: 40
+  - gold: 80
+    supply: 40
+  - gold: 80
+    supply: 40
+  - gold: 80
+    supply: 40
+  bonusPool:
+  - type: 1
+    weight: 3
+    baseAmount: 1
+  - type: 2
+    weight: 2
+    baseAmount: 2
+  - type: 3
+    weight: 2
+    baseAmount: 2
+  - type: 4
+    weight: 1
+    baseAmount: 25
+  defenceRewardMultiplier: 1
+  offenceRewardMultiplier: 1.5
+  draftPicksBySkulls: 010000000100000002000000
+  varietyBonusPercent: 10
+  rewardMultiplierBySkulls:
+  - 1
+  - 1.5
+  - 2.25
+  enemyHealthMultiplierBySkulls:
+  - 1
+  - 1.15
+  - 1.3
+  killQuotaMultiplierBySkulls:
+  - 1
+  - 1.15
+  - 1.3
+  modifierMagnitudeBySkulls:
+  - 0.6
+  - 1
+  - 1.4
+  captainOnThreeSkulls: 1
+  skullRollTable:
+  - wave: 2
+    minThreat: 1
+    oneSkull: 60
+    twoSkulls: 35
+    threeSkulls: 5
+  - wave: 2
+    minThreat: 3
+    oneSkull: 45
+    twoSkulls: 40
+    threeSkulls: 15
+  - wave: 2
+    minThreat: 5
+    oneSkull: 30
+    twoSkulls: 45
+    threeSkulls: 25
+  - wave: 3
+    minThreat: 1
+    oneSkull: 45
+    twoSkulls: 40
+    threeSkulls: 15
+  - wave: 3
+    minThreat: 3
+    oneSkull: 35
+    twoSkulls: 45
+    threeSkulls: 20
+  - wave: 3
+    minThreat: 5
+    oneSkull: 20
+    twoSkulls: 45
+    threeSkulls: 35
+  - wave: 4
+    minThreat: 1
+    oneSkull: 35
+    twoSkulls: 45
+    threeSkulls: 20
+  - wave: 4
+    minThreat: 3
+    oneSkull: 25
+    twoSkulls: 45
+    threeSkulls: 30
+  - wave: 4
+    minThreat: 5
+    oneSkull: 15
+    twoSkulls: 45
+    threeSkulls: 40
+  firstWave:
+    objectiveId: kill_enemies
+    skulls: 1
+    bonus: 0
+    rollClan: 1
+  finalWave:
+    objectiveId: defeat_captain
+    skulls: 1
+    bonus: 0
+    rollClan: 0
+  firstDraftedWave: 2
+  finalWaveNumber: 5
+  routDurationSeconds: 4
+  supplyPerGateHp: 1
+  gateRepairHpPerSecond: 20
+  maxGateRepairPerPrep: 0

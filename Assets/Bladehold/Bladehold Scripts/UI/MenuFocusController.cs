@@ -89,6 +89,16 @@ public class MenuFocusController : MonoBehaviour
         }
     }
 
+    /// <summary>Replaces the default control, for panels whose rows are built at runtime, and focuses it under a pad.</summary>
+    public void SetDefaultSelectable(Selectable selectable)
+    {
+        defaultSelectable = selectable;
+        if (InputDeviceWatcher.GamepadActive && isActiveAndEnabled)
+        {
+            SelectDefault();
+        }
+    }
+
     /// <summary>Focuses the default control — also callable by panel code after it swaps tab content.</summary>
     public void SelectDefault()
     {

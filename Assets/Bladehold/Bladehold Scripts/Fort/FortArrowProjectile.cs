@@ -22,6 +22,12 @@ public class FortArrowProjectile : MonoBehaviour
     private string infusedElement = "";
     private GameObject visualFxInstance;
 
+    private void Awake()
+    {
+        // PlayerBarrier colliders (tower plot pads) only keep the player out: arrows fly through them.
+        hitLayers = PlayerBarrier.Exclude(hitLayers);
+    }
+
     public void Init(Vector3 dir, float spd, float dmg)
     {
         direction = dir.normalized;

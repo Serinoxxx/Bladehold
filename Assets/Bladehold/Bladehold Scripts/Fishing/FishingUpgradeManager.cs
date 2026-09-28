@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -15,6 +16,10 @@ public class FishingUpgradeManager : MonoBehaviour
 
     public event Action<FishingUpgradeType, int> OnUpgradeApplied;
 
+    [Header("Feedback")]
+    [Tooltip("Boom + splash burst played at each Fishsploshion blast centre.")]
+    [SerializeField] private MMF_Player fishsploshionFeedback;
+
     private void Awake()
     {
         if (Instance == null)
@@ -26,6 +31,11 @@ public class FishingUpgradeManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+    }
+
+    private void Start()
+    {
+        if (fishsploshionFeedback == null) Debug.LogError("[FishingUpgradeManager] fishsploshionFeedback is not assigned: Fishsploshion blasts are silent and invisible.", this);
     }
 
     private void OnDestroy()
@@ -208,6 +218,8 @@ public class FishingUpgradeManager : MonoBehaviour
     private IEnumerator DetonateFishsploshion(Vector3 position, int chainDepth)
     {
         yield return new WaitForSeconds(FishsploshionDelay);
+
+        if (fishsploshionFeedback != null) fishsploshionFeedback.PlayFeedbacks(position);
 
         int dmg = FishsploshionDamage;
         Collider[] hits = Physics.OverlapSphere(position, FishsploshionRadius);

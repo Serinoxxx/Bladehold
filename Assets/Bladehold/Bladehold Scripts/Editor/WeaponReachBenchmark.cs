@@ -2952,6 +2952,137 @@ public static class WeaponReachBenchmark
             }
         }
 
+        // 27. WAVE CHOICE DRAFT: CARD MIX, REWARD MATHS & FIXED WAVES (plan 15)
+        sb.AppendLine("\n### 27. WAVE CHOICE DRAFT: CARD MIX, REWARD MATHS & FIXED WAVES");
+        {
+            try
+            {
+                void Check(bool ok, string pass, string fail)
+                {
+                    sb.AppendLine(ok ? $"  - {pass} [PASSED]" : $"  - [FAIL] {fail}");
+                    if (ok) passedCount++; else failedCount++;
+                }
+
+                WaveChoiceConfigSO cfg = AssetDatabase.LoadAssetAtPath<WaveChoiceConfigSO>("Assets/Bladehold/Resources/WaveChoiceConfig.asset");
+                Check(cfg != null && cfg.objectivesCsv != null, "WaveChoiceConfig asset exists with its CSV",
+                    "Resources/WaveChoiceConfig.asset or its objectivesCsv is missing");
+                if (cfg != null && cfg.objectivesCsv != null)
+                {
+                    var csvErrors = new List<string>();
+                    WaveObjectiveCatalog catalog = WaveObjectiveCatalog.Parse(cfg.objectivesCsv.text, csvErrors);
+                    Check(csvErrors.Count == 0 && catalog.All.Count > 0, $"WaveObjectives.csv parses cleanly ({catalog.All.Count} rows)",
+                        $"WaveObjectives.csv errors: {string.Join("; ", csvErrors)}");
+
+                    // Every draftable row must map to an objective component on the objectives prefab.
+                    GameObject objectivesPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/Objectives/SurvivorsObjectives.prefab");
+                    var prefabIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    if (objectivesPrefab != null)
+                    {
+                        foreach (MonoBehaviour mb in objectivesPrefab.GetComponentsInChildren<MonoBehaviour>(true))
+                        {
+                            if (mb is ISurvivorsObjective o) prefabIds.Add(o.ObjectiveId);
+                        }
+                    }
+                    var missingIds = new List<string>();
+                    foreach (WaveObjectiveDefinition def in catalog.All)
+                    {
+                        if (def.draftable && !prefabIds.Contains(def.id)) missingIds.Add(def.id);
+                    }
+                    Check(objectivesPrefab != null && missingIds.Count == 0, "Every draftable CSV row has an objective on SurvivorsObjectives.prefab",
+                        $"Draftable rows with no prefab objective: {string.Join(", ", missingIds)}");
+
+                    // Mix rules over 1000 seeded draws across waves 2-4 and threat 1-8.
+                    var rng = new System.Random(15);
+                    var draftableIds = new List<string>();
+                    foreach (WaveObjectiveDefinition def in catalog.All) if (def.draftable) draftableIds.Add(def.id);
+                    int badMix = 0, dupes = 0, tooManyOffence = 0, captainOffered = 0, wrongCount = 0;
+                    int lastPicked = 0, otherPickedTotal = 0;
+                    for (int i = 0; i < 1000; i++)
+                    {
+                        string last = draftableIds[rng.Next(draftableIds.Count)];
+                        var ctx = new WaveCardRollContext { wave = 2 + rng.Next(3), threat = 1 + rng.Next(8), lastObjectiveId = last };
+                        List<WaveCard> draw = WaveCardGenerator.Roll(cfg, ctx, rng);
+                        if (draw.Count != cfg.cardsPerDraw) wrongCount++;
+                        int def = 0, off = 0;
+                        var seen = new HashSet<string>();
+                        foreach (WaveCard c in draw)
+                        {
+                            if (c.stance == WaveStance.Defence) def++;
+                            if (c.stance == WaveStance.Offence) off++;
+                            if (!seen.Add(c.ObjectiveId)) dupes++;
+                            if (c.ObjectiveId == cfg.finalWave.objectiveId || !c.objective.draftable) captainOffered++;
+                            if (c.ObjectiveId == last) lastPicked++; else otherPickedTotal++;
+                        }
+                        if (def < 1 || off < 1) badMix++;
+                        if (off > cfg.maxOffenceCards) tooManyOffence++;
+                    }
+                    Check(wrongCount == 0, $"1000 draws all have {cfg.cardsPerDraw} cards", $"{wrongCount} draws had the wrong card count");
+                    Check(badMix == 0, "Every draw has at least one Defence and one Offence card", $"{badMix} draws broke the Defence/Offence mix");
+                    Check(dupes == 0, "No draw repeats an objective", $"{dupes} duplicate objectives across draws");
+                    Check(tooManyOffence == 0, $"No draw has more than {cfg.maxOffenceCards} Offence cards", $"{tooManyOffence} draws exceeded the Offence cap");
+                    Check(captainOffered == 0, "Captain Assault and non-draftable rows are never offered", $"{captainOffered} non-draftable cards offered");
+                    float lastRate = lastPicked / 1000f;
+                    float otherRate = otherPickedTotal / (1000f * Mathf.Max(1, draftableIds.Count - 1));
+                    Check(lastRate < otherRate, $"Last wave's objective is down-weighted ({lastRate:P0} vs {otherRate:P0} per other objective)",
+                        $"Last objective shows up {lastRate:P0} of draws, others {otherRate:P0}");
+
+                    // Reward maths straight from the SO.
+                    WaveObjectiveDefinition offenceRow = catalog.Get("free_prisoners");
+                    if (offenceRow != null)
+                    {
+                        var stale = new WaveCardRollContext { wave = 2, threat = 1, lastObjectiveId = offenceRow.id };
+                        WaveCard hard = WaveCardGenerator.Build(cfg, offenceRow, 3, null, WaveBonusType.GoblinBlood, false, stale, new System.Random(1));
+                        WaveRewardBase b = cfg.RewardBaseForWave(2);
+                        float mult = cfg.offenceRewardMultiplier * WaveChoiceConfigSO.BySkulls(cfg.rewardMultiplierBySkulls, 3);
+                        Check(!hard.isFresh && hard.gold == Mathf.RoundToInt(b.gold * mult) && hard.supply == Mathf.RoundToInt(b.supply * mult),
+                            $"3-skull Offence pays {hard.gold}g / {hard.supply}s (base × {mult:0.##})",
+                            $"3-skull Offence paid {hard.gold}g / {hard.supply}s, expected {Mathf.RoundToInt(b.gold * mult)}g / {Mathf.RoundToInt(b.supply * mult)}s");
+                        Check(hard.hasCaptain == cfg.captainOnThreeSkulls, "3-skull card brings a captain", "3-skull captain flag doesn't match the config");
+
+                        var fresh = new WaveCardRollContext { wave = 2, threat = 1, lastObjectiveId = "kill_enemies" };
+                        WaveCard freshCard = WaveCardGenerator.Build(cfg, offenceRow, 3, null, WaveBonusType.None, false, fresh, new System.Random(1));
+                        int freshGold = Mathf.RoundToInt(b.gold * mult * (1f + cfg.varietyBonusPercent / 100f));
+                        Check(freshCard.isFresh && freshCard.gold == freshGold, $"Variety bonus applies (+{cfg.varietyBonusPercent}% → {freshCard.gold}g)",
+                            $"Fresh card paid {freshCard.gold}g, expected {freshGold}g");
+
+                        WaveCard draftCard = WaveCardGenerator.Build(cfg, offenceRow, 3, null, WaveBonusType.DraftPick, false, stale, new System.Random(1));
+                        Check(draftCard.bonusAmount == WaveChoiceConfigSO.BySkulls(cfg.draftPicksBySkulls, 3),
+                            $"3-skull draft bonus gives {draftCard.bonusAmount} picks", $"3-skull draft bonus gave {draftCard.bonusAmount} picks");
+                    }
+                    WaveObjectiveDefinition defenceRow = catalog.Get("kill_enemies");
+                    if (defenceRow != null)
+                    {
+                        var ctx1 = new WaveCardRollContext { wave = 1, threat = 1 };
+                        WaveCard easy = WaveCardGenerator.Build(cfg, defenceRow, 1, null, WaveBonusType.None, false, ctx1, new System.Random(1));
+                        WaveRewardBase b1 = cfg.RewardBaseForWave(1);
+                        Check(easy.gold == Mathf.RoundToInt(b1.gold * cfg.defenceRewardMultiplier) && !easy.hasCaptain,
+                            $"1-skull Defence pays {easy.gold}g / {easy.supply}s with no captain", $"1-skull Defence paid {easy.gold}g");
+                    }
+
+                    // Fixed first and last waves.
+                    WaveCard first = WaveCardGenerator.BuildFixed(cfg, cfg.firstWave, new WaveCardRollContext { wave = 1, threat = 1 }, new System.Random(2));
+                    WaveCard final = WaveCardGenerator.BuildFixed(cfg, cfg.finalWave, new WaveCardRollContext { wave = cfg.finalWaveNumber, threat = 1 }, new System.Random(2));
+                    Check(first != null && first.ObjectiveId == "kill_enemies" && first.skulls == 1, "Wave 1 is a fixed 1-skull Hold the Gate",
+                        $"Wave 1 fixed card is {first?.ObjectiveId} at {first?.skulls} skulls");
+                    Check(final != null && final.ObjectiveId == "defeat_captain", "Final wave is the fixed Captain Assault", $"Final wave fixed card is {final?.ObjectiveId}");
+                    Check(!cfg.IsDraftedWave(1) && cfg.IsDraftedWave(2) && cfg.IsDraftedWave(4) && !cfg.IsDraftedWave(cfg.finalWaveNumber),
+                        "Waves 2-4 are drafted, 1 and 5 are not", "Drafted wave range is wrong");
+
+                    // Clan magnitude scaling keeps EnemyBuffController's units.
+                    float haste = ClanModifierMath.Scale(BannerBuffType.Haste, 1.35f, 0.6f);
+                    float armor = ClanModifierMath.Scale(BannerBuffType.Armor, 0.25f, 1.4f);
+                    Check(Mathf.Approximately(haste, 1.21f) && Mathf.Approximately(armor, 0.35f),
+                        $"Clan scaling: Haste 1.35 × 0.6 → {haste:0.00}, Armor 0.25 × 1.4 → {armor:0.00}",
+                        $"Clan scaling gave Haste {haste}, Armor {armor}");
+                }
+            }
+            catch (Exception ex)
+            {
+                sb.AppendLine($"  - Section 27 Benchmark exception: {ex.Message} [FAILED]");
+                failedCount++;
+            }
+        }
+
         sb.AppendLine("\n=================================================");
         sb.AppendLine($"BENCHMARK COMPLETE: {passedCount} PASSED | {failedCount} FAILED");
         sb.AppendLine("=================================================");

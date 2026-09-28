@@ -22,6 +22,8 @@ public class DevConsole : MonoBehaviour
     private bool visible;
     private int spawnTypeIndex;
     private int objectiveIndex;
+    private int waveChoicePreviewWave = 2;
+    private string waveChoicePreviewLastId = "";
     private bool isGodMode;
     private Vector2 mainScrollPos;
     private Vector2 draftScrollPos;
@@ -268,6 +270,7 @@ public class DevConsole : MonoBehaviour
 
         DrawWaveControls();
         DrawThreatControls();
+        DrawWaveChoiceControls();
         DrawObjectiveControls();
         DrawEnemySpawnControls();
         DrawLanguageControls();
@@ -575,6 +578,53 @@ public class DevConsole : MonoBehaviour
         if (GUILayout.Button("Clear", GUILayout.Height(ButtonHeight)))
         {
             SectorThreat.DebugOverride = 0;
+        }
+        GUILayout.EndHorizontal();
+    }
+
+    /// <summary>
+    ///     Wave choice preview (plan 15): rolls a real draw for the chosen wave at the current sector
+    ///     threat and opens the card modal. The pick is only logged until the flow uses it (Phase C).
+    /// </summary>
+    private void DrawWaveChoiceControls()
+    {
+        if (SurvivorsCardSelectUI.Instance == null)
+        {
+            return;
+        }
+
+        GUILayout.Label($"Wave Choice preview (wave {waveChoicePreviewWave}, threat {SectorThreat.Current})");
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("<", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
+        {
+            waveChoicePreviewWave = Mathf.Max(2, waveChoicePreviewWave - 1);
+        }
+        if (GUILayout.Button("Show Wave Cards", GUILayout.Height(ButtonHeight)))
+        {
+            WaveChoiceConfigSO config = WaveChoiceConfigSO.Load();
+            if (config != null)
+            {
+                WaveCardRollContext ctx = new WaveCardRollContext
+                {
+                    wave = waveChoicePreviewWave,
+                    threat = SectorThreat.Current,
+                    lastObjectiveId = waveChoicePreviewLastId,
+                    isDemo = DemoConfigSO.IsDemo
+                };
+                List<WaveCard> draw = WaveCardGenerator.Roll(config, ctx, new System.Random());
+                SetVisible(false);
+                SurvivorsCardSelectUI.Instance.OpenWaveChoice(draw, picked =>
+                {
+                    waveChoicePreviewLastId = picked != null ? picked.ObjectiveId : "";
+                    Debug.Log(picked != null
+                        ? $"[DevConsole] Wave card picked: {picked.ObjectiveId} ({picked.stance}, {picked.skulls} skulls, {picked.ClanName}) → {picked.gold}g {picked.supply}s {picked.bonusType} x{picked.bonusAmount}"
+                        : "[DevConsole] Wave choice closed with no pick.");
+                });
+            }
+        }
+        if (GUILayout.Button(">", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
+        {
+            waveChoicePreviewWave = Mathf.Min(4, waveChoicePreviewWave + 1);
         }
         GUILayout.EndHorizontal();
     }

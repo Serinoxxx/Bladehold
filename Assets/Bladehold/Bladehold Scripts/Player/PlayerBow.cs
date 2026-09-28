@@ -308,13 +308,8 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
             aimCamera = Camera.main;
         }
 
-        // PlayerBarrier colliders only keep the player out (the Fishing Pond's water dome):
-        // arrows and the aim ray fly through them.
-        int playerBarrierLayer = LayerMask.NameToLayer("PlayerBarrier");
-        if (playerBarrierLayer >= 0)
-        {
-            hitLayers &= ~(1 << playerBarrierLayer);
-        }
+        // PlayerBarrier colliders only keep the player out: arrows and the aim ray fly through them.
+        hitLayers = PlayerBarrier.Exclude(hitLayers);
 
         startAttackHash = Animator.StringToHash("StartAttack");
         isHoldingAttackHash = Animator.StringToHash("IsHoldingAttack");
@@ -1181,6 +1176,15 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
     /// </summary>
     public void BounceFrom(IDamageable initialTarget, Damage damage, Vector3 initialHitPoint, int maxBounces)
     {
+        BounceFrom(initialTarget, damage, initialHitPoint, maxBounces, bounceLayers);
+    }
+
+    /// <summary>
+    ///     <see cref="BounceFrom(IDamageable, Damage, Vector3, int)" /> searching <paramref name="layers" />
+    ///     instead of the bow's <see cref="bounceLayers" /> (Enemy only), e.g. the Fishing Pond's Fish layer.
+    /// </summary>
+    public void BounceFrom(IDamageable initialTarget, Damage damage, Vector3 initialHitPoint, int maxBounces, LayerMask layers)
+    {
         if (anyError || damage == null)
         {
             return;
@@ -1208,7 +1212,7 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
             Vector3 bestPosition = currentPoint;
             float bestSqrDistance = float.MaxValue;
 
-            int count = Physics.OverlapSphereNonAlloc(currentPoint, config.bounceRadius, overlapBuffer, bounceLayers, QueryTriggerInteraction.Collide);
+            int count = Physics.OverlapSphereNonAlloc(currentPoint, config.bounceRadius, overlapBuffer, layers, QueryTriggerInteraction.Collide);
             for (int i = 0; i < count; i++)
             {
                 Collider collider = overlapBuffer[i];

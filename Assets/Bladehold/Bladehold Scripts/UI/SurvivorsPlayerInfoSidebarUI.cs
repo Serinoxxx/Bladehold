@@ -15,6 +15,8 @@ public class SurvivorsPlayerInfoSidebarUI : MonoBehaviour
     [Header("Player Info")]
     [SerializeField] private TMP_Text classNameText;
     [SerializeField] private TMP_Text healthText;
+    [Tooltip("Gate HP next to the player's, the number the wave choice hinges on. Hidden outside gate-defence scenes.")]
+    [SerializeField] private TMP_Text gateHealthText;
 
     [Header("Core Stats")]
     [SerializeField] private TMP_Text meleeDamageText;
@@ -82,6 +84,20 @@ public class SurvivorsPlayerInfoSidebarUI : MonoBehaviour
             else
             {
                 healthText.text = "100 / 100 HP";
+            }
+        }
+
+        if (gateHealthText != null)
+        {
+            // Gate mirrors its Health into RunSession on every change, so this is live mid-sector too.
+            bool hasGate = RunSession.FortressGateMaxHealth > 0f;
+            gateHealthText.gameObject.SetActive(hasGate);
+            if (hasGate)
+            {
+                int gateHp = Mathf.Max(0, Mathf.RoundToInt(RunSession.FortressGateCurrentHealth));
+                int gateMax = Mathf.RoundToInt(RunSession.FortressGateMaxHealth);
+                gateHealthText.text = Loc.Get("sidebar.gate_hp", "Gate: {0} / {1} HP")
+                    .Replace("{0}", gateHp.ToString()).Replace("{1}", gateMax.ToString());
             }
         }
     }

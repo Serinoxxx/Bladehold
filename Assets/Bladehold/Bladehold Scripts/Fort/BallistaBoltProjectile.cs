@@ -19,6 +19,12 @@ public class BallistaBoltProjectile : MonoBehaviour
     private float aliveTime = 0f;
     private readonly HashSet<Health> hitTargets = new HashSet<Health>();
 
+    private void Awake()
+    {
+        // PlayerBarrier colliders (tower plot pads) only keep the player out: bolts fly through them.
+        hitLayers = PlayerBarrier.Exclude(hitLayers);
+    }
+
     public void Init(Vector3 dir, float spd, float dmg, int pierce = 3)
     {
         direction = dir.normalized;

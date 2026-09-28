@@ -11,6 +11,9 @@ public class WarBannerClanSO : ScriptableObject
     [Tooltip("Display name of the clan (e.g. 'Swarm-Blight Clan').")]
     public string clanName = "Clan Name";
 
+    [Tooltip("Localization key stem: Strings.csv rows clan.<locKey>.name. Blank = the asset name minus 'Clan_', lower-cased.")]
+    public string locKey = "";
+
     [Tooltip("Sigil or badge sprite representing this clan.")]
     public Sprite clanIcon;
 

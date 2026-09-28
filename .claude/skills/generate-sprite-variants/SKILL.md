@@ -11,13 +11,16 @@ Existing card icons live in `Assets/Bladehold/Art/Icons/Skills/Base/` (PNG) and 
 
 Style: **pure white chunky silhouette on pure black**, faceted low-poly edges, no fine lines or texture, readable at 32px.
 
-- Unity MCP `generate_image` (`action: "list_providers"` first; needs a fal.ai/OpenRouter key set in the Editor; `generate` returns a `job_id`, poll with `status`). It imports into the project, so give `output_folder` a scratch folder you delete afterwards, never the final icon folder.
-- No provider configured: ask Lance for a source image. Don't substitute a code-drawn placeholder.
+### Strict Style Rules:
+- **10 paths MAX per image**: Silhouettes must remain bold, simple, and immediately recognizable at small sizes. No tiny debris, no particle clouds, and no noisy shard scatter.
+- **NO smooth curves or rounded corners**: All contours must be sharp, jagged, and chiseled.
+- **NO perfect circles**: Replace circular elements with imperfect, faceted polygons (e.g. 9-sided nonagons, 7-sided heptagons, or chiseled polyhedral gems).
+- **Chiseled low-poly geometry**: Match the Synty faceted low-poly aesthetic with hard vertices and deliberate angular planes.
 
 Prompt template:
 
 ```text
-An ultra-simple, minimalist 2D flat game UI icon representing [CONCEPT]. Pure solid white chunky silhouette on a solid pitch black background. [One sentence on the single iconic shape, e.g. "A single low-poly battle axe with a faceted head, angled diagonally."] Bold faceted geometric contours, thick readable silhouette, zero noise, zero fine lines, zero background clutter.
+An ultra-simple, minimalist 2D flat game UI icon representing [CONCEPT]. Pure solid white chunky silhouette on a solid pitch black background. [One or two sentences describing the iconic shape with explicit faceted/jagged geometry, e.g. "A jagged faceted geometric stone tower spire crowned with an imperfect 9-sided nonagon crystal orb. Three sharp jagged lightning bolts crackle outward with razor-sharp angles."] Strictly faceted polygonal geometry, zero smooth curves, zero perfect circles, zero rounded corners. Maximum 5 to 8 bold chunky geometric shapes total, bold readable silhouette, zero noise, zero fine lines, zero background clutter.
 ```
 
 ## Step 2: make the variants (offline, outside Unity)

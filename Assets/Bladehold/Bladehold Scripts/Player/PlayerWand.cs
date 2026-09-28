@@ -180,6 +180,9 @@ public class PlayerWand : MonoBehaviour, IChargedAimWeapon
 
     private void Start()
     {
+        // PlayerBarrier colliders only keep the player out: missiles and the aim ray fly through them.
+        hitLayers = PlayerBarrier.Exclude(hitLayers);
+
         if (inputReader == null)
         {
             Debug.LogError("InputReader is not assigned or found; the wand can't read aim/fire input.");

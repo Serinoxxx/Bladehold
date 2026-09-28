@@ -25,6 +25,19 @@ public class SurvivorsCardSelectUI : MonoBehaviour
     [Tooltip("Array of 3 SurvivorsCardUI components (attached to card prefabs).")]
     [SerializeField] private SurvivorsCardUI[] cards = new SurvivorsCardUI[3];
 
+    [Header("Wave Choice (plan 15)")]
+    [Tooltip("Row holding the three skill cards; hidden while the wave choice is open.")]
+    [SerializeField] private GameObject skillCardsRow;
+
+    [Tooltip("Empty layout row the wave cards are instantiated into.")]
+    [SerializeField] private RectTransform waveCardsRow;
+
+    [Tooltip("WaveCard.prefab, one per offered wave card.")]
+    [SerializeField] private WaveCardUI waveCardPrefab;
+
+    [Tooltip("Pad focus for the modal; the first wave card becomes its default.")]
+    [SerializeField] private MenuFocusController focusController;
+
     [Header("Sidebar Reference")]
     [Tooltip("Right-side player info and acquired skills sidebar.")]
     [SerializeField] private SurvivorsPlayerInfoSidebarUI sidebar;
@@ -44,6 +57,11 @@ public class SurvivorsCardSelectUI : MonoBehaviour
     [SerializeField] private float finalFadeDurationSeconds = 0.15f;
 
     private readonly List<SkillNode> currentOfferedNodes = new List<SkillNode>();
+    private readonly List<WaveCardUI> spawnedWaveCards = new List<WaveCardUI>();
+    private readonly List<WaveCard> offeredWaveCards = new List<WaveCard>();
+    private Action<WaveCard> onWaveCardPicked;
+    private WaveCard pickedWaveCard;
+    private bool waveChoiceOpen;
     private float modalOpenedUnscaledTime;
     private Coroutine enableButtonsCoroutine;
     private Coroutine closeRoutine;
@@ -77,6 +95,15 @@ public class SurvivorsCardSelectUI : MonoBehaviour
         if (iconsConfig == null)
         {
             iconsConfig = Resources.Load<SkillTreeIconsSO>("SkillTreeIcons");
+        }
+
+        if (skillCardsRow == null || waveCardsRow == null || waveCardPrefab == null)
+        {
+            Debug.LogError("[SurvivorsCardSelectUI] Wave choice refs (skillCardsRow, waveCardsRow, waveCardPrefab) are not assigned; OpenWaveChoice can't show cards.", this);
+        }
+        if (waveCardsRow != null)
+        {
+            waveCardsRow.gameObject.SetActive(false);
         }
     }
 
@@ -122,6 +149,8 @@ public class SurvivorsCardSelectUI : MonoBehaviour
         }
 
         hasBanishedThisDraft = false;
+        waveChoiceOpen = false;
+        ShowWaveRow(false);
 
         if (headerText != null)
         {
@@ -165,6 +194,116 @@ public class SurvivorsCardSelectUI : MonoBehaviour
         CursorLockManager.SetUnlock("SurvivorsLevelUp", true);
     }
 
+    /// <summary>
+    ///     Opens the between-wave choice (plan 15): pauses, shows one <see cref="WaveCardUI" /> per offered
+    ///     card, and calls <paramref name="onPicked" /> with the chosen card after the modal fades out.
+    ///     Same pause, click guard and fade as <see cref="OpenDraft" />; no banish.
+    /// </summary>
+    public void OpenWaveChoice(IReadOnlyList<WaveCard> waveCards, Action<WaveCard> onPicked)
+    {
+        if (waveCards == null || waveCards.Count == 0 || waveCardsRow == null || waveCardPrefab == null)
+        {
+            Debug.LogError("[SurvivorsCardSelectUI] OpenWaveChoice called with no cards or missing wave card refs; picking nothing.", this);
+            onPicked?.Invoke(waveCards != null && waveCards.Count > 0 ? waveCards[0] : null);
+            return;
+        }
+
+        if (closeRoutine != null)
+        {
+            StopCoroutine(closeRoutine);
+            closeRoutine = null;
+        }
+
+        if (SurvivorsGameManager.Instance != null)
+        {
+            SurvivorsGameManager.Instance.PauseForCardSelection();
+        }
+
+        waveChoiceOpen = true;
+        onWaveCardPicked = onPicked;
+        pickedWaveCard = null;
+        onDraftCompletedCallback = null;
+        activeCategory = null;
+
+        if (headerText != null)
+        {
+            headerText.text = Loc.Get("wave.choice.header", "Choose your next battle");
+        }
+
+        ShowWaveRow(true);
+        offeredWaveCards.Clear();
+        offeredWaveCards.AddRange(waveCards);
+        foreach (WaveCardUI old in spawnedWaveCards)
+        {
+            if (old != null) Destroy(old.gameObject);
+        }
+        spawnedWaveCards.Clear();
+
+        for (int i = 0; i < offeredWaveCards.Count; i++)
+        {
+            WaveCardUI view = Instantiate(waveCardPrefab, waveCardsRow);
+            int index = i; // closure capture
+            view.SetData(offeredWaveCards[i], () => OnWaveCardClicked(index));
+            spawnedWaveCards.Add(view);
+        }
+
+        if (sidebar != null)
+        {
+            sidebar.RefreshSidebar();
+        }
+
+        if (modalPanel != null)
+        {
+            CanvasGroup cg = modalPanel.GetComponent<CanvasGroup>();
+            if (cg != null)
+            {
+                cg.alpha = 1f;
+            }
+            modalPanel.SetActive(true);
+        }
+
+        if (focusController != null && spawnedWaveCards.Count > 0)
+        {
+            focusController.SetDefaultSelectable(spawnedWaveCards[0].SelectButton);
+        }
+
+        modalOpenedUnscaledTime = Time.unscaledTime;
+        if (enableButtonsCoroutine != null)
+        {
+            StopCoroutine(enableButtonsCoroutine);
+        }
+        enableButtonsCoroutine = StartCoroutine(EnableButtonsAfterDelay(clickDelaySeconds));
+
+        CursorLockManager.SetUnlock("SurvivorsLevelUp", true);
+    }
+
+    private void OnWaveCardClicked(int index)
+    {
+        if (!waveChoiceOpen || pickedWaveCard != null) return;
+        if (Time.unscaledTime - modalOpenedUnscaledTime < clickDelaySeconds) return;
+        if (index < 0 || index >= offeredWaveCards.Count) return;
+
+        pickedWaveCard = offeredWaveCards[index];
+
+        if (enableButtonsCoroutine != null)
+        {
+            StopCoroutine(enableButtonsCoroutine);
+            enableButtonsCoroutine = null;
+        }
+        SetButtonsInteractable(false);
+        closeRoutine = StartCoroutine(CloseModalWithFadeRoutine());
+    }
+
+    private void ShowWaveRow(bool showWave)
+    {
+        if (skillCardsRow != null) skillCardsRow.SetActive(!showWave);
+        if (waveCardsRow != null) waveCardsRow.gameObject.SetActive(showWave);
+        if (!showWave && focusController != null && cards.Length > 0 && cards[0] != null)
+        {
+            focusController.SetDefaultSelectable(cards[0].GetComponent<UnityEngine.UI.Selectable>());
+        }
+    }
+
     private void SetButtonsInteractable(bool interactable)
     {
         for (int i = 0; i < cards.Length; i++)
@@ -173,6 +312,10 @@ public class SurvivorsCardSelectUI : MonoBehaviour
             {
                 cards[i].SetInteractable(interactable);
             }
+        }
+        foreach (WaveCardUI view in spawnedWaveCards)
+        {
+            if (view != null) view.SetInteractable(interactable);
         }
     }
 
@@ -374,11 +517,23 @@ public class SurvivorsCardSelectUI : MonoBehaviour
             SurvivorsGameManager.Instance.ResumeFromCardSelection();
         }
 
+        closeRoutine = null;
+
+        if (waveChoiceOpen)
+        {
+            waveChoiceOpen = false;
+            ShowWaveRow(false);
+            Action<WaveCard> waveCallback = onWaveCardPicked;
+            WaveCard picked = pickedWaveCard;
+            onWaveCardPicked = null;
+            pickedWaveCard = null;
+            waveCallback?.Invoke(picked);
+            yield break;
+        }
+
         Action callback = onDraftCompletedCallback;
         onDraftCompletedCallback = null;
         activeCategory = null;
         callback?.Invoke();
-
-        closeRoutine = null;
     }
 }

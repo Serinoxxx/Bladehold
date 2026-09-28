@@ -215,7 +215,8 @@ public class FishingManager : MonoBehaviour
         int bounces = FishingUpgradeManager.Instance.BounceCount;
         if (bounces > 0)
         {
-            playerBow.BounceFrom(impact.target, impact.damage, impact.point, bounces);
+            // The bow's own bounce mask is Enemy only; pond bounces hop between fish.
+            playerBow.BounceFrom(impact.target, impact.damage, impact.point, bounces, 1 << ((FishController)impact.target).gameObject.layer);
         }
     }
 
@@ -358,6 +359,8 @@ public class FishingManager : MonoBehaviour
         if (catchPopupPrefab != null && !string.IsNullOrEmpty(popupText))
         {
             DamageNumbersPro.DamageNumber popup = catchPopupPrefab.Spawn(catchPosition + catchPopupOffset, popupText);
+            // The popup text carries its own unit ("+12 Gold", "+1 Orcish Metal"); drop any suffix baked into the prefab.
+            popup.enableRightText = false;
             popup.SetColor(GetFishTypeColor(fish.isBuffFish, fish.resourceType, fish.buffType));
         }
 

@@ -11,6 +11,7 @@ Things that need your hands, eyes or judgement in the Unity Editor. Items marked
 - [07: Demo gating](editor/07-demo-gating.md) (demo end panel needed in the Campaign Map scene)
 - [08: Legacy cleanup](editor/08-legacy-cleanup.md) (cleanup tool already run by an agent, 2026-09-26)
 - [09: Visuals + MMF](editor/09-visuals-mmf.md) (tower build feedbacks empty until wired)
+- [15: Wave choice draft](editor/15-wave-choice.md) (wave card UI review; flow still uses banners until Phase C)
 
 ## A. Triage first (biggest win)
 
