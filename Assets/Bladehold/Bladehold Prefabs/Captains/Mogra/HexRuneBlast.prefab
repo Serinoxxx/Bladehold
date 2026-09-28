@@ -309,8 +309,8 @@ MonoBehaviour:
   DebugActive: 0
   InScriptDrivenPause: 0
   FeedbacksList:
-  - rid: 1018131889810309286
-  - rid: 1018131889810309287
+  - rid: 1018131889810309326
+  - rid: 1018131889810309327
   KeepPlayModeChanges: 0
   PerformanceMode: 0
   RestoreInitialValuesOnDisable: 0
@@ -322,11 +322,11 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 1018131889810309286
+    - rid: 1018131889810309326
       type: {class: MMF_ParticlesInstantiation, ns: MoreMountains.Feedbacks, asm: MoreMountains.Tools}
       data:
         Active: 1
-        UniqueID: 469712077
+        UniqueID: -1972866680
         Label: Particles HexBurst
         OriginalLabel: 
         ChannelMode: 0
@@ -419,11 +419,11 @@ MonoBehaviour:
         ApplyScale: 0
         ForceSimulationSpeed: 0
         ForcedSimulationSpeed: {x: 0.1, y: 1}
-    - rid: 1018131889810309287
+    - rid: 1018131889810309327
       type: {class: MMF_MMSoundManagerSound, ns: MoreMountains.Feedbacks, asm: MoreMountains.Tools}
       data:
         Active: 1
-        UniqueID: -557606060
+        UniqueID: -1248151773
         Label: Sound EXPLOSION_Short_04_mono
         OriginalLabel: 
         ChannelMode: 0

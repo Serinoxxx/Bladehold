@@ -45,6 +45,7 @@ public static class CaptainMograBuilder
 
     private const string PlayerControllerPath = "Assets/Third Party/Synty/AnimationBaseLocomotion/Animations/Sidekick/Player AC.controller";
     private const string ShamanModelPath = "Assets/Synty/Goblins/SM_Chr_Goblin_Shaman_01/SM_Chr_Goblin_Shaman_01.prefab";
+    private const string GoblinBasePrefabPath = "Assets/Bladehold/Bladehold Prefabs/Goblin Enemy (Base).prefab";
     private const string StaffPath = "Assets/Synty/Weapons/SM_Wep_Staff_03/SM_Wep_Staff_03.prefab";
     private const string CastBarPrefabPath = "Assets/Bladehold/Bladehold Prefabs/UI/BossCastBar.prefab";
     private const string LineMaterialPath = "Assets/Bladehold/Materials/Mockup/Mockup_TelegraphLine.mat";
@@ -589,17 +590,31 @@ public static class CaptainMograBuilder
             if (animator == null) throw new InvalidOperationException("Mogra variant has no Animator.");
             animator.applyRootMotion = false;
 
-            // Model: the Synty Goblin Shaman, bound onto the goblin rig (the Enemy Manager's model swap).
-            if (root.GetComponentInChildren<ModelSwapRecord>(true) == null)
+            // Model: Lance's Sidekick character (Bladehold Sidekick Characters/Mogra) replaced the goblin rig
+            // (2026-09-29). Only the old Goblin Shaman swap fallback remains, for a variant still on the goblin rig.
+            bool onGoblinRig = animator.name == "SidekickSyntyCharacter";
+            ModelSwapRecord record = root.GetComponent<ModelSwapRecord>();
+            if (!onGoblinRig && record != null)
+            {
+                // The record described a swap onto the old goblin rig, which is gone.
+                Object.DestroyImmediate(record);
+            }
+            else if (onGoblinRig && record == null)
             {
                 GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>(ShamanModelPath);
                 if (model == null) throw new InvalidOperationException($"Goblin Shaman model missing: {ShamanModelPath}");
                 List<string> swapped = new List<string>();
                 int count = ModelSwapUtility.Swap(animator, model, deleteOldRenderers: false, "Mogra model", swapped);
                 if (count == 0) throw new InvalidOperationException("The Goblin Shaman model didn't bind to the goblin rig.");
-                ModelSwapRecord record = root.AddComponent<ModelSwapRecord>();
+                record = root.AddComponent<ModelSwapRecord>();
                 record.sourceModelPrefab = model;
                 record.swappedRendererNames = swapped.ToArray();
+            }
+
+            // A new rig comes without the goblin base's ragdoll (bone bodies, colliders, joints, blood).
+            if (animator.GetComponentsInChildren<Rigidbody>(true).Length == 0)
+            {
+                CopyRagdoll(animator.transform);
             }
 
             // A staff in the right hand.
@@ -681,6 +696,59 @@ public static class CaptainMograBuilder
         {
             PrefabUtility.UnloadPrefabContents(root);
         }
+    }
+
+    /// <summary>
+    ///     Copies the goblin base prefab's bone ragdoll onto a replacement rig with the same bone names (the Sidekick
+    ///     skeleton): Rigidbody, the non-trigger collider, CharacterJoint (reconnected to the new rig) and
+    ///     RagdollBloodImpact, on the Ragdoll layer. Trigger colliders and VulnerableSpots are left to the rig.
+    /// </summary>
+    private static void CopyRagdoll(Transform targetRig)
+    {
+        GameObject basePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(GoblinBasePrefabPath);
+        if (basePrefab == null) throw new InvalidOperationException($"Goblin base prefab missing: {GoblinBasePrefabPath}");
+        Animator sourceAnimator = basePrefab.GetComponentInChildren<Animator>(true);
+
+        Dictionary<string, Transform> targetBones = new Dictionary<string, Transform>();
+        foreach (Transform t in targetRig.GetComponentsInChildren<Transform>(true))
+        {
+            if (!targetBones.ContainsKey(t.name)) targetBones[t.name] = t;
+        }
+
+        List<KeyValuePair<CharacterJoint, CharacterJoint>> joints = new List<KeyValuePair<CharacterJoint, CharacterJoint>>();
+        int copied = 0;
+        foreach (Rigidbody sourceBody in sourceAnimator.GetComponentsInChildren<Rigidbody>(true))
+        {
+            if (!targetBones.TryGetValue(sourceBody.name, out Transform bone))
+            {
+                Debug.LogWarning($"[CaptainMograBuilder] Rig has no '{sourceBody.name}' bone; its ragdoll body is skipped.");
+                continue;
+            }
+            bone.gameObject.layer = sourceBody.gameObject.layer;
+            EditorUtility.CopySerialized(sourceBody, bone.gameObject.AddComponent<Rigidbody>());
+            foreach (Collider sourceCollider in sourceBody.GetComponents<Collider>())
+            {
+                if (sourceCollider.isTrigger) continue;
+                EditorUtility.CopySerialized(sourceCollider, bone.gameObject.AddComponent(sourceCollider.GetType()));
+            }
+            RagdollBloodImpact blood = sourceBody.GetComponent<RagdollBloodImpact>();
+            if (blood != null) EditorUtility.CopySerialized(blood, bone.gameObject.AddComponent<RagdollBloodImpact>());
+            CharacterJoint joint = sourceBody.GetComponent<CharacterJoint>();
+            if (joint != null)
+            {
+                CharacterJoint copy = bone.gameObject.AddComponent<CharacterJoint>();
+                EditorUtility.CopySerialized(joint, copy);
+                joints.Add(new KeyValuePair<CharacterJoint, CharacterJoint>(joint, copy));
+            }
+            copied++;
+        }
+
+        foreach (KeyValuePair<CharacterJoint, CharacterJoint> pair in joints)
+        {
+            Rigidbody connected = pair.Key.connectedBody;
+            pair.Value.connectedBody = connected != null && targetBones.TryGetValue(connected.name, out Transform bone) ? bone.GetComponent<Rigidbody>() : null;
+        }
+        Debug.Log($"[CaptainMograBuilder] Copied {copied} ragdoll bodies onto '{targetRig.name}'.");
     }
 
     private static Transform FindDeep(Transform parent, string name)

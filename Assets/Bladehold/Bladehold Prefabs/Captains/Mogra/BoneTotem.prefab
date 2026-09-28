@@ -135,7 +135,7 @@ MonoBehaviour:
   DebugActive: 0
   InScriptDrivenPause: 0
   FeedbacksList:
-  - rid: 1018131889810309290
+  - rid: 1018131889810309330
   KeepPlayModeChanges: 0
   PerformanceMode: 0
   RestoreInitialValuesOnDisable: 0
@@ -147,11 +147,11 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 1018131889810309290
+    - rid: 1018131889810309330
       type: {class: MMF_MMSoundManagerSound, ns: MoreMountains.Feedbacks, asm: MoreMountains.Tools}
       data:
         Active: 1
-        UniqueID: 383192901
+        UniqueID: -1028763778
         Label: Sound whoosh_slow_deep_06
         OriginalLabel: 
         ChannelMode: 0
@@ -501,8 +501,8 @@ MonoBehaviour:
   DebugActive: 0
   InScriptDrivenPause: 0
   FeedbacksList:
-  - rid: 1018131889810309288
-  - rid: 1018131889810309289
+  - rid: 1018131889810309328
+  - rid: 1018131889810309329
   KeepPlayModeChanges: 0
   PerformanceMode: 0
   RestoreInitialValuesOnDisable: 0
@@ -514,11 +514,11 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 1018131889810309288
+    - rid: 1018131889810309328
       type: {class: MMF_ParticlesInstantiation, ns: MoreMountains.Feedbacks, asm: MoreMountains.Tools}
       data:
         Active: 1
-        UniqueID: -1809925070
+        UniqueID: 814571629
         Label: Particles HexBurstLarge
         OriginalLabel: 
         ChannelMode: 0
@@ -611,11 +611,11 @@ MonoBehaviour:
         ApplyScale: 0
         ForceSimulationSpeed: 0
         ForcedSimulationSpeed: {x: 0.1, y: 1}
-    - rid: 1018131889810309289
+    - rid: 1018131889810309329
       type: {class: MMF_MMSoundManagerSound, ns: MoreMountains.Feedbacks, asm: MoreMountains.Tools}
       data:
         Active: 1
-        UniqueID: 167059776
+        UniqueID: -2038329812
         Label: Sound whoosh_slow_deep_06
         OriginalLabel: 
         ChannelMode: 0
@@ -965,8 +965,8 @@ MonoBehaviour:
   DebugActive: 0
   InScriptDrivenPause: 0
   FeedbacksList:
-  - rid: 1018131889810309291
-  - rid: 1018131889810309292
+  - rid: 1018131889810309331
+  - rid: 1018131889810309332
   KeepPlayModeChanges: 0
   PerformanceMode: 0
   RestoreInitialValuesOnDisable: 0
@@ -978,11 +978,11 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 1018131889810309291
+    - rid: 1018131889810309331
       type: {class: MMF_ParticlesInstantiation, ns: MoreMountains.Feedbacks, asm: MoreMountains.Tools}
       data:
         Active: 1
-        UniqueID: -1238534563
+        UniqueID: 601988562
         Label: Particles HexBurstLarge
         OriginalLabel: 
         ChannelMode: 0
@@ -1075,11 +1075,11 @@ MonoBehaviour:
         ApplyScale: 0
         ForceSimulationSpeed: 0
         ForcedSimulationSpeed: {x: 0.1, y: 1}
-    - rid: 1018131889810309292
+    - rid: 1018131889810309332
       type: {class: MMF_MMSoundManagerSound, ns: MoreMountains.Feedbacks, asm: MoreMountains.Tools}
       data:
         Active: 1
-        UniqueID: 616146736
+        UniqueID: 407086349
         Label: Sound Fantasy_Game_Magic_Organic_Poof_Buff_Hit_5
         OriginalLabel: 
         ChannelMode: 0

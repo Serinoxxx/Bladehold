@@ -324,8 +324,8 @@ MonoBehaviour:
   DebugActive: 0
   InScriptDrivenPause: 0
   FeedbacksList:
-  - rid: 1018131889810309284
-  - rid: 1018131889810309285
+  - rid: 1018131889810309324
+  - rid: 1018131889810309325
   KeepPlayModeChanges: 0
   PerformanceMode: 0
   RestoreInitialValuesOnDisable: 0
@@ -337,11 +337,11 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 1018131889810309284
+    - rid: 1018131889810309324
       type: {class: MMF_ParticlesInstantiation, ns: MoreMountains.Feedbacks, asm: MoreMountains.Tools}
       data:
         Active: 1
-        UniqueID: 1055045609
+        UniqueID: -350577135
         Label: Particles HexBurst
         OriginalLabel: 
         ChannelMode: 0
@@ -434,11 +434,11 @@ MonoBehaviour:
         ApplyScale: 0
         ForceSimulationSpeed: 0
         ForcedSimulationSpeed: {x: 0.1, y: 1}
-    - rid: 1018131889810309285
+    - rid: 1018131889810309325
       type: {class: MMF_MMSoundManagerSound, ns: MoreMountains.Feedbacks, asm: MoreMountains.Tools}
       data:
         Active: 1
-        UniqueID: -1514048935
+        UniqueID: 771507197
         Label: Sound Fantasy_Game_Magic_Fuse_Fizzle_Gas
         OriginalLabel: 
         ChannelMode: 0

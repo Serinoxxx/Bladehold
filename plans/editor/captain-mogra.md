@@ -7,7 +7,7 @@ Not from a plan: a direct request on 2026-09-29. Unity MCP was connected. Everyt
 ## Done by an agent via MCP (2026-09-29)
 
 - [x] **Assets built** with **Bladehold/Captains/Build Captain Mogra Assets** (`Editor/CaptainMograBuilder.cs`). Re-run it after changing the builder; it rebuilds these and keeps `CaptainMograSO` tuning.
-  - `Captain Mogra Enemy Variant.prefab`: the Goblin Shaman model swapped onto the goblin rig, `SM_Wep_Staff_03` in `hand_r`, the `Mogra AC`, 9 MMF players under `Mogra Feedbacks`, and a `Ritual Cast Bar` (BossCastBar instance).
+  - `Captain Mogra Enemy Variant.prefab`: your Sidekick `Mogra` model (2026-09-29; the builder copied the goblin base's bone ragdoll onto it and turned root motion off), `SM_Wep_Staff_03` in `hand_r`, the `Mogra AC`, 9 MMF players under `Mogra Feedbacks`, and a `Ritual Cast Bar` (BossCastBar instance).
   - `Bladehold Prefabs/Captains/Mogra/`: HexBolt, HexRuneBlast, BoneTotem, HexShockwaveRing, RitualSafeCircle, RitualDanger, plus green VFX (`VFX/HexBurst*`, `HexDaze`) and materials.
   - `Bladehold Animations/Mogra/Mogra AC.controller`: a from-scratch controller (goblin locomotion; Sorceress casts, channel and stun; Synty roar, death and cheer).
   - `Player AC`: a new full-body **Dodge** layer (above Melee, below Death) that plays `A_MOD_SWD_Dodge_F_Neut` on the `Dodge` trigger.
