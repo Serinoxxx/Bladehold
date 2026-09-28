@@ -6,7 +6,7 @@ using UnityEngine;
 ///     Survivors objective: Free the prisoners.
 ///     Spawns prisoner cages across the battlefield. Player must find and break the cages to free them.
 /// </summary>
-public class FreePrisonersObjective : MonoBehaviour, ISurvivorsObjective
+public class FreePrisonersObjective : MonoBehaviour, ISurvivorsObjective, IObjectivePreview
 {
     [Header("Objective Configuration")]
     [SerializeField] private string objectiveId = "free_prisoners";
@@ -15,7 +15,7 @@ public class FreePrisonersObjective : MonoBehaviour, ISurvivorsObjective
     [SerializeField] private int requiredCount = 3;
 
     [Header("Timer & Failure Configuration")]
-    [Tooltip("Time limit in seconds to free all prisoners before failing (e.g. 120s = 2 minutes). <= 0 means no time limit.")]
+    [Tooltip("Fallback time limit in seconds when WaveObjectives.csv has no row for this objective (the row's timerSeconds wins). <= 0 means no time limit.")]
     [SerializeField] private float timeLimit = 120f;
 
     [Header("Prefabs & Spawn Points")]
@@ -28,6 +28,7 @@ public class FreePrisonersObjective : MonoBehaviour, ISurvivorsObjective
     private readonly List<PrisonerCage> spawnedCages = new List<PrisonerCage>();
     private int freedCount;
     private float timeRemaining;
+    private float activeTimeLimit = -1f;
     private int lastReportedSeconds = -1;
     private bool isActive;
     private bool isComplete;
@@ -36,7 +37,7 @@ public class FreePrisonersObjective : MonoBehaviour, ISurvivorsObjective
     public string ObjectiveId => objectiveId;
     public string Title => title;
     public string Description => description;
-    public float TimeLimit => timeLimit;
+    public float TimeLimit => activeTimeLimit >= 0f ? activeTimeLimit : ObjectiveCsv.TimerSeconds(objectiveId, timeLimit);
     public float TimeRemaining => timeRemaining;
     public bool IsComplete => isComplete;
     public bool IsFailed => isFailed;
@@ -54,12 +55,9 @@ public class FreePrisonersObjective : MonoBehaviour, ISurvivorsObjective
             {
                 return $"Prisoners freed: {freedCount}/{requiredCount}";
             }
-            if (timeLimit > 0f)
+            if (TimeLimit > 0f)
             {
-                int totalSec = Mathf.Max(0, Mathf.CeilToInt(timeRemaining));
-                int mins = totalSec / 60;
-                int secs = totalSec % 60;
-                return $"Prisoners freed: {freedCount}/{requiredCount} ({mins}:{secs:D2})";
+                return $"Prisoners freed: {freedCount}/{requiredCount} ({ObjectiveCsv.FormatClock(timeRemaining)})";
             }
             return $"Prisoners freed: {freedCount}/{requiredCount}";
         }
@@ -77,7 +75,8 @@ public class FreePrisonersObjective : MonoBehaviour, ISurvivorsObjective
         isComplete = false;
         isFailed = false;
         freedCount = 0;
-        timeRemaining = timeLimit;
+        activeTimeLimit = ObjectiveCsv.TimerSeconds(objectiveId, timeLimit);
+        timeRemaining = activeTimeLimit;
         lastReportedSeconds = Mathf.CeilToInt(timeRemaining);
         spawnedCages.Clear();
 
@@ -136,7 +135,7 @@ public class FreePrisonersObjective : MonoBehaviour, ISurvivorsObjective
     {
         if (!isActive || isComplete || isFailed) return;
 
-        if (timeLimit > 0f)
+        if (activeTimeLimit > 0f)
         {
             timeRemaining -= deltaTime;
             int currentSeconds = Mathf.Max(0, Mathf.CeilToInt(timeRemaining));
@@ -234,6 +233,24 @@ public class FreePrisonersObjective : MonoBehaviour, ISurvivorsObjective
                     label: "Prisoner"
                 ));
             }
+        }
+    }
+
+    public void GetPreviewWaypointTargets(List<ObjectiveWaypointTarget> results)
+    {
+        if (results == null || spawnPoints == null) return;
+
+        string label = Loc.Get("wave.obj.free_prisoners.preview", "Cage");
+        int count = Mathf.Min(requiredCount, spawnPoints.Length);
+        for (int i = 0; i < count; i++)
+        {
+            if (spawnPoints[i] == null) continue;
+            results.Add(new ObjectiveWaypointTarget(
+                spawnPoints[i],
+                worldOffset: new Vector3(0f, 1.8f, 0f),
+                customIcon: cageWaypointIcon,
+                tintColor: ObjectiveCsv.PreviewTint(new Color(1f, 0.8f, 0.2f)),
+                label: label));
         }
     }
 }

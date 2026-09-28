@@ -2,8 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using MoreMountains.Feedbacks;
+using Synty.AnimationBaseLocomotion.Samples.InputSystem;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 public enum FishingState
@@ -92,6 +92,7 @@ public class FishingManager : MonoBehaviour
     private bool rewardsCommitted = false;
     private bool anyError = false;
     private PlayerBow playerBow;
+    private InputReader inputReader;
     private PlayerStats playerStats;
     private int appliedPierceBonus = 0;
 
@@ -169,6 +170,11 @@ public class FishingManager : MonoBehaviour
         if (player.Ammo != null) player.Ammo.InfiniteAmmo = true;
         else Debug.LogError("[FishingManager] The Player has no PlayerAmmo: pond shots will spend nothing but can't be made free either.", this);
 
+        // Start Wave (T / gamepad D-pad Down) through the player's InputReader starts the countdown.
+        inputReader = player.GetComponentInChildren<InputReader>(true);
+        if (inputReader == null) Debug.LogError("[FishingManager] The Player has no InputReader: Start Wave can't begin the countdown.", this);
+        else inputReader.onStartWavePerformed += HandleStartWavePressed;
+
         playerStats = player.Stats;
         playerBow = player.GetComponentInChildren<PlayerBow>(true);
         if (playerBow == null)
@@ -189,6 +195,7 @@ public class FishingManager : MonoBehaviour
     private void OnDestroy()
     {
         if (playerBow != null) playerBow.OnArrowImpact -= HandleArrowImpact;
+        if (inputReader != null) inputReader.onStartWavePerformed -= HandleStartWavePressed;
         if (FishingUpgradeManager.Instance != null) FishingUpgradeManager.Instance.OnUpgradeApplied -= HandleUpgradeApplied;
         if (Instance == this)
         {
@@ -224,15 +231,7 @@ public class FishingManager : MonoBehaviour
     {
         if (anyError) return;
 
-        if (currentState == FishingState.WaitingToStart)
-        {
-            Keyboard keyboard = Keyboard.current;
-            if (keyboard != null && keyboard.tKey.wasPressedThisFrame)
-            {
-                StartCountdown();
-            }
-        }
-        else if (currentState == FishingState.FrenzyActive)
+        if (currentState == FishingState.FrenzyActive)
         {
             frenzyTimeRemaining -= Time.deltaTime;
 
@@ -258,6 +257,12 @@ public class FishingManager : MonoBehaviour
                 FinishFrenzy();
             }
         }
+    }
+
+    private void HandleStartWavePressed()
+    {
+        if (anyError) return;
+        StartCountdown();
     }
 
     public void StartCountdown()

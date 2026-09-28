@@ -106,7 +106,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "DraftSkills",
+                    "name": "StartWave",
                     "type": "Button",
                     "id": "e8d7a12b-3456-4c78-90ab-cdef12345678",
                     "expectedControlType": "Button",
@@ -482,7 +482,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard and Mouse",
-                    "action": "DraftSkills",
+                    "action": "StartWave",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -493,7 +493,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "DraftSkills",
+                    "action": "StartWave",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

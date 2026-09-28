@@ -125,33 +125,13 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
         }
 
 
-        // Also check for between-wave active upgrade powerup in arena
-        if (GameLoopManager.Instance != null && GameLoopManager.Instance.ActivePowerup != null)
+        // Prep phase (plan 15): preview where the picked wave card's objective will happen
+        GameLoopManager loop = GameLoopManager.Instance;
+        if (loop != null && loop.IsAwaitingReady && loop.CurrentWaveCard != null && objectiveManager != null)
         {
-            targetBuffer.Add(new ObjectiveWaypointTarget(
-                GameLoopManager.Instance.ActivePowerup.transform,
-                worldOffset: new Vector3(0f, 1.5f, 0f),
-                customIcon: defaultObjectiveIcon,
-                tintColor: new Color(1f, 0.85f, 0.2f, 1f),
-                label: $"{GameLoopManager.Instance.ActivePowerup.BountyName}"
-            ));
-        }
-
-        // Check for active banners during intermission
-        if (GameLoopManager.Instance != null && GameLoopManager.Instance.IsIntermission && GameLoopManager.Instance.ActiveBanners != null)
-        {
-            foreach (var banner in GameLoopManager.Instance.ActiveBanners)
+            if (objectiveManager.FindObjective(loop.CurrentWaveCard.ObjectiveId) is IObjectivePreview preview)
             {
-                if (banner != null)
-                {
-                    targetBuffer.Add(new ObjectiveWaypointTarget(
-                        banner.transform,
-                        worldOffset: new Vector3(0f, 2.0f, 0f),
-                        customIcon: destinationGateIcon,
-                        tintColor: new Color(0.9f, 0.3f, 0.3f, 1f),
-                        label: "War Banner"
-                    ));
-                }
+                preview.GetPreviewWaypointTargets(targetBuffer);
             }
         }
 

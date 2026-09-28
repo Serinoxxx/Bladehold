@@ -5,16 +5,19 @@ using UnityEngine.AI;
 
 /// <summary>
 ///     Survivors objective: A Golden Goblin spawns and runs around a set of waypoints.
-///     No other enemies spawn during this objective. It drops gold periodically on damage.
+///     No regular enemies spawn during this objective (<see cref="ISuppressRegularSpawns" />). It drops
+///     gold every 10% HP lost and a bonus on death. Killing it completes the objective; if the timer
+///     (<c>timerSeconds</c> of its <c>WaveObjectives.csv</c> row) runs out it escapes and the objective fails.
 /// </summary>
-public class GoldenGoblinObjective : MonoBehaviour, ISurvivorsObjective
+public class GoldenGoblinObjective : MonoBehaviour, ISurvivorsObjective, ISuppressRegularSpawns, IObjectivePreview
 {
     [Header("Objective Configuration")]
     [SerializeField] private string objectiveId = "golden_goblin_event";
     [SerializeField] private string title = "Golden Goblin";
     [SerializeField] private string description = "Catch the Golden Goblin before he escapes!";
+    [Tooltip("Fallback escape timer when WaveObjectives.csv has no row for this objective.")]
     [SerializeField] private float duration = 30f;
-    
+
     [Header("Golden Goblin Settings")]
     [SerializeField] private GameObject goldenGoblinPrefab;
     [SerializeField] private Transform[] waypoints;
@@ -25,8 +28,11 @@ public class GoldenGoblinObjective : MonoBehaviour, ISurvivorsObjective
     [SerializeField] private float knockbackResistOverride = 999f;
 
     private float timer;
+    private float activeDuration;
+    private int lastReportedSeconds = -1;
     private bool isActive;
     private bool isComplete;
+    private bool isFailed;
     private Health targetHealth;
     private NavMeshAgent targetAgent;
     private int currentWaypointIndex;
@@ -36,10 +42,22 @@ public class GoldenGoblinObjective : MonoBehaviour, ISurvivorsObjective
     public string ObjectiveId => objectiveId;
     public string Title => title;
     public string Description => description;
-    public string ProgressText => "Escapes in: {Mathf.CeilToInt(duration - timer)}s";
-    public float ProgressNormalized => Mathf.Clamp01(timer / duration);
+    public float Duration => activeDuration > 0f ? activeDuration : ObjectiveCsv.RequiredDuration(objectiveId, duration);
+
+    public string ProgressText
+    {
+        get
+        {
+            if (isFailed) return Loc.Get("wave.obj.golden_goblin.escaped", "The Golden Goblin escaped!");
+            if (isComplete) return Loc.Get("wave.obj.golden_goblin.caught", "Golden Goblin caught!");
+            int secs = Mathf.Max(0, Mathf.CeilToInt(Duration - timer));
+            return Loc.Get("wave.obj.golden_goblin.progress", "Escapes in: {0}s").Replace("{0}", secs.ToString());
+        }
+    }
+
+    public float ProgressNormalized => Duration > 0f ? Mathf.Clamp01(timer / Duration) : 1f;
     public bool IsComplete => isComplete;
-    public bool IsFailed => false;
+    public bool IsFailed => isFailed;
     public bool IsActive => isActive;
 
     public event Action<ISurvivorsObjective> OnProgressChanged;
@@ -50,22 +68,27 @@ public class GoldenGoblinObjective : MonoBehaviour, ISurvivorsObjective
     {
         isActive = true;
         isComplete = false;
+        isFailed = false;
         timer = 0f;
+        activeDuration = ObjectiveCsv.RequiredDuration(objectiveId, duration);
+        lastReportedSeconds = Mathf.CeilToInt(activeDuration);
 
+        // Belt and braces: the real "no regular spawns" rule is ISuppressRegularSpawns, which
+        // GameLoopManager honours when it starts the wave (the spawner is started after this runs).
         if (SurvivorsSpawner.Instance != null)
         {
             SurvivorsSpawner.Instance.StopSpawning();
         }
 
         SpawnGoblin();
-        OnProgressChanged?.Invoke(this);
+        if (isActive) OnProgressChanged?.Invoke(this);
     }
 
     private void SpawnGoblin()
     {
-        if (goldenGoblinPrefab == null || waypoints == null || waypoints.Length == 0)
+        if (goldenGoblinPrefab == null || waypoints == null || waypoints.Length == 0 || waypoints[0] == null)
         {
-            Debug.LogWarning("[GoldenGoblinObjective] Missing prefab or waypoints, completing objective instantly.");
+            Debug.LogError("[GoldenGoblinObjective] Missing goldenGoblinPrefab or waypoints; completing the objective instantly.", this);
             CompleteObjective();
             return;
         }
@@ -83,18 +106,22 @@ public class GoldenGoblinObjective : MonoBehaviour, ISurvivorsObjective
         {
             targetHealth.SetMaxHealth(maxHealthOverride);
             targetHealth.Heal(maxHealthOverride);
-            
+
             KnockbackReceiver kr = goblinGo.GetComponent<KnockbackReceiver>();
             if (kr != null) kr.SetResistance(knockbackResistOverride);
-            
+
             ImpulseGoblin impulse = goblinGo.GetComponent<ImpulseGoblin>();
             if (impulse != null) impulse.enabled = false;
 
             targetHealth.OnDamaged += HandleGoblinDamaged;
             targetHealth.OnDied += HandleGoblinDied;
-            
+
             initialHealth = targetHealth.MaxHealth;
             lastDropHealth = initialHealth;
+        }
+        else
+        {
+            Debug.LogError($"[GoldenGoblinObjective] Golden goblin prefab '{goblinGo.name}' has no Health.", this);
         }
 
         targetAgent = goblinGo.GetComponent<NavMeshAgent>();
@@ -102,16 +129,20 @@ public class GoldenGoblinObjective : MonoBehaviour, ISurvivorsObjective
         {
             targetAgent.speed = 8f;
             currentWaypointIndex = 1 % waypoints.Length;
-            targetAgent.SetDestination(waypoints[currentWaypointIndex].position);
+            if (waypoints[currentWaypointIndex] != null && targetAgent.isOnNavMesh)
+            {
+                targetAgent.SetDestination(waypoints[currentWaypointIndex].position);
+            }
         }
     }
 
     private void HandleGoblinDamaged(Damage damage)
     {
-        if (targetHealth == null || isComplete || !isActive) return;
+        if (targetHealth == null || isComplete || isFailed || !isActive) return;
 
         float dropThreshold = initialHealth * 0.1f;
-        
+        if (dropThreshold <= 0f) return;
+
         while (lastDropHealth - targetHealth.CurrentHealth >= dropThreshold)
         {
             lastDropHealth -= dropThreshold;
@@ -121,45 +152,35 @@ public class GoldenGoblinObjective : MonoBehaviour, ISurvivorsObjective
 
     private void HandleGoblinDied()
     {
-        if (isComplete || !isActive) return;
+        if (isComplete || isFailed || !isActive) return;
 
         DropGold(killBonusGold);
-        
-        if (GameLoopManager.Instance != null && SurvivorsSpawner.Instance != null)
-        {
-            GameLoopManager.Instance.DebugCompleteObjective();
-        }
-        
         CompleteObjective();
     }
 
     private void DropGold(int amount)
     {
-        if (coinPrefab == null || targetHealth == null) return;
-        
+        if (coinPrefab == null || targetHealth == null || amount <= 0) return;
+
         Coin coin = Instantiate(coinPrefab, targetHealth.transform.position + Vector3.up, Quaternion.identity);
         coin.SetAmount(amount);
     }
 
     public void UpdateObjective(float deltaTime)
     {
-        if (!isActive || isComplete) return;
+        if (!isActive || isComplete || isFailed) return;
 
         timer += deltaTime;
-        OnProgressChanged?.Invoke(this);
-
-        if (timer >= duration)
+        int currentSeconds = Mathf.Max(0, Mathf.CeilToInt(activeDuration - timer));
+        if (currentSeconds != lastReportedSeconds)
         {
-            if (targetHealth != null && targetHealth.gameObject != null)
-            {
-                Destroy(targetHealth.gameObject);
-            }
-            
-            if (GameLoopManager.Instance != null)
-            {
-                GameLoopManager.Instance.DebugCompleteObjective();
-            }
-            CompleteObjective();
+            lastReportedSeconds = currentSeconds;
+            OnProgressChanged?.Invoke(this);
+        }
+
+        if (timer >= activeDuration)
+        {
+            HandleEscape();
             return;
         }
 
@@ -168,24 +189,62 @@ public class GoldenGoblinObjective : MonoBehaviour, ISurvivorsObjective
             if (!targetAgent.pathPending && targetAgent.remainingDistance < 1f)
             {
                 currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
-                targetAgent.SetDestination(waypoints[currentWaypointIndex].position);
+                if (waypoints[currentWaypointIndex] != null)
+                {
+                    targetAgent.SetDestination(waypoints[currentWaypointIndex].position);
+                }
             }
         }
+    }
+
+    /// <summary>Timer ran out: the goblin gets away and the objective fails (the card reward is lost).</summary>
+    private void HandleEscape()
+    {
+        if (!isActive || isComplete || isFailed) return;
+
+        isFailed = true;
+        isActive = false;
+        DespawnGoblin();
+
+        OnProgressChanged?.Invoke(this);
+        OnFailed?.Invoke(this);
     }
 
     private void CompleteObjective()
     {
         isActive = false;
         isComplete = true;
+        OnProgressChanged?.Invoke(this);
         OnCompleted?.Invoke(this);
+    }
+
+    /// <summary>Unsubscribes and removes a still-living goblin. A dead one is left as a corpse.</summary>
+    private void DespawnGoblin()
+    {
+        if (targetHealth == null) return;
+
+        targetHealth.OnDamaged -= HandleGoblinDamaged;
+        targetHealth.OnDied -= HandleGoblinDied;
+        if (!targetHealth.IsDead)
+        {
+            Destroy(targetHealth.gameObject);
+        }
+        targetHealth = null;
+        targetAgent = null;
     }
 
     public void CleanupObjective()
     {
         isActive = false;
-        if (targetHealth != null && targetHealth.gameObject != null)
+        DespawnGoblin();
+    }
+
+    private void OnDestroy()
+    {
+        if (targetHealth != null)
         {
-            Destroy(targetHealth.gameObject);
+            targetHealth.OnDamaged -= HandleGoblinDamaged;
+            targetHealth.OnDied -= HandleGoblinDied;
         }
     }
 
@@ -201,9 +260,23 @@ public class GoldenGoblinObjective : MonoBehaviour, ISurvivorsObjective
 
     public void GetActiveWaypointTargets(List<ObjectiveWaypointTarget> results)
     {
-        if (targetHealth != null)
+        if (!isActive || results == null) return;
+
+        if (targetHealth != null && !targetHealth.IsDead)
         {
-            results.Add(new ObjectiveWaypointTarget(targetHealth.transform, label: "Golden Goblin"));
+            results.Add(new ObjectiveWaypointTarget(targetHealth.transform, label: Loc.Get("wave.obj.golden_goblin.waypoint", "Golden Goblin")));
         }
+    }
+
+    public void GetPreviewWaypointTargets(List<ObjectiveWaypointTarget> results)
+    {
+        if (results == null || waypoints == null || waypoints.Length == 0 || waypoints[0] == null) return;
+
+        // It always spawns on the first waypoint, then laps the rest.
+        results.Add(new ObjectiveWaypointTarget(
+            waypoints[0],
+            worldOffset: new Vector3(0f, 1.8f, 0f),
+            tintColor: ObjectiveCsv.PreviewTint(new Color(1f, 0.85f, 0.2f)),
+            label: Loc.Get("wave.obj.golden_goblin.preview", "Golden Goblin")));
     }
 }

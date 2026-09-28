@@ -4,6 +4,11 @@
 
 ### New Features
 
+- Added the wave draft: between waves you pick one of 3 battles, each with an objective, Defence or Offence stance, 1-3 skull difficulty with a clan modifier, and its own reward
+- Added gate repair: during prep, hold E at the gate to spend supply restoring its health
+- Added a Captain Assault finale to every sector: kill the clan captain on wave 5 to win
+- Added objective previews during prep that show where the next objective will happen
+- Added a hold-to-start Ready control (T or D-pad Down) to begin each wave after building
 - Added ultimates to the Rest Area shop: every shop offers the ultimate of your melee weapon and your ranged weapon until you own one (100 gold)
 - Added separate ultimate bars for your melee and ranged weapon: each fills from hits with that weapon, and towers, burns and combos fill both at half rate
 - Added the Twin Fury meta perk (tier 3, 50 Goblin Blood): the shop can sell a second ultimate for your other weapon (400 gold)
@@ -121,6 +126,9 @@
 
 ### Fixes
 
+- Fixed the Golden Goblin counting as a success when it escaped, and completing twice when killed
+- Fixed the Siegebreaker's name being misspelled
+- Fixed clan modifiers never applying to enemies
 - Fixed the field going empty during Supply Wagon and Battering Ram objectives: enemies now keep arriving until the objective is resolved
 - Fixed Rest Area healing and ultimate charge being lost when returning to the campaign map
 - Fixed ultimate charge not carrying over between sectors
@@ -179,6 +187,9 @@
 
 ### Balance Changes
 
+- Removed the gate damage penalty for failing to destroy the siege engines
+- Added a 3 minute time limit to Protect the Supply Wagon; its gold bags are now part of the wave reward
+- Harder waves now add enemy health and kills to Hold the Gate, and 3-skull waves bring a captain
 - Kill quotas grow by 10% per campaign tier, and at least 60% of every wave is goblins
 - Heavier enemies are now limited to a few on the field at once
 - Replaced Bulwark enemy telegraphed slam attacks with standard melee strikes when close to the player, removing the slam entirely
@@ -190,6 +201,9 @@
 
 ### General Changes
 
+- Removed war banners and between-wave reward chests; wave rewards are now granted automatically
+- Leftover enemies now flee when an objective ends instead of having to be hunted down
+- The Fishing Pond start now also works on gamepad (D-pad Down)
 - Updated the ultimate button: press it while aiming your ranged weapon to use the ranged ultimate, otherwise it uses your melee ultimate
 - Removed ultimates from the draft cards; they are now bought at the shop
 - Updated the draft so cards only show up once they can work: Kindling needs Fire on a slot, Deep Freeze needs Ice on a slot, Shatter needs Deep Freeze, Inferno Burst and Eye of the Storm need an ultimate, and each duo card needs both of its elements on slots (Superconductor needs Deep Freeze instead of Ice)

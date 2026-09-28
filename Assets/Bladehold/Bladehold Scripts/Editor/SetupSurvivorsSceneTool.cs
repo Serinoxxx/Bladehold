@@ -472,13 +472,7 @@ public class SetupSurvivorsSceneTool : EditorWindow
                 var glmSo = new SerializedObject(glm);
                 glmSo.FindProperty("spawner").objectReferenceValue = spawnerComp;
                 glmSo.FindProperty("objectiveManager").objectReferenceValue = objManagerComp;
-                if (powerupSpawnGo != null) glmSo.FindProperty("upgradePowerupSpawnPoint").objectReferenceValue = powerupSpawnGo.transform;
-
-                var bspProp = glmSo.FindProperty("bannerSpawnPoints");
-                bspProp.arraySize = 3;
-                bspProp.GetArrayElementAtIndex(0).objectReferenceValue = banner0Go != null ? banner0Go.transform : null;
-                bspProp.GetArrayElementAtIndex(1).objectReferenceValue = banner1Go != null ? banner1Go.transform : null;
-                bspProp.GetArrayElementAtIndex(2).objectReferenceValue = banner2Go != null ? banner2Go.transform : null;
+                // Plan 15: war banners and the between-wave powerup are gone (wave cards replace them).
 
                 if (intermissionCamGo != null)
                 {

@@ -14,15 +14,15 @@ public class EnemyBuffController : MonoBehaviour
 
         if (health == null) return;
 
-        // Resolve magnitude from Clan SO if available, or fall back to parameter/defaults
+        // Magnitude from the caller (the wave card's skull-scaled clan effect), else the current card, else defaults
+        WaveCard card = GameLoopManager.Instance != null ? GameLoopManager.Instance.CurrentWaveCard : null;
         if (magnitude > 0f)
         {
             buffMagnitude = magnitude;
         }
-        else if (GameLoopManager.Instance != null && GameLoopManager.Instance.CurrentClanBuffSO != null &&
-                 GameLoopManager.Instance.CurrentClanBuffSO.buffType == buff)
+        else if (card != null && card.BuffType == buff && card.modifierMagnitude > 0f)
         {
-            buffMagnitude = GameLoopManager.Instance.CurrentClanBuffSO.buffMagnitude;
+            buffMagnitude = card.modifierMagnitude;
         }
         else
         {

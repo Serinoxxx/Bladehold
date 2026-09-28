@@ -549,8 +549,14 @@ public class CampaignMapUI : MonoBehaviour
 
     private void HandleNodeHovered(CampaignNodeSO node, CampaignNodeButtonUI.NodeVisualStatus status, Vector2 screenPos)
     {
+        CampaignNodeButtonUI hovered = null;
+        if (node != null)
+        {
+            spawnedButtons.TryGetValue(node.nodeId, out hovered);
+        }
+
         // A mouse hover takes over keyboard/gamepad focus, so the next key press moves on from here.
-        if (node != null && spawnedButtons.TryGetValue(node.nodeId, out CampaignNodeButtonUI hovered) && hovered != focusedButton)
+        if (hovered != null && hovered != focusedButton)
         {
             if (focusedButton != null)
             {
@@ -561,7 +567,15 @@ public class CampaignMapUI : MonoBehaviour
 
         if (tooltipUI != null)
         {
-            tooltipUI.Show(node, status, screenPos);
+            // Anchor to the node's rect so the tooltip sits beside the node instead of over it.
+            if (hovered != null && hovered.Rect != null)
+            {
+                tooltipUI.Show(node, status, hovered.Rect);
+            }
+            else
+            {
+                tooltipUI.Show(node, status, screenPos);
+            }
         }
     }
 

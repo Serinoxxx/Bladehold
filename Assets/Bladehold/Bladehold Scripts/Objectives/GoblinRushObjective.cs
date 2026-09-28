@@ -11,14 +11,16 @@ public class GoblinRushObjective : MonoBehaviour, ISurvivorsObjective, IOverride
     [SerializeField] private string objectiveId = "goblin_rush";
     [SerializeField] private string title = "Goblin Rush!";
     [SerializeField] private string description = "Survive the continuous goblin rush and kill as many as you can!";
+    [Tooltip("Fallback duration when WaveObjectives.csv has no row (or a 0 timer) for this objective.")]
     [SerializeField] private float durationSeconds = 120f;
-    
+
     [Header("Overrides")]
     [SerializeField] private string[] allowedEnemyIds = new string[] { "goblin" };
 
     private int initialKills;
     private int currentKills;
     private float timeRemaining;
+    private float activeDuration;
     private bool isActive;
     private bool isComplete;
 
@@ -36,7 +38,7 @@ public class GoblinRushObjective : MonoBehaviour, ISurvivorsObjective, IOverride
         }
     }
     
-    public float ProgressNormalized => durationSeconds > 0 ? Mathf.Clamp01(1f - (timeRemaining / durationSeconds)) : 1f;
+    public float ProgressNormalized => activeDuration > 0 ? Mathf.Clamp01(1f - (timeRemaining / activeDuration)) : 1f;
     public bool IsComplete => isComplete;
     public bool IsFailed => false;
     public bool IsActive => isActive;
@@ -52,7 +54,8 @@ public class GoblinRushObjective : MonoBehaviour, ISurvivorsObjective, IOverride
         isActive = true;
         isComplete = false;
         currentKills = 0;
-        timeRemaining = durationSeconds;
+        activeDuration = ObjectiveCsv.RequiredDuration(objectiveId, durationSeconds);
+        timeRemaining = activeDuration;
         initialKills = GameStats.Instance != null ? GameStats.Instance.GoblinsKilled : 0;
         OnProgressChanged?.Invoke(this);
     }

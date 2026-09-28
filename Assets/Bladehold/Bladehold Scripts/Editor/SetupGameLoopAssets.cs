@@ -922,9 +922,9 @@ public static class SetupGameLoopAssets
             bool victoryTriggered = false;
             glm.OnVictory += () => victoryTriggered = true;
             glm.StartWave(5);
-            glm.DebugCompleteObjective();
             var spawner = Object.FindAnyObjectByType<SurvivorsSpawner>();
             if (spawner != null) spawner.DespawnAllAliveEnemies();
+            glm.DebugCompleteObjective();
             for (int k = 0; k < glm.TargetKillsThisWave; k++) glm.OnEnemyKilled(null);
             sb.AppendLine($"- Wave 5 Cleared. Victory Triggered: {victoryTriggered} (Expected: True)");
             if (!victoryTriggered) throw new System.Exception("Victory was not triggered upon clearing Wave 5!");

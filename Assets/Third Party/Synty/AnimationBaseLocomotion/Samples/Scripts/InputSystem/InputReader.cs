@@ -45,8 +45,13 @@ namespace Synty.AnimationBaseLocomotion.Samples.InputSystem
         // OnDismount is never called (PlayerMount falls back to a direct X-key read).
         public Action onDismountPerformed;
 
-        // Bladehold addition: draft-skills action (T / gamepad D-pad Down).
-        public Action onDraftSkillsPerformed;
+        // Bladehold addition: start-wave action (T / gamepad D-pad Down), a plain Button with no
+        // interaction, so started = press, performed = press, canceled = release. The wave flow
+        // holds it for a set time to start a wave; StartWaveHeld tracks whether it is down.
+        public Action onStartWaveStarted;
+        public Action onStartWavePerformed;
+        public Action onStartWaveCanceled;
+        public bool StartWaveHeld { get; private set; }
 
         // Bladehold addition: interact action (E / gamepad West).
         public Action onInteractPerformed;
@@ -223,14 +228,23 @@ namespace Synty.AnimationBaseLocomotion.Samples.InputSystem
             // Implemented here only to satisfy the IPlayerActions interface generated from Controls.inputactions.
         }
 
-        public void OnDraftSkills(InputAction.CallbackContext context)
+        public void OnStartWave(InputAction.CallbackContext context)
         {
-            if (!context.performed)
+            if (context.started)
             {
-                return;
+                StartWaveHeld = true;
+                onStartWaveStarted?.Invoke();
             }
-
-            onDraftSkillsPerformed?.Invoke();
+            else if (context.performed)
+            {
+                StartWaveHeld = true;
+                onStartWavePerformed?.Invoke();
+            }
+            else if (context.canceled)
+            {
+                StartWaveHeld = false;
+                onStartWaveCanceled?.Invoke();
+            }
         }
 
         public void OnInteract(InputAction.CallbackContext context)

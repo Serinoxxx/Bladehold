@@ -102,17 +102,16 @@ public class EnemyIntroUI : MonoBehaviour
         {
             if (difficultySkulls > 0)
             {
-                string skulls = BannerDifficultyHelper.GetSkullString((BannerDifficultyTier)Mathf.Clamp(difficultySkulls, 1, 4));
                 Color tierCol = BannerDifficultyHelper.GetTierColor((BannerDifficultyTier)Mathf.Clamp(difficultySkulls, 1, 4));
                 string hexCol = ColorUtility.ToHtmlStringRGB(tierCol);
 
                 if (!string.IsNullOrEmpty(subtitle))
                 {
-                    subtitleText.text = $"{skulls}   <color=#{hexCol}>[{subtitle}]</color>";
+                    subtitleText.text = $"<color=#{hexCol}>[{subtitle}]</color>"; // no emoji skulls: the font has no glyph for them
                 }
                 else
                 {
-                    subtitleText.text = $"{skulls}";
+                    subtitleText.text = BannerDifficultyHelper.GetTierName((BannerDifficultyTier)Mathf.Clamp(difficultySkulls, 1, 4)).ToUpperInvariant();
                 }
                 subtitleText.gameObject.SetActive(true);
             }

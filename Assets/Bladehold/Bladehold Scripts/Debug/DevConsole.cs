@@ -24,6 +24,8 @@ public class DevConsole : MonoBehaviour
     private int objectiveIndex;
     private int waveChoicePreviewWave = 2;
     private string waveChoicePreviewLastId = "";
+    private int waveCardForceIndex;
+    private int waveCardForceSkulls = 1;
     private bool isGodMode;
     private Vector2 mainScrollPos;
     private Vector2 draftScrollPos;
@@ -627,6 +629,88 @@ public class DevConsole : MonoBehaviour
             waveChoicePreviewWave = Mathf.Min(4, waveChoicePreviewWave + 1);
         }
         GUILayout.EndHorizontal();
+
+        DrawWaveCardForceControls();
+    }
+
+    /// <summary>
+    ///     Live wave-flow cheats (plan 15), prep phase only: <c>wavecards</c> rerolls and reopens the draft
+    ///     for the upcoming wave; <c>wavecard &lt;id&gt; &lt;skulls&gt;</c> forces a card (pick the objective and
+    ///     skulls, then Force). "Ready" skips the 1 s [T] hold.
+    /// </summary>
+    private void DrawWaveCardForceControls()
+    {
+        GameLoopManager loop = GameLoopManager.Instance;
+        WaveChoiceConfigSO config = WaveChoiceConfigSO.Load();
+        if (loop == null || config == null)
+        {
+            return;
+        }
+
+        IReadOnlyList<WaveObjectiveDefinition> rows = config.Catalog.All;
+        if (rows.Count == 0)
+        {
+            return;
+        }
+        waveCardForceIndex = Mathf.Clamp(waveCardForceIndex, 0, rows.Count - 1);
+        WaveObjectiveDefinition row = rows[waveCardForceIndex];
+
+        GUI.enabled = loop.IsPrepPhase;
+        GUILayout.Label(loop.IsPrepPhase
+            ? $"Wave {loop.UpcomingWave} card: {(loop.CurrentWaveCard != null ? $"{loop.CurrentWaveCard.ObjectiveId} ({loop.CurrentWaveCard.skulls} skulls)" : "choosing")}"
+            : "Wave card cheats: prep phase only");
+
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Reroll Draft (wavecards)", GUILayout.Height(ButtonHeight)))
+        {
+            SetVisible(false);
+            if (!loop.DebugRerollWaveDraft()) Debug.LogWarning("[DevConsole] wavecards: can't reroll right now (draft already open, or not in prep).");
+        }
+        if (GUILayout.Button("Ready", GUILayout.Width(70f), GUILayout.Height(ButtonHeight)))
+        {
+            loop.DebugPressReady();
+        }
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("<", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
+        {
+            waveCardForceIndex = (waveCardForceIndex - 1 + rows.Count) % rows.Count;
+        }
+        GUILayout.Label($"{row.id} ({row.stance})", GUILayout.Height(ButtonHeight));
+        if (GUILayout.Button(">", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
+        {
+            waveCardForceIndex = (waveCardForceIndex + 1) % rows.Count;
+        }
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        for (int s = 1; s <= WaveChoiceConfigSO.MaxSkulls; s++)
+        {
+            bool on = waveCardForceSkulls == s;
+            if (GUILayout.Toggle(on, $"{s} skull{(s > 1 ? "s" : "")}", GUI.skin.button, GUILayout.Height(ButtonHeight)) && !on)
+            {
+                waveCardForceSkulls = s;
+            }
+        }
+        if (GUILayout.Button("Force (wavecard)", GUILayout.Height(ButtonHeight)))
+        {
+            CampaignNodeSO node = CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive ? CampaignManager.Instance.CurrentNode : null;
+            WarBannerClanSO clan = config.clans.Count > 0 ? config.clans[UnityEngine.Random.Range(0, config.clans.Count)] : null;
+            WaveCardRollContext ctx = new WaveCardRollContext
+            {
+                wave = loop.UpcomingWave,
+                threat = SectorThreat.Current,
+                captainName = node != null ? node.captainName : null,
+                isDemo = DemoConfigSO.IsDemo
+            };
+            WaveCard card = WaveCardGenerator.Build(config, row, waveCardForceSkulls, clan, WaveBonusType.None, rollBonus: true, ctx, new System.Random());
+            Debug.Log(loop.DebugSetUpcomingCard(card)
+                ? $"[DevConsole] wavecard {row.id} {waveCardForceSkulls}: forced for wave {loop.UpcomingWave} ({card.ClanName}, {card.gold}g {card.supply}s {card.bonusType} x{card.bonusAmount})."
+                : "[DevConsole] wavecard: only during prep, after the draft closes.");
+        }
+        GUILayout.EndHorizontal();
+        GUI.enabled = true;
     }
 
     /// <summary>

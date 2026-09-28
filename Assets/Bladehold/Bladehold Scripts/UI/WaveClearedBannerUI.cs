@@ -26,6 +26,8 @@ public class WaveClearedBannerUI : MonoBehaviour
     [SerializeField] private string questCompletedHeader = "QUEST COMPLETE";
     [Tooltip("Header text displayed when an objective/quest fails.")]
     [SerializeField] private string questFailedHeader = "OBJECTIVE FAILED";
+    [Tooltip("Header text displayed when a wave card reward is granted.")]
+    [SerializeField] private string rewardHeader = "REWARD";
 
     [Header("Animation & Juiciness")]
     [Tooltip("Animator driving the text banner entrance and exit states.")]
@@ -44,6 +46,7 @@ public class WaveClearedBannerUI : MonoBehaviour
     [SerializeField] private float displayDuration = 3f;
 
     private Coroutine hideRoutine;
+    private GameLoopManager gameLoop;
     private bool anyError;
 
     private void OnValidate()
@@ -128,6 +131,12 @@ public class WaveClearedBannerUI : MonoBehaviour
         objectiveManager.OnObjectiveCompleted += HandleSurvivorsObjectiveCleared;
         objectiveManager.OnObjectiveFailed += HandleSurvivorsObjectiveFailed;
 
+        if (GameLoopManager.Instance != null)
+        {
+            gameLoop = GameLoopManager.Instance;
+            gameLoop.OnWaveRewardGranted += HandleWaveRewardGranted;
+        }
+
         // If an objective was already active before Start (e.g. introductory objective), announce it
         if (objectiveManager.CurrentObjective != null && objectiveManager.CurrentObjective.IsActive)
         {
@@ -142,6 +151,10 @@ public class WaveClearedBannerUI : MonoBehaviour
             objectiveManager.OnObjectiveStarted -= HandleSurvivorsObjectiveStarted;
             objectiveManager.OnObjectiveCompleted -= HandleSurvivorsObjectiveCleared;
             objectiveManager.OnObjectiveFailed -= HandleSurvivorsObjectiveFailed;
+        }
+        if (gameLoop != null)
+        {
+            gameLoop.OnWaveRewardGranted -= HandleWaveRewardGranted;
         }
     }
 
@@ -159,6 +172,12 @@ public class WaveClearedBannerUI : MonoBehaviour
     private void HandleSurvivorsObjectiveFailed(ISurvivorsObjective obj)
     {
         ShowBanner(questFailedHeader, obj != null ? obj.Title : null, 0, 0, isNewQuest: false);
+    }
+
+    // Plan 15: the picked wave card paid out (after the rout).
+    private void HandleWaveRewardGranted(WaveCard card, string description)
+    {
+        ShowBanner(Loc.Get("wave.reward.banner", rewardHeader), description, card != null ? card.gold : 0, 0, isNewQuest: false);
     }
 
     private void ShowBanner(string mainHeader, string questSubTitle, int gold, int kills, bool isNewQuest = false)

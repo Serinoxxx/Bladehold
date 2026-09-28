@@ -701,9 +701,9 @@ public static class WeaponReachBenchmark
         }
 
         // =========================================================
-        // 8. WAR BANNER DIFFICULTY TIERS & ENRAGED CAPTAINS
+        // 8. CAPTAIN DIFFICULTY TIERS (the old banner tiers, now driven by wave-card skulls)
         // =========================================================
-        sb.AppendLine("\n### 8. WAR BANNER DIFFICULTY TIERS & ENRAGED CAPTAINS");
+        sb.AppendLine("\n### 8. CAPTAIN DIFFICULTY TIERS & ENRAGED CAPTAINS");
 
         // 8A: Multiplier Math Verification
         try
@@ -756,40 +756,30 @@ public static class WeaponReachBenchmark
             failedCount++;
         }
 
-        // 8C: Progression Roll Verification
+        // 8C: Captain tier mapping (plan 15: banners are gone; wave-card skulls and sector threat pick the tier)
         try
         {
-            // Run 1: Must always roll Standard
-            BannerDifficultyTier run1_slot0 = BannerDifficultyHelper.RollTierForBanner(1, 1, 0);
-            BannerDifficultyTier run1_slot1 = BannerDifficultyHelper.RollTierForBanner(1, 1, 1);
-            BannerDifficultyTier run1_slot2 = BannerDifficultyHelper.RollTierForBanner(1, 1, 2);
+            BannerDifficultyTier Skulls(int s) => new WaveCard { skulls = s }.CaptainTier;
+            bool skullsMap = Skulls(1) == BannerDifficultyTier.Standard && Skulls(2) == BannerDifficultyTier.Enraged &&
+                             Skulls(3) == BannerDifficultyTier.Nightmare;
+            bool threatMaps = GameLoopManager.CaptainTierForThreat(1) == BannerDifficultyTier.Enraged &&
+                              GameLoopManager.CaptainTierForThreat(3) == BannerDifficultyTier.Nightmare &&
+                              GameLoopManager.CaptainTierForThreat(6) == BannerDifficultyTier.Omega;
 
-            // Run 2+: Slot 0 is Standard, Slot 1 is Enraged
-            BannerDifficultyTier run2_slot0 = BannerDifficultyHelper.RollTierForBanner(2, 1, 0);
-            BannerDifficultyTier run2_slot1 = BannerDifficultyHelper.RollTierForBanner(2, 1, 1);
-
-            // Round 3+: Slot 2 can roll Nightmare or Omega
-            BannerDifficultyTier r3_nightmare = BannerDifficultyHelper.RollTierForBanner(2, 3, 2, roll: 0.8f);
-            BannerDifficultyTier r3_omega = BannerDifficultyHelper.RollTierForBanner(2, 3, 2, roll: 0.1f);
-
-            bool run1Safe = (run1_slot0 == BannerDifficultyTier.Standard && run1_slot1 == BannerDifficultyTier.Standard && run1_slot2 == BannerDifficultyTier.Standard);
-            bool run2Working = (run2_slot0 == BannerDifficultyTier.Standard && run2_slot1 == BannerDifficultyTier.Enraged);
-            bool lateRoundsWorking = (r3_nightmare == BannerDifficultyTier.Nightmare && r3_omega == BannerDifficultyTier.Omega);
-
-            if (run1Safe && run2Working && lateRoundsWorking)
+            if (skullsMap && threatMaps)
             {
-                sb.AppendLine("  - Progression Rolling: Run 1 locked to Standard; Run 2+ offers Enraged/Nightmare/Omega. [PASSED]");
+                sb.AppendLine("  - Captain tiers: card skulls 1/2/3 → Standard/Enraged/Nightmare; final-wave captain Enraged (threat 1-2) / Nightmare (3-5) / Omega (6+). [PASSED]");
                 passedCount++;
             }
             else
             {
-                sb.AppendLine($"  - [FAIL] Progression rolling failure (run1Safe={run1Safe}, run2Working={run2Working}, lateRoundsWorking={lateRoundsWorking})!");
+                sb.AppendLine($"  - [FAIL] Captain tier mapping (skullsMap={skullsMap}, threatMaps={threatMaps})!");
                 failedCount++;
             }
         }
         catch (Exception ex)
         {
-            sb.AppendLine($"  - Progression rolling exception: {ex.Message} [FAILED]");
+            sb.AppendLine($"  - Captain tier mapping exception: {ex.Message} [FAILED]");
             failedCount++;
         }
 
@@ -2537,13 +2527,12 @@ public static class WeaponReachBenchmark
             testGlm.StartWave(1);
             bool wave1Active = testGlm.IsWaveActive;
 
-            // Clear wave 1
+            // Resolve wave 1 (plan 15: the objective resolving ends the wave; with no stragglers the rout is instant)
             testGlm.DebugCompleteObjective();
-            for (int k = 0; k < testGlm.TargetKillsThisWave; k++) testGlm.OnEnemyKilled(null);
-            bool wave1ClearedNoGate = true; // the rest gate is gone (plan 08); kept so the report line is unchanged
+            bool wave1ClearedNoGate = !testGlm.IsWaveActive && testGlm.IsPrepPhase;
 
             // Start wave 5 (final wave)
-            // Wave 5 spawns a captain: give the bare test manager a stand-in template for both captain slots
+            // Wave 5 may spawn a captain (Captain Assault fallback): give the bare test manager a stand-in template for both captain slots
             // so the spawn path runs without the "no prefab" errors (the real prefabs are scene wiring).
             GameObject captainTemplate = new GameObject("Benchmark_CaptainTemplate");
             captainTemplate.AddComponent<Health>();
@@ -2556,19 +2545,18 @@ public static class WeaponReachBenchmark
             testGlm.StartWave(5);
             bool wave5Active = testGlm.IsWaveActive;
             testGlm.DebugCompleteObjective();
-            for (int k = 0; k < testGlm.TargetKillsThisWave; k++) testGlm.OnEnemyKilled(null);
 
             bool wave5VictoryTriggered = victoryFired && !testGlm.IsWaveActive;
             bool healthRatioCarriedOver = Mathf.Approximately(RunSession.PlayerHealthRatio, 0.6f);
 
             if (wave1Active && wave1ClearedNoGate && wave5Active && wave5VictoryTriggered && healthRatioCarriedOver)
             {
-                sb.AppendLine("  - GameLoopManager 5-Wave Flow: Defense node runs continuous 5 waves without gate interruption, fires OnVictory on Wave 5, and preserves health ratio. [PASSED]");
+                sb.AppendLine("  - GameLoopManager 5-Wave Flow: wave resolves on its objective into prep, fires OnVictory on Wave 5, and preserves health ratio. [PASSED]");
                 passedCount++;
             }
             else
             {
-                sb.AppendLine($"  - [FAIL] 5-wave loop test failed (w1Active={wave1Active}, w1NoGate={wave1ClearedNoGate}, w5Active={wave5Active}, victoryFired={wave5VictoryTriggered}, hpRatio={healthRatioCarriedOver})");
+                sb.AppendLine($"  - [FAIL] 5-wave loop test failed (w1Active={wave1Active}, w1Resolved={wave1ClearedNoGate}, w5Active={wave5Active}, victoryFired={wave5VictoryTriggered}, hpRatio={healthRatioCarriedOver})");
                 failedCount++;
             }
 

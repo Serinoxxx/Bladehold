@@ -12,7 +12,9 @@ using MoreMountains.Feedbacks;
 ///     one since the player is still alive behind the screen) — or, via <see cref="ShowVictory" />, when
 ///     the sector is won. Shows goblins killed and gold earned this run (from <see cref="GameStats" />)
 ///     plus the run's gold (<see cref="RunSession.InRunGold" />). Defeat has one way out: back to the
-///     Meta Area with the run wiped. Victory has one: on to the Campaign Map. When an optional
+///     Meta Area with the run wiped. Victory has one: on to the Campaign Map (no retry, the sector is
+///     won), and adds a Sector Rewards panel from <see cref="GameLoopManager.Summary" />. The stats panel
+///     shows this scene's totals (<see cref="RunTelemetry.GetRunTotals" />). When an optional
 ///     <see cref="FailureBanner" /> is assigned, it plays first with a per-condition failure reason
 ///     ("The hero has fallen…" / "The gate was destroyed…") and the screen only fades in after it
 ///     finishes.
@@ -56,8 +58,35 @@ public class DeathScreen : MonoBehaviour
     [SerializeField] private Button returnToMetaButton;
     [Tooltip("Optional: victory line showing the supply refunded for dismantled towers. Hidden on defeat or when nothing was refunded.")]
     [SerializeField] private TMP_Text towerRefundText;
-    [Tooltip("Format for the tower refund line; {0} is the supply amount.")]
+    [Tooltip("English fallback for the tower refund line (Loc key endscreen.tower_refund); {0} is the supply amount.")]
     [SerializeField] private string towerRefundFormat = "Towers dismantled: +{0} supply";
+
+    [Header("Title Band")]
+    [Tooltip("Optional line under the title. Victory: 'Sector defended' (or the campaign-complete line). Defeat: the failure reason.")]
+    [SerializeField] private TMP_Text subtitleText;
+
+    [Header("Sector Rewards (victory only)")]
+    [Tooltip("Optional: panel listing what the sector paid out (GameLoopManager.Summary). Hidden on defeat and when there's no GameLoopManager.")]
+    [SerializeField] private GameObject sectorRewardsPanel;
+    [Tooltip("Inactive template row inside the rewards list, cloned once per reward line.")]
+    [SerializeField] private SectorRewardRowUI rewardRowTemplate;
+    [Tooltip("Captains defeated this sector, one per line, or 'None'.")]
+    [SerializeField] private TMP_Text captainsText;
+    [SerializeField] private RewardIcon wavesWonIcon;
+    [SerializeField] private RewardIcon wavesLostIcon;
+    [SerializeField] private RewardIcon goldIcon;
+    [SerializeField] private RewardIcon supplyIcon;
+    [SerializeField] private RewardIcon goblinBloodIcon;
+    [SerializeField] private RewardIcon orcishMetalIcon;
+    [SerializeField] private RewardIcon trollHeartIcon;
+    [SerializeField] private RewardIcon draftPicksIcon;
+
+    [System.Serializable]
+    private struct RewardIcon
+    {
+        public Sprite sprite;
+        public Color tint;
+    }
     [Tooltip("Seconds to fade the screen in.")]
     [SerializeField] private float fadeDuration = 1f;
 
@@ -139,6 +168,14 @@ public class DeathScreen : MonoBehaviour
         {
             towerRefundText.gameObject.SetActive(false);
         }
+        if (sectorRewardsPanel != null)
+        {
+            sectorRewardsPanel.SetActive(false);
+        }
+        if (rewardRowTemplate != null)
+        {
+            rewardRowTemplate.gameObject.SetActive(false);
+        }
 
         nextStageButton.onClick.AddListener(ProceedToCampaignMap);
         returnToMetaButton.onClick.AddListener(ReturnToMetaScene);
@@ -179,14 +216,29 @@ public class DeathScreen : MonoBehaviour
     public void ShowVictory(string title = null, int towerRefund = 0)
     {
         isCampaignComplete = CampaignManager.Instance.CurrentNodeEndsCampaign;
-        string defaultTitle = isCampaignComplete ? campaignCompleteTitle : victoryTitle;
-        string t = !string.IsNullOrEmpty(title) ? title : defaultTitle;
+        string t;
+        if (isCampaignComplete)
+        {
+            t = Loc.Get("endscreen.campaign_title", campaignCompleteTitle);
+        }
+        else if (string.IsNullOrEmpty(title) || title == victoryTitle)
+        {
+            // GameLoopManager passes the English default; route it through Loc like our own default.
+            t = Loc.Get("endscreen.victory_title", victoryTitle);
+        }
+        else
+        {
+            t = title;
+        }
+        string subtitle = isCampaignComplete
+            ? Loc.Get("endscreen.campaign_subtitle", "The campaign is won")
+            : Loc.Get("endscreen.victory_subtitle", "Sector defended");
         if (towerRefundText != null)
         {
             towerRefundText.gameObject.SetActive(towerRefund > 0);
-            towerRefundText.text = string.Format(towerRefundFormat, towerRefund);
+            towerRefundText.text = Loc.Get("endscreen.tower_refund", towerRefundFormat).Replace("{0}", towerRefund.ToString());
         }
-        ShowRunOver(t, null, isVictory: true);
+        ShowRunOver(t, subtitle, isVictory: true);
     }
 
     /// <summary>
@@ -220,7 +272,8 @@ public class DeathScreen : MonoBehaviour
         ShowRunOver(Loc.Get(gateFellTitleKey), Loc.Get(gateFellReasonKey));
     }
 
-    private void ShowRunOver(string title, string failureReason, bool isVictory = false)
+    /// <param name="subtitle">Victory: the line under the title. Defeat: the failure reason (banner + subtitle).</param>
+    private void ShowRunOver(string title, string subtitle, bool isVictory = false)
     {
         if (shown || anyError)
         {
@@ -248,6 +301,11 @@ public class DeathScreen : MonoBehaviour
         {
             titleText.text = title;
         }
+        if (subtitleText != null)
+        {
+            subtitleText.gameObject.SetActive(!string.IsNullOrEmpty(subtitle));
+            subtitleText.text = subtitle;
+        }
 
         RefreshCurrencies();
 
@@ -257,35 +315,25 @@ public class DeathScreen : MonoBehaviour
 
         bool isSurvivorsMode = SurvivorsGameManager.Instance != null;
 
-        if (!isSurvivorsMode)
-        {
-            if (goblinsKilledText != null)
-            {
-                goblinsKilledText.text = Loc.Format("wavestats.goblins_slain", killed);
-            }
-            if (goldEarnedText != null)
-            {
-                goldEarnedText.text = Loc.Format("wavestats.gold_earned", earned);
-            }
-        }
         if (totalGoldText != null)
         {
             totalGoldText.text = Loc.Format("wavestats.total_gold", total);
         }
 
-        float runSeconds = 0f;
-        int lvl = 1;
-        int dmgDealt = 0;
-        int dmgTaken = 0;
-        int crits = 0;
-
+        Button focusButton;
         if (isVictory)
         {
-            // Victory: proceed directly to Campaign Map
+            // Victory: proceed directly to the Campaign Map. No retry: the sector is already won.
             returnToMetaButton.gameObject.SetActive(false);
             nextStageButton.gameObject.SetActive(true);
             TMP_Text lbl = nextStageButton.GetComponentInChildren<TMP_Text>();
-            if (lbl != null) lbl.text = isCampaignComplete ? campaignCompleteButtonText : victoryButtonText;
+            if (lbl != null)
+            {
+                lbl.text = isCampaignComplete
+                    ? Loc.Get("endscreen.return_sanctuary", campaignCompleteButtonText)
+                    : Loc.Get("endscreen.proceed_map", victoryButtonText);
+            }
+            focusButton = nextStageButton;
         }
         else
         {
@@ -293,61 +341,133 @@ public class DeathScreen : MonoBehaviour
             nextStageButton.gameObject.SetActive(false);
             returnToMetaButton.gameObject.SetActive(true);
             TMP_Text lbl = returnToMetaButton.GetComponentInChildren<TMP_Text>();
-            if (lbl != null) lbl.text = defeatButtonText;
+            if (lbl != null) lbl.text = Loc.Get("endscreen.return_sanctuary", defeatButtonText);
             if (towerRefundText != null)
             {
                 towerRefundText.gameObject.SetActive(false);
             }
+            focusButton = returnToMetaButton;
+        }
+        MenuFocusController focus = GetComponent<MenuFocusController>();
+        if (focus != null)
+        {
+            focus.SetDefaultSelectable(focusButton);
         }
 
+        PopulateSectorRewards(isVictory);
+
+        // Sector stats. Damage and crits are this scene's totals from RunTelemetry (the per-wave
+        // accumulators it also keeps are reset between waves, so they read 0 at the end screen).
+        float runSeconds = 0f;
+        int dmgDealt = 0;
+        int dmgTaken = 0;
+        int crits = 0;
+        if (RunTelemetry.Instance != null)
+        {
+            RunTelemetry.WaveStats totals = RunTelemetry.Instance.GetRunTotals(out runSeconds);
+            dmgDealt = Mathf.RoundToInt(totals.damageDealt);
+            dmgTaken = Mathf.RoundToInt(totals.damageTaken);
+            crits = totals.crits;
+        }
         if (isSurvivorsMode)
         {
-            // Survivors run telemetry & stats
-            runSeconds = SurvivorsGameManager.Instance != null ? SurvivorsGameManager.Instance.RunTimer : 0f;
-            // The stats panel's "Level Reached" row now shows the wave reached (the XP level system is gone).
-            lvl = GameLoopManager.Instance != null ? GameLoopManager.Instance.CurrentWave : 1;
+            runSeconds = SurvivorsGameManager.Instance.RunTimer;
+        }
+        // The "Wave Reached" row: the wave number the sector ended on (the XP level system is gone).
+        int wave = GameLoopManager.Instance != null ? GameLoopManager.Instance.CurrentWave : 1;
 
-            if (RunTelemetry.Instance != null)
-            {
-                var waveStats = RunTelemetry.Instance.GetCurrentWaveStats();
-                dmgDealt = Mathf.RoundToInt(waveStats.damageDealt);
-                dmgTaken = Mathf.RoundToInt(waveStats.damageTaken);
-                crits = waveStats.crits;
-            }
-
-            if (survivorsStatsPanel == null)
-            {
-                survivorsStatsPanel = GetComponentInChildren<SurvivorsStatsPanelUI>(true);
-            }
-
-            if (survivorsStatsPanel != null)
-            {
-                survivorsStatsPanel.HideAllRows();
-            }
-            else
-            {
-                int minutes = Mathf.FloorToInt(runSeconds / 60f);
-                int seconds = Mathf.FloorToInt(runSeconds % 60f);
-                if (timeSurvivedText != null) timeSurvivedText.text = $"{minutes:00}:{seconds:00}";
-                if (levelReachedText != null) levelReachedText.text = lvl.ToString();
-                if (goblinsKilledText != null) goblinsKilledText.text = killed == 0 ? "0" : killed.ToString("#,##0");
-                if (goldEarnedText != null) goldEarnedText.text = earned == 0 ? "0" : earned.ToString("#,##0");
-                if (damageDealtText != null) damageDealtText.text = dmgDealt == 0 ? "0" : dmgDealt.ToString("#,##0");
-                if (damageTakenText != null) damageTakenText.text = dmgTaken == 0 ? "0" : dmgTaken.ToString("#,##0");
-                if (critsText != null) critsText.text = crits == 0 ? "0" : crits.ToString("#,##0");
-            }
-
-            if (survivorsSidebar != null)
-            {
-                survivorsSidebar.gameObject.SetActive(true);
-                survivorsSidebar.RefreshSidebar();
-            }
+        if (survivorsStatsPanel == null)
+        {
+            survivorsStatsPanel = GetComponentInChildren<SurvivorsStatsPanelUI>(true);
         }
 
-        StartCoroutine(RunOverSequence(failureReason, isSurvivorsMode, isVictory, runSeconds, lvl, killed, earned, dmgDealt, dmgTaken, crits));
+        if (survivorsStatsPanel != null)
+        {
+            survivorsStatsPanel.HideAllRows();
+        }
+        else if (!isSurvivorsMode)
+        {
+            if (goblinsKilledText != null) goblinsKilledText.text = Loc.Format("wavestats.goblins_slain", killed);
+            if (goldEarnedText != null) goldEarnedText.text = Loc.Format("wavestats.gold_earned", earned);
+        }
+        else
+        {
+            int minutes = Mathf.FloorToInt(runSeconds / 60f);
+            int seconds = Mathf.FloorToInt(runSeconds % 60f);
+            if (timeSurvivedText != null) timeSurvivedText.text = $"{minutes:00}:{seconds:00}";
+            if (levelReachedText != null) levelReachedText.text = wave.ToString();
+            if (goblinsKilledText != null) goblinsKilledText.text = killed.ToString("#,##0");
+            if (goldEarnedText != null) goldEarnedText.text = earned.ToString("#,##0");
+            if (damageDealtText != null) damageDealtText.text = dmgDealt.ToString("#,##0");
+            if (damageTakenText != null) damageTakenText.text = dmgTaken.ToString("#,##0");
+            if (critsText != null) critsText.text = crits.ToString("#,##0");
+        }
+
+        if (survivorsSidebar != null)
+        {
+            survivorsSidebar.gameObject.SetActive(true);
+            survivorsSidebar.RefreshSidebar();
+        }
+
+        StartCoroutine(RunOverSequence(isVictory ? null : subtitle, isVictory, runSeconds, wave, killed, earned, dmgDealt, dmgTaken, crits));
     }
 
-    private IEnumerator RunOverSequence(string failureReason, bool isSurvivorsMode = false, bool isVictory = false, float runSeconds = 0f, int lvl = 1, int killed = 0, int earned = 0, int dmgDealt = 0, int dmgTaken = 0, int crits = 0)
+    /// <summary>
+    ///     Victory only: fills the Sector Rewards panel from <see cref="GameLoopManager.Summary" />,
+    ///     one cloned template row per line. Gold and supply always show; the rest only when earned.
+    /// </summary>
+    private void PopulateSectorRewards(bool isVictory)
+    {
+        if (sectorRewardsPanel == null)
+        {
+            return;
+        }
+        GameLoopManager loop = GameLoopManager.Instance;
+        bool show = isVictory && loop != null && rewardRowTemplate != null;
+        sectorRewardsPanel.SetActive(show);
+        if (!show)
+        {
+            return;
+        }
+
+        SectorSummary s = loop.Summary;
+        AddRewardRow(Loc.Get("endscreen.waves_won", "Waves won"), s.wavesWon.ToString(), wavesWonIcon);
+        AddRewardRow(Loc.Get("endscreen.waves_lost", "Waves lost"), s.wavesFailed.ToString(), wavesLostIcon);
+        AddRewardRow(Loc.Get("endscreen.reward_gold", "Gold"), "+" + s.cardGold.ToString("#,##0"), goldIcon);
+        AddRewardRow(Loc.Get("endscreen.reward_supply", "Supply"), "+" + s.cardSupply.ToString("#,##0"), supplyIcon);
+        if (s.goblinBlood > 0)
+        {
+            AddRewardRow(Loc.Get("endscreen.reward_blood", "Goblin Blood"), "+" + s.goblinBlood.ToString("#,##0"), goblinBloodIcon);
+        }
+        if (s.orcishMetal > 0)
+        {
+            AddRewardRow(Loc.Get("endscreen.reward_metal", "Orcish Metal"), "+" + s.orcishMetal.ToString("#,##0"), orcishMetalIcon);
+        }
+        if (s.trollHeartHp > 0)
+        {
+            AddRewardRow(Loc.Get("endscreen.reward_troll_heart", "Troll Heart max HP"), "+" + s.trollHeartHp.ToString("#,##0"), trollHeartIcon);
+        }
+        if (s.draftPicks > 0)
+        {
+            AddRewardRow(Loc.Get("endscreen.reward_draft_picks", "Draft picks"), s.draftPicks.ToString(), draftPicksIcon);
+        }
+
+        if (captainsText != null)
+        {
+            captainsText.text = s.captainsDefeated.Count > 0
+                ? string.Join("\n", s.captainsDefeated)
+                : Loc.Get("endscreen.captains_none", "None");
+        }
+    }
+
+    private void AddRewardRow(string label, string value, RewardIcon icon)
+    {
+        SectorRewardRowUI row = Instantiate(rewardRowTemplate, rewardRowTemplate.transform.parent);
+        row.gameObject.SetActive(true);
+        row.Set(label, value, icon.sprite, icon.tint);
+    }
+
+    private IEnumerator RunOverSequence(string failureReason, bool isVictory, float runSeconds, int wave, int killed, int earned, int dmgDealt, int dmgTaken, int crits)
     {
         // The failure-reason banner only plays on defeat, not on victory.
         if (!isVictory && failureBanner != null && !string.IsNullOrEmpty(failureReason))
@@ -360,9 +480,9 @@ public class DeathScreen : MonoBehaviour
 
         yield return FadeIn();
 
-        if (isSurvivorsMode && survivorsStatsPanel != null)
+        if (survivorsStatsPanel != null)
         {
-            yield return survivorsStatsPanel.PlaySequenceRoutine(runSeconds, lvl, killed, earned, dmgDealt, dmgTaken, crits);
+            yield return survivorsStatsPanel.PlaySequenceRoutine(runSeconds, wave, killed, earned, dmgDealt, dmgTaken, crits);
         }
     }
 

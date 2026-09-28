@@ -9,7 +9,8 @@ using UnityEngine.AI;
 ///     Supply wagon entity for the "Protect the supply wagon" objective.
 ///     Moves along NavMesh toward a destination gate only when the player is within its detection radius.
 ///     Dynamically sizes and animates its visual range circle indicator and plays movement feedbacks.
-///     On arrival, after a configurable delay, it bursts with feedback/VFX, spawns gold bags, and destroys itself.
+///     On arrival, after a configurable delay, it bursts with feedback/VFX and destroys itself. It pays
+///     nothing itself: the wave card's reward bundle is the payout (plan 15).
 /// </summary>
 [RequireComponent(typeof(NavMeshAgent))]
 public class SupplyWagonEscort : MonoBehaviour
@@ -47,28 +48,13 @@ public class SupplyWagonEscort : MonoBehaviour
     [SerializeField] private AudioSource movementAudioSource;
 
     [Header("Arrival & Burst Settings")]
-    [Tooltip("Delay in seconds after reaching the destination before playing the burst feedback and dropping gold.")]
+    [Tooltip("Delay in seconds after reaching the destination before playing the burst feedback.")]
     [SerializeField] private float burstDelay = 0.5f;
 
-    [Tooltip("MMF_Player played when the wagon reaches the destination and bursts (gold coin burst; add a fanfare here).")]
+    [Tooltip("MMF_Player played when the wagon reaches the destination and bursts (add a fanfare here). The payout is the wave card reward; the wagon drops no gold of its own.")]
     [SerializeField] private MMF_Player arrivalFeedback;
 
-    [Tooltip("Coin / Gold Bag pickup prefab dropped on arrival burst.")]
-    [SerializeField] private Coin goldBagPrefab;
-
-    [Tooltip("Minimum number of gold bags dropped on arrival burst.")]
-    [SerializeField] private int minGoldBags = 4;
-
-    [Tooltip("Maximum number of gold bags dropped on arrival burst.")]
-    [SerializeField] private int maxGoldBags = 5;
-
-    [Tooltip("Amount of gold contained in each dropped gold bag.")]
-    [SerializeField] private int goldPerBag = 25;
-
-    [Tooltip("Scatter radius in meters around the wagon for dropped gold bags.")]
-    [SerializeField] private float dropScatterRadius = 2.0f;
-
-    [Tooltip("Height / position offset for spawning gold bags and burst VFX.")]
+    [Tooltip("Height / position offset for the burst VFX.")]
     [SerializeField] private Vector3 dropOffset = new Vector3(0f, 0.5f, 0f);
 
     [Tooltip("Seconds to wait after the burst before destroying the wagon GameObject (lets feedbacks play out).")]
@@ -249,8 +235,6 @@ public class SupplyWagonEscort : MonoBehaviour
             arrivalFeedback.PlayFeedbacks(transform.position + dropOffset);
         }
 
-        SpawnGoldBags();
-
         // Disable colliders immediately upon burst so movement/combat no longer interacts with cart
         foreach (Collider col in GetComponentsInChildren<Collider>())
         {
@@ -271,28 +255,6 @@ public class SupplyWagonEscort : MonoBehaviour
         OnArrived?.Invoke(this);
 
         Destroy(gameObject, Mathf.Max(0.05f, destroyDelay));
-    }
-
-    private void SpawnGoldBags()
-    {
-        Coin prefab = goldBagPrefab;
-        if (prefab == null)
-        {
-            Debug.LogError("[SupplyWagonEscort] goldBagPrefab is not assigned.", this);
-            return;
-        }
-
-        int count = UnityEngine.Random.Range(minGoldBags, maxGoldBags + 1);
-        for (int i = 0; i < count; i++)
-        {
-            Vector2 jitter = UnityEngine.Random.insideUnitCircle * dropScatterRadius;
-            Vector3 spawnPos = transform.position + dropOffset + new Vector3(jitter.x, 0f, jitter.y);
-            Coin bag = Instantiate(prefab, spawnPos, Quaternion.identity);
-            if (bag != null)
-            {
-                bag.SetAmount(goldPerBag);
-            }
-        }
     }
 
     private void OnDrawGizmosSelected()

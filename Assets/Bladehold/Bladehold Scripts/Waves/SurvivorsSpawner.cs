@@ -531,7 +531,8 @@ public class SurvivorsSpawner : MonoBehaviour
 
             EnemyDefinitionApplier.Apply(enemy, selectedType.def);
 
-            // Note: Banner wave buffs are localized to Bannerman units and their auras (others do not get it globally)
+            // Wave card modifiers (plan 15): skull HP multiplier and the clan buff.
+            if (GameLoopManager.Instance != null) GameLoopManager.Instance.ApplyWaveModifiers(enemy);
 
             if (stats != null)
             {
@@ -686,6 +687,27 @@ public class SurvivorsSpawner : MonoBehaviour
         return picked;
     }
 
+    /// <summary>The spawn point closest to <paramref name="from" /> (where routed stragglers flee to).</summary>
+    public Vector3 NearestSpawnPoint(Vector3 from)
+    {
+        Vector3 best = from;
+        float bestSqr = float.MaxValue;
+        if (spawnPoints != null)
+        {
+            foreach (Transform pt in spawnPoints)
+            {
+                if (pt == null) continue;
+                float sqr = (pt.position - from).sqrMagnitude;
+                if (sqr < bestSqr)
+                {
+                    bestSqr = sqr;
+                    best = pt.position;
+                }
+            }
+        }
+        return best;
+    }
+
     private Vector3 ResolveSpawnPosition()
     {
         if (spawnPoints != null && spawnPoints.Length > 0)
@@ -801,6 +823,7 @@ public class SurvivorsSpawner : MonoBehaviour
         Vector3 spawnPos = ResolveSpawnPosition();
         GameObject enemy = Instantiate(type.prefab, spawnPos, Quaternion.identity);
         EnemyDefinitionApplier.Apply(enemy, type.def);
+        if (GameLoopManager.Instance != null) GameLoopManager.Instance.ApplyWaveModifiers(enemy);
 
         Health health = enemy.GetComponent<Health>();
         if (health != null)

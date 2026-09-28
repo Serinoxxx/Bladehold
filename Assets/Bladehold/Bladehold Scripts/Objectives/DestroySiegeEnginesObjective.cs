@@ -6,7 +6,7 @@ using UnityEngine;
 ///     Survivors objective: Spawns 3 catapults / siege engines at designated positions.
 ///     Player must seek out and destroy all 3.
 /// </summary>
-public class DestroySiegeEnginesObjective : MonoBehaviour, ISurvivorsObjective
+public class DestroySiegeEnginesObjective : MonoBehaviour, ISurvivorsObjective, IObjectivePreview
 {
     [Header("Objective Configuration")]
     [SerializeField] private string objectiveId = "destroy_siege_engines";
@@ -15,11 +15,8 @@ public class DestroySiegeEnginesObjective : MonoBehaviour, ISurvivorsObjective
     [SerializeField] private int requiredCount = 3;
 
     [Header("Timer & Failure Configuration")]
-    [Tooltip("Time limit in seconds to destroy all catapults before the objective fails and damages the gate (e.g. 120s = 2 minutes). <= 0 means no time limit.")]
+    [Tooltip("Fallback time limit in seconds when WaveObjectives.csv has no row for this objective (the row's timerSeconds wins). <= 0 means no time limit. Failing only loses the wave card reward.")]
     [SerializeField] private float timeLimit = 120f;
-
-    [Tooltip("Damage dealt to the gate if the objective times out.")]
-    [SerializeField] private float gateDamageOnTimeout = 100f;
 
     [Header("Prefab & Spawn Points")]
     [Tooltip("Prefab instantiated for each siege engine. Must have DestructibleSiegeEngine component.")]
@@ -39,6 +36,7 @@ public class DestroySiegeEnginesObjective : MonoBehaviour, ISurvivorsObjective
     private readonly List<DestructibleSiegeEngine> spawnedEngines = new List<DestructibleSiegeEngine>();
     private int destroyedCount;
     private float timeRemaining;
+    private float activeTimeLimit = -1f;
     private int lastReportedSeconds = -1;
     private bool isActive;
     private bool isComplete;
@@ -47,7 +45,7 @@ public class DestroySiegeEnginesObjective : MonoBehaviour, ISurvivorsObjective
     public string ObjectiveId => objectiveId;
     public string Title => title;
     public string Description => description;
-    public float TimeLimit => timeLimit;
+    public float TimeLimit => activeTimeLimit >= 0f ? activeTimeLimit : ObjectiveCsv.TimerSeconds(objectiveId, timeLimit);
     public float TimeRemaining => timeRemaining;
     public bool IsComplete => isComplete;
     public bool IsFailed => isFailed;
@@ -59,18 +57,15 @@ public class DestroySiegeEnginesObjective : MonoBehaviour, ISurvivorsObjective
         {
             if (isFailed)
             {
-                return "Failed! Fortress gate took 100 damage!";
+                return "Failed! The siege engines are still standing.";
             }
             if (isComplete)
             {
                 return $"Catapults destroyed: {destroyedCount}/{requiredCount}";
             }
-            if (timeLimit > 0f)
+            if (TimeLimit > 0f)
             {
-                int totalSec = Mathf.Max(0, Mathf.CeilToInt(timeRemaining));
-                int mins = totalSec / 60;
-                int secs = totalSec % 60;
-                return $"Catapults destroyed: {destroyedCount}/{requiredCount} ({mins}:{secs:D2})";
+                return $"Catapults destroyed: {destroyedCount}/{requiredCount} ({ObjectiveCsv.FormatClock(timeRemaining)})";
             }
             return $"Catapults destroyed: {destroyedCount}/{requiredCount}";
         }
@@ -88,7 +83,8 @@ public class DestroySiegeEnginesObjective : MonoBehaviour, ISurvivorsObjective
         isComplete = false;
         isFailed = false;
         destroyedCount = 0;
-        timeRemaining = timeLimit;
+        activeTimeLimit = ObjectiveCsv.TimerSeconds(objectiveId, timeLimit);
+        timeRemaining = activeTimeLimit;
         lastReportedSeconds = Mathf.CeilToInt(timeRemaining);
         spawnedEngines.Clear();
 
@@ -152,7 +148,7 @@ public class DestroySiegeEnginesObjective : MonoBehaviour, ISurvivorsObjective
     {
         if (!isActive || isComplete || isFailed) return;
 
-        if (timeLimit > 0f)
+        if (activeTimeLimit > 0f)
         {
             timeRemaining -= deltaTime;
             int currentSeconds = Mathf.Max(0, Mathf.CeilToInt(timeRemaining));
@@ -174,57 +170,12 @@ public class DestroySiegeEnginesObjective : MonoBehaviour, ISurvivorsObjective
     {
         if (!isActive || isComplete || isFailed) return;
 
+        // Failure only loses the wave card reward (plan 15): no gate penalty.
         isFailed = true;
         isActive = false;
 
-        DamageGateOnTimeout();
-
         OnProgressChanged?.Invoke(this);
         OnFailed?.Invoke(this);
-    }
-
-    private void DamageGateOnTimeout()
-    {
-        if (gateDamageOnTimeout <= 0f) return;
-
-        Vector3 searchPos = Player.Instance != null ? Player.Instance.transform.position : transform.position;
-        Gate targetGate = Gate.NearestAlive(searchPos);
-
-        if (targetGate == null && Gate.All != null && Gate.All.Count > 0)
-        {
-            foreach (Gate g in Gate.All)
-            {
-                if (g != null && !g.IsDestroyed)
-                {
-                    targetGate = g;
-                    break;
-                }
-            }
-        }
-
-        if (targetGate == null)
-        {
-            targetGate = FindFirstObjectByType<Gate>() ?? FindObjectOfType<Gate>();
-        }
-
-        if (targetGate != null && targetGate.Damageable != null)
-        {
-            Damage dmg = new Damage
-            {
-                value = gateDamageOnTimeout,
-                type = DamageType.blunt,
-                unparryable = true,
-                isPlayerDamage = false,
-                source = null,
-                sourcePosition = transform.position
-            };
-            targetGate.Damageable.ReceiveDamage(dmg);
-            Debug.Log($"[DestroySiegeEnginesObjective] Timed out! Gate '{targetGate.gameObject.name}' took {gateDamageOnTimeout} damage.");
-        }
-        else
-        {
-            Debug.LogWarning("[DestroySiegeEnginesObjective] Timed out, but no alive gate found in scene to damage!");
-        }
     }
 
     public void CleanupObjective()
@@ -294,6 +245,24 @@ public class DestroySiegeEnginesObjective : MonoBehaviour, ISurvivorsObjective
                     label: "Catapult"
                 ));
             }
+        }
+    }
+
+    public void GetPreviewWaypointTargets(List<ObjectiveWaypointTarget> results)
+    {
+        if (results == null || spawnPoints == null) return;
+
+        string label = Loc.Get("wave.obj.siege_engines.preview", "Siege engine");
+        int count = Mathf.Min(requiredCount, spawnPoints.Length);
+        for (int i = 0; i < count; i++)
+        {
+            if (spawnPoints[i] == null) continue;
+            results.Add(new ObjectiveWaypointTarget(
+                spawnPoints[i],
+                worldOffset: new Vector3(0f, 2.5f, 0f),
+                customIcon: siegeEngineWaypointIcon,
+                tintColor: ObjectiveCsv.PreviewTint(new Color(1f, 0.55f, 0.1f)),
+                label: label));
         }
     }
 }

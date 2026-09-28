@@ -209,6 +209,48 @@ public class SurvivorsObjectiveManager : MonoBehaviour
     }
 
     /// <summary>
+    ///     Starts the objective whose <see cref="ISurvivorsObjective.ObjectiveId" /> matches (plan 15: the
+    ///     picked wave card's objective). Looks in the pool first, then the scene, so an objective that
+    ///     isn't in the random pool (Captain Assault) still works. Returns false if none matches.
+    /// </summary>
+    public bool StartObjective(string objectiveId, int waveNumber)
+    {
+        ISurvivorsObjective match = FindObjective(objectiveId);
+        if (match == null) return false;
+
+        isRunning = true;
+        currentWave = waveNumber;
+        currentPhase = SurvivorsObjectivePhase.Active;
+        OnPhaseChanged?.Invoke(currentPhase);
+
+        int poolIndex = objectivePool.IndexOf(match);
+        if (poolIndex >= 0) lastObjectiveIndex = poolIndex;
+        SetActiveObjective(match);
+        OnWaveStarted?.Invoke(currentWave);
+        return true;
+    }
+
+    /// <summary>The objective with this id in the pool or the scene, or null.</summary>
+    public ISurvivorsObjective FindObjective(string objectiveId)
+    {
+        if (string.IsNullOrEmpty(objectiveId)) return null;
+        InitializePool();
+        foreach (ISurvivorsObjective obj in objectivePool)
+        {
+            if (obj != null && string.Equals(obj.ObjectiveId, objectiveId, StringComparison.OrdinalIgnoreCase)) return obj;
+        }
+        foreach (MonoBehaviour mb in FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (mb is ISurvivorsObjective obj && !(obj is KillRemainingEnemiesObjective) &&
+                string.Equals(obj.ObjectiveId, objectiveId, StringComparison.OrdinalIgnoreCase))
+            {
+                return obj;
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
     /// Randomly starts an objective from the pool without consecutive repeats.
     /// </summary>
     public void StartRandomObjective()
@@ -360,7 +402,7 @@ public class SurvivorsObjectiveManager : MonoBehaviour
             nextIndex = UnityEngine.Random.Range(0, objectivePool.Count);
             attempts++;
         }
-        while (nextIndex == lastObjectiveIndex && attempts < 10);
+        while ((nextIndex == lastObjectiveIndex || objectivePool[nextIndex].ObjectiveId == GameLoopManager.CaptainObjectiveId) && attempts < 10);
 
         lastObjectiveIndex = nextIndex;
         return objectivePool[nextIndex];

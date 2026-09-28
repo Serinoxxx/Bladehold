@@ -101,6 +101,25 @@ public class RunTelemetry : MonoBehaviour
     private float totalMountSeconds;
     private int totalChestsDestroyed;
 
+    // Gate repair (plan 15). Repairs happen in the prep phase *before* a wave, so this is not reset on
+    // WaveStarted: it accumulates through prep + the wave and is cleared after that wave's wave_clear row,
+    // i.e. each wave row counts the supply spent repairing in the prep that led into it.
+    private int gateRepairSupplyThisWave;
+    private int totalGateRepairSupply;
+
+    /// <summary>Supply spent repairing the gate since the last wave_clear row (the prep leading into the current wave).</summary>
+    public int GateRepairSupplyThisWave => gateRepairSupplyThisWave;
+    /// <summary>Supply spent repairing the gate this scene run.</summary>
+    public int TotalGateRepairSupply => totalGateRepairSupply;
+
+    /// <summary>Called by <see cref="GateRepairStation" /> each time it spends supply on the gate. No-op without telemetry.</summary>
+    public static void RecordGateRepair(int supply)
+    {
+        if (instance == null || supply <= 0) return;
+        instance.gateRepairSupplyThisWave += supply;
+        instance.totalGateRepairSupply += supply;
+    }
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Bootstrap()
     {
@@ -216,6 +235,7 @@ public class RunTelemetry : MonoBehaviour
         {
             gameLoop.OnWaveStarted += HandleWaveStarted;
             gameLoop.OnWaveCleared += HandleWaveCleared;
+            gameLoop.OnWaveCardPicked += HandleWaveCardPicked;
         }
         if (playerHealth != null)
         {
@@ -258,6 +278,7 @@ public class RunTelemetry : MonoBehaviour
         totalDamageDealt = 0f; totalMeleeDamageDealt = 0f; totalRangedDamageDealt = 0f; totalHitsDealt = 0; totalCrits = 0;
         totalQuickAttacks = 0; totalChargedAttacks = 0;
         totalSprintSeconds = 0f;
+        gateRepairSupplyThisWave = 0; totalGateRepairSupply = 0;
         totalDodges = 0; totalMountSeconds = 0f; totalChestsDestroyed = 0;
         fatalEnemy = ""; gateDestroyerEnemy = ""; gateDestroyedWave = 0; lastDamagerName = "";
 
@@ -282,6 +303,7 @@ public class RunTelemetry : MonoBehaviour
         {
             gameLoop.OnWaveStarted -= HandleWaveStarted;
             gameLoop.OnWaveCleared -= HandleWaveCleared;
+            gameLoop.OnWaveCardPicked -= HandleWaveCardPicked;
         }
         if (playerHealth != null)
         {
@@ -327,7 +349,39 @@ public class RunTelemetry : MonoBehaviour
 
     private void HandleWaveCleared(int wave, string _)
     {
-        WriteWaveRow("wave_clear", wave, "");
+        WriteWaveRow("wave_clear", wave, WaveOutcomeDetail());
+        gateRepairSupplyThisWave = 0;
+    }
+
+    // Plan 15: outcome, card and reward of the wave just resolved, plus supply spent repairing the gate before it.
+    private string WaveOutcomeDetail()
+    {
+        if (gameLoop == null) return Invariant($"gate_repair_supply={gateRepairSupplyThisWave}");
+        WaveCard card = gameLoop.CurrentWaveCard;
+        string cardText = card != null ? Invariant($"{card.ObjectiveId}/{card.stance}/{card.skulls}") : "none";
+        string reward = string.IsNullOrEmpty(gameLoop.LastRewardDescription) ? "none" : gameLoop.LastRewardDescription;
+        return Invariant($"outcome={(gameLoop.LastWaveSucceeded ? "success" : "fail")}; card={cardText}; reward={reward}; gate_repair_supply={gateRepairSupplyThisWave}");
+    }
+
+    // Plan 15: one row per wave draft: the three offers, the pick, decision time, player and gate HP at pick time.
+    private void HandleWaveCardPicked(System.Collections.Generic.IReadOnlyList<WaveCard> offered, WaveCard picked, float seconds)
+    {
+        System.Collections.Generic.List<string> offers = new System.Collections.Generic.List<string>();
+        if (offered != null)
+        {
+            foreach (WaveCard c in offered)
+            {
+                if (c != null) offers.Add(Invariant($"{c.ObjectiveId}/{c.stance}/{c.skulls}"));
+            }
+        }
+        string pick = picked != null ? Invariant($"{picked.ObjectiveId}/{picked.stance}/{picked.skulls}") : "none";
+        float playerPct = playerHealth != null && playerHealth.MaxHealth > 0f ? playerHealth.CurrentHealth / playerHealth.MaxHealth * 100f : -1f;
+        float gatePct = RunSession.FortressGateMaxHealth > 0f ? RunSession.FortressGateCurrentHealth / RunSession.FortressGateMaxHealth * 100f : -1f;
+        int wave = gameLoop != null ? gameLoop.UpcomingWave : 0;
+        AppendRow("wave_choice",
+            wave: Invariant($"{wave}"),
+            runSeconds: Invariant($"{RunSeconds():F1}"),
+            detail: Invariant($"offered={string.Join("|", offers)}; pick={pick}; decide_s={seconds:F1}; player_hp_pct={playerPct:F0}; gate_hp_pct={gatePct:F0}"));
     }
 
     private void HandlePlayerDamaged(Damage damage)
@@ -490,6 +544,26 @@ public class RunTelemetry : MonoBehaviour
             quickAttacks = quickAttacks,
             chargedAttacks = chargedAttacks,
             sprintSeconds = sprintSeconds
+        };
+    }
+
+    /// <summary>
+    ///     Totals since this scene loaded (one sector), for the end screen. Covers the same damage sources
+    ///     as the CSV: melee weapon, thrown axe and wand hits (bow and ultimate/elemental riders aren't counted).
+    /// </summary>
+    public WaveStats GetRunTotals(out float seconds)
+    {
+        seconds = RunSeconds();
+        return new WaveStats
+        {
+            damageTaken = totalDamageTaken,
+            hitsTaken = totalHitsTaken,
+            damageDealt = totalDamageDealt,
+            hitsDealt = totalHitsDealt,
+            crits = totalCrits,
+            quickAttacks = totalQuickAttacks,
+            chargedAttacks = totalChargedAttacks,
+            sprintSeconds = totalSprintSeconds
         };
     }
 

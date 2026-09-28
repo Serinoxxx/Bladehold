@@ -15,6 +15,15 @@ public interface IRequiresContinuousSpawns
 }
 
 /// <summary>
+///     Marks an objective that runs with no regular wave spawns (Golden Goblin): the wave's kill quota
+///     isn't spawned and counts as met, so the objective's own resolution ends the wave.
+///     <see cref="GameLoopManager" /> must skip <c>SurvivorsSpawner.StartWave</c> for it.
+/// </summary>
+public interface ISuppressRegularSpawns
+{
+}
+
+/// <summary>
 ///     Defines the contract for an objective in Survivors Mode (e.g. kill wave, destroy siege engines,
 ///     escort wagon, free prisoners).
 /// </summary>

@@ -138,6 +138,14 @@ Starting numbers, to tune from telemetry. Base 80 gold / 40 supply: a 1-skull De
 
   Its checks were also run ad hoc via MCP (0 mix, duplicate or count violations; last objective 11% vs 41%). The full suite wasn't run.
 
+**Session 2 (2026-09-28): Phases C-E done in code** (both csprojs build clean; not yet Play-tested). The editor checklist has the scene wiring and a full Play-mode pass.
+- **Deviations:**
+  - The objective resolving ends the wave; the kill quota only sizes spawns (Hold the Gate's target is set to the quota).
+  - The Ready prompt and countdown show in the objective tracker via `GameLoopManager.StatusText`, since the countdown text fields are unwired.
+  - DevConsole "commands" are buttons: the console has no text input.
+  - Golden Goblin uses a new `ISuppressRegularSpawns` marker.
+  - Gate max HP is **200** (`DoorSO`), so 1 supply / HP is on the pricey side, not too cheap.
+
 ## Tasks
 
 ### Phase A: Data + card model (no flow changes yet)
@@ -154,21 +162,21 @@ Starting numbers, to tune from telemetry. Base 80 gold / 40 supply: a 1-skull De
 - [x] MMF hover and select feedbacks (`/feel-integration`).
 
 ### Phase C: Flow rewrite in `GameLoopManager`
-- [ ] Replace the banner fields with `CurrentWaveCard` (drop `CurrentClanBuffSO`, `CurrentBannerRewardSO`, `CurrentWaveBuff`, `CurrentWaveBounty`, `CurrentWaveDifficultyTier`). Update the readers: `BannermanAura` (clan buff type now comes from the card's clan), `ObjectiveWaypointTrackerUI`, `ObjectiveTrackerUI`, captain spawn and the campaign seeding in `Start`.
-- [ ] New intermission: reward popup → `OpenWaveChoice` → prep phase with objective preview markers → **Ready** → 3-2-1 → `StartWave`. Wave 1 and wave 5 skip the draft.
+- [x] Replace the banner fields with `CurrentWaveCard` (drop `CurrentClanBuffSO`, `CurrentBannerRewardSO`, `CurrentWaveBuff`, `CurrentWaveBounty`, `CurrentWaveDifficultyTier`). Update the readers: `BannermanAura` (clan buff type now comes from the card's clan), `ObjectiveWaypointTrackerUI`, `ObjectiveTrackerUI`, captain spawn and the campaign seeding in `Start`.
+- [x] New intermission: reward popup → `OpenWaveChoice` → prep phase with objective preview markers → **Ready** → 3-2-1 → `StartWave`. Wave 1 and wave 5 skip the draft.
   - **Ready input:** **T** / gamepad **D-pad Down** (decided, Lance 2026-09-27), held for 1 s. HUD prompt: "Hold [T] to start the wave".
     - Rename the dead `DraftSkills` action in the Synty `Controls.inputactions`, which is already bound to T + D-pad Down and has no subscribers, to `StartWave`. Update `InputReader` (`onDraftSkillsPerformed` becomes `onStartWavePerformed`, plus started/canceled for the hold). Hand-update `Controls.cs` the same way as plan 12, and check that the rebind list shows the new name.
     - Also switch `FishingManager.Update` (L228-231, a raw `Keyboard.current.tKey` read today with no gamepad support) to the same action, so "T / D-pad Down = start" is one consistent control everywhere.
   - Wire up the countdown text fields, which are empty today, so the 3-2-1 is actually visible.
-- [ ] `SurvivorsObjectiveManager.StartObjective(string id)`: a real entry point (not the Debug one) that the flow uses in place of `PickNextRandomObjective`. Keep the random pick only as a fallback when there's no card.
-- [ ] **Resolution:** on success, auto-grant the bundle (`ApplyBounty` logic reworked for bundles: gold → `AddInRunGold`, supply → `AddInRunSupply`, Blood → `AddGoblinBlood`, draft → `OpenDraft` chained, Troll Heart → max HP). Keep the heal perks (regeneration, Special Herbs) on wave clear. On failure: the fail banner (`WaveClearedBannerUI` already handles it) and no card reward.
-- [ ] **Rout the stragglers** on resolution (success or fail): remaining enemies flee to the nearest spawn point and despawn, reusing the captain morale-break stun then retreat. Kills during the rout still pay. This replaces the Cleanup phase wait, and the 45 s lightning backstop becomes a fallback only.
-- [ ] Remove the banner and chest runtime: `SpawnWarBannersRoutine`, `BannerTeardownRoutine`, `SpawnPowerupForCurrentBounty`, `HandlePowerupClaimed`, and the `warBannerPrefab`/`upgradePowerupPrefab` fields. Leave `WarBannerController`, `WaveUpgradePowerup` and the reward SOs in place for plan 08-style deletion after a playtest confirms (list them in the editor checklist).
-- [ ] `TowerPlot.IsPrepPhase` stays true through the new prep phase and false once Ready is pressed.
+- [x] `SurvivorsObjectiveManager.StartObjective(string id)`: a real entry point (not the Debug one) that the flow uses in place of `PickNextRandomObjective`. Keep the random pick only as a fallback when there's no card.
+- [x] **Resolution:** on success, auto-grant the bundle (`ApplyBounty` logic reworked for bundles: gold → `AddInRunGold`, supply → `AddInRunSupply`, Blood → `AddGoblinBlood`, draft → `OpenDraft` chained, Troll Heart → max HP). Keep the heal perks (regeneration, Special Herbs) on wave clear. On failure: the fail banner (`WaveClearedBannerUI` already handles it) and no card reward.
+- [x] **Rout the stragglers** on resolution (success or fail): remaining enemies flee to the nearest spawn point and despawn, reusing the captain morale-break stun then retreat. Kills during the rout still pay. This replaces the Cleanup phase wait, and the 45 s lightning backstop becomes a fallback only.
+- [x] Remove the banner and chest runtime: `SpawnWarBannersRoutine`, `BannerTeardownRoutine`, `SpawnPowerupForCurrentBounty`, `HandlePowerupClaimed`, and the `warBannerPrefab`/`upgradePowerupPrefab` fields. Leave `WarBannerController`, `WaveUpgradePowerup` and the reward SOs in place for plan 08-style deletion after a playtest confirms (list them in the editor checklist).
+- [x] `TowerPlot.IsPrepPhase` stays true through the new prep phase and false once Ready is pressed.
 
 ### Phase D: Objectives, fail rules and modifiers
-- [ ] Add the Offence fail conditions from the roster table: remove the Siege Engines gate penalty, make a Golden Goblin escape raise `OnFailed`, and add the Wagon timer. Defence objectives keep today's behaviour; the only loss is the gate falling, which ends the run.
-- [ ] **Gate repair with supply** (prep phase only, same `IsPrepPhase` gate as `TowerPlot`):
+- [x] Add the Offence fail conditions from the roster table: remove the Siege Engines gate penalty, make a Golden Goblin escape raise `OnFailed`, and add the Wagon timer. Defence objectives keep today's behaviour; the only loss is the gate falling, which ends the run.
+- [x] **Gate repair with supply** (prep phase only, same `IsPrepPhase` gate as `TowerPlot`):
   - A `GateRepairStation` interactable at the gate (an `Interactable`, like the tower plots). **Hold [E]** pours supply into the gate at a steady rate, e.g. 20 HP/s, and stops at max HP or when supply runs out. The prompt shows "Repair gate: 1 supply / HP · 340/600 HP".
   - Heals through `Health` (add a public `Heal`/`Revive`-style call if one doesn't exist), and `RunSession.FortressGateCurrentHealth` follows as `Gate` already mirrors it.
   - Spend supply via `RunSession` (the same path `BuildWheelUI` uses).
@@ -176,24 +184,24 @@ Starting numbers, to tune from telemetry. Base 80 gold / 40 supply: a 1-skull De
   - MMF feedback: hammering loop plus a gate-bar tick (`/feel-integration`).
   - Telemetry: supply spent on repair per wave, to see how often players choose repair over towers.
   - Gate max HP is set in the scene (not verified headlessly). Check it when tuning `supplyPerHp`: if the gate has thousands of HP, 1:1 may be too cheap compared with 25-50 supply towers.
-- [ ] Every objective reads `timerSeconds` and its fail parameters from its CSV row, so the card and the objective can't disagree.
-- [ ] **Golden Goblin bugs:**
+- [x] Every objective reads `timerSeconds` and its fail parameters from its CSV row, so the card and the objective can't disagree.
+- [x] **Golden Goblin bugs:**
   - add the missing `$` in `ProgressText` (L39);
   - remove the double completion via `DebugCompleteObjective` + `OnCompleted` (L128-133, L158-162);
   - make its `StopSpawning` stick (implement `IOverrideEnemySpawns` or a no-spawn marker that `StartWave` respects).
-- [ ] **Modifiers:** attach and initialise `EnemyBuffController` from the spawner's post-spawn hook (`SurvivorsSpawner.cs` ~L532, after `EnemyDefinitionApplier.Apply`) with the card's clan and scaled magnitude. Apply the skull HP multiplier at the same point. Skull quota multiplier in `StartWave`.
+- [x] **Modifiers:** attach and initialise `EnemyBuffController` from the spawner's post-spawn hook (`SurvivorsSpawner.cs` ~L532, after `EnemyDefinitionApplier.Apply`) with the card's clan and scaled magnitude. Apply the skull HP multiplier at the same point. Skull quota multiplier in `StartWave`.
   - Check that all 5 buff types (Shield, Haste, Berserk, Regen, Armor) actually work. The component has never run.
   - Give each clan a `locKey` and a plain-language effect line for the card.
-- [ ] **Captain on 3-skull cards:** `SpawnCaptainForWave` with the tier mapped from skulls. Retire `BannerDifficultyTier`, or map skulls 1/2/3 to Standard/Enraged/Nightmare so the captain scaling code is untouched. Captain death rewards stay.
-- [ ] **`DefeatCaptainObjective`** for wave 5: spawns the node's captain at the sector-threat tier, ends the wave on its death, then victory. Fraglob's `captainPrefab` is empty and falls back to Kombusta, so either fix that or accept it for the demo.
-- [ ] **Campaign node:** `CampaignNodeSO.tierIndex` feeds the skull roll table, and `clanBuff` biases which clan shows up (×2 weight). Drop the node `bountyType` seeding. Update `CampaignTooltipUI` to say "Clan: Ironfang" and not show a buff that never applied.
+- [x] **Captain on 3-skull cards:** `SpawnCaptainForWave` with the tier mapped from skulls. Retire `BannerDifficultyTier`, or map skulls 1/2/3 to Standard/Enraged/Nightmare so the captain scaling code is untouched. Captain death rewards stay.
+- [x] **`DefeatCaptainObjective`** for wave 5: spawns the node's captain at the sector-threat tier, ends the wave on its death, then victory. Fraglob's `captainPrefab` is empty and falls back to Kombusta, so either fix that or accept it for the demo.
+- [x] **Campaign node:** `CampaignNodeSO.tierIndex` feeds the skull roll table, and `clanBuff` biases which clan shows up (×2 weight). Drop the node `bountyType` seeding. Update `CampaignTooltipUI` to say "Clan: Ironfang" and not show a buff that never applied.
 
 ### Phase E: Telemetry, docs, cleanup
-- [ ] `RunTelemetry`: a `wave_choice` row per draft: the 3 offered cards (id/stance/skulls), the pick, seconds to decide, and the player HP% and gate HP% at pick time. Add outcome (success/fail) and reward granted to the `wave_clear` row's `detail`. This is what the balance pass needs: pick rates and fail rates per stance and skull.
-- [ ] Update the `WeaponReachBenchmark` banner-tier tests (L711-777) and the wave simulations (L2542-2559, `SetupGameLoopAssets.cs:900-928`).
-- [ ] DevConsole: `wavecards` (reroll or show the draft now), `wavecard <objectiveId> <skulls>` (force a card).
-- [ ] Docs: `Waves/CLAUDE.md` "Sector sequence" (it also still mentions the removed `SpawnEndgameBoss`), `/CLAUDE.md` if conventions change, and the `add-objective` skill (objectives now need a CSV row, stance and fail rule), `/changelog`.
-- [ ] Editor checklist: `plans/editor/15-wave-choice.md` (`/editor-wiring-todo`) covers the SO asset, card prefab, Ready binding, wiring the countdown text, the objective preview markers, the sidebar gate row, placing the gate repair station in each battle scene, deleting banner and chest assets after the playtest, and a UI review.
+- [x] `RunTelemetry`: a `wave_choice` row per draft: the 3 offered cards (id/stance/skulls), the pick, seconds to decide, and the player HP% and gate HP% at pick time. Add outcome (success/fail) and reward granted to the `wave_clear` row's `detail`. This is what the balance pass needs: pick rates and fail rates per stance and skull.
+- [x] Update the `WeaponReachBenchmark` banner-tier tests (L711-777) and the wave simulations (L2542-2559, `SetupGameLoopAssets.cs:900-928`).
+- [x] DevConsole: `wavecards` (reroll or show the draft now), `wavecard <objectiveId> <skulls>` (force a card).
+- [x] Docs: `Waves/CLAUDE.md` "Sector sequence" (it also still mentions the removed `SpawnEndgameBoss`), `/CLAUDE.md` if conventions change, and the `add-objective` skill (objectives now need a CSV row, stance and fail rule), `/changelog`.
+- [x] Editor checklist: `plans/editor/15-wave-choice.md` (`/editor-wiring-todo`) covers the SO asset, card prefab, Ready binding, wiring the countdown text, the objective preview markers, the sidebar gate row, placing the gate repair station in each battle scene, deleting banner and chest assets after the playtest, and a UI review.
 
 ## Needs Lance in the Editor
 

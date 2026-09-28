@@ -113,9 +113,15 @@ public class ObjectiveTrackerUI : MonoBehaviour
         // 2. Active rotating sub-objective / cleanup / intermission / boss status
         if (objectiveProgressText != null)
         {
-            if (GameLoopManager.Instance != null && GameLoopManager.Instance.ActivePowerup != null)
+            GameLoopManager loop = GameLoopManager.Instance;
+            if (loop != null && !string.IsNullOrEmpty(loop.StatusText))
             {
-                objectiveProgressText.text = $"[Wave Cleared!]\nClaim {GameLoopManager.Instance.ActivePowerup.BountyName} in the arena.";
+                // Between waves (plan 15): the picked card's objective, then the Ready prompt / countdown / rout.
+                WaveCard card = loop.CurrentWaveCard;
+                string title = card != null && card.objective != null
+                    ? card.objective.TitleText
+                    : Loc.Get("wave.status.prep_header", "Prepare for wave {0}").Replace("{0}", loop.UpcomingWave.ToString());
+                objectiveProgressText.text = $"[{title}]\n{loop.StatusText}";
             }
             else if (objectiveManager != null)
             {
@@ -127,12 +133,6 @@ public class ObjectiveTrackerUI : MonoBehaviour
                     }
                     int alive = SurvivorsSpawner.Instance != null ? SurvivorsSpawner.Instance.AliveCount : 0;
                     objectiveProgressText.text = $"Kill all remaining enemies: {alive} left";
-                }
-                else if (objectiveManager.Phase == SurvivorsObjectivePhase.Intermission)
-                {
-                    int remSec = Mathf.CeilToInt(objectiveManager.PhaseTimeRemaining);
-                    int nextWave = objectiveManager.CurrentWave + 1;
-                    objectiveProgressText.text = $"[Prepare for Wave {nextWave}]\nNext wave starts in: {remSec}s";
                 }
                 else if (objectiveManager.CurrentObjective != null && objectiveManager.CurrentObjective.IsActive)
                 {

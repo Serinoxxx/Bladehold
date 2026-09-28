@@ -8,12 +8,12 @@ using UnityEngine.AI;
 ///     Plays a cinematic introduction sequence, binds to the HUD boss health bar,
 ///     and completes when the Slayer is defeated.
 /// </summary>
-public class DefeatSlayerObjective : MonoBehaviour, ISurvivorsObjective
+public class DefeatSlayerObjective : MonoBehaviour, ISurvivorsObjective, IObjectivePreview
 {
     [Header("Objective Configuration")]
     [SerializeField] private string objectiveId = "defeat_slayer";
-    [SerializeField] private string title = "Defeat the Slayer";
-    [SerializeField] private string description = "Stop the Slayer before he destroys the gate!";
+    [SerializeField] private string title = "Defeat the Siegebreaker";
+    [SerializeField] private string description = "Stop the Siegebreaker before he destroys the gate!";
 
     [Header("Spawning & Prefab")]
     [Tooltip("The Slayer enemy prefab to instantiate.")]
@@ -38,8 +38,8 @@ public class DefeatSlayerObjective : MonoBehaviour, ISurvivorsObjective
     {
         get
         {
-            if (slayerHealth == null) return "Defeat the Slayer";
-            return $"Slayer Health: {Mathf.CeilToInt(slayerHealth.CurrentHealth)} / {Mathf.CeilToInt(slayerHealth.MaxHealth)}";
+            if (slayerHealth == null) return "Defeat the Siegebreaker";
+            return $"Siegebreaker Health:{Mathf.CeilToInt(slayerHealth.CurrentHealth)} / {Mathf.CeilToInt(slayerHealth.MaxHealth)}";
         }
     }
 
@@ -210,8 +210,26 @@ public class DefeatSlayerObjective : MonoBehaviour, ISurvivorsObjective
                 worldOffset: new Vector3(0f, 2.5f, 0f),
                 customIcon: slayerWaypointIcon,
                 tintColor: new Color(1f, 0.25f, 0.25f, 1f),
-                label: "Slayer"
+                label: "Siegebreaker"
             ));
+        }
+    }
+
+    public void GetPreviewWaypointTargets(System.Collections.Generic.List<ObjectiveWaypointTarget> results)
+    {
+        if (results == null || spawnPoints == null) return;
+
+        // It spawns on one of these at random, so preview them all.
+        string label = Loc.Get("wave.obj.siegebreaker.preview", "Siegebreaker");
+        foreach (Transform point in spawnPoints)
+        {
+            if (point == null) continue;
+            results.Add(new ObjectiveWaypointTarget(
+                point,
+                worldOffset: new Vector3(0f, 2.5f, 0f),
+                customIcon: slayerWaypointIcon,
+                tintColor: ObjectiveCsv.PreviewTint(new Color(1f, 0.25f, 0.25f)),
+                label: label));
         }
     }
 }

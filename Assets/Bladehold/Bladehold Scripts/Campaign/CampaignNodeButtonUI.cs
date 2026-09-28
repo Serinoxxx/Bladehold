@@ -109,8 +109,7 @@ public class CampaignNodeButtonUI : MonoBehaviour, IPointerEnterHandler, IPointe
             if (node.HasCaptain)
             {
                 captainBadgeText.gameObject.SetActive(true);
-                string skulls = BannerDifficultyHelper.GetSkullString(node.difficultyTier);
-                captainBadgeText.text = $"{skulls} {node.captainName}";
+                captainBadgeText.text = node.captainName; // tier shows as colour; the emoji skulls had no glyph in the font
                 captainBadgeText.color = BannerDifficultyHelper.GetTierColor(node.difficultyTier);
             }
             else

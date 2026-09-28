@@ -1,36 +1,37 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using MoreMountains.Feedbacks;
+using Synty.AnimationBaseLocomotion.Samples.InputSystem;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using Unity.Cinemachine;
 
 /// <summary>
-///     Master controller for a combat sector's 5-wave loop: war-banner pick + tower prep before each
-///     wave, per-wave objectives and kill quotas, bounty rewards, captains on harder tiers, and
-///     victory after wave 5 (towers dismantled for supply, then back to the Campaign Map).
+///     Master controller for a combat sector's 5-wave loop (plan 15): wave 1 is a fixed Hold the Gate,
+///     waves 2-4 are picked from a 3-card wave draft (objective + stance + skulls + clan modifier +
+///     reward bundle), wave 5 is the fixed Captain Assault. Between waves: reward popup → wave draft →
+///     prep (build towers, objective preview) → hold Ready → 3-2-1 → wave. When the objective resolves
+///     the stragglers rout, the card reward is granted on success, and clearing wave 5 wins the sector.
 /// </summary>
 public class GameLoopManager : MonoBehaviour
 {
     public static GameLoopManager Instance { get; private set; }
 
+    public const string CaptainObjectiveId = "defeat_captain";
+
     [Header("Configurations")]
     [Tooltip("Round pacing config asset containing round rosters, 20 max concurrent limit, 3s indicators, and drop weights.")]
     [SerializeField] private RoundPacingConfigSO pacingConfig;
-    [SerializeField] private WarBannerConfigSO bannerConfig;
-    [SerializeField] private GameObject warBannerPrefab;
-    [SerializeField] private Transform[] bannerSpawnPoints;
 
     [SerializeField] private bool enableGameLoopManageStateDebug = false;
 
-    public BannerBuffType CurrentWaveBuff { get; private set; } = BannerBuffType.None;
-    public BannerBountyType CurrentWaveBounty { get; private set; } = BannerBountyType.None;
-    public BannerDifficultyTier CurrentWaveDifficultyTier { get; private set; } = BannerDifficultyTier.Standard;
-    public WarBannerClanSO CurrentClanBuffSO { get; private set; }
-    public WarBannerRewardSO CurrentBannerRewardSO { get; private set; }
-    private List<WarBannerController> activeBanners = new List<WarBannerController>();
+    [Header("Ready")]
+    [Tooltip("Seconds the Start Wave input ([T] / D-pad Down) must be held to leave prep.")]
+    [SerializeField] private float readyHoldSeconds = 1f;
+    [Tooltip("Seconds the reward popup stays up before the wave draft opens.")]
+    [SerializeField] private float rewardPopupSeconds = 2f;
 
     [Header("Captain Settings")]
     [Tooltip("Captain Fraglob prefab. If null, an error is logged and Captain Kombusta spawns instead.")]
@@ -48,12 +49,6 @@ public class GameLoopManager : MonoBehaviour
     [SerializeField] private SurvivorsObjectiveManager objectiveManager;
     [SerializeField] private Transform bossSpawnPoint;
 
-    [Header("Upgrade Powerup (Between Waves)")]
-    [Tooltip("World spawn point for the between-wave upgrade powerup. Defaults to arena center (0,0,0) if null.")]
-    [SerializeField] private Transform upgradePowerupSpawnPoint;
-    [Tooltip("Fallback powerup prefab (a Powerups/WaveReward_* variant) for a bounty whose WarBannerRewardSO has no rewardPrefab.")]
-    [SerializeField] private GameObject upgradePowerupPrefab;
-
     [Header("UI References (Optional / Fallback)")]
     [SerializeField] private TMP_Text waveAnnouncementText;
     [SerializeField] private TMP_Text intermissionTimerText;
@@ -64,39 +59,71 @@ public class GameLoopManager : MonoBehaviour
     private int killsThisWave = 0;
     private int targetKillsThisWave = 15;
     private ISurvivorsObjective currentObjective;
-    private bool isObjectiveComplete = false;
     private bool isWaveActive = false;
     private bool isIntermission = false;
-    private float intermissionTimeRemaining = 0f;
-    private WaveUpgradePowerup activePowerup;
+    private bool isPrep = false;
+    private bool isChoosingCard = false;
+    private bool isAwaitingReady = false;
+    private bool isResolving = false;
+    private bool isRouting = false;
+    private float readyHoldTimer = 0f;
+    private float resolveWatchdog = 0f;
+    private int upcomingWave = 1;
+    private string lastObjectiveId = "";
+    private float cardChoiceOpenedTime;
+    private GameObject activeCaptain;
+    private InputReader inputReader;
+    private System.Random cardRng;
+    private WaveChoiceConfigSO waveChoiceConfig;
 
     [Header("Resource Reward Feedback (Auto-Wired)")]
     public DamageNumbersPro.DamageNumber goldPopupPrefab;
     public DamageNumbersPro.DamageNumber metalPopupPrefab;
     public DamageNumbersPro.DamageNumber bloodPopupPrefab;
-    [Tooltip("Played above the player when a war-banner bounty pays out (coin sound, UI track).")]
+    [Tooltip("Played above the player when a wave card's reward pays out (coin sound, UI track).")]
     public MMF_Player rewardFeedback;
 
-    public IReadOnlyList<WarBannerController> ActiveBanners => activeBanners;
+    /// <summary>The card the current (or upcoming, during prep) wave is played with. Null outside a card flow.</summary>
+    public WaveCard CurrentWaveCard { get; private set; }
+
+    /// <summary>The clan modifier of the current card, or None.</summary>
+    public BannerBuffType CurrentWaveBuff => CurrentWaveCard != null ? CurrentWaveCard.BuffType : BannerBuffType.None;
 
     public int CurrentWave => RunSession.CurrentWave;
     public int CurrentRound => RunSession.CurrentRound;
+    public int UpcomingWave => upcomingWave;
     public int KillsThisWave => killsThisWave;
     public int TargetKillsThisWave => targetKillsThisWave;
     public SurvivorsObjectiveManager ObjectiveManager => objectiveManager;
     public ISurvivorsObjective CurrentObjective => objectiveManager != null ? objectiveManager.CurrentObjective : currentObjective;
     public bool IsWaveActive => isWaveActive;
     public bool IsIntermission => isIntermission;
-    public bool IsPrepPhase => isIntermission || !isWaveActive;
-    public float IntermissionTimeRemaining => intermissionTimeRemaining;
-    public Transform UpgradePowerupSpawnPoint => upgradePowerupSpawnPoint;
-    public WaveUpgradePowerup ActivePowerup => activePowerup;
+    /// <summary>True from the end of a wave until Ready is held: the only window where towers and gate repair work.</summary>
+    public bool IsPrepPhase => isPrep;
+    /// <summary>True during prep once a card is picked and the game is waiting for the Ready hold.</summary>
+    public bool IsAwaitingReady => isPrep && isAwaitingReady && !isChoosingCard;
+    public float ReadyHoldProgress => readyHoldSeconds > 0f ? Mathf.Clamp01(readyHoldTimer / readyHoldSeconds) : 0f;
+    public bool IsRouting => isRouting;
+    /// <summary>3, 2, 1 during the pre-wave countdown; 0 otherwise.</summary>
+    public int CountdownSeconds { get; private set; }
+    /// <summary>The upcoming wave's card objective title during prep, or blank.</summary>
+    public string UpcomingObjectiveTitle => isPrep && CurrentWaveCard != null && CurrentWaveCard.objective != null ? CurrentWaveCard.objective.TitleText : "";
+    /// <summary>One-line HUD status for the between-wave phases (prompt, countdown, rout); empty during a wave.</summary>
+    public string StatusText { get; private set; } = "";
+
+    /// <summary>What this sector paid and who fell, for the victory screen. Reset on scene load.</summary>
+    public SectorSummary Summary { get; } = new SectorSummary();
 
     public event Action<int> OnWaveStarted;
     public event Action<int, string> OnWaveCleared;
-    public event Action<float> OnIntermissionTick;
     public event Action OnVictory;
     public event Action<Health> OnEnemyKilledEvent;
+    /// <summary>Fired when a wave's objective resolves (after the rout): wave, success, the card it was played with (may be null).</summary>
+    public event Action<int, bool, WaveCard> OnWaveResolved;
+    /// <summary>Fired when a card reward is paid: the card and the one-line description shown in the popup.</summary>
+    public event Action<WaveCard, string> OnWaveRewardGranted;
+    /// <summary>Fired when the player picks from a wave draft: offered cards, the pick, seconds taken to decide.</summary>
+    public event Action<IReadOnlyList<WaveCard>, WaveCard, float> OnWaveCardPicked;
 
     private void Awake()
     {
@@ -119,10 +146,15 @@ public class GameLoopManager : MonoBehaviour
     {
         if (rewardFeedback == null) Debug.LogError("[GameLoopManager] rewardFeedback is not assigned.", this);
 
-        if (Player.Instance != null && Player.Instance.Health != null)
+        waveChoiceConfig = WaveChoiceConfigSO.Load();
+        cardRng = new System.Random(Environment.TickCount);
+
+        if (Player.Instance != null)
         {
-            Player.Instance.Health.OnDied += HandlePlayerDied;
+            inputReader = Player.Instance.GetComponentInChildren<InputReader>();
+            if (Player.Instance.Health != null) Player.Instance.Health.OnDied += HandlePlayerDied;
         }
+        if (inputReader == null) Debug.LogError("[GameLoopManager] No InputReader on the player; the Ready hold can't be read.", this);
 
         // The castle scenes' gates were authored with an Interactable from the old rest-gate flow;
         // nothing handles it now, so keep it from showing a dead [E] prompt.
@@ -135,34 +167,23 @@ public class GameLoopManager : MonoBehaviour
             }
         }
 
-        // Auto-discover and bind objective manager if not wired
         if (objectiveManager == null) objectiveManager = SurvivorsObjectiveManager.Instance ?? FindAnyObjectByType<SurvivorsObjectiveManager>();
         if (objectiveManager != null)
         {
             objectiveManager.OnObjectiveCompleted += HandleObjectiveCompleted;
+            objectiveManager.OnObjectiveFailed += HandleObjectiveFailed;
         }
 
-        // Hook up spawner enemy death and wave wiped listeners
-        HookupSpawnerEnemyDeaths();
-        if (spawner != null)
-        {
-            spawner.OnWaveWiped -= HandleSpawnerWaveWiped;
-            spawner.OnWaveWiped += HandleSpawnerWaveWiped;
-        }
-
-        // Initialize first wave
         int initialWave = RunSession.CurrentWave > 0 ? RunSession.CurrentWave : 1;
         RunSession.CurrentWave = initialWave;
 
-        if (CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive && CampaignManager.Instance.CurrentNode != null)
+        CampaignNodeSO node = CurrentCampaignNode;
+        if (node != null)
         {
-            var node = CampaignManager.Instance.CurrentNode;
-            CurrentWaveBounty = node.bountyType;
-            CurrentWaveDifficultyTier = node.difficultyTier;
-            Debug.Log($"[GameLoopManager] Campaign Active: Sector '{node.nodeTitle}' configured (Tier {CurrentWaveDifficultyTier}, Bounty {CurrentWaveBounty}).");
+            Debug.Log($"[GameLoopManager] Campaign Active: Sector '{node.nodeTitle}' (threat {SectorThreat.Current}, clan {(node.clanBuff != null ? node.clanBuff.clanName : "any")}).");
         }
 
-        CheckAndSpawnBanners(initialWave);
+        BeginIntermission(initialWave);
     }
 
     private void OnDestroy()
@@ -179,23 +200,12 @@ public class GameLoopManager : MonoBehaviour
             objectiveManager.OnObjectiveCompleted -= HandleObjectiveCompleted;
             objectiveManager.OnObjectiveFailed -= HandleObjectiveFailed;
         }
-
-        if (spawner != null)
-        {
-            spawner.OnWaveWiped -= HandleSpawnerWaveWiped;
-        }
     }
 
-    private void HandleSpawnerWaveWiped()
-    {
-        Debug.Log("[GameLoopManager] Spawner reported wave wiped!");
-        CheckWaveCompletionConditions();
-    }
+    private static CampaignNodeSO CurrentCampaignNode =>
+        CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive ? CampaignManager.Instance.CurrentNode : null;
 
-    private void HookupSpawnerEnemyDeaths()
-    {
-        // Spawner notifies via enemy death or we can query active deaths
-    }
+    private int TotalWaves => pacingConfig != null ? pacingConfig.wavesPerRound : 5;
 
     public void OnEnemyKilled(Health enemyHealth)
     {
@@ -217,387 +227,500 @@ public class GameLoopManager : MonoBehaviour
             RunSession.AddInRunSupply(supplyDrop);
         }
 
-        cleanupTimer = 0f;
         OnEnemyKilledEvent?.Invoke(enemyHealth);
-        CheckWaveCompletionConditions();
     }
+
+    // ---- Intermission: reward → wave draft → prep → Ready ----
+
+    private void BeginIntermission(int nextWave)
+    {
+        upcomingWave = nextWave;
+        if (nextWave > TotalWaves) return;
+
+        isIntermission = true;
+        isPrep = true;
+        isAwaitingReady = false;
+        readyHoldTimer = 0f;
+        CurrentWaveCard = null;
+        if (intermissionBanner != null) intermissionBanner.SetActive(true);
+        if (objectiveManager != null) objectiveManager.SetPhase(SurvivorsObjectivePhase.Intermission, 0f);
+
+        WaveCardRollContext ctx = BuildRollContext(nextWave);
+        if (waveChoiceConfig == null)
+        {
+            EnterAwaitReady();
+            return;
+        }
+
+        if (waveChoiceConfig.IsDraftedWave(nextWave) && SurvivorsCardSelectUI.Instance != null)
+        {
+            List<WaveCard> cards = WaveCardGenerator.Roll(waveChoiceConfig, ctx, cardRng);
+            if (cards.Count > 0)
+            {
+                isChoosingCard = true;
+                cardChoiceOpenedTime = Time.unscaledTime;
+                SetStatus(Loc.Get("wave.status.choose", "Choose your next battle"));
+                SurvivorsCardSelectUI.Instance.OpenWaveChoice(cards, picked => HandleWaveCardPicked(cards, picked));
+                return;
+            }
+            Debug.LogError($"[GameLoopManager] Wave draft for wave {nextWave} rolled no cards; playing a fixed wave instead.", this);
+        }
+
+        FixedWaveDefinition fixedWave = nextWave >= waveChoiceConfig.finalWaveNumber ? waveChoiceConfig.finalWave : waveChoiceConfig.firstWave;
+        CurrentWaveCard = WaveCardGenerator.BuildFixed(waveChoiceConfig, fixedWave, ctx, cardRng);
+        EnterAwaitReady();
+    }
+
+    private WaveCardRollContext BuildRollContext(int wave)
+    {
+        CampaignNodeSO node = CurrentCampaignNode;
+        return new WaveCardRollContext
+        {
+            wave = wave,
+            threat = SectorThreat.Current,
+            lastObjectiveId = lastObjectiveId,
+            nodeClan = node != null ? node.clanBuff : null,
+            captainName = node != null ? node.captainName : null,
+            isDemo = DemoConfigSO.IsDemo
+        };
+    }
+
+    private void HandleWaveCardPicked(IReadOnlyList<WaveCard> offered, WaveCard picked)
+    {
+        isChoosingCard = false;
+        CurrentWaveCard = picked;
+        float seconds = Time.unscaledTime - cardChoiceOpenedTime;
+        OnWaveCardPicked?.Invoke(offered, picked, seconds);
+        if (picked != null)
+        {
+            Debug.Log($"[GameLoopManager] Wave {upcomingWave} card: {picked.ObjectiveId} ({picked.stance}, {picked.skulls} skulls, {picked.ClanName}) → {picked.gold}g {picked.supply}s {picked.bonusType} x{picked.bonusAmount}");
+        }
+        EnterAwaitReady();
+    }
+
+    private void EnterAwaitReady()
+    {
+        isPrep = true;
+        isAwaitingReady = true;
+        readyHoldTimer = 0f;
+        string title = CurrentWaveCard != null && CurrentWaveCard.objective != null ? CurrentWaveCard.objective.TitleText : "";
+        if (waveAnnouncementText != null)
+        {
+            waveAnnouncementText.text = string.IsNullOrEmpty(title)
+                ? $"WAVE {upcomingWave} / {TotalWaves}"
+                : $"WAVE {upcomingWave} / {TotalWaves}: {title.ToUpperInvariant()}";
+        }
+        SetStatus(ReadyPrompt());
+    }
+
+    private string ReadyPrompt() => Loc.Get("wave.status.ready", "Build your defences, then start the wave");
+
+    private void Update()
+    {
+        if (IsAwaitingReady)
+        {
+            TickReadyHold();
+        }
+
+        if (isResolving)
+        {
+            // Backstop: if the rout ever stalls (stuck agents), finish it off.
+            resolveWatchdog += Time.deltaTime;
+            if (resolveWatchdog >= 45f && isWaveActive)
+            {
+                resolveWatchdog = 0f;
+                Debug.LogWarning("[GameLoopManager] Rout backstop expired! Striking stragglers with lightning.");
+                if (spawner != null) spawner.StrikeAllAliveWithLightning(9999f);
+            }
+        }
+    }
+
+    private void TickReadyHold()
+    {
+        bool held = inputReader != null && inputReader.StartWaveHeld;
+        if (!held || Time.timeScale <= 0f)
+        {
+            if (readyHoldTimer > 0f)
+            {
+                readyHoldTimer = 0f;
+                SetStatus(ReadyPrompt());
+            }
+            return;
+        }
+
+        readyHoldTimer += Time.unscaledDeltaTime;
+        if (readyHoldTimer >= readyHoldSeconds)
+        {
+            readyHoldTimer = 0f;
+            isPrep = false;
+            isAwaitingReady = false;
+            StartCoroutine(StartNextWaveAfterDelay());
+        }
+    }
+
+    /// <summary>Debug / DevConsole: skips the Ready hold.</summary>
+    public void DebugPressReady()
+    {
+        if (!IsAwaitingReady) return;
+        readyHoldTimer = readyHoldSeconds;
+        isPrep = false;
+        isAwaitingReady = false;
+        StartCoroutine(StartNextWaveAfterDelay());
+    }
+
+    /// <summary>
+    ///     DevConsole: replaces the upcoming wave's card (e.g. a forced <c>wavecard &lt;id&gt; &lt;skulls&gt;</c>).
+    ///     Only during prep; the card applies when Ready is held.
+    /// </summary>
+    public bool DebugSetUpcomingCard(WaveCard card)
+    {
+        if (!IsAwaitingReady || card == null) return false;
+        CurrentWaveCard = card;
+        EnterAwaitReady();
+        return true;
+    }
+
+    /// <summary>DevConsole: rerolls and reopens the wave draft for the upcoming wave (prep only).</summary>
+    public bool DebugRerollWaveDraft()
+    {
+        if (!IsAwaitingReady || waveChoiceConfig == null || SurvivorsCardSelectUI.Instance == null) return false;
+        List<WaveCard> cards = WaveCardGenerator.Roll(waveChoiceConfig, BuildRollContext(Mathf.Clamp(upcomingWave, waveChoiceConfig.firstDraftedWave, waveChoiceConfig.finalWaveNumber - 1)), cardRng);
+        if (cards.Count == 0) return false;
+        isChoosingCard = true;
+        cardChoiceOpenedTime = Time.unscaledTime;
+        SurvivorsCardSelectUI.Instance.OpenWaveChoice(cards, picked => HandleWaveCardPicked(cards, picked));
+        return true;
+    }
+
+    private IEnumerator StartNextWaveAfterDelay()
+    {
+        for (int sec = 3; sec > 0; sec--)
+        {
+            CountdownSeconds = sec;
+            string countdown = Loc.Get("wave.status.countdown", "Wave starts in {0}...").Replace("{0}", sec.ToString(CultureInfo.InvariantCulture));
+            SetStatus(countdown);
+            if (intermissionTimerText != null) intermissionTimerText.text = countdown;
+            yield return new WaitForSeconds(1.0f);
+        }
+
+        CountdownSeconds = 0;
+        isIntermission = false;
+        if (intermissionBanner != null) intermissionBanner.SetActive(false);
+
+        StartWave(upcomingWave);
+    }
+
+    private void SetStatus(string text)
+    {
+        StatusText = text ?? "";
+        if (intermissionTimerText != null && !isWaveActive) intermissionTimerText.text = StatusText;
+    }
+
+    // ---- The wave ----
 
     public void StartWave(int waveNumber)
     {
         RunSession.CurrentWave = waveNumber;
-        int totalWaves = pacingConfig != null ? pacingConfig.wavesPerRound : 5;
+        upcomingWave = waveNumber;
 
-        targetKillsThisWave = pacingConfig != null
+        WaveCard card = CurrentWaveCard;
+        int baseQuota = pacingConfig != null
             ? pacingConfig.GetKillQuota(waveNumber, SectorThreat.Current)
             : 15 + (waveNumber - 1) * 5;
+        float quotaMultiplier = card != null ? card.killQuotaMultiplier : 1f;
+        targetKillsThisWave = Mathf.Max(1, Mathf.RoundToInt(baseQuota * quotaMultiplier));
         killsThisWave = 0;
-        isObjectiveComplete = false;
         isWaveActive = true;
         isIntermission = false;
+        isPrep = false;
+        isResolving = false;
+        isAwaitingReady = false;
+        isRouting = false;
+        resolveWatchdog = 0f;
+        activeCaptain = null;
+        SetStatus("");
 
         if (intermissionBanner != null) intermissionBanner.SetActive(false);
 
-        // Start wave objective via SurvivorsObjectiveManager
-        StartWaveObjective(waveNumber);
+        StartWaveObjective(waveNumber, card);
 
         if (currentObjective is GoblinRushObjective)
         {
             targetKillsThisWave = 999999;
         }
+        else if (currentObjective is KillEnemiesObjective holdTheGate)
+        {
+            // Hold the Gate's kill target is the wave quota, so it scales with threat and skulls.
+            holdTheGate.SetRequiredKills(targetKillsThisWave);
+        }
 
-        // Start Spawner with wave-specific settings & quota
         if (spawner != null)
         {
             spawner.StartWave(waveNumber, targetKillsThisWave);
+            // Golden Goblin: the objective is the only thing on the field.
+            if (currentObjective is ISuppressRegularSpawns) spawner.StopSpawning();
         }
 
-        // Wave 5 Climax: Spawn Clan Captain
-        if (waveNumber >= totalWaves)
+        // A 3-skull card brings a captain (the Captain Assault objective spawns its own).
+        bool objectiveSpawnsCaptain = currentObjective != null && currentObjective.ObjectiveId == CaptainObjectiveId;
+        if (!objectiveSpawnsCaptain && card != null && card.hasCaptain)
         {
-            string preferredCaptain = null;
-            if (CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive && CampaignManager.Instance.CurrentNode != null)
-            {
-                preferredCaptain = CampaignManager.Instance.CurrentNode.captainName;
-            }
-            BannerDifficultyTier captainTier = CurrentWaveDifficultyTier >= BannerDifficultyTier.Enraged
-                ? CurrentWaveDifficultyTier
-                : BannerDifficultyTier.Enraged;
-            SpawnCaptainForWave(captainTier, preferredCaptain);
-        }
-        else if (CurrentWaveDifficultyTier >= BannerDifficultyTier.Enraged)
-        {
-            string preferredCaptain = null;
-            if (CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive && CampaignManager.Instance.CurrentNode != null)
-            {
-                preferredCaptain = CampaignManager.Instance.CurrentNode.captainName;
-            }
-            SpawnCaptainForWave(CurrentWaveDifficultyTier, preferredCaptain);
+            activeCaptain = SpawnCaptainForWave(card.CaptainTier, CurrentCampaignNode != null ? CurrentCampaignNode.captainName : null);
         }
 
         if (waveAnnouncementText != null)
         {
-            waveAnnouncementText.text = $"WAVE {waveNumber} / {totalWaves}";
+            waveAnnouncementText.text = $"WAVE {waveNumber} / {TotalWaves}";
         }
 
         OnWaveStarted?.Invoke(waveNumber);
-        Debug.Log($"[GameLoopManager] Started Wave {waveNumber} / {totalWaves}. Target kills: {targetKillsThisWave}");
+        Debug.Log($"[GameLoopManager] Started Wave {waveNumber} / {TotalWaves}. Objective {currentObjective?.ObjectiveId ?? "none"}, target kills {targetKillsThisWave}, skulls {card?.skulls ?? 1}.");
     }
 
-    private void StartWaveObjective(int waveNumber)
+    private void StartWaveObjective(int waveNumber, WaveCard card)
     {
         if (objectiveManager == null)
         {
             objectiveManager = SurvivorsObjectiveManager.Instance ?? FindAnyObjectByType<SurvivorsObjectiveManager>();
+            if (objectiveManager != null)
+            {
+                objectiveManager.OnObjectiveCompleted += HandleObjectiveCompleted;
+                objectiveManager.OnObjectiveFailed += HandleObjectiveFailed;
+            }
         }
 
-        if (objectiveManager != null)
+        if (objectiveManager == null)
         {
-            objectiveManager.OnObjectiveCompleted -= HandleObjectiveCompleted;
-            objectiveManager.OnObjectiveCompleted += HandleObjectiveCompleted;
-            
-            objectiveManager.OnObjectiveFailed -= HandleObjectiveFailed;
-            objectiveManager.OnObjectiveFailed += HandleObjectiveFailed;
-
-            isObjectiveComplete = false;
-            objectiveManager.StartWaveObjective(waveNumber);
-            currentObjective = objectiveManager.CurrentObjective;
-            Debug.Log($"[GameLoopManager] Wave {waveNumber} Objective: {currentObjective?.Title ?? "None"}");
-        }
-        else
-        {
-            isObjectiveComplete = true;
             currentObjective = null;
+            return;
+        }
+
+        bool started = card != null && objectiveManager.StartObjective(card.ObjectiveId, waveNumber);
+        if (!started)
+        {
+            if (card != null)
+            {
+                Debug.LogError($"[GameLoopManager] Wave card objective '{card.ObjectiveId}' isn't in this scene; falling back to a random objective.", this);
+            }
+            objectiveManager.StartWaveObjective(waveNumber);
+
+            // Captain Assault is missing from the scene: keep wave 5's captain the old way.
+            if (card != null && card.ObjectiveId == CaptainObjectiveId)
+            {
+                activeCaptain = SpawnCaptainForWave(CaptainTierForThreat(SectorThreat.Current), CurrentCampaignNode != null ? CurrentCampaignNode.captainName : null);
+            }
+        }
+
+        currentObjective = objectiveManager.CurrentObjective;
+        if (currentObjective != null) lastObjectiveId = currentObjective.ObjectiveId;
+        Debug.Log($"[GameLoopManager] Wave {waveNumber} Objective: {currentObjective?.Title ?? "None"}");
+    }
+
+    /// <summary>The captain tier the final wave uses at a sector threat (mirrors DefeatCaptainObjective).</summary>
+    public static BannerDifficultyTier CaptainTierForThreat(int threat) => DefeatCaptainObjective.TierForThreat(threat);
+
+    /// <summary>
+    ///     Applies the current card's enemy modifiers to a freshly spawned wave enemy: the skull HP
+    ///     multiplier, then the clan buff at the card's scaled magnitude. Called by the spawner.
+    /// </summary>
+    public void ApplyWaveModifiers(GameObject enemy)
+    {
+        WaveCard card = CurrentWaveCard;
+        if (enemy == null || card == null || !isWaveActive) return;
+
+        Health health = enemy.GetComponent<Health>();
+        if (health != null && !Mathf.Approximately(card.enemyHealthMultiplier, 1f))
+        {
+            health.SetMaxHealth(health.MaxHealth * card.enemyHealthMultiplier);
+        }
+
+        if (card.HasClan)
+        {
+            EnemyBuffController buff = enemy.GetComponent<EnemyBuffController>() ?? enemy.AddComponent<EnemyBuffController>();
+            buff.Initialize(card.BuffType, card.modifierMagnitude);
         }
     }
 
     private void HandleObjectiveCompleted(ISurvivorsObjective obj)
     {
-        if (obj is KillRemainingEnemiesObjective)
-        {
-            Debug.Log("[GameLoopManager] All remaining enemies eliminated!");
-            ClearActiveWave();
-            return;
-        }
-
-        isObjectiveComplete = true;
+        if (obj is KillRemainingEnemiesObjective) return; // legacy cleanup objective; the rout replaces it
+        if (!isWaveActive || isResolving) return;
         Debug.Log($"[GameLoopManager] Objective Completed: {obj?.Title}");
-
-        // Stop spawner from spawning any further enemies
-        if (spawner != null && spawner.IsSpawningActive)
-        {
-            spawner.StopSpawning();
-        }
-
-        int remainingAlive = spawner != null ? spawner.AliveCount : 0;
-        if (remainingAlive > 0)
-        {
-            Debug.Log($"[GameLoopManager] Objective '{obj?.Title}' completed. {remainingAlive} enemies remain. Starting cleanup phase.");
-            if (objectiveManager != null)
-            {
-                objectiveManager.StartCleanupObjective();
-            }
-        }
-        else
-        {
-            Debug.Log($"[GameLoopManager] Objective '{obj?.Title}' completed and no enemies remain. Clearing wave.");
-            ClearActiveWave();
-        }
+        ResolveWave(true);
     }
 
     private void HandleObjectiveFailed(ISurvivorsObjective obj)
     {
-        isObjectiveComplete = true;
-        Debug.Log($"[GameLoopManager] Objective Failed: {obj?.Title}. Proceeding with wave clear.");
-        CheckWaveCompletionConditions();
+        if (!isWaveActive || isResolving) return;
+        Debug.Log($"[GameLoopManager] Objective Failed: {obj?.Title}. No card reward.");
+        ResolveWave(false);
     }
 
-    /// <summary>Debug method: Manually completes the active objective to satisfy wave clear conditions.</summary>
+    /// <summary>Debug method: completes the active objective, which resolves the wave.</summary>
     public void DebugCompleteObjective()
     {
-        isObjectiveComplete = true;
-        if (objectiveManager != null && objectiveManager.CurrentObjective != null)
+        if (objectiveManager != null && objectiveManager.CurrentObjective != null && !objectiveManager.CurrentObjective.IsComplete)
         {
             objectiveManager.DebugCompleteCurrentObjective();
         }
-        CheckWaveCompletionConditions();
+        if (isWaveActive && !isResolving)
+        {
+            ResolveWave(true);
+        }
     }
 
-    private float cleanupTimer = 0f;
+    // ---- Resolution: rout → clear → reward → next intermission ----
 
-    private void CheckWaveCompletionConditions()
+    private void ResolveWave(bool success)
     {
-        if (!isWaveActive) return;
-
-        // If in cleanup objective, wave completes once all remaining enemies are dead
-        if (objectiveManager != null && objectiveManager.CurrentObjective is KillRemainingEnemiesObjective)
-        {
-            if (spawner != null && spawner.AliveCount <= 0)
-            {
-                ClearActiveWave();
-            }
-            return;
-        }
-
-        bool killQuotaMet = killsThisWave >= targetKillsThisWave;
-
-        // Special rule for time-based survival objectives: they end exactly when the time is up, regardless of kills
-        if (currentObjective is GoblinRushObjective)
-        {
-            killQuotaMet = true;
-        }
-
-        // Wagon/ram: the wave can't end before the objective resolves (the spawner trickles enemies meanwhile).
-        if (currentObjective is IRequiresContinuousSpawns && !isObjectiveComplete)
-        {
-            cleanupTimer = 0f;
-            return;
-        }
-
-        if (killQuotaMet && isObjectiveComplete)
-        {
-            if (spawner != null && spawner.IsSpawningActive)
-            {
-                spawner.StopSpawning();
-            }
-
-            if (spawner != null && spawner.AliveCount > 0)
-            {
-                // Transition to cleanup objective if not already in cleanup
-                if (objectiveManager != null && !(objectiveManager.CurrentObjective is KillRemainingEnemiesObjective))
-                {
-                    objectiveManager.StartCleanupObjective();
-                }
-                return;
-            }
-
-            ClearActiveWave();
-        }
-        else
-        {
-            cleanupTimer = 0f;
-        }
+        isResolving = true;
+        resolveWatchdog = 0f;
+        if (spawner != null) spawner.StopSpawning();
+        StartCoroutine(RoutRoutine(success));
     }
 
-    private void Update()
+    private IEnumerator RoutRoutine(bool success)
     {
-        if (isWaveActive && isObjectiveComplete)
+        List<Health> stragglers = new List<Health>();
+        if (spawner != null) spawner.GetAliveEnemies(stragglers);
+        if (activeCaptain != null)
         {
-            cleanupTimer += Time.deltaTime;
-            // Generous 45s fail-safe for unreachable/stuck enemies (reset by OnEnemyKilled)
-            if (cleanupTimer >= 45f)
+            Health captainHealth = activeCaptain.GetComponent<Health>();
+            if (captainHealth != null && !captainHealth.IsDead && !stragglers.Contains(captainHealth)) stragglers.Add(captainHealth);
+        }
+        stragglers.RemoveAll(h => h == null || h.IsDead);
+
+        if (stragglers.Count > 0)
+        {
+            isRouting = true;
+            SetStatus(Loc.Get("wave.status.rout", "The goblins are fleeing!"));
+            float duration = waveChoiceConfig != null ? waveChoiceConfig.routDurationSeconds : 4f;
+            foreach (Health h in stragglers)
             {
-                cleanupTimer = 0f;
-                Debug.LogWarning("[GameLoopManager] Catch-all 45s cleanup timer expired! Striking stragglers with lightning.");
-                if (spawner != null)
-                {
-                    spawner.StopSpawning();
-                    spawner.StrikeAllAliveWithLightning(9999f);
-                }
-                if (isWaveActive)
-                {
-                    ClearActiveWave();
-                }
+                Vector3 fleeTo = spawner != null ? spawner.NearestSpawnPoint(h.transform.position) : h.transform.position - h.transform.forward * 30f;
+                EnemyRout.Begin(h.gameObject, fleeTo);
             }
+
+            float t = 0f;
+            while (t < duration && stragglers.Exists(h => h != null && !h.IsDead))
+            {
+                t += Time.deltaTime;
+                yield return null;
+            }
+
+            if (spawner != null) spawner.DespawnAllAliveEnemies();
+            foreach (Health h in stragglers)
+            {
+                if (h != null && !h.IsDead) Destroy(h.gameObject);
+            }
+            isRouting = false;
         }
-        else
-        {
-            cleanupTimer = 0f;
-        }
+
+        ClearActiveWave(success);
     }
 
-    private void ClearActiveWave()
+    private void ClearActiveWave(bool success)
     {
         if (!isWaveActive) return;
         isWaveActive = false;
-        cleanupTimer = 0f;
+        isResolving = false;
         int clearedWave = CurrentWave;
-        int totalWaves = pacingConfig != null ? pacingConfig.wavesPerRound : 5;
+        WaveCard card = CurrentWaveCard;
 
-        Debug.Log($"[GameLoopManager] Wave {clearedWave} / {totalWaves} Cleared!");
+        Debug.Log($"[GameLoopManager] Wave {clearedWave} / {TotalWaves} {(success ? "cleared" : "failed")}.");
+
+        if (objectiveManager != null) objectiveManager.StopActiveObjective();
 
         // Decrement temporary buff durations from rest shop
         RunSession.OnWaveCompleted();
 
-        // Award wave clear defense supply
+        // Kill gold/supply and the flat wave-clear supply are always kept.
         RunSession.AddInRunSupply(30);
 
-        if (clearedWave >= totalWaves)
+        // Wave-clear heal perks apply win or lose.
+        if (Player.Instance != null && Player.Instance.Health != null)
         {
-            // All 5 waves cleared! Stop spawns, despawn lingering enemies, and trigger Victory Screen
+            if (RunSession.HasMetaPerk("regeneration")) Player.Instance.Health.Heal(5f);
+            if (RunSession.SpecialHerbsWavesRemaining > 0) Player.Instance.Health.Heal(5f);
+        }
+
+        if (success) Summary.wavesWon++; else Summary.wavesFailed++;
+        LastWaveSucceeded = success;
+        LastRewardDescription = "";
+
+        if (clearedWave >= TotalWaves)
+        {
             if (spawner != null)
             {
                 spawner.StopSpawning();
                 spawner.DespawnAllAliveEnemies();
             }
 
+            OnWaveResolved?.Invoke(clearedWave, success, card);
             OnWaveCleared?.Invoke(clearedWave, "Sector Defended");
             TriggerVictory();
+            return;
+        }
+
+        isPrep = true; // building opens as soon as the field is clear
+        OnWaveResolved?.Invoke(clearedWave, success, card);
+
+        if (success && card != null)
+        {
+            GrantCardReward(card, () =>
+            {
+                OnWaveCleared?.Invoke(clearedWave, "Wave Cleared");
+                StartCoroutine(NextIntermissionAfterPopup(clearedWave + 1));
+            });
         }
         else
         {
-            // Intermediate wave (1 to 4): Stop enemy spawns, spawn powerup for the bounty
-            if (spawner != null)
-            {
-                spawner.StopSpawning();
-            }
-
-            OnWaveCleared?.Invoke(clearedWave, "Wave Cleared");
-            
-            SpawnPowerupForCurrentBounty();
+            OnWaveCleared?.Invoke(clearedWave, success ? "Wave Cleared" : "Objective Failed");
+            StartCoroutine(NextIntermissionAfterPopup(clearedWave + 1));
         }
     }
 
-    private void SpawnPowerupForCurrentBounty()
+    /// <summary>Whether the last resolved wave's objective succeeded (telemetry reads this on OnWaveCleared).</summary>
+    public bool LastWaveSucceeded { get; private set; }
+
+    /// <summary>What the last card reward paid, e.g. "+180 gold, +90 supply, 2 Goblin Blood" (blank on failure).</summary>
+    public string LastRewardDescription { get; private set; } = "";
+
+    private IEnumerator NextIntermissionAfterPopup(int nextWave)
     {
-        if (activePowerup != null)
-        {
-            Debug.LogWarning("[GameLoopManager] activePowerup is already present; skipping duplicate powerup spawn.");
-            return;
-        }
-
-        if (CurrentWaveBounty == BannerBountyType.None)
-        {
-            StartCoroutine(TransitionToNextBannersRoutine());
-            return;
-        }
-
-        Vector3 spawnPos = upgradePowerupSpawnPoint != null ? upgradePowerupSpawnPoint.position : Vector3.zero;
-        
-        GameObject prefabToSpawn = null;
-        if (CurrentBannerRewardSO != null && CurrentBannerRewardSO.rewardPrefab != null)
-        {
-            prefabToSpawn = CurrentBannerRewardSO.rewardPrefab;
-        }
-        else if (bannerConfig != null)
-        {
-            var activeRewards = bannerConfig.GetActiveRewards();
-            var matchingReward = activeRewards.Find(r => r != null && r.bountyType == CurrentWaveBounty);
-            if (matchingReward != null && matchingReward.rewardPrefab != null)
-            {
-                prefabToSpawn = matchingReward.rewardPrefab;
-            }
-        }
-
-        if (prefabToSpawn == null)
-        {
-            prefabToSpawn = upgradePowerupPrefab;
-        }
-
-        activePowerup = WaveUpgradePowerup.Spawn(spawnPos, CurrentWaveBounty, prefabToSpawn);
-        if (activePowerup == null)
-        {
-            // Spawn already logged which field to wire. Skip the reward rather than stall the run.
-            StartCoroutine(TransitionToNextBannersRoutine());
-            return;
-        }
-        activePowerup.OnClaimed += HandlePowerupClaimed;
+        yield return new WaitForSecondsRealtime(rewardPopupSeconds);
+        BeginIntermission(nextWave);
     }
 
-    private void HandlePowerupClaimed(WaveUpgradePowerup powerup)
+    /// <summary>Pays a card's bundle: gold, supply, then the bonus (a draft pick opens the skill-card modal, chained).</summary>
+    private void GrantCardReward(WaveCard card, Action onComplete)
     {
-        powerup.OnClaimed -= HandlePowerupClaimed;
-
-        ApplyBounty(powerup.Bounty, () => 
+        List<string> parts = new List<string>();
+        if (card.gold > 0)
         {
-            powerup.DestroyPowerup();
-            CurrentWaveBuff = BannerBuffType.None;
-            CurrentWaveBounty = BannerBountyType.None;
-            CurrentWaveDifficultyTier = BannerDifficultyTier.Standard;
-            CurrentClanBuffSO = null;
-            CurrentBannerRewardSO = null;
-            StartCoroutine(TransitionToNextBannersRoutine());
-        });
-    }
-
-    private void ApplyBounty(BannerBountyType bounty, Action onComplete)
-    {
-        string rewardDesc = "Bounty Claimed";
-        bool isDraft = false;
-        int multiplier = BannerDifficultyHelper.GetRewardMultiplier(CurrentWaveDifficultyTier);
-
-        switch (bounty)
+            RunSession.AddInRunGold(card.gold);
+            parts.Add(Loc.Get("wave.reward.gold", "+{0} gold").Replace("{0}", card.gold.ToString(CultureInfo.InvariantCulture)));
+        }
+        if (card.supply > 0)
         {
-            case BannerBountyType.WeaponDraft:
-                rewardDesc = multiplier > 1 ? $"Weapon Upgrade Draft! ({multiplier}x)" : "Weapon Upgrade Draft!";
-                if (multiplier > 1) RunSession.DraftRerollsRemaining += (multiplier - 1);
-                if (SurvivorsCardSelectUI.Instance != null)
-                {
-                    isDraft = true;
-                    SurvivorsCardSelectUI.Instance.OpenDraft(DraftCategory.Weapon, onComplete);
-                }
+            RunSession.AddInRunSupply(card.supply);
+            parts.Add(Loc.Get("wave.reward.supply", "+{0} supply").Replace("{0}", card.supply.ToString(CultureInfo.InvariantCulture)));
+        }
+
+        int draftPicks = 0;
+        switch (card.bonusType)
+        {
+            case WaveBonusType.DraftPick:
+                draftPicks = Mathf.Max(1, card.bonusAmount);
                 break;
-            case BannerBountyType.FortressDraft:
-                int supplyBonus = 50 * multiplier;
-                rewardDesc = $"Supply Cache! (+{supplyBonus} Supply)";
-                RunSession.AddInRunSupply(supplyBonus);
-                onComplete?.Invoke();
+            case WaveBonusType.GoblinBlood:
+                RunSession.AddGoblinBlood(card.bonusAmount);
                 break;
-            case BannerBountyType.ElementDraft:
-                rewardDesc = multiplier > 1 ? $"Elemental Upgrade Draft! ({multiplier}x)" : "Elemental Upgrade Draft!";
-                if (multiplier > 1) RunSession.DraftRerollsRemaining += (multiplier - 1);
-                if (SurvivorsCardSelectUI.Instance != null)
-                {
-                    isDraft = true;
-                    SurvivorsCardSelectUI.Instance.OpenDraft(DraftCategory.Elemental, onComplete);
-                }
+            case WaveBonusType.OrcishMetal:
+                RunSession.AddOrcishMetal(card.bonusAmount);
                 break;
-            case BannerBountyType.GoldCache:
-                int gold = UnityEngine.Random.Range(75, 126) * multiplier;
-                RunSession.AddInRunGold(gold);
-                rewardDesc = multiplier > 1 ? $"+{gold} Gold ({multiplier}x)" : $"+{gold} Gold";
-                break;
-            case BannerBountyType.OrcishMetal:
-                int metal = UnityEngine.Random.Range(2, 4) * multiplier;
-                RunSession.AddOrcishMetal(metal);
-                rewardDesc = multiplier > 1 ? $"+{metal} Orcish Metal ({multiplier}x)" : $"+{metal} Orcish Metal";
-                break;
-            case BannerBountyType.GoblinBlood:
-                int blood = UnityEngine.Random.Range(4, 7) * multiplier;
-                RunSession.AddGoblinBlood(blood);
-                rewardDesc = multiplier > 1 ? $"+{blood} Goblin Blood ({multiplier}x)" : $"+{blood} Goblin Blood";
-                break;
-            case BannerBountyType.TrollHeart:
-                float bonusHp = 25f * (multiplier > 1 ? 1.5f : 1.0f);
+            case WaveBonusType.TrollHeart:
+                float bonusHp = card.bonusAmount;
                 RunSession.PlayerBonusMaxHealth += bonusHp;
                 if (Player.Instance != null && Player.Instance.Health != null)
                 {
@@ -605,35 +728,35 @@ public class GameLoopManager : MonoBehaviour
                     Player.Instance.Health.SetMaxHealth(Player.Instance.Health.MaxHealth + bonusHp);
                     Player.Instance.Health.SetCurrentHealth(current + bonusHp);
                 }
-                rewardDesc = $"Troll Heart (+{bonusHp} Max HP)";
                 break;
         }
+        if (card.bonusType != WaveBonusType.None) parts.Add(card.BonusText);
 
-        // Apply meta perks
-        if (RunSession.HasMetaPerk("regeneration") && Player.Instance != null && Player.Instance.Health != null)
-        {
-            Player.Instance.Health.Heal(5f);
-        }
-
-        if (RunSession.SpecialHerbsWavesRemaining > 0 && Player.Instance != null && Player.Instance.Health != null)
-        {
-            Player.Instance.Health.Heal(5f);
-        }
-
+        Summary.RecordReward(card, draftPicks);
+        string desc = string.Join(", ", parts);
+        LastRewardDescription = desc;
         if (rewardNotificationText != null)
         {
-            rewardNotificationText.text = $"Wave Reward: {rewardDesc}";
+            rewardNotificationText.text = $"{Loc.Get("wave.reward.header", "Wave Reward")}: {desc}";
         }
+        PlayRewardFeedback(card);
+        OnWaveRewardGranted?.Invoke(card, desc);
+        Debug.Log($"[GameLoopManager] Wave card reward: {desc}");
 
-        PlayRewardFeedback(bounty, rewardDesc);
-
-        if (!isDraft)
-        {
-            onComplete?.Invoke();
-        }
+        OpenDraftPicks(draftPicks, onComplete);
     }
 
-    private void PlayRewardFeedback(BannerBountyType bounty, string desc)
+    private void OpenDraftPicks(int remaining, Action onComplete)
+    {
+        if (remaining <= 0 || SurvivorsCardSelectUI.Instance == null)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+        SurvivorsCardSelectUI.Instance.OpenDraft(null, () => OpenDraftPicks(remaining - 1, onComplete));
+    }
+
+    private void PlayRewardFeedback(WaveCard card)
     {
         if (Player.Instance == null) return;
         Vector3 pos = Player.Instance.transform.position + new Vector3(0, 2f, 0);
@@ -643,215 +766,9 @@ public class GameLoopManager : MonoBehaviour
             rewardFeedback.PlayFeedbacks(pos);
         }
 
-        DamageNumbersPro.DamageNumber prefab = null;
-        if (bounty == BannerBountyType.GoldCache) prefab = goldPopupPrefab;
-        else if (bounty == BannerBountyType.OrcishMetal) prefab = metalPopupPrefab;
-        else if (bounty == BannerBountyType.GoblinBlood) prefab = bloodPopupPrefab;
-
-        if (prefab != null)
-        {
-            // Extract the number from desc (e.g. "+75 Gold")
-            string[] parts = desc.Split(' ');
-            if (parts.Length > 0 && parts[0].StartsWith("+"))
-            {
-                if (int.TryParse(parts[0].Substring(1), out int amount))
-                {
-                    prefab.Spawn(pos, amount);
-                }
-            }
-        }
-    }
-
-    private IEnumerator TransitionToNextBannersRoutine()
-    {
-        yield return new WaitForSeconds(3.0f);
-        CheckAndSpawnBanners(CurrentWave + 1);
-    }
-
-    private int upcomingWave = 1;
-
-    private void CheckAndSpawnBanners(int nextWave)
-    {
-        upcomingWave = nextWave;
-        int totalWaves = pacingConfig != null ? pacingConfig.wavesPerRound : 5;
-        if (nextWave > totalWaves) return;
-
-        SpawnWarBanners();
-    }
-
-    private void SpawnWarBanners()
-    {
-        StartCoroutine(SpawnWarBannersRoutine());
-    }
-
-    private IEnumerator SpawnWarBannersRoutine()
-    {
-        isIntermission = true;
-        if (intermissionBanner != null) intermissionBanner.SetActive(true);
-        if (waveAnnouncementText != null) waveAnnouncementText.text = "SELECT A WAR BANNER TO START NEXT WAVE";
-        if (intermissionTimerText != null) intermissionTimerText.text = "[E] Tear Down Banner";
-
-        if (objectiveManager != null) objectiveManager.SetPhase(SurvivorsObjectivePhase.Intermission, 0f);
-
-        // Clear old banners
-        foreach (var b in activeBanners) { if (b != null) Destroy(b.gameObject); }
-        activeBanners.Clear();
-
-        if (bannerConfig == null || warBannerPrefab == null || bannerSpawnPoints == null || bannerSpawnPoints.Length < 3)
-        {
-            Debug.LogWarning("[GameLoopManager] Banner config/prefab/spawn points missing. Skipping banners.");
-            StartCoroutine(StartNextWaveAfterDelay());
-            yield break;
-        }
-        
-        // Pick 3 random unique clans and rewards
-        List<WarBannerClanSO> availableClans = new List<WarBannerClanSO>(bannerConfig.GetActiveClans());
-        List<WarBannerRewardSO> availableRewards = new List<WarBannerRewardSO>(bannerConfig.GetActiveRewards());
-
-        // Shuffle
-        for (int i = 0; i < availableClans.Count; i++) { WarBannerClanSO temp = availableClans[i]; int randomIndex = UnityEngine.Random.Range(i, availableClans.Count); availableClans[i] = availableClans[randomIndex]; availableClans[randomIndex] = temp; }
-        for (int i = 0; i < availableRewards.Count; i++) { WarBannerRewardSO temp = availableRewards[i]; int randomIndex = UnityEngine.Random.Range(i, availableRewards.Count); availableRewards[i] = availableRewards[randomIndex]; availableRewards[randomIndex] = temp; }
-
-        SaveData saveData = SaveSystem.Load();
-        int runs = (saveData != null) ? saveData.runsAttempted : 1;
-
-        for (int i = 0; i < 3; i++)
-        {
-            GameObject bannerGo = Instantiate(warBannerPrefab, bannerSpawnPoints[i].position, bannerSpawnPoints[i].rotation);
-            WarBannerController controller = bannerGo.GetComponent<WarBannerController>();
-            if (controller != null)
-            {
-                BannerDifficultyTier tier = BannerDifficultyHelper.RollTierForBanner(runs, CurrentRound, i);
-                controller.Initialize(availableClans[i % availableClans.Count], availableRewards[i % availableRewards.Count], tier);
-                controller.OnBannerInteracted += HandleBannerInteracted;
-                controller.StageHighUp();
-                activeBanners.Add(controller);
-                
-                if (i == 0 && intermissionVirtualCamera != null)
-                {
-                    intermissionVirtualCamera.LookAt = bannerGo.transform;
-                }
-            }
-        }
-        
-        // --- Cinematic Sequence Start ---
-        
-        // 1. Brief slow motion
-        Time.timeScale = 0.3f;
-        
-        // 2. Camera transition
-        if (intermissionVirtualCamera != null)
-        {
-            intermissionVirtualCamera.gameObject.SetActive(true);
-        }
-        
-        yield return new WaitForSecondsRealtime(0.6f);
-        Time.timeScale = 1.0f;
-        
-        // Show side stats panel
-        if (intermissionStatsPanel != null)
-        {
-            intermissionStatsPanel.SetActive(true);
-        }
-
-        // 3. Drop banners
-        for (int i = 0; i < 3; i++)
-        {
-            if (activeBanners.Count > i && activeBanners[i] != null)
-            {
-                activeBanners[i].SlamDown();
-            }
-            yield return new WaitForSeconds(0.4f);
-        }
-        
-        // Wait a moment to admire the banners, then cut back to player
-        yield return new WaitForSeconds(1.0f);
-        if (intermissionVirtualCamera != null)
-        {
-            intermissionVirtualCamera.gameObject.SetActive(false);
-        }
-    }
-
-    private void HandleBannerInteracted(WarBannerController selectedBanner)
-    {
-        CurrentClanBuffSO = selectedBanner.Clan;
-        CurrentBannerRewardSO = selectedBanner.Reward;
-        CurrentWaveBuff = selectedBanner.Clan != null ? selectedBanner.Clan.buffType : selectedBanner.Buff.buffType;
-        CurrentWaveBounty = selectedBanner.Reward != null ? selectedBanner.Reward.bountyType : selectedBanner.Bounty.bountyType;
-        CurrentWaveDifficultyTier = selectedBanner.DifficultyTier;
-
-        StartCoroutine(BannerTeardownRoutine(selectedBanner));
-    }
-    
-    private IEnumerator BannerTeardownRoutine(WarBannerController selectedBanner)
-    {
-        if (intermissionVirtualCamera != null)
-        {
-            intermissionVirtualCamera.LookAt = selectedBanner.transform;
-            intermissionVirtualCamera.gameObject.SetActive(true);
-        }
-
-        // 1. Lock interaction on all banners
-        foreach (var banner in activeBanners)
-        {
-            if (banner != null)
-            {
-                banner.SetInteractable(false);
-            }
-        }
-        
-        // 2. Hide Stats Panel
-        if (intermissionStatsPanel != null)
-        {
-            intermissionStatsPanel.SetActive(false);
-        }
-        
-        // 3. Trigger animations
-        foreach (var banner in activeBanners)
-        {
-            if (banner != null)
-            {
-                if (banner == selectedBanner)
-                {
-                    banner.TearDown();
-                }
-                else
-                {
-                    banner.ShrinkOut();
-                }
-            }
-        }
-        
-        activeBanners.Clear();
-        
-        Debug.Log("[GameLoopManager] Them's tearin down ours bannah! Get 'em!");
-        
-        // 4. Wait for burning dissolve to finish
-        yield return new WaitForSeconds(3.0f);
-        
-        // 5. Restore camera
-        if (intermissionVirtualCamera != null)
-        {
-            intermissionVirtualCamera.gameObject.SetActive(false);
-        }
-
-        StartCoroutine(StartNextWaveAfterDelay());
-    }
-
-    private IEnumerator StartNextWaveAfterDelay()
-    {
-        // Brief countdown
-        for (int sec = 3; sec > 0; sec--)
-        {
-            if (intermissionTimerText != null) intermissionTimerText.text = $"Next Wave in: {sec}s";
-            if (waveAnnouncementText != null) waveAnnouncementText.text = $"NEXT WAVE IN {sec}...";
-            yield return new WaitForSeconds(1.0f);
-        }
-
-        isIntermission = false;
-        if (intermissionBanner != null) intermissionBanner.SetActive(false);
-
-        StartWave(upcomingWave);
+        if (goldPopupPrefab != null && card.gold > 0) goldPopupPrefab.Spawn(pos, card.gold);
+        if (card.bonusType == WaveBonusType.OrcishMetal && metalPopupPrefab != null) metalPopupPrefab.Spawn(pos + Vector3.up * 0.5f, card.bonusAmount);
+        if (card.bonusType == WaveBonusType.GoblinBlood && bloodPopupPrefab != null) bloodPopupPrefab.Spawn(pos + Vector3.up * 0.5f, card.bonusAmount);
     }
 
     /// <summary>
@@ -860,9 +777,9 @@ public class GameLoopManager : MonoBehaviour
     /// </summary>
     public GameObject SpawnCaptainForWave(BannerDifficultyTier tier, string preferredCaptainName = null)
     {
-        Vector3 spawnPos = captainSpawnPoint != null ? captainSpawnPoint.position : 
+        Vector3 spawnPos = captainSpawnPoint != null ? captainSpawnPoint.position :
                            (bossSpawnPoint != null ? bossSpawnPoint.position : (transform.position + new Vector3(0f, 0f, 25f)));
-        Quaternion spawnRot = captainSpawnPoint != null ? captainSpawnPoint.rotation : 
+        Quaternion spawnRot = captainSpawnPoint != null ? captainSpawnPoint.rotation :
                              (bossSpawnPoint != null ? bossSpawnPoint.rotation : Quaternion.identity);
 
         bool pickKombusta;
@@ -920,6 +837,20 @@ public class GameLoopManager : MonoBehaviour
             fraglob.Initialize(tier, captainName);
         }
 
+        Health captainHealth = captainGo.GetComponent<Health>();
+        if (captainHealth != null)
+        {
+            string fallenName = captainName;
+            BannerDifficultyTier fallenTier = tier;
+            Action onCaptainDied = null;
+            onCaptainDied = () =>
+            {
+                captainHealth.OnDied -= onCaptainDied;
+                Summary.captainsDefeated.Add($"{fallenName} ({BannerDifficultyHelper.GetTierName(fallenTier)})");
+            };
+            captainHealth.OnDied += onCaptainDied;
+        }
+
         // Play the enemy intro announcement with difficulty skulls
         if (EnemyIntroUI.Instance != null)
         {
@@ -933,10 +864,11 @@ public class GameLoopManager : MonoBehaviour
 
     private void TriggerVictory()
     {
-        int totalWaves = pacingConfig != null ? pacingConfig.wavesPerRound : 5;
-        Debug.Log($"[GameLoopManager] DEFENSE VICTORY! All {totalWaves} waves cleared!");
+        Debug.Log($"[GameLoopManager] DEFENSE VICTORY! All {TotalWaves} waves cleared!");
         isWaveActive = false;
         isIntermission = false;
+        isPrep = false;
+        SetStatus("");
 
         // Preserve player health ratio so it carries over to the next node
         if (Player.Instance != null && Player.Instance.Health != null)
@@ -946,6 +878,7 @@ public class GameLoopManager : MonoBehaviour
 
         // Towers don't follow the player to the next sector: dismantle them for supply.
         int towerRefund = TowerPlotManager.Instance != null ? TowerPlotManager.Instance.DismantleAllForRefund() : 0;
+        Summary.towerRefund = towerRefund;
 
         // Trigger DeathScreen in victory mode (No procedural fallback UI)
         DeathScreen endScreen = DeathScreen.Instance != null ? DeathScreen.Instance : FindAnyObjectByType<DeathScreen>();
@@ -971,33 +904,26 @@ public class GameLoopManager : MonoBehaviour
     private void OnGUI()
     {
         if (!Application.isPlaying) return;
-        
+
         if (!enableGameLoopManageStateDebug) return;
 
         GUILayout.BeginArea(new Rect(10, 10, 350, 250), GUI.skin.box);
         GUILayout.Label("<b>GameLoopManager State</b>");
-        GUILayout.Label($"Round: {CurrentRound} | Wave: {CurrentWave}");
-        GUILayout.Label($"Wave Active: {isWaveActive} | Intermission: {isIntermission}");
+        GUILayout.Label($"Round: {CurrentRound} | Wave: {CurrentWave} | Upcoming: {upcomingWave}");
+        GUILayout.Label($"Wave Active: {isWaveActive} | Prep: {isPrep} | Choosing: {isChoosingCard} | Routing: {isRouting}");
         GUILayout.Label($"Kills: {killsThisWave} / {targetKillsThisWave}");
-        
-        if (currentObjective != null)
-        {
-            GUILayout.Label($"Objective: {currentObjective.Title}");
-            GUILayout.Label($"Objective Complete: {isObjectiveComplete}");
-        }
-        else
-        {
-            GUILayout.Label("Objective: None");
-        }
+        GUILayout.Label(CurrentWaveCard != null
+            ? $"Card: {CurrentWaveCard.ObjectiveId} ({CurrentWaveCard.stance}, {CurrentWaveCard.skulls} skulls, {CurrentWaveCard.ClanName})"
+            : "Card: none");
+        GUILayout.Label(currentObjective != null ? $"Objective: {currentObjective.Title}" : "Objective: None");
 
         if (spawner != null)
         {
             GUILayout.Label($"Spawner Active: {spawner.IsSpawningActive}");
             GUILayout.Label($"Enemies Alive: {spawner.AliveCount} / {spawner.MaxConcurrentEnemies}");
             GUILayout.Label($"Remaining to Spawn: {spawner.RemainingToSpawn}");
-            GUILayout.Label($"Remaining to Kill: {Mathf.Max(0, targetKillsThisWave - killsThisWave)}");
         }
-        
+
         GUILayout.EndArea();
     }
 }

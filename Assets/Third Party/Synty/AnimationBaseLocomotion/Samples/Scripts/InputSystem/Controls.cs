@@ -192,7 +192,7 @@ public partial class @Controls: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""DraftSkills"",
+                    ""name"": ""StartWave"",
                     ""type"": ""Button"",
                     ""id"": ""e8d7a12b-3456-4c78-90ab-cdef12345678"",
                     ""expectedControlType"": ""Button"",
@@ -568,7 +568,7 @@ public partial class @Controls: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Keyboard and Mouse"",
-                    ""action"": ""DraftSkills"",
+                    ""action"": ""StartWave"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -579,7 +579,7 @@ public partial class @Controls: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Gamepad"",
-                    ""action"": ""DraftSkills"",
+                    ""action"": ""StartWave"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -673,7 +673,7 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         m_Player_Attack = m_Player.FindAction("Attack", throwIfNotFound: true);
         m_Player_Dismount = m_Player.FindAction("Dismount", throwIfNotFound: true);
         m_Player_Ultimate = m_Player.FindAction("Ultimate", throwIfNotFound: true);
-        m_Player_DraftSkills = m_Player.FindAction("DraftSkills", throwIfNotFound: true);
+        m_Player_StartWave = m_Player.FindAction("StartWave", throwIfNotFound: true);
         m_Player_Interact = m_Player.FindAction("Interact", throwIfNotFound: true);
         m_Player_SummonMount = m_Player.FindAction("SummonMount", throwIfNotFound: true);
     }
@@ -767,7 +767,7 @@ public partial class @Controls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Attack;
     private readonly InputAction m_Player_Dismount;
     private readonly InputAction m_Player_Ultimate;
-    private readonly InputAction m_Player_DraftSkills;
+    private readonly InputAction m_Player_StartWave;
     private readonly InputAction m_Player_Interact;
     private readonly InputAction m_Player_SummonMount;
     /// <summary>
@@ -826,9 +826,9 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         /// </summary>
         public InputAction @Ultimate => m_Wrapper.m_Player_Ultimate;
         /// <summary>
-        /// Provides access to the underlying input action "Player/DraftSkills".
+        /// Provides access to the underlying input action "Player/StartWave".
         /// </summary>
-        public InputAction @DraftSkills => m_Wrapper.m_Player_DraftSkills;
+        public InputAction @StartWave => m_Wrapper.m_Player_StartWave;
         /// <summary>
         /// Provides access to the underlying input action "Player/Interact".
         /// </summary>
@@ -896,9 +896,9 @@ public partial class @Controls: IInputActionCollection2, IDisposable
             @Ultimate.started += instance.OnUltimate;
             @Ultimate.performed += instance.OnUltimate;
             @Ultimate.canceled += instance.OnUltimate;
-            @DraftSkills.started += instance.OnDraftSkills;
-            @DraftSkills.performed += instance.OnDraftSkills;
-            @DraftSkills.canceled += instance.OnDraftSkills;
+            @StartWave.started += instance.OnStartWave;
+            @StartWave.performed += instance.OnStartWave;
+            @StartWave.canceled += instance.OnStartWave;
             @Interact.started += instance.OnInteract;
             @Interact.performed += instance.OnInteract;
             @Interact.canceled += instance.OnInteract;
@@ -949,9 +949,9 @@ public partial class @Controls: IInputActionCollection2, IDisposable
             @Ultimate.started -= instance.OnUltimate;
             @Ultimate.performed -= instance.OnUltimate;
             @Ultimate.canceled -= instance.OnUltimate;
-            @DraftSkills.started -= instance.OnDraftSkills;
-            @DraftSkills.performed -= instance.OnDraftSkills;
-            @DraftSkills.canceled -= instance.OnDraftSkills;
+            @StartWave.started -= instance.OnStartWave;
+            @StartWave.performed -= instance.OnStartWave;
+            @StartWave.canceled -= instance.OnStartWave;
             @Interact.started -= instance.OnInteract;
             @Interact.performed -= instance.OnInteract;
             @Interact.canceled -= instance.OnInteract;
@@ -1102,12 +1102,12 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnUltimate(InputAction.CallbackContext context);
         /// <summary>
-        /// Method invoked when associated input action "DraftSkills" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// Method invoked when associated input action "StartWave" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>
         /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnDraftSkills(InputAction.CallbackContext context);
+        void OnStartWave(InputAction.CallbackContext context);
         /// <summary>
         /// Method invoked when associated input action "Interact" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>

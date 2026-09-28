@@ -8,7 +8,7 @@ using UnityEngine;
 ///     Once it arrives at the gate, it pounds the doors every 5 seconds dealing 50 damage.
 ///     The player must destroy the battering ram before it breaches the gate.
 /// </summary>
-public class StopBatteringRamObjective : MonoBehaviour, ISurvivorsObjective, IRequiresContinuousSpawns
+public class StopBatteringRamObjective : MonoBehaviour, ISurvivorsObjective, IRequiresContinuousSpawns, IObjectivePreview
 {
     [Header("Objective Configuration")]
     [SerializeField] private string objectiveId = "stop_battering_ram";
@@ -232,6 +232,31 @@ public class StopBatteringRamObjective : MonoBehaviour, ISurvivorsObjective, IRe
                 tintColor: new Color(0.4f, 0.8f, 1f, 1f),
                 label: "Gate"
             ));
+        }
+    }
+
+    public void GetPreviewWaypointTargets(List<ObjectiveWaypointTarget> results)
+    {
+        if (results == null) return;
+
+        if (ramSpawnPoint != null)
+        {
+            results.Add(new ObjectiveWaypointTarget(
+                ramSpawnPoint,
+                worldOffset: new Vector3(0f, 2.5f, 0f),
+                customIcon: ramWaypointIcon,
+                tintColor: ObjectiveCsv.PreviewTint(new Color(0.95f, 0.3f, 0.2f)),
+                label: Loc.Get("wave.obj.battering_ram.preview_start", "Ram start")));
+        }
+
+        if (gateDestinationPoint != null)
+        {
+            results.Add(new ObjectiveWaypointTarget(
+                gateDestinationPoint,
+                worldOffset: new Vector3(0f, 2.5f, 0f),
+                customIcon: destinationWaypointIcon,
+                tintColor: ObjectiveCsv.PreviewTint(new Color(0.4f, 0.8f, 1f)),
+                label: Loc.Get("wave.obj.battering_ram.preview_target", "Ram target")));
         }
     }
 }

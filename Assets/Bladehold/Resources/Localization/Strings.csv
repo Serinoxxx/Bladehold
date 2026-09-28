@@ -472,3 +472,34 @@ pause.settings,Pause menu button,Settings,Réglages,Impostazioni,Einstellungen,A
 pause.photo_mode,Pause menu button,Photo Mode,Mode photo,Modalità foto,Fotomodus,Modo foto,Фоторежим,拍照模式,フォトモード,사진 모드
 pause.quit,Pause menu button,Quit,Quitter,Esci,Beenden,Salir,Выйти,退出,終了,종료
 settings.game_speed,Settings row label for game speed,Game Speed,Vitesse du jeu,Velocità di gioco,Spielgeschwindigkeit,Velocidad del juego,Скорость игры,游戏速度,ゲームスピード,게임 속도
+endscreen.victory_title,End screen title when a sector is won,Victory!,Victoire !,Vittoria!,Sieg!,¡Victoria!,Победа!,胜利！,勝利！,승리!
+endscreen.campaign_title,End screen title when the campaign is won,Campaign Complete!,Campagne terminée !,Campagna completata!,Feldzug abgeschlossen!,¡Campaña completada!,Кампания завершена!,战役完成！,キャンペーン完了！,캠페인 완료!
+endscreen.victory_subtitle,Line under the victory title,Sector defended,Secteur défendu,Settore difeso,Sektor verteidigt,Sector defendido,Сектор защищён,区域已守住,セクター防衛成功,구역 방어 성공
+endscreen.campaign_subtitle,Line under the campaign-complete title,The campaign is won,La campagne est gagnée,La campagna è vinta,Der Feldzug ist gewonnen,La campaña está ganada,Кампания выиграна,战役已获胜,キャンペーンに勝利した,캠페인에서 승리했습니다
+endscreen.proceed_map,Victory button,Proceed to Campaign Map,Aller à la carte de campagne,Vai alla mappa della campagna,Weiter zur Feldzugskarte,Ir al mapa de campaña,К карте кампании,前往战役地图,キャンペーンマップへ,캠페인 지도로 이동
+endscreen.return_sanctuary,Defeat/campaign-complete button; HUMAN: translate Sanctuary via /translate-game-name,Return to Sanctuary,,,,,,,,
+endscreen.stats_header,End screen panel heading,Sector Stats,Statistiques du secteur,Statistiche del settore,Sektorstatistik,Estadísticas del sector,Статистика сектора,区域统计,セクター統計,구역 통계
+endscreen.stat_time,End screen stat row: time spent in this sector,Sector Time,Temps dans le secteur,Tempo nel settore,Zeit im Sektor,Tiempo en el sector,Время в секторе,区域用时,セクター時間,구역 시간
+endscreen.stat_wave,End screen stat row: wave number the sector ended on,Wave Reached,Vague atteinte,Ondata raggiunta,Erreichte Welle,Oleada alcanzada,Достигнутая волна,到达波次,到達ウェーブ,도달한 웨이브
+endscreen.stat_kills,End screen stat row,Enemies Slain,Ennemis tués,Nemici uccisi,Besiegte Feinde,Enemigos abatidos,Убито врагов,击杀敌人,撃破した敵,처치한 적
+endscreen.stat_gold,End screen stat row: gold picked up from kills,Gold Collected,Or récolté,Oro raccolto,Gesammeltes Gold,Oro recogido,Собрано золота,收集金币,獲得ゴールド,획득한 골드
+endscreen.stat_damage_dealt,End screen stat row,Damage Dealt,Dégâts infligés,Danni inflitti,Verursachter Schaden,Daño infligido,Нанесено урона,造成伤害,与えたダメージ,입힌 피해
+endscreen.stat_damage_taken,End screen stat row,Damage Taken,Dégâts subis,Danni subiti,Erlittener Schaden,Daño recibido,Получено урона,受到伤害,受けたダメージ,받은 피해
+endscreen.stat_crits,End screen stat row,Critical Hits,Coups critiques,Colpi critici,Kritische Treffer,Golpes críticos,Критические удары,暴击次数,クリティカルヒット,치명타
+endscreen.rewards_header,Victory screen panel heading,Sector Rewards,Récompenses du secteur,Ricompense del settore,Sektorbelohnungen,Recompensas del sector,Награды сектора,区域奖励,セクター報酬,구역 보상
+endscreen.waves_won,Victory rewards row,Waves won,Vagues gagnées,Ondate vinte,Gewonnene Wellen,Oleadas ganadas,Выиграно волн,获胜波次,勝利したウェーブ,승리한 웨이브
+endscreen.waves_lost,Victory rewards row,Waves lost,Vagues perdues,Ondate perse,Verlorene Wellen,Oleadas perdidas,Проиграно волн,失败波次,敗北したウェーブ,패배한 웨이브
+endscreen.reward_gold,Victory rewards row: gold from wave cards,Gold,Or,Oro,Gold,Oro,Золото,金币,ゴールド,골드
+endscreen.reward_supply,Victory rewards row; HUMAN: currency term via /translate-game-name,Supply,,,,,,,,
+endscreen.reward_blood,Victory rewards row; HUMAN: currency term via /translate-game-name,Goblin Blood,,,,,,,,
+endscreen.reward_metal,Victory rewards row; HUMAN: currency term via /translate-game-name,Orcish Metal,,,,,,,,
+endscreen.reward_troll_heart,Victory rewards row: max HP gained from Troll Heart; HUMAN: term via /translate-game-name,Troll Heart max HP,,,,,,,,
+endscreen.reward_draft_picks,Victory rewards row: draft card picks earned,Draft picks,Choix de cartes,Scelte di carte,Kartenwahlen,Elecciones de cartas,Выбор карт,卡牌选择,カード選択,카드 선택
+endscreen.tower_refund,Victory rewards line; {0}=supply amount,Towers dismantled: +{0} supply,,,,,,,,
+endscreen.captains_header,Victory screen heading over the captains list,Captains Defeated,Capitaines vaincus,Capitani sconfitti,Besiegte Hauptleute,Capitanes derrotados,Побеждённые капитаны,击败的队长,倒した隊長,처치한 대장
+endscreen.captains_none,Victory screen: no captain was killed this sector,None,Aucun,Nessuno,Keine,Ninguno,Нет,无,なし,없음
+endscreen.hero_melee,End screen hero panel row,Melee Damage,Dégâts de mêlée,Danni in mischia,Nahkampfschaden,Daño cuerpo a cuerpo,Урон в ближнем бою,近战伤害,近接ダメージ,근접 피해
+endscreen.hero_ranged,End screen hero panel row,Ranged Damage,Dégâts à distance,Danni a distanza,Fernkampfschaden,Daño a distancia,Урон дальнего боя,远程伤害,遠距離ダメージ,원거리 피해
+endscreen.hero_crit,End screen hero panel row,Crit Chance,Chance de critique,Probabilità critica,Kritchance,Prob. de crítico,Шанс крита,暴击几率,クリティカル率,치명타 확률
+endscreen.hero_speed,End screen hero panel row,Move Speed,Vitesse de déplacement,Velocità di movimento,Bewegungstempo,Velocidad de movimiento,Скорость передвижения,移动速度,移動速度,이동 속도
+endscreen.skills_header,End screen hero panel heading,Acquired Skills,Compétences acquises,Abilità acquisite,Erworbene Fähigkeiten,Habilidades adquiridas,Полученные навыки,已获得技能,習得スキル,획득한 스킬
