@@ -21,6 +21,7 @@ public class DevConsole : MonoBehaviour
 
     private bool visible;
     private int spawnTypeIndex;
+    private BannerDifficultyTier captainSpawnTier = BannerDifficultyTier.Enraged;
     private int objectiveIndex;
     private int waveChoicePreviewWave = 2;
     private string waveChoicePreviewLastId = "";
@@ -275,6 +276,7 @@ public class DevConsole : MonoBehaviour
         DrawWaveChoiceControls();
         DrawObjectiveControls();
         DrawEnemySpawnControls();
+        DrawCaptainSpawnControls();
         DrawLanguageControls();
         DrawRageReadout();
         DrawImbuementReadout();
@@ -810,6 +812,40 @@ public class DevConsole : MonoBehaviour
                 SurvivorsSpawner.Instance.DebugSpawnEnemyType(selected.id);
             }
         }
+    }
+
+    /// <summary>
+    ///     Captain cheat: spawns a named captain through <see cref="GameLoopManager.SpawnCaptainForWave" />, the
+    ///     real path (tier scaling, boss bar, intro banner, rout tracking), at a ◄/► picked tier. The type picker
+    ///     above skips Initialize, so a captain spawned there has no tier, boss bar or intro.
+    /// </summary>
+    private void DrawCaptainSpawnControls()
+    {
+        GameLoopManager loop = GameLoopManager.Instance;
+        if (loop == null) return;
+
+        GUILayout.Label("Spawn Captain");
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("<", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
+        {
+            captainSpawnTier = (BannerDifficultyTier)Mathf.Max((int)BannerDifficultyTier.Standard, (int)captainSpawnTier - 1);
+        }
+        GUILayout.Label(BannerDifficultyHelper.GetTierName(captainSpawnTier), GUILayout.ExpandWidth(true));
+        if (GUILayout.Button(">", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
+        {
+            captainSpawnTier = (BannerDifficultyTier)Mathf.Min((int)BannerDifficultyTier.Omega, (int)captainSpawnTier + 1);
+        }
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        foreach (CaptainRegistry.CaptainEntry entry in CaptainRegistry.All)
+        {
+            if (GUILayout.Button(entry.matchKey, GUILayout.Height(ButtonHeight)))
+            {
+                loop.SpawnCaptainForWave(captainSpawnTier, entry.displayName);
+            }
+        }
+        GUILayout.EndHorizontal();
     }
 
     // Class controls removed because the game is now classless.

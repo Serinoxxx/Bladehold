@@ -54,7 +54,7 @@ Not from a plan: a direct request on 2026-09-29. Unity MCP was connected. Everyt
 
 ## Playtest
 
-Reach him fast: start a sector, then use the DevConsole wave/objective controls to get to wave 5. Or pick a 3-skull card (35% Mogra). The spawn-type picker spawns `captain_mogra` without tier scaling or the intro.
+Reach him fast: DevConsole (backquote) → **Spawn Captain** → pick a tier with ◄/► → **Mogra**. That uses the real spawn path (tier scaling, boss bar, intro). The plain spawn-type picker skips all three.
 
 - [ ] **Fight length and fairness at Enraged (625 HP):**
   - Every hit should be avoidable by moving or dashing.
