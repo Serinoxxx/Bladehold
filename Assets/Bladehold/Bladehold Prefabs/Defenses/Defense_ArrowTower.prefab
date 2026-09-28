@@ -639,7 +639,7 @@ MonoBehaviour:
   range: 18
   fireInterval: 0.8
   arrowSpeed: 26
-  arrowDamage: 18
+  arrowDamage: 5
   arrowPrefab: {fileID: 6470877643881086575, guid: 65caf45d2b719f246bbaed4f22290a2c, type: 3}
   firePoint: {fileID: 5858103455817867801}
   fireFeedback: {fileID: 3742857805272620294}

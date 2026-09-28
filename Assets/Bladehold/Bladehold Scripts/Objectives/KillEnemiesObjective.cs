@@ -4,7 +4,7 @@ using UnityEngine;
 /// <summary>
 ///     Survivors objective: Hold the Gate / kill a specified count of enemies (e.g. 50 goblins).
 /// </summary>
-public class KillEnemiesObjective : MonoBehaviour, ISurvivorsObjective
+public class KillEnemiesObjective : MonoBehaviour, ISurvivorsObjective, IRequiresContinuousSpawns, IKillQuotaObjective
 {
     [Header("Objective Configuration")]
     [SerializeField] private string objectiveId = "kill_enemies";
@@ -25,6 +25,7 @@ public class KillEnemiesObjective : MonoBehaviour, ISurvivorsObjective
     public bool IsComplete => isComplete;
     public bool IsFailed => false;
     public bool IsActive => isActive;
+    public int KillsRemaining => isActive ? Mathf.Max(0, requiredKills - currentKills) : 0;
 
     public event Action<ISurvivorsObjective> OnProgressChanged;
     public event Action<ISurvivorsObjective> OnCompleted;

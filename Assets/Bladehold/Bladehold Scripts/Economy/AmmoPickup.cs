@@ -100,7 +100,7 @@ public class AmmoPickup : MonoBehaviour
 
         if (pickupPopup != null && added > 0)
         {
-            pickupPopup.Spawn(transform.position + popupOffset, added);
+            pickupPopup.Spawn(transform.position + popupOffset, string.Format(Loc.Get("ammo.popup_gained", "+{0} arrows"), added));
         }
 
         if (pickupFeedback != null)

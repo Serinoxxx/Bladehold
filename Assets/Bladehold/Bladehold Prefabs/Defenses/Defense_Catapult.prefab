@@ -1945,7 +1945,7 @@ MonoBehaviour:
   minRange: 6
   maxRange: 24
   fireInterval: 3.8
-  splashDamage: 45
+  splashDamage: 5
   splashRadius: 4.5
   projectilePrefab: {fileID: 3244241999456470636, guid: b08de3dc4888549498796441d4a4afa9, type: 3}
   launchPoint: {fileID: 2509738184053764697}

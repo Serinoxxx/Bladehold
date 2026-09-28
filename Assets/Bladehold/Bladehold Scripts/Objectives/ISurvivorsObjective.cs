@@ -15,6 +15,16 @@ public interface IRequiresContinuousSpawns
 }
 
 /// <summary>
+///     A <see cref="IRequiresContinuousSpawns" /> objective resolved by a kill count (Hold the Gate). Once
+///     the quota is out, the spawner tops the wave back up by the kills still owed instead of trickling,
+///     since some deaths never count as kills (enemies blown up by a bomber or powder keg).
+/// </summary>
+public interface IKillQuotaObjective
+{
+    int KillsRemaining { get; }
+}
+
+/// <summary>
 ///     Marks an objective that runs with no regular wave spawns (Golden Goblin): the wave's kill quota
 ///     isn't spawned and counts as met, so the objective's own resolution ends the wave.
 ///     <see cref="GameLoopManager" /> must skip <c>SurvivorsSpawner.StartWave</c> for it.

@@ -399,6 +399,19 @@ public class SurvivorsSpawner : MonoBehaviour
 
             if (remainingToSpawn <= 0)
             {
+                // Kill-count objectives re-open the quota for the kills still owed, at normal batch pacing.
+                if (GameLoopManager.Instance != null && GameLoopManager.Instance.CurrentObjective is IKillQuotaObjective killQuota)
+                {
+                    int shortfall = killQuota.KillsRemaining - aliveCount;
+                    if (shortfall > 0)
+                    {
+                        remainingToSpawn = shortfall;
+                        continue;
+                    }
+                    yield return new WaitForSeconds(pacingConfig != null ? pacingConfig.objectiveTrickleInterval : 2f);
+                    continue;
+                }
+
                 int trickleMinAlive = pacingConfig != null ? pacingConfig.objectiveTrickleMinAlive : 6;
                 float trickleInterval = pacingConfig != null ? pacingConfig.objectiveTrickleInterval : 2f;
                 if (aliveCount < trickleMinAlive)
