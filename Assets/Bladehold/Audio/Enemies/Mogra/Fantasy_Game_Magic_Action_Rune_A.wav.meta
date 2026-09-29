@@ -1,0 +1,29 @@
+fileFormatVersion: 2
+guid: 02680736d7c56470090f0ceb2ad06440
+AudioImporter:
+  externalObjects: {}
+  serializedVersion: 6
+  defaultSettings:
+    loadType: 0
+    sampleRateSetting: 0
+    sampleRateOverride: 44100
+    compressionFormat: 1
+    quality: 1
+    conversionMode: 0
+  platformSettingOverrides: {}
+  forceToMono: 0
+  normalize: 1
+  preloadAudioData: 1
+  loadInBackground: 0
+  ambisonic: 0
+  3D: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 94186
+  packageName: Fantasy Game Sound Effects
+  packageVersion: 1.1
+  assetPath: Assets/Bladehold/Audio/Enemies/Mogra/Fantasy_Game_Magic_Action_Rune_A.wav
+  uploadId: 475053

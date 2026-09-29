@@ -1,4 +1,5 @@
 using System;
+using HighlightPlus;
 using MoreMountains.Feedbacks;
 using UnityEngine;
 
@@ -22,8 +23,16 @@ public class BoneTotem : MonoBehaviour
     [SerializeField] private GameObject visualRoot;
     [Tooltip("Played when the totem rises.")]
     [SerializeField] private MMF_Player riseFeedback;
-    [Tooltip("Played on each pulse (a hum or thump as the ring leaves).")]
+    [Tooltip("Charge-up before each pulse (rising hum). Plays as the glow starts.")]
+    [SerializeField] private MMF_Player chargeFeedback;
+    [Tooltip("Discharge as the ring leaves (the release crack).")]
     [SerializeField] private MMF_Player pulseFeedback;
+    [Tooltip("Glow switched on while the totem charges a pulse (HighlightPlus, Mogra Outline profile).")]
+    [SerializeField] private HighlightEffect chargeGlow;
+    [Tooltip("Optional: a light ramped up over the charge. Leave empty for none.")]
+    [SerializeField] private Light chargeLight;
+    [Tooltip("Peak intensity of chargeLight at the moment of discharge.")]
+    [SerializeField] private float chargeLightIntensity = 4f;
     [Tooltip("Played when the totem is broken.")]
     [SerializeField] private MMF_Player breakFeedback;
 
@@ -31,6 +40,8 @@ public class BoneTotem : MonoBehaviour
     private Transform ownerTether;
     private IDamageable ownerDamageable;
     private float pulseInterval;
+    private float chargeSeconds;
+    private bool charging;
     private float nextPulseTime;
     private float ringSpeed;
     private float ringMaxRadius;
@@ -60,6 +71,9 @@ public class BoneTotem : MonoBehaviour
         if (health == null) Debug.LogError($"{name}: BoneTotem needs a Health.", this);
         if (tether == null) Debug.LogError($"{name}: tether LineRenderer is not assigned.", this);
         if (breakFeedback == null) Debug.LogError($"{name}: breakFeedback is not assigned.", this);
+        if (chargeFeedback == null) Debug.LogError($"{name}: chargeFeedback is not assigned.", this);
+        if (chargeGlow == null) Debug.LogError($"{name}: chargeGlow (HighlightEffect) is not assigned; the charge-up won't glow.", this);
+        SetCharging(false, 0f);
         if (health != null) health.OnDied += HandleDied;
     }
 
@@ -69,14 +83,17 @@ public class BoneTotem : MonoBehaviour
     }
 
     /// <summary>Configures the totem. Call right after Instantiate (before Start).</summary>
-    public void Init(float maxHealth, GameObject shockwaveRingPrefab, float firstPulseDelay, float interval,
+    /// <param name="chargeUpSeconds">How long the totem glows and hums before each pulse (the tell).</param>
+    public void Init(float maxHealth, GameObject shockwaveRingPrefab, float firstPulseDelay, float interval, float chargeUpSeconds,
         float speed, float maxRadius, float width, float damage, Transform ownerTetherPoint, IDamageable owner)
     {
         if (health == null) health = GetComponent<Health>();
         if (health != null) health.SetMaxHealth(maxHealth);
         ringPrefab = shockwaveRingPrefab;
         pulseInterval = Mathf.Max(0.5f, interval);
-        nextPulseTime = Time.time + Mathf.Max(0f, firstPulseDelay);
+        chargeSeconds = Mathf.Clamp(chargeUpSeconds, 0f, pulseInterval);
+        // The first pulse still gets its full charge-up.
+        nextPulseTime = Time.time + Mathf.Max(chargeSeconds, firstPulseDelay);
         ringSpeed = speed;
         ringMaxRadius = maxRadius;
         ringWidth = width;
@@ -93,10 +110,31 @@ public class BoneTotem : MonoBehaviour
 
         UpdateTether();
 
+        float untilPulse = nextPulseTime - Time.time;
+        if (!charging && untilPulse <= chargeSeconds && chargeSeconds > 0f)
+        {
+            charging = true;
+            if (chargeFeedback != null) chargeFeedback.PlayFeedbacks(transform.position);
+        }
+        if (charging) SetCharging(true, chargeSeconds > 0f ? 1f - Mathf.Clamp01(untilPulse / chargeSeconds) : 1f);
+
         if (Time.time >= nextPulseTime)
         {
             nextPulseTime = Time.time + pulseInterval;
+            charging = false;
+            SetCharging(false, 0f);
             Pulse();
+        }
+    }
+
+    /// <summary>Glow on (and the light ramping to its peak by <paramref name="progress" /> 0-1) while charging.</summary>
+    private void SetCharging(bool on, float progress)
+    {
+        if (chargeGlow != null && chargeGlow.highlighted != on) chargeGlow.SetHighlighted(on);
+        if (chargeLight != null)
+        {
+            chargeLight.enabled = on;
+            chargeLight.intensity = on ? chargeLightIntensity * progress : 0f;
         }
     }
 
@@ -148,6 +186,8 @@ public class BoneTotem : MonoBehaviour
     private void Break()
     {
         broken = true;
+        charging = false;
+        SetCharging(false, 0f);
         if (tether != null) tether.enabled = false;
         if (breakFeedback != null) breakFeedback.PlayFeedbacks(transform.position);
         if (visualRoot != null) visualRoot.SetActive(false);

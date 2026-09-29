@@ -200,6 +200,7 @@
 - Configured hero health ratio to persist across campaign nodes
 - Standardized basic warhorse to 30-second duration and 90-second cooldown with a 1.5-second summon cast time
 - Reduced Fishing Pond fish swimming speed by about half
+- Doubled Captain Mogra's pause between spells
 
 ### General Changes
 
@@ -228,6 +229,7 @@
 - Added sound, dust and a light screen shake when a tower is built, and a neigh when you summon or dismiss your horse
 - Updated the death screen to show the wave you reached
 - Updated the Fishing Pond so it's just you and your bow: no mount, no ultimate and no sword swings, and their HUD is hidden
+- Updated Captain Mogra: new spell sounds, he glows while casting or powered by his totems, and totems now glow and hum before each shockwave
 
 ## [0.1.20] - 2026-09-08
 

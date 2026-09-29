@@ -69,6 +69,10 @@ public class CaptainMograController : MonoBehaviour, ICaptain
     [SerializeField] private MMF_Player ritualDetonateFeedback;
     [Tooltip("He's staggered (daze stars, grunt).")]
     [SerializeField] private MMF_Player staggerFeedback;
+    [Tooltip("The bolts leave his hand (release whoosh).")]
+    [SerializeField] private MMF_Player boltReleaseFeedback;
+    [Tooltip("The runes appear on the ground (arcane hum), played at the pattern centre.")]
+    [SerializeField] private MMF_Player runeReleaseFeedback;
 
     private static readonly int CastBoltHash = Animator.StringToHash("CastBolt");
     private static readonly int CastRunesHash = Animator.StringToHash("CastRunes");
@@ -85,6 +89,7 @@ public class CaptainMograController : MonoBehaviour, ICaptain
     private bool anyError;
     private bool stoppedForGood;
     private bool subscribed;
+    private bool glowing;
 
     private int phase = 1;
     private Coroutine currentActionRoutine;
@@ -180,6 +185,8 @@ public class CaptainMograController : MonoBehaviour, ICaptain
         if (ritualBrokenFeedback == null) Debug.LogError("[CaptainMograController] ritualBrokenFeedback is not assigned.", this);
         if (ritualDetonateFeedback == null) Debug.LogError("[CaptainMograController] ritualDetonateFeedback is not assigned.", this);
         if (staggerFeedback == null) Debug.LogError("[CaptainMograController] staggerFeedback is not assigned.", this);
+        if (boltReleaseFeedback == null) Debug.LogError("[CaptainMograController] boltReleaseFeedback is not assigned.", this);
+        if (runeReleaseFeedback == null) Debug.LogError("[CaptainMograController] runeReleaseFeedback is not assigned.", this);
 
         if (anyError) return;
 
@@ -234,17 +241,27 @@ public class CaptainMograController : MonoBehaviour, ICaptain
         float multiplier = TierMultiplier;
         if (health != null) health.SetMaxHealth(data.baseMaxHealth * multiplier);
         if (movement != null) movement.SetSpeed(data.baseMoveSpeed * Mathf.Min(1.25f, 1f + (multiplier - 1f) * 0.35f));
-        RefreshOutline();
+        SetGlow(false);
     }
 
-    private void RefreshOutline()
+    /// <summary>
+    ///     True while he's casting a spell or charged by a standing totem. The highlight uses the prefab's
+    ///     own profile (Mogra Outline); this only toggles it.
+    /// </summary>
+    public bool ShouldGlow
     {
-        if (highlightEffect == null) return;
-        Color tierCol = BannerDifficultyHelper.GetTierColor(difficultyTier);
-        highlightEffect.outlineColor = tierCol;
-        highlightEffect.glowHQColor = tierCol;
-        highlightEffect.highlighted = true;
-        highlightEffect.Refresh();
+        get
+        {
+            if (stoppedForGood || health == null || health.IsDead) return false;
+            bool casting = currentActionRoutine != null && currentAction != MograAction.None && currentAction != MograAction.PhaseShift;
+            return casting || CountAliveTotems() > 0;
+        }
+    }
+
+    private void SetGlow(bool on)
+    {
+        glowing = on;
+        if (highlightEffect != null) highlightEffect.SetHighlighted(on);
     }
 
     private void ResolvePlayer()
@@ -307,6 +324,12 @@ public class CaptainMograController : MonoBehaviour, ICaptain
 
     private void LateUpdate()
     {
+        if (!anyError)
+        {
+            bool glow = ShouldGlow;
+            if (glow != glowing) SetGlow(glow);
+        }
+
         if (castBarRoot == null || !castBarRoot.activeSelf) return;
         Camera cam = Camera.main;
         if (cam != null) castBarRoot.transform.rotation = cam.transform.rotation;
@@ -483,6 +506,7 @@ public class CaptainMograController : MonoBehaviour, ICaptain
             aim.y = 0f;
             if (aim.sqrMagnitude < 0.01f) aim = transform.forward;
             FireBoltFan(aim.normalized, count, damage);
+            if (boltReleaseFeedback != null) boltReleaseFeedback.PlayFeedbacks(castPoint.position);
 
             if (v < volleys - 1) yield return new WaitForSeconds(0.35f);
         }
@@ -527,6 +551,7 @@ public class CaptainMograController : MonoBehaviour, ICaptain
         Vector3 centre = playerTransform.position;
         Vector3 forward = playerTransform.position - transform.position;
         List<HexRuneSpot> spots = HexRunePatterns.Build(pattern, forward, data.runeRadius, data.runeStepSeconds, telegraph, UnityEngine.Random.Range(0, 2));
+        if (runeReleaseFeedback != null) runeReleaseFeedback.PlayFeedbacks(centre);
         spots.Sort((a, b) => a.appearAt.CompareTo(b.appearAt));
 
         float damage = ScaledDamage(data.runeDamage);
@@ -660,7 +685,7 @@ public class CaptainMograController : MonoBehaviour, ICaptain
         }
         // Stagger first pulses so the rings don't all arrive at once.
         float firstPulse = data.totemFirstPulseDelay + index * (data.totemPulseInterval / Mathf.Max(1, CaptainMograSO.ByPhase(data.totemCountByPhase, phase, 1)));
-        totem.Init(data.totemBaseHealth * TierMultiplier, data.shockwaveRingPrefab, firstPulse, data.totemPulseInterval,
+        totem.Init(data.totemBaseHealth * TierMultiplier, data.shockwaveRingPrefab, firstPulse, data.totemPulseInterval, data.totemChargeSeconds,
             data.ringSpeed, data.ringMaxRadius, data.ringWidth, ScaledDamage(data.ringDamage), castPoint, health);
         totem.OnBroken += HandleTotemBroken;
         totems.Add(totem);

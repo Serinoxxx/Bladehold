@@ -30,7 +30,7 @@ public class CaptainMograSO : ScriptableObject
     public float phaseRoarSeconds = 1.6f;
 
     [Tooltip("Seconds of recovery after each attack, per phase.")]
-    public float[] recoveryByPhase = { 1.4f, 1.1f, 0.8f };
+    public float[] recoveryByPhase = { 2.8f, 2.2f, 1.6f };
 
     [Header("Hex Bolts (fan of slow, non-homing orbs)")]
     [Tooltip("Bolts per volley, per phase.")]
@@ -115,6 +115,9 @@ public class CaptainMograSO : ScriptableObject
 
     [Tooltip("Seconds between each totem's shockwave rings.")]
     public float totemPulseInterval = 4.5f;
+
+    [Tooltip("Seconds each totem glows and hums before a pulse (the tell). Part of the pulse interval, not added to it.")]
+    public float totemChargeSeconds = 1.4f;
 
     [Tooltip("Seconds before a new totem's first ring, so the player can react to it appearing.")]
     public float totemFirstPulseDelay = 2f;

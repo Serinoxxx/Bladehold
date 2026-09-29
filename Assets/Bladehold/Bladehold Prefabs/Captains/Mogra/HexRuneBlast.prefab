@@ -309,8 +309,8 @@ MonoBehaviour:
   DebugActive: 0
   InScriptDrivenPause: 0
   FeedbacksList:
-  - rid: 1018131889810309326
-  - rid: 1018131889810309327
+  - rid: 1018131889810309365
+  - rid: 1018131889810309366
   KeepPlayModeChanges: 0
   PerformanceMode: 0
   RestoreInitialValuesOnDisable: 0
@@ -322,11 +322,11 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 1018131889810309326
+    - rid: 1018131889810309365
       type: {class: MMF_ParticlesInstantiation, ns: MoreMountains.Feedbacks, asm: MoreMountains.Tools}
       data:
         Active: 1
-        UniqueID: -1972866680
+        UniqueID: -1198965351
         Label: Particles HexBurst
         OriginalLabel: 
         ChannelMode: 0
@@ -419,12 +419,12 @@ MonoBehaviour:
         ApplyScale: 0
         ForceSimulationSpeed: 0
         ForcedSimulationSpeed: {x: 0.1, y: 1}
-    - rid: 1018131889810309327
+    - rid: 1018131889810309366
       type: {class: MMF_MMSoundManagerSound, ns: MoreMountains.Feedbacks, asm: MoreMountains.Tools}
       data:
         Active: 1
-        UniqueID: -1248151773
-        Label: Sound EXPLOSION_Short_04_mono
+        UniqueID: -1095808191
+        Label: Sound PoisonAcid_Explosion_1_M
         OriginalLabel: 
         ChannelMode: 0
         Channel: 0
@@ -494,7 +494,7 @@ MonoBehaviour:
         Owner: {fileID: 7185052401911305998}
         DebugActive: 0
         Source: 0
-        Sfx: {fileID: 8300000, guid: 001cb6b1e3595df45aa7eb64a76d15c7, type: 3}
+        Sfx: {fileID: 8300000, guid: 67a367759e2334becbdb95adb0664840, type: 3}
         AudioResourceToPlay: {fileID: 0}
         RandomSfx: []
         SequentialOrder: 0
@@ -502,8 +502,8 @@ MonoBehaviour:
         SequentialOrderHoldCooldownDuration: 2
         RandomUnique: 0
         SoundDataSO: {fileID: 0}
-        MinVolume: 0.3
-        MaxVolume: 0.3
+        MinVolume: 0.35
+        MaxVolume: 0.35
         MinPitch: 1
         MaxPitch: 1
         MmSoundManagerTrack: 0

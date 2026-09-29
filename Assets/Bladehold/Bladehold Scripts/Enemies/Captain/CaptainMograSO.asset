@@ -19,9 +19,9 @@ MonoBehaviour:
   phase3HealthFraction: 0.33
   phaseRoarSeconds: 1.6
   recoveryByPhase:
-  - 1.4
-  - 1.1
-  - 0.8
+  - 2.8
+  - 2.2
+  - 1.6
   boltCountByPhase: 030000000300000005000000
   boltFanDegrees: 44
   boltWindupSeconds: 0.55
@@ -53,6 +53,7 @@ MonoBehaviour:
   totemPlacementRadius: 6
   totemBaseHealth: 45
   totemPulseInterval: 4.5
+  totemChargeSeconds: 1.2
   totemFirstPulseDelay: 2
   ringSpeed: 5
   ringMaxRadius: 13

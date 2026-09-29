@@ -67,6 +67,20 @@ public static class CaptainMograBuilder
     private const string SfxWhooshBig = "Assets/Bladehold/Bladehold Audio/SFX/Wooshes/whoosh_swish_high_big_01.wav";
     private const string SfxWhooshDeep = "Assets/Bladehold/Bladehold Audio/SFX/Wooshes/whoosh_slow_deep_06.wav";
     private const string SfxUgh = "Assets/Bladehold/Audio/Enemies/DemonUndead/MONSTER_Ugh_03_mono.wav";
+    private const string MograSfx = "Assets/Bladehold/Audio/Enemies/Mogra/";
+    private const string SfxBoltWindup = MograSfx + "PoisonAcid_Warmup_Short_1_M.wav";
+    private const string SfxBoltRelease = MograSfx + "Fantasy_Game_Magic_Dark Magic_1_Cast_Shadow_Warlock_Spell.wav";
+    private const string SfxBoltHit = MograSfx + "PoisonAcid_Hit_1_M.wav";
+    private const string SfxRuneWindup = MograSfx + "Fantasy_Game_Magic_Action_Rune_A.wav";
+    private const string SfxRuneRelease = MograSfx + "Fantasy_Game_Magic_Dark Magic_4_Cast_Shadow_Warlock_Spell.wav";
+    private const string SfxRuneErupt = MograSfx + "PoisonAcid_Explosion_1_M.wav";
+    private const string SfxSummonCast = MograSfx + "Fantasy_Game_Magic_Earth_Long_Cast_Spell_A.wav";
+    private const string SfxBlinkCast = MograSfx + "Fantasy_Game_Magic_Dark Magic_3_Cast_Shadow_Warlock_Spell.wav";
+    private const string SfxRitualStart = MograSfx + "PoisonAcid_Warmup_Long_1_M.wav";
+    private const string SfxRitualBlast = MograSfx + "Fantasy_Game_Magic_Dark Magic_2_Blast_Shadow_Warlock_Spell.wav";
+    private const string SfxTotemCharge = MograSfx + "PoisonAcid_Warmup_Short_2_M.wav";
+    private const string SfxTotemDischarge = MograSfx + "PoisonWarmupExplosion_0.wav";
+    private const string MograHighlightProfilePath = "Assets/Mogra Outline.asset";
 
     private static readonly Color HexGreen = new Color(0.35f, 1f, 0.25f, 1f);
 
@@ -316,7 +330,7 @@ public static class CaptainMograBuilder
 
         MMF_Player impact = NewPlayer(root.transform, "ImpactMMF");
         AddParticles(impact, HexBurstPath);
-        AddSound(impact, SfxFizzle, 0.5f);
+        AddSound(impact, SfxBoltHit, 0.7f);
 
         SetRef(bolt, "body", body);
         SetRef(bolt, "impactFeedback", impact);
@@ -339,7 +353,7 @@ public static class CaptainMograBuilder
 
         MMF_Player erupt = NewPlayer(root.transform, "EruptMMF");
         AddParticles(erupt, HexBurstPath);
-        AddSound(erupt, SfxBlastShort, 0.3f);
+        AddSound(erupt, SfxRuneErupt, 0.35f);
 
         SetRef(blast, "telegraphVisual", telegraph.transform);
         SetRef(blast, "fillVisual", fillDisc.transform);
@@ -418,8 +432,35 @@ public static class CaptainMograBuilder
         MMF_Player rise = NewPlayer(root.transform, "RiseMMF");
         AddParticles(rise, HexBurstLargePath);
         AddSound(rise, SfxWhooshDeep, 0.6f);
+        MMF_Player charge = NewPlayer(root.transform, "ChargeMMF");
+        AddSound(charge, SfxTotemCharge, 0.8f);
         MMF_Player pulse = NewPlayer(root.transform, "PulseMMF");
-        AddSound(pulse, SfxWhooshDeep, 0.45f);
+        AddSound(pulse, SfxTotemDischarge, 0.75f);
+        AddSound(pulse, SfxWhooshDeep, 0.4f);
+
+        // Charge-up glow (Mogra's own highlight profile) and a green light ramped by BoneTotem.
+        HighlightPlus.HighlightEffect chargeGlow = root.AddComponent<HighlightPlus.HighlightEffect>();
+        HighlightPlus.HighlightProfile profile = AssetDatabase.LoadAssetAtPath<HighlightPlus.HighlightProfile>(MograHighlightProfilePath);
+        if (profile != null)
+        {
+            chargeGlow.profile = profile;
+            chargeGlow.ProfileLoad(profile);
+        }
+        else
+        {
+            Debug.LogWarning($"[CaptainMograBuilder] {MograHighlightProfilePath} not found; the totem glow uses HighlightPlus defaults.");
+        }
+        chargeGlow.highlighted = false;
+        GameObject lightGo = new GameObject("Charge Light");
+        lightGo.transform.SetParent(root.transform, false);
+        lightGo.transform.localPosition = new Vector3(0f, 2f, 0f);
+        Light chargeLight = lightGo.AddComponent<Light>();
+        chargeLight.type = LightType.Point;
+        chargeLight.color = HexGreen;
+        chargeLight.range = 5f;
+        chargeLight.intensity = 0f;
+        chargeLight.shadows = LightShadows.None;
+        chargeLight.enabled = false;
         MMF_Player brk = NewPlayer(root.transform, "BreakMMF");
         AddParticles(brk, HexBurstLargePath);
         AddSound(brk, SfxPoof, 0.8f);
@@ -430,7 +471,10 @@ public static class CaptainMograBuilder
         SetRef(totem, "tether", tether);
         SetRef(totem, "visualRoot", visual);
         SetRef(totem, "riseFeedback", rise);
+        SetRef(totem, "chargeFeedback", charge);
         SetRef(totem, "pulseFeedback", pulse);
+        SetRef(totem, "chargeGlow", chargeGlow);
+        SetRef(totem, "chargeLight", chargeLight);
         SetRef(totem, "breakFeedback", brk);
         Save(root, TotemPrefabPath);
     }
@@ -644,16 +688,27 @@ public static class CaptainMograBuilder
             AddSound(roar, SfxLaugh, 1f);
             AddImpulse(roar);
             MMF_Player boltCast = NewPlayer(feedbacks, "BoltCastMMF");
-            AddSound(boltCast, SfxFizzle, 0.8f);
+            AddSound(boltCast, SfxBoltWindup, 0.8f);
+            AddSound(boltCast, SfxChant, 0.6f);
+            MMF_Player boltRelease = NewPlayer(feedbacks, "BoltReleaseMMF");
+            AddSound(boltRelease, SfxBoltRelease, 0.8f);
+            AddSound(boltRelease, SfxFizzle, 0.5f);
             MMF_Player runeCast = NewPlayer(feedbacks, "RuneCastMMF");
-            AddSound(runeCast, SfxPoof, 0.9f);
+            AddSound(runeCast, SfxRuneWindup, 0.9f);
+            AddSound(runeCast, SfxLaugh, 0.5f);
+            MMF_Player runeRelease = NewPlayer(feedbacks, "RuneReleaseMMF");
+            AddSound(runeRelease, SfxRuneRelease, 0.8f);
+            AddSound(runeRelease, SfxPoof, 0.6f);
             MMF_Player blinkFx = NewPlayer(feedbacks, "BlinkMMF");
             AddParticles(blinkFx, HexBurstLargePath);
             AddSound(blinkFx, SfxWhooshBig, 0.8f);
+            AddSound(blinkFx, SfxBlinkCast, 0.7f);
             MMF_Player summonFx = NewPlayer(feedbacks, "SummonMMF");
             AddSound(summonFx, SfxChant, 1f);
+            AddSound(summonFx, SfxSummonCast, 0.8f);
             MMF_Player channel = NewPlayer(feedbacks, "RitualChannelMMF");
             AddSound(channel, SfxSizzleLoop, 0.8f, loop: true);
+            AddSound(channel, SfxRitualStart, 0.9f);
             MMF_Player broken = NewPlayer(feedbacks, "RitualBrokenMMF");
             AddParticles(broken, HexBurstLargePath);
             AddSound(broken, SfxWhimper, 1f);
@@ -661,6 +716,7 @@ public static class CaptainMograBuilder
             MMF_Player detonate = NewPlayer(feedbacks, "RitualDetonateMMF");
             AddParticles(detonate, HexBurstLargePath);
             AddSound(detonate, SfxBlastLarge, 1f);
+            AddSound(detonate, SfxRitualBlast, 0.9f);
             AddImpulse(detonate);
             MMF_Player stagger = NewPlayer(feedbacks, "StaggerMMF");
             AddParticles(stagger, HexDazePath);
@@ -675,6 +731,8 @@ public static class CaptainMograBuilder
             SetRef(controller, "ritualBrokenFeedback", broken);
             SetRef(controller, "ritualDetonateFeedback", detonate);
             SetRef(controller, "staggerFeedback", stagger);
+            SetRef(controller, "boltReleaseFeedback", boltRelease);
+            SetRef(controller, "runeReleaseFeedback", runeRelease);
 
             // Ritual cast bar over his head (world-space; the controller billboards it).
             Transform bar = root.transform.Find("Ritual Cast Bar");

@@ -29,22 +29,12 @@ Not from a plan: a direct request on 2026-09-29. Unity MCP was connected. Everyt
 
 ## Audio and VFX review
 
-- [ ] **Sounds are placeholders from existing project clips.** All are `MMSoundManager Sound` feedbacks on the variant's `Mogra Feedbacks` children and the spell prefabs:
+- [ ] **Listen to the spell sounds (2026-09-29 pass).** 12 imported clips in `Audio/Enemies/Mogra/` (Battle Sound Library poison/acid set, Fantasy Game dark magic set), layered on the variant's `Mogra Feedbacks` MMF players:
+  - each cast has a wind-up (`BoltCastMMF`, `RuneCastMMF`, `SummonMMF`) and a release (`BoltReleaseMMF`, `RuneReleaseMMF`);
+  - the blink, ritual start, detonation, bolt hit and rune eruption each have a sound;
+  - totems play `ChargeMMF` (1.4 s rising hum) then `PulseMMF` (discharge crack).
 
-  | Moment | Clip |
-  |---|---|
-  | Phase roar | goblin angry laugh |
-  | Bolt cast | fuse fizzle |
-  | Rune cast | magic poof |
-  | Rune eruption | short explosion, volume 0.3, max 3 at once |
-  | Blink | big whoosh |
-  | Summon | goblin attack bark |
-  | Ritual channel | acid sizzle loop |
-  | Ritual broken | goblin whimper |
-  | Ritual detonation | large explosion |
-  | Stagger | monster "ugh" |
-
-  Swap in better ones with `/find-and-import-assets` if you like.
+  Several clips have long tails (up to 6.5 s): trim volumes on the MMF players if casts overlap into mush.
 - [ ] **Colours.** His runes are green (his theme), while the rest of the game telegraphs danger in red. The countdown fill makes it read as danger, but confirm it reads right in a busy wave. Ritual safe circles are blue.
 
 ## Decisions
