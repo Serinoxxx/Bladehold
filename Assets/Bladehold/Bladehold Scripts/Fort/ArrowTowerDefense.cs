@@ -44,6 +44,8 @@ public class ArrowTowerDefense : DefenseStructure
         }
     }
 
+    public override float MaxRange => range;
+
     protected override void ApplyLevelStats(int level)
     {
         switch (level)
@@ -203,6 +205,7 @@ public class ArrowTowerDefense : DefenseStructure
             if (h.ImmuneToPlayerDamage) continue;
             if (Player.Instance != null && h.transform.root == Player.Instance.transform.root) continue;
             if (h.GetComponentInParent<Gate>() != null) continue;
+            if (IsInsideMinRange(h.transform.position)) continue;
 
             float distSqr = (h.transform.position - transform.position).sqrMagnitude;
             if (distSqr < bestDistSqr)

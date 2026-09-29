@@ -43,6 +43,14 @@ public class BuildWheelUI : MonoBehaviour
     [SerializeField] private TMP_Text descriptionLabel;
     [SerializeField] private Button closeButton;
 
+    [Header("Range Summary (hover line under the description)")]
+    [Tooltip("Max range below this reads as Short; below Long reads as Medium; at or above Long reads as Long.")]
+    [SerializeField] private float mediumRangeFrom = 12f;
+    [SerializeField] private float longRangeFrom = 20f;
+    [Tooltip("Blind spot below this reads as Small; below Large reads as Medium; at or above Large reads as Large.")]
+    [SerializeField] private float mediumBlindSpotFrom = 5f;
+    [SerializeField] private float largeBlindSpotFrom = 7f;
+
     [Header("Build Feedback")]
     [SerializeField] private DamageNumbersPro.DamageNumber supplyPopupPrefab;
     [Tooltip("Played at the plot when a tower is bought (hammer sound + wood burst).")]
@@ -354,7 +362,36 @@ public class BuildWheelUI : MonoBehaviour
     {
         if (index >= 0 && index < defenseOptions.Count && descriptionLabel != null)
         {
-            descriptionLabel.text = defenseOptions[index].description;
+            DefenseOption opt = defenseOptions[index];
+            string rangeLine = GetRangeSummary(opt.defenseType);
+            descriptionLabel.text = string.IsNullOrEmpty(rangeLine)
+                ? opt.description
+                : $"{opt.description}\n<size=85%>{rangeLine}</size>";
         }
+    }
+
+    /// <summary>
+    ///     "Range: Medium  |  Blind spot: Small", read from the prefab the active plot would build,
+    ///     so it stays in step with whatever minRange / range the prefab is tuned to.
+    /// </summary>
+    private string GetRangeSummary(FortDefenseType type)
+    {
+        if (activePlot == null) return null;
+        GameObject prefab = activePlot.GetPrefabForType(type);
+        DefenseStructure defense = prefab != null ? prefab.GetComponent<DefenseStructure>() : null;
+        if (defense == null) return null;
+
+        if (defense.MaxRange <= 0f) return "Trap: hits what walks over it";
+
+        float max = defense.MaxRange;
+        string range = max < mediumRangeFrom ? "Short" : max < longRangeFrom ? "Medium" : "Long";
+
+        float min = defense.MinRange;
+        string blindSpot = min <= 0f ? "None"
+            : min < mediumBlindSpotFrom ? "Small"
+            : min < largeBlindSpotFrom ? "Medium"
+            : "Large";
+
+        return $"Range: {range}  |  Blind spot: {blindSpot}";
     }
 }

@@ -2206,6 +2206,35 @@ public static class WeaponReachBenchmark
                 failedCount++;
             }
 
+            // 19E: Minimum-range blind spot (flat distance, height ignored)
+            var minRangeField = typeof(DefenseStructure).GetField("minRange", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var insideMethod = typeof(DefenseStructure).GetMethod("IsInsideMinRange", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (minRangeField != null && insideMethod != null)
+            {
+                towerObj.transform.position = Vector3.zero;
+                minRangeField.SetValue(towerDef, 3f);
+                bool hugging = (bool)insideMethod.Invoke(towerDef, new object[] { new Vector3(1.5f, 4f, 1f) });
+                bool outside = (bool)insideMethod.Invoke(towerDef, new object[] { new Vector3(5f, 0f, 0f) });
+                minRangeField.SetValue(towerDef, 0f);
+                bool noBlindSpot = (bool)insideMethod.Invoke(towerDef, new object[] { new Vector3(0.1f, 0f, 0f) });
+
+                if (hugging && !outside && !noBlindSpot)
+                {
+                    sb.AppendLine("  - Min Range Blind Spot: 3m blind spot rejects a hugging enemy (even above the tower), accepts one at 5m; 0 disables it. [PASSED]");
+                    passedCount++;
+                }
+                else
+                {
+                    sb.AppendLine($"  - [FAIL] Min range blind spot wrong: hugging={hugging}, outside={outside}, noBlindSpot={noBlindSpot}");
+                    failedCount++;
+                }
+            }
+            else
+            {
+                sb.AppendLine("  - [FAIL] DefenseStructure.minRange / IsInsideMinRange not found via reflection");
+                failedCount++;
+            }
+
             UnityEngine.Object.DestroyImmediate(gateObj);
             UnityEngine.Object.DestroyImmediate(towerObj);
         }

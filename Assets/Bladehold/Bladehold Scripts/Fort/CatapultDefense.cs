@@ -8,7 +8,6 @@ using UnityEngine;
 public class CatapultDefense : DefenseStructure
 {
     [Header("Catapult Config")]
-    [SerializeField] private float minRange = 6f;
     [SerializeField] private float maxRange = 24f;
     [SerializeField] private float fireInterval = 3.8f;
     [SerializeField] private float splashDamage = 45f;
@@ -62,6 +61,8 @@ public class CatapultDefense : DefenseStructure
             }
         }
     }
+
+    public override float MaxRange => maxRange;
 
     protected override void ApplyLevelStats(int level)
     {
@@ -235,7 +236,7 @@ public class CatapultDefense : DefenseStructure
             if (h.GetComponentInParent<Gate>() != null) continue;
 
             float dist = Vector3.Distance(transform.position, h.transform.position);
-            if (dist >= minRange && dist <= maxRange)
+            if (!IsInsideMinRange(h.transform.position) && dist <= maxRange)
             {
                 enemiesInRange.Add(h);
             }

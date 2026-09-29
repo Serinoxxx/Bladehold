@@ -2497,6 +2497,7 @@ MonoBehaviour:
   supplyPerAction: 2
   rotateToTarget: 0
   rotationSpeed: 160
+  minRange: 6
   repairFeedback: {fileID: 854820786477560573}
   upgradeFeedback: {fileID: 8984222864706021366}
   breakFeedback: {fileID: 9121402473923794418}

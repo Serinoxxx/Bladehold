@@ -25,6 +25,9 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
     [SerializeField] protected bool rotateToTarget = false;
     [Tooltip("Speed in degrees per second at which the tower rotates towards the target.")]
     [SerializeField] protected float rotationSpeed = 160f;
+    [Tooltip("Blind spot radius (flat distance from the tower's centre). Enemies closer than this can't be targeted, so enemies hugging the tower are the hero's job. 0 = no blind spot.")]
+    [Min(0f)]
+    [SerializeField] protected float minRange = 0f;
 
     [Header("Audio & Feedback")]
     [Tooltip("Played at the tower when the player resupplies it (sound + wood burst).")]
@@ -43,6 +46,9 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
     public int MaxSupply => maxSupply;
     public int SupplyPerAction => supplyPerAction;
     public bool IsDepleted => currentSupply <= 0;
+    public float MinRange => minRange;
+    /// <summary>Furthest this tower can target. 0 for traps, which only hit what walks over them.</summary>
+    public virtual float MaxRange => 0f;
     /// <summary>Supply the player has paid to upgrade this tower (free level-ups via SetLevel/InitState don't count).</summary>
     public int UpgradeSupplySpent => upgradeSupplySpent;
     /// <summary>What dismantling this tower hands back: its remaining supply plus everything spent upgrading it.</summary>
@@ -261,6 +267,15 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
         {
             PromptText = $"Lv {currentLevel} Max";
         }
+    }
+
+    /// <summary>True when a point is inside this tower's blind spot (flat distance under <see cref="MinRange"/>).</summary>
+    protected bool IsInsideMinRange(Vector3 worldPos)
+    {
+        if (minRange <= 0f) return false;
+        Vector3 offset = worldPos - transform.position;
+        offset.y = 0f;
+        return offset.sqrMagnitude < minRange * minRange;
     }
 
     public virtual void RotateTowardsTarget(Vector3 worldTargetPos, float speedMultiplier = 1f)

@@ -67,6 +67,8 @@ public class NetThrowerDefense : DefenseStructure
         }
     }
 
+    public override float MaxRange => range;
+
     protected override void ApplyLevelStats(int level)
     {
         switch (level)
@@ -259,6 +261,7 @@ public class NetThrowerDefense : DefenseStructure
             if (h.ImmuneToPlayerDamage) continue;
             if (Player.Instance != null && h.transform.root == Player.Instance.transform.root) continue;
             if (h.GetComponentInParent<Gate>() != null) continue;
+            if (IsInsideMinRange(h.transform.position)) continue;
 
             NetRootStatus existingRoot = h.GetComponent<NetRootStatus>();
             if (existingRoot != null && existingRoot.IsRooted) continue; // Skip already rooted enemies

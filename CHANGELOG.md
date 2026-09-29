@@ -1,5 +1,19 @@
 # Bladehold - Changelog
 
+## [0.1.29] - 2026-09-29
+
+### New Features
+
+### Fixes
+
+### Balance Changes
+
+- Added a blind spot around the Arrow Tower, Net Thrower, Ballista and Catapult: they can no longer shoot enemies standing right next to them, so defending them up close is up to you
+
+### General Changes
+
+- Added range and blind spot size to each defence's description in the build wheel
+
 ## [0.1.28] - 2026-09-13
 
 ### New Features

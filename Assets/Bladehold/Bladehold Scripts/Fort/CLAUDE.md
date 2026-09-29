@@ -7,6 +7,7 @@
   - Arrow Tower, Catapult, Ballista, Net Thrower, Spike Trap, Oil Vat.
 - **`DefenseStructure`** base + subclasses (`ArrowTowerDefense`, `CatapultDefense`, `BallistaDefense`, `NetThrowerDefense`, `SpikeTrapDefense`, `OilVatDefense`).
   - Each tower holds its own supply and spends some per shot. At 0 it stays standing but stops firing (a "NO SUPPLY" marker points at it).
+  - **Blind spot**: `DefenseStructure.minRange` (flat distance, serialized per prefab) is a radius the turret can't target, so enemies hugging a tower are the hero's job. Turrets call `IsInsideMinRange` in their target filter. Arrow 3m, Net Thrower 4m, Ballista 6m, Catapult 8m; Spike Trap and Oil Vat have none (they cover the gap).
   - `[E]` on a tower refills it from the player's pool. Once it's full, `[E]` upgrades it instead (max level 3). Refill and upgrade work any time, not just during prep.
 - **`DefenseAssemblyAnimation`**: ghost preview plus the piece-drop / ground-emerge build animation.
 - **`TowerPlotManager`**: owns the plots. Towers **never carry between sectors**. On victory, `GameLoopManager.TriggerVictory` calls `DismantleAllForRefund()`, which pays each tower's `DismantleRefund` (remaining supply + supply spent upgrading it) into `RunSession.InRunSupply`; the victory screen shows the total. On player death the towers are just cleared. Every sector starts with empty plots.

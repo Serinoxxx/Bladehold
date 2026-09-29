@@ -74,6 +74,8 @@ public class BallistaDefense : DefenseStructure
         }
     }
 
+    public override float MaxRange => range;
+
     protected override void ApplyLevelStats(int level)
     {
         switch (level)
@@ -235,6 +237,7 @@ public class BallistaDefense : DefenseStructure
             if (h.ImmuneToPlayerDamage) continue;
             if (Player.Instance != null && h.transform.root == Player.Instance.transform.root) continue;
             if (h.GetComponentInParent<Gate>() != null) continue;
+            if (IsInsideMinRange(h.transform.position)) continue;
 
             if (h.CurrentHealth > highestHp)
             {
