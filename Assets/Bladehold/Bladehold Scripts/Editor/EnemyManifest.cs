@@ -1012,6 +1012,7 @@ internal static class EnemyManifest
             id = "sapper",
             soFolder = "Sapper",
             prefabName = "Sapper Enemy Variant",
+            basePrefabPath = "Assets/Bladehold/Bladehold Prefabs/Dwarf Enemy Variant.prefab", // dwarf body, so it reads apart from plain goblins
             rootScale = 0.9f,
             removeComponents = new[] { typeof(GoldenGoblin), typeof(ImpulseGoblin) },
             assets = new[]
@@ -1041,8 +1042,9 @@ internal static class EnemyManifest
             id = "hexer",
             soFolder = "Hexer",
             prefabName = "Hexer Enemy Variant",
+            basePrefabPath = "Assets/Bladehold/Bladehold Prefabs/Medusa Enemy Variant.prefab", // Medusa body + sorceress casting anims
             navStoppingDistance = 2f, // it plants itself at channel range (TowerHexer pauses AIMovement)
-            removeComponents = new[] { typeof(GoldenGoblin), typeof(ImpulseGoblin) },
+            removeComponents = new[] { typeof(GoldenGoblin), typeof(ImpulseGoblin), typeof(MedusaGazeAura) }, // no inherited Medusa gaze
             assets = new[]
             {
                 new SoSpec

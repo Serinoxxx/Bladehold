@@ -16,6 +16,7 @@
 - Added a blind spot around the Arrow Tower, Net Thrower, Ballista and Catapult: they can no longer shoot enemies standing right next to them, so defending them up close is up to you
 - Reduced all tower and trap damage to about a quarter (Arrow Tower now needs two hits to kill a goblin)
 - Increased enemies on the field to 40 at once, and raised the kills needed per wave to 40, 45, 50, 55 and 60
+- Bulwarks now appear from the first sector and first wave, twice as often, with up to 4 at once
 
 ### General Changes
 
