@@ -1034,6 +1034,44 @@ internal static class EnemyManifest
             },
         },
 
+        // Hexer: stands ~10m off the nearest tower and channels a beam that stops it firing. A hero hit
+        // breaks the channel briefly; killing it ends it. Keeps the base melee as a fallback.
+        new EnemySpec
+        {
+            id = "hexer",
+            soFolder = "Hexer",
+            prefabName = "Hexer Enemy Variant",
+            navStoppingDistance = 10f,
+            removeComponents = new[] { typeof(GoldenGoblin), typeof(ImpulseGoblin) },
+            assets = new[]
+            {
+                new SoSpec
+                {
+                    soType = typeof(TowerHexerSO),
+                    assetName = "TowerHexerSO",
+                    initDefaults = so =>
+                    {
+                        TowerHexerSO hex = (TowerHexerSO)so;
+                        hex.beamPrefab = LoadPrefab("Assets/Third Party/SineVFX/LightningSystem/CompleteEffectsPrefabs/SingleVFXOnly/Chain/LS_Chain_02.prefab");
+                    },
+                },
+            },
+            components = new[]
+            {
+                new ComponentSpec
+                {
+                    type = typeof(TowerHexer),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "data", ctx.LoadedAsset("TowerHexerSO"));
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                        EnemyPrefabGenerator.SetReference(so, "targetSelector", ctx.Root.GetComponent<AITargetSelector>());
+                        EnemyPrefabGenerator.SetReference(so, "animator", ctx.ChildAnimator);
+                    },
+                },
+            },
+        },
+
         // Dome Warden: slow goblin that holds a dome over itself and nearby allies. Projectiles from
         // outside can't get in (towers never can), so the hero has to walk in. Stands off at 9m so
         // the dome doesn't come to the player; keeps the base melee for when the player arrives.

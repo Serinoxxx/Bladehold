@@ -96,6 +96,7 @@ public class OilVatDefense : DefenseStructure
 
     private void SpillOil()
     {
+        if (IsHexed) return; // a pool already spilled keeps burning
         if (!ConsumeSupply()) return;
 
         activePoolRemaining = poolDuration;

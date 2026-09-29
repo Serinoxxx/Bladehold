@@ -148,6 +148,16 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
                     label: "NO SUPPLY"
                 ));
             }
+            else if (def != null && def.IsHexed)
+            {
+                targetBuffer.Add(new ObjectiveWaypointTarget(
+                    def.transform,
+                    worldOffset: new Vector3(0f, 3.2f, 0f),
+                    customIcon: noSupplyIcon != null ? noSupplyIcon : defaultObjectiveIcon,
+                    tintColor: new Color(0.7f, 0.35f, 1f, 1f),
+                    label: "HEXED"
+                ));
+            }
         }
 
         // Fallback for cleanup phase if buffer is empty

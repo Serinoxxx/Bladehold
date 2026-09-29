@@ -178,7 +178,7 @@ public class TowerPlotManager : MonoBehaviour
             processedTargets.Clear();
             foreach (TowerPlot p in plots)
             {
-                if (p != null && p.CurrentDefense != null)
+                if (p != null && p.CurrentDefense != null && !p.CurrentDefense.IsHexed)
                 {
                     ApplyPermafrostAura(p.CurrentDefense.transform.position, radius);
                 }
@@ -194,7 +194,7 @@ public class TowerPlotManager : MonoBehaviour
         float bestSqr = float.MaxValue;
         foreach (TowerPlot p in plots)
         {
-            if (p == null || p.CurrentDefense == null) continue;
+            if (p == null || p.CurrentDefense == null || p.CurrentDefense.IsHexed) continue;
             Vector3 towerPos = p.CurrentDefense.transform.position;
             processedTargets.Clear();
             int count = Physics.OverlapSphereNonAlloc(towerPos, teslaRange, overlapBuffer);

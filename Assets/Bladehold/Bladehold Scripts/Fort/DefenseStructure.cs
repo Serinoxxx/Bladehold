@@ -47,6 +47,36 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
     public int SupplyPerAction => supplyPerAction;
     public bool IsDepleted => currentSupply <= 0;
     public float MinRange => minRange;
+
+    private readonly System.Collections.Generic.HashSet<MonoBehaviour> hexers = new System.Collections.Generic.HashSet<MonoBehaviour>();
+
+    /// <summary>
+    ///     True while any Hexer is channelling on this tower: it stays standing but can't fire (turrets,
+    ///     traps, Tesla Spire and Permafrost all check this). A hexer destroyed mid-channel is pruned.
+    /// </summary>
+    public bool IsHexed
+    {
+        get
+        {
+            if (hexers.Count == 0) return false;
+            hexers.RemoveWhere(h => h == null);
+            return hexers.Count > 0;
+        }
+    }
+
+    /// <summary>Starts a hex from <paramref name="hexer" /> (idempotent). The tower stops firing until every hexer lets go.</summary>
+    public void AddHexer(MonoBehaviour hexer)
+    {
+        if (hexer == null || !hexers.Add(hexer)) return;
+        UpdatePrompt();
+    }
+
+    /// <summary>Ends <paramref name="hexer" />'s hex (idempotent).</summary>
+    public void RemoveHexer(MonoBehaviour hexer)
+    {
+        if (hexer == null || !hexers.Remove(hexer)) return;
+        UpdatePrompt();
+    }
     /// <summary>Furthest this tower can target. 0 for traps, which only hit what walks over them.</summary>
     public virtual float MaxRange => 0f;
     /// <summary>Supply the player has paid to upgrade this tower (free level-ups via SetLevel/InitState don't count).</summary>
@@ -267,6 +297,8 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
         {
             PromptText = $"Lv {currentLevel} Max";
         }
+
+        if (IsHexed) PromptText = $"[HEXED] {PromptText}";
     }
 
     /// <summary>True when a point is inside this tower's blind spot (flat distance under <see cref="MinRange"/>).</summary>

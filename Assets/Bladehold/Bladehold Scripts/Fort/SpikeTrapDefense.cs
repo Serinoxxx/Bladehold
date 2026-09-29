@@ -50,6 +50,7 @@ public class SpikeTrapDefense : DefenseStructure
 
     private void Update()
     {
+        if (IsHexed) return;
         if (Time.time < nextTriggerTime) return;
 
         Collider[] hits = Physics.OverlapSphere(transform.position, triggerRadius);

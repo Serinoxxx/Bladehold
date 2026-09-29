@@ -93,7 +93,7 @@ public class NetThrowerDefense : DefenseStructure
 
     private void Update()
     {
-        if (IsDepleted || currentSupply <= 0) return;
+        if (IsDepleted || currentSupply <= 0 || IsHexed) return;
 
         Health target = FindUnrootedEnemy();
         if (target != null)

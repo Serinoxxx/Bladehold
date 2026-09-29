@@ -100,7 +100,7 @@ public class BallistaDefense : DefenseStructure
 
     private void Update()
     {
-        if (IsDepleted || currentSupply <= 0) return;
+        if (IsDepleted || currentSupply <= 0 || IsHexed) return;
 
         Health target = FindPriorityEnemy();
         if (target != null)

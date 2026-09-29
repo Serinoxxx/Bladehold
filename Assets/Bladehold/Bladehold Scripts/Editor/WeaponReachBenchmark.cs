@@ -2429,6 +2429,75 @@ public static class WeaponReachBenchmark
             failedCount++;
         }
 
+        // 19I. HEXER: hexed towers stop, hexers split up, prefab wired
+        sb.AppendLine("\n### 19I. HEXER TOWER HEX");
+        try
+        {
+            Vector3 hexOrigin = new Vector3(8000f, 0f, 0f);
+            GameObject nearObj = new GameObject("Benchmark_HexNearTower");
+            nearObj.transform.position = hexOrigin + new Vector3(8f, 0f, 0f);
+            ArrowTowerDefense nearTower = nearObj.AddComponent<ArrowTowerDefense>();
+            InvokeLifecycle(nearTower, "OnEnable");
+            nearTower.InitState(1, 50, 50);
+            GameObject farObj = new GameObject("Benchmark_HexFarTower");
+            farObj.transform.position = hexOrigin + new Vector3(20f, 0f, 0f);
+            ArrowTowerDefense farTower = farObj.AddComponent<ArrowTowerDefense>();
+            InvokeLifecycle(farTower, "OnEnable");
+            farTower.InitState(1, 50, 50);
+
+            GameObject hexerA = new GameObject("Benchmark_HexerA");
+            TowerHexer hexA = hexerA.AddComponent<TowerHexer>();
+            GameObject hexerB = new GameObject("Benchmark_HexerB");
+            TowerHexer hexB = hexerB.AddComponent<TowerHexer>();
+
+            bool picksNearest = TowerHexer.FindTower(hexOrigin, 45f) == nearTower;
+            nearTower.AddHexer(hexA);
+            bool hexed = nearTower.IsHexed && nearTower.PromptText.StartsWith("[HEXED]");
+            bool splitsUp = TowerHexer.FindTower(hexOrigin, 45f) == farTower;
+            nearTower.AddHexer(hexB);
+            nearTower.RemoveHexer(hexA);
+            bool stillHexedByB = nearTower.IsHexed;
+            UnityEngine.Object.DestroyImmediate(hexerB); // destroyed mid-channel: must not stick
+            bool prunesDead = !nearTower.IsHexed;
+
+            UnityEngine.Object.DestroyImmediate(hexerA);
+            UnityEngine.Object.DestroyImmediate(nearObj);
+            UnityEngine.Object.DestroyImmediate(farObj);
+
+            if (picksNearest && hexed && splitsUp && stillHexedByB && prunesDead)
+            {
+                sb.AppendLine("  - Hexer Rules: targets the nearest tower, hexed towers flag [HEXED], a second Hexer picks an unhexed tower, hexes stack and a destroyed Hexer doesn't leave the tower stuck. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Hexer rules (picksNearest={picksNearest}, hexed={hexed}, splitsUp={splitsUp}, stillHexedByB={stillHexedByB}, prunesDead={prunesDead})");
+                failedCount++;
+            }
+
+            EnemyPrefabMapSO hexMap = AssetDatabase.LoadAssetAtPath<EnemyPrefabMapSO>("Assets/Bladehold/Bladehold Scripts/Enemies/EnemyPrefabMap.asset");
+            GameObject hexerPrefab = hexMap != null ? hexMap.FindPrefab("hexer") : null;
+            TowerHexer hexComp = hexerPrefab != null ? hexerPrefab.GetComponent<TowerHexer>() : null;
+            TowerHexerSO hexSo = hexComp != null ? new SerializedObject(hexComp).FindProperty("data").objectReferenceValue as TowerHexerSO : null;
+            bool hexBeam = hexSo != null && hexSo.beamPrefab != null && hexSo.beamPrefab.GetComponentInChildren<LightningSystemChain>(true) != null;
+
+            if (hexSo != null && hexBeam)
+            {
+                sb.AppendLine("  - Hexer Prefab: registered in EnemyPrefabMap with TowerHexer, SO and a LightningSystemChain beam wired. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Hexer prefab (registered={hexerPrefab != null}, soWired={hexSo != null}, hexBeam={hexBeam}). Run Bladehold > Generate Enemy Prefabs.");
+                failedCount++;
+            }
+        }
+        catch (Exception ex)
+        {
+            sb.AppendLine($"  - Hexer Benchmark exception: {ex.Message} [FAILED]");
+            failedCount++;
+        }
+
         // =========================================================================
         // 20. DEFENSE VISUALS, NET MECHANICS, CATAPULT DETONATION & SUPPLY BENCHMARK
         // =========================================================================
