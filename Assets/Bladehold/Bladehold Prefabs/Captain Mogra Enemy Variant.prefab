@@ -196,7 +196,7 @@ MonoBehaviour:
         Active: 1
         UniqueID: 1663541691
         Label: Sound goblin_fairy_laugh_angry_02
-        OriginalLabel: 
+        OriginalLabel: MMSoundManager Sound
         ChannelMode: 0
         Channel: 0
         MMChannelDefinition: {fileID: 0}
@@ -680,7 +680,7 @@ MonoBehaviour:
         Active: 1
         UniqueID: -956378480
         Label: Particles HexDaze
-        OriginalLabel: 
+        OriginalLabel: Particles Instantiation
         ChannelMode: 0
         Channel: 0
         MMChannelDefinition: {fileID: 0}
@@ -777,7 +777,7 @@ MonoBehaviour:
         Active: 1
         UniqueID: 1050948920
         Label: Sound MONSTER_Ugh_03_mono
-        OriginalLabel: 
+        OriginalLabel: MMSoundManager Sound
         ChannelMode: 0
         Channel: 0
         MMChannelDefinition: {fileID: 0}
@@ -1144,7 +1144,7 @@ MonoBehaviour:
         Active: 1
         UniqueID: -127456574
         Label: Sound Fantasy_Game_Magic_Dark Magic_4_Cast_Shadow_Warlock_Spell
-        OriginalLabel: 
+        OriginalLabel: MMSoundManager Sound
         ChannelMode: 0
         Channel: 0
         MMChannelDefinition: {fileID: 0}
@@ -1363,7 +1363,7 @@ MonoBehaviour:
         Active: 1
         UniqueID: 868664595
         Label: Sound Fantasy_Game_Magic_Organic_Poof_Buff_Hit_5
-        OriginalLabel: 
+        OriginalLabel: MMSoundManager Sound
         ChannelMode: 0
         Channel: 0
         MMChannelDefinition: {fileID: 0}
@@ -1730,7 +1730,7 @@ MonoBehaviour:
         Active: 1
         UniqueID: -1687994679
         Label: Sound Fantasy_Game_Magic_Dark Magic_1_Cast_Shadow_Warlock_Spell
-        OriginalLabel: 
+        OriginalLabel: MMSoundManager Sound
         ChannelMode: 0
         Channel: 0
         MMChannelDefinition: {fileID: 0}
@@ -1949,7 +1949,7 @@ MonoBehaviour:
         Active: 1
         UniqueID: 868885180
         Label: Sound Fantasy_Game_Magic_Fuse_Fizzle_Gas
-        OriginalLabel: 
+        OriginalLabel: MMSoundManager Sound
         ChannelMode: 0
         Channel: 0
         MMChannelDefinition: {fileID: 0}
@@ -2316,7 +2316,7 @@ MonoBehaviour:
         Active: 1
         UniqueID: -711568078
         Label: Sound goblin_fairy_attack_10
-        OriginalLabel: 
+        OriginalLabel: MMSoundManager Sound
         ChannelMode: 0
         Channel: 0
         MMChannelDefinition: {fileID: 0}
@@ -2535,7 +2535,7 @@ MonoBehaviour:
         Active: 1
         UniqueID: -656415695
         Label: Sound Fantasy_Game_Magic_Earth_Long_Cast_Spell_A
-        OriginalLabel: 
+        OriginalLabel: MMSoundManager Sound
         ChannelMode: 0
         Channel: 0
         MMChannelDefinition: {fileID: 0}
@@ -2902,7 +2902,7 @@ MonoBehaviour:
         Active: 1
         UniqueID: -297656240
         Label: Sound Fantasy_Game_Magic_Action_Rune_A
-        OriginalLabel: 
+        OriginalLabel: MMSoundManager Sound
         ChannelMode: 0
         Channel: 0
         MMChannelDefinition: {fileID: 0}
@@ -3121,7 +3121,7 @@ MonoBehaviour:
         Active: 1
         UniqueID: -1958515017
         Label: Sound goblin_fairy_laugh_angry_02
-        OriginalLabel: 
+        OriginalLabel: MMSoundManager Sound
         ChannelMode: 0
         Channel: 0
         MMChannelDefinition: {fileID: 0}
@@ -3488,7 +3488,7 @@ MonoBehaviour:
         Active: 1
         UniqueID: -1488840730
         Label: Sound Fantasy_Game_Loops_Acid Pool_1_Sizzle_Liquid_Danger_Hazard
-        OriginalLabel: 
+        OriginalLabel: MMSoundManager Sound
         ChannelMode: 0
         Channel: 0
         MMChannelDefinition: {fileID: 0}
@@ -3707,7 +3707,7 @@ MonoBehaviour:
         Active: 1
         UniqueID: -1669092473
         Label: Sound PoisonAcid_Warmup_Long_1_M
-        OriginalLabel: 
+        OriginalLabel: MMSoundManager Sound
         ChannelMode: 0
         Channel: 0
         MMChannelDefinition: {fileID: 0}
@@ -4075,7 +4075,7 @@ MonoBehaviour:
         Active: 1
         UniqueID: -1754572615
         Label: Particles HexBurstLarge
-        OriginalLabel: 
+        OriginalLabel: Particles Instantiation
         ChannelMode: 0
         Channel: 0
         MMChannelDefinition: {fileID: 0}
@@ -4172,7 +4172,7 @@ MonoBehaviour:
         Active: 1
         UniqueID: -1980680021
         Label: Sound goblin_fairy_cry_whimper_high_02
-        OriginalLabel: 
+        OriginalLabel: MMSoundManager Sound
         ChannelMode: 0
         Channel: 0
         MMChannelDefinition: {fileID: 0}
@@ -4657,7 +4657,7 @@ MonoBehaviour:
         Active: 1
         UniqueID: -2045032621
         Label: Particles HexBurstLarge
-        OriginalLabel: 
+        OriginalLabel: Particles Instantiation
         ChannelMode: 0
         Channel: 0
         MMChannelDefinition: {fileID: 0}
@@ -4754,7 +4754,7 @@ MonoBehaviour:
         Active: 1
         UniqueID: -1116578250
         Label: Sound whoosh_swish_high_big_01
-        OriginalLabel: 
+        OriginalLabel: MMSoundManager Sound
         ChannelMode: 0
         Channel: 0
         MMChannelDefinition: {fileID: 0}
@@ -4973,7 +4973,7 @@ MonoBehaviour:
         Active: 1
         UniqueID: -1043964535
         Label: Sound Fantasy_Game_Magic_Dark Magic_3_Cast_Shadow_Warlock_Spell
-        OriginalLabel: 
+        OriginalLabel: MMSoundManager Sound
         ChannelMode: 0
         Channel: 0
         MMChannelDefinition: {fileID: 0}
@@ -5340,7 +5340,7 @@ MonoBehaviour:
         Active: 1
         UniqueID: -611063497
         Label: Sound PoisonAcid_Warmup_Short_1_M
-        OriginalLabel: 
+        OriginalLabel: MMSoundManager Sound
         ChannelMode: 0
         Channel: 0
         MMChannelDefinition: {fileID: 0}
@@ -5559,7 +5559,7 @@ MonoBehaviour:
         Active: 1
         UniqueID: -1180879201
         Label: Sound goblin_fairy_attack_10
-        OriginalLabel: 
+        OriginalLabel: MMSoundManager Sound
         ChannelMode: 0
         Channel: 0
         MMChannelDefinition: {fileID: 0}
@@ -5928,7 +5928,7 @@ MonoBehaviour:
         Active: 1
         UniqueID: 1780992628
         Label: Particles HexBurstLarge
-        OriginalLabel: 
+        OriginalLabel: Particles Instantiation
         ChannelMode: 0
         Channel: 0
         MMChannelDefinition: {fileID: 0}
@@ -6025,7 +6025,7 @@ MonoBehaviour:
         Active: 1
         UniqueID: 1953310387
         Label: Sound explosion_large_01
-        OriginalLabel: 
+        OriginalLabel: MMSoundManager Sound
         ChannelMode: 0
         Channel: 0
         MMChannelDefinition: {fileID: 0}
@@ -6244,7 +6244,7 @@ MonoBehaviour:
         Active: 1
         UniqueID: 139487908
         Label: Sound Fantasy_Game_Magic_Dark Magic_2_Blast_Shadow_Warlock_Spell
-        OriginalLabel: 
+        OriginalLabel: MMSoundManager Sound
         ChannelMode: 0
         Channel: 0
         MMChannelDefinition: {fileID: 0}
@@ -6663,15 +6663,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.0292327
+      value: 47.17559
       objectReference: {fileID: 0}
     - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.00000016006126
+      value: -5.9726114
       objectReference: {fileID: 0}
     - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 6.311174
+      value: 34.15483
       objectReference: {fileID: 0}
     - target: {fileID: 4881413148910990634, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: m_LocalRotation.w
@@ -7674,9 +7674,9 @@ MonoBehaviour:
   effectNameUseRegEx: 0
   excludeObjectsWithHighlightEffect: 0
   combineMeshes: 0
-  alphaCutOff: 0
+  alphaCutOff: 0.5
   alphaCutOffTextureName: 
-  cullBackFaces: 1
+  cullBackFaces: 0
   ignoreObjectVisibility: 0
   reflectionProbes: 0
   GPUInstancing: 1
@@ -7699,11 +7699,11 @@ MonoBehaviour:
   minimumWidth: 0
   subMeshMask: -1
   vertexTransformMode: 0
-  overlay: 0
+  overlay: 0.037
   overlayMode: 0
   overlayPattern: 0
   overlayPatternScrolling: {x: 0, y: 0}
-  overlayColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  overlayColor: {r: 0, g: 1.826198, b: 0.75252444, a: 1}
   overlayAnimationSpeed: 1
   overlayMinIntensity: 0.5
   overlayBlending: 1
@@ -7718,7 +7718,7 @@ MonoBehaviour:
   overlayPatternSoftness: 0.02
   overlayPatternRotation: 0
   outline: 1
-  outlineColor: {r: 0, g: 2, b: 0.0650754, a: 1}
+  outlineColor: {r: 0, g: 2, b: 0.32208633, a: 1}
   outlineColorStyle: 0
   outlineGradient:
     serializedVersion: 2
@@ -7751,9 +7751,9 @@ MonoBehaviour:
     m_NumColorKeys: 2
     m_NumAlphaKeys: 2
   outlineGradientInLocalSpace: 0
-  outlineWidth: 0.5
+  outlineWidth: 0.45
   outlineBlurPasses: 2
-  outlineQuality: 3
+  outlineQuality: 2
   outlineEdgeMode: 0
   outlineEdgeThreshold: 0.995
   outlineDistanceScaleBias: 25
@@ -7780,14 +7780,14 @@ MonoBehaviour:
   outlineDashWidth: 0.5
   outlineDashGap: 0.3
   outlineDashSpeed: 2
-  glow: 0.51
-  glowWidth: 2
+  glow: 0
+  glowWidth: 0.45
   glowQuality: 2
   glowBlurMethod: 0
   glowHighPrecision: 1
   glowDistanceScaleBias: 25
   glowDownsampling: 2
-  glowHQColor: {r: 0, g: 2, b: 0.24149323, a: 1}
+  glowHQColor: {r: 0, g: 2, b: 0.49315548, a: 1}
   glowDithering: 1
   glowDitheringStyle: 0
   glowMagicNumber1: 0.75

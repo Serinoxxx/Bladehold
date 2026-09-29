@@ -18,6 +18,12 @@ public class BallistaDefense : DefenseStructure
     [SerializeField] private MMF_Player fireFeedback;
     [SerializeField] private LayerMask enemyLayers = ~0;
 
+    [Header("Knockback")]
+    [Tooltip("Horizontal launch speed (m/s) pushing enemies along the bolt's flight direction.")]
+    [SerializeField] private float knockbackAway = 10f;
+    [Tooltip("Upward launch speed (m/s) added to each bolt hit.")]
+    [SerializeField] private float knockbackUp = 6f;
+
     [Header("Aim & Animation")]
     [SerializeField] private float windUpDuration = 0.35f;
 
@@ -171,7 +177,7 @@ public class BallistaDefense : DefenseStructure
             BallistaBoltProjectile proj = boltObj.GetComponent<BallistaBoltProjectile>();
             if (proj != null)
             {
-                proj.Init(dir, boltSpeed, boltDamage, pierceCount);
+                proj.Init(dir, boltSpeed, boltDamage, pierceCount, knockbackAway, knockbackUp);
             }
         }
         else
@@ -184,12 +190,15 @@ public class BallistaDefense : DefenseStructure
                 Health h = hit.collider.GetComponentInParent<Health>();
                 if (h != null && !h.IsDead && (Player.Instance == null || h.transform.root != Player.Instance.transform.root))
                 {
+                    Vector3 knockback = BallistaBoltProjectile.KnockbackVelocity(dir, knockbackAway, knockbackUp);
                     Damage dmg = new Damage
                     {
                         value = boltDamage,
                         type = DamageType.sharp,
                         isPlayerDamage = true,
                         sourcePosition = spawnPos,
+                        knockbackVelocity = knockback,
+                        knockbackForce = knockback.magnitude,
                         source = Player.Instance != null ? Player.Instance.Damageable : null
                     };
                     h.ReceiveDamage(dmg);

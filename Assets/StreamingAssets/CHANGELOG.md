@@ -1,5 +1,236 @@
 # Bladehold - Changelog
 
+## [0.1.28] - 2026-09-13
+
+### New Features
+
+- Added the wave draft: between waves you pick one of 3 battles, each with an objective, Defence or Offence stance, 1-3 skull difficulty with a clan modifier, and its own reward
+- Added gate repair: during prep, hold E at the gate to spend supply restoring its health
+- Added a Captain Assault finale to every sector: kill the clan captain on wave 5 to win
+- Added objective previews during prep that show where the next objective will happen
+- Added a hold-to-start Ready control (T or D-pad Down) to begin each wave after building
+- Added ultimates to the Rest Area shop: every shop offers the ultimate of your melee weapon and your ranged weapon until you own one (100 gold)
+- Added separate ultimate bars for your melee and ranged weapon: each fills from hits with that weapon, and towers, burns and combos fill both at half rate
+- Added the Twin Fury meta perk (tier 3, 50 Goblin Blood): the shop can sell a second ultimate for your other weapon (400 gold)
+- Added upgrade levels to Lunge Mastery, ShieldBreaker, Vampire Blade, Inferno Burst, Permafrost, Fire Arrows, Lightning Arrows, Thermal Shock, Plasma Overload and Superconductor, so drafting them again makes them stronger
+- Added supply refund on sector victory: towers are dismantled and their remaining supply plus upgrade costs return to you
+- Unified victory and defeat presentation using the customizable End Game Screen prefab, displaying triumphant victory titling upon clearing all sector waves
+- Added automated behavioral benchmark tests verifying end game screen victory mode, defeat routing, and live currency updates
+- Added automatic post-objective cleanup phase transitioning the objective to "Kill all remaining enemies" whenever stragglers remain on the battlefield
+- Added red skull HUD waypoint indicators hovering over all remaining enemies with screen-edge clamping and distance meters directing players to stragglers
+- Added 5-wave defense sector loop replacing periodic 3-wave rest area breaks with continuous wave combat
+- Added Victory Screen overlay celebrating defense node completion with wave stats, kills, currencies secured, and triumphant audio fanfare
+- Added Wave 5 Clan Captain climax encounter to defense sectors
+- Added automated behavioral benchmark tests verifying 5-wave defense loop, victory trigger, and health ratio persistence
+- Added Fishing Minigame with 7 tactical nodes along the campaign path replacing supply rooms and adding side routes
+- Added 60-second Fishing Frenzy minigame featuring a dedicated fishing bow with infinite ammo and fish circling a pond
+- Added 6 minigame draft upgrade cards (Bounce Shot, Fishsploshion, Icey Water, Fish Skewer, Bleed, Fat Fish) offered on fishing level-up
+- Added 6 rare Buff Fish variants granting permanent in-run stat bonuses with a maximum cap of 3 consumed buff fish per run
+- Added glowing Diamond Fish spawning after 30 seconds with 20x health, awarding permanent Diamond Fish Bones
+- Added start prompt, 3-2-1 countdown with thump audio and punch animation, and horn signal for frenzy start
+- Added end-of-session results tally modal displaying fish caught, currencies earned, and Buff Fish feast selection
+- Added dedicated Fishing Pond arena scene with water perimeter barriers preventing players from entering the pond
+- Added automated behavioral benchmark tests verifying campaign fishing nodes, draft upgrade formulas, buff fish cap, and currency persistence
+
+- Added transparent ghost preview and modular piece-drop construction animations for multi-part defense structures with ground dust puffs and screenshake
+- Added rising ground emergence animations with rumble tremors, dust, and heavy lock-in slam for compact defenses
+- Added physical arcing net projectiles with spinning net meshes and ground impact effects for Net Thrower defenses
+- Added 3D rope and mesh capture visuals bound to enemies while immobilized by Net Throwers
+- Added booming impact explosion and fiery debris VFX to catapult boulder detonations
+- Added sensory feedback for tower construction, repairs, and upgrades with wood impact sounds, dust puffs, and floating supply cost popups
+
+- Added active towers HUD panel displaying deployed defense types, upgrade levels, and real-time supply sliders
+- Added 'NO SUPPLY' objective marker overlay pointing to depleted battlefield defenses
+- Added non-destructive supply depletion keeping towers standing on plots when reaching 0 supply
+- Added target tracking rotation and visual pre-fire anticipation animations for Ballista, Catapult, and Net Thrower defenses
+- Added target movement prediction and leading trajectory calculations to Arrow Towers
+- Added visual Balance Tree Editor window (`Bladehold > Balance Tree Editor` or `F1`) displaying an interactive node graph of Weapons, Draft Upgrades, Armour Sets, Mounts, Meta Perks, and Tower Defenses
+- Added in-place balance tweaking and inspector panel for graph nodes with live mid-game apply and disk persistence for ScriptableObjects and DraftUpgrades.csv
+- Added Add Node menu and TODO node specification tracking writing pending mechanics and dependencies to `UPGRADE_TODOS.md` for AI implementation
+- Added 6 Elemental Draft Cards for battlefield defenses in the draft pool: Frost Arrows, Glacial Catapult, Lightning Arrows, Tempest Catapult, Fire Arrows, and Pyroclast Catapult
+- Added Frost Arrows imbuing Arrow Tower volleys with chill status that slows target movement speed by 40%
+- Added Glacial Catapult creating slippery frozen ground upon rock impact that trips incoming enemies and makes them slip over
+- Added player ice sliding allowing heroes to slide smoothly across frozen ice zones with +35% move speed and reduced movement friction while retaining responsive steering and rotation
+- Added Lightning Arrows accelerating Arrow Tower fire rate by +50% and imbuing projectiles with electric shock damage
+- Added Tempest Catapult generating a lingering overhead storm cloud on impact that repeatedly calls down lightning strikes on enemies below
+- Added Fire Arrows enhancing Arrow Tower arrow damage by +40% and igniting struck foes for burning damage over time
+- Added Pyroclast Catapult launching an impact rock that breaks out into a rolling fireball, blazing across the battlefield, leaving fiery trails, and damaging enemies in its path
+- Added melee fireball redirection allowing the player to strike rolling fireballs with melee weapons to steer their trajectory and grant a speed boost
+- Added automated behavioral benchmark tests verifying elemental draft upgrades, tower fire rates, ice zone mechanics, player sliding, storm clouds, and melee fireball redirection
+
+- Added Princess Katherine boss encounter in the Royal Sanctuary with fleeing AI and holy revival mechanics
+- Added Armored Knight AI enemies with sword combat, downed states at 0 HP, and golden soul beacons
+- Added dynamic revival spell channeling where attacking Princess Katherine delays her 5-second cast by +1.5 seconds per hit
+- Added regal Royal Throne Annex arena scene (`Bladehold Princess Sanctuary.unity`) with throne dais, crimson carpets, colonnades, and baked NavMesh
+- Added Dark Campaign Victory awarding 500 Gold, 30 Goblin Blood, and 10 Orcish Metal upon defeating the Princess
+- Added automated behavioral benchmark tests validating Armored Knight downed state, 5.0-second spell channeling, player hit delay penalties, and revival restoration
+- Added Necromancer Revelation encounter with dialogue choice system ([Obey] Slay Princess Katherine vs [Defy] Slay the Necromancer)
+- Added two-phase Necromancer boss battle featuring an invulnerable Bubble Shield, skeleton army summoning, and Phase 2 direct scythe combat with 180-degree telegraphed sweeping slashes
+- Added Crypt Skeleton AI minions with NavMesh tracking, melee attacks, and automatic shield shatter death callbacks
+- Added colossal indoor crypt arena scene (`Bladehold Necromancer Crypt.unity`) with vaulted colonnades, stone tombs, ritual altar, braziers, and baked NavMesh
+- Added automated behavioral benchmark tests validating Necromancer bubble shield invulnerability, skeleton death shield shatter, Phase 2 melee vulnerability, and campaign node routing
+
+- Added 7 Castle Campaign level scenes with distinctive architecture and atmospheric lighting: Castle Courtyard (Tier 1 Center), Castle Ramparts (Tier 2A), Castle Armory (Tier 2B), Great Hall (Tier 4), Castle Dungeons (Tier 5A), Castle Conservatory (Tier 5B), and Throne Antechamber (Tier 7)
+- Added automated Castle Campaign level generator editor tool (`BuildCastleLevels.cs`) constructing greybox geometry, perimeter battlements, lighting, connected prefabs, choke point tower defense plots, exit gates, and baked NavMesh
+- Added 4 to 6 strategic Tower Plots (`TowerPlot.prefab`) in each castle level wired to `TowerPlotManager` and `FortDefenseManager` with full Build Wheel UI support
+- Added Castle Gate extraction exits unlocking `[E] View Campaign Map` upon completing the 3rd wave of each sector, returning players directly to the overview war room map
+- Added tier-scaled wave progression advancing wave numbers and difficulty across campaign tiers (Tier 1: Waves 1-3, Tier 2: Waves 4-6, Tier 4: Waves 7-9, Tier 5: Waves 10-12, Tier 7: Waves 13-15)
+- Added smashable Supply Room sector in the Castle Campaign featuring destructible wooden crates, barrels, and reinforced lockboxes
+- Added SupplyBox destructible component rewarding in-run Gold, Fort Supply, permanent Goblin Blood, and Orcish Metal when broken by weapons
+- Added non-hostile Supply Room safe area with player upgrade rehydration and return gate to the Campaign Map
+- Added Castle Campaign 8-tier branching node progression graph, Campaign Overview Map UI, and sector hover tooltips
+- Added Clan Captain Captain Kombusta with a 10-dynamite barrage special attack at range (>=5m) dealing 20 damage in a 2m telegraphed radius, and a close-quarters self-immolation fire aura after 3 seconds in melee range
+- Added automated behavioral benchmark tests for Captain Kombusta dynamite explosions, distance qualification, and melee self-immolation
+- Added Deep Quiver Tier 1 meta upgrade increasing maximum ammo capacity by +5
+- Added ammunition bundle purchasable at the Rest Area shop
+- Added battlefield ammunition drops from defeated enemies
+- Added center-screen warning when aiming without ammunition
+- Added contextual aiming HUD showing current ammo under crosshairs only while aiming
+- Added universal ammunition pool for ranged weapons (bow, thrown axe, wand) starting with 20 base capacity
+- Added dedicated mount system triggered at any time using [X] with an interruptible summon cast time
+- Added 5 unlockable mount variations in the Meta Area purchasable with Orcish Metal (Frost Strider, Infernal Steed, Abyssal Behemoth, Phantom Charger, Celestial Dreadnought) with distinct speeds, charge damage, knockback, durations, and cooldowns
+- Added diegetic 3D mount pedestals in the Meta Area for inspecting, unlocking, and equipping mounts
+- Added Blade Tempest as the signature sword melee ultimate ability, replacing the old mount ultimate
+- Unlocked horse archery from the get-go across all loadouts
+- Added HUD cast bar, active duration timer, and cooldown tracker for mounts
+- Added battlefield defences system with static Tower Plots placed across the battlefield, allowing players to build defenses during preparation phases via an interactive Build Wheel
+- Added 6 upgradable defense types: Arrow Tower (rapid light piercing), Catapult (lobbed fire splash damage), Ballista (heavy line-piercing bolts), Net Thrower (area root and immobilization), Spike Trap (high damage impale triggers), and Oil Vat (boiling oil slowing and scalding)
+- Added dynamic assembly drop sequence where defenses drop from the sky piece-by-piece with holy light rays and wood impact slamming
+- Added Supply currency system used to construct, maintain, and upgrade battlefield structures; defenses consume supply as they fire and break if depleted
+- Added in-field resupply and tier upgrading mechanics on active defenses using Supply
+- Added HUD Supply currency counter in the top-left resource bar
+- Updated Bulwark with directional blocking allowing backstab strikes to bypass the shield and stagger, separated block animations onto an upper body layer for continuous locomotion, and added distinct full-body stagger flinch reactions
+- Added Bulwark enemy carrying a destructible physical shield that stops player melee attacks, mitigates projectile damage, and retaliates with a telegraphed counter-slam
+- Added Stop the Battering Ram objective where enemies push a siege ram toward the castle gate requiring the player to destroy it before it breaches the defenses
+- Added Powder Keg enemy type carrying an overhead explosive barrel that can be shot with arrows to detonate into nearby foes or slams down to detonate near the castle gate
+- Added Bannerman enemy type granting localized proximity aura buffs to nearby allies based on the active wave banner with distinct highlight glows
+- Added destructible overhead banner system allowing players to shoot and disable enemy buff auras independently
+- Added 1-Click Combat Scenarios harness to developer console for rapid testing (Sword vs Dummy, Axe vs Brutes, Mace vs Bubbler, Fire Swarm, Bow Longshot, Ultimate Unleash)
+- Added automated Mechanics Benchmark tool validating all 57 draft cards, all 4 armour sets, live dash fire trail spawning, weapon hitboxes, and bubble shield absorption
+- Added automated behavioral mechanic tests for Life Steal healing, Backstab angle damage, Executioner low-HP bonus, Second Wind death revival, Greed/War Chest gold scaling, and ShieldBreaker damage amplification
+
+- Added overhead health bar and hit reactions (red flash, shield bash impact audio, and wood splinter particles) to the Battering Ram
+- Added automated behavioral benchmark tests verifying Battering Ram escort formation spacing and lead waypoint calculations
+
+- Added customizable BuildWheelSliceButton prefab asset styled with authentic Synty circular tracery, gold border rings, defense icons, and supply cost badges
+- Added defense icons to the defensive build wheel for Arrow Tower, Catapult, Ballista, Net Thrower, Spike Trap, and Oil Vat
+- Added automated behavioral benchmark tests verifying decoupled reticle visual scaling, ammo counter font size, and build wheel button prefab dimensions
+- Sectors now get harder the deeper you go into the campaign: new enemy types join the horde tier by tier (Bannermen and Powder Kegs, then Bulwarks and Assassins, then Storm Witches, then Trolls), while goblins still make up most of every wave
+- Added keyboard and gamepad navigation to the campaign map: move between sectors with WASD, the arrow keys, the d-pad or the left stick, and deploy with Enter or A
+- Added coloured outlines to fish at the Fishing Pond so you can tell each type apart at a glance, with a glow on buff fish and the Diamond Fish
+- Added floating reward popups when you catch a fish, such as +12 Gold
+- Added the Fishing Pond's level-up card picks, end-of-frenzy reward tally and on-screen fishing stats
+- Added a Thanks for Playing screen at the end of the demo campaign
+- Added element colours to elemental card icons: orange for fire, light blue for ice, purple for lightning
+- Added summoning your mount from the start of every run with [X] (D-pad Up on a controller)
+- Added Captain Mogra Hexfang, a goblin shaman captain who can turn up in place of any sector's captain: dodge his ground rune patterns and hex bolts, break his bone totems to stun him, and interrupt his Bonefire Ritual or shelter in a safe circle
+- Added a dodge animation and a brief moment of invulnerability to the dash
+
+### Fixes
+
+- Fixed the Golden Goblin counting as a success when it escaped, and completing twice when killed
+- Fixed the Siegebreaker's name being misspelled
+- Fixed clan modifiers never applying to enemies
+- Fixed the field going empty during Supply Wagon and Battering Ram objectives: enemies now keep arriving until the objective is resolved
+- Fixed Rest Area healing and ultimate charge being lost when returning to the campaign map
+- Fixed ultimate charge not carrying over between sectors
+- Fixed Armored buff fish max health stacking again on every scene load
+- Fixed upgrades being applied twice in the Supply Room
+- Fixed Goblin Blood and Orcish Metal counters displaying placeholder values instead of current save quantities on the end game screen
+- Fixed defeat screen forcibly transitioning to the meta area after two seconds, allowing players to view combat stats and choose when to return
+- Fixed end game screen navigation routing to the Campaign Map upon victory and returning to the Meta Area upon defeat
+- Added missing Defensive Supply currency row and icon to the end game screen
+- Removed procedural fallback victory UI to ensure end-of-run presentation uses authorable UI assets
+- Fixed enemy spawner continuing to spawn new enemy waves after main wave objectives had already been completed
+- Fixed objective HUD text prematurely falling back to incoming objective prompts while enemies remained after an objective completed
+- Fixed missing Supply currency counter on the player HUD
+- Fixed Captain Kombusta bomb telegraphs floating or misaligned with terrain slopes
+- Fixed Captain Kombusta bomb pacing and flight duration to give a 1.0-second delay between telegraph indicators
+- Removed blueprint ghost visual during tower defense construction
+- Fixed arrow ammo count and out of ammo warning appearing too small on 1080p and different resolutions by scaling them for the 4K reference canvas with high-contrast outlines
+- Fixed arrow ammo count shrinking when charging bow draws by decoupling the crosshair reticle tightening scale from child HUD counters
+- Fixed build wheel UI appearing cramped by expanding the wheel to a 1400px Synty radial layout with 240px slice buttons and scaled typography
+- Fixed victory screen being bypassed when completing defense sectors in campaign mode
+- Fixed Arrow Tower and other defense structures continuously firing at friendly Castle Gates
+- Fixed Battering Ram remaining stalled during the siege objective by ensuring enemies path to lead and escort the ram forward
+- Fixed boss controller component initialization in test mode ensuring damage block event listeners are hooked immediately upon combat activation
+- Fixed Campaign Overview Map displaying no nodes by authoring dedicated node button and route line prefabs, anchoring scroll containers to the left margin, and connecting a persistent campaign graph asset
+- Fixed coin, health pack and orb pickups playing their sound twice
+- Fixed the ammo pickup making no sound
+- Fixed destroyed defenses, the build wheel, supply wagon gold bags and some objective markers losing their effects or icons outside the Editor
+- Fixed Captain Kombusta's dynamite, fishing arrows and pond fish showing up as plain placeholder shapes
+- Fixed the vortex blades of the throwing-axe ultimate showing as red boxes instead of axes
+- Fixed the mace ultimate's ground slam flashing your hero instead of shaking the screen; it now shakes the screen as intended
+- Fixed firing with an empty quiver making no sound; you now hear a dry click
+- Fixed the Earth Splitter smash having no screenshake
+- Fixed the light flash on Impulse hits never showing; it now pulses where the hit lands
+- Fixed Plasma Overload leaving a fireball burning forever where it went off
+- Fixed blood splashes from sword hits sometimes coming out the wrong size after a ragdoll had bled nearby
+- Fixed the fleeing Golden Goblin dying silently; it now bursts into coins with a jingle like other golden enemies
+- Fixed finished enemy effects (lightning, boulder and dynamite blasts, gold bursts) staying in the level after they faded, slowly piling up over a sector
+- Fixed tower effects (catapult impacts, rolling fireball bursts, wood splinters when a tower breaks) staying in the level after they faded
+- Fixed the Fishing Frenzy countdown thumps and start horn never playing
+- Fixed the battering ram's splinters and the prisoner cage's dust cloud staying in the level after they faded
+- Fixed the Necromancer's shield break and scythe hits not shaking the screen
+- Fixed the Necromancer's summoning circles staying in the crypt for the rest of the fight
+- Fixed the campaign map appearing mostly off-screen and the mouse cursor staying locked on it
+- Fixed arrows at the Fishing Pond stopping at an invisible wall instead of reaching the fish
+- Fixed fish swimming outside the pond, under the ground
+- Fixed Chain Dash showing a lightning strike instead of charging your blade, and its chain lightning never triggering
+- Fixed Blazing Trail leaving no visible flames
+- Fixed Kindling, Frost Step, Shatter, Fortress Pyre, Lunge Mastery, Shieldbreaker, Power Dash, First Strike, Armor Shatter, Colossal Force and Vampire Blade's drawback having no effect
+- Fixed your ultimate ignoring the element you drafted for it
+- Fixed dying in the boss fights showing no defeat screen, and the pause menu missing there
+- Fixed menu buttons that made no click sound
+- Fixed weapon pedestals in the hub showing an extra sword
+- Fixed Captain Kombusta spawning far outside the arena in Frozen Pass and Ancient Garden
+- Fixed the Bannerman's banner staying visible after it was destroyed
+- Fixed Fire, Frost and Spark buff fish doing nothing: Fire and Spark now add +25% Fire or Lightning damage each, and Frost adds +25% damage against chilled or frozen enemies
+
+### Balance Changes
+
+- Removed the gate damage penalty for failing to destroy the siege engines
+- Added a 3 minute time limit to Protect the Supply Wagon; its gold bags are now part of the wave reward
+- Harder waves now add enemy health and kills to Hold the Gate, and 3-skull waves bring a captain
+- Kill quotas grow by 10% per campaign tier, and at least 60% of every wave is goblins
+- Heavier enemies are now limited to a few on the field at once
+- Replaced Bulwark enemy telegraphed slam attacks with standard melee strikes when close to the player, removing the slam entirely
+- Increased Captain Kombusta bomb flight time to 2.0 seconds and bomb throw interval to 3.0 seconds
+- Adjusted defense level pacing to 5 waves per combat node with staged enemy roster progression from goblins to heavy siege units
+- Configured hero health ratio to persist across campaign nodes
+- Standardized basic warhorse to 30-second duration and 90-second cooldown with a 1.5-second summon cast time
+- Reduced Fishing Pond fish swimming speed by about half
+- Doubled Captain Mogra's pause between spells
+
+### General Changes
+
+- Removed war banners and between-wave reward chests; wave rewards are now granted automatically
+- Leftover enemies now flee when an objective ends instead of having to be hunted down
+- The Fishing Pond start now also works on gamepad (D-pad Down)
+- Updated the ultimate button: press it while aiming your ranged weapon to use the ranged ultimate, otherwise it uses your melee ultimate
+- Removed ultimates from the draft cards; they are now bought at the shop
+- Updated the draft so cards only show up once they can work: Kindling needs Fire on a slot, Deep Freeze needs Ice on a slot, Shatter needs Deep Freeze, Inferno Burst and Eye of the Storm need an ultimate, and each duo card needs both of its elements on slots (Superconductor needs Deep Freeze instead of Ice)
+- Updated the Battle Portal to start a new run straight on the campaign map
+- Removed Retry Level from the defeat screen; dying always returns you to the Meta Area
+- Removed the Return to Stronghold button from the campaign map
+- Towers no longer carry over between sectors; each sector starts with empty plots
+- Updated Bannerman enemy variant to use the Goblin Brute model with war banner mounted to the upper spine
+- Updated campaign combat sector tooltip labels to reflect 5-wave defense structure
+- Added click-to-proceed button on Victory Screen routing directly to the Campaign Map
+- Registered Necromancer's Crypt and Princess Sanctuary in AreaDatabase and linked Tier 8 campaign node branches
+- Removed fortress defense cards from the random draft pool in favor of dedicated static battlefield plots and the Build Wheel system
+- Replaced banner bounty fortress draft rewards with Supply Cache payouts
+- Removed deprecated class definitions and legacy skill tree data in favor of the unified Hero loadout and draft upgrade systems
+- Migrated net captured status visuals from procedural runtime code to an authored Editor prefab configured via NetRootConfigSO
+- Removed runtime asset-path fallbacks from Net Thrower defense and Net projectile scripts
+- Added project rule prohibiting procedural visual creation in code and runtime asset-path fallbacks
+- Added automated editor setup script to regenerate campaign UI prefabs and persistent graph data
+- Added tower building spots to Frozen Pass and Ancient Garden
+- Added sound, dust and a light screen shake when a tower is built, and a neigh when you summon or dismiss your horse
+- Updated the death screen to show the wave you reached
+- Updated the Fishing Pond so it's just you and your bow: no mount, no ultimate and no sword swings, and their HUD is hidden
+- Updated Captain Mogra: new spell sounds, he glows while casting or powered by his totems, and totems now glow and hum before each shockwave
+
 ## [0.1.20] - 2026-09-08
 
 ### New Features
@@ -275,3 +506,21 @@
 ### General Changes
 - Added hit sparks, screen shake, and impact sounds
 - Added Berserker and Mage skill tree preview panels
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

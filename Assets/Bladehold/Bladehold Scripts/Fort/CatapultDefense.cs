@@ -19,6 +19,12 @@ public class CatapultDefense : DefenseStructure
     [SerializeField] private MMF_Player fireFeedback;
     [SerializeField] private LayerMask enemyLayers = ~0;
 
+    [Header("Knockback")]
+    [Tooltip("Horizontal launch speed (m/s) pushing enemies outward from the impact centre.")]
+    [SerializeField] private float knockbackAway = 10f;
+    [Tooltip("Upward launch speed (m/s) added to each enemy caught in the blast.")]
+    [SerializeField] private float knockbackUp = 6f;
+
     [Header("Aim & Animation")]
     [SerializeField] private float windUpDuration = 0.45f;
 
@@ -193,6 +199,7 @@ public class CatapultDefense : DefenseStructure
         if (proj != null)
         {
             proj.SetElementalUpgrades(hasIce, hasLightning, hasFire);
+            proj.SetKnockback(knockbackAway, knockbackUp);
             proj.Launch(spawnPos, targetPos, effectiveSplashDamage, 1.2f, splashRadius);
         }
         else

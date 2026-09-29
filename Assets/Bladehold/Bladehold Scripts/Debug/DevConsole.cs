@@ -281,7 +281,7 @@ public class DevConsole : MonoBehaviour
         DrawRageReadout();
         DrawImbuementReadout();
 
-        // Perf stress tests: burst-spawn into the current wave, ignoring the concurrent cap.
+        // Perf stress tests: burst-spawn fodder goblins, ignoring the concurrent cap. Works before a wave starts.
         GUILayout.Label("Spawn Goblins (stress test)");
         GUILayout.BeginHorizontal();
         DrawSpawnBurstButton(50);

@@ -19,6 +19,14 @@ public class Damage
     /// </summary>
     public float knockbackForce;
 
+    /// <summary>
+    ///     Optional explicit launch velocity (outward + upward) for this hit's knockback. When non-zero
+    ///     it replaces <see cref="KnockbackReceiver" />'s default launch direction/angle so the source
+    ///     can tune the away and up components separately (e.g. tower hits). <see cref="knockbackForce" />
+    ///     still decides fling vs knockdown vs slide against the target's resistance.
+    /// </summary>
+    public Vector3 knockbackVelocity;
+
     /// <summary>World position the hit came from; the target is pushed away from this point.</summary>
     public Vector3 sourcePosition;
 

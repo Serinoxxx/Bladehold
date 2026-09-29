@@ -20,9 +20,9 @@ MonoBehaviour:
   effectNameUseRegEx: 0
   excludeObjectsWithHighlightEffect: 0
   combineMeshes: 0
-  alphaCutOff: 0
+  alphaCutOff: 0.5
   alphaCutOffTextureName: 
-  cullBackFaces: 1
+  cullBackFaces: 0
   normalsOption: 0
   fadeInDuration: 0
   fadeOutDuration: 0
@@ -32,9 +32,9 @@ MonoBehaviour:
   constantWidth: 1
   extraCoveragePixels: 0
   minimumWidth: 0
-  overlay: 0
+  overlay: 0.037
   overlayMode: 0
-  overlayColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  overlayColor: {r: 0, g: 1.826198, b: 0.75252444, a: 1}
   overlayAnimationSpeed: 1
   overlayMinIntensity: 0.5
   overlayBlending: 1
@@ -51,7 +51,7 @@ MonoBehaviour:
   overlayPatternSoftness: 0.02
   overlayPatternRotation: 0
   outline: 1
-  outlineColor: {r: 0, g: 0, b: 0, a: 1}
+  outlineColor: {r: 0, g: 2, b: 0.32208633, a: 1}
   outlineColorStyle: 0
   outlineGradient:
     serializedVersion: 2
@@ -86,7 +86,7 @@ MonoBehaviour:
   outlineGradientInLocalSpace: 0
   outlineBlurPasses: 2
   outlineWidth: 0.45
-  outlineQuality: 3
+  outlineQuality: 2
   outlineEdgeMode: 0
   outlineEdgeThreshold: 0.995
   outlineDistanceScaleBias: 25
@@ -111,14 +111,14 @@ MonoBehaviour:
   outlineVisibility: 0
   outlineIndependent: 0
   outlineMaskMode: 0
-  glow: 1.21
-  glowWidth: 0.4
-  glowQuality: 3
+  glow: 0
+  glowWidth: 0.45
+  glowQuality: 2
   glowBlurMethod: 0
   glowHighPrecision: 1
   glowDistanceScaleBias: 25
   glowDownsampling: 2
-  glowHQColor: {r: 0.64, g: 1, b: 0, a: 1}
+  glowHQColor: {r: 0, g: 2, b: 0.49315548, a: 1}
   glowDithering: 1
   glowDitheringStyle: 0
   glowMagicNumber1: 0.75

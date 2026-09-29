@@ -24,6 +24,8 @@ public class CatapultProjectile : MonoBehaviour
     private float damageAmount;
     private float elapsedTime = 0f;
     private bool hasExploded = false;
+    private float knockbackAway;
+    private float knockbackUp;
 
     private bool isSlipperyGround = false;
     private bool isStormCloud = false;
@@ -42,6 +44,12 @@ public class CatapultProjectile : MonoBehaviour
         isSlipperyGround = slipperyGround;
         isStormCloud = stormCloud;
         isRollingFireball = rollingFireball;
+    }
+
+    public void SetKnockback(float away, float up)
+    {
+        knockbackAway = away;
+        knockbackUp = up;
     }
 
     public void Launch(Vector3 start, Vector3 target, float damage, float duration = 1.2f, float radius = 4.5f)
@@ -106,6 +114,16 @@ public class CatapultProjectile : MonoBehaviour
 
             damagedEntities.Add(h);
 
+            // Radial push: straight out from the impact centre (random heading if dead-centre), plus lift.
+            Vector3 outward = h.transform.position - impactPos;
+            outward.y = 0f;
+            if (outward.sqrMagnitude < 0.0001f)
+            {
+                Vector2 r = Random.insideUnitCircle.normalized;
+                outward = new Vector3(r.x, 0f, r.y);
+            }
+            Vector3 knockback = outward.normalized * knockbackAway + Vector3.up * knockbackUp;
+
             Damage dmg = new Damage
             {
                 value = damageAmount,
@@ -113,6 +131,8 @@ public class CatapultProjectile : MonoBehaviour
                 elementId = "Fire",
                 isPlayerDamage = true,
                 sourcePosition = impactPos,
+                knockbackVelocity = knockback,
+                knockbackForce = knockback.magnitude,
                 source = Player.Instance != null ? Player.Instance.Damageable : null
             };
 

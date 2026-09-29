@@ -145,7 +145,10 @@ public class KnockbackReceiver : MonoBehaviour
         {
             if (!health.IsDead)
             {
-                ragdoll.AddImpulse(LaunchDirection(damage) * force * 0.5f);
+                Vector3 impulse = damage.knockbackVelocity != Vector3.zero
+                    ? ExplicitLaunchVelocity(damage)
+                    : LaunchDirection(damage) * force;
+                ragdoll.AddImpulse(impulse * 0.5f);
             }
             return;
         }
@@ -278,6 +281,8 @@ public class KnockbackReceiver : MonoBehaviour
         agent.isStopped = true;
 
         Vector3 direction = transform.position - damage.sourcePosition;
+        Vector3 explicitFlat = new Vector3(damage.knockbackVelocity.x, 0f, damage.knockbackVelocity.z);
+        if (explicitFlat.sqrMagnitude > 0.0001f) direction = explicitFlat;
         direction.y = 0f;
         direction = direction.sqrMagnitude > 0.0001f ? direction.normalized : -transform.forward;
 
@@ -390,7 +395,9 @@ public class KnockbackReceiver : MonoBehaviour
             forceMag = Mathf.Min(forceMag, config.maxKnockbackForce);
         }
 
-        Vector3 launchVelocity = launchDir * forceMag;
+        Vector3 launchVelocity = damage.knockbackVelocity != Vector3.zero && !isArrowPinCandidate
+            ? ExplicitLaunchVelocity(damage)
+            : launchDir * forceMag;
         Vector3 flatDir = transform.position - damage.sourcePosition;
         flatDir.y = 0f;
         flatDir = flatDir.sqrMagnitude > 0.0001f ? flatDir.normalized : -transform.forward;
@@ -561,6 +568,24 @@ public class KnockbackReceiver : MonoBehaviour
         if (aiMovement != null) aiMovement.enabled = value;
         if (aiAnimation != null) aiAnimation.enabled = value;
         if (aiAttack != null) aiAttack.enabled = value;
+    }
+
+    /// <summary>
+    ///     The hit's own <see cref="Damage.knockbackVelocity" /> (separately tuned away/up components),
+    ///     scaled by the global multiplier and capped at <see cref="KnockbackConfigSO.maxKnockbackForce" />.
+    /// </summary>
+    private Vector3 ExplicitLaunchVelocity(Damage damage)
+    {
+        Vector3 velocity = damage.knockbackVelocity;
+        if (config != null)
+        {
+            velocity *= config.knockbackMultiplier;
+            if (config.maxKnockbackForce > 0f)
+            {
+                velocity = Vector3.ClampMagnitude(velocity, config.maxKnockbackForce);
+            }
+        }
+        return velocity;
     }
 
     private Vector3 LaunchDirection(Damage damage)

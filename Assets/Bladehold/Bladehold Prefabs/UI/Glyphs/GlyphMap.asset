@@ -76,5 +76,7 @@ MonoBehaviour:
     sprite: {fileID: 21300000, guid: 8eff536e73ba2ae449dbb2baa3463bf1, type: 3}
   - controlName: backspace
     sprite: {fileID: 21300000, guid: d3ca901a7e6d27a4b91fadff96d2ef26, type: 3}
+  - controlName: t
+    sprite: {fileID: 21300000, guid: 6e30fa5cdece643419465c12a9223519, type: 3}
   blankKeycap: {fileID: 21300000, guid: ecd15159b03516f42809f043a7747895, type: 3}
   blankKeycapWide: {fileID: 21300000, guid: af24d69515d658047b7bb1016a67d7df, type: 3}

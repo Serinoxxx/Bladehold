@@ -820,12 +820,17 @@ public class SurvivorsSpawner : MonoBehaviour
         return null;
     }
 
-    /// <summary>Debug helper for DevConsole: burst spawns N enemies immediately.</summary>
+    /// <summary>
+    ///     Debug helper for DevConsole: burst spawns N fodder goblins immediately. Goes through the same
+    ///     per-type path as <see cref="DebugSpawnEnemyType" /> rather than the wave path, so it works in prep
+    ///     before a wave has started (handy for recording encounters).
+    /// </summary>
     public void DebugSpawnBurst(int count)
     {
+        string fodderId = pacingConfig != null ? pacingConfig.fodderEnemyId : "goblin";
         for (int i = 0; i < count; i++)
         {
-            SpawnEnemyForWave(currentWave);
+            DebugSpawnEnemyType(fodderId);
         }
     }
 

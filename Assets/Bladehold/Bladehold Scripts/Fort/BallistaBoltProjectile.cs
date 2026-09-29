@@ -15,6 +15,8 @@ public class BallistaBoltProjectile : MonoBehaviour
     private Vector3 direction;
     private float speed = 35f;
     private float damageAmount;
+    private float knockbackAway;
+    private float knockbackUp;
     private int pierceRemaining;
     private float aliveTime = 0f;
     private readonly HashSet<Health> hitTargets = new HashSet<Health>();
@@ -25,11 +27,13 @@ public class BallistaBoltProjectile : MonoBehaviour
         hitLayers = PlayerBarrier.Exclude(hitLayers);
     }
 
-    public void Init(Vector3 dir, float spd, float dmg, int pierce = 3)
+    public void Init(Vector3 dir, float spd, float dmg, int pierce = 3, float knockAway = 0f, float knockUp = 0f)
     {
         direction = dir.normalized;
         speed = spd;
         damageAmount = dmg;
+        knockbackAway = knockAway;
+        knockbackUp = knockUp;
         maxPierce = pierce;
         pierceRemaining = pierce;
         transform.forward = direction;
@@ -65,22 +69,19 @@ public class BallistaBoltProjectile : MonoBehaviour
             {
                 hitTargets.Add(targetHealth);
 
+                Vector3 knockback = KnockbackVelocity(direction, knockbackAway, knockbackUp);
                 Damage dmg = new Damage
                 {
                     value = damageAmount,
                     type = DamageType.sharp,
                     isPlayerDamage = true,
                     sourcePosition = curPos,
+                    knockbackVelocity = knockback,
+                    knockbackForce = knockback.magnitude,
                     source = Player.Instance != null ? Player.Instance.Damageable : null
                 };
 
                 targetHealth.ReceiveDamage(dmg);
-
-                // Knockback
-                if (targetHealth.TryGetComponent(out Rigidbody rb) && !rb.isKinematic)
-                {
-                    rb.AddForce(direction * 15f, ForceMode.Impulse);
-                }
 
                 pierceRemaining--;
                 if (pierceRemaining <= 0)
@@ -92,5 +93,13 @@ public class BallistaBoltProjectile : MonoBehaviour
         }
 
         transform.position = nextPos;
+    }
+
+    /// <summary>Launch velocity for a bolt hit: <paramref name="away" /> along the flattened flight direction plus <paramref name="up" />.</summary>
+    public static Vector3 KnockbackVelocity(Vector3 flightDir, float away, float up)
+    {
+        Vector3 flat = new Vector3(flightDir.x, 0f, flightDir.z);
+        flat = flat.sqrMagnitude > 0.0001f ? flat.normalized : Vector3.zero;
+        return flat * away + Vector3.up * up;
     }
 }
