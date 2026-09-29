@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16071c960b30e7444b779b267a09385e, type: 3}
+  m_Name: TowerSapperSO
+  m_EditorClassIdentifier: Assembly-CSharp::TowerSapperSO
+  searchRadius: 60
+  rescanInterval: 0.5
+  drainRange: 2.8
+  drainInterval: 1
+  drainPerTick: 4
+  drainTrigger: Attack
