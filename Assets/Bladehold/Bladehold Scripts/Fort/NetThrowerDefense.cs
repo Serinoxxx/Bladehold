@@ -218,6 +218,8 @@ public class NetThrowerDefense : DefenseStructure
             Health h = hit.GetComponentInParent<Health>();
             if (h == null || h.IsDead || processed.Contains(h)) continue;
             if (Player.Instance != null && h.transform.root == Player.Instance.transform.root) continue;
+            // A dome stops the net itself, not just its impact damage.
+            if (ProjectileDome.IsInsideAnyDome(h.transform.position)) continue;
 
             processed.Add(h);
 
@@ -230,6 +232,8 @@ public class NetThrowerDefense : DefenseStructure
             // Also deliver minor blunt impact damage
             Damage dmg = new Damage
             {
+                isDefenseDamage = true,
+                isProjectile = true,
                 value = 10f * currentLevel,
                 type = DamageType.blunt,
                 isPlayerDamage = true,

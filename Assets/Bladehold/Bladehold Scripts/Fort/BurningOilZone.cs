@@ -91,6 +91,7 @@ public class BurningOilZone : MonoBehaviour
             // Apply elemental fire damage
             Damage damage = new Damage
             {
+                isDefenseDamage = true,
                 value = damagePerTick,
                 type = DamageType.elemental,
                 sourcePosition = transform.position,
@@ -119,6 +120,7 @@ public class BurningOilZone : MonoBehaviour
                 {
                     Damage shock = new Damage
                     {
+                        isDefenseDamage = true,
                         value = damagePerTick * 0.75f,
                         type = DamageType.elemental,
                         elementId = "Lightning",

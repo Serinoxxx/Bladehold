@@ -23,6 +23,7 @@
   - With `readsPlayerStats`, damage, range, crit and the cut-through cap come from `PlayerStats`. Hitting the cap and then meeting one more target ends the activation and raises `OnBlocked`.
   - Raises `OnHit(IDamageable, Damage, hitPoint)`.
 - **`IShieldBlocker`**: shields (Bulwark, bubble shields) that intercept melee.
+- **`Damage.isProjectile` / `isDefenseDamage`**: the Dome Warden's `ProjectileDome` blocks projectile hits on enemies inside it: defence projectiles always, the hero's only while the hero is outside. Every `Fort/` damage site sets `isDefenseDamage`; arrows, ballista, nets and Tesla bolts also set `isProjectile` (the Catapult deliberately doesn't, so it lobs over domes). Set both correctly on any new ranged hit.
 - **`KnockbackReceiver`** reacts to `OnDamaged` and shoves the `NavMeshAgent`.
 
 ## Feedback and cleanup

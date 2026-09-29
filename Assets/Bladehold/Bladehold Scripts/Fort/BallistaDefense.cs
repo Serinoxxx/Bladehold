@@ -195,6 +195,8 @@ public class BallistaDefense : DefenseStructure
                     Vector3 knockback = BallistaBoltProjectile.KnockbackVelocity(dir, knockbackAway, knockbackUp);
                     Damage dmg = new Damage
                     {
+                        isDefenseDamage = true,
+                        isProjectile = true,
                         value = boltDamage,
                         type = DamageType.sharp,
                         isPlayerDamage = true,

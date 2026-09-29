@@ -72,6 +72,8 @@ public class BallistaBoltProjectile : MonoBehaviour
                 Vector3 knockback = KnockbackVelocity(direction, knockbackAway, knockbackUp);
                 Damage dmg = new Damage
                 {
+                    isDefenseDamage = true,
+                    isProjectile = true,
                     value = damageAmount,
                     type = DamageType.sharp,
                     isPlayerDamage = true,

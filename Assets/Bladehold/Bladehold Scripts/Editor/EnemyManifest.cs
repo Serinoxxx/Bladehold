@@ -1034,6 +1034,44 @@ internal static class EnemyManifest
             },
         },
 
+        // Dome Warden: slow goblin that holds a dome over itself and nearby allies. Projectiles from
+        // outside can't get in (towers never can), so the hero has to walk in. Stands off at 9m so
+        // the dome doesn't come to the player; keeps the base melee for when the player arrives.
+        new EnemySpec
+        {
+            id = "dome_warden",
+            soFolder = "DomeWarden",
+            prefabName = "Dome Warden Enemy Variant",
+            rootScale = 1.1f,
+            navStoppingDistance = 9f,
+            removeComponents = new[] { typeof(GoldenGoblin), typeof(ImpulseGoblin) },
+            assets = new[]
+            {
+                new SoSpec
+                {
+                    soType = typeof(ProjectileDomeSO),
+                    assetName = "ProjectileDomeSO",
+                    initDefaults = so =>
+                    {
+                        ProjectileDomeSO dome = (ProjectileDomeSO)so;
+                        dome.domeVisualPrefab = LoadPrefab("Assets/Bladehold/Bladehold Prefabs/VFX/BubbleShieldVisual.prefab");
+                    },
+                },
+            },
+            components = new[]
+            {
+                new ComponentSpec
+                {
+                    type = typeof(ProjectileDome),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "data", ctx.LoadedAsset("ProjectileDomeSO"));
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                    },
+                },
+            },
+        },
+
         // Captain Kombusta: Clan Captain specializing in a 10-dynamite barrage at distance (>=5m) and self-immolation up close.
         new EnemySpec
         {

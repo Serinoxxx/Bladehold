@@ -225,6 +225,8 @@ public class TowerPlotManager : MonoBehaviour
 
         target.ReceiveDamage(new Damage
         {
+            isDefenseDamage = true,
+            isProjectile = true,
             value = damage,
             type = DamageType.elemental,
             elementId = "Lightning",

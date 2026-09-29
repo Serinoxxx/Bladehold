@@ -87,6 +87,7 @@ public class SpikeTrapDefense : DefenseStructure
             {
                 Damage dmg = new Damage
                 {
+                    isDefenseDamage = true,
                     value = impaleDamage,
                     type = DamageType.sharp,
                     isPlayerDamage = true,

@@ -55,6 +55,12 @@ public class Damage
     public bool isProjectile;
 
     /// <summary>
+    ///     True if a built defence (tower, trap, tower-wide card) dealt this, rather than the hero directly.
+    ///     A <see cref="ProjectileDome" /> blocks defence projectiles even while the hero stands inside it.
+    /// </summary>
+    public bool isDefenseDamage;
+
+    /// <summary>
     ///     Travel / flight direction vector of the attack or projectile. Used for trajectory-aligned knockback flings.
     /// </summary>
     public Vector3 direction;

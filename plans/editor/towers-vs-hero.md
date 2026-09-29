@@ -1,17 +1,18 @@
-# Editor to-do: towers vs hero (blind spots, Sapper)
+# Editor to-do: towers vs hero (blind spots, Sapper, Dome Warden)
 
-No plan file; from the 2026-09-29 design chat (towers and hero doing the same job). Unity MCP was **not** connected, so nothing here has run in the Editor. Tick items off as you go and delete the file when it's empty. **The Sapper never spawns until its prefab is generated (first item under Wiring).**
+No plan file; from the 2026-09-29 design chat (towers and hero doing the same job). Unity MCP was **not** connected, so nothing here has run in the Editor. Tick items off as you go and delete the file when it's empty. **Neither the Sapper nor the Dome Warden spawns until the prefab generator has run (first item under Wiring).**
 
 ## Verify first
 
-- [ ] **Scripts import clean.** Focus Unity and check the Console. New files: `Enemies/Sapper/TowerSapper.cs`, `Enemies/Sapper/TowerSapperSO.cs`. Their `.meta` files are created on import, so commit those afterwards.
-- [ ] **Reload `Config/Enemies.csv` in LibreOffice before you save it.** It was open (lock file) when the `sapper` row was appended. Saving the old buffer drops the row. Your uncommitted Bulwark tuning is still in the working copy.
+- [ ] **Scripts import clean.** Focus Unity and check the Console. New files: `Enemies/Sapper/TowerSapper.cs`, `TowerSapperSO.cs`, `Enemies/DomeWarden/ProjectileDome.cs`, `ProjectileDomeSO.cs`. Their `.meta` files are created on import, so commit those afterwards.
 
 ## Wiring
 
-- [ ] **Generate the Sapper prefab** *(MCP-able)*: **Bladehold > Generate Enemy Prefabs**. This creates `Bladehold Prefabs/Sapper Enemy Variant.prefab`, `Enemies/Sapper/TowerSapperSO.asset` and the `sapper` entry in `EnemyPrefabMap.asset`. `TowerSapper.data`, `health`, `targetSelector` and `animator` are wired by the generator (and auto-wire in `OnValidate` except `data`). Verify: benchmark 19F "Sapper Prefab" passes.
+- [ ] **Generate the Sapper and Dome Warden prefabs** *(MCP-able)*: **Bladehold > Generate Enemy Prefabs**. This creates `Bladehold Prefabs/Sapper Enemy Variant.prefab`, `Enemies/Sapper/TowerSapperSO.asset` and the `sapper` entry in `EnemyPrefabMap.asset` (plus `Dome Warden Enemy Variant.prefab` and `dome_warden`). `TowerSapper.data`, `health`, `targetSelector` and `animator` are wired by the generator (and auto-wire in `OnValidate` except `data`). Verify: benchmark 19F "Sapper Prefab" passes.
 - [ ] **Sapper look** (art pass): it's a plain goblin at 0.9 scale. Give it something readable at a glance (a pickaxe, a satchel, a tint) so players learn "that one goes for my towers".
 - [ ] **`TowerSapper.drainFeedback`** (optional `MMF_Player` on the prefab): a hacking thunk + wood chips at the tower each tick. Without it the only sign is the tower's supply bar dropping.
+- [ ] **Dome Warden visual check** *(MCP-able)*: the generator creates `Enemies/DomeWarden/ProjectileDomeSO.asset` with `domeVisualPrefab` = `Bladehold Prefabs/VFX/BubbleShieldVisual.prefab` (the Bubbler's sphere), scaled to a 10m-wide dome, half-buried (`visualHeightOffset` 0). It may need its own, more transparent material at that size so it doesn't hide the fight. Its colliders are switched off at runtime. Verify: benchmark 19G "Dome Warden Prefab" passes.
+- [ ] **Dome Warden look + `ProjectileDome.blockFeedback`** (optional `MMF_Player`): a glassy ping where a projectile is stopped. Without it the only sign is the dome pulsing.
 
 ## UI review
 
@@ -21,9 +22,13 @@ No plan file; from the 2026-09-29 design chat (towers and hero doing the same jo
 
 - [ ] **Blind spot sizes**: `minRange` on each `Bladehold Prefabs/Defenses/Defense_*.prefab`. Currently Arrow 3, Net Thrower 4, Ballista 6, Catapult 8.
 - [ ] **Sapper numbers**: `TowerSapperSO`. Currently drain 4 supply/s, drain range 2.8m (keep it under the Arrow Tower's 3m blind spot), search 60m. Roster row: 30 HP, speed 4.2, from wave 2 at threat tier 2, 15% weight, max 3 at once.
+- [ ] **Dome Warden numbers**: `ProjectileDomeSO.radius` 5m. Stands 9m off its target (`NavMeshAgent` stopping distance on the prefab). Roster row: 80 HP, speed 2.8, from wave 2 at threat tier 3, 12% weight, max 1 at once.
 
 ## Playtest
 
 - [ ] **Blind spot**: build an Arrow Tower and a Catapult, and let goblins walk up to each. The tower stops shooting anything hugging it and resumes once they step out. A Spike Trap next to the Catapult catches what the Catapult can't.
 - [ ] **Sapper beats**: DevConsole (backquote) → spawn-type picker → `sapper` with a tower built. It runs past you to the nearest tower, hacks until the tower shows NO SUPPLY, then goes for the next one. With no towers it fights you like a normal goblin.
-- [ ] **Negative cases**: the tower it's draining never shoots it (it's in the blind spot), but a neighbouring tower does. It never drains a tower after dying. Hitting it doesn't make it turn on you (it's single-minded by design; say if you'd rather it retaliates). Refilling a tower with [E] while a sapper is on it works and the sapper keeps draining.
+- [ ] **Negative cases**: the tower it's draining never shoots it (it's in the blind spot), but a neighbouring tower does. It never drains a tower after dying. Hitting it doesn't make it turn on you (single-minded by design, decided 2026-09-30). Refilling a tower with [E] while a sapper is on it works and the sapper keeps draining.
+- [ ] **Dome beats**: DevConsole spawn picker → `dome_warden` next to a few goblins, with an Arrow Tower and a Catapult built. Arrows and ballista bolts stop at goblins inside the dome (the dome pulses). Catapult boulders still land. Your bow does nothing from outside and works once you step in. Your sword works. Nets don't root anything inside.
+- [ ] **Dome negative cases**: the dome drops the moment the Warden dies, and nothing stays shielded after. A goblin that walks out of the dome is hittable within a quarter-second. Enemy projectiles are never affected.
+- [ ] **Decision: towers keep firing into a dome.** They waste supply on blocked shots, which reads clearly ("my arrows bounce") but drains ammo. The alternative is towers skipping domed targets. Say if you'd rather that.

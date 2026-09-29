@@ -134,6 +134,7 @@ public class OilVatDefense : DefenseStructure
             // Apply heat scald damage
             Damage dmg = new Damage
             {
+                isDefenseDamage = true,
                 value = damagePerSecond * 0.5f, // half second tick
                 type = DamageType.elemental,
                 elementId = "Fire",

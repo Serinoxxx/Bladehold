@@ -143,6 +143,7 @@ public class CatapultStormCloud : MonoBehaviour
 
         Damage damage = new Damage
         {
+            isDefenseDamage = true,
             value = actualDamage,
             type = DamageType.elemental,
             elementId = "Lightning",

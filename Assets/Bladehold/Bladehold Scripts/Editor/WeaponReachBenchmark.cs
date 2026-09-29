@@ -2308,6 +2308,69 @@ public static class WeaponReachBenchmark
             failedCount++;
         }
 
+        // 19G. DOME WARDEN: projectile dome blocking rule
+        sb.AppendLine("\n### 19G. DOME WARDEN PROJECTILE DOME");
+        try
+        {
+            Damage towerArrow = new Damage { value = 10f, isPlayerDamage = true, isProjectile = true, isDefenseDamage = true };
+            Damage heroArrow = new Damage { value = 10f, isPlayerDamage = true, isProjectile = true };
+            Damage heroSwing = new Damage { value = 10f, isPlayerDamage = true };
+            Damage catapult = new Damage { value = 10f, isPlayerDamage = true, isDefenseDamage = true };
+            Damage enemyBolt = new Damage { value = 10f, isProjectile = true };
+
+            bool towerAlways = ProjectileDome.ShouldBlock(towerArrow, false) && ProjectileDome.ShouldBlock(towerArrow, true);
+            bool heroOutsideBlocked = ProjectileDome.ShouldBlock(heroArrow, false);
+            bool heroInsideAllowed = !ProjectileDome.ShouldBlock(heroArrow, true);
+            bool meleeAllowed = !ProjectileDome.ShouldBlock(heroSwing, false);
+            bool lobAllowed = !ProjectileDome.ShouldBlock(catapult, false);
+            bool enemyIgnored = !ProjectileDome.ShouldBlock(enemyBolt, false);
+
+            GameObject domeObj = new GameObject("Benchmark_Dome");
+            domeObj.transform.position = new Vector3(6000f, 0f, 0f);
+            ProjectileDome dome = domeObj.AddComponent<ProjectileDome>();
+            ProjectileDomeSO domeSo = ScriptableObject.CreateInstance<ProjectileDomeSO>();
+            domeSo.radius = 5f;
+            SerializedObject domeSer = new SerializedObject(dome);
+            domeSer.FindProperty("data").objectReferenceValue = domeSo;
+            domeSer.ApplyModifiedPropertiesWithoutUndo();
+            bool containsFlat = dome.Contains(domeObj.transform.position + new Vector3(3f, 6f, 3f)) && !dome.Contains(domeObj.transform.position + new Vector3(4f, 0f, 4f));
+            UnityEngine.Object.DestroyImmediate(domeObj);
+            UnityEngine.Object.DestroyImmediate(domeSo);
+
+            if (towerAlways && heroOutsideBlocked && heroInsideAllowed && meleeAllowed && lobAllowed && enemyIgnored && containsFlat)
+            {
+                sb.AppendLine("  - Dome Rule: tower projectiles always blocked, hero projectiles only from outside, melee/catapult/enemy hits pass, flat 5m containment. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Dome rule (towerAlways={towerAlways}, heroOutsideBlocked={heroOutsideBlocked}, heroInsideAllowed={heroInsideAllowed}, meleeAllowed={meleeAllowed}, lobAllowed={lobAllowed}, enemyIgnored={enemyIgnored}, containsFlat={containsFlat})");
+                failedCount++;
+            }
+
+            EnemyPrefabMapSO domeMap = AssetDatabase.LoadAssetAtPath<EnemyPrefabMapSO>("Assets/Bladehold/Bladehold Scripts/Enemies/EnemyPrefabMap.asset");
+            GameObject wardenPrefab = domeMap != null ? domeMap.FindPrefab("dome_warden") : null;
+            ProjectileDome wardenDome = wardenPrefab != null ? wardenPrefab.GetComponent<ProjectileDome>() : null;
+            ProjectileDomeSO wardenSo = wardenDome != null ? new SerializedObject(wardenDome).FindProperty("data").objectReferenceValue as ProjectileDomeSO : null;
+            bool hasVisual = wardenSo != null && wardenSo.domeVisualPrefab != null;
+
+            if (wardenSo != null && hasVisual)
+            {
+                sb.AppendLine("  - Dome Warden Prefab: registered in EnemyPrefabMap with ProjectileDome, SO and dome visual wired. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Dome Warden prefab (registered={wardenPrefab != null}, soWired={wardenSo != null}, hasVisual={hasVisual}). Run Bladehold > Generate Enemy Prefabs.");
+                failedCount++;
+            }
+        }
+        catch (Exception ex)
+        {
+            sb.AppendLine($"  - Dome Warden Benchmark exception: {ex.Message} [FAILED]");
+            failedCount++;
+        }
+
         // =========================================================================
         // 20. DEFENSE VISUALS, NET MECHANICS, CATAPULT DETONATION & SUPPLY BENCHMARK
         // =========================================================================

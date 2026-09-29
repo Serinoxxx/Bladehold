@@ -126,6 +126,7 @@ public class CatapultProjectile : MonoBehaviour
 
             Damage dmg = new Damage
             {
+                isDefenseDamage = true,
                 value = damageAmount,
                 type = DamageType.elemental,
                 elementId = "Fire",

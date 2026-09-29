@@ -125,6 +125,7 @@ public class FortArrowProjectile : MonoBehaviour
             {
                 Damage damage = new Damage
                 {
+                    isDefenseDamage = true,
                     value = damageAmount,
                     type = (!string.IsNullOrEmpty(infusedElement)) ? DamageType.elemental : DamageType.sharp,
                     isProjectile = true,

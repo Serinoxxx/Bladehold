@@ -169,6 +169,7 @@ public class RollingFireball : MonoBehaviour, IDamageable
 
                     Damage damage = new Damage
                     {
+                        isDefenseDamage = true,
                         value = actualDamage,
                         type = DamageType.elemental,
                         elementId = "Fire",
@@ -235,6 +236,7 @@ public class RollingFireball : MonoBehaviour, IDamageable
             {
                 Damage dmg = new Damage
                 {
+                    isDefenseDamage = true,
                     value = rollDamage * 1.5f,
                     type = DamageType.elemental,
                     elementId = "Fire",

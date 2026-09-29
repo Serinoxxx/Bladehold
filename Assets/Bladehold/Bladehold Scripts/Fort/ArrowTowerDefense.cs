@@ -164,6 +164,8 @@ public class ArrowTowerDefense : DefenseStructure
             // Fallback direct ray / damage
             Damage dmg = new Damage
             {
+                isDefenseDamage = true,
+                isProjectile = true,
                 value = finalDamage,
                 type = (isFrost || isLightning || isFire) ? DamageType.elemental : DamageType.sharp,
                 elementId = isFire ? "Fire" : (isLightning ? "Lightning" : (isFrost ? "Ice" : "")),
