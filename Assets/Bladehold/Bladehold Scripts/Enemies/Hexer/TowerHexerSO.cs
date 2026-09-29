@@ -11,7 +11,7 @@ public class TowerHexerSO : ScriptableObject
     public float rescanInterval = 0.5f;
 
     [Header("Channel")]
-    [Tooltip("Flat distance from the tower at which the Hexer can channel. It stands off (NavMeshAgent stopping distance ~10) so the hero has to go to it.")]
+    [Tooltip("Flat distance from the tower at which the Hexer plants itself and channels, so the hero has to go to it.")]
     public float channelRange = 11f;
     [Tooltip("The channel drops if the tower gets further than channelRange + this (e.g. the Hexer got knocked away).")]
     public float breakRangeMargin = 2f;

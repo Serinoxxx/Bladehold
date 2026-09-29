@@ -2334,7 +2334,7 @@ public static class WeaponReachBenchmark
             SerializedObject domeSer = new SerializedObject(dome);
             domeSer.FindProperty("data").objectReferenceValue = domeSo;
             domeSer.ApplyModifiedPropertiesWithoutUndo();
-            bool containsFlat = dome.Contains(domeObj.transform.position + new Vector3(3f, 6f, 3f)) && !dome.Contains(domeObj.transform.position + new Vector3(4f, 0f, 4f));
+            bool containsFlat = dome.Contains(domeObj.transform.position + new Vector3(3f, 1f, 3f)) && !dome.Contains(domeObj.transform.position + new Vector3(4f, 0f, 4f)) && !dome.Contains(domeObj.transform.position + new Vector3(1f, 7f, 0f));
             var hpField = typeof(ProjectileDome).GetField("currentHealth", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             hpField.SetValue(dome, 150f);
             dome.AbsorbHit(100f, domeObj.transform.position);
@@ -2346,7 +2346,7 @@ public static class WeaponReachBenchmark
 
             if (towerAlways && heroOutsideBlocked && heroInsideAllowed && meleeAllowed && splashNotHealthBlocked && enemyIgnored && containsFlat && soaks && breaks)
             {
-                sb.AppendLine("  - Dome Rule: tower projectiles always blocked, hero projectiles only from outside, melee and enemy hits pass, flat 5m containment, 150 HP dome soaks 100 then breaks. [PASSED]");
+                sb.AppendLine("  - Dome Rule: tower projectiles always blocked, hero projectiles only from outside, melee and enemy hits pass, 5m sphere containment (a goblin 7m above is outside), 150 HP dome soaks 100 then breaks. [PASSED]");
                 passedCount++;
             }
             else

@@ -63,6 +63,9 @@ public class Damage
     /// <summary>True for heavy piercing hits (the Ballista) that shields don't shrug off: skips the Bulwark shield's projectile penalty.</summary>
     public bool piercesShields;
 
+    /// <summary>True for damage dealt by an elemental status (burn tick, Thermal Shock, chain lightning) rather than a direct hit. A Hexer's channel ignores these.</summary>
+    public bool isStatusEffect;
+
     /// <summary>
     ///     Travel / flight direction vector of the attack or projectile. Used for trajectory-aligned knockback flings.
     /// </summary>

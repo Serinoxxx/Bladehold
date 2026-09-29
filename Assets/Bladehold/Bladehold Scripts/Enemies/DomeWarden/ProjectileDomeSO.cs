@@ -4,7 +4,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "ProjectileDomeSO", menuName = "Scriptable Objects/Enemies/Projectile Dome")]
 public class ProjectileDomeSO : ScriptableObject
 {
-    [Tooltip("Dome radius in metres. Enemies inside are shielded from projectiles.")]
+    [Tooltip("Dome radius in metres (a sphere around the visual centre). Enemies inside are shielded from projectiles.")]
     public float radius = 5f;
 
     [Tooltip("Seconds between checks for enemies walking into or out of the dome.")]

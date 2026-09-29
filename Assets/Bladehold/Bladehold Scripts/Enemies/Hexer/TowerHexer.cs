@@ -17,6 +17,8 @@ public class TowerHexer : MonoBehaviour
     [SerializeField] private TowerHexerSO data;
     [SerializeField] private Health health;
     [SerializeField] private AITargetSelector targetSelector;
+    [Tooltip("Paused while channelling so the Hexer plants itself instead of walking on into the tower.")]
+    [SerializeField] private AIMovement movement;
     [SerializeField] private Animator animator;
     [Tooltip("Optional: played at the tower when a hex lands.")]
     [SerializeField] private MMF_Player hexStartFeedback;
@@ -44,6 +46,7 @@ public class TowerHexer : MonoBehaviour
     {
         if (health == null) health = GetComponent<Health>();
         if (targetSelector == null) targetSelector = GetComponent<AITargetSelector>();
+        if (movement == null) movement = GetComponent<AIMovement>();
         if (animator == null) animator = GetComponentInChildren<Animator>();
     }
 
@@ -69,11 +72,14 @@ public class TowerHexer : MonoBehaviour
             Debug.LogError($"{name}: TowerHexer.animator is not assigned or found.", this);
             anyError = true;
         }
+        if (movement == null)
+        {
+            Debug.LogError($"{name}: TowerHexer.movement (AIMovement) is not assigned or found.", this);
+            anyError = true;
+        }
         if (anyError) return;
 
         castTriggerHash = Animator.StringToHash(data.castTrigger);
-        SetUpBeam();
-
         health.OnDied += HandleDied;
         health.OnDamaged += HandleDamaged;
 
@@ -83,6 +89,8 @@ public class TowerHexer : MonoBehaviour
             playerHealth = player.Health;
             playerHealth.OnDied += HandlePlayerDied;
         }
+
+        SetUpBeam();
     }
 
     private void SetUpBeam()
@@ -111,7 +119,7 @@ public class TowerHexer : MonoBehaviour
         beam.autoScaleEnabled = false;
         beam.masterScale = 1f;
         beam.chainPoints = new[] { beamOrigin, beamTarget };
-        beam.gameObject.SetActive(false);
+        beam.vfxEnabled = false; // its own toggle; SetActive before its Start throws in its OnDisable
     }
 
     private void OnDestroy()
@@ -165,8 +173,9 @@ public class TowerHexer : MonoBehaviour
     {
         isChannelling = true;
         currentTower.AddHexer(this);
+        movement.SetMovementPaused(true);
         nextPulseTime = 0f;
-        if (beam != null) beam.gameObject.SetActive(true);
+        if (beam != null) beam.vfxEnabled = true;
         if (hexStartFeedback != null) hexStartFeedback.PlayFeedbacks(currentTower.transform.position);
     }
 
@@ -175,7 +184,8 @@ public class TowerHexer : MonoBehaviour
         if (!isChannelling) return;
         isChannelling = false;
         if (currentTower != null) currentTower.RemoveHexer(this);
-        if (beam != null) beam.gameObject.SetActive(false);
+        if (movement != null) movement.SetMovementPaused(false);
+        if (beam != null) beam.vfxEnabled = false;
     }
 
     private void ReleaseTower()
@@ -195,7 +205,7 @@ public class TowerHexer : MonoBehaviour
 
     private void HandleDamaged(Damage damage)
     {
-        if (damage == null || !damage.IsPlayerOwned || damage.isDefenseDamage) return;
+        if (damage == null || !damage.IsPlayerOwned || damage.isDefenseDamage || damage.isStatusEffect) return;
         resumeTime = Time.time + data.interruptDuration;
         if (!isChannelling) return;
         StopChannel();

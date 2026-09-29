@@ -1041,7 +1041,7 @@ internal static class EnemyManifest
             id = "hexer",
             soFolder = "Hexer",
             prefabName = "Hexer Enemy Variant",
-            navStoppingDistance = 10f,
+            navStoppingDistance = 2f, // it plants itself at channel range (TowerHexer pauses AIMovement)
             removeComponents = new[] { typeof(GoldenGoblin), typeof(ImpulseGoblin) },
             assets = new[]
             {
@@ -1067,6 +1067,7 @@ internal static class EnemyManifest
                         EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
                         EnemyPrefabGenerator.SetReference(so, "targetSelector", ctx.Root.GetComponent<AITargetSelector>());
                         EnemyPrefabGenerator.SetReference(so, "animator", ctx.ChildAnimator);
+                        EnemyPrefabGenerator.SetReference(so, "movement", ctx.Movement);
                     },
                 },
             },

@@ -54,7 +54,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7080334578233263117, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
       propertyPath: m_StoppingDistance
-      value: 10
+      value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 6572349470805921892, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
@@ -91,6 +91,7 @@ MonoBehaviour:
   data: {fileID: 11400000, guid: 64164e1f8efd1114eb64815571e30cfb, type: 2}
   health: {fileID: 4449040476893057446}
   targetSelector: {fileID: 5448175601000097828}
+  movement: {fileID: 7568373487092716763}
   animator: {fileID: 546438684173865966}
   hexStartFeedback: {fileID: 0}
   interruptFeedback: {fileID: 0}
@@ -116,3 +117,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7a610a77074b0b47936e37d35e5b4b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AITargetSelector
+--- !u!114 &7568373487092716763 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8448426296968807282, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
+  m_PrefabInstance: {fileID: 2032976534175766441}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940459893904109566}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fbbc2048d5b01e48874c730dc14a696, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AIMovement

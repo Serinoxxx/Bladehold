@@ -104,7 +104,7 @@ public class EnemyStatusManager : MonoBehaviour
                 float baseTick = (Player.Instance != null && Player.Instance.Stats != null) ? Player.Instance.Stats.GetValue(StatType.SwordDamage) * 0.15f : 10f;
                 float fireBonus = (Player.Instance != null && Player.Instance.Stats != null) ? Player.Instance.Stats.GetValue(StatType.FireDamageBonus) : 0f;
                 float dotDamage = (baseTick + combustionDPS) * (1f + Mathf.Max(0f, fireBonus));
-                Damage dot = new Damage { value = dotDamage, type = DamageType.elemental, source = Player.Instance?.Damageable, isPlayerDamage = true };
+                Damage dot = new Damage { value = dotDamage, type = DamageType.elemental, isStatusEffect = true, source = Player.Instance?.Damageable, isPlayerDamage = true };
                 health.ReceiveDamage(dot);
             }
         }
@@ -289,7 +289,7 @@ public class EnemyStatusManager : MonoBehaviour
                     RemoveStatus("Frozen");
                     
                     float burstDamage = damage.value * 1.5f * thermalShock;
-                    Damage burst = new Damage { value = burstDamage, type = DamageType.elemental, source = Player.Instance.Damageable, isPlayerDamage = true };
+                    Damage burst = new Damage { value = burstDamage, type = DamageType.elemental, isStatusEffect = true, source = Player.Instance.Damageable, isPlayerDamage = true };
                     health.ReceiveDamage(burst);
                     
                     if (ElementalEffectsManager.Instance != null)
@@ -332,7 +332,7 @@ public class EnemyStatusManager : MonoBehaviour
                         Health target = hit.GetComponentInParent<Health>();
                         if (target != null && target != health && !target.IsDead && (target.transform.root != Player.Instance.transform.root))
                         {
-                            Damage explosion = new Damage { value = dotDamage, type = DamageType.elemental, source = Player.Instance.Damageable, isPlayerDamage = true };
+                            Damage explosion = new Damage { value = dotDamage, type = DamageType.elemental, isStatusEffect = true, source = Player.Instance.Damageable, isPlayerDamage = true };
                             target.ReceiveDamage(explosion);
                         }
                     }
@@ -361,7 +361,7 @@ public class EnemyStatusManager : MonoBehaviour
                         Health target = hit.GetComponentInParent<Health>();
                         if (target != null && target != health && !target.IsDead && (target.transform.root != Player.Instance.transform.root))
                         {
-                            Damage clDmg = new Damage { value = clDamage, type = DamageType.elemental, source = Player.Instance.Damageable, isPlayerDamage = true };
+                            Damage clDmg = new Damage { value = clDamage, type = DamageType.elemental, isStatusEffect = true, source = Player.Instance.Damageable, isPlayerDamage = true };
                             target.ReceiveDamage(clDmg);
                             targetsHit++;
                         }
@@ -391,7 +391,7 @@ public class EnemyStatusManager : MonoBehaviour
                 Health targetHealth = hit.GetComponentInParent<Health>();
                 if (targetHealth != null && targetHealth != health && !targetHealth.IsDead && (Player.Instance == null || targetHealth.transform.root != Player.Instance.transform.root))
                 {
-                    Damage clDmg = new Damage { value = clDamage, type = DamageType.elemental, source = Player.Instance?.Damageable, isPlayerDamage = true };
+                    Damage clDmg = new Damage { value = clDamage, type = DamageType.elemental, isStatusEffect = true, source = Player.Instance?.Damageable, isPlayerDamage = true };
                     targetHealth.ReceiveDamage(clDmg);
                     targetsHit++;
                 }

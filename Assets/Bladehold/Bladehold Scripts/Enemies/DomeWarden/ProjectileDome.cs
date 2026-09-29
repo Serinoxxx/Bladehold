@@ -54,7 +54,7 @@ public class ProjectileDome : MonoBehaviour
     public bool IsUp => !isDown && !anyError && !isBroken;
     public Vector3 SphereCentre => transform.position + Vector3.up * (data != null ? data.visualHeightOffset : 0f);
 
-    /// <summary>True when a point is inside any standing dome (flat distance).</summary>
+    /// <summary>True when a point is inside any standing dome sphere.</summary>
     public static bool IsInsideAnyDome(Vector3 worldPos)
     {
         foreach (ProjectileDome dome in active)
@@ -70,7 +70,7 @@ public class ProjectileDome : MonoBehaviour
         foreach (ProjectileDome dome in active)
         {
             if (dome == null || !dome.IsUp) continue;
-            if ((worldPos - dome.SphereCentre).sqrMagnitude <= dome.Radius * dome.Radius) return dome;
+            if (dome.Contains(worldPos)) return dome;
         }
         return null;
     }
@@ -95,11 +95,10 @@ public class ProjectileDome : MonoBehaviour
         return damage.isDefenseDamage || !heroInsideDome;
     }
 
+    /// <summary>True when a point is inside the dome sphere (3D, so a goblin on a rampart above isn't covered).</summary>
     public bool Contains(Vector3 worldPos)
     {
-        Vector3 offset = worldPos - transform.position;
-        offset.y = 0f;
-        return offset.sqrMagnitude <= Radius * Radius;
+        return (worldPos - SphereCentre).sqrMagnitude <= Radius * Radius;
     }
 
     private void OnValidate()
@@ -169,7 +168,7 @@ public class ProjectileDome : MonoBehaviour
     private void Rescan()
     {
         seenThisScan.Clear();
-        Collider[] hits = Physics.OverlapSphere(transform.position, data.radius, enemyLayers, QueryTriggerInteraction.Collide);
+        Collider[] hits = Physics.OverlapSphere(SphereCentre, data.radius, enemyLayers, QueryTriggerInteraction.Collide);
         foreach (Collider hit in hits)
         {
             if (hit == null) continue;
