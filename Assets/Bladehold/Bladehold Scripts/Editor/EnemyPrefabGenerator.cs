@@ -308,6 +308,13 @@ public static class EnemyPrefabGenerator
                 throw new InvalidOperationException($"No Animator found under '{spec.prefabName}' to apply the override to.");
             }
             animator.runtimeAnimatorController = controller;
+
+            // Third-party clips (Sorceress, Kevin Iglesias) carry events like Hit/Shoot/Land; a no-op
+            // receiver on the rig keeps Unity from logging a missing-receiver warning on every play.
+            if (animator.GetComponent<EnemyAnimationEvents>() == null)
+            {
+                animator.gameObject.AddComponent<EnemyAnimationEvents>();
+            }
         }
 
         if (spec.disableBaseAIAttack)

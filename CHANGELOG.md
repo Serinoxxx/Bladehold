@@ -11,6 +11,8 @@
 
 ### Fixes
 
+- Fixed the Dwarf and Medusa enemies (and the Sapper and Hexer built on them) animating in a hunched goblin pose; they now stand, walk, run, attack and die with their own animations
+
 ### Balance Changes
 
 - Added a blind spot around the Arrow Tower, Net Thrower, Ballista and Catapult: they can no longer shoot enemies standing right next to them, so defending them up close is up to you

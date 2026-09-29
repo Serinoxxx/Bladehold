@@ -21,6 +21,7 @@
   - `CoinDropper`, `Enemy` (kill reporting).
 - **Attacks are uneven by design.** Special enemies have telegraphed attacks (Bulwark counter-slam, Kombusta dynamite, Troll slam, bomber, and others). Basic enemies just swing for minor damage when in range, with no telegraph.
 - **`Enemy.RosterId`** is stamped by `EnemyDefinitionApplier` on every roster spawn (null for scene-placed enemies). Use it to pick out plain goblins (e.g. `WardenEscort` recruits only `goblin`).
+- **Non-goblin bodies get their own simple controller**, not the goblin one: the goblin clips hunch other rigs over. `Bladehold Animations/Dwarf AC.controller` and `Medusa AC.controller` are a Locomotion blend (Idle/Walk/Run on `MoveSpeed`) plus Death, Knockdown→`GetUp`, Stagger, and Attack/Cheer layers, and they declare every goblin parameter so `LocomotionAnimator` never hits a missing one. Assign via the manifest's `animatorOverridePath`. The generator also adds `EnemyAnimationEvents` to the rig to swallow third-party clip events.
 - Special attack components sit beside their SOs (`*Attack.cs` + `*AttackSO.cs`), with per-enemy folders for bigger kits (`Bulwark/`, `Bannerman/`, `Bomber/`, `Assassin/`, `Captain/`, …).
 
 ## Captains

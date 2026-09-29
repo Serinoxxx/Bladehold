@@ -142,6 +142,7 @@ internal static class EnemyManifest
         {
             id = "dwarf",
             prefabName = "Dwarf Enemy Variant",
+            animatorOverridePath = "Assets/Bladehold/Bladehold Animations/Dwarf AC.controller", // simple human (masculine) idle/walk/run + axe attack; the goblin clips hunch a dwarf over
         },
 
         // Ancient Warrior: standard balanced melee — a pure stat variant (Enemies.csv row only).
@@ -525,7 +526,7 @@ internal static class EnemyManifest
             id = "medusa",
             soFolder = "Medusa",
             prefabName = "Medusa Enemy Variant",
-            animatorOverridePath = "Assets/Bladehold/Bladehold Prefabs/Sorceress Override.overrideController",
+            animatorOverridePath = "Assets/Bladehold/Bladehold Animations/Medusa AC.controller", // simple human (feminine) idle/walk/run + Sorceress cast/death (Sorceress Override floated her)
             removeComponents = new[] { typeof(GoldenGoblin), typeof(ImpulseGoblin) },
             assets = new[]
             {
