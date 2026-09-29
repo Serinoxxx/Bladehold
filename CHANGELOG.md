@@ -4,6 +4,8 @@
 
 ### New Features
 
+- Added the Sapper, a goblin that ignores you and runs for your towers to hack their supply away
+
 ### Fixes
 
 ### Balance Changes

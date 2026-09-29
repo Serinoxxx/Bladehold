@@ -14,6 +14,7 @@ Things that need your hands, eyes or judgement in the Unity Editor. Items marked
 - [15: Wave choice draft](editor/15-wave-choice.md) (wave card UI review; flow still uses banners until Phase C)
 - [Ammo chest + Hold the Gate top-up](editor/ammo-chest.md) (chest prefab not built or placed yet)
 - [Captain Mogra Hexfang + dash i-frames](editor/captain-mogra.md) (built and play-checked; needs your audio, animation and balance pass)
+- [Towers vs hero: blind spots + Sapper](editor/towers-vs-hero.md) (Sapper prefab not generated yet)
 
 ## A. Triage first (biggest win)
 

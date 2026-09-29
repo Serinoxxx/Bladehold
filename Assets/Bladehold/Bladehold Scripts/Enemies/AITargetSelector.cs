@@ -23,6 +23,23 @@ public class AITargetSelector : MonoBehaviour
 
     private Gate assignedGate;
     private float playerOverrideUntilTime = Mathf.NegativeInfinity;
+    private DefenseStructure towerTarget;
+
+    /// <summary>
+    ///     Points this enemy at a built tower (the Sapper). While the tower stands and still has
+    ///     supply it beats every other target, player included, and there is no damage target, so
+    ///     <see cref="AIAttack" /> stays idle and the caller does its own work at the tower.
+    ///     Pass null to clear; a depleted or dismantled tower clears itself.
+    /// </summary>
+    public void SetTowerTarget(DefenseStructure tower)
+    {
+        towerTarget = tower;
+    }
+
+    /// <summary>The tower being targeted, or null when none (or it's depleted/gone).</summary>
+    public DefenseStructure TowerTarget => HasTowerTarget ? towerTarget : null;
+
+    private bool HasTowerTarget => towerTarget != null && towerTarget.isActiveAndEnabled && !towerTarget.IsDepleted;
 
     /// <summary>When true, this enemy ignores player proximity and prioritizes the gate.</summary>
     public bool IgnorePlayer
@@ -53,6 +70,7 @@ public class AITargetSelector : MonoBehaviour
     {
         get
         {
+            if (HasTowerTarget) return false;
             if (ShouldTargetPlayer()) return true;
             if (TryGetRamEscortTarget(out _)) return false;
             if (IsDefendingGate())
@@ -70,6 +88,8 @@ public class AITargetSelector : MonoBehaviour
     {
         get
         {
+            if (HasTowerTarget) return towerTarget.transform.position;
+
             if (ShouldTargetPlayer())
             {
                 Player player = Player.Instance;
@@ -116,6 +136,8 @@ public class AITargetSelector : MonoBehaviour
     {
         get
         {
+            if (HasTowerTarget) return null;
+
             if (ShouldTargetPlayer())
             {
                 Player player = Player.Instance;

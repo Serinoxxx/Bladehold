@@ -2244,6 +2244,70 @@ public static class WeaponReachBenchmark
             failedCount++;
         }
 
+        // 19F. SAPPER: tower targeting beats the player, clears when the tower runs dry
+        sb.AppendLine("\n### 19F. SAPPER TOWER TARGETING");
+        try
+        {
+            // Far from anything earlier sections left in DefenseStructure.AllActive.
+            Vector3 origin = new Vector3(5000f, 0f, 0f);
+            GameObject sapTowerObj = new GameObject("Benchmark_SapperTower");
+            sapTowerObj.transform.position = origin + new Vector3(10f, 0f, 0f);
+            ArrowTowerDefense sapTower = sapTowerObj.AddComponent<ArrowTowerDefense>();
+            InvokeLifecycle(sapTower, "OnEnable");
+            sapTower.InitState(1, 50, 50);
+
+            GameObject sapperObj = new GameObject("Benchmark_Sapper");
+            sapperObj.transform.position = origin;
+            AITargetSelector sapSelector = sapperObj.AddComponent<AITargetSelector>();
+
+            bool foundNear = TowerSapper.FindNearestTower(origin, 60f) == sapTower;
+            bool ignoresFar = TowerSapper.FindNearestTower(origin, 5f) == null;
+
+            sapSelector.SetTowerTarget(sapTower);
+            bool pathsToTower = sapSelector.TargetPosition == sapTowerObj.transform.position;
+            bool noSwingTarget = sapSelector.TargetDamageable == null && !sapSelector.IsTargetingPlayer;
+
+            sapTower.ConsumeSupply(50);
+            bool clearsWhenDry = sapSelector.TowerTarget == null && TowerSapper.FindNearestTower(origin, 60f) == null;
+
+            if (foundNear && ignoresFar && pathsToTower && noSwingTarget && clearsWhenDry)
+            {
+                sb.AppendLine("  - Sapper Targeting: finds the nearest supplied tower in range, paths to it with no swing target, and drops it once it's dry. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Sapper targeting (foundNear={foundNear}, ignoresFar={ignoresFar}, pathsToTower={pathsToTower}, noSwingTarget={noSwingTarget}, clearsWhenDry={clearsWhenDry})");
+                failedCount++;
+            }
+
+            UnityEngine.Object.DestroyImmediate(sapperObj);
+            UnityEngine.Object.DestroyImmediate(sapTowerObj);
+
+            // Prefab & EnemyPrefabMap registration (needs Bladehold > Generate Enemy Prefabs to have run)
+            EnemyPrefabMapSO sapMap = AssetDatabase.LoadAssetAtPath<EnemyPrefabMapSO>("Assets/Bladehold/Bladehold Scripts/Enemies/EnemyPrefabMap.asset");
+            GameObject sapperPrefab = sapMap != null ? sapMap.FindPrefab("sapper") : null;
+            TowerSapper sapComp = sapperPrefab != null ? sapperPrefab.GetComponent<TowerSapper>() : null;
+            bool sapWired = sapComp != null && new SerializedObject(sapComp).FindProperty("data").objectReferenceValue != null;
+            bool hasSelector = sapperPrefab != null && sapperPrefab.GetComponent<AITargetSelector>() != null;
+
+            if (sapWired && hasSelector)
+            {
+                sb.AppendLine("  - Sapper Prefab: registered in EnemyPrefabMap with TowerSapper (SO wired) and AITargetSelector. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Sapper prefab (registered={sapperPrefab != null}, sapWired={sapWired}, hasSelector={hasSelector}). Run Bladehold > Generate Enemy Prefabs.");
+                failedCount++;
+            }
+        }
+        catch (Exception ex)
+        {
+            sb.AppendLine($"  - Sapper Benchmark exception: {ex.Message} [FAILED]");
+            failedCount++;
+        }
+
         // =========================================================================
         // 20. DEFENSE VISUALS, NET MECHANICS, CATAPULT DETONATION & SUPPLY BENCHMARK
         // =========================================================================

@@ -1005,6 +1005,35 @@ internal static class EnemyManifest
             }
         },
 
+        // Sapper: ignores the player, runs to the nearest built tower and hacks its supply away
+        // from inside the tower's blind spot. Keeps the base melee as a fallback when no tower stands.
+        new EnemySpec
+        {
+            id = "sapper",
+            soFolder = "Sapper",
+            prefabName = "Sapper Enemy Variant",
+            rootScale = 0.9f,
+            removeComponents = new[] { typeof(GoldenGoblin), typeof(ImpulseGoblin) },
+            assets = new[]
+            {
+                new SoSpec { soType = typeof(TowerSapperSO), assetName = "TowerSapperSO" },
+            },
+            components = new[]
+            {
+                new ComponentSpec
+                {
+                    type = typeof(TowerSapper),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "data", ctx.LoadedAsset("TowerSapperSO"));
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                        EnemyPrefabGenerator.SetReference(so, "targetSelector", ctx.Root.GetComponent<AITargetSelector>());
+                        EnemyPrefabGenerator.SetReference(so, "animator", ctx.ChildAnimator);
+                    },
+                },
+            },
+        },
+
         // Captain Kombusta: Clan Captain specializing in a 10-dynamite barrage at distance (>=5m) and self-immolation up close.
         new EnemySpec
         {
