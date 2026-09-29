@@ -2322,7 +2322,8 @@ public static class WeaponReachBenchmark
             bool heroOutsideBlocked = ProjectileDome.ShouldBlock(heroArrow, false);
             bool heroInsideAllowed = !ProjectileDome.ShouldBlock(heroArrow, true);
             bool meleeAllowed = !ProjectileDome.ShouldBlock(heroSwing, false);
-            bool lobAllowed = !ProjectileDome.ShouldBlock(catapult, false);
+            // Boulder splash isn't a projectile hit; the boulder itself is caught in flight (FindDomeAt).
+            bool splashNotHealthBlocked = !ProjectileDome.ShouldBlock(catapult, false);
             bool enemyIgnored = !ProjectileDome.ShouldBlock(enemyBolt, false);
 
             GameObject domeObj = new GameObject("Benchmark_Dome");
@@ -2334,17 +2335,23 @@ public static class WeaponReachBenchmark
             domeSer.FindProperty("data").objectReferenceValue = domeSo;
             domeSer.ApplyModifiedPropertiesWithoutUndo();
             bool containsFlat = dome.Contains(domeObj.transform.position + new Vector3(3f, 6f, 3f)) && !dome.Contains(domeObj.transform.position + new Vector3(4f, 0f, 4f));
+            var hpField = typeof(ProjectileDome).GetField("currentHealth", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            hpField.SetValue(dome, 150f);
+            dome.AbsorbHit(100f, domeObj.transform.position);
+            bool soaks = !dome.IsBroken && Mathf.Approximately(dome.CurrentHealth, 50f);
+            dome.AbsorbHit(60f, domeObj.transform.position);
+            bool breaks = dome.IsBroken && !dome.IsUp;
             UnityEngine.Object.DestroyImmediate(domeObj);
             UnityEngine.Object.DestroyImmediate(domeSo);
 
-            if (towerAlways && heroOutsideBlocked && heroInsideAllowed && meleeAllowed && lobAllowed && enemyIgnored && containsFlat)
+            if (towerAlways && heroOutsideBlocked && heroInsideAllowed && meleeAllowed && splashNotHealthBlocked && enemyIgnored && containsFlat && soaks && breaks)
             {
-                sb.AppendLine("  - Dome Rule: tower projectiles always blocked, hero projectiles only from outside, melee/catapult/enemy hits pass, flat 5m containment. [PASSED]");
+                sb.AppendLine("  - Dome Rule: tower projectiles always blocked, hero projectiles only from outside, melee and enemy hits pass, flat 5m containment, 150 HP dome soaks 100 then breaks. [PASSED]");
                 passedCount++;
             }
             else
             {
-                sb.AppendLine($"  - [FAIL] Dome rule (towerAlways={towerAlways}, heroOutsideBlocked={heroOutsideBlocked}, heroInsideAllowed={heroInsideAllowed}, meleeAllowed={meleeAllowed}, lobAllowed={lobAllowed}, enemyIgnored={enemyIgnored}, containsFlat={containsFlat})");
+                sb.AppendLine($"  - [FAIL] Dome rule (towerAlways={towerAlways}, heroOutsideBlocked={heroOutsideBlocked}, heroInsideAllowed={heroInsideAllowed}, meleeAllowed={meleeAllowed}, splashNotHealthBlocked={splashNotHealthBlocked}, enemyIgnored={enemyIgnored}, containsFlat={containsFlat}, soaks={soaks}, breaks={breaks})");
                 failedCount++;
             }
 
@@ -2353,15 +2360,16 @@ public static class WeaponReachBenchmark
             ProjectileDome wardenDome = wardenPrefab != null ? wardenPrefab.GetComponent<ProjectileDome>() : null;
             ProjectileDomeSO wardenSo = wardenDome != null ? new SerializedObject(wardenDome).FindProperty("data").objectReferenceValue as ProjectileDomeSO : null;
             bool hasVisual = wardenSo != null && wardenSo.domeVisualPrefab != null;
+            bool hasHitNumber = wardenDome != null && new SerializedObject(wardenDome).FindProperty("hitNumberPrefab").objectReferenceValue != null;
 
-            if (wardenSo != null && hasVisual)
+            if (wardenSo != null && hasVisual && hasHitNumber)
             {
-                sb.AppendLine("  - Dome Warden Prefab: registered in EnemyPrefabMap with ProjectileDome, SO and dome visual wired. [PASSED]");
+                sb.AppendLine("  - Dome Warden Prefab: registered in EnemyPrefabMap with ProjectileDome, SO, dome visual and hit number wired. [PASSED]");
                 passedCount++;
             }
             else
             {
-                sb.AppendLine($"  - [FAIL] Dome Warden prefab (registered={wardenPrefab != null}, soWired={wardenSo != null}, hasVisual={hasVisual}). Run Bladehold > Generate Enemy Prefabs.");
+                sb.AppendLine($"  - [FAIL] Dome Warden prefab (registered={wardenPrefab != null}, soWired={wardenSo != null}, hasVisual={hasVisual}, hasHitNumber={hasHitNumber}). Run Bladehold > Generate Enemy Prefabs.");
                 failedCount++;
             }
         }

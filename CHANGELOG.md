@@ -5,7 +5,7 @@
 ### New Features
 
 - Added the Sapper, a goblin that ignores you and runs for your towers to hack their supply away
-- Added the Dome Warden, a goblin whose dome stops arrows and bolts from outside; walk in to fight it, or lob Catapult shots over the top
+- Added the Dome Warden, a goblin whose dome catches arrows, bolts and boulders from outside until it breaks; walk in to fight it, or shoot the dome down
 
 ### Fixes
 

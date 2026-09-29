@@ -132,6 +132,8 @@ public class EnemyStatusManager : MonoBehaviour
     public void ApplyStatus(string elementId, float slowOverride = -1f)
     {
         if (string.IsNullOrEmpty(elementId)) return;
+        // A Dome Warden's dome caught the hit this status rode in on.
+        if (ProjectileDome.BlockedThisFrame(health)) return;
 
         if (elementId.Equals("Ice", System.StringComparison.OrdinalIgnoreCase))
         {

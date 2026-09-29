@@ -83,6 +83,14 @@ public class CatapultProjectile : MonoBehaviour
         }
         transform.position = currentPos;
 
+        // A Dome Warden's dome catches the boulder where its arc enters the shell.
+        ProjectileDome dome = ProjectileDome.FindDomeAt(currentPos);
+        if (dome != null)
+        {
+            ExplodeAt(currentPos, dome);
+            return;
+        }
+
         if (t >= 1f)
         {
             Explode();
@@ -91,10 +99,20 @@ public class CatapultProjectile : MonoBehaviour
 
     public void Explode()
     {
+        ExplodeAt(targetPoint, null);
+    }
+
+    /// <summary>
+    ///     Bursts at <paramref name="impactPos" />. When <paramref name="hitDome" /> caught it, the dome soaks
+    ///     the damage once and no ground zone spawns (it burst in the air). Splash never reaches
+    ///     enemies under a standing dome, but a boulder that breaks the dome splashes through.
+    /// </summary>
+    private void ExplodeAt(Vector3 impactPos, ProjectileDome hitDome)
+    {
         if (hasExploded) return;
         hasExploded = true;
 
-        Vector3 impactPos = targetPoint;
+        if (hitDome != null) hitDome.AbsorbHit(damageAmount, impactPos);
 
         if (explosionFeedback != null)
         {
@@ -111,6 +129,7 @@ public class CatapultProjectile : MonoBehaviour
             Health h = hit.GetComponentInParent<Health>();
             if (h == null || damagedEntities.Contains(h) || h.IsDead) continue;
             if (Player.Instance != null && h.transform.root == Player.Instance.transform.root) continue;
+            if (ProjectileDome.IsInsideAnyDome(h.transform.position)) continue;
 
             damagedEntities.Add(h);
 
@@ -139,6 +158,12 @@ public class CatapultProjectile : MonoBehaviour
 
             h.ReceiveDamage(dmg);
             EnemyStatusManager.GetOrAdd(h)?.ApplyStatus("Fire");
+        }
+
+        if (hitDome != null)
+        {
+            Destroy(gameObject);
+            return;
         }
 
         // 1. Frost Catapult: Spawn Slippery Ice Ground

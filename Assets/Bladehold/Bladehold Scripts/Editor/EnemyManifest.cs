@@ -1067,6 +1067,11 @@ internal static class EnemyManifest
                     {
                         EnemyPrefabGenerator.SetReference(so, "data", ctx.LoadedAsset("ProjectileDomeSO"));
                         EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+
+                        // Dome hits reuse the goblin's own damage popup, tinted purple at spawn.
+                        DamageNumberSpawner popups = ctx.Root.GetComponentInChildren<DamageNumberSpawner>(true);
+                        UnityEngine.Object popupPrefab = popups != null ? new SerializedObject(popups).FindProperty("popupPrefab").objectReferenceValue : null;
+                        EnemyPrefabGenerator.SetReference(so, "hitNumberPrefab", popupPrefab);
                     },
                 },
             },
