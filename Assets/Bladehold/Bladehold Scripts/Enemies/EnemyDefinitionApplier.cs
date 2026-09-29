@@ -27,6 +27,9 @@ public static class EnemyDefinitionApplier
 
     private static void ApplyDefinitionInternal(GameObject enemy, EnemyDefinition def, bool preserveHealthFraction)
     {
+        Enemy enemyComponent = enemy.GetComponent<Enemy>();
+        if (enemyComponent != null) enemyComponent.RosterId = def.id;
+
         if (def.health.HasValue)
         {
             enemy.GetComponent<Health>()?.SetMaxHealth(def.health.Value, preserveHealthFraction);

@@ -2379,6 +2379,56 @@ public static class WeaponReachBenchmark
             failedCount++;
         }
 
+        // 19H. WARDEN ESCORT: formation slots and targeting
+        sb.AppendLine("\n### 19H. WARDEN ESCORT FORMATION");
+        try
+        {
+            GameObject wardenObj = new GameObject("Benchmark_Warden");
+            wardenObj.transform.position = new Vector3(7000f, 0f, 0f);
+            Health wardenHealth = wardenObj.AddComponent<Health>();
+            WardenEscort escort = wardenObj.AddComponent<WardenEscort>();
+            WardenEscortSO escortSo = ScriptableObject.CreateInstance<WardenEscortSO>();
+            SerializedObject escortSer = new SerializedObject(escort);
+            escortSer.FindProperty("data").objectReferenceValue = escortSo;
+            escortSer.FindProperty("health").objectReferenceValue = wardenHealth;
+            escortSer.ApplyModifiedPropertiesWithoutUndo();
+
+            // 12 slots on a 3.5m ring, evenly spread (opposite slots mirror each other).
+            Vector3 s0 = escort.GetSlotPosition(0) - wardenObj.transform.position;
+            Vector3 s6 = escort.GetSlotPosition(6) - wardenObj.transform.position;
+            bool ringOk = escortSo.maxEscorts == 12 && Mathf.Abs(s0.magnitude - escortSo.ringRadius) < 0.01f && (s0 + s6).sqrMagnitude < 0.0001f;
+
+            GameObject escGoblin = new GameObject("Benchmark_EscortGoblin");
+            AITargetSelector escSelector = escGoblin.AddComponent<AITargetSelector>();
+            escSelector.SetEscortLeader(escort, 3);
+            // No Player.Instance here, so the Warden never calls escorts to engage.
+            bool holdsSlot = escSelector.TargetPosition == escort.GetSlotPosition(3) && escSelector.TargetDamageable == null && !escSelector.IsTargetingPlayer;
+
+            var diedMethod = typeof(WardenEscort).GetMethod("HandleDied", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            diedMethod.Invoke(escort, null);
+            bool releasedOnDeath = escSelector.EscortLeader == null && escSelector.TargetPosition != escort.GetSlotPosition(3);
+
+            UnityEngine.Object.DestroyImmediate(escGoblin);
+            UnityEngine.Object.DestroyImmediate(wardenObj);
+            UnityEngine.Object.DestroyImmediate(escortSo);
+
+            if (ringOk && holdsSlot && releasedOnDeath)
+            {
+                sb.AppendLine("  - Warden Escort: 12 slots on a 3.5m ring, escorts path to their slot with no swing target, formation dissolves on the Warden's death. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Warden escort (ringOk={ringOk}, holdsSlot={holdsSlot}, releasedOnDeath={releasedOnDeath})");
+                failedCount++;
+            }
+        }
+        catch (Exception ex)
+        {
+            sb.AppendLine($"  - Warden Escort Benchmark exception: {ex.Message} [FAILED]");
+            failedCount++;
+        }
+
         // =========================================================================
         // 20. DEFENSE VISUALS, NET MECHANICS, CATAPULT DETONATION & SUPPLY BENCHMARK
         // =========================================================================

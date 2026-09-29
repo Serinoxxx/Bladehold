@@ -73,6 +73,7 @@ public class BallistaBoltProjectile : MonoBehaviour
                 Damage dmg = new Damage
                 {
                     isDefenseDamage = true,
+                    piercesShields = true,
                     isProjectile = true,
                     value = damageAmount,
                     type = DamageType.sharp,

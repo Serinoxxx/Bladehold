@@ -1057,6 +1057,7 @@ internal static class EnemyManifest
                         dome.domeVisualPrefab = LoadPrefab("Assets/Bladehold/Bladehold Prefabs/VFX/BubbleShieldVisual.prefab");
                     },
                 },
+                new SoSpec { soType = typeof(WardenEscortSO), assetName = "WardenEscortSO" },
             },
             components = new[]
             {
@@ -1072,6 +1073,15 @@ internal static class EnemyManifest
                         DamageNumberSpawner popups = ctx.Root.GetComponentInChildren<DamageNumberSpawner>(true);
                         UnityEngine.Object popupPrefab = popups != null ? new SerializedObject(popups).FindProperty("popupPrefab").objectReferenceValue : null;
                         EnemyPrefabGenerator.SetReference(so, "hitNumberPrefab", popupPrefab);
+                    },
+                },
+                new ComponentSpec
+                {
+                    type = typeof(WardenEscort),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "data", ctx.LoadedAsset("WardenEscortSO"));
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
                     },
                 },
             },

@@ -10,6 +10,9 @@ public class Enemy : MonoBehaviour
 
     private bool anyError = false;
 
+    /// <summary>The roster (Enemies.csv) id this instance was spawned as, stamped by <see cref="EnemyDefinitionApplier" />. Null for scene-placed enemies.</summary>
+    public string RosterId { get; set; }
+
     private void OnValidate()
     {
         if (health == null)

@@ -10,7 +10,7 @@ public class BallistaDefense : DefenseStructure
     [SerializeField] private float range = 22f;
     [SerializeField] private float fireInterval = 3.0f;
     [SerializeField] private float boltSpeed = 35f;
-    [SerializeField] private float boltDamage = 110f;
+    [SerializeField] private float boltDamage = 31f;
     [SerializeField] private int pierceCount = 3;
     [SerializeField] private GameObject boltPrefab;
     [SerializeField] private Transform firePoint;
@@ -81,17 +81,17 @@ public class BallistaDefense : DefenseStructure
         switch (level)
         {
             case 1:
-                boltDamage = 110f;
+                boltDamage = 31f;
                 fireInterval = 3.0f;
                 pierceCount = 2;
                 break;
             case 2:
-                boltDamage = 190f;
+                boltDamage = 53f;
                 fireInterval = 2.3f;
                 pierceCount = 3;
                 break;
             case 3:
-                boltDamage = 300f;
+                boltDamage = 84f;
                 fireInterval = 1.6f;
                 pierceCount = 4;
                 break;
@@ -196,6 +196,7 @@ public class BallistaDefense : DefenseStructure
                     Damage dmg = new Damage
                     {
                         isDefenseDamage = true,
+                        piercesShields = true,
                         isProjectile = true,
                         value = boltDamage,
                         type = DamageType.sharp,

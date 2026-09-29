@@ -37,7 +37,7 @@ public static class SetupGameLoopAssets
             pacing = ScriptableObject.CreateInstance<RoundPacingConfigSO>();
             AssetDatabase.CreateAsset(pacing, pacingPath);
         }
-        pacing.maxConcurrentEnemies = 20;
+        pacing.maxConcurrentEnemies = 40;
         pacing.spawnTelegraphDuration = 3.0f;
         pacing.wavesPerRound = 5;
         pacing.bossEnemyId = "slayer";

@@ -10,7 +10,7 @@ public class ArrowTowerDefense : DefenseStructure
     [SerializeField] private float range = 18f;
     [SerializeField] private float fireInterval = 0.8f;
     [SerializeField] private float arrowSpeed = 26f;
-    [SerializeField] private float arrowDamage = 18f;
+    [SerializeField] private float arrowDamage = 5f;
     [SerializeField] private GameObject arrowPrefab;
     [SerializeField] private Transform firePoint;
     [Tooltip("Played at the fire point on each shot.")]
@@ -51,17 +51,17 @@ public class ArrowTowerDefense : DefenseStructure
         switch (level)
         {
             case 1:
-                arrowDamage = 18f;
+                arrowDamage = 5f;
                 fireInterval = 0.8f;
                 range = 18f;
                 break;
             case 2:
-                arrowDamage = 32f;
+                arrowDamage = 9f;
                 fireInterval = 0.65f;
                 range = 20f;
                 break;
             case 3:
-                arrowDamage = 50f;
+                arrowDamage = 14f;
                 fireInterval = 0.5f;
                 range = 22f;
                 break;

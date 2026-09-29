@@ -250,8 +250,8 @@ public class BulwarkShield : MonoBehaviour, IDamageable, IShieldBlocker
 
         float appliedDamage = damage != null ? damage.value : 0f;
 
-        // Projectiles deal only 10% damage to shields.
-        if (damage != null && damage.isProjectile)
+        // Projectiles deal only 10% damage to shields. Ballista bolts (piercesShields) hit at full.
+        if (damage != null && damage.isProjectile && !damage.piercesShields)
         {
             float mult = config != null ? config.projectileDamageMultiplier : 0.1f;
             appliedDamage *= mult;

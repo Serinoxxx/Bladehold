@@ -4,11 +4,11 @@ No plan file; from the 2026-09-29 design chat (towers and hero doing the same jo
 
 ## Verify first
 
-- [ ] **Scripts import clean.** Focus Unity and check the Console. New files: `Enemies/Sapper/TowerSapper.cs`, `TowerSapperSO.cs`, `Enemies/DomeWarden/ProjectileDome.cs`, `ProjectileDomeSO.cs`. Their `.meta` files are created on import, so commit those afterwards.
+- [ ] **Scripts import clean.** Focus Unity and check the Console. New files: `Enemies/Sapper/TowerSapper.cs`, `TowerSapperSO.cs`, `Enemies/DomeWarden/ProjectileDome.cs`, `ProjectileDomeSO.cs`, `WardenEscort.cs`, `WardenEscortSO.cs`. Their `.meta` files are created on import, so commit those afterwards.
 
 ## Wiring
 
-- [ ] **Generate the Sapper and Dome Warden prefabs** *(MCP-able)*: **Bladehold > Generate Enemy Prefabs**. This creates `Bladehold Prefabs/Sapper Enemy Variant.prefab`, `Enemies/Sapper/TowerSapperSO.asset` and the `sapper` entry in `EnemyPrefabMap.asset` (plus `Dome Warden Enemy Variant.prefab` and `dome_warden`). `TowerSapper.data`, `health`, `targetSelector` and `animator` are wired by the generator (and auto-wire in `OnValidate` except `data`). Verify: benchmark 19F "Sapper Prefab" passes.
+- [ ] **Generate the Sapper and Dome Warden prefabs** *(MCP-able)*: **Bladehold > Generate Enemy Prefabs**. This creates `Bladehold Prefabs/Sapper Enemy Variant.prefab`, `Enemies/Sapper/TowerSapperSO.asset` and the `sapper` entry in `EnemyPrefabMap.asset` (plus `Dome Warden Enemy Variant.prefab`, its `ProjectileDomeSO` + `WardenEscortSO` assets and `dome_warden`). `TowerSapper.data`, `health`, `targetSelector` and `animator` are wired by the generator (and auto-wire in `OnValidate` except `data`). Verify: benchmark 19F "Sapper Prefab" passes.
 - [ ] **Sapper look** (art pass): it's a plain goblin at 0.9 scale. Give it something readable at a glance (a pickaxe, a satchel, a tint) so players learn "that one goes for my towers".
 - [ ] **`TowerSapper.drainFeedback`** (optional `MMF_Player` on the prefab): a hacking thunk + wood chips at the tower each tick. Without it the only sign is the tower's supply bar dropping.
 - [ ] **Dome Warden visual check** *(MCP-able)*: the generator creates `Enemies/DomeWarden/ProjectileDomeSO.asset` with `domeVisualPrefab` = `Bladehold Prefabs/VFX/BubbleShieldVisual.prefab` (the Bubbler's sphere), scaled to a 10m-wide dome, half-buried (`visualHeightOffset` 0). It may need its own, more transparent material at that size so it doesn't hide the fight. Its colliders are switched off at runtime. The generator also wires `ProjectileDome.hitNumberPrefab` to the goblin's own damage popup; check it actually shows purple (`hitNumberColor` on the SO), in case that popup prefab forces its own colour. Verify: benchmark 19G "Dome Warden Prefab" passes.
@@ -23,6 +23,9 @@ No plan file; from the 2026-09-29 design chat (towers and hero doing the same jo
 - [ ] **Blind spot sizes**: `minRange` on each `Bladehold Prefabs/Defenses/Defense_*.prefab`. Currently Arrow 3, Net Thrower 4, Ballista 6, Catapult 8.
 - [ ] **Sapper numbers**: `TowerSapperSO`. Currently drain 4 supply/s, drain range 2.8m (keep it under the Arrow Tower's 3m blind spot), search 60m. Roster row: 30 HP, speed 4.2, from wave 2 at threat tier 2, 15% weight, max 3 at once.
 - [ ] **Dome Warden numbers**: `ProjectileDomeSO`: radius 5m, 150 dome HP, back up 8s after breaking. Stands 9m off its target (`NavMeshAgent` stopping distance on the prefab). Roster row: 80 HP, speed 2.8, from wave 2 at threat tier 3, 12% weight, max 1 at once.
+- [ ] **Escort numbers**: `WardenEscortSO`: 12 slots on a 3.5m ring, recruits `goblin`s within 16m, all break formation when you come within 6m of the Warden.
+- [ ] **Tower damage** (cut to ~28%, hard-coded in each `ApplyLevelStats`): Arrow 5/9/14, Ballista 31/53/84, Catapult 13/22/36, Spike Trap 24/41/64, Oil Vat 6/10/15 per second, Net 3 per level. Tesla Spire's damage comes from its draft card and wasn't touched.
+- [ ] **Wave size**: `Bladehold Config/SurvivorsRoundPacingConfig.asset`: `maxConcurrentEnemies` 40, quotas 40/45/50/55/60. Watch frame rate with 40 agents plus towers, and whether supply income (per kill) now outpaces tower costs.
 
 ## Playtest
 
@@ -32,3 +35,5 @@ No plan file; from the 2026-09-29 design chat (towers and hero doing the same jo
 - [ ] **Dome beats**: DevConsole spawn picker → `dome_warden` next to a few goblins, with an Arrow Tower and a Catapult built. Arrows and ballista bolts stop on the dome with a purple number and no white one. Catapult boulders burst on the shell. Your bow hits the dome from outside and the goblins once you step in. Your sword works. Nets don't root anything inside, and fire/ice arrows don't ignite or chill anything inside. Enough hits break the dome (everything inside is hittable), and it comes back 8s later.
 - [ ] **Dome negative cases**: the dome drops the moment the Warden dies, and nothing stays shielded after. A goblin that walks out of the dome is hittable within a quarter-second. Enemy projectiles are never affected.
 - [ ] **Towers keep firing into a dome** by design now: their shots wear it down, so it costs supply but isn't wasted.
+- [ ] **Escort beats**: spawn a `dome_warden` with 20+ goblins around (DevConsole +50 burst). Up to 12 goblins form a ring inside the dome and walk with the Warden, ignoring you at range. Walk within about 6m and they all charge. Escorts that die are replaced from nearby goblins. Killing the Warden sends every escort back to normal chasing.
+- [ ] **Escort negative cases**: sappers, bulwarks and other specials never join the ring. A goblin never belongs to two Wardens at once.

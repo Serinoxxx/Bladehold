@@ -20,6 +20,7 @@
   - `AIAttack` (basic melee).
   - `CoinDropper`, `Enemy` (kill reporting).
 - **Attacks are uneven by design.** Special enemies have telegraphed attacks (Bulwark counter-slam, Kombusta dynamite, Troll slam, bomber, and others). Basic enemies just swing for minor damage when in range, with no telegraph.
+- **`Enemy.RosterId`** is stamped by `EnemyDefinitionApplier` on every roster spawn (null for scene-placed enemies). Use it to pick out plain goblins (e.g. `WardenEscort` recruits only `goblin`).
 - Special attack components sit beside their SOs (`*Attack.cs` + `*AttackSO.cs`), with per-enemy folders for bigger kits (`Bulwark/`, `Bannerman/`, `Bomber/`, `Assassin/`, `Captain/`, …).
 
 ## Captains

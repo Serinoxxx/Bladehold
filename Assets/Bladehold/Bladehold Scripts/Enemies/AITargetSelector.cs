@@ -41,6 +41,25 @@ public class AITargetSelector : MonoBehaviour
 
     private bool HasTowerTarget => towerTarget != null && towerTarget.isActiveAndEnabled && !towerTarget.IsDepleted;
 
+    private WardenEscort escortLeader;
+    private int escortSlot;
+
+    /// <summary>
+    ///     Puts this enemy in a Dome Warden's formation at <paramref name="slot" />. While the Warden
+    ///     holds formation, the slot beats the player (and there's no swing target); once the Warden
+    ///     calls its escorts to engage, normal targeting resumes. Pass null to leave the formation.
+    /// </summary>
+    public void SetEscortLeader(WardenEscort leader, int slot)
+    {
+        escortLeader = leader;
+        escortSlot = slot;
+    }
+
+    /// <summary>The Warden this enemy is escorting, or null.</summary>
+    public WardenEscort EscortLeader => escortLeader != null && escortLeader.IsLeading ? escortLeader : null;
+
+    private bool HoldingFormation => EscortLeader != null && !escortLeader.EscortsEngage;
+
     /// <summary>When true, this enemy ignores player proximity and prioritizes the gate.</summary>
     public bool IgnorePlayer
     {
@@ -71,6 +90,7 @@ public class AITargetSelector : MonoBehaviour
         get
         {
             if (HasTowerTarget) return false;
+            if (HoldingFormation) return false;
             if (ShouldTargetPlayer()) return true;
             if (TryGetRamEscortTarget(out _)) return false;
             if (IsDefendingGate())
@@ -89,6 +109,7 @@ public class AITargetSelector : MonoBehaviour
         get
         {
             if (HasTowerTarget) return towerTarget.transform.position;
+            if (HoldingFormation) return escortLeader.GetSlotPosition(escortSlot);
 
             if (ShouldTargetPlayer())
             {
@@ -137,6 +158,7 @@ public class AITargetSelector : MonoBehaviour
         get
         {
             if (HasTowerTarget) return null;
+            if (HoldingFormation) return null;
 
             if (ShouldTargetPlayer())
             {

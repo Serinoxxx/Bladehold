@@ -11,7 +11,7 @@ public class OilVatDefense : DefenseStructure
     [SerializeField] private float poolRadius = 5.0f;
     [SerializeField] private float spillCooldown = 6.0f;
     [SerializeField] private float poolDuration = 4.5f;
-    [SerializeField] private float damagePerSecond = 20f;
+    [SerializeField] private float damagePerSecond = 6f;
     [Tooltip("The burning oil pool spawned on each spill (a gameplay zone, not feedback).")]
     [SerializeField] private GameObject oilPoolVfxPrefab;
     [Tooltip("Played at the vat each time it spills (splash sound).")]
@@ -39,17 +39,17 @@ public class OilVatDefense : DefenseStructure
         switch (level)
         {
             case 1:
-                damagePerSecond = 20f;
+                damagePerSecond = 6f;
                 spillCooldown = 6.0f;
                 poolRadius = 5.0f;
                 break;
             case 2:
-                damagePerSecond = 35f;
+                damagePerSecond = 10f;
                 spillCooldown = 5.0f;
                 poolRadius = 6.0f;
                 break;
             case 3:
-                damagePerSecond = 55f;
+                damagePerSecond = 15f;
                 spillCooldown = 4.0f;
                 poolRadius = 7.0f;
                 break;

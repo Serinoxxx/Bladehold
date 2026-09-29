@@ -60,6 +60,9 @@ public class Damage
     /// </summary>
     public bool isDefenseDamage;
 
+    /// <summary>True for heavy piercing hits (the Ballista) that shields don't shrug off: skips the Bulwark shield's projectile penalty.</summary>
+    public bool piercesShields;
+
     /// <summary>
     ///     Travel / flight direction vector of the attack or projectile. Used for trajectory-aligned knockback flings.
     /// </summary>

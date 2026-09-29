@@ -23,7 +23,7 @@
   - With `readsPlayerStats`, damage, range, crit and the cut-through cap come from `PlayerStats`. Hitting the cap and then meeting one more target ends the activation and raises `OnBlocked`.
   - Raises `OnHit(IDamageable, Damage, hitPoint)`.
 - **`IShieldBlocker`**: shields (Bulwark, bubble shields) that intercept melee.
-- **`Damage.isProjectile` / `isDefenseDamage`**: the Dome Warden's `ProjectileDome` blocks projectile hits on enemies inside it: defence projectiles always, the hero's only while the hero is outside. Every `Fort/` damage site sets `isDefenseDamage`; arrows, ballista, nets and Tesla bolts also set `isProjectile` (Catapult boulders aren't flagged: `CatapultProjectile` bursts on the dome shell via `ProjectileDome.FindDomeAt`). Caught hits damage the dome instead (purple number), and `EnemyStatusManager.ApplyStatus` skips statuses via `ProjectileDome.BlockedThisFrame`. Set both correctly on any new ranged hit.
+- **`Damage.isProjectile` / `isDefenseDamage`**: the Dome Warden's `ProjectileDome` blocks projectile hits on enemies inside it: defence projectiles always, the hero's only while the hero is outside. Every `Fort/` damage site sets `isDefenseDamage`; arrows, ballista, nets and Tesla bolts also set `isProjectile` (Catapult boulders aren't flagged: `CatapultProjectile` bursts on the dome shell via `ProjectileDome.FindDomeAt`). Caught hits damage the dome instead (purple number), and `EnemyStatusManager.ApplyStatus` skips statuses via `ProjectileDome.BlockedThisFrame`. Set both correctly on any new ranged hit. `piercesShields` (Ballista) skips the Bulwark shield's 10% projectile penalty.
 - **`KnockbackReceiver`** reacts to `OnDamaged` and shoves the `NavMeshAgent`.
 
 ## Feedback and cleanup

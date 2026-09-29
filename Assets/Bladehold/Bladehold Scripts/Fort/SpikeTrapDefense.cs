@@ -9,7 +9,7 @@ public class SpikeTrapDefense : DefenseStructure
 {
     [Header("Spike Trap Config")]
     [SerializeField] private float triggerRadius = 2.6f;
-    [SerializeField] private float impaleDamage = 85f;
+    [SerializeField] private float impaleDamage = 24f;
     [SerializeField] private float triggerCooldown = 1.2f;
     [Tooltip("Played at the trap when the spikes fire (chop sound + blood splat).")]
     [SerializeField] private MMF_Player impaleFeedback;
@@ -34,15 +34,15 @@ public class SpikeTrapDefense : DefenseStructure
         switch (level)
         {
             case 1:
-                impaleDamage = 85f;
+                impaleDamage = 24f;
                 triggerCooldown = 1.2f;
                 break;
             case 2:
-                impaleDamage = 145f;
+                impaleDamage = 41f;
                 triggerCooldown = 0.85f;
                 break;
             case 3:
-                impaleDamage = 230f;
+                impaleDamage = 64f;
                 triggerCooldown = 0.55f;
                 break;
         }

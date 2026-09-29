@@ -14,20 +14,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RoundPacingConfigSO
   rounds:
   - roundNumber: 1
-    requiredKillsPerWave: 15
+    requiredKillsPerWave: 40
   - roundNumber: 2
-    requiredKillsPerWave: 20
+    requiredKillsPerWave: 45
   - roundNumber: 3
-    requiredKillsPerWave: 25
+    requiredKillsPerWave: 50
   - roundNumber: 4
-    requiredKillsPerWave: 30
+    requiredKillsPerWave: 55
   - roundNumber: 5
-    requiredKillsPerWave: 35
+    requiredKillsPerWave: 60
   wavesPerRound: 5
   quotaGrowthPerThreat: 0.1
   fodderEnemyId: goblin
   fodderShare: 0.6
-  maxConcurrentEnemies: 20
+  maxConcurrentEnemies: 40
   spawnTelegraphDuration: 3
   objectiveTrickleMinAlive: 6
   objectiveTrickleInterval: 2

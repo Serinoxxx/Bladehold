@@ -10,7 +10,7 @@ public class CatapultDefense : DefenseStructure
     [Header("Catapult Config")]
     [SerializeField] private float maxRange = 24f;
     [SerializeField] private float fireInterval = 3.8f;
-    [SerializeField] private float splashDamage = 45f;
+    [SerializeField] private float splashDamage = 13f;
     [SerializeField] private float splashRadius = 4.5f;
     [SerializeField] private GameObject projectilePrefab;
     [SerializeField] private Transform launchPoint;
@@ -69,17 +69,17 @@ public class CatapultDefense : DefenseStructure
         switch (level)
         {
             case 1:
-                splashDamage = 45f;
+                splashDamage = 13f;
                 fireInterval = 3.8f;
                 splashRadius = 4.5f;
                 break;
             case 2:
-                splashDamage = 80f;
+                splashDamage = 22f;
                 fireInterval = 3.0f;
                 splashRadius = 5.5f;
                 break;
             case 3:
-                splashDamage = 130f;
+                splashDamage = 36f;
                 fireInterval = 2.2f;
                 splashRadius = 6.5f;
                 break;

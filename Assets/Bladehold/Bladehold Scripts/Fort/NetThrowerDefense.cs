@@ -234,7 +234,7 @@ public class NetThrowerDefense : DefenseStructure
             {
                 isDefenseDamage = true,
                 isProjectile = true,
-                value = 10f * currentLevel,
+                value = 3f * currentLevel,
                 type = DamageType.blunt,
                 isPlayerDamage = true,
                 sourcePosition = targetPos,
