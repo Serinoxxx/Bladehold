@@ -15,6 +15,8 @@ public class TowerSapper : MonoBehaviour
     [SerializeField] private TowerSapperSO data;
     [SerializeField] private Health health;
     [SerializeField] private AITargetSelector targetSelector;
+    [Tooltip("Paused once in drain range so the Sapper plants at the tower's edge instead of walking into it.")]
+    [SerializeField] private AIMovement movement;
     [SerializeField] private Animator animator;
     [Tooltip("Optional: played at the tower on each drain tick (hacking sound, wood chips).")]
     [SerializeField] private MMF_Player drainFeedback;
@@ -24,6 +26,7 @@ public class TowerSapper : MonoBehaviour
     private float nextDrainTime;
     private int drainTriggerHash;
     private Health playerHealth;
+    private bool isPlanted;
     private bool isDead;
     private bool playerDead;
     private bool anyError;
@@ -34,6 +37,7 @@ public class TowerSapper : MonoBehaviour
     {
         if (health == null) health = GetComponent<Health>();
         if (targetSelector == null) targetSelector = GetComponent<AITargetSelector>();
+        if (movement == null) movement = GetComponent<AIMovement>();
         if (animator == null) animator = GetComponentInChildren<Animator>();
     }
 
@@ -57,6 +61,11 @@ public class TowerSapper : MonoBehaviour
         if (animator == null)
         {
             Debug.LogError($"{name}: TowerSapper.animator is not assigned or found.", this);
+            anyError = true;
+        }
+        if (movement == null)
+        {
+            Debug.LogError($"{name}: TowerSapper.movement (AIMovement) is not assigned or found.", this);
             anyError = true;
         }
         if (anyError) return;
@@ -84,8 +93,7 @@ public class TowerSapper : MonoBehaviour
 
         if (!IsValidTarget(currentTower))
         {
-            currentTower = null;
-            targetSelector.SetTowerTarget(null);
+            ReleaseTower();
 
             if (Time.time < nextScanTime) return;
             nextScanTime = Time.time + data.rescanInterval;
@@ -95,27 +103,53 @@ public class TowerSapper : MonoBehaviour
             targetSelector.SetTowerTarget(currentTower);
         }
 
-        if (Time.time < nextDrainTime) return;
-        if (!IsWithinFlatDistance(transform.position, currentTower.transform.position, data.drainRange)) return;
+        // Towers aren't NavMesh obstacles, so without this it walks into the tower's centre and
+        // stands inside the model. Plant at the drain range instead, facing the tower.
+        bool inRange = IsWithinFlatDistance(transform.position, currentTower.transform.position, data.drainRange);
+        if (inRange != isPlanted)
+        {
+            isPlanted = inRange;
+            movement.SetMovementPaused(inRange);
+        }
+        if (!inRange) return;
+        FaceTower();
 
+        if (Time.time < nextDrainTime) return;
         nextDrainTime = Time.time + data.drainInterval;
         animator.SetTrigger(drainTriggerHash);
         if (drainFeedback != null) drainFeedback.PlayFeedbacks(currentTower.transform.position);
         currentTower.ConsumeSupply(data.drainPerTick);
     }
 
+    private void ReleaseTower()
+    {
+        currentTower = null;
+        if (targetSelector != null) targetSelector.SetTowerTarget(null);
+        if (isPlanted)
+        {
+            isPlanted = false;
+            if (movement != null) movement.SetMovementPaused(false);
+        }
+    }
+
+    private void FaceTower()
+    {
+        Vector3 toTower = currentTower.transform.position - transform.position;
+        toTower.y = 0f;
+        if (toTower.sqrMagnitude < 0.0001f) return;
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(toTower), 360f * Time.deltaTime);
+    }
+
     private void HandleDied()
     {
         isDead = true;
-        currentTower = null;
-        if (targetSelector != null) targetSelector.SetTowerTarget(null);
+        ReleaseTower();
     }
 
     private void HandlePlayerDied()
     {
         playerDead = true;
-        currentTower = null;
-        if (targetSelector != null) targetSelector.SetTowerTarget(null);
+        ReleaseTower();
     }
 
     private static bool IsValidTarget(DefenseStructure tower)

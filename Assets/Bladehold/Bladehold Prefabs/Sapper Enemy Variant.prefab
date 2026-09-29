@@ -94,6 +94,7 @@ MonoBehaviour:
   data: {fileID: 11400000, guid: aa9e56c3681e0344dad888006a93739e, type: 2}
   health: {fileID: 4529312934116257231}
   targetSelector: {fileID: 5259850836507415629}
+  movement: {fileID: 7668842048773564594}
   animator: {fileID: 6946595583327411801}
   drainFeedback: {fileID: 0}
 --- !u!114 &4529312934116257231 stripped
@@ -123,3 +124,14 @@ Animator:
   m_CorrespondingSourceObject: {fileID: 6637556094960556724, guid: c595ed904bbf4af448abd3bbe3643373, type: 3}
   m_PrefabInstance: {fileID: 4357819749671716077}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &7668842048773564594 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6203469684204334175, guid: c595ed904bbf4af448abd3bbe3643373, type: 3}
+  m_PrefabInstance: {fileID: 4357819749671716077}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1839884679664407447}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fbbc2048d5b01e48874c730dc14a696, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AIMovement

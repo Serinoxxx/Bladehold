@@ -1030,6 +1030,7 @@ internal static class EnemyManifest
                         EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
                         EnemyPrefabGenerator.SetReference(so, "targetSelector", ctx.Root.GetComponent<AITargetSelector>());
                         EnemyPrefabGenerator.SetReference(so, "animator", ctx.ChildAnimator);
+                        EnemyPrefabGenerator.SetReference(so, "movement", ctx.Movement);
                     },
                 },
             },
