@@ -7017,6 +7017,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2634145823703351209, guid: 9976bda3fcfdc0f45bd17f991bb2050a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6104951730206211030}
+    - targetCorrespondingSourceObject: {fileID: 2634145823703351209, guid: 9976bda3fcfdc0f45bd17f991bb2050a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5803526549520546761}
     - targetCorrespondingSourceObject: {fileID: 1506884988414133505, guid: 9976bda3fcfdc0f45bd17f991bb2050a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2721483673200333947}
@@ -7919,6 +7922,18 @@ MonoBehaviour:
   hitFxFadeOutDuration: 0.25
   hitFxColor: {r: 1, g: 1, b: 1, a: 1}
   hitFxRadius: 0.5
+--- !u!114 &5803526549520546761
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2115685608821474177}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bf5c4eee4afc0c4f8bb10cdb6ad2c8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAnimationEvents
 --- !u!1 &2676358425779530805 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2086966250485387293, guid: 9976bda3fcfdc0f45bd17f991bb2050a, type: 3}

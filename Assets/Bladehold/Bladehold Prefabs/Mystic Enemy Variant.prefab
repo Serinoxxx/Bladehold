@@ -677,6 +677,9 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1233347782355984, guid: e218b66930d51a741a5150ddb1bfeec0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1390201040070230104}
     - targetCorrespondingSourceObject: {fileID: 1534798696686958, guid: e218b66930d51a741a5150ddb1bfeec0, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2610135155365624051}
@@ -1077,6 +1080,23 @@ CharacterJoint:
   m_EnablePreprocessing: 1
   m_MassScale: 1
   m_ConnectedMassScale: 1
+--- !u!1 &6066437114519345602 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1233347782355984, guid: e218b66930d51a741a5150ddb1bfeec0, type: 3}
+  m_PrefabInstance: {fileID: 6067529380942869970}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1390201040070230104
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6066437114519345602}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bf5c4eee4afc0c4f8bb10cdb6ad2c8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAnimationEvents
 --- !u!1 &6066614859434519202 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1341136336265072, guid: e218b66930d51a741a5150ddb1bfeec0, type: 3}

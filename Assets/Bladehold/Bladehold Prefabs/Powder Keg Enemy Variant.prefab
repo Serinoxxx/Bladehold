@@ -130,6 +130,9 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1387492477484550, guid: 7ee713c854e6be5469a1372d66b7bc40, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3565516157187726480}
     - targetCorrespondingSourceObject: {fileID: 1826037347352886, guid: 7ee713c854e6be5469a1372d66b7bc40, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4030984597864463825}
@@ -175,6 +178,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59cfd3ee7cc3f4f4e88929ac8e296897, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VulnerableSpot
+--- !u!1 &1596014649346349307 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1387492477484550, guid: 7ee713c854e6be5469a1372d66b7bc40, type: 3}
+  m_PrefabInstance: {fileID: 1595051849682282237}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &3565516157187726480
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1596014649346349307}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bf5c4eee4afc0c4f8bb10cdb6ad2c8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAnimationEvents
 --- !u!4 &1599478282104117533 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4712718303035360, guid: 7ee713c854e6be5469a1372d66b7bc40, type: 3}

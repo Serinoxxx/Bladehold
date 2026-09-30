@@ -166,6 +166,7 @@ MonoBehaviour:
   highlightEffect: {fileID: 0}
   firePoint: {fileID: 6709335891876274283}
   attackData: {fileID: 11400000, guid: 1d4e631373f9aaf429380aa3b853ef1d, type: 2}
+  igniteFeedback: {fileID: 0}
 --- !u!114 &9088559272336961180 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2416392165065999887, guid: 64b407995d56642478ea2b02984a62f8, type: 3}
