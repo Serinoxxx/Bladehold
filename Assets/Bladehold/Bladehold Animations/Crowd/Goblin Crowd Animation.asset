@@ -42,7 +42,108 @@ MonoBehaviour:
     length: 2.4
     loop: 0
     referenceSpeed: 0
+  - name: Ragdoll Fall 1
+    startFrame: 438
+    frameCount: 79
+    length: 1.3
+    loop: 0
+    referenceSpeed: 0
+  - name: Ragdoll Fall 2
+    startFrame: 517
+    frameCount: 131
+    length: 2.1666667
+    loop: 0
+    referenceSpeed: 0
+  - name: Ragdoll Fall 3
+    startFrame: 648
+    frameCount: 94
+    length: 1.55
+    loop: 0
+    referenceSpeed: 0
+  - name: Ragdoll Fall 4
+    startFrame: 742
+    frameCount: 79
+    length: 1.3
+    loop: 0
+    referenceSpeed: 0
+  - name: Ragdoll Fall 5
+    startFrame: 821
+    frameCount: 79
+    length: 1.3
+    loop: 0
+    referenceSpeed: 0
+  - name: Ragdoll Fall 6
+    startFrame: 900
+    frameCount: 79
+    length: 1.3
+    loop: 0
+    referenceSpeed: 0
+  deathClips: 040000000500000006000000070000000800000009000000
+  impacts:
+  - clip: 4
+    time: 0.016666668
+    localPoint: {x: 0.32239926, y: -0.02, z: -0.015547246}
+    intensity: 0.03560056
+    decalSize: 0.2948249
+  - clip: 4
+    time: 0.033333335
+    localPoint: {x: 0.4842276, y: -0.02, z: -0.19026518}
+    intensity: 0.028917382
+    decalSize: 0.2845328
+  - clip: 4
+    time: 0.7333333
+    localPoint: {x: -0.2986888, y: -0.02, z: -1.8582778}
+    intensity: 0.12309593
+    decalSize: 0.62956774
+  - clip: 4
+    time: 0.74999994
+    localPoint: {x: 0.19733939, y: -0.02, z: -2.137804}
+    intensity: 0.37679538
+    decalSize: 0.8202649
+  - clip: 6
+    time: 0.98333305
+    localPoint: {x: -0.34001237, y: -0.02, z: -1.9013152}
+    intensity: 0.088568285
+    decalSize: 0.57639515
+  - clip: 7
+    time: 0.016666668
+    localPoint: {x: 0.32826865, y: -0.02, z: -0.047321852}
+    intensity: 0.026885035
+    decalSize: 0.28140298
+  - clip: 7
+    time: 0.6333334
+    localPoint: {x: 0.40552527, y: -0.02, z: -2.4472425}
+    intensity: 0.12677489
+    decalSize: 0.63523334
+  - clip: 8
+    time: 0.68333334
+    localPoint: {x: -1.4670964, y: -0.02, z: -0.84677327}
+    intensity: 0.15758178
+    decalSize: 0.48267594
+  - clip: 9
+    time: 0.016666668
+    localPoint: {x: 0.35235047, y: -0.02, z: -0.027089678}
+    intensity: 0.06688697
+    decalSize: 0.34300596
+  - clip: 9
+    time: 0.033333335
+    localPoint: {x: 0.54040927, y: -0.02, z: -0.22444795}
+    intensity: 0.038135767
+    decalSize: 0.2987291
+  - clip: 9
+    time: 0.6000001
+    localPoint: {x: 0.6628013, y: -0.02, z: -1.985996}
+    intensity: 0.24926668
+    decalSize: 0.8238707
+  - clip: 9
+    time: 0.6333334
+    localPoint: {x: 1.174319, y: -0.02, z: -2.065462}
+    intensity: 0.2633026
+    decalSize: 0.645486
   runSpeedThreshold: 0.4
   minRunPlaybackRate: 0.6
   crossfadeSeconds: 0.15
   visualCheckInterval: 15
+  demoteAfterSeconds: 3
+  demoteMinCameraDistance: 12
+  demoteCheckInterval: 0.5

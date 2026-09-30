@@ -34,6 +34,8 @@ public class EnemyRagdoll : MonoBehaviour
     [SerializeField] private CorpseDespawner corpseDespawner;
     [Tooltip("Blood burst played where a ragdolled body part hits something. Intensity = impact strength; the player is turned to the contact normal before it plays.")]
     [SerializeField] private MMF_Player bloodImpactFeedback;
+    [Tooltip("Optional: a baked crowd goblin is handed back to its real rig before any ragdoll builds.")]
+    [SerializeField] private BakedCrowdAgent crowdAgent;
 
     public MMF_Player BloodImpactFeedback => bloodImpactFeedback;
 
@@ -85,6 +87,10 @@ public class EnemyRagdoll : MonoBehaviour
         {
             corpseDespawner = GetComponent<CorpseDespawner>();
         }
+        if (crowdAgent == null)
+        {
+            crowdAgent = GetComponent<BakedCrowdAgent>();
+        }
     }
 
     private void Awake()
@@ -92,6 +98,10 @@ public class EnemyRagdoll : MonoBehaviour
         if (animator == null)
         {
             animator = GetComponentInChildren<Animator>();
+        }
+        if (crowdAgent == null)
+        {
+            crowdAgent = GetComponent<BakedCrowdAgent>();
         }
         CacheExistingBodies();
     }
@@ -204,6 +214,11 @@ public class EnemyRagdoll : MonoBehaviour
     /// </summary>
     public bool BuildIfNeeded()
     {
+        // Every real ragdoll starts here, so a baked crowd goblin gets its skeleton and renderer back first.
+        if (crowdAgent != null)
+        {
+            crowdAgent.Promote();
+        }
         if (isBuilt)
         {
             RestoreBodies();

@@ -40,6 +40,8 @@ public class KnockbackReceiver : MonoBehaviour
     [SerializeField] private AIAnimation aiAnimation;
     [SerializeField] private AIAttack aiAttack;
     [SerializeField] private KnockbackConfigSO config;
+    [Tooltip("Optional: past the ragdoll cap, a baked crowd goblin plays a recorded ragdoll fall instead of the animated death.")]
+    [SerializeField] private BakedCrowdAgent crowdAgent;
 
     [SerializeField] private string knockdownTrigger = "Knockdown";
     [SerializeField] private string getUpStateName = "GetUp";
@@ -94,6 +96,7 @@ public class KnockbackReceiver : MonoBehaviour
         if (aiMovement == null) aiMovement = GetComponent<AIMovement>();
         if (aiAnimation == null) aiAnimation = GetComponent<AIAnimation>();
         if (aiAttack == null) aiAttack = GetComponent<AIAttack>();
+        if (crowdAgent == null) crowdAgent = GetComponent<BakedCrowdAgent>();
     }
 
     private void Start()
@@ -107,6 +110,8 @@ public class KnockbackReceiver : MonoBehaviour
         if (knockdownFeedback == null) Debug.LogError($"[KnockbackReceiver] knockdownFeedback is not assigned on {gameObject.name}.", this);
         if (flingFeedback == null) Debug.LogError($"[KnockbackReceiver] flingFeedback is not assigned on {gameObject.name}.", this);
         if (wallPinFeedback == null) Debug.LogError($"[KnockbackReceiver] wallPinFeedback is not assigned on {gameObject.name}.", this);
+
+        if (crowdAgent == null) crowdAgent = GetComponent<BakedCrowdAgent>();
 
         knockdownTriggerHash = Animator.StringToHash(knockdownTrigger);
         getUpStateHash = Animator.StringToHash(getUpStateName);
@@ -218,14 +223,7 @@ public class KnockbackReceiver : MonoBehaviour
         {
             if (animator != null) animator.enabled = false;
 
-            Vector3 flatDir = -transform.forward;
-            if (playerHealth != null)
-            {
-                flatDir = transform.position - playerHealth.transform.position;
-                flatDir.y = 0f;
-                if (flatDir.sqrMagnitude < 0.0001f) flatDir = -transform.forward;
-            }
-            flatDir.Normalize();
+            Vector3 flatDir = FlatAwayFromPlayer();
 
             float torque = config != null ? config.spinTorque : 5f;
             Vector3 tumbleAxis = Vector3.Cross(Vector3.up, flatDir);
@@ -235,6 +233,10 @@ public class KnockbackReceiver : MonoBehaviour
             Vector3 deathLaunch = flatDir * 1.5f + Vector3.up * 0.8f;
             ragdoll.EnterRagdoll(deathLaunch, spin, 1.2f);
             routine = StartCoroutine(CorpseSettleRoutine());
+        }
+        else if (crowdAgent != null && crowdAgent.PlayBakedDeath(FlatAwayFromPlayer()))
+        {
+            // Past the ragdoll cap: a recorded ragdoll fall, then a baked corpse.
         }
         else
         {
@@ -247,6 +249,19 @@ public class KnockbackReceiver : MonoBehaviour
                 animator.SetTrigger(Animator.StringToHash("Death"));
             }
         }
+    }
+
+    /// <summary>Flat direction from the player to this enemy (the way a death throws the body), or backwards without a player.</summary>
+    private Vector3 FlatAwayFromPlayer()
+    {
+        Vector3 flatDir = -transform.forward;
+        if (playerHealth != null)
+        {
+            flatDir = transform.position - playerHealth.transform.position;
+            flatDir.y = 0f;
+            if (flatDir.sqrMagnitude < 0.0001f) flatDir = -transform.forward;
+        }
+        return flatDir.normalized;
     }
 
     private IEnumerator CorpseSettleRoutine()

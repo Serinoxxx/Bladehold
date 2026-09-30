@@ -127,6 +127,10 @@ public class BakedCrowdRenderer : MonoBehaviour
                 agents.RemoveAt(i);
                 continue;
             }
+            if (!agent.gameObject.activeInHierarchy)
+            {
+                continue;
+            }
             if (!agent.Tick(deltaTime, out Vector4 frame))
             {
                 continue;

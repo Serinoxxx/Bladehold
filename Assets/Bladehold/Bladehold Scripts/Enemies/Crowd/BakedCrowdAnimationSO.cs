@@ -35,6 +35,22 @@ public class BakedCrowdAnimationSO : ScriptableObject
         public float referenceSpeed;
     }
 
+    /// <summary>
+    ///     A body part landing hard during a recorded ragdoll fall: the blood burst + decal a real
+    ///     ragdoll's <see cref="RagdollBloodImpact" /> would have played at that moment.
+    /// </summary>
+    [Serializable]
+    public class ImpactEvent
+    {
+        public int clip;
+        public float time;
+        [Tooltip("Contact point in the rig's local space (the fall is recorded launching along the rig's -Z).")]
+        public Vector3 localPoint;
+        [Tooltip("MMF intensity (0-1), as RagdollBloodImpact computes it.")]
+        public float intensity;
+        public float decalSize;
+    }
+
     [Header("Bake output (written by the baker)")]
     public Mesh mesh;
     public Material material;
@@ -42,6 +58,10 @@ public class BakedCrowdAnimationSO : ScriptableObject
     public int boneCount;
     public float bakeFps = 30f;
     public Clip[] clips;
+
+    [Tooltip("Indices into clips of the recorded ragdoll falls; each ends on its settled corpse pose.")]
+    public int[] deathClips;
+    public ImpactEvent[] impacts;
 
     [Header("Playback tuning")]
     [Tooltip("Agent speed (m/s) above which the run clip plays instead of idle.")]
@@ -56,6 +76,16 @@ public class BakedCrowdAnimationSO : ScriptableObject
     [Tooltip("How often (in frames) each baked goblin re-checks for things only the real Animator can show " +
              "(an added HighlightEffect outline, a late golden/impulse swap).")]
     [Min(1)] public int visualCheckInterval = 15;
+
+    [Header("Returning to the crowd")]
+    [Tooltip("A live goblin rejoins the baked crowd once it has gone this long without damage and is back in plain locomotion.")]
+    [Min(0f)] public float demoteAfterSeconds = 3f;
+
+    [Tooltip("...and is at least this far from the camera (or off-screen), so the pose snap goes unseen.")]
+    [Min(0f)] public float demoteMinCameraDistance = 12f;
+
+    [Tooltip("Seconds between a live goblin's rejoin checks.")]
+    [Min(0.05f)] public float demoteCheckInterval = 0.5f;
 
     // CPU copy of the (readable) bone texture, fetched on first promotion.
     [NonSerialized] private Color[] cachedPixels;

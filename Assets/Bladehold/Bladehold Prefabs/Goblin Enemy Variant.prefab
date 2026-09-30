@@ -830,6 +830,7 @@ MonoBehaviour:
   aiAnimation: {fileID: 4497168724745371170}
   aiAttack: {fileID: 8780529840763675578}
   config: {fileID: 11400000, guid: 2aee244ee24a4bf4fbdb917cff62562a, type: 2}
+  crowdAgent: {fileID: 3559920026835921682}
   knockdownTrigger: Knockdown
   getUpStateName: GetUp
   cheerTrigger: Cheer
@@ -903,6 +904,7 @@ MonoBehaviour:
   config: {fileID: 11400000, guid: 0dc3a05117208104ebded74f15a5fa59, type: 2}
   corpseDespawner: {fileID: 8820226531336169178}
   bloodImpactFeedback: {fileID: 8375012180620453399}
+  crowdAgent: {fileID: 3559920026835921682}
 --- !u!114 &6790884973619429240
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -980,6 +982,7 @@ MonoBehaviour:
   agent: {fileID: 7080334578233263117}
   aiAttack: {fileID: 8780529840763675578}
   knockbackReceiver: {fileID: 8743446565083701594}
+  ragdoll: {fileID: 2774917170554717151}
   goldenGoblin: {fileID: 6572349470805921892}
   impulseGoblin: {fileID: 6790884973619429240}
 --- !u!1 &2890684999563868791

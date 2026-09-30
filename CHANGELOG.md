@@ -29,6 +29,7 @@
 - Removed the old Castle Courtyard battle, replaced by the Outer Gate
 - Replaced the Armory Barracks battle with the Desert Gate
 - Improved performance in large goblin fights
+- Updated goblins killed beyond the Max Ragdolls limit to tumble and bleed like ragdolls instead of playing a stock death animation
 
 ## [0.1.28] - 2026-09-13
 

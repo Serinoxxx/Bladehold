@@ -113,8 +113,20 @@ internal static class EnemyManifest
                         EnemyPrefabGenerator.SetReference(so, "aiAttack", ctx.Root.GetComponent<AIAttack>());
                         EnemyPrefabGenerator.SetReference(so, "knockbackReceiver", ctx.Root.GetComponent<KnockbackReceiver>());
                         EnemyPrefabGenerator.SetReference(so, "goldenGoblin", ctx.Root.GetComponent<GoldenGoblin>());
+                        EnemyPrefabGenerator.SetReference(so, "ragdoll", ctx.Root.GetComponent<EnemyRagdoll>());
                         EnemyPrefabGenerator.SetReference(so, "impulseGoblin", ctx.Root.GetComponent<ImpulseGoblin>());
                     },
+                },
+                // Hand the goblin to the crowd for real ragdolls (promote first) and over-cap baked falls.
+                new ComponentSpec
+                {
+                    type = typeof(EnemyRagdoll),
+                    wire = (so, ctx) => EnemyPrefabGenerator.SetReference(so, "crowdAgent", ctx.Root.GetComponent<BakedCrowdAgent>()),
+                },
+                new ComponentSpec
+                {
+                    type = typeof(KnockbackReceiver),
+                    wire = (so, ctx) => EnemyPrefabGenerator.SetReference(so, "crowdAgent", ctx.Root.GetComponent<BakedCrowdAgent>()),
                 },
             },
         },

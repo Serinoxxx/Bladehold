@@ -5,6 +5,8 @@ using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
+using UnityEngine.SceneManagement;
+using UnityEditor.SceneManagement;
 
 /// <summary>
 ///     Bakes the fodder goblin's idle, run and attack into a <see cref="BakedCrowdAnimationSO" /> for
@@ -13,6 +15,12 @@ using UnityEngine.Playables;
 ///     and again over run legs), writes each frame's bone skin matrices to a float texture, and copies
 ///     the body mesh with its bone indices/weights moved into UV4/UV5. Existing output assets are
 ///     rewritten in place so their GUIDs, and the tuning fields on the SO, survive a re-bake.
+///
+///     It also records <see cref="FallVariations" /> real ragdoll deaths: a goblin posed from an idle
+///     frame is launched the way <see cref="KnockbackReceiver" /> throws a corpse, simulated in an
+///     isolated preview physics scene on flat ground until it settles, and its bones are captured each
+///     step as a non-looping clip (the last frame is the corpse pose). Hard landings are logged as
+///     <see cref="BakedCrowdAnimationSO.ImpactEvent" />s so the baked fall bleeds where a real one would.
 ///
 ///     Re-run after changing the goblin's body mesh, rig or any of the three clips.
 /// </summary>
@@ -32,6 +40,16 @@ public static class BakedCrowdBaker
     private const string RunTreeName = "Run_F_Incline_BlendTree";
     private const string AttackLayerName = "Attack";
     private const string AttackStateName = "Attack";
+
+    // Ragdoll fall recordings: (launch strength multiplier, sideways angle in degrees), one clip each.
+    private static readonly Vector2[] FallVariations =
+    {
+        new Vector2(1.0f, 0f), new Vector2(1.5f, 18f), new Vector2(0.8f, -15f),
+        new Vector2(2.0f, -8f), new Vector2(1.2f, 28f), new Vector2(1.7f, -25f),
+    };
+    private const float FallMinSeconds = 1.0f;
+    private const float FallMaxSeconds = 4.0f;
+    private const float FallLiftMetres = 0.03f;
 
     [MenuItem("Bladehold/Crowd/Bake Goblin Crowd Animation")]
     public static void Bake()
@@ -77,6 +95,17 @@ public static class BakedCrowdBaker
             clips.Add(SampleClip(graph, output, animator, bones, bindposes, rows, "Run", runClip, null, null, true, runReferenceSpeed));
             clips.Add(SampleClip(graph, output, animator, bones, bindposes, rows, "Attack", idleClip, attackClip, attackLayer.avatarMask, false, 0f));
             clips.Add(SampleClip(graph, output, animator, bones, bindposes, rows, "Attack (moving)", runClip, attackClip, attackLayer.avatarMask, false, 0f));
+            AnimationMode.StopAnimationMode();
+
+            var deathClips = new List<int>();
+            var impacts = new List<BakedCrowdAnimationSO.ImpactEvent>();
+            BakedCrowdAnimationSO.Clip idle = clips[BakedCrowdAnimationSO.ClipIdle];
+            for (int v = 0; v < FallVariations.Length; v++)
+            {
+                deathClips.Add(clips.Count);
+                Color[] startPose = rows[idle.startFrame + (v * 17) % idle.frameCount];
+                clips.Add(RecordFall(prefab, v, FallVariations[v], startPose, clips.Count, rows, impacts));
+            }
 
             if (!AssetDatabase.IsValidFolder(OutputFolder))
             {
@@ -99,11 +128,14 @@ public static class BakedCrowdBaker
             data.boneCount = bones.Length;
             data.bakeFps = BakeFps;
             data.clips = clips.ToArray();
+            data.deathClips = deathClips.ToArray();
+            data.impacts = impacts.ToArray();
             EditorUtility.SetDirty(data);
             AssetDatabase.SaveAssets();
 
             Debug.Log($"[BakedCrowdBaker] Baked {bones.Length} bones, {rows.Count} frames at {BakeFps} fps " +
-                      $"(idle '{idleClip.name}', run '{runClip.name}' @ {runReferenceSpeed} m/s, attack '{attackClip.name}') into {DataPath}.");
+                      $"(idle '{idleClip.name}', run '{runClip.name}' @ {runReferenceSpeed} m/s, attack '{attackClip.name}', " +
+                      $"{deathClips.Count} ragdoll falls with {impacts.Count} impacts) into {DataPath}.");
         }
         finally
         {
@@ -253,17 +285,199 @@ public static class BakedCrowdBaker
         return clip;
     }
 
+    /// <summary>
+    ///     Simulates one real ragdoll death in an isolated preview physics scene and records it as a clip.
+    ///     The launch copies KnockbackReceiver's death throw (flat push + lift, tumble spin, a kicked
+    ///     limb), thrown along the rig's -Z.
+    /// </summary>
+    private static BakedCrowdAnimationSO.Clip RecordFall(GameObject prefab, int variation, Vector2 settings, Color[] startPose,
+        int clipIndex, List<Color[]> rows, List<BakedCrowdAnimationSO.ImpactEvent> impacts)
+    {
+        Scene scene = EditorSceneManager.NewPreviewScene();
+        try
+        {
+            PhysicsScene physics = scene.GetPhysicsScene();
+            GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab, scene);
+            instance.transform.SetPositionAndRotation(Vector3.up * FallLiftMetres, Quaternion.identity);
+            var ground = new GameObject("Ground");
+            SceneManager.MoveGameObjectToScene(ground, scene);
+            BoxCollider groundBox = ground.AddComponent<BoxCollider>();
+            groundBox.size = new Vector3(80f, 1f, 80f);
+            groundBox.center = new Vector3(0f, -0.5f, 0f);
+
+            Animator animator = instance.GetComponentInChildren<Animator>();
+            animator.enabled = false;
+            SkinnedMeshRenderer body = FindActiveBody(instance);
+            Transform[] bones = body.bones;
+            Matrix4x4[] bindposes = body.sharedMesh.bindposes;
+            Transform rig = animator.transform;
+            PoseFromRow(bones, bindposes, rig, startPose);
+
+            EnemyRagdoll ragdoll = instance.GetComponent<EnemyRagdoll>();
+            RagdollConfigSO ragdollConfig = ragdoll != null ? ragdoll.Config : null;
+            KnockbackConfigSO knockbackConfig = LoadKnockbackConfig(instance);
+            if (ragdollConfig == null || knockbackConfig == null)
+            {
+                throw new InvalidOperationException("The goblin prefab needs EnemyRagdoll and KnockbackReceiver configs to record ragdoll falls.");
+            }
+
+            Transform hips = animator.GetBoneTransform(HumanBodyBones.Hips);
+            Rigidbody[] bodies = hips.GetComponentsInChildren<Rigidbody>(true);
+            Rigidbody pelvis = hips.GetComponent<Rigidbody>();
+            if (bodies.Length < 2 || pelvis == null) throw new InvalidOperationException("The goblin prefab has no baked ragdoll bodies.");
+            var boneColliders = new HashSet<Collider>(hips.GetComponentsInChildren<Collider>(true));
+            foreach (Collider collider in instance.GetComponentsInChildren<Collider>(true))
+            {
+                // Only the ragdoll's own solid bone colliders take part, as in the game.
+                collider.enabled = boneColliders.Contains(collider) && !collider.isTrigger;
+            }
+            Physics.SyncTransforms();
+
+            var random = new System.Random(1234 + variation * 7919);
+            Vector3 flatDir = Quaternion.AngleAxis(settings.y, Vector3.up) * -rig.forward;
+            Vector3 launch = flatDir * (1.5f * settings.x) + Vector3.up * 0.8f;
+            float torque = knockbackConfig.spinTorque;
+            Vector3 tumbleAxis = Vector3.Cross(Vector3.up, flatDir);
+            Vector3 noise = new Vector3((float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f) * 2f;
+            foreach (Rigidbody rb in bodies)
+            {
+                rb.isKinematic = false;
+                rb.linearVelocity = launch;
+            }
+            pelvis.angularVelocity = tumbleAxis * torque + noise * (torque * 0.3f);
+            Rigidbody kicked = bodies[1 + random.Next(bodies.Length - 1)];
+            kicked.linearVelocity += noise.normalized * 1.2f;
+
+            var clip = new BakedCrowdAnimationSO.Clip { name = "Ragdoll Fall " + (variation + 1), startFrame = rows.Count, loop = false };
+            var lastVelocity = new Vector3[bodies.Length];
+            var nextImpact = new float[bodies.Length];
+            for (int b = 0; b < bodies.Length; b++) lastVelocity[b] = bodies[b].linearVelocity;
+            float maxMultiplier = Mathf.Max(0.01f, Mathf.Max(ragdollConfig.torsoBaseScale, ragdollConfig.headBaseScale, ragdollConfig.limbBaseScale));
+
+            float dt = 1f / BakeFps;
+            float time = 0f;
+            float settled = 0f;
+            rows.Add(CaptureRow(bones, bindposes, rig));
+            while (time < FallMaxSeconds)
+            {
+                physics.Simulate(dt);
+                time += dt;
+                rows.Add(CaptureRow(bones, bindposes, rig));
+
+                for (int b = 0; b < bodies.Length; b++)
+                {
+                    Vector3 velocity = bodies[b].linearVelocity;
+                    Vector3 change = velocity - lastVelocity[b];
+                    lastVelocity[b] = velocity;
+                    // A hard landing: a big velocity change that pushed the body back up off the ground.
+                    float speed = change.magnitude;
+                    if (change.y <= 0f || speed < ragdollConfig.minImpactSpeed || time < nextImpact[b]) continue;
+                    nextImpact[b] = time + ragdollConfig.impactCooldown;
+
+                    RagdollBloodImpact part = bodies[b].GetComponent<RagdollBloodImpact>();
+                    float partMultiplier = PartMultiplier(ragdollConfig, part != null ? part.BodyPartType : RagdollBodyPartType.Limb);
+                    float speedFactor = Mathf.Clamp01((speed - ragdollConfig.minImpactSpeed) /
+                                                      Mathf.Max(0.01f, ragdollConfig.maxImpactSpeed - ragdollConfig.minImpactSpeed));
+                    Vector3 contact = bodies[b].worldCenterOfMass;
+                    contact.y = 0.01f;
+                    impacts.Add(new BakedCrowdAnimationSO.ImpactEvent
+                    {
+                        clip = clipIndex,
+                        time = time,
+                        localPoint = rig.InverseTransformPoint(contact),
+                        intensity = speedFactor * partMultiplier / maxMultiplier,
+                        decalSize = partMultiplier * Mathf.Lerp(ragdollConfig.minDecalSize, ragdollConfig.maxDecalSize, speedFactor),
+                    });
+                }
+
+                if (time >= FallMinSeconds)
+                {
+                    settled = pelvis.linearVelocity.magnitude < knockbackConfig.settleSpeed ? settled + dt : 0f;
+                    if (settled >= knockbackConfig.settleTime) break;
+                }
+            }
+
+            clip.frameCount = rows.Count - clip.startFrame;
+            clip.length = (clip.frameCount - 1) / BakeFps;
+            return clip;
+        }
+        finally
+        {
+            EditorSceneManager.ClosePreviewScene(scene);
+        }
+    }
+
+    private static KnockbackConfigSO LoadKnockbackConfig(GameObject instance)
+    {
+        KnockbackReceiver receiver = instance.GetComponent<KnockbackReceiver>();
+        if (receiver == null) return null;
+        return new SerializedObject(receiver).FindProperty("config").objectReferenceValue as KnockbackConfigSO;
+    }
+
+    private static float PartMultiplier(RagdollConfigSO config, RagdollBodyPartType type)
+    {
+        switch (type)
+        {
+            case RagdollBodyPartType.Torso: return config.torsoBaseScale;
+            case RagdollBodyPartType.Head: return config.headBaseScale;
+            default: return config.limbBaseScale;
+        }
+    }
+
+    private static Color[] CaptureRow(Transform[] bones, Matrix4x4[] bindposes, Transform rig)
+    {
+        Matrix4x4 toRig = rig.worldToLocalMatrix;
+        var row = new Color[bones.Length * 3];
+        for (int b = 0; b < bones.Length; b++)
+        {
+            Matrix4x4 skin = toRig * bones[b].localToWorldMatrix * bindposes[b];
+            for (int r = 0; r < 3; r++)
+            {
+                Vector4 v = skin.GetRow(r);
+                row[b * 3 + r] = new Color(v.x, v.y, v.z, v.w);
+            }
+        }
+        return row;
+    }
+
+    /// <summary>Poses the skeleton from a baked row (rig-space skin matrices), parents first.</summary>
+    private static void PoseFromRow(Transform[] bones, Matrix4x4[] bindposes, Transform rig, Color[] row)
+    {
+        var order = new List<int>();
+        for (int i = 0; i < bones.Length; i++) order.Add(i);
+        order.Sort((a, b) => Depth(bones[a], rig).CompareTo(Depth(bones[b], rig)));
+        Matrix4x4 toWorld = rig.localToWorldMatrix;
+        foreach (int i in order)
+        {
+            Matrix4x4 skin = Matrix4x4.identity;
+            for (int r = 0; r < 3; r++)
+            {
+                Color c = row[i * 3 + r];
+                skin.SetRow(r, new Vector4(c.r, c.g, c.b, c.a));
+            }
+            Matrix4x4 world = toWorld * skin * bindposes[i].inverse;
+            bones[i].SetPositionAndRotation(world.GetPosition(), world.rotation);
+        }
+    }
+
+    private static int Depth(Transform t, Transform root)
+    {
+        int depth = 0;
+        for (; t != null && t != root; t = t.parent) depth++;
+        return depth;
+    }
+
     private static Texture2D WriteTexture(List<Color[]> rows, int width)
     {
         Texture2D texture = AssetDatabase.LoadAssetAtPath<Texture2D>(TexturePath);
         bool isNew = texture == null;
         if (isNew)
         {
-            texture = new Texture2D(width, rows.Count, TextureFormat.RGBAFloat, false, true);
+            texture = new Texture2D(width, rows.Count, TextureFormat.RGBAHalf, false, true);
         }
         else
         {
-            texture.Reinitialize(width, rows.Count, TextureFormat.RGBAFloat, false);
+            texture.Reinitialize(width, rows.Count, TextureFormat.RGBAHalf, false);
         }
         texture.name = "Goblin Crowd Bones";
         texture.filterMode = FilterMode.Point;
