@@ -1,3 +1,4 @@
+using System;
 using MoreMountains.Feedbacks;
 using System.Collections;
 using UnityEngine;
@@ -37,6 +38,9 @@ public class AIAttack : MonoBehaviour
     private bool anyError = false;
 
     private float damageMultiplier = 1f;
+
+    /// <summary>Raised when the attack animation is triggered (listeners that animate without the Animator, e.g. <see cref="BakedCrowdAgent" />).</summary>
+    public event Action OnAttackStarted;
 
     /// <summary>
     ///     Per-instance damage override (e.g. <see cref="SurvivorsSpawner" /> applying an enemy type's
@@ -317,7 +321,8 @@ public class AIAttack : MonoBehaviour
         }
         lastAttackTime = Time.time;
         animator.SetTrigger(attackTriggerHash);
-        
+        OnAttackStarted?.Invoke();
+
         if (movement != null)
         {
             movement.SetTurningPaused(true);

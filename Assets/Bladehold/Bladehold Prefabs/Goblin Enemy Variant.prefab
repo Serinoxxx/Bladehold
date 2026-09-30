@@ -399,6 +399,7 @@ GameObject:
   - component: {fileID: 6790884973619429240}
   - component: {fileID: 4433720349428158434}
   - component: {fileID: 1750997362636305128}
+  - component: {fileID: 3559920026835921682}
   m_Layer: 7
   m_Name: Goblin Enemy Variant
   m_TagString: Untagged
@@ -960,6 +961,27 @@ MonoBehaviour:
   maxRaycastDistance: 3
   raycastHeightOffset: 0.5
   groundJitterRadius: 0.25
+--- !u!114 &3559920026835921682
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 494112403358464087}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df0742f14610d3740ac086b5f42d4031, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BakedCrowdAgent
+  crowdData: {fileID: 11400000, guid: f338175ccda00dd48be7ac5f5795c434, type: 2}
+  health: {fileID: 2416392165065999887}
+  animator: {fileID: 1638963520121624715}
+  bodyRenderer: {fileID: 1586114936138099649}
+  agent: {fileID: 7080334578233263117}
+  aiAttack: {fileID: 8780529840763675578}
+  knockbackReceiver: {fileID: 8743446565083701594}
+  goldenGoblin: {fileID: 6572349470805921892}
+  impulseGoblin: {fileID: 6790884973619429240}
 --- !u!1 &2890684999563868791
 GameObject:
   m_ObjectHideFlags: 0

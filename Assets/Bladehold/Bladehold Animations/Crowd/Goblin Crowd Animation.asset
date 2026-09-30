@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aaba86395cc3cdf4babdc33fc0852650, type: 3}
+  m_Name: Goblin Crowd Animation
+  m_EditorClassIdentifier: Assembly-CSharp::BakedCrowdAnimationSO
+  mesh: {fileID: 4300000, guid: acf14faca94440540a716f78fbefdfa3, type: 2}
+  material: {fileID: 2100000, guid: 79f594fc75c854640b536422ecd72b28, type: 2}
+  boneTexture: {fileID: 2800000, guid: f03107fe5a039ad41a90f1c3538c2792, type: 2}
+  boneCount: 49
+  bakeFps: 60
+  clips:
+  - name: Idle
+    startFrame: 0
+    frameCount: 106
+    length: 1.7666668
+    loop: 1
+    referenceSpeed: 0
+  - name: Run
+    startFrame: 106
+    frameCount: 42
+    length: 0.70000005
+    loop: 1
+    referenceSpeed: 3.5
+  - name: Attack
+    startFrame: 148
+    frameCount: 145
+    length: 2.4
+    loop: 0
+    referenceSpeed: 0
+  - name: Attack (moving)
+    startFrame: 293
+    frameCount: 145
+    length: 2.4
+    loop: 0
+    referenceSpeed: 0
+  runSpeedThreshold: 0.4
+  minRunPlaybackRate: 0.6
+  crossfadeSeconds: 0.15
+  visualCheckInterval: 15

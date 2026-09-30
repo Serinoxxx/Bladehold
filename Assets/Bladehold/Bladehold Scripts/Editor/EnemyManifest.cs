@@ -96,6 +96,27 @@ internal static class EnemyManifest
         {
             id = "goblin",
             prefabName = "Goblin Enemy Variant",
+            components = new[]
+            {
+                // The bulk of the horde: drawn baked (idle/run/attack) until anything else happens to it.
+                // Bake data comes from Bladehold/Crowd/Bake Goblin Crowd Animation (BakedCrowdBaker).
+                new ComponentSpec
+                {
+                    type = typeof(BakedCrowdAgent),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "crowdData", LoadAsset<BakedCrowdAnimationSO>(BakedCrowdBaker.DataPath));
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                        EnemyPrefabGenerator.SetReference(so, "animator", ctx.ChildAnimator);
+                        EnemyPrefabGenerator.SetReference(so, "bodyRenderer", ActiveBody(ctx.Root));
+                        EnemyPrefabGenerator.SetReference(so, "agent", ctx.Root.GetComponent<UnityEngine.AI.NavMeshAgent>());
+                        EnemyPrefabGenerator.SetReference(so, "aiAttack", ctx.Root.GetComponent<AIAttack>());
+                        EnemyPrefabGenerator.SetReference(so, "knockbackReceiver", ctx.Root.GetComponent<KnockbackReceiver>());
+                        EnemyPrefabGenerator.SetReference(so, "goldenGoblin", ctx.Root.GetComponent<GoldenGoblin>());
+                        EnemyPrefabGenerator.SetReference(so, "impulseGoblin", ctx.Root.GetComponent<ImpulseGoblin>());
+                    },
+                },
+            },
         },
 
         // Golden Goblin: dedicated fleeing enemy type — fast, doesn't attack, runs around and away from player.
@@ -1287,6 +1308,19 @@ internal static class EnemyManifest
     }
 
     /// <summary>Loads a non-prefab asset for wiring (the roster), throwing when missing.</summary>
+    /// <summary>The body SkinnedMeshRenderer that's switched on (the Synty rigs carry many inactive alternates).</summary>
+    private static SkinnedMeshRenderer ActiveBody(GameObject root)
+    {
+        foreach (SkinnedMeshRenderer smr in root.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+        {
+            if (smr.enabled && smr.gameObject.activeInHierarchy)
+            {
+                return smr;
+            }
+        }
+        throw new InvalidOperationException($"'{root.name}' has no active body SkinnedMeshRenderer.");
+    }
+
     private static T LoadAsset<T>(string path) where T : UnityEngine.Object
     {
         var asset = AssetDatabase.LoadAssetAtPath<T>(path);

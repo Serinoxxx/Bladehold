@@ -28,6 +28,7 @@
 - Added range and blind spot size to each defence's description in the build wheel
 - Removed the old Castle Courtyard battle, replaced by the Outer Gate
 - Replaced the Armory Barracks battle with the Desert Gate
+- Improved performance in large goblin fights
 
 ## [0.1.28] - 2026-09-13
 
