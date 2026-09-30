@@ -152,13 +152,13 @@ namespace Bladehold.UI
                 "Hold the elevated stone battlements against Captain Fraglob and his vanguard. High elevation, windy battlements."
             ));
 
-            // Tier 2B: Castle Armory
+            // Tier 2B: Desert Gate
             Register(new AreaMetadata(
-                "Bladehold Castle Armory",
+                "Bladehold Desert Gate",
                 2,
-                "Castle Armory",
-                "Weapons Depot",
-                "Clear out Captain Kombusta's incendiary sappers before they ignite the castle's fortified armory storehouse."
+                "Desert Gate",
+                "Sunscorched Canyon",
+                "Captain Kombusta's incendiary sappers march on the desert gate. Two spiked ravines cut the canyon floor; hold the bridges and knock the warband into the pits before it reaches the walls."
             ));
 
             // Tier 4: Great Hall

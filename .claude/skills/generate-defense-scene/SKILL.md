@@ -19,7 +19,7 @@ followed by a rule check. Code: `Assets/Bladehold/Bladehold Scripts/Editor/Scene
 | `DefenseSceneGenerator` | Orchestrates the stages. It also builds the castle, bridges, spikes, SpikePit volumes and play-area boundary, bakes the NavMesh, and lays out the gameplay. |
 | `DefenseSceneValidator` | Checks the gameplay rules (below). |
 | `PrefabMeasure` | Mesh-measured bounds, footprints and grounding for any prefab. |
-| `DefenseSceneDefaults` | Builds the stock assets in `Assets/Bladehold/Config/SceneGen/`: the Outer Gate spec, the Alpine palette and `SpikePitConfig`. |
+| `DefenseSceneDefaults` | Builds the stock assets in `Assets/Bladehold/Config/SceneGen/`: `SpikePitConfig`, Outer Gate spec + Alpine palette (tier 1), Desert Gate spec + Arid palette (tier 2, two ravines). One menu item per scene, so new stock scenes get a `Create<Scene>` builder here too. |
 
 Runtime piece: `Hazards/SpikePit.cs` + `SpikePitConfigSO` (one heavy hit on landing, 12 by default, so
 normal 10-HP goblins die. A shared registry means walking along the floor between boxes isn't a second
@@ -37,7 +37,7 @@ fall.)
 
 ## Workflow (via `/unity-editor-mcp`)
 
-1. **New scene:** duplicate `Config/SceneGen/OuterGate_DefenseSpec.asset` and set `scenePath` (under `Assets/Bladehold/Bladehold Scenes/`) and `seed`. Edit the numbers: plots, ravines/bridges/ramps, spawns, `objectiveZRange`. **New biome:** duplicate `Alpine_DefensePalette.asset` and swap the prefabs and layers. Check materials: Alpine's own `SM_Env_Rock_Cliff_*` are **refractive glacier ice**, which is why the Alpine palette uses the Arid cliff meshes with `Snow_Rock_Tri`.
+1. **New scene:** duplicate `Config/SceneGen/OuterGate_DefenseSpec.asset` and set `scenePath` (under `Assets/Bladehold/Bladehold Scenes/`) and `seed`. Edit the numbers: plots, ravines/bridges/ramps, spawns, `objectiveZRange`. **New biome:** duplicate `Alpine_DefensePalette.asset` and swap the prefabs and layers. Check materials: Alpine's own `SM_Env_Rock_Cliff_*` are **refractive glacier ice**, which is why the Alpine palette uses the Arid cliff meshes with `Snow_Rock_Tri`. Pick terrain layers from the pack's own demo `TerrainData` (its layer shares show which ones the artist used), and avoid a very pale road layer: it reads as painted lines.
 2. **Generate.** It can take about a minute, so queue it on `delayCall`. A synchronous call can time out the MCP response even though it completes:
    ```csharp
    var spec = AssetDatabase.LoadAssetAtPath<DefenseSceneSpecSO>("Assets/Bladehold/Config/SceneGen/<Spec>.asset");

@@ -13,11 +13,10 @@ MonoBehaviour:
   m_Name: Node_tier2_armory_barracks
   m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
   nodeId: tier2_armory_barracks
-  nodeTitle: Armory Barracks
-  subtitle: Fortified Guardhouse
-  description: Clear out Captain Kombusta's incendiary sappers before they ignite
-    the castle's armory storehouse.
-  sceneName: Bladehold Castle Armory
+  nodeTitle: Desert Gate
+  subtitle: Sunscorched Canyon
+  description: "Captain Kombusta's incendiary sappers march on the desert gate. Two spiked ravines cut the canyon floor; hold the bridges and knock the warband into the pits before it reaches the walls."
+  sceneName: Bladehold Desert Gate
   nodeType: 0
   tierIndex: 2
   mapPosition: {x: 300, y: -130}

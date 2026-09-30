@@ -1,0 +1,142 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b02862b8870d46944bd892d7cbd1eb5c, type: 3}
+  m_Name: DesertGate_DefenseSpec
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::DefenseSceneSpecSO
+  scenePath: Assets/Bladehold/Bladehold Scenes/Bladehold Desert Gate.unity
+  seed: 2202
+  palette: {fileID: 11400000, guid: a4593860647d815418ea440874efaeba, type: 2}
+  terrainMin: {x: -200, y: -120}
+  terrainSize: 400
+  terrainHeight: 130
+  playfieldElevation: 30
+  heightmapResolution: 1025
+  alphamapResolution: 1024
+  gateNotchHalfWidth: 20
+  fieldHalfWidth: 80
+  flareLength: 40
+  fieldEndZ: 190
+  cornerRadius: 30
+  edgeNoise: 9
+  fieldUndulation: 0.35
+  foothillWidth: 16
+  foothillHeight: 5
+  mountainHeight: 85
+  mountainWidth: 80
+  notchFoothillWidth: 3
+  courtyardDepth: 60
+  courtyardHalfWidth: 38
+  wallEmbed: 8
+  castleBuildings:
+  - prefab: {fileID: 1539475987485874, guid: ad046a662ca27474fbd4aef7604bdde6, type: 3}
+    position: {x: 0, y: -44}
+    yaw: 180
+  - prefab: {fileID: 1405846119302248, guid: c4acdd3f8bf9cfe4e8db56a2f52a57db, type: 3}
+    position: {x: 15.82574, y: -45.287754}
+    yaw: -80.02519
+  - prefab: {fileID: 1134997539092316, guid: 8adfb299be9e7f74c859e0c948e2f4c0, type: 3}
+    position: {x: -26.78431, y: -30.293098}
+    yaw: 104.97419
+  - prefab: {fileID: 1159825550740384, guid: 871736051670df6409b1c54e9710effe, type: 3}
+    position: {x: 9.010621, y: -23.149513}
+    yaw: -81.0955
+  - prefab: {fileID: 1966127341303218, guid: c004583408826104080451c4b7713ee5, type: 3}
+    position: {x: -10.561797, y: -37.080868}
+    yaw: 80.83689
+  - prefab: {fileID: 1925638959922780, guid: aecaf73c950a6664e926dbffe7b9d800, type: 3}
+    position: {x: -10.946744, y: -17.264006}
+    yaw: 87.048096
+  - prefab: {fileID: 1904262631371420, guid: 4d3bedae59bad854eac1c80230ab57f0, type: 3}
+    position: {x: 28.696617, y: -28.88584}
+    yaw: -79.379654
+  - prefab: {fileID: 1257024709312140, guid: 7038763010482764cadfe26b89e05c78, type: 3}
+    position: {x: 23.165283, y: -14.147798}
+    yaw: -76.433136
+  - prefab: {fileID: 1428951525696302, guid: 356fa83e91052c344953b8081a7d6f57, type: 3}
+    position: {x: -29.356243, y: -16.794144}
+    yaw: 104.6433
+  - prefab: {fileID: 1682407712963166, guid: f3626ee6839141c4eb68cab2cd2fc161, type: 3}
+    position: {x: -23.141571, y: -44.081543}
+    yaw: 76.44041
+  - prefab: {fileID: 1107351626861436, guid: 5f8c58b5e7e6b504b84711e4dfda3757, type: 3}
+    position: {x: 16.721014, y: -31.887222}
+    yaw: -88.103745
+  ravines:
+  - z: 60
+    topWidth: 11
+    floorWidth: 6
+    depth: 6
+    meanderAmplitude: 4
+    meanderWavelength: 95
+    bridges:
+    - x: -42
+      tilesWide: 1
+    - x: 0
+      tilesWide: 2
+    - x: 42
+      tilesWide: 1
+    exitRamps:
+    - x: -20
+      direction: -1
+      width: 4.5
+      slopeDegrees: 24
+    - x: 20
+      direction: 1
+      width: 4.5
+      slopeDegrees: 24
+  - z: 112
+    topWidth: 12
+    floorWidth: 7
+    depth: 7
+    meanderAmplitude: 5
+    meanderWavelength: 130
+    bridges:
+    - x: -24
+      tilesWide: 1
+    - x: 26
+      tilesWide: 1
+    exitRamps:
+    - x: 0
+      direction: 1
+      width: 4.5
+      slopeDegrees: 24
+    - x: -52
+      direction: -1
+      width: 4.5
+      slopeDegrees: 24
+    - x: 52
+      direction: 1
+      width: 4.5
+      slopeDegrees: 24
+  playerSpawn: {x: 0, y: 9}
+  towerPlots:
+  - {x: -32, y: 18}
+  - {x: -12, y: 14}
+  - {x: 12, y: 14}
+  - {x: 32, y: 18}
+  - {x: -24, y: 38}
+  - {x: 24, y: 38}
+  enemySpawns:
+  - {x: -60, y: 162}
+  - {x: -45, y: 172}
+  - {x: -30, y: 164}
+  - {x: -15, y: 174}
+  - {x: 0, y: 166}
+  - {x: 15, y: 174}
+  - {x: 30, y: 164}
+  - {x: 45, y: 172}
+  - {x: 60, y: 162}
+  - {x: 0, y: 178}
+  objectiveRangeMargin: 8
+  objectiveZRange: {x: 76, y: 165}
+  scatterDensity: 1
+  gameplayClearRadius: 7

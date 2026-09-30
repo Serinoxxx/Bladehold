@@ -117,7 +117,7 @@ public class CampaignGraphSO : ScriptableObject
         rootNode = nodeTier1;
 
         // -------------------------------------------------------------
-        // TIER 2: Split into 2 options (North Ramparts / Armory Barracks)
+        // TIER 2: Split into 2 options (North Ramparts / Desert Gate)
         // -------------------------------------------------------------
         CampaignNodeSO nodeTier2A = CreateNode(
             "tier2_north_ramparts",
@@ -139,10 +139,10 @@ public class CampaignGraphSO : ScriptableObject
 
         CampaignNodeSO nodeTier2B = CreateNode(
             "tier2_armory_barracks",
-            "Armory Barracks",
-            "Fortified Guardhouse",
-            "Clear out Captain Kombusta's incendiary sappers before they ignite the castle's armory storehouse.",
-            "Bladehold Castle Armory",
+            "Desert Gate",
+            "Sunscorched Canyon",
+            "Captain Kombusta's incendiary sappers march on the desert gate. Two spiked ravines cut the canyon floor; hold the bridges and knock the warband into the pits before it reaches the walls.",
+            "Bladehold Desert Gate",
             CampaignNodeType.Combat,
             2,
             new Vector2(300f, -130f),

@@ -32,6 +32,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Bladehold/Bladehold Scenes/Bladehold Outer Gate.unity
     guid: 11108488924c54f41a597e836a3d0b73
+  - enabled: 1
+    path: Assets/Bladehold/Bladehold Scenes/Bladehold Desert Gate.unity
+    guid: 51dec450c0e6b7344a7bbd95d37333a7
   - enabled: 0
     path: Assets/Bladehold/Bladehold Scenes/Bladehold Castle Ramparts.unity
     guid: 42837d35e3411bd47852d759f065cdf3

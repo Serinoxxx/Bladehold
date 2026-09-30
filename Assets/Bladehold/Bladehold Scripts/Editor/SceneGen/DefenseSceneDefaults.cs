@@ -13,6 +13,8 @@ public static class DefenseSceneDefaults
     public const string SpikePitConfigPath = "Assets/Bladehold/Config/SceneGen/SpikePitConfig.asset";
     public const string AlpinePalettePath = "Assets/Bladehold/Config/SceneGen/Alpine_DefensePalette.asset";
     public const string OuterGateSpecPath = "Assets/Bladehold/Config/SceneGen/OuterGate_DefenseSpec.asset";
+    public const string AridPalettePath = "Assets/Bladehold/Config/SceneGen/Arid_DefensePalette.asset";
+    public const string DesertGateSpecPath = "Assets/Bladehold/Config/SceneGen/DesertGate_DefenseSpec.asset";
 
     private const string Alpine = "Assets/Synty/PolygonNatureBiomes/PNB_Alpine_Mountain";
     private const string Kingdom = "Assets/Synty/PolygonFantasyKingdom/Prefabs";
@@ -28,6 +30,17 @@ public static class DefenseSceneDefaults
         CreateOuterGateSpec(palette);
         AssetDatabase.SaveAssets();
         Debug.Log("[DefenseSceneDefaults] Stock scene-gen assets written to " + ConfigFolder);
+    }
+
+    [MenuItem("Bladehold/Scene Gen/Create or Refresh Desert Gate Assets (Arid)")]
+    public static void CreateDesertGate()
+    {
+        EnsureFolder(ConfigFolder);
+        EnsureSpikePitConfig();
+        DefenseBiomePaletteSO palette = CreateAridPalette();
+        CreateDesertGateSpec(palette);
+        AssetDatabase.SaveAssets();
+        Debug.Log("[DefenseSceneDefaults] Desert Gate scene-gen assets written to " + ConfigFolder);
     }
 
     private static void EnsureFolder(string path)
@@ -72,8 +85,8 @@ public static class DefenseSceneDefaults
         return list;
     }
 
-    private static TerrainLayer Layer(string name) =>
-        AssetDatabase.LoadAssetAtPath<TerrainLayer>($"{Alpine}/Terrain/{name}.terrainlayer");
+    private static TerrainLayer Layer(string name, string biome = Alpine) =>
+        AssetDatabase.LoadAssetAtPath<TerrainLayer>($"{biome}/Terrain/{name}.terrainlayer");
 
     private static DefenseBiomePaletteSO CreateAlpinePalette()
     {
@@ -171,6 +184,138 @@ public static class DefenseSceneDefaults
             new Vector2(60f, 148f), new Vector2(0f, 164f)
         };
         s.objectiveZRange = new Vector2(84f, 140f);
+
+        s.castleBuildings = LayoutCastle(s);
+        EditorUtility.SetDirty(s);
+    }
+
+    /// <summary>
+    ///     The PNB Arid Desert biome: sand floor with pale drifts, red-sand slopes, faces and trails (the
+    ///     main layers of the pack's own demo terrain), its triplanar rock cliffs as-is, dead trees and cacti, bones and
+    ///     tumbleweed for litter. Castle, bridge and battlefield props stay Fantasy Kingdom, like Alpine.
+    /// </summary>
+    private static DefenseBiomePaletteSO CreateAridPalette()
+    {
+        var p = LoadOrCreate<DefenseBiomePaletteSO>(AridPalettePath);
+        string ap = $"{Arid}/Prefabs";
+
+        p.ground = Layer("Sand_01", Arid);
+        p.groundVariant = Layer("Sand_04", Arid);
+        p.slope = Layer("RedSand", Arid);
+        p.cliff = Layer("RedSand", Arid);
+        p.road = Layer("RedSand", Arid);
+        p.ravineFloor = Layer("SaltCracks", Arid);
+        p.courtyard = Layer("Sand_02", Arid);
+        p.terrainMaterial = AssetDatabase.LoadAssetAtPath<Material>(
+            "Packages/com.unity.render-pipelines.universal/Runtime/Materials/TerrainLit.mat");
+
+        p.cliffs = Prefabs(ap, "SM_Env_Rock_Cliff_01", "SM_Env_Rock_Cliff_02", "SM_Env_Rock_Cliff_04",
+            "SM_Env_Rock_Cliff_05", "SM_Env_Rock_Cliff_06", "SM_Env_Rock_Cliff_08", "SM_Env_Rock_Cliff_09",
+            "SM_Env_Rock_Cliff_10", "SM_Env_Rock_Cliff_12", "SM_Env_Rock_Cliff_14");
+        p.cliffMaterial = null;
+        p.largeRocks = Prefabs(ap, "SM_Env_Rock_07", "SM_Env_Rock_08", "SM_Env_Rock_09", "SM_Env_Rock_Rough_01",
+            "SM_Env_Rocks_Spikey_01");
+        p.mediumRocks = Prefabs(ap, "SM_Env_Rock_01", "SM_Env_Rock_03", "SM_Env_Rock_06", "SM_Env_Rock_10",
+            "SM_Env_Rock_11", "SM_Env_Rock_Rough_02");
+        p.smallRocks = Prefabs(ap, "SM_Env_Rock_Small_01", "SM_Env_Rock_Small_04", "SM_Env_Rock_02",
+            "SM_Env_Rock_04", "SM_Env_Rock_05");
+        // The "snow" role is drifts banked against rocks and walls: low scrub and succulents here.
+        p.snowMounds = Prefabs(ap, "SM_Env_GroundCover_01", "SM_Env_GroundCover_02", "SM_Env_Succulent_01",
+            "SM_Env_Bush_Bramble_01");
+        p.trees = Prefabs(ap, "SM_Env_Tree_Dead_01", "SM_Env_Tree_Dead_02", "SM_Env_Cactus_03");
+        p.deadTrees = Prefabs(ap, "SM_Env_Tree_Dead_02", "SM_Env_Cactus_03", "SM_Env_Bush_Bramble_02");
+
+        p.gate = Prefab(Kingdom, "SM_Bld_Castle_Wall_Gate_L_01");
+        p.wall = Prefab(Kingdom, "SM_Bld_Castle_Wall_01");
+        p.wallTower = Prefab(Kingdom, "SM_Bld_Castle_Wall_Tower_M_01");
+        p.bridgeTile = Prefab(Kingdom, "SM_Bld_Bridge_01");
+        p.bridgePillar = Prefab(Kingdom, "SM_Bld_Bridge_Pillars_01");
+        p.pitSpikes = Prefabs(Dungeon, "SM_Env_Trap_Spikes_01");
+        p.defenseStakes = Prefabs(Kingdom, "SM_Prop_Spike_Fortification_01", "SM_Prop_Spike_Fortification_02",
+            "SM_Prop_Spike_Fortification_03");
+        p.banners = Prefabs(Kingdom, "SM_Prop_Battle_Banner_01", "SM_Prop_Battle_Banner_02", "SM_Prop_Battle_Banner_03");
+        p.fieldLitter = Prefabs(ap, "SM_Prop_Bones_01", "SM_Prop_Bones_03", "SM_Prop_Bones_05",
+            "SM_Prop_Tumbleweed_01", "SM_Env_Rock_Small_04", "SM_Env_Rock_Pebbles_03", "SM_Env_Cactus_01",
+            "SM_Env_Cactus_02");
+        p.courtyardProps = Prefabs(Kingdom, "SM_Prop_Barrel_01", "SM_Prop_Camp_Brazier_01", "SM_Prop_Crate_01",
+            "SM_Prop_Cart_01", "SM_Prop_Banner_01");
+
+        p.skybox = AssetDatabase.GetBuiltinExtraResource<Material>("Default-Skybox.mat");
+        p.volumeProfile = AssetDatabase.LoadAssetAtPath<UnityEngine.Rendering.VolumeProfile>(
+            $"{Arid}/Scene/Demo_01/Global Volume Profile.asset");
+        p.sunColor = new Color(1f, 0.86f, 0.68f);
+        p.sunIntensity = 1.5f;
+        p.sunEuler = new Vector3(42f, -40f, 0f);
+        p.fogColor = new Color(0.82f, 0.62f, 0.46f);
+        p.fogDensity = 0.003f;
+        p.ambientSky = new Color(1f, 0.83f, 0.7f);
+        p.ambientEquator = new Color(0.62f, 0.55f, 0.55f);
+        p.ambientGround = new Color(0.25f, 0.15f, 0.1f);
+
+        EditorUtility.SetDirty(p);
+        return p;
+    }
+
+    /// <summary>
+    ///     Campaign tier 2: the Outer Gate's shape pushed harder. A second, wider ravine far out with only
+    ///     two crossings, offset from the inner bridges so the warband zigzags under fire.
+    /// </summary>
+    private static void CreateDesertGateSpec(DefenseBiomePaletteSO palette)
+    {
+        var s = LoadOrCreate<DefenseSceneSpecSO>(DesertGateSpecPath);
+        s.scenePath = "Assets/Bladehold/Bladehold Scenes/Bladehold Desert Gate.unity";
+        s.seed = 2202;
+        s.palette = palette;
+        s.fieldHalfWidth = 80f;
+        s.fieldEndZ = 190f;
+
+        s.towerPlots = new List<Vector2>
+        {
+            new Vector2(-32f, 18f), new Vector2(-12f, 14f), new Vector2(12f, 14f), new Vector2(32f, 18f),
+            new Vector2(-24f, 38f), new Vector2(24f, 38f)
+        };
+
+        s.ravines = new List<RavineSpec>
+        {
+            new RavineSpec
+            {
+                z = 60f, topWidth = 11f, floorWidth = 6f, depth = 6f, meanderAmplitude = 4f, meanderWavelength = 95f,
+                bridges = new List<BridgeSpec>
+                {
+                    new BridgeSpec { x = -42f, tilesWide = 1 },
+                    new BridgeSpec { x = 0f, tilesWide = 2 },
+                    new BridgeSpec { x = 42f, tilesWide = 1 }
+                },
+                exitRamps = new List<RampSpec>
+                {
+                    new RampSpec { x = -20f, direction = -1 },
+                    new RampSpec { x = 20f, direction = 1 }
+                }
+            },
+            new RavineSpec
+            {
+                z = 112f, topWidth = 12f, floorWidth = 7f, depth = 7f, meanderAmplitude = 5f, meanderWavelength = 130f,
+                bridges = new List<BridgeSpec>
+                {
+                    new BridgeSpec { x = -24f, tilesWide = 1 },
+                    new BridgeSpec { x = 26f, tilesWide = 1 }
+                },
+                exitRamps = new List<RampSpec>
+                {
+                    new RampSpec { x = 0f, direction = 1 },
+                    new RampSpec { x = -52f, direction = -1 },
+                    new RampSpec { x = 52f, direction = 1 }
+                }
+            }
+        };
+
+        s.enemySpawns = new List<Vector2>
+        {
+            new Vector2(-60f, 162f), new Vector2(-45f, 172f), new Vector2(-30f, 164f), new Vector2(-15f, 174f),
+            new Vector2(0f, 166f), new Vector2(15f, 174f), new Vector2(30f, 164f), new Vector2(45f, 172f),
+            new Vector2(60f, 162f), new Vector2(0f, 178f)
+        };
+        s.objectiveZRange = new Vector2(76f, 165f);
 
         s.castleBuildings = LayoutCastle(s);
         EditorUtility.SetDirty(s);
