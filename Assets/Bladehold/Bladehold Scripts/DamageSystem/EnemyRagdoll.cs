@@ -11,6 +11,13 @@ using UnityEngine;
 ///     flings, so enemies that are never flung cost nothing and flung ones cost nothing between
 ///     flings. Physical tunables live on <see cref="RagdollConfigSO" />.
 ///
+///     Pre-baked prefabs (the usual case) carry the bones' Rigidbodies and CharacterJoints, but an
+///     idle kinematic body glued to an animated bone still costs PhysX a transform sync every step:
+///     11 per enemy, ~7 ms/frame at 300 goblins. So <see cref="StripBodies" /> snapshots and removes
+///     them at spawn (colliders, VulnerableSpot and <see cref="RagdollBloodImpact" /> stay), and
+///     <see cref="RestoreBodies" /> re-adds them from the snapshot on the first fling. A live
+///     recovery strips them again; corpses keep theirs so the sink carries the bones down.
+///
 ///     The bone colliders are created after <see cref="DisableCollidersOnDeath" /> caches its list in
 ///     Start, which intentionally keeps them out of its death sweep — a corpse flung by a lethal hit
 ///     must keep its bone colliders to land with. <see cref="FreezeCorpse" /> disables them once the
@@ -60,6 +67,10 @@ public class EnemyRagdoll : MonoBehaviour
     private readonly List<Collider> boneColliders = new List<Collider>();
     private SkinnedMeshRenderer[] meshRenderers;
     private bool isBuilt = false;
+    private bool bodiesLive = false;
+    private Transform pelvisBone;
+    private readonly List<BodySnapshot> bodySnapshots = new List<BodySnapshot>();
+    private readonly List<JointSnapshot> jointSnapshots = new List<JointSnapshot>();
     private bool buildFailed = false;
     private bool anyError = false;
 
@@ -129,6 +140,8 @@ public class EnemyRagdoll : MonoBehaviour
 
             meshRenderers = GetComponentsInChildren<SkinnedMeshRenderer>();
             isBuilt = true;
+            bodiesLive = true;
+            StripBodies();
         }
     }
 
@@ -193,11 +206,13 @@ public class EnemyRagdoll : MonoBehaviour
     {
         if (isBuilt)
         {
+            RestoreBodies();
             return true;
         }
         CacheExistingBodies();
         if (isBuilt)
         {
+            RestoreBodies();
             return true;
         }
         if (anyError || buildFailed)
@@ -207,6 +222,7 @@ public class EnemyRagdoll : MonoBehaviour
 
         buildFailed = !TryBuild();
         isBuilt = !buildFailed;
+        bodiesLive = isBuilt;
         return isBuilt;
     }
 
@@ -233,6 +249,7 @@ public class EnemyRagdoll : MonoBehaviour
         {
             return;
         }
+        RestoreBodies();
 
         // While simulating, the bones fly far from the root transform, but each SkinnedMeshRenderer's
         // culling bounds stay anchored where the root was left (the launch point) — so the camera can
@@ -289,6 +306,7 @@ public class EnemyRagdoll : MonoBehaviour
     {
         // Restore cheap anchored bounds: the caller snaps the root back under the body immediately.
         Deactivate(restoreAnchoredBounds: true);
+        StripBodies();
     }
 
     /// <summary>
@@ -365,6 +383,148 @@ public class EnemyRagdoll : MonoBehaviour
 
         IsRagdolled = false;
         ActiveCount = Mathf.Max(0, ActiveCount - 1);
+    }
+
+    private struct BodySnapshot
+    {
+        public Transform bone;
+        public float mass, linearDamping, angularDamping, maxDepenetrationVelocity;
+        public bool useGravity;
+        public CollisionDetectionMode collisionDetectionMode;
+        public RigidbodyInterpolation interpolation;
+        public RigidbodyConstraints constraints;
+    }
+
+    private struct JointSnapshot
+    {
+        public Transform bone, connectedBone;
+        public Vector3 axis, swingAxis, anchor, connectedAnchor;
+        public bool autoConfigureConnectedAnchor, enableProjection, enablePreprocessing, enableCollision;
+        public float projectionDistance, projectionAngle, breakForce, breakTorque, massScale, connectedMassScale;
+        public SoftJointLimit lowTwistLimit, highTwistLimit, swing1Limit, swing2Limit;
+        public SoftJointLimitSpring twistLimitSpring, swingLimitSpring;
+    }
+
+    /// <summary>
+    ///     Snapshots the idle kinematic bodies and joints, then removes them so un-flung enemies cost
+    ///     PhysX nothing. Colliders and blood-impact components stay on the bones for the restore.
+    /// </summary>
+    private void StripBodies()
+    {
+        if (!bodiesLive || IsRagdolled)
+        {
+            return;
+        }
+
+        bodySnapshots.Clear();
+        jointSnapshots.Clear();
+        pelvisBone = Pelvis != null ? Pelvis.transform : null;
+
+        foreach (Rigidbody body in bodies)
+        {
+            if (body == null) continue;
+            foreach (Joint joint in body.GetComponents<Joint>())
+            {
+                CharacterJoint cj = joint as CharacterJoint;
+                if (cj != null && cj.connectedBody != null)
+                {
+                    jointSnapshots.Add(new JointSnapshot
+                    {
+                        bone = cj.transform, connectedBone = cj.connectedBody.transform,
+                        axis = cj.axis, swingAxis = cj.swingAxis, anchor = cj.anchor, connectedAnchor = cj.connectedAnchor,
+                        autoConfigureConnectedAnchor = cj.autoConfigureConnectedAnchor,
+                        enableProjection = cj.enableProjection, enablePreprocessing = cj.enablePreprocessing,
+                        enableCollision = cj.enableCollision, projectionDistance = cj.projectionDistance,
+                        projectionAngle = cj.projectionAngle, breakForce = cj.breakForce, breakTorque = cj.breakTorque,
+                        massScale = cj.massScale, connectedMassScale = cj.connectedMassScale,
+                        lowTwistLimit = cj.lowTwistLimit, highTwistLimit = cj.highTwistLimit,
+                        swing1Limit = cj.swing1Limit, swing2Limit = cj.swing2Limit,
+                        twistLimitSpring = cj.twistLimitSpring, swingLimitSpring = cj.swingLimitSpring,
+                    });
+                }
+                // Joints depend on the Rigidbody, so they must go first.
+                DestroyImmediate(joint);
+            }
+        }
+
+        foreach (Rigidbody body in bodies)
+        {
+            if (body == null) continue;
+            bodySnapshots.Add(new BodySnapshot
+            {
+                bone = body.transform, mass = body.mass, linearDamping = body.linearDamping,
+                angularDamping = body.angularDamping, maxDepenetrationVelocity = body.maxDepenetrationVelocity,
+                useGravity = body.useGravity, collisionDetectionMode = body.collisionDetectionMode,
+                interpolation = body.interpolation, constraints = body.constraints,
+            });
+            DestroyImmediate(body);
+        }
+
+        bodies.Clear();
+        Pelvis = null;
+        bodiesLive = false;
+    }
+
+    /// <summary>Re-adds the stripped bodies and joints (kinematic, as built) ahead of a fling.</summary>
+    private void RestoreBodies()
+    {
+        if (bodiesLive)
+        {
+            return;
+        }
+
+        // bodies[0] must stay the pelvis (EnterRagdoll's limb kick skips it); the snapshot keeps build order.
+        foreach (BodySnapshot snap in bodySnapshots)
+        {
+            if (snap.bone == null) continue;
+            Rigidbody body = snap.bone.gameObject.AddComponent<Rigidbody>();
+            body.mass = snap.mass;
+            body.linearDamping = snap.linearDamping;
+            body.angularDamping = snap.angularDamping;
+            body.maxDepenetrationVelocity = snap.maxDepenetrationVelocity;
+            body.useGravity = snap.useGravity;
+            body.interpolation = snap.interpolation;
+            body.constraints = snap.constraints;
+            body.isKinematic = true;
+            body.collisionDetectionMode = snap.collisionDetectionMode;
+            bodies.Add(body);
+            if (snap.bone == pelvisBone)
+            {
+                Pelvis = body;
+            }
+        }
+
+        foreach (JointSnapshot snap in jointSnapshots)
+        {
+            if (snap.bone == null || snap.connectedBone == null) continue;
+            CharacterJoint joint = snap.bone.gameObject.AddComponent<CharacterJoint>();
+            joint.autoConfigureConnectedAnchor = snap.autoConfigureConnectedAnchor;
+            joint.connectedBody = snap.connectedBone.GetComponent<Rigidbody>();
+            joint.axis = snap.axis;
+            joint.swingAxis = snap.swingAxis;
+            joint.anchor = snap.anchor;
+            if (!snap.autoConfigureConnectedAnchor)
+            {
+                joint.connectedAnchor = snap.connectedAnchor;
+            }
+            joint.lowTwistLimit = snap.lowTwistLimit;
+            joint.highTwistLimit = snap.highTwistLimit;
+            joint.swing1Limit = snap.swing1Limit;
+            joint.swing2Limit = snap.swing2Limit;
+            joint.twistLimitSpring = snap.twistLimitSpring;
+            joint.swingLimitSpring = snap.swingLimitSpring;
+            joint.enableProjection = snap.enableProjection;
+            joint.projectionDistance = snap.projectionDistance;
+            joint.projectionAngle = snap.projectionAngle;
+            joint.enablePreprocessing = snap.enablePreprocessing;
+            joint.enableCollision = snap.enableCollision;
+            joint.breakForce = snap.breakForce;
+            joint.breakTorque = snap.breakTorque;
+            joint.massScale = snap.massScale;
+            joint.connectedMassScale = snap.connectedMassScale;
+        }
+
+        bodiesLive = true;
     }
 
     private bool TryBuild()
