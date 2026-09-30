@@ -15,6 +15,7 @@ public static class DefenseSceneDefaults
     public const string OuterGateSpecPath = "Assets/Bladehold/Config/SceneGen/OuterGate_DefenseSpec.asset";
     public const string AridPalettePath = "Assets/Bladehold/Config/SceneGen/Arid_DefensePalette.asset";
     public const string DesertGateSpecPath = "Assets/Bladehold/Config/SceneGen/DesertGate_DefenseSpec.asset";
+    public const string AridRockWallLayerPath = "Assets/Bladehold/Config/SceneGen/Arid_RockWall.terrainlayer";
 
     private const string Alpine = "Assets/Synty/PolygonNatureBiomes/PNB_Alpine_Mountain";
     private const string Kingdom = "Assets/Synty/PolygonFantasyKingdom/Prefabs";
@@ -190,9 +191,10 @@ public static class DefenseSceneDefaults
     }
 
     /// <summary>
-    ///     The PNB Arid Desert biome: sand floor with pale drifts, red-sand slopes, faces and trails (the
+    ///     The PNB Arid Desert biome: sand floor with pale drifts, red-sand slopes, faces, trails and pit floors (the
     ///     main layers of the pack's own demo terrain), its triplanar rock cliffs as-is, dead trees and cacti, bones and
-    ///     tumbleweed for litter. Castle, bridge and battlefield props stay Fantasy Kingdom, like Alpine.
+    ///     tumbleweed for litter. Ravine walls get the pack's rock-wall texture and a lining of tall boulders, and
+    ///     the field gets prop clusters harvested from the pack's demo scene. Castle, bridge and battlefield props stay Fantasy Kingdom, like Alpine.
     /// </summary>
     private static DefenseBiomePaletteSO CreateAridPalette()
     {
@@ -204,8 +206,9 @@ public static class DefenseSceneDefaults
         p.slope = Layer("RedSand", Arid);
         p.cliff = Layer("RedSand", Arid);
         p.road = Layer("RedSand", Arid);
-        p.ravineFloor = Layer("SaltCracks", Arid);
+        p.ravineFloor = Layer("RedSand", Arid);
         p.courtyard = Layer("Sand_02", Arid);
+        p.ravineWall = AridRockWallLayer();
         p.terrainMaterial = AssetDatabase.LoadAssetAtPath<Material>(
             "Packages/com.unity.render-pipelines.universal/Runtime/Materials/TerrainLit.mat");
 
@@ -224,6 +227,19 @@ public static class DefenseSceneDefaults
             "SM_Env_Bush_Bramble_01");
         p.trees = Prefabs(ap, "SM_Env_Tree_Dead_01", "SM_Env_Tree_Dead_02", "SM_Env_Cactus_03");
         p.deadTrees = Prefabs(ap, "SM_Env_Tree_Dead_02", "SM_Env_Cactus_03", "SM_Env_Bush_Bramble_02");
+        // Tall, narrow boulders stood shoulder to shoulder make the ravine walls read as rock.
+        p.ravineWallRocks = Prefabs(ap, "SM_Env_Rock_07", "SM_Env_Rock_08", "SM_Env_Rock_09", "SM_Env_Rock_10",
+            "SM_Env_Rock_11", "SM_Env_Rock_12", "SM_Env_Rock_13");
+        // The artist's own groupings from the pack demo: skeletons among spiky rocks, cacti with pebbles and scrub.
+        p.propClusters = DefenseClusterHarvester.Harvest($"{Arid}/Scene/Demo_01.unity",
+            new[]
+            {
+                "SM_Prop_Bones", "SM_Env_Rocks_Spikey", "SM_Env_Rock_Pebbles", "SM_Env_Succulent", "SM_Env_Cactus",
+                "SM_Env_Rock_Small", "SM_Env_Bush_Bramble", "SM_Env_GroundCover", "SM_Env_Tree_Dead", "SM_Env_Rock_0",
+                "SM_Env_Rock_1", "SM_Prop_Tumbleweed"
+            },
+            new[] { "SM_Prop_Bones", "SM_Env_Rocks_Spikey", "SM_Env_Rock_0", "SM_Env_Rock_1", "SM_Env_Tree_Dead", "SM_Env_Cactus_03" },
+            minPieces: 5);
 
         p.gate = Prefab(Kingdom, "SM_Bld_Castle_Wall_Gate_L_01");
         p.wall = Prefab(Kingdom, "SM_Bld_Castle_Wall_01");
@@ -254,6 +270,24 @@ public static class DefenseSceneDefaults
 
         EditorUtility.SetDirty(p);
         return p;
+    }
+
+    /// <summary>The pack's rock-wall texture as a terrain layer (the pack ships it only as a mesh material).</summary>
+    private static TerrainLayer AridRockWallLayer()
+    {
+        var layer = AssetDatabase.LoadAssetAtPath<TerrainLayer>(AridRockWallLayerPath);
+        if (layer == null)
+        {
+            layer = new TerrainLayer();
+            AssetDatabase.CreateAsset(layer, AridRockWallLayerPath);
+        }
+        layer.diffuseTexture = AssetDatabase.LoadAssetAtPath<Texture2D>($"{Arid}/Textures/RockWall_Texture_01.png");
+        layer.normalMapTexture = AssetDatabase.LoadAssetAtPath<Texture2D>($"{Arid}/Textures/RockWall_Normals_01.png");
+        layer.tileSize = new Vector2(6f, 6f);
+        // A touch darker than the lit field so the walls read as shade and depth.
+        layer.diffuseRemapMax = new Vector4(0.78f, 0.74f, 0.72f, 1f);
+        EditorUtility.SetDirty(layer);
+        return layer;
     }
 
     /// <summary>

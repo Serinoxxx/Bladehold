@@ -12,10 +12,11 @@ followed by a rule check. Code: `Assets/Bladehold/Bladehold Scripts/Editor/Scene
 | File | Role |
 |---|---|
 | `DefenseSceneSpecSO` | Layout: valley/notch/field size, mountains, courtyard + building placements, ravines (bridges, exit ramps), plots, spawns, objective band, scatter density. |
-| `DefenseBiomePaletteSO` | Terrain layers, prefab lists by role (cliffs, rocks, snow, trees, stakes, banners, litter, gate/wall/bridge/spikes), `cliffMaterial` override, lighting. |
+| `DefenseBiomePaletteSO` | Terrain layers, prefab lists by role (cliffs, rocks, snow, trees, stakes, banners, litter, gate/wall/bridge/spikes), `cliffMaterial` override, lighting. Optional: `ravineWall` layer + `ravineWallRocks`, and `propClusters`. |
 | `DefenseHeightfield` | The analytic ground model. **Every stage queries it**, so edges, rims and floors agree. |
-| `DefenseTerrainBuilder` | Heights, rule-based splat (slope, floor, roads, courtyard), terrain-tree forests. |
-| `DefenseSceneScatter` | Scatter rules: cliffs, outcrops, boulders, rim rocks, clusters, snow drifts, stakes, banners, litter, courtyard props. |
+| `DefenseTerrainBuilder` | Heights, rule-based splat (slope, floor, roads, courtyard, optional ravine-wall rock), terrain-tree forests. |
+| `DefenseSceneScatter` | Scatter rules: cliffs, outcrops, boulders, rim rocks, ravine-wall and ramp-wall rocks, prop clusters, clusters, snow drifts, stakes, banners, litter, courtyard props. |
+| `DefenseClusterHarvester` | Lifts the artist's prop groupings out of a Synty demo scene into `PropCluster` templates for a palette. |
 | `DefenseSceneGenerator` | Orchestrates the stages. It also builds the castle, bridges, spikes, SpikePit volumes and play-area boundary, bakes the NavMesh, and lays out the gameplay. |
 | `DefenseSceneValidator` | Checks the gameplay rules (below). |
 | `PrefabMeasure` | Mesh-measured bounds, footprints and grounding for any prefab. |
@@ -35,6 +36,26 @@ fall.)
 - **Ravines.** The floor is baked NavMesh, so flung goblins recover onto it instead of dying from `KnockbackReceiver`'s no-NavMesh fallback. Exit ramps are cut into the **gate-side** bank only, so pathfinding never routes *through* the pit and the only crossings are bridges. Bridge decks sit 0.18 m proud of the rims.
 - **Objectives** (cages, catapults, wagon, ram) come from a grid filtered by rule: at least `MaxTowerRange()` (read from the TowerPlot prefab's defences, currently 24 m) plus `objectiveRangeMargin` from every plot, off roads and rims, and reachable from the player. The wagon and ram also need a Large Enemy path to the gate.
 
+## Ravine walls and prop clusters (set dressing that makes a scene read as art)
+
+Both are **opt-in per palette**. The Alpine palette leaves them empty, so the Outer Gate regenerates exactly as before (the rules return before touching the RNG). The Arid palette uses both. To add them to another biome, fill the fields and regenerate.
+
+- **Ravine walls.** A bare ravine is a heightmap cliff, and top-down terrain UVs stretch it into vertical streaks. That looks like "a sudden drop", not a gorge. Two fixes:
+  - **`ravineWall` terrain layer.** Painted by height from just under the rim down to the floor, across the ravine band and the ramp cuts' side walls. The floor and the ramp surface keep `ravineFloor`. Use a real rock texture. The Arid palette builds `Config/SceneGen/Arid_RockWall.terrainlayer` from the pack's `RockWall_Texture_01` (the pack ships it only as a mesh material), darkened a little with `diffuseRemapMax`.
+  - **`ravineWallRocks`.** Tall, narrow boulders stood shoulder to shoulder along both walls:
+    - Sized to the ravine depth, buried below the floor and topped out 0.2–0.8 m under the rim.
+    - Long axis along the wall, leaning slightly into the bank.
+    - Face at most ~0.4 m onto the floor edge.
+    - The gate-side wall is skipped where a ramp cut replaces it; the cut's side wall gets its own lining, sized to the falling wall height.
+    - **Colliders are stripped** (visual only, like the spikes), so the floor NavMesh, the ramps, the SpikePit volumes and the validator are unaffected.
+  - **Pitfall — ramp-cut walls are near vertical.** Their face is only ~0.8 m wide in plan, so a rock whose face just meets the computed wall line is buried, with slivers poking through. Stand it ~0.6 m proud, into the lane edge. Check with a camera *inside* the ramp lane looking at the wall.
+  - **Pitfall — light floors.** A pale `ravineFloor` (e.g. salt cracks) glares and flattens the pit, and it bleeds up the ramps. A mid or darker layer reads as depth and makes the spikes pop.
+- **Prop clusters.** Props scattered one at a time read as noise. The pack demos already contain artist-composed groups, like a skeleton among spiky rocks, or a cactus with pebbles, scrub and succulents.
+  - **Harvesting.** `DefenseClusterHarvester.Harvest(demoScene, allowPrefixes, featurePrefixes, …)` opens the demo additively (and closes it unsaved). It single-link groups prefab instances within 3.2 m and keeps groups of 5–30 pieces, radius ≤ 9 m, that contain a feature piece. Each piece's height is stored relative to the demo terrain, clamped to [−1.5, 0.15], so pieces that sat on a mound don't float.
+  - **Filtering.** Demo scenes group by type, not by cluster, so harvest spatially. Filter out off-theme props: the Arid demo has sci-fi hoses, solar panels and beacons, plus lava and sulphur pools.
+  - **Placement.** `PlacePropClusters` stamps them on an 11 m grid in the open field. Only the core (0.4 × radius) must be clear. The whole group gets a random yaw and each piece is re-grounded, and any piece landing in a `KeepClear` lane is dropped. Pieces under 1.5 m tall lose their colliders. Taller rocks and dead trees keep theirs, so they become NavMesh obstacles the validator re-checks.
+  - **Harvest in code.** The palette builder in `DefenseSceneDefaults` calls the harvester, so re-running the menu item re-harvests.
+
 ## Workflow (via `/unity-editor-mcp`)
 
 1. **New scene:** duplicate `Config/SceneGen/OuterGate_DefenseSpec.asset` and set `scenePath` (under `Assets/Bladehold/Bladehold Scenes/`) and `seed`. Edit the numbers: plots, ravines/bridges/ramps, spawns, `objectiveZRange`. **New biome:** duplicate `Alpine_DefensePalette.asset` and swap the prefabs and layers. Check materials: Alpine's own `SM_Env_Rock_Cliff_*` are **refractive glacier ice**, which is why the Alpine palette uses the Arid cliff meshes with `Snow_Rock_Tri`. Pick terrain layers from the pack's own demo `TerrainData` (its layer shares show which ones the artist used), and avoid a very pale road layer: it reads as painted lines.
@@ -45,7 +66,7 @@ fall.)
    ```
    Then wait for `[DefenseSceneGenerator] Generated` in `%LOCALAPPDATA%\Unity\Editor\Editor.log`. The validator report follows it. Menu equivalent: select the spec, then **Bladehold > Scene Gen > Generate Selected Defense Scene Spec**.
 3. **Read the report.** Every `FAIL` names the rule and the location. Fix the **spec** (move a plot, add a bridge, widen the objective band), not the scene. Regeneration overwrites the scene file, and hand edits are lost.
-4. **Look at it.** Use `manage_camera` screenshots from fixed spots: `[0,35,-25]→[0,0,70]` (overview from the castle), `[8,7,48]→[0,5,0]` (the gate), `[-14,4,50]→[0,-1,58]` (a bridge), `[0,14,140]→[0,3,40]` (from the spawns). Save them to the scratchpad, **not** `Assets/Screenshots`, or move them out before committing.
+4. **Look at it.** Use `manage_camera` screenshots from fixed spots: `[0,35,-25]→[0,0,70]` (overview from the castle), `[8,7,48]→[0,5,0]` (the gate), `[-14,4,50]→[0,-1,58]` (a bridge), `[0,14,140]→[0,3,40]` (from the spawns). For ravine walls, also shoot **along** a ravine from a rim away from bridges (e.g. `[-33,5,51]→[-12,-3,61]`), and look across at a ramp cut from the far bank. Save them to the scratchpad, **not** `Assets/Screenshots`, or move them out before committing.
 5. **Play-test.** Enter Play mode in the scene and use `SurvivorsSpawner.DebugSpawnBurst` / `DebugSpawnEnemyType("troll")`. Wait a frame before hitting a fresh spawn: `KnockbackReceiver` subscribes in `Start`. For a fling test, warp a goblin onto a side bridge, then `ReceiveDamage` with `knockbackForce` ≥ its resistance and a sideways `knockbackVelocity`.
 6. **Campaign hookup** (for a new scene): follow `/add-campaign-node` (node `sceneName`, graph seed, `AreaDatabase`, build settings, DevConsole button).
 

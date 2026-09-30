@@ -9,7 +9,7 @@
 - Added an escort of up to 12 goblins that marches in formation inside the Dome Warden's dome and charges you when you get close
 - Added the Hexer, a goblin that stands back and channels a beam into one of your towers so it can't fire; hit it to break the channel
 - Added the Outer Gate, a new first campaign battle: a snowy mountain valley in front of the castle gate with a spiked ravine crossed by three bridges
-- Added the Desert Gate, a new second-tier campaign battle against Captain Kombusta: a red desert canyon with two spiked ravines, the far one crossed by only two bridges
+- Added the Desert Gate, a new second-tier campaign battle against Captain Kombusta: a red desert canyon with two spiked ravines, the far one crossed by only two bridges; its ravines are rocky gorges lined with boulders, and the field is dotted with skeletons, spiky rocks and cacti
 - Added spike pits: goblins knocked off a bridge take a heavy hit on landing and have to climb back out by ramp
 
 ### Fixes

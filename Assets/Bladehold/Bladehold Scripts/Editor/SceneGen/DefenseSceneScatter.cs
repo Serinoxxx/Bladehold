@@ -28,6 +28,8 @@ public static class DefenseSceneScatter
         PlaceOutcrops(ctx, Group(root, "MountainOutcrops"), pal.cliffs, Mathf.RoundToInt(90 * density));
         PlaceLargeRocks(ctx, Group(root, "LargeRocks"), pal.largeRocks, Mathf.RoundToInt(110 * density), anchors);
         PlaceRimRocks(ctx, Group(root, "RavineRims"), pal.mediumRocks, density, anchors);
+        PlaceRavineWallRocks(ctx, Group(root, "RavineWalls"), pal.ravineWallRocks, density);
+        PlacePropClusters(ctx, Group(root, "PropClusters"), pal.propClusters, density);
         PlaceClusters(ctx, Group(root, "MediumRocks"), pal.mediumRocks, anchors, 1, 3, 0.25f);
 
         var smallRoot = Group(root, "SmallRocks");
@@ -232,6 +234,175 @@ public static class DefenseSceneScatter
                     anchors.Add(new Placed { p = p, radius = rad });
                 }
             }
+        }
+    }
+
+    /// <summary>
+    ///     Rocks set shoulder to shoulder into both ravine walls, so the drop reads as a rocky gorge and not a
+    ///     stretched terrain cliff. Each rock's long axis runs along the wall; it is sized to the ravine depth,
+    ///     buried below the floor, topped out just under the rim and pushed back into the bank so its face
+    ///     barely reaches the floor edge. Visual only: colliders are stripped, so the baked floor, the ramps and
+    ///     the SpikePit volumes behave exactly as without them. Ramp lanes and bridge footprints stay open.
+    /// </summary>
+    private static void PlaceRavineWallRocks(DefenseBuildContext ctx, Transform parent, List<GameObject> rocks,
+        float density)
+    {
+        if (rocks.Count == 0) return;
+        for (int i = 0; i < ctx.Spec.ravines.Count; i++)
+        {
+            RavineSpec r = ctx.Spec.ravines[i];
+            Vector2 span = ctx.Hf.RavineXSpan(i);
+            float halfTop = r.topWidth * 0.5f, halfFloor = r.floorWidth * 0.5f;
+            for (int side = -1; side <= 1; side += 2)
+            {
+                float x = span.x + Rand(ctx, 0f, 1.5f);
+                while (x < span.y)
+                {
+                    GameObject prefab = Pick(ctx, rocks);
+                    Bounds lb = PrefabMeasure.LocalBounds(prefab);
+                    float scale = r.depth * Rand(ctx, 0.95f, 1.3f) / Mathf.Max(0.1f, lb.size.y);
+                    bool longX = lb.size.x >= lb.size.z;
+                    float along = (longX ? lb.size.x : lb.size.z) * scale;
+                    float across = (longX ? lb.size.z : lb.size.x) * scale;
+                    float step = along * Rand(ctx, 0.55f, 0.85f) / Mathf.Max(0.3f, density);
+
+                    float cz = ctx.Hf.RavineCentreZ(i, x);
+                    // Face at most ~0.4 m onto the floor; the back disappears into the bank.
+                    float dz = Mathf.Max((halfTop + halfFloor) * 0.5f, halfFloor + across * 0.5f - 0.4f);
+                    var p = new Vector2(x, cz + side * dz);
+                    bool skip = ctx.Rng.NextDouble() < 0.1 || ctx.Hf.RavineExtentMask(i, x) < 0.85f;
+                    if (!skip && side < 0) skip = OverRampCut(ctx, i, x, along * 0.5f);
+                    foreach (BridgeFootprint b in ctx.Bridges) skip |= b.Contains(p, along * 0.5f);
+                    if (!skip)
+                    {
+                        Vector2 t = ctx.Hf.RavineTangent(i, x);
+                        float yaw = Mathf.Atan2(-t.y, t.x) * Mathf.Rad2Deg + (longX ? 0f : 90f)
+                                    + (ctx.Rng.NextDouble() < 0.5 ? 180f : 0f) + Rand(ctx, -12f, 12f);
+                        float top = -Rand(ctx, 0.2f, 0.8f);
+                        float bottom = top - PrefabMeasure.Height(prefab, scale);
+                        var pos = new Vector3(p.x, bottom - PrefabMeasure.BaseOffset(prefab, scale), p.y);
+                        // Lean back into the bank a little so the faces don't stand dead vertical.
+                        Quaternion lean = Quaternion.AngleAxis(Rand(ctx, 3f, 9f) * side, new Vector3(t.x, 0f, t.y));
+                        Vector3 rootPos = PrefabMeasure.RootForCentre(prefab, p, yaw, scale);
+                        pos.x = rootPos.x;
+                        pos.z = rootPos.z;
+                        GameObject go = PrefabMeasure.Instantiate(prefab, parent, pos,
+                            lean * Quaternion.Euler(0f, yaw, 0f), scale);
+                        go.isStatic = true;
+                        foreach (Collider c in go.GetComponentsInChildren<Collider>(true)) Object.DestroyImmediate(c);
+                    }
+                    x += step;
+                }
+            }
+
+            foreach (RampSpec ramp in r.exitRamps) LineRampWall(ctx, parent, rocks, i, ramp, density);
+        }
+    }
+
+    /// <summary>True where a ramp cut replaces the gate-side wall at x (from the ramp foot to its top).</summary>
+    private static bool OverRampCut(DefenseBuildContext ctx, int ravine, float x, float halfAlong)
+    {
+        RavineSpec r = ctx.Spec.ravines[ravine];
+        foreach (RampSpec ramp in r.exitRamps)
+        {
+            ctx.Hf.RampLane(ravine, ramp, x, out float along, out _);
+            if (along > -halfAlong * 0.3f && along < ctx.Hf.RampLength(ramp, r)) return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    ///     The bank-side wall of a ramp cut, whose height falls from the full ravine depth to nothing as the
+    ///     ramp climbs out. Rocks are sized to the local wall height and kept behind the lane edge, so nothing
+    ///     stands in the walkway.
+    /// </summary>
+    private static void LineRampWall(DefenseBuildContext ctx, Transform parent, List<GameObject> rocks, int ravine,
+        RampSpec ramp, float density)
+    {
+        RavineSpec r = ctx.Spec.ravines[ravine];
+        float len = ctx.Hf.RampLength(ramp, r);
+        float dir = Mathf.Sign(ramp.direction == 0 ? 1 : ramp.direction);
+        float along = Rand(ctx, 0f, 1f);
+        while (along < len)
+        {
+            float x = ramp.x + dir * along;
+            float wallHeight = r.depth * (1f - along / len);
+            if (wallHeight < 1.2f) break;
+            GameObject prefab = Pick(ctx, rocks);
+            Bounds lb = PrefabMeasure.LocalBounds(prefab);
+            float scale = (wallHeight + Rand(ctx, 0.3f, 0.9f)) / Mathf.Max(0.1f, lb.size.y);
+            bool longX = lb.size.x >= lb.size.z;
+            float size = (longX ? lb.size.x : lb.size.z) * scale;
+            float across = (longX ? lb.size.z : lb.size.x) * scale;
+
+            ctx.Hf.RampLane(ravine, ramp, x, out _, out float laneZ);
+            // The cut's face is near vertical, so a rock whose face only meets it disappears into the bank:
+            // stand it half a metre proud, into the lane edge (still ~3.5 m of walkway, and no collider).
+            var p = new Vector2(x, laneZ - ramp.width * 0.5f - across * 0.5f + 0.6f);
+            bool skip = false;
+            foreach (BridgeFootprint b in ctx.Bridges) skip |= b.Contains(p, size * 0.5f);
+            if (!skip)
+            {
+                Vector2 t = ctx.Hf.RavineTangent(ravine, x);
+                float yaw = Mathf.Atan2(-t.y, t.x) * Mathf.Rad2Deg + (longX ? 0f : 90f)
+                            + (ctx.Rng.NextDouble() < 0.5 ? 180f : 0f) + Rand(ctx, -10f, 10f);
+                float top = -Rand(ctx, 0.2f, 0.6f);
+                float bottom = top - PrefabMeasure.Height(prefab, scale);
+                Vector3 rootPos = PrefabMeasure.RootForCentre(prefab, p, yaw, scale);
+                rootPos.y = bottom - PrefabMeasure.BaseOffset(prefab, scale);
+                Quaternion lean = Quaternion.AngleAxis(-Rand(ctx, 0f, 4f), new Vector3(t.x, 0f, t.y));
+                GameObject go = PrefabMeasure.Instantiate(prefab, parent, rootPos,
+                    lean * Quaternion.Euler(0f, yaw, 0f), scale);
+                go.isStatic = true;
+                foreach (Collider c in go.GetComponentsInChildren<Collider>(true)) Object.DestroyImmediate(c);
+            }
+            along += size * Rand(ctx, 0.55f, 0.8f) / Mathf.Max(0.3f, density);
+        }
+    }
+
+    /// <summary>
+    ///     Hand-composed prop groups (see <see cref="DefenseClusterHarvester" />) in the open field between the
+    ///     roads: each is spun to a random yaw, its pieces re-grounded one by one, and any piece that would land
+    ///     in a gameplay lane dropped. Small pieces lose their colliders like field litter; big ones (rocks, dead
+    ///     trees) keep them and so become NavMesh obstacles the validator re-checks.
+    /// </summary>
+    private static void PlacePropClusters(DefenseBuildContext ctx, Transform parent, List<PropCluster> clusters,
+        float density)
+    {
+        if (clusters.Count == 0) return;
+        DefenseSceneSpecSO s = ctx.Spec;
+        List<Vector2> cands = Grid(ctx, 11f, p =>
+            ctx.Hf.ValleyDistance(p.x, p.y) < -5f && p.y > 12f && p.y < s.fieldEndZ - 12f);
+        Shuffle(ctx, cands);
+        foreach (Vector2 c in cands)
+        {
+            if (ctx.Rng.NextDouble() > 0.85 * density) continue;
+            PropCluster cluster = clusters[ctx.Rng.Next(clusters.Count)];
+            // Only the core must be clear; outlying pieces that land in a lane are dropped one by one below.
+            float reach = cluster.radius * 0.4f + 1f;
+            if (ctx.KeepClear(c, reach) || ctx.Overlaps(c, reach, 1.4f)) continue;
+
+            var group = new GameObject(cluster.name).transform;
+            group.SetParent(parent);
+            group.position = new Vector3(c.x, 0f, c.y);
+            Quaternion spin = Quaternion.Euler(0f, Rand(ctx, 0f, 360f), 0f);
+            foreach (ClusterPiece piece in cluster.pieces)
+            {
+                if (piece.prefab == null) continue;
+                Vector3 o = spin * new Vector3(piece.offset.x, 0f, piece.offset.z);
+                var p = new Vector2(c.x + o.x, c.y + o.z);
+                float r = PrefabMeasure.FootprintRadius(piece.prefab, piece.scale.x);
+                if (ctx.KeepClear(p, r) || ctx.Hf.ValleyDistance(p.x, p.y) > -2f) continue;
+                var go = (GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(piece.prefab, group);
+                go.transform.SetPositionAndRotation(new Vector3(p.x, ctx.Ground(p.x, p.y) + piece.offset.y, p.y),
+                    spin * piece.rotation);
+                go.transform.localScale = piece.scale;
+                go.isStatic = true;
+                if (PrefabMeasure.Height(piece.prefab, piece.scale.y) < 1.5f)
+                    foreach (Collider col in go.GetComponentsInChildren<Collider>(true)) Object.DestroyImmediate(col);
+            }
+            if (group.childCount == 0) Object.DestroyImmediate(group.gameObject);
+            else ctx.Occupy(c, cluster.radius * 0.8f);
         }
     }
 

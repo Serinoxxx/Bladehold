@@ -9,7 +9,7 @@ using UnityEngine;
 /// </summary>
 public static class DefenseTerrainBuilder
 {
-    private const int Ground = 0, Variant = 1, Slope = 2, Cliff = 3, Road = 4, Floor = 5, Court = 6, LayerCount = 7;
+    private const int Ground = 0, Variant = 1, Slope = 2, Cliff = 3, Road = 4, Floor = 5, Court = 6, Wall = 7;
 
     public static Terrain Build(DefenseSceneSpecSO spec, DefenseHeightfield hf, Transform parent, string dataFolder,
         System.Random rng)
@@ -45,7 +45,10 @@ public static class DefenseTerrainBuilder
         }
         td.SetHeights(0, 0, heights);
 
-        td.terrainLayers = new[] { p.ground, p.groundVariant, p.slope, p.cliff, p.road, p.ravineFloor, p.courtyard };
+        // The ravine-wall layer is optional; palettes without one keep the original seven layers.
+        td.terrainLayers = p.ravineWall != null
+            ? new[] { p.ground, p.groundVariant, p.slope, p.cliff, p.road, p.ravineFloor, p.courtyard, p.ravineWall }
+            : new[] { p.ground, p.groundVariant, p.slope, p.cliff, p.road, p.ravineFloor, p.courtyard };
         PaintSplat(spec, hf, td);
         EditorUtility.SetDirty(td);
 
@@ -76,9 +79,11 @@ public static class DefenseTerrainBuilder
     private static void PaintSplat(DefenseSceneSpecSO spec, DefenseHeightfield hf, TerrainData td)
     {
         int ares = td.alphamapResolution;
-        var maps = new float[ares, ares, LayerCount];
+        int layerCount = td.terrainLayers.Length;
+        bool walls = layerCount > Wall;
+        var maps = new float[ares, ares, layerCount];
         List<List<Vector2>> roads = hf.Roads();
-        var w = new float[LayerCount];
+        var w = new float[layerCount];
 
         for (int iz = 0; iz < ares; iz++)
         {
@@ -92,7 +97,7 @@ public static class DefenseTerrainBuilder
                 float h = td.GetInterpolatedHeight(u, v) - spec.playfieldElevation;
                 float d = hf.ValleyDistance(wx, wz);
 
-                System.Array.Clear(w, 0, LayerCount);
+                System.Array.Clear(w, 0, layerCount);
                 w[Ground] = 1f;
 
                 Over(w, Variant, Smooth(0.45f, 0.75f, hf.Fbm(wx, wz, 0.035f, 3, 5)) * 0.7f);
@@ -113,11 +118,36 @@ public static class DefenseTerrainBuilder
                 // Snow clings up to ~40 degrees; only the steepest faces show bare rock.
                 Over(w, Slope, Smooth(24f, 36f, steep));
                 Over(w, Cliff, Smooth(40f, 50f, steep) * (0.75f + 0.25f * hf.Fbm(wx, wz, 0.05f, 2, 6)));
+                if (walls) PaintRavineWall(spec, hf, w, wx, wz, h);
 
-                for (int l = 0; l < LayerCount; l++) maps[iz, ix, l] = w[l];
+                for (int l = 0; l < layerCount; l++) maps[iz, ix, l] = w[l];
             }
         }
         td.SetAlphamaps(0, 0, maps);
+    }
+
+    /// <summary>
+    ///     Rock paint on the ravine walls: from just under the rim down to the floor, which (and the ramp lanes)
+    ///     keep the floor layer. Height-based rather than slope-based, so the whole wall changes material at the
+    ///     rim instead of blending through the field's slope layer.
+    /// </summary>
+    private static void PaintRavineWall(DefenseSceneSpecSO spec, DefenseHeightfield hf, float[] w, float x, float z,
+        float h)
+    {
+        for (int i = 0; i < spec.ravines.Count; i++)
+        {
+            RavineSpec r = spec.ravines[i];
+            float extent = hf.RavineExtentMask(i, x);
+            if (extent <= 0f) continue;
+            // The band covers the ravine and the ramp cuts in its gate-side bank (their side walls too).
+            bool band = Mathf.Abs(z - hf.RavineCentreZ(i, x)) < r.topWidth * 0.5f + 0.8f || hf.InRampLane(x, z, 1.5f);
+            if (!band) continue;
+            Over(w, Wall, Smooth(-0.1f, -0.7f, h) * extent);
+            float floor = Smooth(-r.depth + 1.1f, -r.depth + 0.5f, h);
+            if (hf.InRampLane(x, z, -0.3f)) floor = Mathf.Max(floor, Smooth(-0.2f, -0.8f, h));
+            Over(w, Floor, floor * extent);
+            return;
+        }
     }
 
     /// <summary>Composites a layer over the current weights (weights stay normalised).</summary>

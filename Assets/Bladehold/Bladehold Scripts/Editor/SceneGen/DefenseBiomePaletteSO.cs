@@ -39,6 +39,16 @@ public class DefenseBiomePaletteSO : ScriptableObject
     [Tooltip("Dead/bare trees and stumps sprinkled near the field edge.")]
     public List<GameObject> deadTrees = new List<GameObject>();
 
+    [Header("Ravine walls")]
+    [Tooltip("Optional: painted on the ravine walls below the rim, so they read as rock rather than stretched ground. Empty keeps the plain slope/cliff paint.")]
+    public TerrainLayer ravineWall;
+    [Tooltip("Optional: rocks set into both ravine walls below the rim (colliders stripped, so the floor NavMesh is untouched). Tall, narrow rocks read best.")]
+    public List<GameObject> ravineWallRocks = new List<GameObject>();
+
+    [Header("Prop clusters")]
+    [Tooltip("Hand-composed groups (bones, spiky rocks, succulents...) stamped between the roads. Harvested from a Synty demo scene by DefenseClusterHarvester.")]
+    public List<PropCluster> propClusters = new List<PropCluster>();
+
     [Header("Structures")]
     public GameObject gate;
     [Tooltip("Yaw applied to the gate model so its outer face points +Z (towards the attackers).")]
@@ -70,4 +80,24 @@ public class DefenseBiomePaletteSO : ScriptableObject
     public Color ambientSky = new Color(0.55f, 0.63f, 0.75f);
     public Color ambientEquator = new Color(0.42f, 0.5f, 0.58f);
     public Color ambientGround = new Color(0.3f, 0.3f, 0.32f);
+}
+
+/// <summary>A group of props laid out around a centre, re-grounded piece by piece wherever it is stamped.</summary>
+[System.Serializable]
+public class PropCluster
+{
+    public string name;
+    [Tooltip("Furthest piece from the centre, in metres.")]
+    public float radius;
+    public List<ClusterPiece> pieces = new List<ClusterPiece>();
+}
+
+[System.Serializable]
+public class ClusterPiece
+{
+    public GameObject prefab;
+    [Tooltip("XZ offset from the cluster centre; Y is the height above the ground under the piece (negative = sunk).")]
+    public Vector3 offset;
+    public Quaternion rotation = Quaternion.identity;
+    public Vector3 scale = Vector3.one;
 }
