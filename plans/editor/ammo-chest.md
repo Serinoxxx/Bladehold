@@ -16,7 +16,7 @@ Not from a plan: a direct request on 2026-09-29. Unity MCP was connected and the
 
 ## Scene
 
-- [ ] **Place one chest just inside the gate** in `Bladehold Castle Courtyard.unity` and `Bladehold Castle Dungeons.unity`, plus any other sector scene with a gate. *(MCP-able once your scene edits are saved)*
+- [ ] **Place one chest just inside the gate** in `Bladehold Outer Gate.unity` (generated: add it to the spec/generator rather than hand-placing, or it is lost on regeneration) and `Bladehold Castle Dungeons.unity`, plus any other sector scene with a gate. *(MCP-able once your scene edits are saved)*
   - It needs no collider, since interaction is distance-based through `InteractableRegistry`.
   - Put it where you can reach it mid-wave without walking through the horde.
 

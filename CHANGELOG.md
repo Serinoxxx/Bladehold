@@ -8,6 +8,8 @@
 - Added the Dome Warden, a goblin whose dome catches arrows, bolts and boulders from outside until it breaks; walk in to fight it, or shoot the dome down
 - Added an escort of up to 12 goblins that marches in formation inside the Dome Warden's dome and charges you when you get close
 - Added the Hexer, a goblin that stands back and channels a beam into one of your towers so it can't fire; hit it to break the channel
+- Added the Outer Gate, a new first campaign battle: a snowy mountain valley in front of the castle gate with a spiked ravine crossed by three bridges
+- Added spike pits: goblins knocked off a bridge take a heavy hit on landing and have to climb back out by ramp
 
 ### Fixes
 
@@ -23,6 +25,7 @@
 ### General Changes
 
 - Added range and blind spot size to each defence's description in the build wheel
+- Removed the old Castle Courtyard battle, replaced by the Outer Gate
 
 ## [0.1.28] - 2026-09-13
 

@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: Node_tier1_courtyard_entrance
   m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
   nodeId: tier1_courtyard_entrance
-  nodeTitle: Courtyard Entrance
-  subtitle: Outer Castle Courtyard
-  description: Defend the courtyard gates against the initial goblin assault. Fortify
-    tower defense slots and secure the entryway.
-  sceneName: Bladehold Castle Courtyard
+  nodeTitle: Outer Gate
+  subtitle: Snowbound Approach
+  description: Hold the outer gate against the first goblin warband. Build towers
+    on the approach and knock raiders off the bridges into the spike ravine.
+  sceneName: Bladehold Outer Gate
   nodeType: 0
   tierIndex: 1
   mapPosition: {x: 100, y: 0}
@@ -35,3 +35,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 32dd7451bc9e8374d817999b58d80f1c, type: 2}
   - {fileID: 11400000, guid: 14e852b703476ae42bcfa3d9476ee4c0, type: 2}
   - {fileID: 11400000, guid: 6959791242a150b40a9a22d79666299d, type: 2}
+  endsCampaign: 0

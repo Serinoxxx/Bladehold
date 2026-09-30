@@ -13,8 +13,8 @@ using TMPro;
 
 /// <summary>
 ///     Automated Scene Generator & Level Builder for Part 3 of the Castle Campaign Overhaul.
-///     Constructs the 7 campaign combat encounter scenes:
-///     1. Bladehold Castle Courtyard (Tier 1 Center: Courtyard Gate)
+///     Constructs 6 castle campaign combat encounter scenes. (Tier 1's Castle Courtyard was replaced by
+///     the generated Outer Gate scene; see Editor/SceneGen/DefenseSceneGenerator.cs.)
 ///     2. Bladehold Castle Ramparts (Tier 2 Option A: High battlements)
 ///     3. Bladehold Castle Armory (Tier 2 Option B: Weapons depot)
 ///     4. Bladehold Great Hall (Tier 4 Center Merge: Grand banquet hall)
@@ -28,7 +28,6 @@ public static class BuildCastleLevels
 
     public static readonly string[] AllCastleScenePaths = new string[]
     {
-        "Assets/Bladehold/Bladehold Scenes/Bladehold Castle Courtyard.unity",
         "Assets/Bladehold/Bladehold Scenes/Bladehold Castle Ramparts.unity",
         "Assets/Bladehold/Bladehold Scenes/Bladehold Castle Armory.unity",
         "Assets/Bladehold/Bladehold Scenes/Bladehold Great Hall.unity",
@@ -37,17 +36,16 @@ public static class BuildCastleLevels
         "Assets/Bladehold/Bladehold Scenes/Bladehold Throne Antechamber.unity"
     };
 
-    [MenuItem("Bladehold/Build Castle Levels/Build All 7 Levels", priority = 20)]
+    [MenuItem("Bladehold/Build Castle Levels/Build All 6 Levels", priority = 20)]
     public static void BuildAllLevels()
     {
-        Debug.Log("[BuildCastleLevels] === Beginning Full Generation of 7 Castle Campaign Levels ===");
+        Debug.Log("[BuildCastleLevels] === Beginning Full Generation of 6 Castle Campaign Levels ===");
 
         if (!Directory.Exists(ScenesDir))
         {
             Directory.CreateDirectory(ScenesDir);
         }
 
-        BuildCourtyardScene();
         BuildRampartsScene();
         BuildArmoryScene();
         BuildGreatHallScene();
@@ -59,80 +57,7 @@ public static class BuildCastleLevels
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
-        Debug.Log("[BuildCastleLevels] === All 7 Castle Campaign Levels Successfully Built & Registered! ===");
-    }
-
-    // =========================================================================
-    // 1. TIER 1: CASTLE COURTYARD
-    // =========================================================================
-    [MenuItem("Bladehold/Build Castle Levels/1. Castle Courtyard", priority = 21)]
-    public static void BuildCourtyardScene()
-    {
-        string scenePath = AllCastleScenePaths[0];
-        Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-
-        // Lighting & Atmosphere (Warm golden late afternoon)
-        SetupAtmosphere(
-            ambientColor: new Color(0.24f, 0.22f, 0.26f),
-            fogColor: new Color(0.20f, 0.18f, 0.22f),
-            fogDensity: 0.012f,
-            sunColor: new Color(1f, 0.90f, 0.72f),
-            sunIntensity: 1.25f,
-            sunRot: Quaternion.Euler(48f, 35f, 0f)
-        );
-
-        // Architecture Root
-        GameObject envRoot = new GameObject("Environment_Castle_Courtyard");
-        Material stoneMat = LoadMaterial("Assets/Synty/PolygonFantasyKingdom/Materials/Alts/PolygonFantasyKingdom_Mat_01_A_Emmisive.mat", "Standard");
-        Material wallMat = LoadMaterial("Assets/Synty/PolygonFantasyKingdom/Materials/Alts/PolygonFantasyKingdom_Mat_01_B.mat", "Standard");
-
-        // Ground Floor (56x56m stone courtyard)
-        CreateGround(envRoot.transform, 56f, 56f, stoneMat);
-
-        // Perimeter Walls & Battlements
-        CreatePerimeterEnclosure(envRoot.transform, 56f, 56f, 7f, 2.5f, wallMat, gateOpeningWidth: 10f);
-
-        // Castle Gate at North (Z = 24)
-        GameObject gateGo = CreateCastleGate(envRoot.transform, new Vector3(0f, 0f, 24f), Quaternion.Euler(0f, 180f, 0f));
-
-        // Themed Props (Training Dummies, Weapon Racks, Braziers)
-        CreateTorchOrBrazier("Brazier_NW", new Vector3(-18f, 0f, 18f), envRoot.transform, new Color(1f, 0.55f, 0.2f), 2.2f, 14f);
-        CreateTorchOrBrazier("Brazier_NE", new Vector3(18f, 0f, 18f), envRoot.transform, new Color(1f, 0.55f, 0.2f), 2.2f, 14f);
-        CreateTorchOrBrazier("Brazier_SW", new Vector3(-18f, 0f, -18f), envRoot.transform, new Color(1f, 0.55f, 0.2f), 2.2f, 14f);
-        CreateTorchOrBrazier("Brazier_SE", new Vector3(18f, 0f, -18f), envRoot.transform, new Color(1f, 0.55f, 0.2f), 2.2f, 14f);
-        CreateTorchOrBrazier("GateTorch_L", new Vector3(-6f, 3.5f, 23.5f), envRoot.transform, new Color(1f, 0.65f, 0.25f), 1.8f, 10f);
-        CreateTorchOrBrazier("GateTorch_R", new Vector3(6f, 3.5f, 23.5f), envRoot.transform, new Color(1f, 0.65f, 0.25f), 1.8f, 10f);
-
-        // Flanking Corner Bastions / Watchtowers
-        CreateStoneColumn(envRoot.transform, new Vector3(-26f, 0f, 26f), new Vector3(5f, 10f, 5f), wallMat);
-        CreateStoneColumn(envRoot.transform, new Vector3(26f, 0f, 26f), new Vector3(5f, 10f, 5f), wallMat);
-        CreateStoneColumn(envRoot.transform, new Vector3(-26f, 0f, -26f), new Vector3(5f, 10f, 5f), wallMat);
-        CreateStoneColumn(envRoot.transform, new Vector3(26f, 0f, -26f), new Vector3(5f, 10f, 5f), wallMat);
-
-        // Bake NavMesh
-        BakeNavMesh(envRoot);
-
-        // Instantiate Gameplay Prefabs & Wire Connections
-        SetupSurvivorsSceneTool.RunSetup(gateGo, false, true);
-
-        // Setup 6 TowerPlots at Courtyard Choke Points
-        Vector3[] plotPositions = new Vector3[]
-        {
-            new Vector3(-6f, 0f, 20f),  // Gate Left
-            new Vector3(6f, 0f, 20f),   // Gate Right
-            new Vector3(-15f, 0f, 5f),  // Midfield West
-            new Vector3(15f, 0f, 5f),   // Midfield East
-            new Vector3(-10f, 0f, -12f),// Outer Approach West
-            new Vector3(10f, 0f, -12f)  // Outer Approach East
-        };
-        SetupBattlefieldTowerPlots(plotPositions);
-
-        // Ensure Defenses UI (BuildWheelUI, SupplyUI)
-        EnsureDefensesHUD();
-
-        EditorSceneManager.MarkSceneDirty(scene);
-        EditorSceneManager.SaveScene(scene, scenePath);
-        Debug.Log($"[BuildCastleLevels] Saved: {scenePath}");
+        Debug.Log("[BuildCastleLevels] === All 6 Castle Campaign Levels Successfully Built & Registered! ===");
     }
 
     // =========================================================================
@@ -141,7 +66,7 @@ public static class BuildCastleLevels
     [MenuItem("Bladehold/Build Castle Levels/2. Castle Ramparts", priority = 22)]
     public static void BuildRampartsScene()
     {
-        string scenePath = AllCastleScenePaths[1];
+        string scenePath = AllCastleScenePaths[0];
         Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
         // Lighting & Atmosphere (Windy, high-elevation cool daylight with silver-blue fog)
@@ -212,7 +137,7 @@ public static class BuildCastleLevels
     [MenuItem("Bladehold/Build Castle Levels/3. Castle Armory", priority = 23)]
     public static void BuildArmoryScene()
     {
-        string scenePath = AllCastleScenePaths[2];
+        string scenePath = AllCastleScenePaths[1];
         Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
         // Lighting & Atmosphere (Enclosed forge glow, warm embers, dusty light shafts)
@@ -281,7 +206,7 @@ public static class BuildCastleLevels
     [MenuItem("Bladehold/Build Castle Levels/4. Great Hall", priority = 24)]
     public static void BuildGreatHallScene()
     {
-        string scenePath = AllCastleScenePaths[3];
+        string scenePath = AllCastleScenePaths[2];
         Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
         // Lighting & Atmosphere (Grand banquet chandeliers, warm hearth flames, noble gold)
@@ -363,7 +288,7 @@ public static class BuildCastleLevels
     [MenuItem("Bladehold/Build Castle Levels/5. Castle Dungeons", priority = 25)]
     public static void BuildDungeonsScene()
     {
-        string scenePath = AllCastleScenePaths[4];
+        string scenePath = AllCastleScenePaths[3];
         Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
         // Lighting & Atmosphere (Dark subterranean gloom, sickly greenish-teal fog, dim flickering braziers)
@@ -434,7 +359,7 @@ public static class BuildCastleLevels
     [MenuItem("Bladehold/Build Castle Levels/6. Castle Conservatory", priority = 26)]
     public static void BuildConservatoryScene()
     {
-        string scenePath = AllCastleScenePaths[5];
+        string scenePath = AllCastleScenePaths[4];
         Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
         // Lighting & Atmosphere (Shattered glass greenhouse, lush emerald daylight, soft mist)
@@ -522,7 +447,7 @@ public static class BuildCastleLevels
     [MenuItem("Bladehold/Build Castle Levels/7. Throne Antechamber", priority = 27)]
     public static void BuildThroneAntechamberScene()
     {
-        string scenePath = AllCastleScenePaths[6];
+        string scenePath = AllCastleScenePaths[5];
         Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
         // Lighting & Atmosphere (The Obsidian Portico: deep royal crimson & dark gold shadows)

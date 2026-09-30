@@ -134,13 +134,13 @@ namespace Bladehold.UI
             ));
 
             // Castle Campaign Levels
-            // Tier 1: Castle Courtyard
+            // Tier 1: Outer Gate
             Register(new AreaMetadata(
-                "Bladehold Castle Courtyard",
+                "Bladehold Outer Gate",
                 1,
-                "Castle Courtyard",
-                "Courtyard Gate",
-                "Defend the courtyard gates against the initial goblin assault. Fortify tower defense slots and secure the entryway."
+                "Outer Gate",
+                "Snowbound Approach",
+                "Hold the outer gate against the first goblin warband. Build towers on the approach and knock raiders off the bridges into the spike ravine."
             ));
 
             // Tier 2A: Castle Ramparts

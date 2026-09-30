@@ -35,7 +35,7 @@ Whenever a change needs manual steps in the Unity Editor that can't be done by e
 
 ## Project skills
 
-Recurring expansion work has step-by-step recipes in `.claude/skills/` â€” **invoke the matching skill before starting** rather than working from this doc alone (they encode the exemplars, pitfalls, and *current* CSV formats, which this doc lags): `add-skill-line` (skill-tree nodes / player mechanics), `add-enemy-type`, `generate-enemy-prefabs` (manifest-driven enemy prefab variants â€” no hand wiring), `compile-check` (headless C# verification via `dotnet build`), `editor-wiring-todo` (the TODO.md entry format).
+Recurring expansion work has step-by-step recipes in `.claude/skills/` â€” **invoke the matching skill before starting** rather than working from this doc alone (they encode the exemplars, pitfalls, and *current* CSV formats, which this doc lags): `add-skill-line` (skill-tree nodes / player mechanics), `add-enemy-type`, `generate-defense-scene` (spec-driven gate-defense battle scenes: terrain, castle, spike ravines, scatter, NavMesh, validator — never hand-edit the output), `generate-enemy-prefabs` (manifest-driven enemy prefab variants â€” no hand wiring), `compile-check` (headless C# verification via `dotnet build`), `editor-wiring-todo` (the TODO.md entry format).
 
 ## Code layout
 

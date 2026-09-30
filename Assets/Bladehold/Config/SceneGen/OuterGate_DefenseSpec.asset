@@ -1,0 +1,115 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b02862b8870d46944bd892d7cbd1eb5c, type: 3}
+  m_Name: OuterGate_DefenseSpec
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::DefenseSceneSpecSO
+  scenePath: Assets/Bladehold/Bladehold Scenes/Bladehold Outer Gate.unity
+  seed: 1337
+  palette: {fileID: 11400000, guid: 3cfd3a83812231d45aef34f5b3a03c0c, type: 2}
+  terrainMin: {x: -200, y: -120}
+  terrainSize: 400
+  terrainHeight: 130
+  playfieldElevation: 30
+  heightmapResolution: 1025
+  alphamapResolution: 1024
+  gateNotchHalfWidth: 20
+  fieldHalfWidth: 75
+  flareLength: 40
+  fieldEndZ: 175
+  cornerRadius: 30
+  edgeNoise: 9
+  fieldUndulation: 0.35
+  foothillWidth: 16
+  foothillHeight: 5
+  mountainHeight: 85
+  mountainWidth: 80
+  notchFoothillWidth: 3
+  courtyardDepth: 60
+  courtyardHalfWidth: 38
+  wallEmbed: 8
+  castleBuildings:
+  - prefab: {fileID: 1539475987485874, guid: ad046a662ca27474fbd4aef7604bdde6, type: 3}
+    position: {x: 0, y: -44}
+    yaw: 180
+  - prefab: {fileID: 1405846119302248, guid: c4acdd3f8bf9cfe4e8db56a2f52a57db, type: 3}
+    position: {x: 21.951931, y: -17.846212}
+    yaw: -98.76354
+  - prefab: {fileID: 1134997539092316, guid: 8adfb299be9e7f74c859e0c948e2f4c0, type: 3}
+    position: {x: -25.347782, y: -15.2037735}
+    yaw: 96.18046
+  - prefab: {fileID: 1159825550740384, guid: 871736051670df6409b1c54e9710effe, type: 3}
+    position: {x: -14.8322935, y: -41.75611}
+    yaw: 88.73208
+  - prefab: {fileID: 1966127341303218, guid: c004583408826104080451c4b7713ee5, type: 3}
+    position: {x: 14.851741, y: -31.273994}
+    yaw: -84.22218
+  - prefab: {fileID: 1925638959922780, guid: aecaf73c950a6664e926dbffe7b9d800, type: 3}
+    position: {x: -21.921833, y: -30.818558}
+    yaw: 87.58862
+  - prefab: {fileID: 1904262631371420, guid: 4d3bedae59bad854eac1c80230ab57f0, type: 3}
+    position: {x: -10.088293, y: -22.724138}
+    yaw: 90.17123
+  - prefab: {fileID: 1257024709312140, guid: 7038763010482764cadfe26b89e05c78, type: 3}
+    position: {x: 9.263693, y: -12.198526}
+    yaw: -103.841484
+  - prefab: {fileID: 1428951525696302, guid: 356fa83e91052c344953b8081a7d6f57, type: 3}
+    position: {x: 25.735992, y: -38.12544}
+    yaw: -89.60489
+  - prefab: {fileID: 1107351626861436, guid: 5f8c58b5e7e6b504b84711e4dfda3757, type: 3}
+    position: {x: -27.7599, y: -45.871597}
+    yaw: 91.69397
+  ravines:
+  - z: 58
+    topWidth: 11
+    floorWidth: 6
+    depth: 6
+    meanderAmplitude: 3.5
+    meanderWavelength: 110
+    bridges:
+    - x: -45
+      tilesWide: 1
+    - x: 0
+      tilesWide: 2
+    - x: 45
+      tilesWide: 1
+    exitRamps:
+    - x: -20
+      direction: -1
+      width: 4.5
+      slopeDegrees: 24
+    - x: 20
+      direction: 1
+      width: 4.5
+      slopeDegrees: 24
+  playerSpawn: {x: 0, y: 9}
+  towerPlots:
+  - {x: -30, y: 20}
+  - {x: -12, y: 15}
+  - {x: 12, y: 15}
+  - {x: 30, y: 20}
+  - {x: -22, y: 36}
+  - {x: 22, y: 36}
+  enemySpawns:
+  - {x: -60, y: 148}
+  - {x: -45, y: 158}
+  - {x: -30, y: 150}
+  - {x: -15, y: 160}
+  - {x: 0, y: 152}
+  - {x: 15, y: 160}
+  - {x: 30, y: 150}
+  - {x: 45, y: 158}
+  - {x: 60, y: 148}
+  - {x: 0, y: 164}
+  objectiveRangeMargin: 8
+  objectiveZRange: {x: 84, y: 140}
+  scatterDensity: 1
+  gameplayClearRadius: 7

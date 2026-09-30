@@ -307,6 +307,7 @@ public class DevConsole : MonoBehaviour
     private void DrawSceneControls()
     {
         GUILayout.Label("Load Scene");
+        DrawSceneLoadButton("Bladehold Outer Gate");
         DrawSceneLoadButton("Bladehold Frozen Pass Scene");
         DrawSceneLoadButton("Bladehold Meta Area Scene");
         DrawSceneLoadButton("Bladehold Rest Area Scene");

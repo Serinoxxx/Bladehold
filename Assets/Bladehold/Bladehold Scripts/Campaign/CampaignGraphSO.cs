@@ -95,14 +95,14 @@ public class CampaignGraphSO : ScriptableObject
         allNodes.Clear();
 
         // -------------------------------------------------------------
-        // TIER 1: Courtyard Entrance (Center Start)
+        // TIER 1: Outer Gate (Center Start)
         // -------------------------------------------------------------
         CampaignNodeSO nodeTier1 = CreateNode(
             "tier1_courtyard_entrance",
-            "Courtyard Entrance",
-            "Outer Castle Courtyard",
-            "Defend the courtyard gates against the initial goblin assault. Fortify tower defense slots and secure the entryway.",
-            "Bladehold Castle Courtyard",
+            "Outer Gate",
+            "Snowbound Approach",
+            "Hold the outer gate against the first goblin warband. Build towers on the approach and knock raiders off the bridges into the spike ravine.",
+            "Bladehold Outer Gate",
             CampaignNodeType.Combat,
             1,
             new Vector2(100f, 0f),
