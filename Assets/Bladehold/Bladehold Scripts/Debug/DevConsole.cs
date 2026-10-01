@@ -313,6 +313,7 @@ public class DevConsole : MonoBehaviour
         DrawSceneLoadButton("Bladehold Frozen Pass Scene");
         DrawSceneLoadButton("Bladehold Meta Area Scene");
         DrawSceneLoadButton("Bladehold Rest Area Scene");
+        DrawSceneLoadButton("Bladehold Fishing Pond");
         DrawSceneLoadButton("Bladehold Survivors Scene");
         DrawSceneLoadButton("Bladehold Ancient Garden");
     }

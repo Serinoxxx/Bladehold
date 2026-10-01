@@ -1,5 +1,17 @@
 # Bladehold - Changelog
 
+## [0.1.31] - 2026-10-01
+
+### New Features
+
+### Fixes
+
+- Fixed the Quit button on the main menu not closing the game
+
+### Balance Changes
+
+### General Changes
+
 ## [0.1.29] - 2026-09-29
 
 ### New Features
