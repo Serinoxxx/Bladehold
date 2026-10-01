@@ -119,6 +119,10 @@ public class SurvivorsSpawner : MonoBehaviour
     public bool IsSpawningActive => isSpawningActive;
     public int MaxConcurrentShielders => maxConcurrentShielders;
 
+    /// <summary>The spawn telegraph's visual: the pacing asset's, else the inspector fallback.</summary>
+    public GameObject IndicatorPrefab =>
+        pacingConfig != null && pacingConfig.indicatorPrefab != null ? pacingConfig.indicatorPrefab : spawnIndicatorPrefab;
+
     /// <summary>
     /// Returns all currently alive tracked enemies with destroyed or dead instances pruned.
     /// </summary>
@@ -529,10 +533,9 @@ public class SurvivorsSpawner : MonoBehaviour
 
         Vector3 spawnPos = ResolveSpawnPosition();
         float indicatorDuration = pacingConfig != null ? pacingConfig.spawnTelegraphDuration : 3.0f;
-        GameObject indPrefab = (pacingConfig != null && pacingConfig.indicatorPrefab != null) ? pacingConfig.indicatorPrefab : spawnIndicatorPrefab;
 
         aliveCount++; // Reserve slot during telegraph
-        SpawnIndicator.Create(spawnPos, indicatorDuration, indPrefab, () =>
+        SpawnIndicator.Create(spawnPos, indicatorDuration, IndicatorPrefab, () =>
         {
             if (!isSpawningActive || this == null)
             {
@@ -800,6 +803,37 @@ public class SurvivorsSpawner : MonoBehaviour
         }
 
         return fallbackPos;
+    }
+
+    /// <summary>
+    ///     Every roster type this sector can field in any of its waves, fodder first: the threat or
+    ///     scene-roster gating <see cref="SelectSpawnTypeForWave" /> applies at the last wave, without the
+    ///     alive caps. Objective overrides (Goblin Rush) aren't known yet and are left out. Read by
+    ///     <see cref="EnemyPrewarmer" />.
+    /// </summary>
+    public void GetPrewarmTypes(List<EnemyDefinition> defs, List<GameObject> prefabs)
+    {
+        defs.Clear();
+        prefabs.Clear();
+        InitializeIfNeeded();
+        if (anyError) return;
+
+        int lastWave = pacingConfig != null ? pacingConfig.wavesPerRound : 5;
+        int threat = SectorThreat.Current;
+        string fodderId = FodderId;
+        foreach (SpawnType type in spawnTypes)
+        {
+            bool isFodder = string.Equals(type.def.id, fodderId, StringComparison.OrdinalIgnoreCase);
+            bool canSpawn = SceneEnemyRoster.Active
+                ? SceneEnemyRoster.Allows(type.def.id)
+                  && SectorSpawnRules.IsUnlockedInSceneRoster(type.def.enabled, type.def.unlockWave, lastWave)
+                : SectorSpawnRules.IsUnlocked(type.def, lastWave, threat);
+            if (!isFodder && !canSpawn) continue;
+
+            int index = isFodder ? 0 : defs.Count;
+            defs.Insert(index, type.def);
+            prefabs.Insert(index, type.prefab);
+        }
     }
 
     /// <summary>Debug helper for DevConsole: list of loaded spawnable enemy definitions.</summary>

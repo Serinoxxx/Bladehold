@@ -17,6 +17,8 @@ Things that need your hands, eyes or judgement in the Unity Editor. Items marked
 - [Towers vs hero: blind spots, Sapper, Dome Warden](editor/towers-vs-hero.md) (Sapper + Dome Warden prefabs not generated yet)
 - [Save slots](editor/save-slots.md) (built and play-checked; needs your UI review)
 - [Skeleton crowd enemies](editor/skeleton-crowd-enemies.md) (generated and baked; needs your Play-mode check and weapon poses)
+- [Troll sliding / warping](editor/troll-movement.md) (agent double-scale fixed in code; walk-speed sync and a playtest left)
+- [Enemy spawn/death prewarm](editor/enemy-prewarm.md) (wired by YAML, not yet opened in the Editor; needs a hitch check and a shader-variant re-collect)
 
 ## A. Triage first (biggest win)
 

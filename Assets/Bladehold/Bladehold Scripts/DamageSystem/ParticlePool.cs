@@ -55,6 +55,29 @@ public static class ParticlePool
         return instance;
     }
 
+    /// <summary>
+    ///     Tops the pool for <paramref name="prefab" /> up to <paramref name="count" /> idle instances, so the
+    ///     first burst of a mass kill doesn't instantiate mid-fight. Called by <see cref="EnemyPrewarmer" />.
+    /// </summary>
+    public static void Prewarm(ParticleSystem prefab, int count)
+    {
+        if (prefab == null || count <= 0) return;
+        EnsureRoot();
+
+        if (!pools.TryGetValue(prefab, out Queue<ParticleSystem> pool))
+        {
+            pool = new Queue<ParticleSystem>();
+            pools[prefab] = pool;
+        }
+
+        while (pool.Count < count)
+        {
+            ParticleSystem instance = Object.Instantiate(prefab, poolRoot);
+            instance.gameObject.SetActive(false);
+            pool.Enqueue(instance);
+        }
+    }
+
     public static void Release(ParticleSystem prefab, ParticleSystem instance, float delay = 0f)
     {
         if (instance == null || prefab == null) return;

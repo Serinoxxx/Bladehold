@@ -46,6 +46,8 @@ Every battle scene runs the same loop: `GameLoopManager` + `SurvivorsSpawner` + 
 
 ## Gotchas
 
+- **Scene-start prewarm.** `EnemyPrewarmer` (on the EnemySpawner prefab) holds the loading screen (`LoadingScreenManager.HoldFadeOut`) while it spawns, renders and rehearsal-kills one of each type from `SurvivorsSpawner.GetPrewarmTypes`, so first spawns/deaths don't hitch on shader compiles and pool growth. Only baked crowd types are killed (others' death effects reach into the scene). The kills credit the victim itself, so gold and kill stats skip them. Anything new that rewards kills or damage globally must check `EnemyPrewarmer.IsRehearsing`, as `PlayerUltimateController` does.
+
 - The objective manager's 30 s cleanup timer is never counted down. `KillRemainingEnemiesObjective` (the old cleanup phase) is no longer started by the flow; the rout replaced it.
 - `WarBannerController`, `WaveUpgradePowerup` and the `WarBannerRewardSO`/`WarBannerConfigSO` assets are dead code since plan 15, kept until a playtest confirms (listed for deletion in `plans/editor/15-wave-choice.md`). `WarBannerClanSO` and `BannerDifficultyTier` are still live (card clans and captain tiers).
 - Wagon and ram objectives implement `IRequiresContinuousSpawns`: the wave can't end until they resolve, and once the quota is out the spawner trickles enemies (topping up to `objectiveTrickleMinAlive`, one per `objectiveTrickleInterval`) so the field never empties.

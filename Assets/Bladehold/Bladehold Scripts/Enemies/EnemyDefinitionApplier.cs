@@ -77,10 +77,12 @@ public static class EnemyDefinitionApplier
             NavMeshAgent agent = enemy.GetComponent<NavMeshAgent>();
             if (agent != null)
             {
-                // Reset agent dimensions relative to base goblin prefab defaults (0.5 radius, 2.0 height)
-                // and scale them, rather than multiplying the active agent size which would double-scale.
-                agent.radius = 0.5f * targetScale;
-                agent.height = 2f * targetScale;
+                // Reset agent dimensions to the base goblin prefab defaults (0.5 radius, 2.0 height).
+                // Radius/height are local-space like baseOffset: the agent already multiplies them by
+                // the transform scale, so scaling them here too gave the 4.8x Troll an ~11.5 m
+                // avoidance radius that shoved it (and every goblin near it) around.
+                agent.radius = 0.5f;
+                agent.height = 2f;
                 
                 // baseOffset is local-space: the agent already applies the transform scale.
                 // Scaling it here again buries large enemies below the NavMesh.

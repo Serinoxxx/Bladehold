@@ -565,6 +565,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1427332617875962604}
   - component: {fileID: 615871162583436328}
+  - component: {fileID: 7215530948561290044}
   m_Layer: 0
   m_Name: EnemySpawner
   m_TagString: Untagged
@@ -1925,3 +1926,17 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2388938746961362722}
   m_LocalEulerAnglesHint: {x: 0, y: -195.812, z: 0}
+--- !u!114 &7215530948561290044
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3235339430547657717}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97326ec17cc345e4a4cee618d015994e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyPrewarmer
+  config: {fileID: 11400000, guid: 7392fba2a73b4a49a5de021f61e5afc6, type: 2}
+  spawner: {fileID: 615871162583436328}

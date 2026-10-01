@@ -271,6 +271,8 @@ public class PlayerUltimateController : MonoBehaviour
     private void HandleAnyHealthDamaged(Health target, Damage damage)
     {
         if (IsUltimateActive || target == null || damage == null) return;
+        // The loading-screen rehearsal kills (EnemyPrewarmer) aren't the player's work.
+        if (EnemyPrewarmer.IsRehearsing) return;
 
         float amount = ChargeFor(target, damage);
         if (amount > 0f) pendingDamage.Add(new PendingDamage { target = target, amount = amount });

@@ -59,8 +59,28 @@ namespace Bladehold.UI
         [SerializeField] private ShaderVariantCollection prewarmVariants;
         [SerializeField] private int variantsPerFrame = 25;
 
+        [Tooltip("Longest the fade-out waits on scene-start holds (HoldFadeOut) before revealing the scene anyway.")]
+        [SerializeField] private float maxFadeOutHoldSeconds = 8f;
+
         private bool isLoading = false;
         public bool IsLoading => isLoading;
+
+        /// <summary>True while a transition is on screen, without spawning the manager like <see cref="Instance" /> does.</summary>
+        public static bool IsTransitioning => _instance != null && _instance.isLoading;
+
+        private static int fadeOutHolds;
+
+        /// <summary>
+        ///     Keeps the loading screen up after the new scene activates until every hold is released
+        ///     (or <c>maxFadeOutHoldSeconds</c> passes), so scene-start work like <see cref="EnemyPrewarmer" />
+        ///     runs out of sight. Take it in Awake, which runs before the activation finishes.
+        /// </summary>
+        public static void HoldFadeOut() => fadeOutHolds++;
+
+        public static void ReleaseFadeOut() => fadeOutHolds = Mathf.Max(0, fadeOutHolds - 1);
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics() => fadeOutHolds = 0;
 
         private void Awake()
         {
@@ -212,6 +232,12 @@ namespace Bladehold.UI
             // Allow scene start frames to settle
             yield return null;
             yield return null;
+
+            float holdStart = Time.unscaledTime;
+            while (fadeOutHolds > 0 && Time.unscaledTime - holdStart < maxFadeOutHoldSeconds)
+            {
+                yield return null;
+            }
 
             // 5. Fade out and clean up
             if (activeLoadingUI != null)
