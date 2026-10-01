@@ -1,5 +1,18 @@
 # Bladehold - Changelog
 
+## [0.1.32] - 2026-10-01
+
+### New Features
+
+### Fixes
+
+- Fixed the horse sometimes refusing to move from a standstill until forward was held for a few seconds
+- Fixed the camera sometimes getting stuck with the mouse cursor showing after changing areas
+
+### Balance Changes
+
+### General Changes
+
 ## [0.1.31] - 2026-10-01
 
 ### New Features

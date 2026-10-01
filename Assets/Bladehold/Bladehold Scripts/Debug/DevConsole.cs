@@ -101,7 +101,8 @@ public class DevConsole : MonoBehaviour
         }
 
         visible = value;
-        CursorLockManager.SetUnlock("DevConsole", visible);
+        // The console is DontDestroyOnLoad and stays open across its own scene loads.
+        CursorLockManager.SetUnlock("DevConsole", visible, persistAcrossScenes: true);
     }
 
     private void OnDisable()

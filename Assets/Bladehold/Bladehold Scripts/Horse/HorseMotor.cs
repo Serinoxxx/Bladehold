@@ -236,6 +236,11 @@ public class HorseMotor : MonoBehaviour
             inputReader.onSprintDeactivated += HandleSprintDeactivated;
         }
 
+        // Zero min-move: the default 0.001 m threshold silently swallows the tiny first steps of a
+        // standing start at high framerates (or low timeScale) — the controller doesn't move at all,
+        // which used to read as "blocked" below and pin the horse at 0 until a long frame broke free.
+        characterController.minMoveDistance = 0f;
+
         // Enemies (and ragdolls) never physically block the ridden horse — the crowd nudge and
         // drag in Update handle them instead. Level geometry still collides normally.
         characterController.excludeLayers |= horseData.crowdLayers;
@@ -368,12 +373,14 @@ public class HorseMotor : MonoBehaviour
 
         Vector3 motion = transform.forward * CurrentSpeed + Vector3.up * verticalVelocity;
         Vector3 positionBefore = transform.position;
-        characterController.Move(motion * dt);
+        CollisionFlags collisionFlags = characterController.Move(motion * dt);
 
         // A controller wedged on level geometry doesn't move, but CurrentSpeed would keep
         // integrating toward target — then burst out at full speed the moment the obstruction
-        // clears. Pull it down toward the forward speed actually achieved instead.
-        if (dt > 0.0001f)
+        // clears. Pull it down toward the forward speed actually achieved instead — but only on a
+        // real side collision: a short move for any other reason (min-move threshold, a tiny
+        // frame) must never be mistaken for a wall, or it cancels acceleration from a standstill.
+        if (dt > 0.0001f && (collisionFlags & CollisionFlags.Sides) != 0)
         {
             Vector3 achievedDelta = transform.position - positionBefore;
             achievedDelta.y = 0f;
