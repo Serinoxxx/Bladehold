@@ -28,6 +28,7 @@ Every battle scene runs the same loop: `GameLoopManager` + `SurvivorsSpawner` + 
    - Current curve: T1 goblin, brute, bubbler, big ork, bomber. T2 adds Bannerman and Powder Keg, T3 Bulwark and Assassin, T4 Storm Witch, T5 Troll.
    - The selection rules live in `SectorSpawnRules` (pure code), shared with the balance sim so the two can't drift.
    - An `IOverrideEnemySpawns` objective (Goblin Rush) replaces the threat gating with its own id list.
+   - **Per-scene enemy lists:** a `SceneEnemyRoster` in the scene (placed by the defense scene generator from the spec's `enemyRosterIds` / `fodderEnemyId`) replaces the threat gating with its list, so `minThreat` 0 rows can spawn there. `unlockWave`, `spawnChance` and `maxConcurrent` still apply, and its fodder id replaces goblin for the 60% floor. The Graveyard uses it for the four skeletons. An objective override only narrows a scene list; if they don't overlap, you get the scene's fodder.
 5. **Resolution**: the objective's `OnCompleted` or `OnFailed` ends the wave. The kill quota only sizes the spawns.
    - Spawning stops and every straggler (and a card captain) **routs** (`Enemies/EnemyRout`: a short stun, then it flees to the nearest spawn point). After `routDurationSeconds` the rest despawn. Kills during the rout still pay.
    - A 45 s lightning backstop covers a stalled rout.

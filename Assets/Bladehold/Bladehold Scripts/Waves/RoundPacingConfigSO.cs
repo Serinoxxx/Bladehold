@@ -43,6 +43,12 @@ public class RoundPacingConfigSO : ScriptableObject
     [Tooltip("Minimum share of each wave's spawns that are fodder. Elites fill the rest by weighted roll.")]
     [Range(0f, 1f)] public float fodderShare = 0.6f;
 
+    [Tooltip("Fixed waves (first and final) roll a clan modifier. Off for the tutorial, whose goblins stay plain.")]
+    public bool rollWaveClans = true;
+
+    [Tooltip("Waves between the first and final one open the wave choice cards. Off for the tutorial: every wave is the fixed first-wave card (kill quota), so no draft and no captain fight.")]
+    public bool draftWaveCards = true;
+
     [Header("Wave Pacing & Spawner Caps")]
     [Tooltip("Maximum enemies permitted alive simultaneously on the field.")]
     public int maxConcurrentEnemies = 20;

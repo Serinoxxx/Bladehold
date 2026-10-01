@@ -253,6 +253,13 @@ public class DeathScreen : MonoBehaviour
 
     private void HandlePlayerDied()
     {
+        // Tutorial arena: a death just restarts the room, no run-over screen.
+        if (TutorialDirector.Instance != null && TutorialDirector.Instance.ReloadOnDeath)
+        {
+            TutorialDirector.Instance.ReloadAfterDeath();
+            return;
+        }
+
         bool isSurvivorsMode = SurvivorsGameManager.Instance != null;
         if (isSurvivorsMode)
         {
@@ -530,7 +537,13 @@ public class DeathScreen : MonoBehaviour
         {
             // Only happens when a battle scene is played straight from the Editor: there's no node
             // to complete, so hand over to a fresh campaign run instead.
-            Debug.Log("[DeathScreen] Victory with no campaign run active (scene played standalone). Starting a fresh campaign run.");
+            Debug.Log("[DeathScreen] Victory with no campaign run active (tutorial, or scene played standalone). Starting a fresh campaign run.");
+            if (TutorialRun.Active)
+            {
+                // The tutorial's gold and supply were a sandbox: the first real run starts clean.
+                TutorialRun.End();
+                RunSession.StartNewRun();
+            }
             CampaignManager.Instance.StartCampaignRun();
             CampaignManager.Instance.OpenOverviewMap();
             return;
@@ -546,6 +559,7 @@ public class DeathScreen : MonoBehaviour
         MMTimeScaleEvent.Reset();
         CursorLockManager.SetUnlock("DeathScreen", false);
         RunSession.ClearRun();
+        TutorialRun.End();
         if (Bladehold.UI.LoadingScreenManager.Instance != null)
         {
             Bladehold.UI.LoadingScreenManager.Instance.LoadScene(

@@ -87,13 +87,18 @@ public class GateRepairStation : MonoBehaviour, IInteractable
         if (gate == null) gate = GetComponentInParent<Gate>();
     }
 
+    /// <summary>The scene's repair station, if any (one per gate scene).</summary>
+    public static GateRepairStation Instance { get; private set; }
+
     private void OnEnable()
     {
+        Instance = this;
         InteractableRegistry.Register(this);
     }
 
     private void OnDisable()
     {
+        if (Instance == this) Instance = null;
         InteractableRegistry.Unregister(this);
         StopRepair();
     }

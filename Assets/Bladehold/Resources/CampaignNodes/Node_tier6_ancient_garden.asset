@@ -19,7 +19,7 @@ MonoBehaviour:
   sceneName: Bladehold Ancient Garden
   nodeType: 0
   tierIndex: 6
-  mapPosition: {x: 1100, y: 240}
+  mapPosition: {x: 1440, y: 150}
   captainName: Captain Kombusta
   difficultyTier: 3
   clanBuff: {fileID: 0}
@@ -32,4 +32,3 @@ MonoBehaviour:
   rewardIcon: {fileID: 0}
   nextNodes:
   - {fileID: 11400000, guid: b98f6555a1e960f4f903b85c31bb5105, type: 2}
-  - {fileID: 11400000, guid: af4e46d1bb7a9924b8e46e8a036efd82, type: 2}

@@ -1,5 +1,56 @@
 # Bladehold - Changelog
 
+## [0.1.29] - 2026-09-29
+
+### New Features
+
+- Added the Sapper, a goblin that ignores you and runs for your towers to hack their supply away
+- Added the Dome Warden, a goblin whose dome catches arrows, bolts and boulders from outside until it breaks; walk in to fight it, or shoot the dome down
+- Added an escort of up to 12 goblins that marches in formation inside the Dome Warden's dome and charges you when you get close
+- Added the Hexer, a goblin that stands back and channels a beam into one of your towers so it can't fire; hit it to break the channel
+- Added the Outer Gate, a new first campaign battle: a snowy mountain valley in front of the castle gate with a spiked ravine crossed by three bridges
+- Added the Desert Gate, a new second-tier campaign battle against Captain Kombusta: a red desert canyon with two spiked ravines, the far one crossed by only two bridges; its ravines are rocky gorges lined with boulders, and the field is dotted with skeletons, spiky rocks and cacti
+- Added spike pits: goblins knocked off a bridge take a heavy hit on landing and have to climb back out by ramp
+- Added a tutorial for new players: a short dungeon that teaches moving, quick and heavy attacks and the bow, a first fight against six goblins, then building an arrow tower, summoning your horse and holding the gate against three waves
+- Added one-time tips the first time the gate takes damage, a tower runs low on ammo, the gate needs repairs, the battle cards appear, and when you return to the Meta Area with Goblin Blood to spend
+- Added Replay Tutorial to the main menu and Skip Tutorial to the pause menu while the tutorial is running
+- Added 5 save slots: pick a slot when you start, see when it was created, how long you've played and when you last played, start a new game in an empty slot, or hold to delete a save (your existing save moves into Slot 1)
+
+- Added skull markers that show where each group of approaching goblins is coming from
+- Added 20 seconds to hunt down fleeing goblins after a wave, with a skull marker on each straggler and a countdown
+- Added a "you are here" flag to the campaign map
+
+### Fixes
+
+- Fixed summoning your horse creating two horses
+- Fixed the horse's ride timer bar not matching how long you could actually ride
+- Fixed the mount slot never showing on the HUD; it now shows the button to press, the ride time left and the cooldown
+- Fixed the Frozen Pass and Ancient Garden battles never appearing on the campaign map
+- Fixed the tutorial's heavy attack tip overlapping the other tip text
+- Fixed the horse being summonable in the Fishing Pond
+- Fixed the Dwarf and Medusa enemies (and the Sapper and Hexer built on them) animating in a hunched goblin pose; they now stand, walk, run, attack and die with their own animations
+
+### Balance Changes
+
+- Added a blind spot around the Arrow Tower, Net Thrower, Ballista and Catapult: they can no longer shoot enemies standing right next to them, so defending them up close is up to you
+- Reduced all tower and trap damage to about a quarter (Arrow Tower now needs two hits to kill a goblin)
+- Increased enemies on the field to 40 at once, and raised the kills needed per wave to 40, 45, 50, 55 and 60
+- Bulwarks now appear from the first sector and first wave, twice as often, with up to 4 at once
+- Changed the bow to take 1 second to reach a full-power draw (it used to fire at full power instantly)
+
+### General Changes
+
+- Changed the campaign map so you can only move forward: once you pick a path, the branches you left behind close
+- Changed the campaign map's routes to run forward in lanes that split and rejoin at the Great Hall, the Throne Antechamber and the Crypt, instead of criss-crossing
+- Refreshed the campaign map's look: tier headings, icons for each kind of battle, coloured sectors, clearer paths and a tidier currency bar
+- Increased the pause before the wave choice cards appear
+- The first tower you build in the tutorial is limited to the Arrow Tower
+- Added range and blind spot size to each defence's description in the build wheel
+- Removed the old Castle Courtyard battle, replaced by the Outer Gate
+- Replaced the Armory Barracks battle with the Desert Gate
+- Improved performance in large goblin fights
+- Updated goblins killed beyond the Max Ragdolls limit to tumble and bleed like ragdolls instead of playing a stock death animation
+
 ## [0.1.28] - 2026-09-13
 
 ### New Features

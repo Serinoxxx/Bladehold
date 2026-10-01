@@ -637,7 +637,7 @@ MonoBehaviour:
   breakFeedback: {fileID: 7565298088084832602}
   supplyPopupPrefab: {fileID: 5445448510257546009, guid: 0c337af341cc6e840986619c86ca00fb, type: 3}
   interactionRadius: 3.5
-  range: 18
+  range: 36
   fireInterval: 0.8
   arrowSpeed: 26
   arrowDamage: 5

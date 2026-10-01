@@ -8,7 +8,7 @@ using UnityEngine;
 public class NetThrowerDefense : DefenseStructure
 {
     [Header("Net Thrower Config")]
-    [SerializeField] private float range = 18f;
+    [SerializeField] private float range = 36f;
     [SerializeField] private float fireInterval = 4.5f;
     [SerializeField] private float netRadius = 4.0f;
     [SerializeField] private float rootDuration = 3.5f;

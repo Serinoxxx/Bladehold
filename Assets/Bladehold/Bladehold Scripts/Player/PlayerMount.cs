@@ -378,20 +378,14 @@ public class PlayerMount : MonoBehaviour
         }
     }
 
+    // Dismount only. Summoning (and cancelling a summon) is the SummonMount action, routed through
+    // PlayerSummonMount; keyboard X is bound to both, so handling it here too summoned a second horse.
     private void HandleDismountPressed()
     {
         if (anyError) return;
         if (IsMounted)
         {
             Dismount();
-        }
-        else if (isCasting)
-        {
-            CancelMountCast();
-        }
-        else
-        {
-            TryStartMountCast();
         }
     }
 
@@ -683,7 +677,7 @@ public class PlayerMount : MonoBehaviour
 
     public bool TryStartMountCast()
     {
-        if (anyError || IsMounted || isCasting) return false;
+        if (anyError || IsMounted || isCasting || !SceneAbilityRules.MountAllowed) return false;
 
         if (mountRemainingCooldown > 0f)
         {

@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MountDefinitionSO
   id: basic_horse
   displayName: Basic Warhorse
-  description: A reliable armored warhorse with balanced endurance, speed, and trample force.
+  description: A reliable armored warhorse with balanced endurance, speed, and trample
+    force.
   icon: {fileID: 0}
   orcishMetalUnlockCost: 0
   material: {fileID: 2100000, guid: ffdb727613893fa459e21f6d316575b0, type: 2}
@@ -23,6 +24,6 @@ MonoBehaviour:
   chargeSpeed: 12
   chargeDamage: 15
   knockbackForce: 14
-  castTime: 1.5
+  castTime: 0.5
   mountDuration: 30
-  mountCooldown: 90
+  mountCooldown: 30

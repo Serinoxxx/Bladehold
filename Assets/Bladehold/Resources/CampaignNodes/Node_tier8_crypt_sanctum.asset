@@ -20,7 +20,7 @@ MonoBehaviour:
   sceneName: Bladehold Necromancer Crypt
   nodeType: 5
   tierIndex: 8
-  mapPosition: {x: 1500, y: 0}
+  mapPosition: {x: 1960, y: 0}
   captainName: 
   difficultyTier: 1
   clanBuff: {fileID: 0}

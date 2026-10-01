@@ -19,7 +19,7 @@ MonoBehaviour:
   sceneName: Bladehold Desert Gate
   nodeType: 0
   tierIndex: 2
-  mapPosition: {x: 300, y: -130}
+  mapPosition: {x: 400, y: -150}
   captainName: Captain Kombusta
   difficultyTier: 2
   clanBuff: {fileID: 0}
@@ -31,7 +31,5 @@ MonoBehaviour:
   metalReward: 5
   rewardIcon: {fileID: 0}
   nextNodes:
-  - {fileID: 11400000, guid: 6c6e6c1c6f25d6448a1cf992d3253227, type: 2}
   - {fileID: 11400000, guid: a0ba8e7d12155594a96389e2d840379d, type: 2}
   - {fileID: 11400000, guid: 3290fcc9c5305d54cbb0b36c9bf5c30c, type: 2}
-  - {fileID: 11400000, guid: b82c1194143846d297f77cab5acf10a2, type: 2}

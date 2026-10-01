@@ -126,7 +126,8 @@ MonoBehaviour:
     rollClan: 0
   firstDraftedWave: 2
   finalWaveNumber: 5
-  routDurationSeconds: 4
+  routDurationSeconds: 20
+  cardsDelaySeconds: 4
   supplyPerGateHp: 1
   gateRepairHpPerSecond: 20
   maxGateRepairPerPrep: 0

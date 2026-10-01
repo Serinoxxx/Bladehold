@@ -111,6 +111,15 @@ public class BuildWheelUI : MonoBehaviour
 
     public bool IsOpen => isOpen;
 
+    /// <summary>
+    ///     While set, the wheel offers only this defence and hides the rest (the tutorial's first build is
+    ///     an Arrow Tower, see <see cref="BuildDefenseStep" />). Null offers everything. Cleared when the
+    ///     wheel is destroyed, so it never leaks into the next scene.
+    /// </summary>
+    public static FortDefenseType? OnlyAllowed { get; set; }
+
+    private static bool IsOffered(FortDefenseType type) => OnlyAllowed == null || OnlyAllowed.Value == type;
+
     private void Awake()
     {
         if (instance == null)
@@ -151,7 +160,11 @@ public class BuildWheelUI : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (instance == this) instance = null;
+        if (instance == this)
+        {
+            instance = null;
+            OnlyAllowed = null;
+        }
         CursorLockManager.SetUnlock("BuildWheel", false);
         PauseMenuController.Instance?.SetToggleEnabled(true);
     }
@@ -235,6 +248,7 @@ public class BuildWheelUI : MonoBehaviour
                 if (btn == null) continue;
 
                 DefenseOption opt = defenseOptions[i];
+                btn.gameObject.SetActive(IsOffered(opt.defenseType));
                 bool canAfford = playerSupply >= opt.supplyCost;
                 int index = i;
 
@@ -259,6 +273,7 @@ public class BuildWheelUI : MonoBehaviour
                 if (btn == null) continue;
 
                 DefenseOption opt = defenseOptions[i];
+                btn.gameObject.SetActive(IsOffered(opt.defenseType));
                 bool canAfford = playerSupply >= opt.supplyCost;
 
                 btn.interactable = canAfford;
@@ -331,6 +346,7 @@ public class BuildWheelUI : MonoBehaviour
         if (index < 0 || index >= defenseOptions.Count) return;
 
         DefenseOption opt = defenseOptions[index];
+        if (!IsOffered(opt.defenseType)) return;
         if (RunSession.InRunSupply < opt.supplyCost)
         {
             Debug.Log($"[BuildWheelUI] Cannot afford {opt.displayName} (Cost: {opt.supplyCost}, Supply: {RunSession.InRunSupply}).");

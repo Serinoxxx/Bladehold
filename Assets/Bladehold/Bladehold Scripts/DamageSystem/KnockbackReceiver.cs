@@ -17,6 +17,11 @@ using UnityEngine.AI;
 ///     Every plain kill (no knockback hit involved) also ragdolls instead of just playing the Death
 ///     animation — see <see cref="HandleDied" /> — subject to the same <see cref="EnemyRagdoll.MaxActive" />
 ///     cap.
+///
+///     Past the cap, a baked crowd goblin (<see cref="BakedCrowdAgent" />) plays a recorded ragdoll
+///     fall carried by one physics sphere instead, for flings and deaths alike: a fling lands face-up
+///     and gets back up (<see cref="BakedFlingRoutine" />), a death stays down as a baked corpse.
+///     Other enemies fall back to a knockdown / the animated death.
 /// </summary>
 public class KnockbackReceiver : MonoBehaviour
 {
@@ -76,6 +81,11 @@ public class KnockbackReceiver : MonoBehaviour
     private int cheerTriggerHash;
     private bool anyError = false;
     private Coroutine routine;
+    // A baked fling (past the ragdoll cap) is in progress: the crowd agent owns the body until it's up.
+    private bool bakedFall;
+    // A lethal fling-strength hit that found the cap full, for HandleDied (raised right after) to throw the baked fall with.
+    private Vector3 lethalLaunch;
+    private int lethalLaunchFrame = -1;
 
     private float Resistance => resistanceOverride ?? (config != null ? config.defaultResistance : 0f);
 
@@ -132,10 +142,8 @@ public class KnockbackReceiver : MonoBehaviour
         }
     }
 
-    private void HandleDamaged(Damage damage)
+    private float ScaledForce(Damage damage)
     {
-        if (anyError || damage.knockbackForce <= 0f) return;
-
         float force = damage.knockbackForce;
         if (config != null)
         {
@@ -144,6 +152,38 @@ public class KnockbackReceiver : MonoBehaviour
             {
                 force = Mathf.Min(force, config.maxKnockbackForce);
             }
+        }
+        return force;
+    }
+
+    /// <summary>
+    ///     True when <paramref name="damage" /> is strong enough to fling this enemy (real or baked
+    ///     ragdoll) and it's free to be flung. <see cref="BakedCrowdAgent" /> asks before promoting, so
+    ///     a baked fall can start from the baked pose.
+    /// </summary>
+    public bool WouldFling(Damage damage)
+    {
+        if (anyError || damage.knockbackForce <= 0f || bakedFall) return false;
+        if (State != KnockbackState.Normal && State != KnockbackState.Sliding) return false;
+        return ScaledForce(damage) >= Resistance;
+    }
+
+    private void HandleDamaged(Damage damage)
+    {
+        if (anyError || damage.knockbackForce <= 0f) return;
+
+        float force = ScaledForce(damage);
+
+        if (bakedFall)
+        {
+            if (!health.IsDead && crowdAgent != null)
+            {
+                Vector3 impulse = damage.knockbackVelocity != Vector3.zero
+                    ? ExplicitLaunchVelocity(damage)
+                    : LaunchDirection(damage) * force;
+                crowdAgent.AddFallImpulse(impulse * 0.5f);
+            }
+            return;
         }
 
         if (State == KnockbackState.Airborne)
@@ -165,7 +205,8 @@ public class KnockbackReceiver : MonoBehaviour
 
         float resistance = Resistance;
         
-        bool fling = force >= resistance
+        bool flingStrength = force >= resistance;
+        bool fling = flingStrength
             && EnemyRagdoll.HasCapacity
             && ragdoll.BuildIfNeeded();
 
@@ -180,10 +221,23 @@ public class KnockbackReceiver : MonoBehaviour
             PlayFlingHitFeedback();
             routine = StartCoroutine(FlingRoutine(damage));
         }
+        else if (flingStrength && health.CurrentHealth <= 0f)
+        {
+            // Lethal, and the cap is full: HandleDied (raised right after this) throws the baked fall this hard.
+            lethalLaunch = FlingVelocity(damage);
+            lethalLaunchFrame = Time.frameCount;
+        }
+        else if (flingStrength && crowdAgent != null && crowdAgent.CanPlayBakedFall(false))
+        {
+            PlayFlingHitFeedback();
+            routine = StartCoroutine(BakedFlingRoutine(damage));
+        }
         else if (force >= resistance - 1f)
         {
             if (health.CurrentHealth > 0f)
             {
+                // The knockdown is an Animator state; a baked goblin flung past the cap without a baked fall lands here.
+                if (crowdAgent != null) crowdAgent.Promote();
                 PlayKnockdownFeedback();
                 routine = StartCoroutine(KnockdownRoutine());
             }
@@ -218,6 +272,14 @@ public class KnockbackReceiver : MonoBehaviour
         SetAiEnabled(false);
         if (rootCollider != null) rootCollider.enabled = false;
 
+        if (bakedFall)
+        {
+            // Died mid baked fling: the fall carries on as the death.
+            bakedFall = false;
+            crowdAgent.MakeFallLethal(FlatAwayFromPlayer());
+            return;
+        }
+
         // Try ragdoll on death
         if ((EnemyRagdoll.HasCapacity || forceRagdollOnDeath) && ragdoll != null && ragdoll.BuildIfNeeded())
         {
@@ -234,7 +296,8 @@ public class KnockbackReceiver : MonoBehaviour
             ragdoll.EnterRagdoll(deathLaunch, spin, 1.2f);
             routine = StartCoroutine(CorpseSettleRoutine());
         }
-        else if (crowdAgent != null && crowdAgent.PlayBakedDeath(FlatAwayFromPlayer()))
+        else if (crowdAgent != null && crowdAgent.PlayBakedFall(FlatAwayFromPlayer(),
+                     lethalLaunchFrame == Time.frameCount ? lethalLaunch : (Vector3?)null, true))
         {
             // Past the ragdoll cap: a recorded ragdoll fall, then a baked corpse.
         }
@@ -553,6 +616,75 @@ public class KnockbackReceiver : MonoBehaviour
         Resume();
     }
 
+    /// <summary>
+    ///     A fling past the ragdoll cap on a baked crowd goblin: a recorded fall carried along the real
+    ///     launch by one physics sphere, then (it lands face-up) the matching baked get-up. Death on the
+    ///     way is handled by <see cref="HandleDied" />, which stops this routine.
+    /// </summary>
+    private IEnumerator BakedFlingRoutine(Damage damage)
+    {
+        State = KnockbackState.KnockedDown;
+        bakedFall = true;
+        Vector3 velocity = FlingVelocity(damage);
+        SetAiEnabled(false);
+        if (!crowdAgent.PlayBakedFall(velocity, velocity, false))
+        {
+            bakedFall = false;
+            Resume();
+            yield break;
+        }
+
+        while (!crowdAgent.FallSettled)
+        {
+            yield return null;
+        }
+
+        bool found = false;
+        NavMeshHit navHit = default;
+        for (float retryElapsed = 0f; ; retryElapsed += config.recoverRetryInterval)
+        {
+            if (NavMesh.SamplePosition(crowdAgent.GetUpStandPosition, out navHit, config.recoverSampleDistance, NavMesh.AllAreas))
+            {
+                found = true;
+                break;
+            }
+            if (retryElapsed >= config.recoverRetryWindow) break;
+            yield return new WaitForSeconds(config.recoverRetryInterval);
+        }
+        if (!found)
+        {
+            // Landed somewhere no goblin can walk out of, as a real fling does.
+            health.ReceiveDamage(new Damage { value = 999999f, type = DamageType.blunt });
+            yield break;
+        }
+
+        crowdAgent.BeginGetUp();
+        while (!crowdAgent.GetUpFinished)
+        {
+            yield return null;
+        }
+        crowdAgent.FinishGetUp();
+
+        Vector3 standAt = NavMesh.SamplePosition(transform.position, out NavMeshHit standHit, config.recoverSampleDistance, NavMesh.AllAreas)
+            ? standHit.position
+            : navHit.position;
+        agent.enabled = true;
+        agent.Warp(standAt);
+        agent.updateRotation = true;
+        bakedFall = false;
+        Resume();
+    }
+
+    /// <summary>The launch velocity a fling from <paramref name="damage" /> gives the body, momentum included.</summary>
+    private Vector3 FlingVelocity(Damage damage)
+    {
+        Vector3 carried = agent != null && agent.enabled && agent.isOnNavMesh ? agent.velocity : Vector3.zero;
+        Vector3 launch = damage.knockbackVelocity != Vector3.zero
+            ? ExplicitLaunchVelocity(damage)
+            : LaunchDirection(damage) * ScaledForce(damage);
+        return carried + launch;
+    }
+
     private void Resume()
     {
         State = KnockbackState.Normal;
@@ -572,6 +704,8 @@ public class KnockbackReceiver : MonoBehaviour
         if (playerHealth != null && playerHealth.IsDead)
         {
             if (agent != null && agent.enabled && agent.isOnNavMesh) agent.isStopped = true;
+            // The cheer is a real Animator state; a goblin that got up baked missed the player-death promotion.
+            if (crowdAgent != null) crowdAgent.Promote();
             animator.SetTrigger(cheerTriggerHash);
         }
         routine = null;

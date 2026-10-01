@@ -105,7 +105,7 @@ public class CampaignGraphSO : ScriptableObject
             "Bladehold Outer Gate",
             CampaignNodeType.Combat,
             1,
-            new Vector2(100f, 0f),
+            new Vector2(140f, 0f),
             captainName: "",
             difficultyTier: BannerDifficultyTier.Standard,
             bountyType: BannerBountyType.WeaponDraft,
@@ -117,21 +117,22 @@ public class CampaignGraphSO : ScriptableObject
         rootNode = nodeTier1;
 
         // -------------------------------------------------------------
-        // TIER 2: Split into 2 options (North Ramparts / Desert Gate)
+        // TIER 2: Split into 2 options (Graveyard / Desert Gate)
         // -------------------------------------------------------------
+        // Skeletons only (the scene's SceneEnemyRoster), with the bone-shaman captain.
         CampaignNodeSO nodeTier2A = CreateNode(
-            "tier2_north_ramparts",
-            "North Ramparts",
-            "Windy Battlements",
-            "Hold the elevated stone battlements against Captain Fraglob and his vanguard. High elevation, windy gusts.",
-            "Bladehold Castle Ramparts",
+            "tier2_graveyard",
+            "Graveyard",
+            "The Restless Dead",
+            "The dead have risen in the old graveyard beyond the north wall. Skeleton legions shamble through the green fog with Captain Mogra Hexfang at their back; hold the two stone bridges over the spike pit and send the bones back to the grave.",
+            "Bladehold Graveyard",
             CampaignNodeType.Combat,
             2,
-            new Vector2(300f, 130f),
-            captainName: "Captain Fraglob",
+            new Vector2(400f, 150f),
+            captainName: "Captain Mogra Hexfang",
             difficultyTier: BannerDifficultyTier.Enraged,
             bountyType: BannerBountyType.GoldCache,
-            rewardsDesc: "+250 Gold Cache, Captain Fraglob Bounty",
+            rewardsDesc: "+250 Gold Cache, Captain Mogra Hexfang Bounty",
             gold: 250,
             blood: 0,
             metal: 0
@@ -145,7 +146,7 @@ public class CampaignGraphSO : ScriptableObject
             "Bladehold Desert Gate",
             CampaignNodeType.Combat,
             2,
-            new Vector2(300f, -130f),
+            new Vector2(400f, -150f),
             captainName: "Captain Kombusta",
             difficultyTier: BannerDifficultyTier.Enraged,
             bountyType: BannerBountyType.OrcishMetal,
@@ -164,7 +165,7 @@ public class CampaignGraphSO : ScriptableObject
             "Bladehold Fishing Pond",
             CampaignNodeType.FishingPond,
             2,
-            new Vector2(300f, -240f),
+            new Vector2(400f, 0f),
             captainName: "",
             difficultyTier: BannerDifficultyTier.Standard,
             bountyType: BannerBountyType.None,
@@ -175,9 +176,6 @@ public class CampaignGraphSO : ScriptableObject
         );
 
         // Tier 1 branches to Tier 2 (Combat choices + Fishing side route)
-        nodeTier1.nextNodes.Add(nodeTier2A);
-        nodeTier1.nextNodes.Add(nodeTier2B);
-        nodeTier1.nextNodes.Add(nodeTier2Fishing);
 
         // -------------------------------------------------------------
         // TIER 3: Rest Area & Fishing Pond Choices
@@ -190,7 +188,7 @@ public class CampaignGraphSO : ScriptableObject
             "Bladehold Rest Area Scene",
             CampaignNodeType.RestArea,
             3,
-            new Vector2(500f, 90f),
+            new Vector2(660f, 75f),
             captainName: "",
             difficultyTier: BannerDifficultyTier.Standard,
             bountyType: BannerBountyType.None,
@@ -209,7 +207,7 @@ public class CampaignGraphSO : ScriptableObject
             "Bladehold Fishing Pond",
             CampaignNodeType.FishingPond,
             3,
-            new Vector2(500f, -90f),
+            new Vector2(660f, -75f),
             captainName: "",
             difficultyTier: BannerDifficultyTier.Standard,
             bountyType: BannerBountyType.None,
@@ -228,7 +226,7 @@ public class CampaignGraphSO : ScriptableObject
             "Bladehold Fishing Pond",
             CampaignNodeType.FishingPond,
             3,
-            new Vector2(500f, -240f),
+            new Vector2(660f, -225f),
             captainName: "",
             difficultyTier: BannerDifficultyTier.Standard,
             bountyType: BannerBountyType.None,
@@ -247,7 +245,7 @@ public class CampaignGraphSO : ScriptableObject
             "Bladehold Frozen Pass Scene",
             CampaignNodeType.Combat,
             3,
-            new Vector2(500f, 240f),
+            new Vector2(660f, 225f),
             captainName: "Captain Kombusta",
             difficultyTier: BannerDifficultyTier.Enraged,
             bountyType: BannerBountyType.ElementDraft,
@@ -258,15 +256,6 @@ public class CampaignGraphSO : ScriptableObject
         );
 
         // Tier 2 choices lead forward to Tier 3 options
-        nodeTier2A.nextNodes.Add(nodeTier3A);
-        nodeTier2A.nextNodes.Add(nodeTier3Fishing);
-        nodeTier2B.nextNodes.Add(nodeTier3A);
-        nodeTier2B.nextNodes.Add(nodeTier3Fishing);
-        nodeTier2B.nextNodes.Add(nodeTier3Basin);
-        nodeTier2Fishing.nextNodes.Add(nodeTier3Fishing);
-        nodeTier2Fishing.nextNodes.Add(nodeTier3Basin);
-        nodeTier2A.nextNodes.Add(nodeTier3Frozen);
-        nodeTier2B.nextNodes.Add(nodeTier3Frozen);
 
         // -------------------------------------------------------------
         // TIER 4: Great Banqueting Hall + Cistern Fishing Pond Side-Route
@@ -279,7 +268,7 @@ public class CampaignGraphSO : ScriptableObject
             "Bladehold Great Hall",
             CampaignNodeType.Combat,
             4,
-            new Vector2(700f, 0f),
+            new Vector2(920f, 75f),
             captainName: "Captain Fraglob",
             difficultyTier: BannerDifficultyTier.Nightmare,
             bountyType: BannerBountyType.FortressDraft,
@@ -298,7 +287,7 @@ public class CampaignGraphSO : ScriptableObject
             "Bladehold Fishing Pond",
             CampaignNodeType.FishingPond,
             4,
-            new Vector2(700f, -150f),
+            new Vector2(920f, -110f),
             captainName: "",
             difficultyTier: BannerDifficultyTier.Standard,
             bountyType: BannerBountyType.None,
@@ -309,11 +298,6 @@ public class CampaignGraphSO : ScriptableObject
         );
 
         // Tier 3 options merge into Tier 4
-        nodeTier3A.nextNodes.Add(nodeTier4);
-        nodeTier3Fishing.nextNodes.Add(nodeTier4);
-        nodeTier3Fishing.nextNodes.Add(nodeTier4Fishing);
-        nodeTier3Basin.nextNodes.Add(nodeTier4Fishing);
-        nodeTier3Frozen.nextNodes.Add(nodeTier4);
 
         // -------------------------------------------------------------
         // TIER 5: Split into 2 options + Sunken Grotto Fishing Pond Side-Route
@@ -326,7 +310,7 @@ public class CampaignGraphSO : ScriptableObject
             "Bladehold Castle Dungeons",
             CampaignNodeType.Combat,
             5,
-            new Vector2(900f, 130f),
+            new Vector2(1180f, 150f),
             captainName: "Captain Fraglob",
             difficultyTier: BannerDifficultyTier.Nightmare,
             bountyType: BannerBountyType.GoblinBlood,
@@ -344,7 +328,7 @@ public class CampaignGraphSO : ScriptableObject
             "Bladehold Castle Conservatory",
             CampaignNodeType.Combat,
             5,
-            new Vector2(900f, -100f),
+            new Vector2(1180f, 0f),
             captainName: "Captain Kombusta",
             difficultyTier: BannerDifficultyTier.Nightmare,
             bountyType: BannerBountyType.ElementDraft,
@@ -363,7 +347,7 @@ public class CampaignGraphSO : ScriptableObject
             "Bladehold Fishing Pond",
             CampaignNodeType.FishingPond,
             5,
-            new Vector2(900f, -240f),
+            new Vector2(1180f, -150f),
             captainName: "",
             difficultyTier: BannerDifficultyTier.Standard,
             bountyType: BannerBountyType.None,
@@ -374,10 +358,6 @@ public class CampaignGraphSO : ScriptableObject
         );
 
         // Tier 4 branches to Tier 5
-        nodeTier4.nextNodes.Add(nodeTier5A);
-        nodeTier4.nextNodes.Add(nodeTier5B);
-        nodeTier4Fishing.nextNodes.Add(nodeTier5B);
-        nodeTier4Fishing.nextNodes.Add(nodeTier5Fishing);
 
         // -------------------------------------------------------------
         // TIER 6: Stop scene choice (Inner Rest Sanctuary / Royal Reflection Pond)
@@ -390,7 +370,7 @@ public class CampaignGraphSO : ScriptableObject
             "Bladehold Rest Area Scene",
             CampaignNodeType.RestArea,
             6,
-            new Vector2(1100f, 90f),
+            new Vector2(1440f, 0f),
             captainName: "",
             difficultyTier: BannerDifficultyTier.Standard,
             bountyType: BannerBountyType.None,
@@ -409,7 +389,7 @@ public class CampaignGraphSO : ScriptableObject
             "Bladehold Fishing Pond",
             CampaignNodeType.FishingPond,
             6,
-            new Vector2(1100f, -90f),
+            new Vector2(1440f, -150f),
             captainName: "",
             difficultyTier: BannerDifficultyTier.Standard,
             bountyType: BannerBountyType.None,
@@ -428,7 +408,7 @@ public class CampaignGraphSO : ScriptableObject
             "Bladehold Ancient Garden",
             CampaignNodeType.Combat,
             6,
-            new Vector2(1100f, 240f),
+            new Vector2(1440f, 150f),
             captainName: "Captain Kombusta",
             difficultyTier: BannerDifficultyTier.Nightmare,
             bountyType: BannerBountyType.GoblinBlood,
@@ -439,12 +419,6 @@ public class CampaignGraphSO : ScriptableObject
         );
 
         // Tier 5 choices lead to Tier 6
-        nodeTier5A.nextNodes.Add(nodeTier6A);
-        nodeTier5A.nextNodes.Add(nodeTier6Fishing);
-        nodeTier5B.nextNodes.Add(nodeTier6A);
-        nodeTier5B.nextNodes.Add(nodeTier6Fishing);
-        nodeTier5Fishing.nextNodes.Add(nodeTier6Fishing);
-        nodeTier5A.nextNodes.Add(nodeTier6Garden);
 
         // -------------------------------------------------------------
         // TIER 7: Pre-final battle / Inner Keep + Keep Aqueduct Pond Side-Route
@@ -457,7 +431,7 @@ public class CampaignGraphSO : ScriptableObject
             "Bladehold Throne Antechamber",
             CampaignNodeType.PreBoss,
             7,
-            new Vector2(1300f, 0f),
+            new Vector2(1700f, 60f),
             captainName: "Captain Kombusta",
             difficultyTier: BannerDifficultyTier.Omega,
             bountyType: BannerBountyType.TrollHeart,
@@ -476,7 +450,7 @@ public class CampaignGraphSO : ScriptableObject
             "Bladehold Fishing Pond",
             CampaignNodeType.FishingPond,
             7,
-            new Vector2(1300f, -140f),
+            new Vector2(1700f, -100f),
             captainName: "",
             difficultyTier: BannerDifficultyTier.Standard,
             bountyType: BannerBountyType.None,
@@ -487,12 +461,6 @@ public class CampaignGraphSO : ScriptableObject
         );
 
         // Tier 6 options merge into Tier 7
-        nodeTier6A.nextNodes.Add(nodeTier7);
-        nodeTier6A.nextNodes.Add(nodeTier7Fishing);
-        nodeTier6Fishing.nextNodes.Add(nodeTier7);
-        nodeTier6Fishing.nextNodes.Add(nodeTier7Fishing);
-        nodeTier6Garden.nextNodes.Add(nodeTier7);
-        nodeTier6Garden.nextNodes.Add(nodeTier7Fishing);
 
         // -------------------------------------------------------------
         // TIER 8: The Revelation / Necromancer Encounter (Crypt Sanctum)
@@ -505,7 +473,7 @@ public class CampaignGraphSO : ScriptableObject
             "Bladehold Necromancer Crypt",
             CampaignNodeType.NecromancerEncounter,
             8,
-            new Vector2(1500f, 0f),
+            new Vector2(1960f, 0f),
             captainName: "",
             difficultyTier: BannerDifficultyTier.Standard,
             bountyType: BannerBountyType.None,
@@ -523,7 +491,7 @@ public class CampaignGraphSO : ScriptableObject
             "Bladehold Princess Sanctuary",
             CampaignNodeType.PrincessBoss,
             8,
-            new Vector2(1750f, 150f),
+            new Vector2(2220f, 150f),
             captainName: "Princess Katherine",
             difficultyTier: BannerDifficultyTier.Omega,
             bountyType: BannerBountyType.GoldCache,
@@ -541,7 +509,7 @@ public class CampaignGraphSO : ScriptableObject
             "Bladehold Necromancer Crypt",
             CampaignNodeType.NecromancerBoss,
             8,
-            new Vector2(1750f, -150f),
+            new Vector2(2220f, -150f),
             captainName: "Malakor the Defiler",
             difficultyTier: BannerDifficultyTier.Omega,
             bountyType: BannerBountyType.GoldCache,
@@ -552,6 +520,40 @@ public class CampaignGraphSO : ScriptableObject
         );
 
         // Tier 7 leads into Tier 8
+
+        // -------------------------------------------------------------
+        // Routes: three lanes that only run forward, splitting after the gate and
+        // narrowing again at the Great Hall (tier 4), the Throne Antechamber (tier 7)
+        // and the Crypt. A node links only to the nearest lanes of the next tier, so
+        // no two paths cross.
+        // -------------------------------------------------------------
+        nodeTier1.nextNodes.Add(nodeTier2A);
+        nodeTier1.nextNodes.Add(nodeTier2Fishing);
+        nodeTier1.nextNodes.Add(nodeTier2B);
+        nodeTier2A.nextNodes.Add(nodeTier3Frozen);
+        nodeTier2A.nextNodes.Add(nodeTier3A);
+        nodeTier2Fishing.nextNodes.Add(nodeTier3A);
+        nodeTier2Fishing.nextNodes.Add(nodeTier3Fishing);
+        nodeTier2B.nextNodes.Add(nodeTier3Fishing);
+        nodeTier2B.nextNodes.Add(nodeTier3Basin);
+        nodeTier3Frozen.nextNodes.Add(nodeTier4);
+        nodeTier3A.nextNodes.Add(nodeTier4);
+        nodeTier3Fishing.nextNodes.Add(nodeTier4);
+        nodeTier3Fishing.nextNodes.Add(nodeTier4Fishing);
+        nodeTier3Basin.nextNodes.Add(nodeTier4Fishing);
+        nodeTier4.nextNodes.Add(nodeTier5A);
+        nodeTier4.nextNodes.Add(nodeTier5B);
+        nodeTier4Fishing.nextNodes.Add(nodeTier5B);
+        nodeTier4Fishing.nextNodes.Add(nodeTier5Fishing);
+        nodeTier5A.nextNodes.Add(nodeTier6Garden);
+        nodeTier5A.nextNodes.Add(nodeTier6A);
+        nodeTier5B.nextNodes.Add(nodeTier6A);
+        nodeTier5B.nextNodes.Add(nodeTier6Fishing);
+        nodeTier5Fishing.nextNodes.Add(nodeTier6Fishing);
+        nodeTier6Garden.nextNodes.Add(nodeTier7);
+        nodeTier6A.nextNodes.Add(nodeTier7);
+        nodeTier6A.nextNodes.Add(nodeTier7Fishing);
+        nodeTier6Fishing.nextNodes.Add(nodeTier7Fishing);
         nodeTier7.nextNodes.Add(nodeTier8);
         nodeTier7Fishing.nextNodes.Add(nodeTier8);
         nodeTier8.nextNodes.Add(nodeTier8Princess);
@@ -615,6 +617,7 @@ public class CampaignGraphSO : ScriptableObject
         allNodes.Add(nodeTier3A);
         allNodes.Add(nodeTier3Fishing);
         allNodes.Add(nodeTier3Basin);
+        allNodes.Add(nodeTier3Frozen);
         allNodes.Add(nodeTier4);
         allNodes.Add(nodeTier4Fishing);
         allNodes.Add(nodeTier5A);
@@ -622,6 +625,7 @@ public class CampaignGraphSO : ScriptableObject
         allNodes.Add(nodeTier5Fishing);
         allNodes.Add(nodeTier6A);
         allNodes.Add(nodeTier6Fishing);
+        allNodes.Add(nodeTier6Garden);
         allNodes.Add(nodeTier7);
         allNodes.Add(nodeTier7Fishing);
         allNodes.Add(nodeTier8);

@@ -309,6 +309,12 @@ public static class SetupCampaignPrefabsAndAssets
         btnSo.FindProperty("activePulseGlow").objectReferenceValue = glowGo;
         if (iconImg != null) btnSo.FindProperty("nodeIconImage").objectReferenceValue = iconImg;
         if (fishingSprite != null) btnSo.FindProperty("fishingIcon").objectReferenceValue = fishingSprite;
+        const string mapIcons = "Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/Icons_Map/ICON_FantasyWarrior_Map_";
+        btnSo.FindProperty("combatIcon").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Sprite>(mapIcons + "ShopWeapons_01_Clean.png");
+        btnSo.FindProperty("restIcon").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Sprite>(mapIcons + "Tavern_01_Clean.png");
+        btnSo.FindProperty("preBossIcon").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Sprite>(mapIcons + "Skull_01_Clean.png");
+        btnSo.FindProperty("bossIcon").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Sprite>(mapIcons + "Dragon_01_Clean.png");
+        btnSo.FindProperty("cryptIcon").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Sprite>(mapIcons + "Magic_01_Clean.png");
         btnSo.ApplyModifiedPropertiesWithoutUndo();
 
         GameObject savedPrefab = PrefabUtility.SaveAsPrefabAsset(root, NodePrefabPath);

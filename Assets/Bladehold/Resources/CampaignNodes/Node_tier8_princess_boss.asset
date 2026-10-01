@@ -20,7 +20,7 @@ MonoBehaviour:
   sceneName: Bladehold Princess Sanctuary
   nodeType: 6
   tierIndex: 8
-  mapPosition: {x: 1750, y: 150}
+  mapPosition: {x: 2220, y: 150}
   captainName: Princess Katherine
   difficultyTier: 4
   clanBuff: {fileID: 0}

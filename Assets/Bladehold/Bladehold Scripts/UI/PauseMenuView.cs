@@ -20,6 +20,8 @@ public class PauseMenuView : MonoBehaviour
     [SerializeField] private Button backFromSettingsButton;
     [SerializeField] private Button photoModeButton;
     [SerializeField] private Button quitButton;
+    [Tooltip("Optional: Skip Tutorial, shown only while the first-launch tutorial is running. Leave empty for none.")]
+    [SerializeField] private Button skipTutorialButton;
     [SerializeField] private GameObject settingsPanel;
     [Tooltip("Hidden whenever the Settings panel or Photo Mode is open, shown alongside it otherwise.")]
     [SerializeField] private GameObject mainButtonsPanel;
@@ -78,6 +80,7 @@ public class PauseMenuView : MonoBehaviour
         if (backFromSettingsButton != null) backFromSettingsButton.onClick.AddListener(ShowMainButtons);
         if (photoModeButton != null) photoModeButton.onClick.AddListener(HandleOpenPhotoMode);
         quitButton.onClick.AddListener(HandleQuit);
+        if (skipTutorialButton != null) skipTutorialButton.onClick.AddListener(HandleSkipTutorial);
 
         PauseMenuController.Instance.OnPauseChanged += HandlePauseChanged;
         if (screenshotMode != null)
@@ -101,6 +104,7 @@ public class PauseMenuView : MonoBehaviour
         if (backFromSettingsButton != null) backFromSettingsButton.onClick.RemoveListener(ShowMainButtons);
         if (photoModeButton != null) photoModeButton.onClick.RemoveListener(HandleOpenPhotoMode);
         if (quitButton != null) quitButton.onClick.RemoveListener(HandleQuit);
+        if (skipTutorialButton != null) skipTutorialButton.onClick.RemoveListener(HandleSkipTutorial);
     }
 
     private void HandlePauseChanged(bool paused)
@@ -138,6 +142,7 @@ public class PauseMenuView : MonoBehaviour
         if (photoModePanelRoot != null) photoModePanelRoot.SetActive(false);
         if (mainButtonsPanel != null) mainButtonsPanel.SetActive(true);
         if (backdrop != null) backdrop.SetActive(true);
+        if (skipTutorialButton != null) skipTutorialButton.gameObject.SetActive(TutorialRun.Active);
     }
 
     private void HandleResume() => PauseMenuController.Instance.SetPaused(false);
@@ -149,6 +154,15 @@ public class PauseMenuView : MonoBehaviour
     }
 
     private void HandleOpenPhotoMode() => screenshotMode?.Enter();
+
+    private void HandleSkipTutorial()
+    {
+        if (PauseMenuController.Instance != null)
+        {
+            PauseMenuController.Instance.SetPaused(false);
+        }
+        TutorialRun.Skip();
+    }
 
     private void HandleQuit()
     {

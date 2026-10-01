@@ -20,7 +20,7 @@ MonoBehaviour:
   sceneName: Bladehold Outer Gate
   nodeType: 0
   tierIndex: 1
-  mapPosition: {x: 100, y: 0}
+  mapPosition: {x: 140, y: 0}
   captainName: 
   difficultyTier: 1
   clanBuff: {fileID: 0}
@@ -33,6 +33,6 @@ MonoBehaviour:
   rewardIcon: {fileID: 0}
   nextNodes:
   - {fileID: 11400000, guid: 32dd7451bc9e8374d817999b58d80f1c, type: 2}
-  - {fileID: 11400000, guid: 14e852b703476ae42bcfa3d9476ee4c0, type: 2}
   - {fileID: 11400000, guid: 6959791242a150b40a9a22d79666299d, type: 2}
+  - {fileID: 11400000, guid: 14e852b703476ae42bcfa3d9476ee4c0, type: 2}
   endsCampaign: 0

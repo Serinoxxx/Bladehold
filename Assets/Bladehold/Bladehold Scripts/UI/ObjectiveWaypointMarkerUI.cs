@@ -30,6 +30,7 @@ public class ObjectiveWaypointMarkerUI : MonoBehaviour
 
     public Transform TargetTransform => targetTransform;
     public bool IsActive => targetTransform != null;
+    public string CurrentLabel => currentLabel;
 
     private void Awake()
     {

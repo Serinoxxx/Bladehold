@@ -39,6 +39,32 @@ public class FishingManager : MonoBehaviour
     [SerializeField] private Vector2 fishOrbitSpeedRange = new Vector2(8f, 16f);
     [Tooltip("Speed multiplier for the Speedy buff fish.")]
     [SerializeField] private float speedyFishSpeedMultiplier = 2f;
+    [Tooltip("New fish appear this far from the pond centre (just inside the rim) and swim in to their orbit.")]
+    [SerializeField] private float fishEntryRadius = 7f;
+    [Tooltip("Depth below the water a new fish starts at, rising to its swim depth as it comes in.")]
+    [SerializeField] private float fishEntryDepth = -0.6f;
+    [Tooltip("How fast a new fish swims in from the rim, in metres per second.")]
+    [SerializeField] private float fishEntrySpeed = 3f;
+
+    [Header("Fish Toughness")]
+    [Tooltip("Arrow damage that counts as one hit on a fish. 4 = a base bow drawn to one charge level; a full draw is about 3 hits, and bow upgrades push it higher. Bleed ticks and Fishsploshion blasts deal their value in hits directly.")]
+    [SerializeField] private float arrowDamagePerHit = 4f;
+    [Tooltip("Hits to kill a Gold fish.")]
+    [SerializeField] private float goldFishHits = 3f;
+    [Tooltip("Hits to kill an Orc Metal or Goblin Blood fish.")]
+    [SerializeField] private float resourceFishHits = 4f;
+    [Tooltip("Hits to kill a buff fish (other than Armored).")]
+    [SerializeField] private float buffFishHits = 4f;
+    [Tooltip("Hits to kill the Armored buff fish.")]
+    [SerializeField] private float armoredFishHits = 12f;
+    [Tooltip("Hits to kill the Diamond fish.")]
+    [SerializeField] private float diamondFishHits = 50f;
+
+    [Header("Fishing Leveling")]
+    [Tooltip("XP needed to go from fishing level 1 to 2. A Gold fish gives 10 XP, Metal/Blood 15, buff fish 25, Diamond 100.")]
+    [SerializeField] private int firstLevelXp = 80;
+    [Tooltip("Each level needs this many times the XP of the one before.")]
+    [SerializeField] private float levelXpGrowth = 1.5f;
 
     [Header("Fish Type Highlight & Popups")]
     [Tooltip("Highlight Plus profile loaded into every fish (outline, plus glow for buff/Diamond fish). The colour comes from the type colours below.")]
@@ -77,8 +103,16 @@ public class FishingManager : MonoBehaviour
     [SerializeField] private MMF_Player frenzyStartFeedback;
     [Tooltip("Optional: played when the timer runs out. Nothing is authored yet.")]
     [SerializeField] private MMF_Player timeUpFeedback;
-    [Tooltip("Optional: played on every fish caught. Nothing is authored yet.")]
+    [Tooltip("Optional: played on every fish caught, when it lands on the player. Nothing is authored yet.")]
     [SerializeField] private MMF_Player catchFeedback;
+
+    [Header("Catch Flight")]
+    [Tooltip("Seconds a caught fish takes to arc from the water to the player. Its rewards count the moment it dies; the popup shows when it lands.")]
+    [SerializeField] private float catchFlightDuration = 0.6f;
+    [Tooltip("How high above the straight line the arc peaks, in metres.")]
+    [SerializeField] private float catchFlightArcHeight = 3f;
+    [Tooltip("Where on the player the fish lands, relative to the player's feet.")]
+    [SerializeField] private Vector3 catchTargetOffset = new Vector3(0f, 1.2f, 0f);
 
     [Header("UI Controllers")]
     [SerializeField] private FishingHUDUI hudUI;
@@ -94,6 +128,7 @@ public class FishingManager : MonoBehaviour
     private PlayerBow playerBow;
     private InputReader inputReader;
     private PlayerStats playerStats;
+    private Transform catchTarget;
     private int appliedPierceBonus = 0;
 
     // Progression / Stats this session
@@ -106,7 +141,7 @@ public class FishingManager : MonoBehaviour
     // Fishing Leveling
     private int currentFishingXp = 0;
     private int currentFishingLevel = 1;
-    private int xpToNextLevel = 40;
+    private int xpToNextLevel;
 
     public FishingState CurrentState => currentState;
     public bool IsFrenzyActive => currentState == FishingState.FrenzyActive;
@@ -134,6 +169,7 @@ public class FishingManager : MonoBehaviour
 
         // Before any Start: the Player and its weapon/armour managers read it to load the bare base kit.
         RunSession.RunUpgradesSuspended = true;
+        xpToNextLevel = Mathf.Max(1, firstLevelXp);
     }
 
     private void Start()
@@ -166,6 +202,8 @@ public class FishingManager : MonoBehaviour
             Debug.LogError("[FishingManager] No Player in the pond scene.", this);
             return;
         }
+
+        catchTarget = player.transform;
 
         if (player.Ammo != null) player.Ammo.InfiniteAmmo = true;
         else Debug.LogError("[FishingManager] The Player has no PlayerAmmo: pond shots will spend nothing but can't be made free either.", this);
@@ -360,18 +398,32 @@ public class FishingManager : MonoBehaviour
             }
         }
 
-        Vector3 catchPosition = fish.transform.position;
+        // Rewards are banked already; the fish flies to the player and the popup shows when it lands.
+        Color popupColor = GetFishTypeColor(fish.isBuffFish, fish.resourceType, fish.buffType);
+        if (catchTarget != null)
+        {
+            fish.FlyTo(catchTarget, catchTargetOffset, catchFlightDuration, catchFlightArcHeight,
+                landedAt => ShowCatch(landedAt, popupText, popupColor));
+        }
+        else
+        {
+            ShowCatch(fish.transform.position, popupText, popupColor);
+        }
+    }
+
+    private void ShowCatch(Vector3 position, string popupText, Color popupColor)
+    {
         if (catchPopupPrefab != null && !string.IsNullOrEmpty(popupText))
         {
-            DamageNumbersPro.DamageNumber popup = catchPopupPrefab.Spawn(catchPosition + catchPopupOffset, popupText);
+            DamageNumbersPro.DamageNumber popup = catchPopupPrefab.Spawn(position + catchPopupOffset, popupText);
             // The popup text carries its own unit ("+12 Gold", "+1 Orcish Metal"); drop any suffix baked into the prefab.
             popup.enableRightText = false;
-            popup.SetColor(GetFishTypeColor(fish.isBuffFish, fish.resourceType, fish.buffType));
+            popup.SetColor(popupColor);
         }
 
         if (catchFeedback != null)
         {
-            catchFeedback.PlayFeedbacks(catchPosition);
+            catchFeedback.PlayFeedbacks(position);
         }
     }
 
@@ -408,7 +460,7 @@ public class FishingManager : MonoBehaviour
         {
             currentFishingXp -= xpToNextLevel;
             currentFishingLevel++;
-            xpToNextLevel = Mathf.RoundToInt(xpToNextLevel * 1.5f);
+            xpToNextLevel = Mathf.RoundToInt(xpToNextLevel * levelXpGrowth);
             // Several level-ups in one frame (a Fishsploshion chain) each earn their own pick.
             if (draftUI != null) draftUI.QueueDraft();
         }
@@ -419,15 +471,15 @@ public class FishingManager : MonoBehaviour
         float roll = UnityEngine.Random.value;
         if (roll < 0.55f)
         {
-            SpawnFish(false, ResourceFishType.Gold, BuffFishType.Speedy, goldFishMat, 1f);
+            SpawnFish(false, ResourceFishType.Gold, BuffFishType.Speedy, goldFishMat, goldFishHits);
         }
         else if (roll < 0.73f)
         {
-            SpawnFish(false, ResourceFishType.OrcMetal, BuffFishType.Speedy, orcMetalFishMat, 1f);
+            SpawnFish(false, ResourceFishType.OrcMetal, BuffFishType.Speedy, orcMetalFishMat, resourceFishHits);
         }
         else if (roll < 0.88f)
         {
-            SpawnFish(false, ResourceFishType.GoblinBlood, BuffFishType.Speedy, goblinBloodFishMat, 1f);
+            SpawnFish(false, ResourceFishType.GoblinBlood, BuffFishType.Speedy, goblinBloodFishMat, resourceFishHits);
         }
         else
         {
@@ -444,18 +496,18 @@ public class FishingManager : MonoBehaviour
                 BuffFishType.Savage => savageFishMat,
                 _ => speedyFishMat
             };
-            float hpMult = (chosenBuff == BuffFishType.Armored) ? 5f : 1f;
-            SpawnFish(true, ResourceFishType.Gold, chosenBuff, mat, hpMult);
+            float hits = (chosenBuff == BuffFishType.Armored) ? armoredFishHits : buffFishHits;
+            SpawnFish(true, ResourceFishType.Gold, chosenBuff, mat, hits);
         }
     }
 
     private void SpawnDiamondFish()
     {
-        SpawnFish(false, ResourceFishType.Diamond, BuffFishType.Speedy, diamondFishMat, 20f);
+        SpawnFish(false, ResourceFishType.Diamond, BuffFishType.Speedy, diamondFishMat, diamondFishHits);
         Debug.Log("[FishingManager] The legendary Diamond Fish has emerged!");
     }
 
-    private void SpawnFish(bool isBuff, ResourceFishType resType, BuffFishType bType, Material mat, float hpMult)
+    private void SpawnFish(bool isBuff, ResourceFishType resType, BuffFishType bType, Material mat, float hits)
     {
         if (fishBasePrefab == null)
         {
@@ -489,7 +541,8 @@ public class FishingManager : MonoBehaviour
         Vector3 center = pondCenterAnchor != null
             ? new Vector3(pondCenterAnchor.position.x, pondCenter.y, pondCenterAnchor.position.z)
             : pondCenter;
-        controller.Setup(center, radius, speed, angle, depth, cw, isBuff, resType, bType, hpMult);
+        controller.Setup(center, radius, speed, angle, depth, cw, isBuff, resType, bType, hits, arrowDamagePerHit,
+            fishEntryRadius, fishEntryDepth, fishEntrySpeed);
         bool special = isBuff || resType == ResourceFishType.Diamond;
         controller.ApplyTypeHighlight(fishHighlightProfile, GetFishTypeColor(isBuff, resType, bType), special);
         activeFish.Add(controller);

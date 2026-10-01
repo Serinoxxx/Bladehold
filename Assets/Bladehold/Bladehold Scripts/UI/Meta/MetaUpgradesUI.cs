@@ -2,84 +2,149 @@ using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
-///     Controller for the 3-Tier Permanent Meta-Progression UI opened via the Spirit NPC.
-///     Displays Goblin Blood and Orcish Metal currencies prominently.
-///     Features 3 horizontal tier rows, tier unlock buttons with Orcish Metal costs,
-///     and individual perk purchase buttons with Goblin Blood costs.
+///     The Spirit's permanent meta-progression window (opened via <see cref="SpiritNPC" />).
+///     Left: one section per tier, each a grid of <see cref="MetaPerkCardUI" /> tiles with rank pips.
+///     Right: the details panel for the hovered/selected perk, with its current and next-rank effect and a Buy button.
+///     Perks come from <see cref="MetaPerkCatalogSO" />; tiers 2 and 3 unlock for Orcish Metal, ranks cost Goblin Blood.
+///     Each bought rank adds the perk id to <see cref="SaveData.purchasedMetaPerks" /> once more.
 /// </summary>
 public class MetaUpgradesUI : MonoBehaviour
 {
+    [Serializable]
+    public class TierSection
+    {
+        public Transform cardGrid;
+        public TMP_Text label;
+        [Tooltip("Unused for tier 1 (always unlocked).")]
+        public Button unlockButton;
+        public TMP_Text unlockButtonText;
+        [Tooltip("Orcish Metal to unlock this tier. Ignored for tier 1.")]
+        public int unlockMetalCost;
+    }
+
+    private const string CursorOwner = "MetaUpgrades";
+
     public static MetaUpgradesUI Instance { get; private set; }
 
-    [Header("Perk Data")]
-    [SerializeField] private List<MetaPerkDefinitionSO> allPerks = new List<MetaPerkDefinitionSO>();
-
-    [Header("UI Panels")]
+    [Header("Window")]
     [SerializeField] private GameObject windowRoot;
     [SerializeField] private Button closeButton;
+    [SerializeField] private MenuFocusController focusController;
 
-    [Header("Currencies Display")]
+    [Header("Currencies")]
     [SerializeField] private TMP_Text goblinBloodText;
     [SerializeField] private TMP_Text orcishMetalText;
 
-    [Header("Tier Containers (Horizontal Rows)")]
-    [SerializeField] private Transform tier1RowContainer;
-    [SerializeField] private Transform tier2RowContainer;
-    [SerializeField] private Transform tier3RowContainer;
+    [Header("Tiers (index 0 = tier 1)")]
+    [SerializeField] private TierSection[] tiers = new TierSection[3];
+    [SerializeField] private MetaPerkCardUI perkCardPrefab;
 
-    [Header("Tier Unlock Buttons")]
-    [SerializeField] private Button unlockTier2Button;
-    [SerializeField] private TMP_Text unlockTier2ButtonText;
-    [SerializeField] private Button unlockTier3Button;
-    [SerializeField] private TMP_Text unlockTier3ButtonText;
+    [Header("Details Panel")]
+    [SerializeField] private Image detailIcon;
+    [SerializeField] private TMP_Text detailName;
+    [SerializeField] private TMP_Text detailRank;
+    [SerializeField] private TMP_Text detailCurrent;
+    [SerializeField] private TMP_Text detailNext;
+    [SerializeField] private Button buyButton;
+    [SerializeField] private TMP_Text buyButtonText;
 
-    [Header("Tooltip")]
-    [SerializeField] private GameObject tooltipBox;
-    [SerializeField] private TMP_Text tooltipTitle;
-    [SerializeField] private TMP_Text tooltipDescription;
-
-    [Header("Perk Card Prefab (Optional / Fallback)")]
-    [SerializeField] private GameObject perkCardPrefab;
+    private readonly List<MetaPerkCardUI> cards = new List<MetaPerkCardUI>();
+    private readonly List<MetaPerkDefinitionSO> cardPerks = new List<MetaPerkDefinitionSO>();
+    private MetaPerkDefinitionSO selectedPerk;
+    private bool anyError;
 
     private void Awake()
     {
         if (Instance == null) Instance = this;
-        if (closeButton != null) closeButton.onClick.AddListener(Close);
-        if (unlockTier2Button != null) unlockTier2Button.onClick.AddListener(() => UnlockTier(2, 5));
-        if (unlockTier3Button != null) unlockTier3Button.onClick.AddListener(() => UnlockTier(3, 10));
-
         if (windowRoot != null) windowRoot.SetActive(false);
-        if (tooltipBox != null) tooltipBox.SetActive(false);
+    }
+
+    private void Start()
+    {
+        if (windowRoot == null || perkCardPrefab == null || tiers == null || tiers.Length < 3 || buyButton == null)
+        {
+            Debug.LogError("[MetaUpgradesUI] windowRoot, perkCardPrefab, buyButton and all three tier sections must be assigned.", this);
+            anyError = true;
+            return;
+        }
+        for (int i = 0; i < tiers.Length; i++)
+        {
+            if (tiers[i] == null || tiers[i].cardGrid == null)
+            {
+                Debug.LogError($"[MetaUpgradesUI] Tier {i + 1} has no card grid.", this);
+                anyError = true;
+            }
+        }
+        if (MetaPerkCatalogSO.Instance == null)
+        {
+            Debug.LogError($"[MetaUpgradesUI] No MetaPerkCatalogSO at Resources/{MetaPerkCatalogSO.ResourcePath}.", this);
+            anyError = true;
+        }
+        if (anyError) return;
+
+        if (closeButton != null) closeButton.onClick.AddListener(Close);
+        buyButton.onClick.AddListener(() => { if (selectedPerk != null) PurchasePerk(selectedPerk); });
+        for (int i = 1; i < tiers.Length; i++)
+        {
+            int tier = i + 1;
+            if (tiers[i].unlockButton != null) tiers[i].unlockButton.onClick.AddListener(() => UnlockTier(tier));
+        }
+        BuildCards();
     }
 
     private void OnDestroy()
     {
         if (Instance == this) Instance = null;
-        if (closeButton != null) closeButton.onClick.RemoveListener(Close);
+        CursorLockManager.SetUnlock(CursorOwner, false);
     }
 
     public void Open()
     {
-        if (windowRoot != null) windowRoot.SetActive(true);
-        CursorLockManager.SetUnlock("MetaUpgrades", true);
+        if (anyError || windowRoot == null) return;
+        windowRoot.SetActive(true);
+        CursorLockManager.SetUnlock(CursorOwner, true);
         Time.timeScale = 0f;
 
-        HideTooltip();
         RefreshUI();
+        if (cards.Count > 0)
+        {
+            ShowDetails(cardPerks[0]);
+            if (focusController != null) focusController.SetDefaultSelectable(cards[0].Button);
+        }
     }
 
+    /// <summary>Public so the window's MenuFocusController can close it on pad B.</summary>
     public void Close()
     {
         if (windowRoot != null) windowRoot.SetActive(false);
-        CursorLockManager.SetUnlock("MetaUpgrades", false);
+        CursorLockManager.SetUnlock(CursorOwner, false);
         Time.timeScale = 1f;
+    }
+
+    private void BuildCards()
+    {
+        IReadOnlyList<MetaPerkDefinitionSO> perks = MetaPerkCatalogSO.Instance.Perks;
+        for (int t = 0; t < tiers.Length; t++)
+        {
+            int tier = t + 1;
+            foreach (MetaPerkDefinitionSO perk in perks)
+            {
+                if (perk == null || perk.tier != tier) continue;
+                MetaPerkCardUI card = Instantiate(perkCardPrefab, tiers[t].cardGrid);
+                card.name = $"PerkCard_{perk.id}";
+                cards.Add(card);
+                cardPerks.Add(perk);
+            }
+        }
     }
 
     public void RefreshUI()
     {
+        if (anyError) return;
         SaveData data = SaveSystem.Load();
         int blood = data != null ? data.goblinBlood : 0;
         int metal = data != null ? data.orcishMetal : 0;
@@ -88,176 +153,145 @@ public class MetaUpgradesUI : MonoBehaviour
         if (goblinBloodText != null) goblinBloodText.text = $"{blood}";
         if (orcishMetalText != null) orcishMetalText.text = $"{metal}";
 
-        // Configure Tier 2 unlock button
-        if (unlockTier2Button != null)
+        for (int i = 1; i < tiers.Length; i++) RefreshUnlockButton(i + 1, unlockedTier, metal);
+
+        for (int i = 0; i < cards.Count; i++)
         {
-            if (DemoConfigSO.IsMetaTierLocked(2))
-            {
-                ShowDemoLockedTierButton(unlockTier2Button, unlockTier2ButtonText);
-            }
-            else if (unlockedTier >= 2)
-            {
-                unlockTier2Button.gameObject.SetActive(false);
-            }
-            else
-            {
-                unlockTier2Button.gameObject.SetActive(true);
-                bool canAfford = metal >= 5;
-                unlockTier2Button.interactable = canAfford;
-                if (unlockTier2ButtonText != null)
-                {
-                    unlockTier2ButtonText.text = "Unlock Tier II (5 Metal)";
-                    unlockTier2ButtonText.color = canAfford ? new Color(0.24f, 0.21f, 0.18f, 1f) : new Color(0.6f, 0.2f, 0.2f, 1f);
-                }
-            }
+            MetaPerkCardUI card = cards[i];
+            MetaPerkDefinitionSO perk = cardPerks[i];
+            int rank = RankOf(data, perk.id);
+            MetaPerkCardUI.CardState state = GetState(perk, rank, unlockedTier, blood);
+            card.Bind(perk, rank, state, CostLabel(perk, rank, state), () => ShowDetails(perk), () => PurchasePerk(perk));
+            card.SetHighlighted(perk == selectedPerk);
         }
 
-        // Configure Tier 3 unlock button
-        if (unlockTier3Button != null)
-        {
-            if (DemoConfigSO.IsMetaTierLocked(3))
-            {
-                ShowDemoLockedTierButton(unlockTier3Button, unlockTier3ButtonText);
-            }
-            else if (unlockedTier >= 3)
-            {
-                unlockTier3Button.gameObject.SetActive(false);
-            }
-            else
-            {
-                unlockTier3Button.gameObject.SetActive(true);
-                bool canAfford = unlockedTier >= 2 && metal >= 10;
-                unlockTier3Button.interactable = canAfford;
-                if (unlockTier3ButtonText != null)
-                {
-                    unlockTier3ButtonText.text = unlockedTier < 2 ? "Requires Tier II" : "Unlock Tier III (10 Metal)";
-                    unlockTier3ButtonText.color = canAfford ? new Color(0.24f, 0.21f, 0.18f, 1f) : new Color(0.6f, 0.2f, 0.2f, 1f);
-                }
-            }
-        }
-
-        // Render perk rows
-        RenderPerkRow(1, tier1RowContainer, true, data, blood);
-        RenderPerkRow(2, tier2RowContainer, unlockedTier >= 2, data, blood);
-        RenderPerkRow(3, tier3RowContainer, unlockedTier >= 3, data, blood);
+        if (selectedPerk != null) ShowDetails(selectedPerk);
     }
 
-    // Tier is outside the demo: keep the button visible so players see there's more, but it can't be used.
-    private static void ShowDemoLockedTierButton(Button button, TMP_Text label)
+    private void RefreshUnlockButton(int tier, int unlockedTier, int metal)
     {
-        button.gameObject.SetActive(true);
-        button.interactable = false;
-        if (label != null)
+        TierSection section = tiers[tier - 1];
+        if (section.unlockButton == null) return;
+
+        if (DemoConfigSO.IsMetaTierLocked(tier))
         {
-            label.text = DemoConfigSO.LockedLabel;
-            label.color = new Color(0.48f, 0.42f, 0.36f, 1f);
+            section.unlockButton.gameObject.SetActive(true);
+            section.unlockButton.interactable = false;
+            if (section.unlockButtonText != null) section.unlockButtonText.text = DemoConfigSO.LockedLabel;
+            return;
+        }
+        if (unlockedTier >= tier)
+        {
+            section.unlockButton.gameObject.SetActive(false);
+            return;
+        }
+
+        section.unlockButton.gameObject.SetActive(true);
+        bool previousUnlocked = unlockedTier >= tier - 1;
+        section.unlockButton.interactable = previousUnlocked && metal >= section.unlockMetalCost;
+        if (section.unlockButtonText != null)
+        {
+            section.unlockButtonText.text = previousUnlocked
+                ? string.Format(Loc.Get("meta.unlock_tier", "Unlock for {0} Metal"), section.unlockMetalCost)
+                : string.Format(Loc.Get("meta.requires_tier", "Requires Tier {0}"), ToRoman(tier - 1));
         }
     }
 
-    private void RenderPerkRow(int tier, Transform container, bool isTierUnlocked, SaveData data, int blood)
+    private static bool IsTierUsable(int tier, int unlockedTier) => !DemoConfigSO.IsMetaTierLocked(tier) && unlockedTier >= tier;
+
+    private static int RankOf(SaveData data, string perkId)
     {
-        if (container == null) return;
-
-        bool isDemoLocked = DemoConfigSO.IsMetaTierLocked(tier);
-        if (isDemoLocked) isTierUnlocked = false;
-
-        List<MetaPerkDefinitionSO> tierPerks = allPerks.FindAll(p => p.tier == tier);
-
-        for (int i = 0; i < tierPerks.Count; i++)
+        if (data == null || data.purchasedMetaPerks == null) return 0;
+        int rank = 0;
+        foreach (string id in data.purchasedMetaPerks)
         {
-            MetaPerkDefinitionSO perk = tierPerks[i];
-            bool isOwned = data != null && data.purchasedMetaPerks != null && data.purchasedMetaPerks.Contains(perk.id);
+            if (id == perkId) rank++;
+        }
+        return rank;
+    }
 
-            Transform cardTransform = i < container.childCount ? container.GetChild(i) : null;
-            if (cardTransform == null && perkCardPrefab != null)
-            {
-                cardTransform = Instantiate(perkCardPrefab, container).transform;
-            }
+    private static MetaPerkCardUI.CardState GetState(MetaPerkDefinitionSO perk, int rank, int unlockedTier, int blood)
+    {
+        if (rank >= perk.MaxRank) return MetaPerkCardUI.CardState.Maxed;
+        if (!IsTierUsable(perk.tier, unlockedTier)) return MetaPerkCardUI.CardState.Locked;
+        return blood >= perk.CostForRank(rank + 1) ? MetaPerkCardUI.CardState.Buyable : MetaPerkCardUI.CardState.TooExpensive;
+    }
 
-            if (cardTransform != null)
-            {
-                cardTransform.gameObject.SetActive(true);
-                ConfigurePerkCard(cardTransform, perk, isTierUnlocked, isDemoLocked, isOwned, blood);
-            }
+    private static string CostLabel(MetaPerkDefinitionSO perk, int rank, MetaPerkCardUI.CardState state)
+    {
+        switch (state)
+        {
+            case MetaPerkCardUI.CardState.Maxed:
+                return perk.MaxRank > 1 ? Loc.Get("meta.mastered", "MASTERED") : Loc.Get("meta.owned", "OWNED");
+            case MetaPerkCardUI.CardState.Locked:
+                return DemoConfigSO.IsMetaTierLocked(perk.tier) ? DemoConfigSO.LockedLabel : Loc.Get("meta.locked", "LOCKED");
+            default:
+                return string.Format(Loc.Get("meta.cost_blood", "{0} Blood"), perk.CostForRank(rank + 1));
         }
     }
 
-    private void ConfigurePerkCard(Transform card, MetaPerkDefinitionSO perk, bool isTierUnlocked, bool isDemoLocked, bool isOwned, int blood)
+    private void ShowDetails(MetaPerkDefinitionSO perk)
     {
-        TMP_Text nameText = card.Find("PerkName")?.GetComponent<TMP_Text>();
-        TMP_Text costText = card.Find("PerkCost")?.GetComponent<TMP_Text>();
-        Image iconImage = card.Find("PerkIcon")?.GetComponent<Image>();
-        Button buyBtn = card.GetComponent<Button>() ?? card.Find("BuyButton")?.GetComponent<Button>();
-
-        if (nameText != null) nameText.text = perk.displayName;
-        if (iconImage != null)
-        {
-            if (perk.icon != null)
-            {
-                iconImage.sprite = perk.icon;
-                iconImage.enabled = true;
-            }
-            else
-            {
-                iconImage.enabled = false;
-            }
-        }
-
-        CanvasGroup cg = card.GetComponent<CanvasGroup>();
-        if (cg != null)
-        {
-            cg.alpha = isTierUnlocked ? (isOwned ? 0.8f : 1.0f) : 0.4f;
-            cg.interactable = isTierUnlocked;
-            cg.blocksRaycasts = true;
-        }
-
-        if (costText != null)
-        {
-            if (isDemoLocked)
-            {
-                costText.text = DemoConfigSO.LockedLabel;
-                costText.color = new Color(0.48f, 0.42f, 0.36f, 1f);
-            }
-            else if (isOwned)
-            {
-                costText.text = "OWNED";
-                costText.color = new Color(0.18f, 0.52f, 0.2f, 1f); // clean green
-            }
-            else if (!isTierUnlocked)
-            {
-                costText.text = "LOCKED";
-                costText.color = new Color(0.48f, 0.42f, 0.36f, 1f);
-            }
-            else
-            {
-                bool canAfford = blood >= perk.goblinBloodCost;
-                costText.text = $"{perk.goblinBloodCost} Blood";
-                costText.color = canAfford ? new Color(0.68f, 0.18f, 0.18f, 1f) : new Color(0.72f, 0.28f, 0.28f, 0.6f);
-            }
-        }
-
-        if (buyBtn != null)
-        {
-            buyBtn.onClick.RemoveAllListeners();
-            buyBtn.interactable = isTierUnlocked && !isDemoLocked && !isOwned && (blood >= perk.goblinBloodCost);
-            buyBtn.onClick.AddListener(() => PurchasePerk(perk));
-        }
-
-        // Tooltip hover triggers
-        EventTriggerListener listener = card.GetComponent<EventTriggerListener>() ?? card.gameObject.AddComponent<EventTriggerListener>();
-        string tooltipBody = isDemoLocked ? $"{perk.description}\n\n<i>{DemoConfigSO.LockedPrompt}</i>" : perk.description;
-        listener.OnHoverEnter = () => ShowTooltip(perk.displayName, tooltipBody);
-        listener.OnHoverExit = HideTooltip;
-    }
-
-    private void UnlockTier(int tier, int metalCost)
-    {
-        if (DemoConfigSO.IsMetaTierLocked(tier)) return;
+        if (perk == null) return;
+        selectedPerk = perk;
+        foreach (MetaPerkCardUI card in cards) card.SetHighlighted(card.Perk == perk);
 
         SaveData data = SaveSystem.Load();
-        if (data.orcishMetal >= metalCost)
+        int rank = RankOf(data, perk.id);
+        int blood = data != null ? data.goblinBlood : 0;
+        int unlockedTier = data != null ? data.unlockedMetaTier : 1;
+        MetaPerkCardUI.CardState state = GetState(perk, rank, unlockedTier, blood);
+        bool ranked = perk.MaxRank > 1;
+
+        if (detailIcon != null)
         {
-            data.orcishMetal -= metalCost;
+            detailIcon.sprite = perk.icon;
+            detailIcon.enabled = perk.icon != null;
+        }
+        if (detailName != null) detailName.text = perk.displayName;
+        if (detailRank != null)
+        {
+            string tierText = string.Format(Loc.Get("meta.tier_label", "Tier {0}"), ToRoman(perk.tier));
+            detailRank.text = ranked
+                ? $"{tierText}  ·  {string.Format(Loc.Get("meta.rank_label", "Rank {0} / {1}"), rank, perk.MaxRank)}"
+                : tierText;
+        }
+
+        if (detailCurrent != null)
+        {
+            if (rank > 0) detailCurrent.text = perk.DescriptionForRank(rank);
+            else detailCurrent.text = ranked ? Loc.Get("meta.not_learned", "Not yet learned.") : perk.DescriptionForRank(1);
+        }
+
+        if (detailNext != null)
+        {
+            if (rank >= perk.MaxRank) detailNext.text = ranked ? Loc.Get("meta.fully_mastered", "Fully mastered.") : "";
+            else if (ranked) detailNext.text = string.Format(Loc.Get("meta.next_rank", "<b>Next rank:</b> {0}"), perk.DescriptionForRank(rank + 1));
+            else detailNext.text = "";
+            if (state == MetaPerkCardUI.CardState.Locked && DemoConfigSO.IsMetaTierLocked(perk.tier))
+            {
+                detailNext.text += $"\n\n<i>{DemoConfigSO.LockedPrompt}</i>";
+            }
+        }
+
+        buyButton.interactable = state == MetaPerkCardUI.CardState.Buyable;
+        if (buyButtonText != null)
+        {
+            buyButtonText.text = state == MetaPerkCardUI.CardState.Buyable || state == MetaPerkCardUI.CardState.TooExpensive
+                ? string.Format(Loc.Get(rank > 0 ? "meta.buy_upgrade" : "meta.buy_learn", rank > 0 ? "Upgrade · {0} Blood" : "Learn · {0} Blood"), perk.CostForRank(rank + 1))
+                : CostLabel(perk, rank, state);
+        }
+    }
+
+    private void UnlockTier(int tier)
+    {
+        if (DemoConfigSO.IsMetaTierLocked(tier)) return;
+        int cost = tiers[tier - 1].unlockMetalCost;
+
+        SaveData data = SaveSystem.Load();
+        if (data.unlockedMetaTier >= tier - 1 && data.orcishMetal >= cost)
+        {
+            data.orcishMetal -= cost;
             data.unlockedMetaTier = Mathf.Max(data.unlockedMetaTier, tier);
             SaveSystem.Save(data);
             RefreshUI();
@@ -267,38 +301,29 @@ public class MetaUpgradesUI : MonoBehaviour
 
     private void PurchasePerk(MetaPerkDefinitionSO perk)
     {
-        if (DemoConfigSO.IsMetaTierLocked(perk.tier)) return;
-
+        ShowDetails(perk);
         SaveData data = SaveSystem.Load();
-        if (data.goblinBlood >= perk.goblinBloodCost && !data.purchasedMetaPerks.Contains(perk.id))
+        int rank = RankOf(data, perk.id);
+        if (rank >= perk.MaxRank || !IsTierUsable(perk.tier, data.unlockedMetaTier)) return;
+
+        int cost = perk.CostForRank(rank + 1);
+        if (data.goblinBlood < cost) return;
+
+        data.goblinBlood -= cost;
+        data.purchasedMetaPerks.Add(perk.id);
+        SaveSystem.Save(data);
+        RefreshUI();
+        Debug.Log($"[MetaUpgradesUI] Purchased {perk.displayName} rank {rank + 1}/{perk.MaxRank}.");
+
+        // Keep pad focus on the card just bought (the buy button may have gone non-interactable).
+        foreach (MetaPerkCardUI card in cards)
         {
-            data.goblinBlood -= perk.goblinBloodCost;
-            data.purchasedMetaPerks.Add(perk.id);
-            SaveSystem.Save(data);
-            RefreshUI();
-            Debug.Log($"[MetaUpgradesUI] Purchased Meta Perk: {perk.displayName}!");
+            if (card.Perk == perk && EventSystem.current != null && EventSystem.current.currentSelectedGameObject == buyButton.gameObject && !buyButton.interactable)
+            {
+                EventSystem.current.SetSelectedGameObject(card.Button.gameObject);
+            }
         }
     }
 
-    public void ShowTooltip(string title, string description)
-    {
-        if (tooltipBox != null) tooltipBox.SetActive(true);
-        if (tooltipTitle != null) tooltipTitle.text = title;
-        if (tooltipDescription != null) tooltipDescription.text = description;
-    }
-
-    public void HideTooltip()
-    {
-        if (tooltipTitle != null) tooltipTitle.text = "Blessings of the Spirit";
-        if (tooltipDescription != null) tooltipDescription.text = "Hover over any blessing to inspect its power. Click to unlock.";
-    }
-}
-
-public class EventTriggerListener : MonoBehaviour, UnityEngine.EventSystems.IPointerEnterHandler, UnityEngine.EventSystems.IPointerExitHandler
-{
-    public Action OnHoverEnter;
-    public Action OnHoverExit;
-
-    public void OnPointerEnter(UnityEngine.EventSystems.PointerEventData eventData) => OnHoverEnter?.Invoke();
-    public void OnPointerExit(UnityEngine.EventSystems.PointerEventData eventData) => OnHoverExit?.Invoke();
+    private static string ToRoman(int n) => n switch { 1 => "I", 2 => "II", 3 => "III", _ => n.ToString() };
 }

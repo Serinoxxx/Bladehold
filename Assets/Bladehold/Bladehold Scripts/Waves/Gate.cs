@@ -49,6 +49,9 @@ public class Gate : MonoBehaviour
     /// <summary>The gate's damage sink, so <see cref="AIAttack" /> can hurt it.</summary>
     public IDamageable Damageable => health;
 
+    /// <summary>The gate's health (null if unwired).</summary>
+    public Health Health => health;
+
     /// <summary>The nearest still-standing gate to a position, or null when none is left (or none exists).</summary>
     public static Gate NearestAlive(Vector3 position)
     {

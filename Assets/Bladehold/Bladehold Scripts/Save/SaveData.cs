@@ -48,6 +48,25 @@ public class SaveData
     public List<string> purchasedMetaPerks = new List<string>();
 
     /// <summary>
+    ///     True once the first-launch tutorial is done (set on entering its last scene) or skipped.
+    ///     New Game routes to the tutorial while this is false. Saves written before the tutorial
+    ///     existed load as completed (see <see cref="SaveSystem.Load" />).
+    /// </summary>
+    public bool tutorialCompleted;
+
+    /// <summary>Ids of the one-time first-encounter hints already shown (see <see cref="FirstTimeHints" />).</summary>
+    public List<string> seenHints = new List<string>();
+
+    /// <summary>When this save slot was started (UTC <see cref="DateTime.Ticks" />; 0 = unknown).</summary>
+    public long createdUtcTicks;
+
+    /// <summary>When this save slot was last written during play (UTC <see cref="DateTime.Ticks" />).</summary>
+    public long lastPlayedUtcTicks;
+
+    /// <summary>Real seconds spent with this slot active, banked by <see cref="SaveSystem" /> on every save.</summary>
+    public double playTimeSeconds;
+
+    /// <summary>
     ///     Total runs attempted across all sessions (default: 1). Read by the war-banner difficulty roll
     ///     (<see cref="BannerDifficultyHelper.RollTierForBanner" />), but nothing increments it yet, so
     ///     banners only ever roll Standard.
@@ -129,6 +148,8 @@ public class SaveData
         unlockedMounts = new List<string>(defaults.unlockedMounts);
         unlockedMetaTier = defaults.unlockedMetaTier;
         purchasedMetaPerks.Clear();
+        tutorialCompleted = defaults.tutorialCompleted;
+        seenHints.Clear();
     }
 
     /// <summary>
@@ -138,22 +159,31 @@ public class SaveData
     /// </summary>
     public void ResetSettings()
     {
-        SaveData defaults = new SaveData();
-        masterVolume = defaults.masterVolume;
-        musicVolume = defaults.musicVolume;
-        sfxVolume = defaults.sfxVolume;
-        maxRagdolls = defaults.maxRagdolls;
-        mouseSensitivity = defaults.mouseSensitivity;
-        invertLookX = defaults.invertLookX;
-        invertLookY = defaults.invertLookY;
-        fieldOfView = defaults.fieldOfView;
-        gameSpeed = defaults.gameSpeed;
-        inputBindingOverridesJson = defaults.inputBindingOverridesJson;
-        languageCode = defaults.languageCode;
-        gamepadLookSensitivity = defaults.gamepadLookSensitivity;
-        postProcessingEnabled = defaults.postProcessingEnabled;
-        postProcessingBloom = defaults.postProcessingBloom;
-        postProcessingVignette = defaults.postProcessingVignette;
-        postProcessingExposure = defaults.postProcessingExposure;
+        CopySettingsFrom(new SaveData());
+    }
+
+    /// <summary>
+    ///     Copies every settings field (the <see cref="ResetSettings" /> half) from another save, leaving
+    ///     progress untouched. Settings are global across save slots, so <see cref="SaveSystem" /> overlays
+    ///     the shared settings file onto whichever slot it loads.
+    /// </summary>
+    public void CopySettingsFrom(SaveData other)
+    {
+        masterVolume = other.masterVolume;
+        musicVolume = other.musicVolume;
+        sfxVolume = other.sfxVolume;
+        maxRagdolls = other.maxRagdolls;
+        mouseSensitivity = other.mouseSensitivity;
+        invertLookX = other.invertLookX;
+        invertLookY = other.invertLookY;
+        fieldOfView = other.fieldOfView;
+        gameSpeed = other.gameSpeed;
+        inputBindingOverridesJson = other.inputBindingOverridesJson;
+        languageCode = other.languageCode;
+        gamepadLookSensitivity = other.gamepadLookSensitivity;
+        postProcessingEnabled = other.postProcessingEnabled;
+        postProcessingBloom = other.postProcessingBloom;
+        postProcessingVignette = other.postProcessingVignette;
+        postProcessingExposure = other.postProcessingExposure;
     }
 }

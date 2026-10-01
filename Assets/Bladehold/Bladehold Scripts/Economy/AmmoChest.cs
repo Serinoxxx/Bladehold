@@ -47,6 +47,10 @@ public class AmmoChest : MonoBehaviour, IInteractable
             {
                 return string.Format(Loc.Get("ammo_chest.prompt_full", "Quiver full · {0}/{1}"), ammo.CurrentAmmo, ammo.MaxAmmo);
             }
+            if (goldCost == 0)
+            {
+                return string.Format(Loc.Get("ammo_chest.prompt_free", "Take {0} arrows"), arrowsPerPurchase);
+            }
             if (RunSession.InRunGold < goldCost)
             {
                 return string.Format(Loc.Get("ammo_chest.prompt_no_gold", "Buy {0} arrows ({1}g) · not enough gold"), arrowsPerPurchase, goldCost);

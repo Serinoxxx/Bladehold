@@ -1943,7 +1943,7 @@ MonoBehaviour:
   supplyPopupPrefab: {fileID: 5445448510257546009, guid: 0c337af341cc6e840986619c86ca00fb, type: 3}
   interactionRadius: 3.5
   minRange: 8
-  maxRange: 24
+  maxRange: 48
   fireInterval: 3.8
   splashDamage: 5
   splashRadius: 4.5

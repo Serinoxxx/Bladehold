@@ -69,6 +69,23 @@ public class CampaignManager : MonoBehaviour
 
     public CampaignNodeSO CurrentNode => GetNode(CurrentNodeId);
 
+    /// <summary>The node cleared most recently, or null before the first clear.</summary>
+    public string LastCompletedNodeId { get; private set; }
+
+    /// <summary>
+    ///     Where the player stands on the map: the last cleared node, or the root before anything is cleared.
+    ///     Only its <c>nextNodes</c> are ever available, so the route only moves forward.
+    /// </summary>
+    public CampaignNodeSO CurrentLocationNode
+    {
+        get
+        {
+            CampaignNodeSO last = GetNode(LastCompletedNodeId);
+            if (last != null) return last;
+            return ActiveGraph != null ? ActiveGraph.rootNode : null;
+        }
+    }
+
     /// <summary>True when clearing the current node ends the campaign (final boss, or a node with <c>endsCampaign</c> ticked).</summary>
     public bool CurrentNodeEndsCampaign => IsCampaignActive && CurrentNode != null && CurrentNode.EndsCampaign;
 
@@ -125,6 +142,7 @@ public class CampaignManager : MonoBehaviour
     public void RestoreFromRunSession()
     {
         CurrentNodeId = RunSession.CampaignCurrentNodeId;
+        LastCompletedNodeId = RunSession.CampaignLastCompletedNodeId;
 
         CompletedNodeIds.Clear();
         if (RunSession.CampaignCompletedNodeIds != null)
@@ -157,6 +175,7 @@ public class CampaignManager : MonoBehaviour
     private void SyncToRunSession()
     {
         RunSession.CampaignCurrentNodeId = CurrentNodeId;
+        RunSession.CampaignLastCompletedNodeId = LastCompletedNodeId;
 
         RunSession.CampaignCompletedNodeIds.Clear();
         foreach (string id in CompletedNodeIds)
@@ -183,6 +202,7 @@ public class CampaignManager : MonoBehaviour
 
         RunSession.IsCampaignRun = true;
         CurrentNodeId = null;
+        LastCompletedNodeId = null;
         CompletedNodeIds.Clear();
         AvailableNodeIds.Clear();
 
@@ -316,7 +336,11 @@ public class CampaignManager : MonoBehaviour
         }
 
         CompletedNodeIds.Add(completedNode.nodeId);
-        AvailableNodeIds.Remove(completedNode.nodeId);
+        LastCompletedNodeId = completedNode.nodeId;
+
+        // No backtracking: the player now stands on this node, so only its children are open. Siblings
+        // and any other branch left behind close for the rest of the run.
+        AvailableNodeIds.Clear();
 
         // Unlock next forward child nodes
         if (completedNode.nextNodes != null)

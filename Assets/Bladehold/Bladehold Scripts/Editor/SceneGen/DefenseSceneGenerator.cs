@@ -239,11 +239,16 @@ public static class DefenseSceneGenerator
             root.SetParent(env);
             Vector2 span = ctx.Hf.RavineXSpan(i);
 
+            if (p.bridgeSpan != null)
+            {
+                for (int bi = 0; bi < r.bridges.Count; bi++) BuildSpanBridge(ctx, root, i, bi);
+            }
+
             // Bridges: tiles laid along Z across the gap, resting on the rims.
             Bounds tb = PrefabMeasure.LocalBounds(p.bridgeTile);
             float pitchZ = Mathf.Floor(tb.size.z);
             float pitchX = Mathf.Floor(tb.size.x);
-            for (int bi = 0; bi < r.bridges.Count; bi++)
+            for (int bi = 0; p.bridgeSpan == null && bi < r.bridges.Count; bi++)
             {
                 BridgeSpec b = r.bridges[bi];
                 var bridgeRoot = new GameObject($"Bridge_{bi}").transform;
@@ -342,6 +347,71 @@ public static class DefenseSceneGenerator
                 so.ApplyModifiedPropertiesWithoutUndo();
             }
         }
+    }
+
+    /// <summary>Half the deck width of a bridge: span pieces at their scaled width, else 5 m tiles.</summary>
+    public static float BridgeHalfWidth(DefenseBiomePaletteSO p, BridgeSpec b)
+    {
+        if (p.bridgeSpan != null)
+            return PrefabMeasure.LocalBounds(p.bridgeSpan).size.x * p.bridgeSpanWidthScale * b.tilesWide * 0.5f;
+        return Mathf.Floor(PrefabMeasure.LocalBounds(p.bridgeTile).size.x) * b.tilesWide * 0.5f;
+    }
+
+    /// <summary>
+    ///     One arched span per tile column, centred on the ravine. The deck is found by raycasting the
+    ///     instance's own colliders, then the whole piece is dropped so its higher end sits
+    ///     <see cref="DeckRise" /> above the rim: no step onto it, and the arch stays proud of the gap.
+    /// </summary>
+    private static void BuildSpanBridge(DefenseBuildContext ctx, Transform ravineRoot, int ravine, int bi)
+    {
+        DefenseBiomePaletteSO p = ctx.Spec.palette;
+        BridgeSpec b = ctx.Spec.ravines[ravine].bridges[bi];
+        var bridgeRoot = new GameObject($"Bridge_{bi}").transform;
+        bridgeRoot.SetParent(ravineRoot);
+        Bounds lb = PrefabMeasure.LocalBounds(p.bridgeSpan);
+        float pitchX = lb.size.x * p.bridgeSpanWidthScale;
+        float halfWidth = BridgeHalfWidth(p, b);
+        float zc = ctx.Hf.RavineCentreZ(ravine, b.x);
+        float halfLen = lb.size.z * 0.5f;
+
+        for (int tx = 0; tx < b.tilesWide; tx++)
+        {
+            float cx = b.x - halfWidth + pitchX * (tx + 0.5f);
+            Vector3 pos = PrefabMeasure.RootForCentre(p.bridgeSpan, new Vector2(cx, zc), 0f, 1f);
+            pos.y = 0f;
+            GameObject go = PrefabMeasure.Instantiate(p.bridgeSpan, bridgeRoot, pos, Quaternion.identity, 1f);
+            go.transform.localScale = new Vector3(p.bridgeSpanWidthScale, 1f, 1f);
+            Physics.SyncTransforms();
+
+            float lift = float.MinValue;
+            for (int end = -1; end <= 1; end += 2)
+            {
+                float z = zc + end * (halfLen - 0.4f);
+                float deck = DeckHeight(go, cx, z);
+                if (float.IsNaN(deck)) continue;
+                lift = Mathf.Max(lift, ctx.Ground(cx, z) + DeckRise - deck);
+            }
+            if (lift == float.MinValue) Debug.LogError($"{Tag} Bridge {bi} on ravine {ravine}: no deck collider under the span ends.");
+            else go.transform.position += Vector3.up * lift;
+        }
+        Physics.SyncTransforms();
+
+        ctx.Bridges.Add(new BridgeFootprint
+        {
+            ravine = ravine,
+            centre = new Vector2(b.x, zc),
+            halfWidth = halfWidth,
+            halfLength = halfLen
+        });
+        ctx.Occupy(new Vector2(b.x, zc), 0f);
+    }
+
+    private static float DeckHeight(GameObject bridge, float x, float z)
+    {
+        float best = float.NaN;
+        foreach (RaycastHit h in Physics.RaycastAll(new Vector3(x, 60f, z), Vector3.down, 120f))
+            if (h.collider.transform.IsChildOf(bridge.transform) && (float.IsNaN(best) || h.point.y > best)) best = h.point.y;
+        return best;
     }
 
     // ---------------------------------------------------------------- boundary
@@ -507,6 +577,13 @@ public static class DefenseSceneGenerator
         // Objective markers: everything must sit outside tower range.
         GameObject objectives = GameObject.Find("SurvivorsObjectives");
         if (objectives != null) LayoutObjectives(ctx, objectives, gate);
+
+        // Per-scene enemy list (e.g. skeletons only), replacing the threat curve.
+        if (spec.enemyRosterIds.Count > 0)
+        {
+            var rosterGo = new GameObject("SceneEnemyRoster");
+            rosterGo.AddComponent<SceneEnemyRoster>().EditorSet(spec.enemyRosterIds.ToArray(), spec.fodderEnemyId);
+        }
 
         // Intermission anchors next to the player spawn.
         Vector3 baseInt = ctx.OnNavMesh(spec.playerSpawn + new Vector2(0f, 5f));

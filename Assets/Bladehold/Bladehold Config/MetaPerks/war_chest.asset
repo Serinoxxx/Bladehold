@@ -14,7 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MetaPerkDefinitionSO
   id: war_chest
   displayName: War Chest
-  description: Begin every combat run with 75 starting Gold.
+  description: Begin every combat run with {0} starting Gold.
   tier: 3
   goblinBloodCost: 50
+  rankCosts: 320000004100000050000000
+  rankValues:
+  - 75
+  - 150
+  - 225
   icon: {fileID: 21300000, guid: ebdb39511ec182b4aa810729668a2a9c, type: 3}
+  prerequisites: []

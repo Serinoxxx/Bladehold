@@ -4,7 +4,7 @@ using UnityEngine;
 /// <summary>
 ///     One baked crowd rig: the idle / run / attack poses of a body sampled into a bone-matrix texture,
 ///     plus the static mesh and instanced material <see cref="BakedCrowdRenderer" /> draws it with.
-///     Written by <c>Bladehold/Crowd/Bake Goblin Crowd Animation</c> (<c>Editor/BakedCrowdBaker</c>):
+///     Written by <c>Bladehold/Crowd/Bake Crowd Animations</c> (<c>Editor/BakedCrowdBaker</c>):
 ///     re-run the bake rather than editing the baked fields by hand. The tuning fields below the bake
 ///     output are designer-editable and survive a re-bake.
 ///
@@ -33,6 +33,24 @@ public class BakedCrowdAnimationSO : ScriptableObject
 
         [Tooltip("Ground speed (m/s) the clip was authored at; run playback is scaled by agent speed / this.")]
         public float referenceSpeed;
+
+        [Header("Ragdoll falls")]
+        [Tooltip("Flat direction (rig space) the recorded body was thrown; the fall is turned so this points along the real throw.")]
+        public Vector3 throwDirection;
+
+        [Tooltip("The recorded launch velocity (rig space), used when a death has no knockback hit of its own.")]
+        public Vector3 launchVelocity;
+
+        [Tooltip("Seconds into the fall when the body is half down. While the fall body is still airborne, playback holds here.")]
+        public float airborneHoldTime;
+
+        [Tooltip("Index of this fall's aligned get-up clip, or -1 when the fall ends face-down and can only be a death.")]
+        public int getUpClip = -1;
+
+        [Header("Get-ups")]
+        [Tooltip("Where (rig space) the body stands at the end of this get-up, and its yaw in degrees: the root moves there afterwards.")]
+        public Vector3 standPosition;
+        public float standYaw;
     }
 
     /// <summary>
@@ -59,9 +77,12 @@ public class BakedCrowdAnimationSO : ScriptableObject
     public float bakeFps = 30f;
     public Clip[] clips;
 
-    [Tooltip("Indices into clips of the recorded ragdoll falls; each ends on its settled corpse pose.")]
+    [Tooltip("Indices into clips of the recorded ragdoll falls; each ends on its settled corpse pose. The face-up ones also have a get-up.")]
     public int[] deathClips;
     public ImpactEvent[] impacts;
+
+    [Tooltip("The goblin's GetUp state as baked (unaligned), crossfaded out of when a get-up finishes and the root moves to the standing spot.")]
+    public int getUpClip = -1;
 
     [Header("Playback tuning")]
     [Tooltip("Agent speed (m/s) above which the run clip plays instead of idle.")]
@@ -87,6 +108,25 @@ public class BakedCrowdAnimationSO : ScriptableObject
     [Tooltip("Seconds between a live goblin's rejoin checks.")]
     [Min(0.05f)] public float demoteCheckInterval = 0.5f;
 
+    [Header("Baked falls (past the ragdoll cap)")]
+    [Tooltip("Radius of the single sphere Rigidbody that carries a baked fall (Ragdoll layer: hits the world, not goblins or the player).")]
+    [Min(0.05f)] public float fallBodyRadius = 0.3f;
+
+    [Tooltip("Friction of the fall body; higher stops the slide sooner.")]
+    [Range(0f, 1f)] public float fallBodyFriction = 0.8f;
+
+    [Tooltip("The fall body counts as settled below this speed (m/s) while grounded...")]
+    [Min(0f)] public float fallSettleSpeed = 0.4f;
+
+    [Tooltip("...for this long, once the fall clip has finished.")]
+    [Min(0f)] public float fallSettleSeconds = 0.25f;
+
+    [Tooltip("A fall settles after this long regardless (stuck on a ledge, endless slope).")]
+    [Min(0.5f)] public float fallTimeout = 6f;
+
+    [Tooltip("Crossfade from a fall's landing pose into its get-up, in seconds.")]
+    [Min(0f)] public float getUpCrossfadeSeconds = 0.3f;
+
     // CPU copy of the (readable) bone texture, fetched on first promotion.
     [NonSerialized] private Color[] cachedPixels;
 
@@ -104,6 +144,20 @@ public class BakedCrowdAnimationSO : ScriptableObject
         m.SetRow(1, new Vector4(r1.r, r1.g, r1.b, r1.a));
         m.SetRow(2, new Vector4(r2.r, r2.g, r2.b, r2.a));
         return m;
+    }
+
+    /// <summary>True when at least one recorded fall ends face-up and so can get back up.</summary>
+    public bool HasGetUpFalls
+    {
+        get
+        {
+            if (deathClips == null) return false;
+            foreach (int fall in deathClips)
+            {
+                if (clips[fall].getUpClip >= 0) return true;
+            }
+            return false;
+        }
     }
 
     public int FrameOf(int clipIndex, float time)

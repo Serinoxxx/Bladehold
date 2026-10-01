@@ -1,0 +1,443 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d31ee5a9a7564c84f8d23154a5067342, type: 3}
+  m_Name: Kingdom_DefensePalette
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::DefenseBiomePaletteSO
+  ground: {fileID: 8574412962073106934, guid: a74d0c49c54e7f24cbd699b771b9c772, type: 2}
+  groundVariant: {fileID: 8574412962073106934, guid: 121682214d0927440a33275b765215ab, type: 2}
+  slope: {fileID: 8574412962073106934, guid: 33f64e8d5f1e24744a2c738f24d4d7ee, type: 2}
+  cliff: {fileID: 8574412962073106934, guid: 392e6041d0efcde459d1d40785479c94, type: 2}
+  road: {fileID: 8574412962073106934, guid: 5e8ecfd9a9d16e346ab632769a7e4e2c, type: 2}
+  ravineFloor: {fileID: 8574412962073106934, guid: 0c6e3138964204f4685fe091e6712f8a, type: 2}
+  courtyard: {fileID: 8574412962073106934, guid: 0443b002948a5e845a5d8a1ed1041b60, type: 2}
+  terrainMaterial: {fileID: 2100000, guid: 594ea882c5a793440b60ff72d896021e, type: 2}
+  cliffs:
+  - {fileID: 1340173751181022, guid: 08e77162937cf2048b655b4b8c53b691, type: 3}
+  - {fileID: 1943993615848928, guid: 6e3a7267ef25d464f9529e4f61b6a025, type: 3}
+  - {fileID: 1696126575580588, guid: d85d0b2a487406846a4e6c18d8317316, type: 3}
+  - {fileID: 1020450978260326, guid: df8bc92f2def937419b3dd7ab3cf031f, type: 3}
+  - {fileID: 1087587913892192, guid: 0558abc42eda771439f8593c7821a2d7, type: 3}
+  cliffMaterial: {fileID: 0}
+  outcropScale: {x: 2, y: 3.4}
+  largeRocks:
+  - {fileID: 1860003969367234, guid: ab6f74f7a8b5c5b479f1f59e2734d1f4, type: 3}
+  - {fileID: 1767625238741972, guid: a8090a92837093a49bf32f0193b8f349, type: 3}
+  - {fileID: 1092518597233016, guid: 3d305d053f0edaf4180ddbaf7955802a, type: 3}
+  mediumRocks:
+  - {fileID: 1449106589940208, guid: 818fbf9ffe287c5489125f1d37e02de5, type: 3}
+  - {fileID: 1739339459435030, guid: b932914ce87c734468a4c00f71611068, type: 3}
+  - {fileID: 1291229355180718, guid: 2f1cf358cb2eb1c43b8f7ecdad486700, type: 3}
+  - {fileID: 1189549595345322, guid: 23e06cc63cc3eb74791ede84dc942e66, type: 3}
+  smallRocks:
+  - {fileID: 1291229355180718, guid: 2f1cf358cb2eb1c43b8f7ecdad486700, type: 3}
+  - {fileID: 1189549595345322, guid: 23e06cc63cc3eb74791ede84dc942e66, type: 3}
+  snowMounds:
+  - {fileID: 1845186741148988, guid: cf8caeea3d1893e4aaa47bd95d17bb2a, type: 3}
+  - {fileID: 1609516448512080, guid: bc597c00db3331b44a6e0faee5be1017, type: 3}
+  - {fileID: 1447882252029640, guid: 6f12d15fa441ca045a597687db81dd6f, type: 3}
+  - {fileID: 1369797743686250, guid: 5e35c1135652c0341a813bd21f4869c3, type: 3}
+  - {fileID: 1477650915871582, guid: 146b0078b283caf4196b83ae7a0525f7, type: 3}
+  trees:
+  - {fileID: 1766626281795622, guid: 86a6bda8f78af6b449cd7570bc4efc6f, type: 3}
+  - {fileID: 1246221467480138, guid: 47a80870cceb48b408dd661a8f1a7764, type: 3}
+  - {fileID: 1549144012402266, guid: 1ebc3d54345802648ae7650eedc41770, type: 3}
+  - {fileID: 1242553701839910, guid: af8a3b23c35a0794ebbde20b219374b1, type: 3}
+  - {fileID: 1480767256909110, guid: bcb591b1428330b4abc0c035a3372be3, type: 3}
+  - {fileID: 1905605002707554, guid: c5fa94f9ebb29bd478295e8701712698, type: 3}
+  deadTrees:
+  - {fileID: 1538585341311756, guid: 03c9e2a98e695684782bd34bc0bc19b0, type: 3}
+  - {fileID: 1372763863936574, guid: c7a2afb2fc4d57f44b94c1e96814b5a4, type: 3}
+  - {fileID: 1379855444947388, guid: 083e710e1692a3a49ab0410e22780f8a, type: 3}
+  ravineWall: {fileID: 0}
+  ravineWallRocks: []
+  propClusters:
+  - name: Demo_ExteriorOnly_Optimized_00_Rock_Cliff_05
+    radius: 5.393109
+    pieces:
+    - prefab: {fileID: 1087587913892192, guid: 0558abc42eda771439f8593c7821a2d7, type: 3}
+      offset: {x: -1.973465, y: 0, z: 1.0366058}
+      rotation: {x: -0, y: 0.35304984, z: -0, w: 0.9356046}
+      scale: {x: -0.92498404, y: 1.51317, z: 0.79341733}
+    - prefab: {fileID: 1087587913892192, guid: 0558abc42eda771439f8593c7821a2d7, type: 3}
+      offset: {x: -5.0634613, y: 0, z: 1.8566055}
+      rotation: {x: 0.97776186, y: 0.20662661, z: -0.025130395, w: -0.025606418}
+      scale: {x: 1, y: 2.2129197, z: 1.0000007}
+    - prefab: {fileID: 1334434696216914, guid: 2b93997388764ab4aa8a4b07f0fc727d, type: 3}
+      offset: {x: 1.7548676, y: 0, z: -1.0211182}
+      rotation: {x: -0, y: 0.65118283, z: -0, w: 0.75892097}
+      scale: {x: 1.0000004, y: 1, z: 1.0000004}
+    - prefab: {fileID: 1977804150361796, guid: bf8fab545a9999c4e9dbe5bbb85b350a, type: 3}
+      offset: {x: 0.8201294, y: 0, z: -0.32936478}
+      rotation: {x: -0, y: 0.65118283, z: -0, w: 0.75892097}
+      scale: {x: 1.0000004, y: 1, z: 1.0000004}
+    - prefab: {fileID: 1365096857537640, guid: 7c50f10bc65b25c429cfa1de506b367b, type: 3}
+      offset: {x: 2.639679, y: 0, z: -1.4448357}
+      rotation: {x: -0, y: 0.65118283, z: -0, w: 0.75892097}
+      scale: {x: 1.0000004, y: 1, z: 1.0000004}
+    - prefab: {fileID: 1334434696216914, guid: 2b93997388764ab4aa8a4b07f0fc727d, type: 3}
+      offset: {x: 1.5386963, y: 0, z: -0.02148819}
+      rotation: {x: -0, y: 0.65118283, z: -0, w: 0.75892097}
+      scale: {x: 1.0000004, y: 1, z: 1.0000004}
+    - prefab: {fileID: 1334434696216914, guid: 2b93997388764ab4aa8a4b07f0fc727d, type: 3}
+      offset: {x: 0.28353882, y: 0, z: -0.07639694}
+      rotation: {x: -0, y: 0.08653935, z: -0, w: 0.9962484}
+      scale: {x: 1.0000005, y: 1, z: 1.0000005}
+  - name: Demo_ExteriorOnly_Optimized_01_Rock_Cliff_05
+    radius: 5.145511
+    pieces:
+    - prefab: {fileID: 1609516448512080, guid: bc597c00db3331b44a6e0faee5be1017, type: 3}
+      offset: {x: 0.024993896, y: 0, z: 4.4805717}
+      rotation: {x: -0.059220742, y: 0.535171, z: -0.102185644, w: 0.83644664}
+      scale: {x: 0.6208775, y: 0.75208265, z: 0.62087727}
+    - prefab: {fileID: 1087587913892192, guid: 0558abc42eda771439f8593c7821a2d7, type: 3}
+      offset: {x: 0.76499176, y: 0, z: 0.41057205}
+      rotation: {x: 0.093509965, y: 0.96796656, z: 0.06510193, w: 0.22373722}
+      scale: {x: 0.8371911, y: 1.7582842, z: -0.6728203}
+    - prefab: {fileID: 1087587913892192, guid: 0558abc42eda771439f8593c7821a2d7, type: 3}
+      offset: {x: -2.1550064, y: 0, z: 2.6305733}
+      rotation: {x: -0.012995024, y: 0.9652911, z: -0.018023156, w: 0.26022947}
+      scale: {x: 0.69301385, y: 2.6187232, z: -0.6829502}
+    - prefab: {fileID: 1609516448512080, guid: bc597c00db3331b44a6e0faee5be1017, type: 3}
+      offset: {x: -2.248001, y: 0, z: 0.34757233}
+      rotation: {x: -0, y: 0.9921815, z: -0, w: -0.124803364}
+      scale: {x: 0.4779342, y: 0.4779342, z: 0.4779342}
+    - prefab: {fileID: 1340173751181022, guid: 08e77162937cf2048b655b4b8c53b691, type: 3}
+      offset: {x: 0.984993, y: 0, z: -2.759426}
+      rotation: {x: 0.5429956, y: -0.026542706, z: -0.8391657, w: 0.01588329}
+      scale: {x: 0.9558466, y: 0.9564605, z: 1.5743599}
+    - prefab: {fileID: 1609516448512080, guid: bc597c00db3331b44a6e0faee5be1017, type: 3}
+      offset: {x: 2.6849976, y: 0, z: -4.389427}
+      rotation: {x: -0, y: 0.522466, z: -0, w: 0.8526601}
+      scale: {x: 0.60224307, y: 0.6022431, z: 0.60224307}
+    - prefab: {fileID: 1503474475152878, guid: bff56dac5e0572b409f4b1691d0a7c50, type: 3}
+      offset: {x: -0.057006836, y: 0, z: -0.72042847}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 0.6725467, y: 0.67254674, z: 0.67254674}
+  - name: Demo_ExteriorOnly_Optimized_02_Bush_Cluster_03
+    radius: 7.159735
+    pieces:
+    - prefab: {fileID: 1410392598601386, guid: c2510d402c00b8d4ea3e1ed4b7838ed2, type: 3}
+      offset: {x: -0.4657097, y: 0, z: 1.5894184}
+      rotation: {x: -0, y: 0.8964376, z: -0, w: 0.44317007}
+      scale: {x: 0.41818196, y: 0.41818196, z: 0.41818196}
+    - prefab: {fileID: 1661032390668868, guid: 9f3159be1e4814744a51a1a31aeb72e3, type: 3}
+      offset: {x: 4.2942924, y: 0, z: 3.6794186}
+      rotation: {x: 0.0030911134, y: 0.74004257, z: -0.0022418655, w: 0.6725493}
+      scale: {x: 0.59145266, y: 0.7073856, z: 0.5914524}
+    - prefab: {fileID: 1591242042108534, guid: b1caf92b258944948a55d7a715a5afa0, type: 3}
+      offset: {x: -4.303711, y: 0, z: 0.9114189}
+      rotation: {x: -0, y: 0.48436612, z: -0, w: 0.8748654}
+      scale: {x: 1, y: 1, z: 1}
+    - prefab: {fileID: 1833031359964946, guid: 6d999824fd17dae41af24ea33945caa9, type: 3}
+      offset: {x: 4.4038506, y: 0, z: -0.49212456}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - prefab: {fileID: 1591242042108534, guid: b1caf92b258944948a55d7a715a5afa0, type: 3}
+      offset: {x: 3.2059975, y: 0, z: -1.2653971}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - prefab: {fileID: 1650153803941426, guid: 7107590036870204a833cfcbcfff84b8, type: 3}
+      offset: {x: 1.1550903, y: 0, z: -2.645937}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - prefab: {fileID: 1503455669175690, guid: c9409a97af2dcc54a930bc02b81b4cda, type: 3}
+      offset: {x: -1.835701, y: 0, z: -1.0206261}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - prefab: {fileID: 1242553701839910, guid: af8a3b23c35a0794ebbde20b219374b1, type: 3}
+      offset: {x: 0.79019165, y: 0, z: -2.3245378}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - prefab: {fileID: 1257376156184336, guid: 70393b3e75d8e844ea5c284ce35f986b, type: 3}
+      offset: {x: -1.0739746, y: 0, z: -2.806522}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - prefab: {fileID: 1480767256909110, guid: bcb591b1428330b4abc0c035a3372be3, type: 3}
+      offset: {x: 5.1186943, y: 0, z: 0.98217773}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - prefab: {fileID: 1487291480178964, guid: 75c71fcdf9bcee142b6ae1dae85fd394, type: 3}
+      offset: {x: -4.3325157, y: 0, z: 1.6987982}
+      rotation: {x: -0.08667804, y: -0, z: -0, w: 0.9962364}
+      scale: {x: 1, y: 1, z: 1}
+    - prefab: {fileID: 1665918834644948, guid: 8ea72e06345945a409de87ba6aa6de22, type: 3}
+      offset: {x: -6.9564705, y: 0, z: 1.6939077}
+      rotation: {x: -0.1067421, y: 0.51265985, z: -0.13337833, w: 0.8414251}
+      scale: {x: 0.99999994, y: 1, z: 0.99999994}
+  - name: Demo_ExteriorOnly_Optimized_03_Rock_Cliff_05
+    radius: 3.4297183
+    pieces:
+    - prefab: {fileID: 1087587913892192, guid: 0558abc42eda771439f8593c7821a2d7, type: 3}
+      offset: {x: -3.1960602, y: 0, z: -1.2442532}
+      rotation: {x: -0.007510006, y: -0.22075208, z: -0.052127317, w: 0.973907}
+      scale: {x: 0.6474898, y: 0.6691539, z: -0.6798255}
+    - prefab: {fileID: 1087587913892192, guid: 0558abc42eda771439f8593c7821a2d7, type: 3}
+      offset: {x: 1.8739395, y: 0, z: 1.1457472}
+      rotation: {x: 0.050688196, y: 0.9796715, z: 0.014295593, w: -0.19357213}
+      scale: {x: 0.82609195, y: 0.73747015, z: 0.74444187}
+    - prefab: {fileID: 1665918834644948, guid: 8ea72e06345945a409de87ba6aa6de22, type: 3}
+      offset: {x: 2.0091362, y: 0, z: -1.0803442}
+      rotation: {x: -0, y: -0.9238487, z: -0, w: 0.38275805}
+      scale: {x: 1.0000004, y: 1, z: 1.0000004}
+    - prefab: {fileID: 1487291480178964, guid: 75c71fcdf9bcee142b6ae1dae85fd394, type: 3}
+      offset: {x: 0.0055007935, y: 0, z: 1.3200359}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - prefab: {fileID: 1387923506914990, guid: df3bf84b72933ed4191314cb2de00cb4, type: 3}
+      offset: {x: -0.69252396, y: 0, z: -0.14118576}
+      rotation: {x: -0.026738675, y: -0, z: -0, w: 0.9996425}
+      scale: {x: 1, y: 1, z: 1}
+  - name: Demo_ExteriorOnly_Optimized_04_Bush_Cluster_04
+    radius: 3.0053456
+    pieces:
+    - prefab: {fileID: 1661032390668868, guid: 9f3159be1e4814744a51a1a31aeb72e3, type: 3}
+      offset: {x: -2.9257927, y: 0, z: 0.68690586}
+      rotation: {x: 0.090525776, y: 0.9405234, z: 0.10445719, w: 0.31033802}
+      scale: {x: 0.5914527, y: 0.59145236, z: 0.59145296}
+    - prefab: {fileID: 1420769427110250, guid: 3e26a597c53162442865d4d32b59cf23, type: 3}
+      offset: {x: 0.81645584, y: 0, z: 0.3723321}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - prefab: {fileID: 1503455669175690, guid: c9409a97af2dcc54a930bc02b81b4cda, type: 3}
+      offset: {x: 0.01133728, y: 0, z: 1.5052195}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - prefab: {fileID: 1242553701839910, guid: af8a3b23c35a0794ebbde20b219374b1, type: 3}
+      offset: {x: 1.2472191, y: 0, z: -0.77994174}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - prefab: {fileID: 1993808167527942, guid: 451222aa5696e3d40b9f0841485e4a1c, type: 3}
+      offset: {x: 0.8507843, y: 0, z: -1.784516}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+  - name: Demo_ExteriorOnly_Optimized_05_Rock_Chunk_01
+    radius: 8.345252
+    pieces:
+    - prefab: {fileID: 1503474475152878, guid: bff56dac5e0572b409f4b1691d0a7c50, type: 3}
+      offset: {x: -5.771858, y: 0, z: -5.9703884}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 0.4718024, y: 0.4718024, z: 0.4718024}
+    - prefab: {fileID: 1993808167527942, guid: 451222aa5696e3d40b9f0841485e4a1c, type: 3}
+      offset: {x: -0.79304504, y: 0, z: -1.9720612}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - prefab: {fileID: 1620045131287868, guid: 632d296771cf4a848825cb402af539a1, type: 3}
+      offset: {x: -2.287857, y: 0, z: -4.012388}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - prefab: {fileID: 1591242042108534, guid: b1caf92b258944948a55d7a715a5afa0, type: 3}
+      offset: {x: 5.035141, y: 0, z: 2.3366117}
+      rotation: {x: 0.022737114, y: -0.6451742, z: -0.07850722, w: 0.7596512}
+      scale: {x: 1.0000001, y: 1, z: 1.0000004}
+    - prefab: {fileID: 1291229355180718, guid: 2f1cf358cb2eb1c43b8f7ecdad486700, type: 3}
+      offset: {x: -4.390854, y: 0, z: -4.6383877}
+      rotation: {x: -0, y: -0.8043499, z: -0, w: 0.59415597}
+      scale: {x: 1.4341967, y: 1.5473953, z: 1.0000006}
+    - prefab: {fileID: 1696126575580588, guid: d85d0b2a487406846a4e6c18d8317316, type: 3}
+      offset: {x: 0.14813995, y: 0, z: 2.1096115}
+      rotation: {x: -0, y: 0.51726717, z: -0, w: 0.855824}
+      scale: {x: 0.5864227, y: 0.43128422, z: 0.52859545}
+    - prefab: {fileID: 1257376156184336, guid: 70393b3e75d8e844ea5c284ce35f986b, type: 3}
+      offset: {x: 5.0827026, y: 0, z: 1.9101439}
+      rotation: {x: -0, y: -0.5914542, z: -0, w: 0.8063386}
+      scale: {x: 1, y: 1, z: 1}
+    - prefab: {fileID: 1092518597233016, guid: 3d305d053f0edaf4180ddbaf7955802a, type: 3}
+      offset: {x: 3.0181427, y: 0, z: 2.2196121}
+      rotation: {x: -0, y: -0.07398895, z: -0, w: 0.9972591}
+      scale: {x: -0.9553366, y: 1.2164186, z: 0.8111562}
+    - prefab: {fileID: 1189549595345322, guid: 23e06cc63cc3eb74791ede84dc942e66, type: 3}
+      offset: {x: 1.1871414, y: 0, z: 3.9256115}
+      rotation: {x: -0.0000192163, y: 0.8777598, z: -0.00062589446, w: 0.4791005}
+      scale: {x: 0.7714287, y: 2.0614955, z: 0.77142847}
+    - prefab: {fileID: 1092518597233016, guid: 3d305d053f0edaf4180ddbaf7955802a, type: 3}
+      offset: {x: -5.7508545, y: 0, z: -6.047388}
+      rotation: {x: -0, y: -0.21700291, z: -0, w: 0.97617096}
+      scale: {x: 1, y: 1, z: 1}
+    - prefab: {fileID: 1291229355180718, guid: 2f1cf358cb2eb1c43b8f7ecdad486700, type: 3}
+      offset: {x: 1.4957199, y: 0, z: 5.423168}
+      rotation: {x: -0, y: 0.83021533, z: -0, w: -0.5574428}
+      scale: {x: 0.99999964, y: 1, z: 0.99999964}
+    - prefab: {fileID: 1189549595345322, guid: 23e06cc63cc3eb74791ede84dc942e66, type: 3}
+      offset: {x: -2.5818558, y: 0, z: 2.1996117}
+      rotation: {x: -0, y: 0.60625386, z: -0, w: 0.7952712}
+      scale: {x: 0.77142906, y: 2.0614955, z: 0.7714292}
+    - prefab: {fileID: 1369797743686250, guid: 5e35c1135652c0341a813bd21f4869c3, type: 3}
+      offset: {x: 4.319145, y: 0, z: 3.0336113}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 0.7113139, y: 0.7113139, z: 0.7113139}
+    - prefab: {fileID: 1973209101124096, guid: 6c17a900ea5e69a4794dcb40340ed057, type: 3}
+      offset: {x: 1.2901459, y: 0, z: -0.5173874}
+      rotation: {x: -0, y: -0.18762627, z: -0, w: 0.9822405}
+      scale: {x: 1, y: 1, z: 1}
+  - name: Demo_ExteriorOnly_Optimized_06_Rock_Chunk_03
+    radius: 2.8548567
+    pieces:
+    - prefab: {fileID: 1257376156184336, guid: 70393b3e75d8e844ea5c284ce35f986b, type: 3}
+      offset: {x: -2.7956848, y: 0, z: 0.57823294}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - prefab: {fileID: 1591242042108534, guid: b1caf92b258944948a55d7a715a5afa0, type: 3}
+      offset: {x: 0.9593277, y: 0, z: 0.85269237}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - prefab: {fileID: 1092518597233016, guid: 3d305d053f0edaf4180ddbaf7955802a, type: 3}
+      offset: {x: 0.92731476, y: 0, z: -1.622767}
+      rotation: {x: 0.019178484, y: 0.3727598, z: -0.07972554, w: 0.92429763}
+      scale: {x: 0.8399999, y: 0.84, z: 0.83999985}
+    - prefab: {fileID: 1291229355180718, guid: 2f1cf358cb2eb1c43b8f7ecdad486700, type: 3}
+      offset: {x: 1.4383392, y: 0, z: 0.33796144}
+      rotation: {x: -0, y: -0.9252512, z: -0, w: 0.37935513}
+      scale: {x: 0.7076384, y: 0.70763767, z: 0.7076384}
+    - prefab: {fileID: 1369797743686250, guid: 5e35c1135652c0341a813bd21f4869c3, type: 3}
+      offset: {x: -0.52928925, y: 0, z: -0.14611983}
+      rotation: {x: 0.09071269, y: 0.2065205, z: 0.02935017, w: 0.97378594}
+      scale: {x: 0.8834316, y: 0.8834315, z: 0.88343155}
+  - name: Demo_ExteriorOnly_Optimized_07_Bush_Cluster_04
+    radius: 3.1608071
+    pieces:
+    - prefab: {fileID: 1591242042108534, guid: b1caf92b258944948a55d7a715a5afa0, type: 3}
+      offset: {x: 1.3583984, y: 0, z: -0.011199951}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - prefab: {fileID: 1609516448512080, guid: bc597c00db3331b44a6e0faee5be1017, type: 3}
+      offset: {x: 0.28839874, y: 0, z: -0.6701999}
+      rotation: {x: -0, y: 0.8780913, z: -0, w: -0.4784932}
+      scale: {x: 0.52790475, y: 0.5279044, z: 0.52790475}
+    - prefab: {fileID: 1503474475152878, guid: bff56dac5e0572b409f4b1691d0a7c50, type: 3}
+      offset: {x: -2.6556015, y: 0, z: -1.7142}
+      rotation: {x: -0, y: -0.64361274, z: -0, w: 0.7653513}
+      scale: {x: 0.45818388, y: 0.45818415, z: 0.45818406}
+    - prefab: {fileID: 1661032390668868, guid: 9f3159be1e4814744a51a1a31aeb72e3, type: 3}
+      offset: {x: -0.91059875, y: 0, z: 1.1258001}
+      rotation: {x: -0, y: 0.6348404, z: -0, w: 0.77264327}
+      scale: {x: 0.49066445, y: 0.49066454, z: 0.49066445}
+    - prefab: {fileID: 1477650915871582, guid: 146b0078b283caf4196b83ae7a0525f7, type: 3}
+      offset: {x: 1.9194031, y: 0, z: 1.2698}
+      rotation: {x: -0, y: 0.7524202, z: -0, w: -0.6586834}
+      scale: {x: 1.0143992, y: 1.0143993, z: 1.0143989}
+  - name: Demo_ExteriorOnly_Optimized_08_Tree_Thin_03
+    radius: 4.0854673
+    pieces:
+    - prefab: {fileID: 1480767256909110, guid: bcb591b1428330b4abc0c035a3372be3, type: 3}
+      offset: {x: -1.8025665, y: 0, z: 3.6663055}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - prefab: {fileID: 1418911200492398, guid: f5f7c978faa52f54ea07ce39457b00ad, type: 3}
+      offset: {x: 1.7154503, y: 0, z: -1.6355209}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 1.3672826, y: 1.3672825, z: 1.3672825}
+    - prefab: {fileID: 1257376156184336, guid: 70393b3e75d8e844ea5c284ce35f986b, type: 3}
+      offset: {x: 1.8534317, y: 0, z: -0.6906967}
+      rotation: {x: -0, y: -0.9937127, z: -0, w: 0.111959875}
+      scale: {x: 0.99999994, y: 1, z: 0.99999994}
+    - prefab: {fileID: 1537376257279788, guid: c8cd544a8e1758546b476879dbfdc22c, type: 3}
+      offset: {x: 1.2094326, y: 0, z: -3.1526947}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 1.3945622, y: 1.3945624, z: 1.3945624}
+    - prefab: {fileID: 1537376257279788, guid: c8cd544a8e1758546b476879dbfdc22c, type: 3}
+      offset: {x: -2.8525677, y: 0, z: 1.5763016}
+      rotation: {x: -0, y: 0.7073585, z: -0, w: 0.706855}
+      scale: {x: 1.3945622, y: 1.3945624, z: 1.3945624}
+    - prefab: {fileID: 1420769427110250, guid: 3e26a597c53162442865d4d32b59cf23, type: 3}
+      offset: {x: -0.12319374, y: 0, z: 0.2363205}
+      rotation: {x: -0, y: -0, z: -0, w: 1}
+      scale: {x: 1.5896733, y: 1.5896734, z: 1.5896734}
+  - name: Demo_ExteriorOnly_Optimized_09_Rock_Cliff_05
+    radius: 4.006378
+    pieces:
+    - prefab: {fileID: 1087587913892192, guid: 0558abc42eda771439f8593c7821a2d7, type: 3}
+      offset: {x: 1.443634, y: 0, z: -1.3389874}
+      rotation: {x: -0, y: 0.45043677, z: -0, w: -0.8928084}
+      scale: {x: -0.749763, y: 0.77602094, z: -0.612891}
+    - prefab: {fileID: 1334434696216914, guid: 2b93997388764ab4aa8a4b07f0fc727d, type: 3}
+      offset: {x: -1.1963654, y: 0, z: 1.8790131}
+      rotation: {x: -0, y: 0.8736584, z: -0, w: -0.48653984}
+      scale: {x: 0.9999999, y: 1, z: 0.9999999}
+    - prefab: {fileID: 1365096857537640, guid: 7c50f10bc65b25c429cfa1de506b367b, type: 3}
+      offset: {x: -2.0004883, y: 0, z: 1.8489475}
+      rotation: {x: -0, y: 0.8736584, z: -0, w: -0.48653984}
+      scale: {x: 0.9999999, y: 1, z: 0.9999999}
+    - prefab: {fileID: 1334434696216914, guid: 2b93997388764ab4aa8a4b07f0fc727d, type: 3}
+      offset: {x: -0.4303589, y: 0, z: 0.97001266}
+      rotation: {x: -0, y: 0.8736584, z: -0, w: -0.48653984}
+      scale: {x: 0.9999999, y: 1, z: 0.9999999}
+    - prefab: {fileID: 1092518597233016, guid: 3d305d053f0edaf4180ddbaf7955802a, type: 3}
+      offset: {x: 2.1836395, y: 0, z: -3.358986}
+      rotation: {x: -0.02460691, y: 0.20323244, z: -0.11765417, w: 0.97172457}
+      scale: {x: 1.4842427, y: 1.4842423, z: 1.4842427}
+  - name: Demo_ExteriorOnly_Optimized_10_Rock_Chunk_01
+    radius: 2.7374234
+    pieces:
+    - prefab: {fileID: 1334434696216914, guid: 2b93997388764ab4aa8a4b07f0fc727d, type: 3}
+      offset: {x: 0.117874146, y: 0, z: 0.4494915}
+      rotation: {x: -0, y: 0.65047216, z: -0, w: 0.75953007}
+      scale: {x: 0.9999999, y: 1, z: 0.9999999}
+    - prefab: {fileID: 1977804150361796, guid: bf8fab545a9999c4e9dbe5bbb85b350a, type: 3}
+      offset: {x: -0.81817627, y: 0, z: 1.1395531}
+      rotation: {x: -0, y: 0.65047216, z: -0, w: 0.75953007}
+      scale: {x: 0.9999999, y: 1, z: 0.9999999}
+    - prefab: {fileID: 1365096857537640, guid: 7c50f10bc65b25c429cfa1de506b367b, type: 3}
+      offset: {x: 1.00354, y: 0, z: 0.027446747}
+      rotation: {x: -0, y: 0.65047216, z: -0, w: 0.75953007}
+      scale: {x: 0.9999999, y: 1, z: 0.9999999}
+    - prefab: {fileID: 1334434696216914, guid: 2b93997388764ab4aa8a4b07f0fc727d, type: 3}
+      offset: {x: -0.10014343, y: 0, z: 1.4486313}
+      rotation: {x: -0, y: 0.65047216, z: -0, w: 0.75953007}
+      scale: {x: 0.9999999, y: 1, z: 0.9999999}
+    - prefab: {fileID: 1291229355180718, guid: 2f1cf358cb2eb1c43b8f7ecdad486700, type: 3}
+      offset: {x: -1.3987122, y: 0, z: -0.6025734}
+      rotation: {x: 0.13703309, y: 0.13255222, z: -0.10186761, w: 0.97635794}
+      scale: {x: 1.0695924, y: 1.251507, z: 1.2515064}
+    - prefab: {fileID: 1092518597233016, guid: 3d305d053f0edaf4180ddbaf7955802a, type: 3}
+      offset: {x: 1.1955414, y: 0, z: -2.462553}
+      rotation: {x: -0.06832062, y: 0.97806776, z: -0.00066884625, w: 0.19676201}
+      scale: {x: 1.2283195, y: 1.2283205, z: 1.228319}
+  gate: {fileID: 1474201465068626, guid: e4616f0d4fa69d044997ad5e4d02b148, type: 3}
+  gateModelYaw: 180
+  wall: {fileID: 1069983557862476, guid: a8c3c2fa6519fae4690d44a8ec308088, type: 3}
+  wallYaw: 180
+  wallTower: {fileID: 1098612053194580, guid: 8cb498ab8ebea3640a0c9b12de1c91f6, type: 3}
+  bridgeTile: {fileID: 1240066901670736, guid: 3c3791d604bc6104fa09b77432654cb6, type: 3}
+  bridgePillar: {fileID: 1271835995646666, guid: 2a70b5473e2e3394da62b94507333f12, type: 3}
+  pitSpikes:
+  - {fileID: 134976, guid: 71b973d16356c61458cb853ecb1850ca, type: 3}
+  defenseStakes:
+  - {fileID: 1422914978940362, guid: 235c9a28d34302249ac8233cf98d8297, type: 3}
+  - {fileID: 1729286115164838, guid: bf7636086a3cbf4429611a44a0293ff2, type: 3}
+  - {fileID: 1190704525894480, guid: c09337db46d95c6468437afccf3bb9a2, type: 3}
+  banners:
+  - {fileID: 1003196782519748, guid: f893351fa0c095a49839ad3fd4c320fb, type: 3}
+  - {fileID: 1937476797999952, guid: d151e4ad652fac64aa16b330e9a43a25, type: 3}
+  - {fileID: 1911324588445948, guid: 03232ca4d1de1f44289e77b986aea352, type: 3}
+  fieldLitter:
+  - {fileID: 1080980776002148, guid: cb51336669983dc4dba599d050045908, type: 3}
+  - {fileID: 1320947558759696, guid: 95614e618c11c4343bb9d793d921e433, type: 3}
+  - {fileID: 1270400730273450, guid: c5db1147f0437c64d8cb70bfccbad315, type: 3}
+  - {fileID: 1591242042108534, guid: b1caf92b258944948a55d7a715a5afa0, type: 3}
+  - {fileID: 1257376156184336, guid: 70393b3e75d8e844ea5c284ce35f986b, type: 3}
+  - {fileID: 1710074090034138, guid: 8987043dc8eb1c24a84b9bf9dd364f31, type: 3}
+  - {fileID: 1596416409772952, guid: 758092bbbc117b040b6342372a2140c5, type: 3}
+  - {fileID: 1291229355180718, guid: 2f1cf358cb2eb1c43b8f7ecdad486700, type: 3}
+  courtyardProps:
+  - {fileID: 1894982720226970, guid: b26e035715d763f409a7e837ae204dab, type: 3}
+  - {fileID: 1092251644890200, guid: 29fd7b3d4b3dabe4388eac10c6617909, type: 3}
+  - {fileID: 1368671110142866, guid: 1892a9bbd9c37a049b7326377596c2df, type: 3}
+  skybox: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  volumeProfile: {fileID: 11400000, guid: 495654bb42f2be845a833f58c691e0cf, type: 2}
+  sunColor: {r: 1, g: 0.93, b: 0.8, a: 1}
+  sunIntensity: 1.45
+  sunEuler: {x: 40, y: -30, z: 0}
+  fogColor: {r: 0.66, g: 0.78, b: 0.86, a: 1}
+  fogDensity: 0.0028
+  ambientSky: {r: 0.6, g: 0.72, b: 0.85, a: 1}
+  ambientEquator: {r: 0.5, g: 0.6, b: 0.52, a: 1}
+  ambientGround: {r: 0.28, g: 0.3, b: 0.22, a: 1}

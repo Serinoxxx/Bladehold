@@ -2,20 +2,27 @@ using System;
 using MoreMountains.Feedbacks;
 using Synty.AnimationBaseLocomotion.Samples.InputSystem;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
+/// <summary>
+///     The Summon Mount ability's input and HUD face. The summon itself (cast, the horse, ride duration,
+///     cooldown) belongs to <see cref="PlayerMount" /> and its equipped <see cref="MountDefinitionSO" />;
+///     this component turns the SummonMount press into <see cref="PlayerMount.TryStartMountCast" /> (a
+///     second press mid-cast cancels) and re-raises PlayerMount's timers as the events the HUD
+///     (<see cref="SummonCastBarUI" />, <see cref="SummonMountUI" />) listens to.
+///     Keyboard X is bound to both SummonMount and Dismount: PlayerMount only dismounts on Dismount, and
+///     this ignores the press while riding, so one press never both dismounts and re-summons.
+/// </summary>
 public class PlayerSummonMount : MonoBehaviour
 {
     [Header("Dependencies")]
     [SerializeField] private PlayerMount playerMount;
     [SerializeField] private Player player;
     [SerializeField] private InputReader inputReader;
-    [SerializeField] private Transform spawnPosition;
 
-    [Header("Settings")]
-    [SerializeField] private HorseMotor horsePrefab;
+    [Header("Feedback")]
     [SerializeField] private MMF_Player spawnFeedback;
     [SerializeField] private MMF_Player despawnFeedback;
+    [Tooltip("Played when a summon press is refused (on cooldown, blocked by the scene).")]
     [SerializeField] private MMF_Player errorFeedback;
 
     // UI Events
@@ -28,18 +35,8 @@ public class PlayerSummonMount : MonoBehaviour
     public event Action OnCastFinished;
     public event Action OnCastCancelled;
 
-    private HorseMotor spawnedHorse;
-    private float remainingDuration;
-    private float maxDuration;
-    private float remainingCooldown;
-    private float maxCooldown;
-    private bool isCooldownActive;
-
-    private bool isCasting;
-    private float castTimer;
-    private float maxCastTime = 2f;
-    private Vector2 lastMoveInput;
-
+    private float castDuration;
+    private int lastDismountFrame = -1;
     private bool anyError;
 
     private void OnValidate()
@@ -65,181 +62,108 @@ public class PlayerSummonMount : MonoBehaviour
 
         // Unlocked from the start of every run (1); kept as a stat so something could still lock it.
         player.Stats.SetBase(StatType.SummonMountUnlocked, 1f);
-        player.Stats.SetBase(StatType.SummonMountDuration, 20f);
-        player.Stats.SetBase(StatType.SummonMountCooldown, 45f);
 
         inputReader.onSummonMountPerformed += HandleSummonAction;
-        player.Health.OnDamaged += HandleDamaged;
+        playerMount.OnMountCastStarted += HandleCastStarted;
+        playerMount.OnMountCastCancelled += HandleCastCancelled;
+        playerMount.OnMountCastCompleted += HandleCastCompleted;
+        playerMount.OnMountDurationChanged += HandleDurationChanged;
+        playerMount.OnMountCooldownChanged += HandleCooldownChanged;
+        playerMount.OnMountedChanged += HandleMountedChanged;
     }
 
     private void OnDestroy()
     {
-        if (inputReader != null)
+        if (inputReader != null) inputReader.onSummonMountPerformed -= HandleSummonAction;
+        if (playerMount != null)
         {
-            inputReader.onSummonMountPerformed -= HandleSummonAction;
-        }
-        if (player != null && player.Health != null)
-        {
-            player.Health.OnDamaged -= HandleDamaged;
+            playerMount.OnMountCastStarted -= HandleCastStarted;
+            playerMount.OnMountCastCancelled -= HandleCastCancelled;
+            playerMount.OnMountCastCompleted -= HandleCastCompleted;
+            playerMount.OnMountDurationChanged -= HandleDurationChanged;
+            playerMount.OnMountCooldownChanged -= HandleCooldownChanged;
+            playerMount.OnMountedChanged -= HandleMountedChanged;
         }
     }
 
-    private void HandleDamaged(Damage damage)
+    private void Update()
     {
-        if (isCasting)
-        {
-            CancelCast();
-        }
+        if (anyError || !playerMount.IsCastingMount) return;
+        OnCastUpdated?.Invoke(playerMount.CastProgress * castDuration, castDuration);
     }
 
     private void HandleSummonAction()
     {
         if (anyError || player.Health.IsDead) return;
 
-        // Riding: the same X press is the Dismount action, handled by PlayerMount.
-        if (playerMount.IsMounted) return;
+        // Riding: the same X press is the Dismount action, handled by PlayerMount. The Dismount handler
+        // may run first and have just put us on the ground, so ignore the press that frame too.
+        if (playerMount.IsMounted || Time.frameCount == lastDismountFrame) return;
 
-        if (!IsAbilityUnlocked) return;
+        if (playerMount.IsCastingMount)
+        {
+            playerMount.CancelMountCast();
+            return;
+        }
 
-        if (spawnedHorse != null)
+        if (!IsAbilityUnlocked || !playerMount.TryStartMountCast())
         {
             if (errorFeedback != null) errorFeedback.PlayFeedbacks();
-            return;
         }
-
-        if (isCasting)
-        {
-            return;
-        }
-
-        StartCast();
     }
 
-    private void StartCast()
+    private void HandleCastStarted(float duration)
     {
-        isCasting = true;
-        castTimer = 0f;
-        lastMoveInput = inputReader._moveComposite;
-        
+        castDuration = duration;
         Animator anim = player.GetComponentInChildren<Animator>();
         if (anim != null) anim.SetTrigger("Cheer"); // Placeholder for casting
-
-        OnCastStarted?.Invoke(maxCastTime);
+        OnCastStarted?.Invoke(duration);
     }
 
-    private void CancelCast()
+    private void HandleCastCancelled()
     {
-        isCasting = false;
         if (errorFeedback != null) errorFeedback.PlayFeedbacks();
         OnCastCancelled?.Invoke();
     }
 
-    private void FinishCast()
+    private void HandleCastCompleted()
     {
-        isCasting = false;
         OnCastFinished?.Invoke();
-        SummonHorse();
-    }
-
-    private void SummonHorse()
-    {
-        if (horsePrefab == null) return;
-
-        spawnedHorse = Instantiate(horsePrefab, spawnPosition.position, spawnPosition.rotation);
-
-        playerMount.TryMount(spawnedHorse);
-
-        maxDuration = player.Stats.GetValue(StatType.SummonMountDuration);
-        remainingDuration = maxDuration;
-        isCooldownActive = false;
-        remainingCooldown = 0f;
-
         if (spawnFeedback != null)
         {
             spawnFeedback.transform.position = transform.position;
             spawnFeedback.PlayFeedbacks();
         }
-
         OnAbilityTriggered?.Invoke();
+        OnDurationUpdated?.Invoke(playerMount.MountRemainingDuration, playerMount.MaxMountDuration);
     }
 
-    private void DespawnHorse()
+    private void HandleDurationChanged(float current, float max) => OnDurationUpdated?.Invoke(current, max);
+
+    private void HandleCooldownChanged(float current, float max)
     {
-        if (spawnedHorse == null) return;
+        OnCooldownUpdated?.Invoke(current, max);
+        if (current <= 0f) OnAbilityReady?.Invoke();
+    }
 
-        if (playerMount.CurrentHorse == spawnedHorse)
-        {
-            playerMount.Dismount();
-        }
-
+    private void HandleMountedChanged(bool mounted)
+    {
+        if (mounted) return;
+        lastDismountFrame = Time.frameCount;
         if (despawnFeedback != null)
         {
-            despawnFeedback.transform.position = spawnedHorse.transform.position;
+            despawnFeedback.transform.position = transform.position;
             despawnFeedback.PlayFeedbacks();
         }
-
-        Destroy(spawnedHorse.gameObject);
-        spawnedHorse = null;
-
-        maxCooldown = player.Stats.GetValue(StatType.SummonMountCooldown);
-        remainingCooldown = maxCooldown;
-        isCooldownActive = true;
-    }
-
-    private void Update()
-    {
-        if (anyError) return;
-
-        if (isCasting)
-        {
-            if (inputReader._moveComposite != lastMoveInput && inputReader._moveComposite.magnitude > 0.1f)
-            {
-                CancelCast();
-                return;
-            }
-
-            castTimer += Time.deltaTime;
-            OnCastUpdated?.Invoke(castTimer, maxCastTime);
-
-            if (castTimer >= maxCastTime)
-            {
-                FinishCast();
-            }
-            return;
-        }
-
-        if (spawnedHorse != null)
-        {
-            if (spawnedHorse.Health != null && spawnedHorse.Health.IsDead)
-            {
-                DespawnHorse();
-            }
-            else
-            {
-                remainingDuration -= Time.deltaTime;
-                OnDurationUpdated?.Invoke(remainingDuration, maxDuration);
-
-                if (remainingDuration <= 0f)
-                {
-                    DespawnHorse();
-                }
-            }
-        }
-        else if (isCooldownActive)
-        {
-            remainingCooldown -= Time.deltaTime;
-            OnCooldownUpdated?.Invoke(remainingCooldown, maxCooldown);
-
-            if (remainingCooldown <= 0f)
-            {
-                isCooldownActive = false;
-                OnAbilityReady?.Invoke();
-            }
-        }
+        OnCooldownUpdated?.Invoke(playerMount.MountRemainingCooldown, playerMount.MaxMountCooldown);
     }
 
     /// <summary>True when the mount can be summoned here: unlocked and allowed by the scene's <see cref="SceneAbilityRules" />. SummonMountUI hides the slot when false.</summary>
     public bool IsAbilityUnlocked => SceneAbilityRules.MountAllowed && player != null && player.Stats != null && player.Stats.GetValue(StatType.SummonMountUnlocked) > 0f;
-    public bool IsHorseActive => spawnedHorse != null;
-    public bool IsCooldownActive => isCooldownActive;
+    public bool IsHorseActive => playerMount != null && playerMount.IsMounted;
+    public bool IsCooldownActive => playerMount != null && !playerMount.IsMounted && playerMount.MountRemainingCooldown > 0f;
+    public float RemainingDuration => playerMount != null ? playerMount.MountRemainingDuration : 0f;
+    public float MaxDuration => playerMount != null ? playerMount.MaxMountDuration : 0f;
+    public float RemainingCooldown => playerMount != null ? playerMount.MountRemainingCooldown : 0f;
+    public float MaxCooldown => playerMount != null ? playerMount.MaxMountCooldown : 0f;
 }

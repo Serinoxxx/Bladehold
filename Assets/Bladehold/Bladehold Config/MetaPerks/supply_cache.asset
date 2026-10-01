@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8768debe5b7f874ea78353f8d59693e, type: 3}
+  m_Name: supply_cache
+  m_EditorClassIdentifier: Assembly-CSharp::MetaPerkDefinitionSO
+  id: supply_cache
+  displayName: Supply Cache
+  description: Begin every run with +{0} Supply for building and refilling towers.
+  tier: 1
+  goblinBloodCost: 10
+  rankCosts: 0a0000000f0000001400000019000000
+  rankValues:
+  - 20
+  - 40
+  - 60
+  - 80
+  icon: {fileID: 21300000, guid: 2a01d30c31d57684d93a2166bdbd2c8f, type: 3}
+  prerequisites: []

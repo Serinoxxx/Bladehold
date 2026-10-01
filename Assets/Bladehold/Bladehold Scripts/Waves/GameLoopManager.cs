@@ -30,8 +30,6 @@ public class GameLoopManager : MonoBehaviour
     [Header("Ready")]
     [Tooltip("Seconds the Start Wave input ([T] / D-pad Down) must be held to leave prep.")]
     [SerializeField] private float readyHoldSeconds = 1f;
-    [Tooltip("Seconds the reward popup stays up before the wave draft opens.")]
-    [SerializeField] private float rewardPopupSeconds = 2f;
 
     [Header("Captain Settings")]
     [Tooltip("Captain Fraglob prefab. If null, an error is logged and Captain Kombusta spawns instead.")]
@@ -66,6 +64,7 @@ public class GameLoopManager : MonoBehaviour
     private bool isAwaitingReady = false;
     private bool isResolving = false;
     private bool isRouting = false;
+    private readonly List<Health> routStragglers = new List<Health>();
     private float readyHoldTimer = 0f;
     private float resolveWatchdog = 0f;
     private int upcomingWave = 1;
@@ -102,8 +101,15 @@ public class GameLoopManager : MonoBehaviour
     public bool IsPrepPhase => isPrep;
     /// <summary>True during prep once a card is picked and the game is waiting for the Ready hold.</summary>
     public bool IsAwaitingReady => isPrep && isAwaitingReady && !isChoosingCard;
+
+    /// <summary>True while the wave choice cards are open.</summary>
+    public bool IsChoosingCard => isChoosingCard;
     public float ReadyHoldProgress => readyHoldSeconds > 0f ? Mathf.Clamp01(readyHoldTimer / readyHoldSeconds) : 0f;
     public bool IsRouting => isRouting;
+    /// <summary>The enemies still fleeing during the rout (dead ones included until it ends). Empty otherwise.</summary>
+    public IReadOnlyList<Health> RoutStragglers => routStragglers;
+    /// <summary>Seconds left to hunt the stragglers down before they escape; 0 when not routing.</summary>
+    public float RoutSecondsLeft { get; private set; }
     /// <summary>3, 2, 1 during the pre-wave countdown; 0 otherwise.</summary>
     public int CountdownSeconds { get; private set; }
     /// <summary>The upcoming wave's card objective title during prep, or blank.</summary>
@@ -252,7 +258,8 @@ public class GameLoopManager : MonoBehaviour
             return;
         }
 
-        if (waveChoiceConfig.IsDraftedWave(nextWave) && SurvivorsCardSelectUI.Instance != null)
+        bool drafting = pacingConfig == null || pacingConfig.draftWaveCards;
+        if (drafting && waveChoiceConfig.IsDraftedWave(nextWave) && SurvivorsCardSelectUI.Instance != null)
         {
             List<WaveCard> cards = WaveCardGenerator.Roll(waveChoiceConfig, ctx, cardRng);
             if (cards.Count > 0)
@@ -266,8 +273,12 @@ public class GameLoopManager : MonoBehaviour
             Debug.LogError($"[GameLoopManager] Wave draft for wave {nextWave} rolled no cards; playing a fixed wave instead.", this);
         }
 
-        FixedWaveDefinition fixedWave = nextWave >= waveChoiceConfig.finalWaveNumber ? waveChoiceConfig.finalWave : waveChoiceConfig.firstWave;
+        FixedWaveDefinition fixedWave = drafting && nextWave >= waveChoiceConfig.finalWaveNumber ? waveChoiceConfig.finalWave : waveChoiceConfig.firstWave;
         CurrentWaveCard = WaveCardGenerator.BuildFixed(waveChoiceConfig, fixedWave, ctx, cardRng);
+        if (CurrentWaveCard != null && pacingConfig != null && !pacingConfig.rollWaveClans)
+        {
+            CurrentWaveCard.clan = null;
+        }
         EnterAwaitReady();
     }
 
@@ -600,8 +611,9 @@ public class GameLoopManager : MonoBehaviour
         if (stragglers.Count > 0)
         {
             isRouting = true;
-            SetStatus(Loc.Get("wave.status.rout", "The goblins are fleeing!"));
-            float duration = waveChoiceConfig != null ? waveChoiceConfig.routDurationSeconds : 4f;
+            routStragglers.Clear();
+            routStragglers.AddRange(stragglers);
+            float duration = waveChoiceConfig != null ? waveChoiceConfig.routDurationSeconds : 20f;
             foreach (Health h in stragglers)
             {
                 Vector3 fleeTo = spawner != null ? spawner.NearestSpawnPoint(h.transform.position) : h.transform.position - h.transform.forward * 30f;
@@ -609,11 +621,21 @@ public class GameLoopManager : MonoBehaviour
             }
 
             float t = 0f;
+            int shownSeconds = -1;
             while (t < duration && stragglers.Exists(h => h != null && !h.IsDead))
             {
+                RoutSecondsLeft = duration - t;
+                int seconds = Mathf.CeilToInt(RoutSecondsLeft);
+                if (seconds != shownSeconds)
+                {
+                    shownSeconds = seconds;
+                    SetStatus(string.Format(Loc.Get("wave.status.rout_hunt", "The goblins are fleeing! Hunt them down: {0}s"), seconds));
+                }
                 t += Time.deltaTime;
                 yield return null;
             }
+            RoutSecondsLeft = 0f;
+            routStragglers.Clear();
 
             if (spawner != null) spawner.DespawnAllAliveEnemies();
             foreach (Health h in stragglers)
@@ -647,7 +669,7 @@ public class GameLoopManager : MonoBehaviour
         // Wave-clear heal perks apply win or lose.
         if (Player.Instance != null && Player.Instance.Health != null)
         {
-            if (RunSession.HasMetaPerk("regeneration")) Player.Instance.Health.Heal(5f);
+            if (RunSession.HasMetaPerk("regeneration")) Player.Instance.Health.Heal(RunSession.GetMetaPerkValue("regeneration", 5f));
             if (RunSession.SpecialHerbsWavesRemaining > 0) Player.Instance.Health.Heal(5f);
         }
 
@@ -695,7 +717,7 @@ public class GameLoopManager : MonoBehaviour
 
     private IEnumerator NextIntermissionAfterPopup(int nextWave)
     {
-        yield return new WaitForSecondsRealtime(rewardPopupSeconds);
+        yield return new WaitForSecondsRealtime(waveChoiceConfig != null ? waveChoiceConfig.cardsDelaySeconds : 4f);
         BeginIntermission(nextWave);
     }
 

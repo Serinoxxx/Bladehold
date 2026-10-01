@@ -14,7 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MetaPerkDefinitionSO
   id: backstab
   displayName: Backstab
-  description: Deal +20% bonus damage when striking enemies from behind.
+  description: Deal +{0}% bonus damage when striking enemies from behind.
   tier: 1
   goblinBloodCost: 10
+  rankCosts: 0a0000000f0000001400000019000000
+  rankValues:
+  - 20
+  - 30
+  - 40
+  - 50
   icon: {fileID: 21300000, guid: 10320c6f1b223fb4d94617c9b7848baf, type: 3}
+  prerequisites: []

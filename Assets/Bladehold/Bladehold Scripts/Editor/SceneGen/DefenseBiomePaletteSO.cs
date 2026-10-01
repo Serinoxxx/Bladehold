@@ -59,6 +59,10 @@ public class DefenseBiomePaletteSO : ScriptableObject
     public GameObject wallTower;
     public GameObject bridgeTile;
     public GameObject bridgePillar;
+    [Tooltip("Optional: one piece that spans the whole crossing (an arched stone bridge, length along Z), used instead of bridgeTile/bridgePillar. Its ends are seated on the rims; it must be longer than the ravine is wide.")]
+    public GameObject bridgeSpan;
+    [Tooltip("Width scale on bridgeSpan (X only), so a narrow arch carries the horde. One 'tile' of BridgeSpec.tilesWide is one scaled span.")]
+    public float bridgeSpanWidthScale = 1f;
     public List<GameObject> pitSpikes = new List<GameObject>();
     [Tooltip("Wooden stake fortifications set in short lines on the gate-side flanks (keep their colliders).")]
     public List<GameObject> defenseStakes = new List<GameObject>();
@@ -68,6 +72,29 @@ public class DefenseBiomePaletteSO : ScriptableObject
     public List<GameObject> fieldLitter = new List<GameObject>();
     [Tooltip("Props sprinkled inside the courtyard between buildings.")]
     public List<GameObject> courtyardProps = new List<GameObject>();
+
+    [Header("Lanterns (optional)")]
+    [Tooltip("Lamps lining both sides of every road, the bridge heads and the gate apron, each given a point light. Colliders are stripped. Instances of these prefabs inside prop clusters get a light too. Empty = none (the stock palettes).")]
+    public List<GameObject> lanterns = new List<GameObject>();
+    public Vector2 lanternScale = new Vector2(1f, 1f);
+    [Tooltip("Metres between lanterns along each road edge.")]
+    public float lanternSpacing = 14f;
+    public Color lanternLightColor = new Color(1f, 0.72f, 0.38f);
+    public float lanternLightIntensity = 3f;
+    public float lanternLightRange = 9f;
+    [Tooltip("Height of the light as a fraction of the lantern's own height (where the lamp is).")]
+    [Range(0f, 1.2f)] public float lanternLightHeight = 0.8f;
+
+    [Header("Ground fog (optional)")]
+    [Tooltip("Particle fog patches laid over the field on a grid and along every ravine floor. Empty = none.")]
+    public List<GameObject> groundFog = new List<GameObject>();
+    [Tooltip("Multiplied into each fog system's start colour.")]
+    public Color groundFogTint = Color.white;
+    public float groundFogSpacing = 32f;
+    [Tooltip("Optional glow rising out of the spike pits: point lights every ~12 m along each ravine floor. Intensity 0 = none.")]
+    public float ravineGlowIntensity = 0f;
+    public Color ravineGlowColor = new Color(0.35f, 1f, 0.45f);
+    public float ravineGlowRange = 11f;
 
     [Header("Lighting")]
     public Material skybox;

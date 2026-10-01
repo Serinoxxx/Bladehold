@@ -3,19 +3,26 @@ using UnityEngine;
 using UnityEngine.AI;
 
 /// <summary>
-///     Runs a goblin as a baked crowd instance: its Animator and SkinnedMeshRenderer are switched off
-///     and <see cref="BakedCrowdRenderer" /> draws it instanced from <see cref="BakedCrowdAnimationSO" />
+///     Runs a crowd enemy (the fodder goblin, the skeletons) as a baked crowd instance: its Animator,
+///     SkinnedMeshRenderer and held props are switched off and <see cref="BakedCrowdRenderer" /> draws it instanced from <see cref="BakedCrowdAnimationSO" />
 ///     (idle, run, attack). When the goblin needs anything else — it's hit, knocked down, cheers,
 ///     turns golden/impulse or gets an outline — it is <see cref="Promote" />d to the real rig: the
 ///     skeleton is posed from the baked frame, then the Animator and renderer come back on. Once it
 ///     has recovered (no damage for a while, plain locomotion, away from the camera) it rejoins the
 ///     crowd (<see cref="Demote" />).
 ///
-///     Death: a real ragdoll (<see cref="EnemyRagdoll.BuildIfNeeded" /> promotes first) while the
-///     global ragdoll cap has room; past the cap <see cref="KnockbackReceiver" /> calls
-///     <see cref="PlayBakedDeath" />, which plays one of the ragdoll falls recorded by the baker —
-///     blood impacts included — and leaves a baked corpse that costs next to nothing until it
-///     despawns.
+///     Ragdolls: a real ragdoll (<see cref="EnemyRagdoll.BuildIfNeeded" /> promotes first) while the
+///     global ragdoll cap has room. Past the cap <see cref="KnockbackReceiver" /> calls
+///     <see cref="PlayBakedFall" />, for a death or a non-lethal fling: one of the ragdoll falls
+///     recorded by the baker plays (blood impacts included) while a pooled
+///     <see cref="BakedFallBody" /> sphere carries the root along the real launch. The falls are
+///     baked root-relative, so the body does the travel and the clip the tumble. A death stays down
+///     as a baked corpse; a fling picks a fall that lands face-up, gets up with a get-up aligned to
+///     that landing (<see cref="BeginGetUp" />), then the root moves to where the body stands
+///     (<see cref="FinishGetUp" />).
+///
+///     Held props (<see cref="propRenderers" />) are baked into the crowd mesh, so the real ones are
+///     hidden while baked and shown again on promotion.
 ///
 ///     Gameplay never changes: AI, NavMesh, attacks and colliders run as normal. The Animator keeps
 ///     its state while off, so triggers set meanwhile (an attack in progress) still play after
@@ -27,12 +34,16 @@ public class BakedCrowdAgent : MonoBehaviour
     [SerializeField] private Health health;
     [SerializeField] private Animator animator;
     [SerializeField] private SkinnedMeshRenderer bodyRenderer;
+    [Tooltip("Held props (sword, shield) on the rig's bones. The bake merges them into the crowd mesh, so they're hidden while baked.")]
+    [SerializeField] private Renderer[] propRenderers;
     [SerializeField] private NavMeshAgent agent;
     [SerializeField] private AIAttack aiAttack;
     [SerializeField] private KnockbackReceiver knockbackReceiver;
     [SerializeField] private EnemyRagdoll ragdoll;
     [SerializeField] private GoldenGoblin goldenGoblin;
     [SerializeField] private ImpulseGoblin impulseGoblin;
+    [Tooltip("Optional: an early corpse-cap despawn releases a still-moving fall body before the sink.")]
+    [SerializeField] private CorpseDespawner corpseDespawner;
 
     public BakedCrowdAnimationSO CrowdData => crowdData;
     public bool IsBaked { get; private set; }
@@ -54,11 +65,25 @@ public class BakedCrowdAgent : MonoBehaviour
     private bool playingDeath;
     private bool anyError = false;
 
+    private enum FallPhase
+    {
+        None,
+        Falling,
+        Settled,
+        GettingUp,
+    }
+
+    private FallPhase fallPhase;
+    private BakedFallBody fallBody;
+    private float fallElapsed;
+    private float fallSettledFor;
+
     private int clip;
     private float clipTime;
     private int fadeClip;
     private float fadeClipTime;
     private float fadeRemaining;
+    private float fadeDuration;
     private static int nextCheckOffset;
     private static readonly Plane[] frustumPlanes = new Plane[6];
 
@@ -74,6 +99,7 @@ public class BakedCrowdAgent : MonoBehaviour
         if (ragdoll == null) ragdoll = GetComponent<EnemyRagdoll>();
         if (goldenGoblin == null) goldenGoblin = GetComponent<GoldenGoblin>();
         if (impulseGoblin == null) impulseGoblin = GetComponent<ImpulseGoblin>();
+        if (corpseDespawner == null) corpseDespawner = GetComponent<CorpseDespawner>();
     }
 
     private void Awake()
@@ -89,13 +115,21 @@ public class BakedCrowdAgent : MonoBehaviour
         {
             aiAttack.OnAttackStarted += HandleAttackStarted;
         }
+        if (corpseDespawner == null)
+        {
+            corpseDespawner = GetComponent<CorpseDespawner>();
+        }
+        if (corpseDespawner != null)
+        {
+            corpseDespawner.OnDespawnStarted += HandleDespawnStarted;
+        }
     }
 
     private void Start()
     {
         if (crowdData == null || crowdData.boneTexture == null || crowdData.mesh == null || crowdData.material == null)
         {
-            Debug.LogError($"BakedCrowdAgent on {name}: crowdData is missing or not baked (run Bladehold/Crowd/Bake Goblin Crowd Animation).", this);
+            Debug.LogError($"BakedCrowdAgent on {name}: crowdData is missing or not baked (run Bladehold/Crowd/Bake Crowd Animations).", this);
             anyError = true;
         }
         if (health == null)
@@ -164,6 +198,11 @@ public class BakedCrowdAgent : MonoBehaviour
         {
             playerHealth.OnDied -= Promote;
         }
+        if (corpseDespawner != null)
+        {
+            corpseDespawner.OnDespawnStarted -= HandleDespawnStarted;
+        }
+        ReleaseFallBody();
         if (IsBaked)
         {
             BakedCrowdRenderer.Unregister(this);
@@ -173,11 +212,24 @@ public class BakedCrowdAgent : MonoBehaviour
     private void HandleDamaged(Damage damage)
     {
         lastDamageTime = Time.time;
-        // A lethal hit is left to the death path: KnockbackReceiver either ragdolls (which promotes
-        // via EnemyRagdoll.BuildIfNeeded) or, past the ragdoll cap, plays a baked fall.
-        if (health.CurrentHealth > 0f)
+        // A lethal hit is left to the death path, and a fling to KnockbackReceiver: a real ragdoll
+        // promotes via EnemyRagdoll.BuildIfNeeded, and past the ragdoll cap a baked fall plays from
+        // the baked pose.
+        bool flings = knockbackReceiver != null && knockbackReceiver.WouldFling(damage);
+        if (health.CurrentHealth > 0f && !flings)
         {
             Promote();
+        }
+    }
+
+    private void HandleDespawnStarted()
+    {
+        // The sink moves the root now.
+        ReleaseFallBody();
+        if (fallPhase != FallPhase.None)
+        {
+            clipTime = crowdData.clips[clip].length;
+            fallPhase = FallPhase.None;
         }
     }
 
@@ -211,12 +263,15 @@ public class BakedCrowdAgent : MonoBehaviour
         return highlight != null && highlight.enabled;
     }
 
-    private void StartClip(int next)
+    private void StartClip(int next) => StartClip(next, crowdData.crossfadeSeconds);
+
+    private void StartClip(int next, float crossfade)
     {
         if (next == clip && crowdData.clips[next].loop) return;
         fadeClip = clip;
         fadeClipTime = clipTime;
-        fadeRemaining = crowdData.crossfadeSeconds;
+        fadeRemaining = crossfade;
+        fadeDuration = crossfade;
         clip = next;
         // Loops start at a random phase so goblins that set off together don't stride in lockstep.
         clipTime = crowdData.clips[next].loop ? Random.Range(0f, crowdData.clips[next].length) : 0f;
@@ -230,6 +285,7 @@ public class BakedCrowdAgent : MonoBehaviour
         fadeRemaining = 0f;
         animator.enabled = false;
         bodyRenderer.enabled = false;
+        SetPropsVisible(false);
         IsBaked = true;
         // While baked, the renderer ticks us; Update only runs the rejoin checks of a live goblin.
         enabled = false;
@@ -243,9 +299,9 @@ public class BakedCrowdAgent : MonoBehaviour
     public bool Tick(float deltaTime, out Vector4 frameData)
     {
         frameData = default;
-        if (playingDeath)
+        if (playingDeath || fallPhase != FallPhase.None)
         {
-            TickDeath(deltaTime, out frameData);
+            TickFall(deltaTime, out frameData);
             return true;
         }
         if (health.IsDead || (knockbackReceiver != null && knockbackReceiver.IsIncapacitated)
@@ -285,7 +341,7 @@ public class BakedCrowdAgent : MonoBehaviour
         {
             fadeRemaining -= deltaTime;
             fadeClipTime += deltaTime * fadeRate;
-            fadeWeight = crowdData.crossfadeSeconds > 0f ? Mathf.Clamp01(fadeRemaining / crowdData.crossfadeSeconds) : 0f;
+            fadeWeight = fadeDuration > 0f ? Mathf.Clamp01(fadeRemaining / fadeDuration) : 0f;
         }
         return new Vector4(
             crowdData.FrameOf(clip, clipTime),
@@ -294,17 +350,50 @@ public class BakedCrowdAgent : MonoBehaviour
             0f);
     }
 
-    private void TickDeath(float deltaTime, out Vector4 frameData)
+    private void TickFall(float deltaTime, out Vector4 frameData)
     {
-        BakedCrowdAnimationSO.Clip fall = crowdData.clips[clip];
-        float previous = clipTime;
-        if (clipTime < fall.length)
+        BakedCrowdAnimationSO.Clip current = crowdData.clips[clip];
+        if (fallPhase == FallPhase.Falling)
+        {
+            if (fallBody != null)
+            {
+                transform.position = fallBody.transform.position - Vector3.up * crowdData.fallBodyRadius;
+            }
+
+            // A big launch is airborne longer than the recording was: hold the tumble half-way down
+            // until the body lands, rather than lying flat in mid-air.
+            float limit = current.length;
+            if (fallBody != null && !fallBody.Grounded && current.airborneHoldTime > 0f)
+            {
+                limit = Mathf.Max(clipTime, Mathf.Min(limit, current.airborneHoldTime));
+            }
+            float previous = clipTime;
+            clipTime = Mathf.Min(clipTime + deltaTime, limit);
+            PlayImpactsBetween(previous, clipTime);
+
+            fallElapsed += deltaTime;
+            bool resting = fallBody == null || (fallBody.Grounded && fallBody.Speed < crowdData.fallSettleSpeed);
+            fallSettledFor = resting ? fallSettledFor + deltaTime : 0f;
+            if ((clipTime >= current.length && fallSettledFor >= crowdData.fallSettleSeconds) || fallElapsed >= crowdData.fallTimeout)
+            {
+                ReleaseFallBody();
+                clipTime = current.length;
+                fallPhase = playingDeath ? FallPhase.None : FallPhase.Settled;
+            }
+        }
+        else if (fallPhase == FallPhase.GettingUp)
         {
             clipTime += deltaTime;
-            PlayImpactsBetween(previous, clipTime);
         }
-        // The fall's last frame is the settled corpse; FrameOf clamps a non-looping clip there.
+        // A fall's last frame is the settled pose; FrameOf clamps a non-looping clip there.
         frameData = FrameData(deltaTime, 1f);
+    }
+
+    private void ReleaseFallBody()
+    {
+        if (fallBody == null) return;
+        fallBody.Release();
+        fallBody = null;
     }
 
     private void PlayImpactsBetween(float from, float to)
@@ -316,14 +405,23 @@ public class BakedCrowdAgent : MonoBehaviour
         {
             if (impact.clip != clip || impact.time <= from || impact.time > to) continue;
             Vector3 point = rig.TransformPoint(impact.localPoint);
+            Vector3 normal = Vector3.up;
+            // The recording landed on flat ground at the root's height; find the real ground under it.
+            bool grounded = Physics.Raycast(point + Vector3.up * 0.75f, Vector3.down, out RaycastHit hit, 2f,
+                BakedFallBody.CollisionMask, QueryTriggerInteraction.Ignore);
+            if (grounded)
+            {
+                point = hit.point;
+                normal = hit.normal;
+            }
             if (ragdoll.BloodImpactFeedback != null)
             {
-                ragdoll.BloodImpactFeedback.transform.rotation = Quaternion.LookRotation(Vector3.up);
+                ragdoll.BloodImpactFeedback.transform.rotation = Quaternion.LookRotation(normal);
                 ragdoll.BloodImpactFeedback.PlayFeedbacks(point, impact.intensity);
             }
-            if (config != null)
+            if (config != null && grounded)
             {
-                BloodDecalManager.SpawnDecal(point, Vector3.up, impact.decalSize, config);
+                BloodDecalManager.SpawnDecal(point, normal, impact.decalSize, config);
             }
         }
     }
@@ -331,26 +429,50 @@ public class BakedCrowdAgent : MonoBehaviour
     public Matrix4x4 RenderMatrix => animator.transform.localToWorldMatrix;
 
     /// <summary>
-    ///     Plays one of the baked ragdoll falls in place of a real ragdoll (the cap is full) and stays
-    ///     baked as the corpse. Works from the live rig too. <paramref name="fallDirection" /> is the flat
-    ///     direction the body is thrown. Returns false when there's nothing baked to play.
+    ///     True when a baked fall can play now: for a death any recorded fall, for a fling (non-lethal)
+    ///     one that lands face-up, and the goblin isn't already falling. Golden and impulse goblins
+    ///     need their real material, so they never fall baked.
     /// </summary>
-    public bool PlayBakedDeath(Vector3 fallDirection)
+    public bool CanPlayBakedFall(bool lethal)
     {
         if (anyError || crowdData.deathClips == null || crowdData.deathClips.Length == 0) return false;
-        if (NeedsRealRig() && !IsBaked) return false;
+        if ((goldenGoblin != null && goldenGoblin.IsGolden) || (impulseGoblin != null && impulseGoblin.IsImpulse)) return false;
+        if (lethal) return true;
+        return !playingDeath && fallPhase == FallPhase.None && !health.IsDead && crowdData.HasGetUpFalls;
+    }
 
-        // The falls are recorded launching along the rig's -Z; turn the body to face away from the throw.
-        fallDirection.y = 0f;
-        if (fallDirection.sqrMagnitude > 0.0001f)
+    /// <summary>
+    ///     Plays one of the baked ragdoll falls in place of a real ragdoll (the cap is full), from the
+    ///     baked crowd or the live rig. <paramref name="flatDirection" /> is the way the body is thrown;
+    ///     <paramref name="velocity" /> is the launch (null: the recorded one). A death stays baked as
+    ///     the corpse. A fling ends <see cref="FallSettled" />, for <see cref="KnockbackReceiver" /> to
+    ///     find the stand-up spot and call <see cref="BeginGetUp" />. Turns the NavMeshAgent off: the
+    ///     fall body moves the root. Returns false when nothing baked can play.
+    /// </summary>
+    public bool PlayBakedFall(Vector3 flatDirection, Vector3? velocity, bool lethal)
+    {
+        if (!CanPlayBakedFall(lethal)) return false;
+
+        int fall = PickFall(lethal);
+        BakedCrowdAnimationSO.Clip recorded = crowdData.clips[fall];
+
+        // Turn the root so the recorded throw points along the real one.
+        flatDirection.y = 0f;
+        if (velocity.HasValue)
         {
-            Vector3 recorded = -animator.transform.forward;
-            recorded.y = 0f;
-            float yaw = Vector3.SignedAngle(recorded, fallDirection, Vector3.up);
+            Vector3 flatVelocity = new Vector3(velocity.Value.x, 0f, velocity.Value.z);
+            if (flatVelocity.sqrMagnitude > 0.01f) flatDirection = flatVelocity;
+        }
+        Transform rig = animator.transform;
+        if (flatDirection.sqrMagnitude > 0.0001f)
+        {
+            Vector3 thrown = rig.TransformDirection(recorded.throwDirection);
+            thrown.y = 0f;
+            if (thrown.sqrMagnitude < 0.0001f) thrown = -rig.forward;
+            float yaw = Vector3.SignedAngle(thrown, flatDirection, Vector3.up);
             transform.Rotate(Vector3.up, yaw, Space.World);
         }
 
-        int fall = crowdData.deathClips[Random.Range(0, crowdData.deathClips.Length)];
         if (IsBaked)
         {
             StartClip(fall);
@@ -359,18 +481,122 @@ public class BakedCrowdAgent : MonoBehaviour
         {
             EnterCrowd(fall);
         }
-        playingDeath = true;
+        playingDeath = lethal;
+        fallPhase = FallPhase.Falling;
+        fallElapsed = 0f;
+        fallSettledFor = 0f;
+
+        if (agent.enabled) agent.enabled = false;
+        Vector3 launch = velocity ?? rig.TransformDirection(recorded.launchVelocity);
+        ReleaseFallBody();
+        // A hair above the radius so a root a touch below the ground doesn't start inside it.
+        Vector3 centre = transform.position + Vector3.up * (crowdData.fallBodyRadius + 0.02f);
+        fallBody = BakedFallBody.Acquire(centre, launch, crowdData.fallBodyRadius, crowdData.fallBodyFriction);
         return true;
+    }
+
+    private int PickFall(bool lethal)
+    {
+        int[] falls = crowdData.deathClips;
+        if (lethal) return falls[Random.Range(0, falls.Length)];
+        int count = 0;
+        foreach (int f in falls)
+        {
+            if (crowdData.clips[f].getUpClip >= 0) count++;
+        }
+        int pick = Random.Range(0, count);
+        foreach (int f in falls)
+        {
+            if (crowdData.clips[f].getUpClip < 0) continue;
+            if (pick-- == 0) return f;
+        }
+        return falls[0];
+    }
+
+    /// <summary>A hit on a body that's mid-fall: nudges the fall body, as a real ragdoll takes an extra impulse.</summary>
+    public void AddFallImpulse(Vector3 velocityChange)
+    {
+        if (fallPhase == FallPhase.Falling && fallBody != null)
+        {
+            fallBody.AddVelocity(velocityChange);
+        }
+    }
+
+    /// <summary>
+    ///     The goblin died during a baked fling: a fall in progress (or settled) just stays down as the
+    ///     corpse; one already getting up falls again, as a death.
+    /// </summary>
+    public void MakeFallLethal(Vector3 flatDirection)
+    {
+        if (fallPhase == FallPhase.GettingUp)
+        {
+            fallPhase = FallPhase.None;
+            PlayBakedFall(flatDirection, null, true);
+            return;
+        }
+        playingDeath = true;
+        if (fallPhase == FallPhase.Settled) fallPhase = FallPhase.None;
+    }
+
+    /// <summary>A baked fling has landed and stopped; it waits for <see cref="BeginGetUp" />.</summary>
+    public bool FallSettled => fallPhase == FallPhase.Settled;
+
+    /// <summary>Where (world space) the body will be standing once its get-up finishes.</summary>
+    public Vector3 GetUpStandPosition
+    {
+        get
+        {
+            int getUp = crowdData.clips[clip].getUpClip;
+            if (fallPhase != FallPhase.Settled || getUp < 0) return transform.position;
+            return animator.transform.TransformPoint(crowdData.clips[getUp].standPosition);
+        }
+    }
+
+    /// <summary>Crossfades the settled fall into its aligned get-up.</summary>
+    public void BeginGetUp()
+    {
+        if (fallPhase != FallPhase.Settled) return;
+        int getUp = crowdData.clips[clip].getUpClip;
+        if (getUp < 0) return;
+        StartClip(getUp, crowdData.getUpCrossfadeSeconds);
+        fallPhase = FallPhase.GettingUp;
+    }
+
+    public bool GetUpFinished => fallPhase == FallPhase.GettingUp && clipTime >= crowdData.clips[clip].length;
+
+    /// <summary>
+    ///     Moves the root to where the get-up left the body standing and carries on in the crowd's idle.
+    ///     The pose doesn't jump: the unaligned get-up's last frame, drawn at the new root, is the
+    ///     aligned one's at the old root.
+    /// </summary>
+    public void FinishGetUp()
+    {
+        if (fallPhase != FallPhase.GettingUp) return;
+        BakedCrowdAnimationSO.Clip getUp = crowdData.clips[clip];
+        Transform rig = animator.transform;
+        Vector3 standWorld = rig.TransformPoint(getUp.standPosition);
+        transform.rotation = transform.rotation * Quaternion.Euler(0f, getUp.standYaw, 0f);
+        transform.position += standWorld - rig.position;
+
+        fallPhase = FallPhase.None;
+        if (crowdData.getUpClip >= 0)
+        {
+            clip = crowdData.getUpClip;
+            clipTime = crowdData.clips[clip].length;
+        }
+        StartClip(BakedCrowdAnimationSO.ClipIdle);
     }
 
     /// <summary>Hands the goblin back to its real Animator and SkinnedMeshRenderer, posed where the bake left it. Idempotent.</summary>
     public void Promote()
     {
-        if (!IsBaked || playingDeath) return;
+        // A baked fall has no live-rig equivalent; it finishes baked.
+        if (!IsBaked || playingDeath || fallPhase != FallPhase.None) return;
         IsBaked = false;
         BakedCrowdRenderer.Unregister(this);
         PoseSkeletonFromBake();
         bodyRenderer.enabled = true;
+        SetPropsVisible(true);
         animator.enabled = true;
         nextDemoteCheck = Time.time + crowdData.demoteCheckInterval;
         enabled = !anyError;
@@ -421,6 +647,15 @@ public class BakedCrowdAgent : MonoBehaviour
         if (IsBaked || anyError || health.IsDead) return;
         bool moving = agent.velocity.magnitude > crowdData.runSpeedThreshold;
         EnterCrowd(moving ? BakedCrowdAnimationSO.ClipRun : BakedCrowdAnimationSO.ClipIdle);
+    }
+
+    private void SetPropsVisible(bool visible)
+    {
+        if (propRenderers == null) return;
+        foreach (Renderer prop in propRenderers)
+        {
+            if (prop != null) prop.enabled = visible;
+        }
     }
 
     private void PoseSkeletonFromBake()

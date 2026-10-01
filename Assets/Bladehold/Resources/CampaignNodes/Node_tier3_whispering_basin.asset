@@ -20,7 +20,7 @@ MonoBehaviour:
   sceneName: Bladehold Fishing Pond
   nodeType: 3
   tierIndex: 3
-  mapPosition: {x: 500, y: -240}
+  mapPosition: {x: 660, y: -225}
   captainName: 
   difficultyTier: 1
   clanBuff: {fileID: 0}

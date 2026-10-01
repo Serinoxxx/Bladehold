@@ -20,7 +20,7 @@ MonoBehaviour:
   sceneName: Bladehold Castle Dungeons
   nodeType: 0
   tierIndex: 5
-  mapPosition: {x: 900, y: 130}
+  mapPosition: {x: 1180, y: 150}
   captainName: Captain Fraglob
   difficultyTier: 3
   clanBuff: {fileID: 0}
@@ -32,6 +32,5 @@ MonoBehaviour:
   metalReward: 0
   rewardIcon: {fileID: 0}
   nextNodes:
-  - {fileID: 11400000, guid: aaf2400b96b7e8144965178150ef93da, type: 2}
-  - {fileID: 11400000, guid: f53b62f5969def447be9ffc469c1d889, type: 2}
   - {fileID: 11400000, guid: 8dda2da0a6d745aa8c4c45656705457e, type: 2}
+  - {fileID: 11400000, guid: aaf2400b96b7e8144965178150ef93da, type: 2}

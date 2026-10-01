@@ -8,8 +8,9 @@ using UnityEngine;
 /// <summary>
 ///     Master controller for Clan Captain: Captain Kombusta.
 ///     Specializes in:
-///     1. Dynamite Volley: When player is at distance >= 5m, throws 10 dynamite sticks, one every second.
-///        Each dynamite detonates in a telegraphed 2m radius causing explosion and 20 damage.
+///     1. Dynamite Volley: When player is between 5m and the max range, throws 10 dynamite sticks, one every second.
+///        Each dynamite detonates in a telegraphed 2m radius causing explosion and 20 damage. The volley
+///        ends early if the player leaves that band or Kombusta is knocked down/ragdolled.
 ///     2. Self-Immolation: If the player gets in melee range (<= 3.5m) for 3 continuous seconds,
 ///        he sets himself on fire, burning the player over time as long as they stay in range.
 ///     3. Clan Captain Hierarchy: Scales with War Banner difficulty tier, Morale Break on defeat, bonus rewards.
@@ -24,6 +25,8 @@ public class CaptainKombustaController : MonoBehaviour, ICaptain
     [SerializeField] private Health health;
     [SerializeField] private AIMovement movement;
     [SerializeField] private AIAttack attack;
+    [Tooltip("Knockdowns and ragdoll flings: no dynamite while incapacitated.")]
+    [SerializeField] private KnockbackReceiver knockback;
     [SerializeField] private Animator animator;
     [SerializeField] private HighlightEffect highlightEffect;
     [SerializeField] private Transform firePoint;
@@ -53,6 +56,8 @@ public class CaptainKombustaController : MonoBehaviour, ICaptain
     public bool IsOnFire => isOnFire;
     public bool IsPerformingSpecial => isPerformingSpecial;
     public float MeleeTimer => meleeTimer;
+
+    private bool IsIncapacitated => knockback != null && knockback.IsIncapacitated;
 
     public event Action<CaptainKombustaController> OnCaptainDied;
 
@@ -89,6 +94,7 @@ public class CaptainKombustaController : MonoBehaviour, ICaptain
         if (health == null) health = GetComponent<Health>();
         if (movement == null) movement = GetComponent<AIMovement>();
         if (attack == null) attack = GetComponent<AIAttack>();
+        if (knockback == null) knockback = GetComponent<KnockbackReceiver>();
         if (animator == null) animator = GetComponentInChildren<Animator>();
         if (highlightEffect == null) highlightEffect = GetComponentInChildren<HighlightEffect>();
 
@@ -186,9 +192,8 @@ public class CaptainKombustaController : MonoBehaviour, ICaptain
 
         float distToPlayer = Vector3.Distance(transform.position, playerTransform.position);
 
-        // 1. Long-Range Special Attack: 10 Dynamite Volley (at distance >= 5m)
-        float triggerDistance = attackData != null ? attackData.dynamiteTriggerDistance : 5.0f;
-        if (!isPerformingSpecial && distToPlayer >= triggerDistance && Time.time >= nextDynamiteSpecialTime)
+        // 1. Long-Range Special Attack: 10 Dynamite Volley (player in the throw band, Kombusta on his feet)
+        if (!isPerformingSpecial && !IsIncapacitated && InDynamiteRange(distToPlayer) && Time.time >= nextDynamiteSpecialTime)
         {
             StartCoroutine(PerformDynamiteVolleyRoutine());
         }
@@ -197,11 +202,18 @@ public class CaptainKombustaController : MonoBehaviour, ICaptain
         UpdateMeleeProximityAndBurn(distToPlayer);
     }
 
+    private bool InDynamiteRange(float distToPlayer)
+    {
+        float minRange = attackData != null ? attackData.dynamiteTriggerDistance : 5.0f;
+        float maxRange = attackData != null ? attackData.dynamiteMaxRange : 15.0f;
+        return distToPlayer >= minRange && distToPlayer <= maxRange;
+    }
+
     private void UpdateMeleeProximityAndBurn(float distToPlayer)
     {
         float meleeThreshold = attackData != null ? attackData.meleeRangeThreshold : 3.5f;
         float igniteDelay = attackData != null ? attackData.meleeIgniteDelay : 3.0f;
-        bool inMeleeRange = distToPlayer <= meleeThreshold;
+        bool inMeleeRange = distToPlayer <= meleeThreshold && !IsIncapacitated;
 
         if (!isOnFire)
         {
@@ -280,6 +292,11 @@ public class CaptainKombustaController : MonoBehaviour, ICaptain
                 break;
             }
 
+            // Knocked down mid-volley: stop. Rotating the root here while ragdolled would swing the
+            // ragdoll's bones around the root pivot, and he'd stand up wherever the pelvis ended up.
+            if (IsIncapacitated) break;
+            if (!InDynamiteRange(Vector3.Distance(transform.position, playerTransform.position))) break;
+
             // Aim towards player
             Vector3 aimDir = (playerTransform.position - transform.position);
             aimDir.y = 0;
@@ -344,7 +361,10 @@ public class CaptainKombustaController : MonoBehaviour, ICaptain
                 groundNormal
             );
 
-            yield return new WaitForSeconds(interval);
+            for (float waited = 0f; waited < interval && !IsIncapacitated; waited += Time.deltaTime)
+            {
+                yield return null;
+            }
         }
 
         if (movement != null) movement.SetMovementPaused(false);

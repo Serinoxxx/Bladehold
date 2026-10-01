@@ -317,6 +317,22 @@ public class DefenseHeightfield
                 roads.Add(road);
             }
         }
+
+        // No centre bridge on the inner ravine: the side roads meet short of the plots, so run one trunk
+        // road from there to the gate apron. (Layouts with a centre bridge already have it.)
+        if (roads.Count > 0)
+        {
+            bool reachesGate = false;
+            float meetZ = float.MaxValue;
+            foreach (List<Vector2> r in roads)
+            {
+                Vector2 end = r[r.Count - 1];
+                reachesGate |= end.y <= 3.01f;
+                if (Mathf.Abs(end.x) < 0.01f) meetZ = Mathf.Min(meetZ, end.y);
+            }
+            if (!reachesGate && meetZ < float.MaxValue)
+                roads.Add(new List<Vector2> { new Vector2(0f, meetZ), new Vector2(0f, 3f) });
+        }
         return roads;
     }
 

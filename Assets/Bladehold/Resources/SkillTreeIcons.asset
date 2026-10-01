@@ -389,3 +389,14 @@ MonoBehaviour:
   - {fileID: 21300000, guid: ed94166ddcd14389a32f26d7cce987c5, type: 3}
   - {fileID: 21300000, guid: f902e1bc39a94aea945e0ac32dae7959, type: 3}
   - {fileID: 21300000, guid: 0723633ed4084adf95cc63c58be65726, type: 3}
+  - {fileID: 21300000, guid: 40551023ad338db4a8eb211edd43110c, type: 3}
+  - {fileID: 21300000, guid: d02cf1aa94c897a498bac027da02517b, type: 3}
+  - {fileID: 21300000, guid: 4d2d91a382b84014d82456e2216a119e, type: 3}
+  - {fileID: 21300000, guid: bacb340741e0aea45b29c5e428ef0dab, type: 3}
+  - {fileID: 21300000, guid: 39acfbb352b54f74da383120734c5200, type: 3}
+  - {fileID: 21300000, guid: c76b5e655485883408059028f53b82a6, type: 3}
+  - {fileID: 21300000, guid: a1d144c44c58d82499608d9704abb6a8, type: 3}
+  - {fileID: 21300000, guid: b0a321cf8fef66445aaaa1c9b5b72b98, type: 3}
+  fireIconTint: {r: 1, g: 0.55, b: 0.1, a: 1}
+  iceIconTint: {r: 0.55, g: 0.85, b: 1, a: 1}
+  lightningIconTint: {r: 0.65, g: 0.35, b: 1, a: 1}

@@ -8,7 +8,7 @@ using UnityEngine;
 public class CatapultDefense : DefenseStructure
 {
     [Header("Catapult Config")]
-    [SerializeField] private float maxRange = 24f;
+    [SerializeField] private float maxRange = 48f;
     [SerializeField] private float fireInterval = 3.8f;
     [SerializeField] private float splashDamage = 13f;
     [SerializeField] private float splashRadius = 4.5f;

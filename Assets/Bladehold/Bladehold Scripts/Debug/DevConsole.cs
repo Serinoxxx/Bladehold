@@ -309,6 +309,7 @@ public class DevConsole : MonoBehaviour
         GUILayout.Label("Load Scene");
         DrawSceneLoadButton("Bladehold Outer Gate");
         DrawSceneLoadButton("Bladehold Desert Gate");
+        DrawSceneLoadButton("Bladehold Graveyard");
         DrawSceneLoadButton("Bladehold Frozen Pass Scene");
         DrawSceneLoadButton("Bladehold Meta Area Scene");
         DrawSceneLoadButton("Bladehold Rest Area Scene");

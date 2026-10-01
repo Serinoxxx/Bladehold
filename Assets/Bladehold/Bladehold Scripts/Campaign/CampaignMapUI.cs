@@ -39,7 +39,25 @@ public class CampaignMapUI : MonoBehaviour
     [SerializeField] private Color pathLockedColor = new Color(0.3f, 0.3f, 0.35f, 0.4f);
     [SerializeField] private Color pathAvailableColor = new Color(1f, 0.85f, 0.25f, 0.95f);
     [SerializeField] private Color pathCompletedColor = new Color(0.35f, 0.75f, 0.45f, 0.75f);
+    [Tooltip("Paths touching a bypassed node (a branch the route has left behind).")]
+    [SerializeField] private Color pathBypassedColor = new Color(0.3f, 0.3f, 0.35f, 0.12f);
     [SerializeField] private float pathThickness = 4f;
+    [Tooltip("Thickness of the route already travelled and the paths open from the current location.")]
+    [SerializeField] private float activePathThickness = 7f;
+
+    [Header("Tier Column Headers")]
+    [Tooltip("Scrolling container (under NodesContent, stretched over it) for one header per tier column.")]
+    [SerializeField] private RectTransform tierHeadersContainer;
+    [Tooltip("Header label prefab (UI/CampaignTierHeader.prefab), anchored top-left of the content, pivot top-centre.")]
+    [SerializeField] private TMP_Text tierHeaderPrefab;
+    [SerializeField] private float tierHeaderTopMargin = 8f;
+
+    [Header("Current Location Marker")]
+    [Tooltip("'You are here' marker (a child of the scrolling content, drawn above the nodes). Sits over the last cleared node, or the first node before anything is cleared.")]
+    [SerializeField] private RectTransform locationMarker;
+    [SerializeField] private Vector2 locationMarkerOffset = new Vector2(0f, 88f);
+    [SerializeField] private float locationMarkerBobHeight = 6f;
+    [SerializeField] private float locationMarkerBobSpeed = 2.5f;
 
     [Header("Keyboard / Gamepad Navigation")]
     [Tooltip("Left-stick deflection that counts as a direction press.")]
@@ -53,6 +71,9 @@ public class CampaignMapUI : MonoBehaviour
 
     private readonly Dictionary<string, CampaignNodeButtonUI> spawnedButtons = new Dictionary<string, CampaignNodeButtonUI>();
     private readonly List<GameObject> spawnedPaths = new List<GameObject>();
+
+    private readonly HashSet<string> reachableNodeIds = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+    private Vector2 locationMarkerBase;
 
     private CampaignNodeButtonUI focusedButton;
     private Vector2 heldDirection;
@@ -81,6 +102,10 @@ public class CampaignMapUI : MonoBehaviour
         {
             Debug.LogError("[CampaignMapUI] Nodes and/or paths container is not assigned.");
             anyError = true;
+        }
+        if (locationMarker == null)
+        {
+            Debug.LogError("[CampaignMapUI] locationMarker is not assigned (the 'you are here' marker under NodesContent).");
         }
 
         if (campaignGraph == null)
@@ -130,6 +155,12 @@ public class CampaignMapUI : MonoBehaviour
 
     private void Update()
     {
+        if (!anyError && locationMarker != null && locationMarker.gameObject.activeSelf)
+        {
+            float bob = Mathf.Sin(Time.unscaledTime * locationMarkerBobSpeed) * locationMarkerBobHeight;
+            locationMarker.anchoredPosition = locationMarkerBase + new Vector2(0f, bob);
+        }
+
         if (anyError || demoEndShown || deploying || DevConsole.IsVisible)
         {
             return;
@@ -363,6 +394,7 @@ public class CampaignMapUI : MonoBehaviour
         }
 
         ClearSpawnedElements();
+        ComputeReachable();
 
         List<CampaignNodeSO> allNodes = campaignGraph.allNodes;
 
@@ -389,6 +421,8 @@ public class CampaignMapUI : MonoBehaviour
 
         // 2. Draw Forward Path Connections
         DrawAllPaths();
+        PlaceLocationMarker();
+        BuildTierHeaders();
 
         // 3. Scroll to focus on active tier
         if (firstAvailableNodeRect != null && scrollRect != null && nodesContainer != null)
@@ -408,6 +442,7 @@ public class CampaignMapUI : MonoBehaviour
         }
 
         RefreshCurrencies();
+        ComputeReachable();
 
         foreach (var kvp in spawnedButtons)
         {
@@ -423,6 +458,71 @@ public class CampaignMapUI : MonoBehaviour
         // Re-draw path connections with updated status colors
         ClearPaths();
         DrawAllPaths();
+        PlaceLocationMarker();
+    }
+
+    /// <summary>Every node still reachable going forward from the open (available) nodes.</summary>
+    private void ComputeReachable()
+    {
+        reachableNodeIds.Clear();
+        Queue<CampaignNodeSO> frontier = new Queue<CampaignNodeSO>();
+        foreach (string id in CampaignManager.Instance.AvailableNodeIds)
+        {
+            CampaignNodeSO node = campaignGraph.GetNodeById(id);
+            if (node != null && reachableNodeIds.Add(node.nodeId)) frontier.Enqueue(node);
+        }
+        while (frontier.Count > 0)
+        {
+            CampaignNodeSO node = frontier.Dequeue();
+            if (node.nextNodes == null) continue;
+            foreach (CampaignNodeSO next in node.nextNodes)
+            {
+                if (next != null && reachableNodeIds.Add(next.nodeId)) frontier.Enqueue(next);
+            }
+        }
+    }
+
+    private static readonly string[] RomanNumerals = { "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X" };
+
+    /// <summary>One label per tier ("IV  Great Hall") over its column, from the graph's tier list.</summary>
+    private void BuildTierHeaders()
+    {
+        if (tierHeadersContainer == null || tierHeaderPrefab == null || campaignGraph.tiers == null) return;
+        for (int i = tierHeadersContainer.childCount - 1; i >= 0; i--)
+        {
+            Destroy(tierHeadersContainer.GetChild(i).gameObject);
+        }
+
+        foreach (CampaignTier tier in campaignGraph.tiers)
+        {
+            if (tier == null || tier.nodes == null) continue;
+            float columnX = float.MaxValue;
+            foreach (CampaignNodeSO node in tier.nodes)
+            {
+                if (node != null && spawnedButtons.ContainsKey(node.nodeId)) columnX = Mathf.Min(columnX, node.mapPosition.x);
+            }
+            if (columnX == float.MaxValue) continue;
+
+            TMP_Text header = Instantiate(tierHeaderPrefab, tierHeadersContainer);
+            string numeral = tier.tierNumber >= 1 && tier.tierNumber <= RomanNumerals.Length ? RomanNumerals[tier.tierNumber - 1] : tier.tierNumber.ToString();
+            header.text = $"<size=140%>{numeral}</size>\n{tier.tierName}";
+            header.rectTransform.anchoredPosition = new Vector2(columnX, -tierHeaderTopMargin);
+        }
+    }
+
+    private void PlaceLocationMarker()
+    {
+        if (locationMarker == null) return;
+        CampaignNodeSO here = CampaignManager.Instance.CurrentLocationNode;
+        if (here == null || !spawnedButtons.TryGetValue(here.nodeId, out CampaignNodeButtonUI button) || button == null)
+        {
+            locationMarker.gameObject.SetActive(false);
+            return;
+        }
+        locationMarker.gameObject.SetActive(true);
+        locationMarkerBase = button.Rect.anchoredPosition + locationMarkerOffset;
+        locationMarker.anchoredPosition = locationMarkerBase;
+        locationMarker.SetAsLastSibling();
     }
 
     private CampaignNodeButtonUI.NodeVisualStatus EvaluateNodeStatus(CampaignNodeSO node)
@@ -442,7 +542,10 @@ public class CampaignMapUI : MonoBehaviour
             return CampaignNodeButtonUI.NodeVisualStatus.Available;
         }
 
-        return CampaignNodeButtonUI.NodeVisualStatus.Locked;
+        // Further along a branch the player can still take: waiting its turn. Anything else is behind them.
+        return reachableNodeIds.Contains(node.nodeId)
+            ? CampaignNodeButtonUI.NodeVisualStatus.Locked
+            : CampaignNodeButtonUI.NodeVisualStatus.Bypassed;
     }
 
     private CampaignNodeButtonUI SpawnNodeButton(CampaignNodeSO node, CampaignNodeButtonUI.NodeVisualStatus status)
@@ -490,16 +593,26 @@ public class CampaignMapUI : MonoBehaviour
                 Vector2 toPos = toRect.anchoredPosition;
 
                 Color pathColor = pathLockedColor;
-                if (fromCompleted && toBtn.CurrentStatus == CampaignNodeButtonUI.NodeVisualStatus.Available)
+                float thickness = pathThickness;
+                CampaignNodeButtonUI.NodeVisualStatus toStatus = toBtn.CurrentStatus;
+                if (fromCompleted && toStatus == CampaignNodeButtonUI.NodeVisualStatus.Available)
                 {
                     pathColor = pathAvailableColor;
+                    thickness = activePathThickness;
                 }
-                else if (fromCompleted && toBtn.CurrentStatus == CampaignNodeButtonUI.NodeVisualStatus.Completed)
+                else if (fromCompleted && toStatus == CampaignNodeButtonUI.NodeVisualStatus.Completed)
                 {
                     pathColor = pathCompletedColor;
+                    thickness = activePathThickness;
+                }
+                else if (fromBtn.CurrentStatus == CampaignNodeButtonUI.NodeVisualStatus.Bypassed ||
+                         toStatus == CampaignNodeButtonUI.NodeVisualStatus.Bypassed ||
+                         fromCompleted)
+                {
+                    pathColor = pathBypassedColor;
                 }
 
-                GameObject lineGo = CreatePathLine(pathParent, fromPos, toPos, pathColor);
+                GameObject lineGo = CreatePathLine(pathParent, fromPos, toPos, pathColor, thickness);
                 if (lineGo != null)
                 {
                     spawnedPaths.Add(lineGo);
@@ -508,8 +621,34 @@ public class CampaignMapUI : MonoBehaviour
         }
     }
 
-    private GameObject CreatePathLine(Transform parent, Vector2 from, Vector2 to, Color color)
+    // Half the node button's size, so path lines stop at the node edges instead of running under the boxes.
+    private Vector2 NodeHalfExtents
     {
+        get
+        {
+            RectTransform prefabRect = nodeButtonPrefab != null ? nodeButtonPrefab.transform as RectTransform : null;
+            return prefabRect != null ? prefabRect.sizeDelta * 0.5f : Vector2.zero;
+        }
+    }
+
+    private static float EdgeDistance(Vector2 direction, Vector2 halfExtents)
+    {
+        float tx = Mathf.Abs(direction.x) > 0.0001f ? halfExtents.x / Mathf.Abs(direction.x) : float.MaxValue;
+        float ty = Mathf.Abs(direction.y) > 0.0001f ? halfExtents.y / Mathf.Abs(direction.y) : float.MaxValue;
+        return Mathf.Min(tx, ty);
+    }
+
+    private GameObject CreatePathLine(Transform parent, Vector2 from, Vector2 to, Color color, float thickness)
+    {
+        // Trim both ends to the node boxes' edges (plus a small gap).
+        Vector2 dir = (to - from).normalized;
+        float trim = EdgeDistance(dir, NodeHalfExtents) + 6f;
+        if (Vector2.Distance(from, to) > trim * 2f + 4f)
+        {
+            from += dir * trim;
+            to -= dir * trim;
+        }
+
         GameObject lineGo = Instantiate(pathLinePrefab, parent);
 
         RectTransform rt = lineGo.GetComponent<RectTransform>();
@@ -523,7 +662,7 @@ public class CampaignMapUI : MonoBehaviour
         Vector2 direction = (to - from).normalized;
         float distance = Vector2.Distance(from, to);
 
-        rt.sizeDelta = new Vector2(distance, pathThickness);
+        rt.sizeDelta = new Vector2(distance, thickness);
         rt.pivot = new Vector2(0f, 0.5f);
         rt.anchoredPosition = from;
 

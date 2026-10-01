@@ -33,7 +33,30 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
     [SerializeField] private Sprite arrowIcon;
     [SerializeField] private Sprite iconBackground;
 
+    [Header("Tower Plots (prep phase)")]
+    [Tooltip("Icon on tower plot markers during the prep phase. Optional: falls back to defaultObjectiveIcon.")]
+    [SerializeField] private Sprite towerPlotIcon;
+    [SerializeField] private Vector3 towerPlotOffset = new Vector3(0f, 2.5f, 0f);
+    [SerializeField] private Color towerPlotEmptyTint = new Color(1f, 0.82f, 0.3f, 1f);
+    [SerializeField] private Color towerPlotBuiltTint = new Color(1f, 1f, 1f, 0.6f);
+
     public Sprite CleanupEnemySkullIcon => cleanupEnemySkullIcon != null ? cleanupEnemySkullIcon : slayerBossIcon;
+
+    /// <summary>Default marker icon, for sources that don't bring their own.</summary>
+    public Sprite DefaultObjectiveIcon => defaultObjectiveIcon;
+
+    /// <summary>
+    ///     Waypoint providers outside the objective system. Register in <c>OnEnable</c>, unregister in
+    ///     <c>OnDisable</c>; static so a source can register before the HUD's tracker exists.
+    /// </summary>
+    public static readonly List<IWaypointSource> ExtraSources = new List<IWaypointSource>();
+
+    public static void RegisterSource(IWaypointSource source)
+    {
+        if (source != null && !ExtraSources.Contains(source)) ExtraSources.Add(source);
+    }
+
+    public static void UnregisterSource(IWaypointSource source) => ExtraSources.Remove(source);
 
     [Header("Screen Clamping & Juice")]
     [Tooltip("Padding in pixels from screen edges when clamping offscreen waypoints.")]
@@ -135,6 +158,24 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
             }
         }
 
+        // Prep phase: mark every tower plot so the player can find where to build
+        if (loop != null && loop.IsAwaitingReady && TowerPlotManager.Instance != null)
+        {
+            AddTowerPlotTargets(TowerPlotManager.Instance.Plots);
+        }
+
+        // Non-objective sources (the tutorial's step waypoints, first-encounter hints)
+        for (int s = ExtraSources.Count - 1; s >= 0; s--)
+        {
+            // Interface refs skip Unity's fake-null check, so test destroyed components explicitly.
+            if (ExtraSources[s] == null || (ExtraSources[s] is Object unityObj && unityObj == null))
+            {
+                ExtraSources.RemoveAt(s);
+                continue;
+            }
+            ExtraSources[s].GetWaypointTargets(targetBuffer);
+        }
+
         // Check for depleted defenses (NO SUPPLY)
         foreach (var def in DefenseStructure.AllActive)
         {
@@ -203,8 +244,8 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
                     continue;
                 }
 
-                // If marker was not bound to this target, bind it
-                if (marker.TargetTransform != target.Transform)
+                // Rebind when the target changes, or its label does (e.g. a plot going from BUILD to built)
+                if (marker.TargetTransform != target.Transform || marker.CurrentLabel != target.Label)
                 {
                     Sprite icon = ResolveIcon(target);
                     marker.Bind(target.Transform, target.WorldOffset, icon, target.TintColor, target.Label);
@@ -275,6 +316,28 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
             {
                 marker.Unbind();
             }
+        }
+    }
+
+    // Empty plots get a gold "BUILD" marker; built ones a plain marker (they can still be upgraded/refilled).
+    // Depleted/hexed defences are skipped — they already get their NO SUPPLY / HEXED marker below.
+    private void AddTowerPlotTargets(IReadOnlyList<TowerPlot> plots)
+    {
+        Sprite icon = towerPlotIcon != null ? towerPlotIcon : defaultObjectiveIcon;
+        foreach (TowerPlot plot in plots)
+        {
+            if (plot == null || !plot.isActiveAndEnabled) continue;
+            DefenseStructure def = plot.CurrentDefense;
+            if (def != null && (def.IsDepleted || def.IsHexed)) continue;
+
+            bool empty = !plot.IsOccupied && !plot.IsBuilding;
+            targetBuffer.Add(new ObjectiveWaypointTarget(
+                plot.transform,
+                worldOffset: plot.BuildPosition - plot.transform.position + towerPlotOffset,
+                customIcon: icon,
+                tintColor: empty ? towerPlotEmptyTint : towerPlotBuiltTint,
+                label: empty ? Loc.Get("wave.prep.plot", "BUILD") : null
+            ));
         }
     }
 

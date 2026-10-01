@@ -467,17 +467,17 @@ public class DamageTrigger : MonoBehaviour
                 damage.isBackstab = true;
                 if (!RunSession.RunUpgradesSuspended && RunSession.HasMetaPerk("backstab"))
                 {
-                    damage.value *= 1.20f;
+                    damage.value *= 1f + RunSession.GetMetaPerkValue("backstab", 20f) / 100f;
                 }
             }
 
-            // Executioner permanent meta perk (+50% bonus damage to targets below 50% HP)
+            // Executioner permanent meta perk (+50% bonus damage per rank to targets below 50% HP)
             if (!RunSession.RunUpgradesSuspended && RunSession.HasMetaPerk("executioner"))
             {
                 Health targetHealth = targetComponent.GetComponentInParent<Health>();
                 if (targetHealth != null && targetHealth.MaxHealth > 0f && targetHealth.CurrentHealth <= targetHealth.MaxHealth * 0.5f)
                 {
-                    damage.value *= 1.50f;
+                    damage.value *= 1f + RunSession.GetMetaPerkValue("executioner", 50f) / 100f;
                 }
             }
 

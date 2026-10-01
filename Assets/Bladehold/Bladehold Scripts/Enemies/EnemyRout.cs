@@ -13,6 +13,7 @@ public class EnemyRout : MonoBehaviour
 {
     private const float StunSeconds = 0.75f;
     private const float FleeSpeedMultiplier = 1.4f;
+    private const float ScatterRadius = 6f;
 
     private Health health;
     private NavMeshAgent agent;
@@ -52,9 +53,24 @@ public class EnemyRout : MonoBehaviour
 
         if (agent != null && agent.enabled && agent.isOnNavMesh)
         {
+            // Every straggler heading for the same spawn point otherwise converges on one exact spot
+            // and, with AIMovement disabled, far-tier agents keep NoObstacleAvoidance — so the whole
+            // rout piles into a single stack. Scatter each destination and force avoidance on.
+            agent.obstacleAvoidanceType = ObstacleAvoidanceType.LowQualityObstacleAvoidance;
             agent.isStopped = false;
             agent.speed *= FleeSpeedMultiplier;
-            agent.SetDestination(fleeTo);
+            agent.SetDestination(ScatteredDestination());
         }
+    }
+
+    private Vector3 ScatteredDestination()
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            Vector2 offset = Random.insideUnitCircle * ScatterRadius;
+            Vector3 candidate = fleeTo + new Vector3(offset.x, 0f, offset.y);
+            if (NavMesh.SamplePosition(candidate, out NavMeshHit hit, 2f, agent.areaMask)) return hit.position;
+        }
+        return fleeTo;
     }
 }

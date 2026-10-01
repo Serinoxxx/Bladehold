@@ -43,6 +43,11 @@ public static class DefenseSceneScatter
         PlaceBanners(ctx, Group(root, "Banners"), pal.banners);
         PlaceFieldLitter(ctx, Group(root, "FieldLitter"), pal.fieldLitter, density);
         PlaceCourtyardProps(ctx, Group(root, "CourtyardProps"), pal.courtyardProps, Mathf.RoundToInt(24 * density));
+        // Optional roles, last so palettes without them regenerate exactly as before.
+        PlaceLanterns(ctx, Group(root, "Lanterns"), pal.lanterns);
+        AddLanternLights(ctx, root, pal.lanterns);
+        PlaceGroundFog(ctx, Group(root, "GroundFog"), pal.groundFog);
+        PlaceRavineGlow(ctx, Group(root, "RavineGlow"));
     }
 
     private static Transform Group(Transform parent, string name)
@@ -575,6 +580,159 @@ public static class DefenseSceneScatter
             Place(ctx, parent, prefab, p, Rand(ctx, 0f, 360f), scale, 0.02f, 0f);
             ctx.Occupy(p, 1.5f);
             placed++;
+        }
+    }
+
+    /// <summary>
+    ///     Lamps down both edges of every road (every <see cref="DefenseBiomePaletteSO.lanternSpacing" /> m), at
+    ///     all four corners of each bridge and either side of the gate apron. Visual only (colliders stripped),
+    ///     so they can sit right at the lane edge without touching pathing.
+    /// </summary>
+    private static void PlaceLanterns(DefenseBuildContext ctx, Transform parent, List<GameObject> lanterns)
+    {
+        if (lanterns.Count == 0) return;
+        DefenseBiomePaletteSO pal = ctx.Spec.palette;
+        var spots = new List<Vector2>();
+
+        foreach (List<Vector2> road in ctx.Hf.Roads())
+        {
+            float carry = 0f;
+            for (int i = 0; i < road.Count - 1; i++)
+            {
+                Vector2 a = road[i], b = road[i + 1];
+                float len = Vector2.Distance(a, b);
+                if (len < 0.01f) continue;
+                Vector2 dir = (b - a) / len;
+                var side = new Vector2(-dir.y, dir.x);
+                float t = carry;
+                for (; t < len; t += pal.lanternSpacing)
+                {
+                    Vector2 c = a + dir * t;
+                    spots.Add(c + side * 4.2f);
+                    spots.Add(c - side * 4.2f);
+                }
+                carry = t - len;
+            }
+        }
+        foreach (BridgeFootprint b in ctx.Bridges)
+        {
+            for (int sx = -1; sx <= 1; sx += 2)
+            for (int sz = -1; sz <= 1; sz += 2)
+                spots.Add(b.centre + new Vector2(sx * (b.halfWidth + 0.9f), sz * (b.halfLength + 0.6f)));
+        }
+        float gateHalf = PrefabMeasure.LocalBounds(pal.gate).size.x * 0.5f;
+        spots.Add(new Vector2(-(gateHalf + 2.5f), 6f));
+        spots.Add(new Vector2(gateHalf + 2.5f, 6f));
+
+        var placed = new List<Vector2>();
+        foreach (Vector2 p in spots)
+        {
+            if (ctx.Hf.ValleyDistance(p.x, p.y) > -1.5f) continue;
+            if (ctx.Hf.NearRavine(p.x, p.y, 0.3f) || ctx.Hf.InRampLane(p.x, p.y, 0.5f)) continue;
+            bool onPlot = false;
+            foreach (Vector2 t in ctx.Spec.towerPlots) onPlot |= Vector2.Distance(t, p) < 5f;
+            foreach (BridgeFootprint br in ctx.Bridges) onPlot |= br.Contains(p, 0.4f);
+            bool crowded = false;
+            foreach (Vector2 q in placed) crowded |= (q - p).sqrMagnitude < 9f;
+            if (onPlot || crowded) continue;
+            GameObject prefab = Pick(ctx, lanterns);
+            GameObject go = Place(ctx, parent, prefab, p, Rand(ctx, 0f, 360f),
+                Rand(ctx, pal.lanternScale.x, pal.lanternScale.y), 0.03f, 0f);
+            foreach (Collider c in go.GetComponentsInChildren<Collider>(true)) Object.DestroyImmediate(c);
+            placed.Add(p);
+        }
+    }
+
+    /// <summary>A point light at the lamp of every lantern instance under <paramref name="root" />, clusters included.</summary>
+    private static void AddLanternLights(DefenseBuildContext ctx, Transform root, List<GameObject> lanterns)
+    {
+        if (lanterns.Count == 0) return;
+        DefenseBiomePaletteSO pal = ctx.Spec.palette;
+        var sources = new HashSet<GameObject>(lanterns);
+        int count = 0;
+        foreach (Transform t in root.GetComponentsInChildren<Transform>(true))
+        {
+            if (!UnityEditor.PrefabUtility.IsAnyPrefabInstanceRoot(t.gameObject)) continue;
+            GameObject src = UnityEditor.PrefabUtility.GetCorrespondingObjectFromSource(t.gameObject);
+            if (src == null || !sources.Contains(src)) continue;
+            Renderer[] rends = t.GetComponentsInChildren<Renderer>();
+            if (rends.Length == 0) continue;
+            Bounds b = rends[0].bounds;
+            foreach (Renderer r in rends) b.Encapsulate(r.bounds);
+            var lightGo = new GameObject("LanternLight");
+            lightGo.transform.SetParent(t, true);
+            lightGo.transform.position = new Vector3(b.center.x, b.min.y + b.size.y * pal.lanternLightHeight, b.center.z);
+            var light = lightGo.AddComponent<Light>();
+            light.type = LightType.Point;
+            light.color = pal.lanternLightColor;
+            light.intensity = pal.lanternLightIntensity * Rand(ctx, 0.85f, 1.1f);
+            light.range = pal.lanternLightRange;
+            light.shadows = LightShadows.None;
+            count++;
+        }
+        Debug.Log($"[DefenseSceneScatter] {count} lantern lights.");
+    }
+
+    /// <summary>Low fog patches on a grid over the field and courtyard, plus a line of them pooled along each ravine floor.</summary>
+    private static void PlaceGroundFog(DefenseBuildContext ctx, Transform parent, List<GameObject> fog)
+    {
+        if (fog.Count == 0) return;
+        DefenseBiomePaletteSO pal = ctx.Spec.palette;
+        List<Vector2> cands = Grid(ctx, pal.groundFogSpacing, p =>
+            ctx.Hf.ValleyDistance(p.x, p.y) < 4f && p.y > -ctx.Spec.courtyardDepth && p.y < ctx.Spec.fieldEndZ + 5f);
+        var spots = new List<Vector3>();
+        foreach (Vector2 p in cands) spots.Add(new Vector3(p.x, ctx.Ground(p.x, p.y) + 0.3f, p.y));
+        for (int i = 0; i < ctx.Spec.ravines.Count; i++)
+        {
+            Vector2 span = ctx.Hf.RavineXSpan(i);
+            for (float x = span.x + 6f; x < span.y - 6f; x += 14f)
+            {
+                if (ctx.Hf.RavineExtentMask(i, x) < 0.9f) continue;
+                float z = ctx.Hf.RavineCentreZ(i, x);
+                spots.Add(new Vector3(x, ctx.Ground(x, z) + 0.4f, z));
+            }
+        }
+        foreach (Vector3 pos in spots)
+        {
+            GameObject prefab = Pick(ctx, fog);
+            var go = (GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(prefab, parent);
+            go.transform.SetPositionAndRotation(pos, Quaternion.Euler(0f, Rand(ctx, 0f, 360f), 0f));
+            foreach (ParticleSystem ps in go.GetComponentsInChildren<ParticleSystem>(true))
+            {
+                ParticleSystem.MainModule main = ps.main;
+                // Already settled when the scene loads, rather than drifting in over the first half-minute.
+                if (main.loop) main.prewarm = true;
+                ParticleSystem.MinMaxGradient c = main.startColor;
+                c.color *= pal.groundFogTint;
+                c.colorMin *= pal.groundFogTint;
+                c.colorMax *= pal.groundFogTint;
+                main.startColor = c;
+            }
+        }
+    }
+
+    /// <summary>Lights low in every ravine, so the spike pits read from the field at night.</summary>
+    private static void PlaceRavineGlow(DefenseBuildContext ctx, Transform parent)
+    {
+        DefenseBiomePaletteSO pal = ctx.Spec.palette;
+        if (pal.ravineGlowIntensity <= 0f) return;
+        for (int i = 0; i < ctx.Spec.ravines.Count; i++)
+        {
+            Vector2 span = ctx.Hf.RavineXSpan(i);
+            for (float x = span.x + 5f; x < span.y - 5f; x += 12f)
+            {
+                if (ctx.Hf.RavineExtentMask(i, x) < 0.9f) continue;
+                float z = ctx.Hf.RavineCentreZ(i, x);
+                var go = new GameObject("PitGlow");
+                go.transform.SetParent(parent);
+                go.transform.position = new Vector3(x, ctx.Ground(x, z) + 1.2f, z);
+                var light = go.AddComponent<Light>();
+                light.type = LightType.Point;
+                light.color = pal.ravineGlowColor;
+                light.intensity = pal.ravineGlowIntensity;
+                light.range = pal.ravineGlowRange;
+                light.shadows = LightShadows.None;
+            }
         }
     }
 

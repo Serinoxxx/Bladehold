@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b068cb8bb75c2de45a5b95cb4c299d13, type: 3}
+  m_Name: MetaPerkCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::MetaPerkCatalogSO
+  perks:
+  - {fileID: 11400000, guid: 0887b14cbd824eb46b362325c9110c50, type: 2}
+  - {fileID: 11400000, guid: eedf9aeca98a6db4f84179c78b213014, type: 2}
+  - {fileID: 11400000, guid: 4fb2a1db8155185419320e2f3a6a9591, type: 2}
+  - {fileID: 11400000, guid: 83a14b725ae64fd5ad9313ae89caf012, type: 2}
+  - {fileID: 11400000, guid: 277fe2a7cba832e418c3385434d795df, type: 2}
+  - {fileID: 11400000, guid: 897fcf2d23733f840b1c997f4a38e526, type: 2}
+  - {fileID: 11400000, guid: d33419a8c259087488edd1635f2375da, type: 2}
+  - {fileID: 11400000, guid: 7f20eb59abe6199489deca443f84219b, type: 2}
+  - {fileID: 11400000, guid: 24c87559821f8cb46bf365ffd79e9faf, type: 2}
+  - {fileID: 11400000, guid: 0ac9ee235fdffae48ab26e9c383895e4, type: 2}
+  - {fileID: 11400000, guid: b5ac89a290d597a40a3d8a30f76b5bd3, type: 2}
+  - {fileID: 11400000, guid: c94c217373af8be4785d3bdddb6eadd2, type: 2}

@@ -317,6 +317,19 @@ public static class EnemyPrefabGenerator
             }
         }
 
+        if (!string.IsNullOrEmpty(spec.bodyName))
+        {
+            ApplyBody(root, spec);
+        }
+
+        if (spec.props != null)
+        {
+            foreach (EnemyManifest.PropSpec prop in spec.props)
+            {
+                ApplyProp(root, spec, prop);
+            }
+        }
+
         if (spec.disableBaseAIAttack)
         {
             var baseAttack = root.GetComponent<AIAttack>();
@@ -377,6 +390,57 @@ public static class EnemyPrefabGenerator
                 agent.stoppingDistance = spec.navStoppingDistance;
             }
         }
+    }
+
+    /// <summary>Shows the rig's alternate body named <c>spec.bodyName</c> and hides every other body.</summary>
+    private static void ApplyBody(GameObject root, EnemyManifest.EnemySpec spec)
+    {
+        Animator animator = root.GetComponentInChildren<Animator>(true);
+        if (animator == null)
+        {
+            throw new InvalidOperationException($"No Animator found under '{spec.prefabName}' to switch the body on.");
+        }
+        bool found = false;
+        foreach (SkinnedMeshRenderer body in animator.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+        {
+            bool show = body.name == spec.bodyName;
+            found |= show;
+            body.gameObject.SetActive(show);
+            if (show) body.enabled = true;
+        }
+        if (!found)
+        {
+            throw new InvalidOperationException($"Manifest entry '{spec.id}': the rig has no body named '{spec.bodyName}'.");
+        }
+    }
+
+    /// <summary>Finds or builds a held prop under its bone, from the source prefab's mesh and materials.</summary>
+    private static void ApplyProp(GameObject root, EnemyManifest.EnemySpec spec, EnemyManifest.PropSpec prop)
+    {
+        var source = AssetDatabase.LoadAssetAtPath<GameObject>(prop.sourcePrefabPath);
+        MeshFilter sourceFilter = source != null ? source.GetComponentInChildren<MeshFilter>(true) : null;
+        MeshRenderer sourceRenderer = sourceFilter != null ? sourceFilter.GetComponent<MeshRenderer>() : null;
+        if (sourceRenderer == null)
+        {
+            throw new InvalidOperationException($"Manifest entry '{spec.id}': prop source '{prop.sourcePrefabPath}' is missing or has no MeshFilter/MeshRenderer.");
+        }
+        bool hasBone = Array.Exists(root.GetComponentsInChildren<Transform>(true), t => t.name == prop.boneName);
+        if (!hasBone)
+        {
+            throw new InvalidOperationException($"Manifest entry '{spec.id}': the rig has no bone '{prop.boneName}' for prop '{prop.name}'.");
+        }
+
+        var context = new GenContext { Root = root };
+        GameObject child = context.FindOrCreateBoneChild(prop.name, prop.boneName, prop.localPosition, Quaternion.Euler(prop.localEuler));
+        child.SetActive(true);
+        // Unity's fake-null from GetComponent defeats ??, so these check explicitly.
+        MeshFilter filter = child.GetComponent<MeshFilter>();
+        if (filter == null) filter = child.AddComponent<MeshFilter>();
+        filter.sharedMesh = sourceFilter.sharedMesh;
+        MeshRenderer renderer = child.GetComponent<MeshRenderer>();
+        if (renderer == null) renderer = child.AddComponent<MeshRenderer>();
+        renderer.sharedMaterials = sourceRenderer.sharedMaterials;
+        renderer.enabled = true;
     }
 
     /// <summary>Sets a serialized reference field, failing loudly when the field doesn't exist — a

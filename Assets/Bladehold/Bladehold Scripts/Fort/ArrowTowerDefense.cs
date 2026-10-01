@@ -7,7 +7,7 @@ using UnityEngine;
 public class ArrowTowerDefense : DefenseStructure
 {
     [Header("Combat Config")]
-    [SerializeField] private float range = 18f;
+    [SerializeField] private float range = 36f;
     [SerializeField] private float fireInterval = 0.8f;
     [SerializeField] private float arrowSpeed = 26f;
     [SerializeField] private float arrowDamage = 5f;
@@ -53,17 +53,17 @@ public class ArrowTowerDefense : DefenseStructure
             case 1:
                 arrowDamage = 5f;
                 fireInterval = 0.8f;
-                range = 18f;
+                range = 36f;
                 break;
             case 2:
                 arrowDamage = 9f;
                 fireInterval = 0.65f;
-                range = 20f;
+                range = 40f;
                 break;
             case 3:
                 arrowDamage = 14f;
                 fireInterval = 0.5f;
-                range = 22f;
+                range = 44f;
                 break;
         }
     }

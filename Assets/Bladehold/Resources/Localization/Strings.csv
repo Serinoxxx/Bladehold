@@ -16,6 +16,7 @@ wave.begin,Flashed when a wave starts,BEGIN,À L'ASSAUT,ALL'ATTACCO,LOS,¡AL ATA
 wave.cleared,Flashed when a wave is finished,Wave Cleared!,Vague terminée !,Ondata completata!,Welle geschafft!,¡Oleada superada!,Волна пройдена!,波次通过！,ウェーブクリア！,웨이브 클리어!
 skill.percent_increase,Tooltip delta line; {0}=percent,{0}% increase,+{0} %,+{0}%,+{0} %,+{0} %,+{0} %,提升 {0}%,{0}% 上昇,{0}% 증가
 wave.label,Persistent wave number label; {0}=wave,Wave {0},Vague {0},Ondata {0},Welle {0},Oleada {0},Волна {0},第 {0} 波,ウェーブ {0},웨이브 {0}
+wave.status.rout_hunt,Objective panel status while stragglers flee after a wave; {0}=seconds left,The goblins are fleeing! Hunt them down: {0}s,Les gobelins fuient ! Traquez-les : {0} s,I goblin fuggono! Dagli la caccia: {0}s,Die Goblins fliehen! Jagt sie: {0} s,¡Los goblins huyen! Dales caza: {0} s,Гоблины бегут! Добейте их: {0} с,哥布林在逃跑！追杀它们：{0}秒,ゴブリンが逃げていく！狩り尽くせ：{0}秒,고블린이 도망친다! 추격하라: {0}초
 wavestats.cleared,Intermission panel heading; {0}=wave number,Wave {0} Cleared,Vague {0} terminée,Ondata {0} completata,Welle {0} geschafft,Oleada {0} superada,Волна {0} пройдена,第 {0} 波已通过,ウェーブ {0} クリア,웨이브 {0} 클리어
 wavestats.gold_bonus,Hold-the-line multiplier line; {0}=multiplier,x{0} Gold Bonus,Bonus d'or x{0},Bonus oro x{0},x{0} Gold-Bonus,Bonificación de oro x{0},Бонус золота x{0},x{0} 金币加成,ゴールドボーナス x{0},골드 보너스 x{0}
 wavestats.goblins_slain,Scoreboard line; {0}=count,Goblins Slain: {0},Gobelins tués : {0},Goblin uccisi: {0},Getötete Goblins: {0},Goblins abatidos: {0},Убито гоблинов: {0},击杀哥布林：{0},ゴブリン討伐数：{0},처치한 고블린: {0}
@@ -503,3 +504,48 @@ endscreen.hero_ranged,End screen hero panel row,Ranged Damage,Dégâts à distan
 endscreen.hero_crit,End screen hero panel row,Crit Chance,Chance de critique,Probabilità critica,Kritchance,Prob. de crítico,Шанс крита,暴击几率,クリティカル率,치명타 확률
 endscreen.hero_speed,End screen hero panel row,Move Speed,Vitesse de déplacement,Velocità di movimento,Bewegungstempo,Velocidad de movimiento,Скорость передвижения,移动速度,移動速度,이동 속도
 endscreen.skills_header,End screen hero panel heading,Acquired Skills,Compétences acquises,Abilità acquisite,Erworbene Fähigkeiten,Habilidades adquiridas,Полученные навыки,已获得技能,習得スキル,획득한 스킬
+tutorial.move,Tutorial step: walk to the marker,Walk to the marker,,,,,,,,
+tutorial.banners,Tutorial step: quick attack,Tap to attack. Cut down the banners,,,,,,,,
+tutorial.heavy,Tutorial step: heavy attack,"Hold to charge a heavy attack, then release to smash the door",,,,,,,,
+tutorial.heavy_nudge,Tutorial: shown after weak hits on the door,"Too weak! Hold the attack to charge it, then release",,,,,,,,
+tutorial.bow,Tutorial step: bow,"Hold to aim your bow, then attack to shoot the ropes",,,,,,,,
+tutorial.bow_fire,"Tutorial step: bow, second line",Shoot while aiming,,,,,,,,
+tutorial.bow_ammo,Tutorial: low arrows tip,Out of arrows? Take more from the crate,,,,,,,,
+tutorial.fight,Tutorial step: arena fight,Goblins! Defeat them,,,,,,,,
+tutorial.dodge,"Tutorial step: arena fight, second line",Dodge,,,,,,,,
+tutorial.build,Tutorial step: build a tower,Build an Arrow Tower on the marked plot,,,,,,,,
+tutorial.ready,Tutorial step: start the wave,Hold to start the wave,,,,,,,,
+tutorial.wave,Tutorial step: survive the wave,Defend the gate! Defeat every goblin,,,,,,,,
+tutorial.wave_first,Tutorial step: first of three waves,Defend the gate! Defeat the first wave,,,,,,,,
+tutorial.mount,Tutorial step: summon the horse between waves,Summon your warhorse,,,,,,,,
+tutorial.mount_trample,"Tutorial step: summon the horse, second line",Ride through goblins to trample them,,,,,,,,
+tutorial.ready_next,Tutorial step: start the second wave,Hold to start the next wave,,,,,,,,
+tutorial.wave_rest,Tutorial step: last two waves,Hold the gate through the last two waves,,,,,,,,
+tutorial.exit,Tutorial: all steps done in a scene,Head through the door,,,,,,,,
+tutorial.exit_prompt,Tutorial exit door interact prompt,Continue,,,,,,,,
+tutorial.skip,Pause menu button,Skip Tutorial,,,,,,,,
+tutorial.replay,Main menu button,Replay Tutorial,,,,,,,,
+hint.gate_damaged,First-time hint,"The gate is under attack! Gate damage lasts the whole run. If it falls, the run is over.",,,,,,,,
+hint.gate_repair,First-time hint,Repair the gate with supply during prep. Supply spent here can't build towers.,,,,,,,,
+hint.tower_restock,First-time hint,Towers run out of ammo. Use a tower to restock it with supply.,,,,,,,,
+hint.wave_cards,First-time hint,"Defence keeps you at the gate. Offence pays more, but leaves your towers to hold alone.",,,,,,,,
+hint.meta_spirit,First-time hint,Spend Goblin Blood with the Spirit for permanent upgrades.,,,,,,,,
+hint.fishing_pond,First-time hint,"Arrows are unlimited here, so shoot freely! It's just you and your bow: no sword, mount or ultimate.",,,,,,,,
+ammo_chest.prompt_free,Free ammo crate prompt ({0} = arrows),Take {0} arrows,,,,,,,,
+saveslots.title,Save slot screen heading,Choose Your Save,,,,,,,,
+saveslots.slot,Save slot card title; {0}=slot number,Slot {0},,,,,,,,
+saveslots.continue,Save slot card action on a used slot,Continue,,,,,,,,
+saveslots.new_game,Save slot card action on an empty slot,New Game,,,,,,,,
+saveslots.empty,Save slot card body on an empty slot,Empty Slot,,,,,,,,
+saveslots.created,Save slot card label: date the save was started,Created,,,,,,,,
+saveslots.play_time,Save slot card label: total time played,Time Played,,,,,,,,
+saveslots.last_played,Save slot card label: date last played,Last Played,,,,,,,,
+saveslots.summary,Save slot card progress line; {0}=meta tier {1}=goblin blood,Tier {0}  ·  {1} Goblin Blood,,,,,,,,
+saveslots.summary_tutorial,Save slot card progress line while the tutorial is unfinished,In the tutorial,,,,,,,,
+saveslots.time_hm,Play time hours+minutes; {0}=hours {1}=minutes,{0}h {1}m,,,,,,,,
+saveslots.time_m,Play time minutes; {0}=minutes,{0}m,,,,,,,,
+saveslots.time_under_minute,Play time under one minute,<1m,,,,,,,,
+saveslots.delete_title,Delete save warning heading; {0}=slot number,Delete Slot {0}?,,,,,,,,
+saveslots.delete_body,Delete save warning body; {0}=play time,{0} of progress will be lost forever.\nThis cannot be undone.,,,,,,,,
+saveslots.hold_to_delete,Delete save button (must be held),Hold to Delete,,,,,,,,
+saveslots.back,Save slot screen back button,Back,,,,,,,,

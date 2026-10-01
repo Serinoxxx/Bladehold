@@ -49,12 +49,22 @@ public static class SectorSpawnRules
         return enabled && minThreat > 0 && threat >= minThreat && wave >= unlockWave;
     }
 
-    /// <summary>Shielder ids (bubblers) get the spawner's tighter concurrent cap. The spawner also checks the prefab for a BubbleShield.</summary>
+    /// <summary>
+    ///     A row in a scene's <see cref="SceneEnemyRoster" /> list: the list replaces <c>minThreat</c>, so only
+    ///     <c>enabled</c> and <c>unlockWave</c> gate it. The caller checks it's on the list.
+    /// </summary>
+    public static bool IsUnlockedInSceneRoster(bool enabled, int unlockWave, int wave)
+    {
+        return enabled && wave >= unlockWave;
+    }
+
+    /// <summary>
+    ///     Shielder ids (bubblers) get the spawner's tighter concurrent cap. The spawner also checks the prefab
+    ///     for a BubbleShield. Not "shield" in general: the shielded skeletons are ordinary melee.
+    /// </summary>
     public static bool IsShielderId(string id)
     {
-        return !string.IsNullOrEmpty(id)
-            && (id.IndexOf("bubbler", StringComparison.OrdinalIgnoreCase) >= 0
-                || id.IndexOf("shield", StringComparison.OrdinalIgnoreCase) >= 0);
+        return !string.IsNullOrEmpty(id) && id.IndexOf("bubbler", StringComparison.OrdinalIgnoreCase) >= 0;
     }
 
     /// <summary>

@@ -109,6 +109,9 @@ public class TowerPlot : MonoBehaviour, IInteractable
         }
     }
 
+    /// <summary>Raised once a defence finishes building on any plot (after the assembly animation, if any).</summary>
+    public static event Action<TowerPlot> OnBuilt;
+
     public void BuildDefense(FortDefenseType type, int level = 1, int supply = -1, bool instant = false)
     {
         if (IsOccupied || IsBuilding) return;
@@ -137,6 +140,7 @@ public class TowerPlot : MonoBehaviour, IInteractable
                 structure.PlotIndex = plotIndex;
                 structure.InitState(level, supply, -1);
             }
+            OnBuilt?.Invoke(this);
             return;
         }
 
@@ -153,6 +157,7 @@ public class TowerPlot : MonoBehaviour, IInteractable
                 structure.PlotIndex = plotIndex;
                 structure.InitState(level, supply, -1);
             }
+            OnBuilt?.Invoke(this);
         });
     }
 

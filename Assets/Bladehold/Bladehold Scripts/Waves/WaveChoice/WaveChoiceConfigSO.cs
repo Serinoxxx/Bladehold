@@ -141,8 +141,10 @@ public class WaveChoiceConfigSO : ScriptableObject
     [Min(2)] public int finalWaveNumber = 5;
 
     [Header("Resolution")]
-    [Tooltip("Seconds stragglers spend fleeing after the objective resolves before they despawn.")]
-    [Min(0f)] public float routDurationSeconds = 4f;
+    [Tooltip("Seconds the player gets to hunt down fleeing stragglers (skull waypoints on each) after the objective resolves, before they escape and despawn. Ends early once they're all dead.")]
+    [Min(0f)] public float routDurationSeconds = 20f;
+    [Tooltip("Seconds (real time) between the wave-cleared popup and the next wave's choice cards opening, so the cards don't snap up the moment the wave ends.")]
+    [Min(0f)] public float cardsDelaySeconds = 4f;
 
     [Header("Gate Repair (prep phase)")]
     [Min(0.01f)] public float supplyPerGateHp = 1f;

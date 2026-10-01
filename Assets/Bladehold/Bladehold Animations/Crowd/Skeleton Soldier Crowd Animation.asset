@@ -1,0 +1,305 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aaba86395cc3cdf4babdc33fc0852650, type: 3}
+  m_Name: Skeleton Soldier Crowd Animation
+  m_EditorClassIdentifier: Assembly-CSharp::BakedCrowdAnimationSO
+  mesh: {fileID: 4300000, guid: efc1bb9efb6c81f48946cfbeee43f13f, type: 2}
+  material: {fileID: 2100000, guid: e25a01c9a033bd0449ec0e412df10911, type: 2}
+  boneTexture: {fileID: 2800000, guid: 21498e8939dcd7b4baeba9abe684a844, type: 2}
+  boneCount: 49
+  bakeFps: 60
+  clips:
+  - name: Idle
+    startFrame: 0
+    frameCount: 106
+    length: 1.7666668
+    loop: 1
+    referenceSpeed: 0
+    throwDirection: {x: 0, y: 0, z: 0}
+    launchVelocity: {x: 0, y: 0, z: 0}
+    airborneHoldTime: 0
+    getUpClip: -1
+    standPosition: {x: 0, y: 0, z: 0}
+    standYaw: 0
+  - name: Run
+    startFrame: 106
+    frameCount: 42
+    length: 0.70000005
+    loop: 1
+    referenceSpeed: 3.5
+    throwDirection: {x: 0, y: 0, z: 0}
+    launchVelocity: {x: 0, y: 0, z: 0}
+    airborneHoldTime: 0
+    getUpClip: -1
+    standPosition: {x: 0, y: 0, z: 0}
+    standYaw: 0
+  - name: Attack
+    startFrame: 148
+    frameCount: 50
+    length: 0.8000001
+    loop: 0
+    referenceSpeed: 0
+    throwDirection: {x: 0, y: 0, z: 0}
+    launchVelocity: {x: 0, y: 0, z: 0}
+    airborneHoldTime: 0
+    getUpClip: -1
+    standPosition: {x: 0, y: 0, z: 0}
+    standYaw: 0
+  - name: Attack (moving)
+    startFrame: 198
+    frameCount: 50
+    length: 0.8000001
+    loop: 0
+    referenceSpeed: 0
+    throwDirection: {x: 0, y: 0, z: 0}
+    launchVelocity: {x: 0, y: 0, z: 0}
+    airborneHoldTime: 0
+    getUpClip: -1
+    standPosition: {x: 0, y: 0, z: 0}
+    standYaw: 0
+  - name: Get Up
+    startFrame: 248
+    frameCount: 123
+    length: 2.0333333
+    loop: 0
+    referenceSpeed: 0
+    throwDirection: {x: 0, y: 0, z: 0}
+    launchVelocity: {x: 0, y: 0, z: 0}
+    airborneHoldTime: 0
+    getUpClip: -1
+    standPosition: {x: 0, y: 0, z: 0}
+    standYaw: 0
+  - name: Ragdoll Fall 1
+    startFrame: 371
+    frameCount: 79
+    length: 1.3
+    loop: 0
+    referenceSpeed: 0
+    throwDirection: {x: -0, y: -0, z: -1}
+    launchVelocity: {x: 0, y: 0.8, z: -1.5}
+    airborneHoldTime: 0.61666673
+    getUpClip: -1
+    standPosition: {x: 0, y: 0, z: 0}
+    standYaw: 0
+  - name: Ragdoll Fall 2
+    startFrame: 450
+    frameCount: 126
+    length: 2.0833333
+    loop: 0
+    referenceSpeed: 0
+    throwDirection: {x: -0.30901703, y: -0, z: -0.9510565}
+    launchVelocity: {x: -0.6952883, y: 0.8, z: -2.139877}
+    airborneHoldTime: 0.68333334
+    getUpClip: 13
+    standPosition: {x: 0, y: 0, z: 0}
+    standYaw: 0
+  - name: Ragdoll Fall 3
+    startFrame: 576
+    frameCount: 94
+    length: 1.55
+    loop: 0
+    referenceSpeed: 0
+    throwDirection: {x: 0.25881907, y: -0, z: -0.9659258}
+    launchVelocity: {x: 0.3105829, y: 0.8, z: -1.159111}
+    airborneHoldTime: 0.8333332
+    getUpClip: -1
+    standPosition: {x: 0, y: 0, z: 0}
+    standYaw: 0
+  - name: Ragdoll Fall 4
+    startFrame: 670
+    frameCount: 79
+    length: 1.3
+    loop: 0
+    referenceSpeed: 0
+    throwDirection: {x: 0.13917312, y: -0, z: -0.99026805}
+    launchVelocity: {x: 0.41751936, y: 0.8, z: -2.9708042}
+    airborneHoldTime: 0.48333353
+    getUpClip: -1
+    standPosition: {x: 0, y: 0, z: 0}
+    standYaw: 0
+  - name: Ragdoll Fall 5
+    startFrame: 749
+    frameCount: 79
+    length: 1.3
+    loop: 0
+    referenceSpeed: 0
+    throwDirection: {x: -0.4694716, y: -0, z: -0.88294756}
+    launchVelocity: {x: -0.8450489, y: 0.8, z: -1.5893056}
+    airborneHoldTime: 0.5666668
+    getUpClip: 14
+    standPosition: {x: 0, y: 0, z: 0}
+    standYaw: 0
+  - name: Ragdoll Fall 6
+    startFrame: 828
+    frameCount: 79
+    length: 1.3
+    loop: 0
+    referenceSpeed: 0
+    throwDirection: {x: 0.4226183, y: -0, z: -0.90630776}
+    launchVelocity: {x: 1.0776768, y: 0.8, z: -2.311085}
+    airborneHoldTime: 0.46666685
+    getUpClip: -1
+    standPosition: {x: 0, y: 0, z: 0}
+    standYaw: 0
+  - name: Ragdoll Fall 12
+    startFrame: 907
+    frameCount: 94
+    length: 1.55
+    loop: 0
+    referenceSpeed: 0
+    throwDirection: {x: -0.190809, y: -0, z: -0.98162717}
+    launchVelocity: {x: -0.5031773, y: 0.8, z: -2.5886228}
+    airborneHoldTime: 0.6666667
+    getUpClip: 15
+    standPosition: {x: 0, y: 0, z: 0}
+    standYaw: 0
+  - name: Ragdoll Fall 15
+    startFrame: 1001
+    frameCount: 95
+    length: 1.5666667
+    loop: 0
+    referenceSpeed: 0
+    throwDirection: {x: -0, y: -0, z: -1}
+    launchVelocity: {x: 0, y: 0.8, z: -2.374457}
+    airborneHoldTime: 0.7333333
+    getUpClip: 16
+    standPosition: {x: 0, y: 0, z: 0}
+    standYaw: 0
+  - name: Get Up (Ragdoll Fall 2)
+    startFrame: 1096
+    frameCount: 123
+    length: 2.0333333
+    loop: 0
+    referenceSpeed: 0
+    throwDirection: {x: 0, y: 0, z: 0}
+    launchVelocity: {x: 0, y: 0, z: 0}
+    airborneHoldTime: 0
+    getUpClip: -1
+    standPosition: {x: -1.0699955, y: 0, z: -0.8203904}
+    standYaw: 67.29209
+  - name: Get Up (Ragdoll Fall 5)
+    startFrame: 1219
+    frameCount: 123
+    length: 2.0333333
+    loop: 0
+    referenceSpeed: 0
+    throwDirection: {x: 0, y: 0, z: 0}
+    launchVelocity: {x: 0, y: 0, z: 0}
+    airborneHoldTime: 0
+    getUpClip: -1
+    standPosition: {x: -0.8249686, y: 0, z: -1.214794}
+    standYaw: 30.996857
+  - name: Get Up (Ragdoll Fall 12)
+    startFrame: 1342
+    frameCount: 123
+    length: 2.0333333
+    loop: 0
+    referenceSpeed: 0
+    throwDirection: {x: 0, y: 0, z: 0}
+    launchVelocity: {x: 0, y: 0, z: 0}
+    airborneHoldTime: 0
+    getUpClip: -1
+    standPosition: {x: -0.9561267, y: 0, z: -1.0381829}
+    standYaw: 48.05195
+  - name: Get Up (Ragdoll Fall 15)
+    startFrame: 1465
+    frameCount: 123
+    length: 2.0333333
+    loop: 0
+    referenceSpeed: 0
+    throwDirection: {x: 0, y: 0, z: 0}
+    launchVelocity: {x: 0, y: 0, z: 0}
+    airborneHoldTime: 0
+    getUpClip: -1
+    standPosition: {x: -0.54248095, y: 0, z: -1.2755381}
+    standYaw: 7.0007052
+  deathClips: 05000000060000000700000008000000090000000a0000000b0000000c000000
+  impacts:
+  - clip: 5
+    time: 0.016666668
+    localPoint: {x: 0.33738098, y: -0.02, z: -0.1828378}
+    intensity: 0.03560056
+    decalSize: 0.2948249
+  - clip: 5
+    time: 0.033333335
+    localPoint: {x: 0.49353117, y: -0.02, z: -0.44222414}
+    intensity: 0.028917382
+    decalSize: 0.2845328
+  - clip: 5
+    time: 0.7333333
+    localPoint: {x: -0.7000476, y: -0.02, z: -2.198476}
+    intensity: 0.12310088
+    decalSize: 0.6295753
+  - clip: 5
+    time: 0.74999994
+    localPoint: {x: -0.19672649, y: -0.02, z: -2.4577374}
+    intensity: 0.37679592
+    decalSize: 0.82026577
+  - clip: 7
+    time: 0.98333305
+    localPoint: {x: -1.0299591, y: -0.02, z: -2.12334}
+    intensity: 0.088652715
+    decalSize: 0.57652515
+  - clip: 8
+    time: 0.016666668
+    localPoint: {x: 0.37776905, y: -0.02, z: -0.18585317}
+    intensity: 0.026885
+    decalSize: 0.28140292
+  - clip: 8
+    time: 0.6333334
+    localPoint: {x: -0.12635589, y: -0.02, z: -2.2569027}
+    intensity: 0.12677477
+    decalSize: 0.63523316
+  - clip: 9
+    time: 0.68333334
+    localPoint: {x: -1.8984721, y: -0.02, z: -1.0404541}
+    intensity: 0.15758005
+    decalSize: 0.48267326
+  - clip: 10
+    time: 0.016666668
+    localPoint: {x: 0.40674374, y: -0.02, z: -0.18988542}
+    intensity: 0.06688697
+    decalSize: 0.34300596
+  - clip: 10
+    time: 0.033333335
+    localPoint: {x: 0.6063446, y: -0.02, z: -0.475064}
+    intensity: 0.038135942
+    decalSize: 0.29872936
+  - clip: 10
+    time: 0.6000001
+    localPoint: {x: -0.018902898, y: -0.02, z: -2.2196686}
+    intensity: 0.24927844
+    decalSize: 0.82388884
+  - clip: 10
+    time: 0.6333334
+    localPoint: {x: 0.47720146, y: -0.02, z: -2.242466}
+    intensity: 0.2632979
+    decalSize: 0.6454788
+  - clip: 12
+    time: 0.7666666
+    localPoint: {x: -0.44855833, y: -0.02, z: -2.1707373}
+    intensity: 0.010161741
+    decalSize: 0.2556491
+  getUpClip: 4
+  runSpeedThreshold: 0.4
+  minRunPlaybackRate: 0.6
+  crossfadeSeconds: 0.15
+  visualCheckInterval: 15
+  demoteAfterSeconds: 3
+  demoteMinCameraDistance: 12
+  demoteCheckInterval: 0.5
+  fallBodyRadius: 0.3
+  fallBodyFriction: 0.8
+  fallSettleSpeed: 0.4
+  fallSettleSeconds: 0.25
+  fallTimeout: 6
+  getUpCrossfadeSeconds: 0.3

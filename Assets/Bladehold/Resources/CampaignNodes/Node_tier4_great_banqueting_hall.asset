@@ -20,7 +20,7 @@ MonoBehaviour:
   sceneName: Bladehold Great Hall
   nodeType: 0
   tierIndex: 4
-  mapPosition: {x: 700, y: 0}
+  mapPosition: {x: 920, y: 75}
   captainName: Captain Fraglob
   difficultyTier: 3
   clanBuff: {fileID: 0}

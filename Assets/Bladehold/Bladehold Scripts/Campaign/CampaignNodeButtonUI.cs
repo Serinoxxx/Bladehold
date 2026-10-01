@@ -16,7 +16,8 @@ public class CampaignNodeButtonUI : MonoBehaviour, IPointerEnterHandler, IPointe
         Locked,
         Available,
         Completed,
-        DemoLocked // past the demo cutoff: shown, never playable
+        DemoLocked, // past the demo cutoff: shown, never playable
+        Bypassed // behind the player's position, or on a branch they can no longer reach: faded out
     }
 
     [Header("Core References")]
@@ -40,12 +41,24 @@ public class CampaignNodeButtonUI : MonoBehaviour, IPointerEnterHandler, IPointe
     [SerializeField] private Color availableBorderColor = new Color(1f, 0.8f, 0.2f, 1f);
     [SerializeField] private Color completedBorderColor = new Color(0.3f, 0.7f, 0.4f, 1f);
     [SerializeField] private Color lockedBorderColor = new Color(0.35f, 0.35f, 0.4f, 0.8f);
+    [Tooltip("Bypassed nodes: background blended this far towards grey.")]
+    [Range(0f, 1f)] [SerializeField] private float bypassedDesaturate = 0.7f;
+    [Tooltip("Bypassed nodes: alpha of the background, border and labels.")]
+    [Range(0f, 1f)] [SerializeField] private float bypassedAlpha = 0.35f;
+    [Tooltip("Reachable-later (Locked) nodes: alpha of the background, border and labels.")]
+    [Range(0f, 1f)] [SerializeField] private float upcomingAlpha = 0.8f;
 
     [SerializeField] private Color combatNodeColor = new Color(0.55f, 0.18f, 0.18f, 1f);
     [SerializeField] private Color restNodeColor = new Color(0.18f, 0.45f, 0.32f, 1f);
     [SerializeField] private Color fishingNodeColor = new Color(0.12f, 0.52f, 0.58f, 1f);
     [SerializeField] private Color bossNodeColor = new Color(0.45f, 0.15f, 0.55f, 1f);
+    [Header("Type Icons (top-left badge; empty = no badge for that type)")]
     [SerializeField] private Sprite fishingIcon;
+    [SerializeField] private Sprite combatIcon;
+    [SerializeField] private Sprite restIcon;
+    [SerializeField] private Sprite preBossIcon;
+    [SerializeField] private Sprite bossIcon;
+    [SerializeField] private Sprite cryptIcon;
 
     private CampaignNodeSO nodeData;
     private NodeVisualStatus currentStatus = NodeVisualStatus.Locked;
@@ -118,24 +131,26 @@ public class CampaignNodeButtonUI : MonoBehaviour, IPointerEnterHandler, IPointe
             }
         }
 
-        // Apply node category background tint
+        // Apply node category background tint (faded for nodes the route has left behind)
         if (backgroundImage != null)
         {
-            backgroundImage.color = GetNodeBgColor(node.nodeType);
+            Color bg = GetNodeBgColor(node.nodeType);
+            if (status == NodeVisualStatus.Bypassed)
+            {
+                float grey = bg.grayscale;
+                bg = Color.Lerp(bg, new Color(grey, grey, grey, 1f), bypassedDesaturate);
+            }
+            bg.a *= StatusAlpha(status);
+            backgroundImage.color = bg;
         }
+        SetLabelAlpha(StatusAlpha(status));
 
-        // Icon (e.g. fishing pond)
+        // Type badge (swords, campfire, fish, skull...)
         if (nodeIconImage != null)
         {
-            if (node.nodeType == CampaignNodeType.FishingPond && fishingIcon != null)
-            {
-                nodeIconImage.gameObject.SetActive(true);
-                nodeIconImage.sprite = fishingIcon;
-            }
-            else
-            {
-                nodeIconImage.gameObject.SetActive(false);
-            }
+            Sprite icon = GetTypeIcon(node.nodeType);
+            nodeIconImage.gameObject.SetActive(icon != null);
+            if (icon != null) nodeIconImage.sprite = icon;
         }
 
         // Status Visuals
@@ -144,7 +159,8 @@ public class CampaignNodeButtonUI : MonoBehaviour, IPointerEnterHandler, IPointe
 
     private void ApplyStatusVisuals(NodeVisualStatus status)
     {
-        if (lockOverlay != null) lockOverlay.SetActive(status == NodeVisualStatus.Locked || status == NodeVisualStatus.DemoLocked);
+        // Padlocks only where the demo stops; nodes further along the route just wait their turn.
+        if (lockOverlay != null) lockOverlay.SetActive(status == NodeVisualStatus.DemoLocked);
         if (completedCheckmark != null) completedCheckmark.SetActive(status == NodeVisualStatus.Completed);
         if (activePulseGlow != null) activePulseGlow.SetActive(status == NodeVisualStatus.Available);
 
@@ -160,8 +176,11 @@ public class CampaignNodeButtonUI : MonoBehaviour, IPointerEnterHandler, IPointe
                     break;
                 case NodeVisualStatus.Locked:
                 case NodeVisualStatus.DemoLocked:
+                case NodeVisualStatus.Bypassed:
                 default:
-                    borderImage.color = lockedBorderColor;
+                    Color border = lockedBorderColor;
+                    border.a *= StatusAlpha(status);
+                    borderImage.color = border;
                     break;
             }
         }
@@ -169,6 +188,46 @@ public class CampaignNodeButtonUI : MonoBehaviour, IPointerEnterHandler, IPointe
         if (button != null)
         {
             button.interactable = (status == NodeVisualStatus.Available);
+        }
+    }
+
+    private float StatusAlpha(NodeVisualStatus status)
+    {
+        switch (status)
+        {
+            case NodeVisualStatus.Bypassed: return bypassedAlpha;
+            case NodeVisualStatus.Locked: return upcomingAlpha;
+            default: return 1f;
+        }
+    }
+
+    private void SetLabelAlpha(float alpha)
+    {
+        foreach (TMP_Text label in new[] { titleText, tierText, captainBadgeText })
+        {
+            if (label != null) label.alpha = alpha;
+        }
+        if (nodeIconImage != null)
+        {
+            Color c = nodeIconImage.color;
+            c.a = alpha;
+            nodeIconImage.color = c;
+        }
+    }
+
+    private Sprite GetTypeIcon(CampaignNodeType type)
+    {
+        switch (type)
+        {
+            case CampaignNodeType.Combat: return combatIcon;
+            case CampaignNodeType.RestArea: return restIcon;
+            case CampaignNodeType.FishingPond: return fishingIcon;
+            case CampaignNodeType.PreBoss: return preBossIcon;
+            case CampaignNodeType.NecromancerEncounter: return cryptIcon;
+            case CampaignNodeType.PrincessBoss:
+            case CampaignNodeType.NecromancerBoss:
+                return bossIcon;
+            default: return null;
         }
     }
 

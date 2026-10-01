@@ -20,7 +20,7 @@ MonoBehaviour:
   sceneName: Bladehold Throne Antechamber
   nodeType: 4
   tierIndex: 7
-  mapPosition: {x: 1300, y: 0}
+  mapPosition: {x: 1700, y: 60}
   captainName: Captain Kombusta
   difficultyTier: 4
   clanBuff: {fileID: 0}

@@ -5,6 +5,13 @@ using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using MoreMountains.Feedbacks;
 
+/// <summary>
+///     The HUD's Summon Mount slot: icon, the SummonMount button glyph (follows device switches and
+///     rebinds via <see cref="InputGlyph" />), a radial fill + seconds for the ride time left and then the
+///     cooldown. Driven by <see cref="PlayerSummonMount" />'s events, which carry <see cref="PlayerMount" />'s
+///     real timers. The slot hides with a CanvasGroup on <see cref="rootContainer" /> (never by deactivating
+///     it, which would stop this component) when the scene's <see cref="SceneAbilityRules" /> block the mount.
+/// </summary>
 public class SummonMountUI : MonoBehaviour
 {
     [Header("UI Elements")]
@@ -12,6 +19,8 @@ public class SummonMountUI : MonoBehaviour
     public Image radialFillImage;
     public TextMeshProUGUI timerText;
     public Image keybindIcon;
+    [Tooltip("Glyph for the SummonMount action (on the keybind image). Falls back to the sprite swap below when unassigned.")]
+    [SerializeField] private InputGlyph keybindGlyph;
 
     [Header("Synty Input Icons (Keyboard/Mouse)")]
     public Sprite keyboardSprite;
@@ -51,7 +60,8 @@ public class SummonMountUI : MonoBehaviour
 
         if (Player.Instance != null)
         {
-            playerSummonMount = Player.Instance.GetComponentInChildren<PlayerSummonMount>();
+            // The ability sits on the player root; Player.Instance is on the Synty character child.
+            playerSummonMount = Player.Instance.transform.root.GetComponentInChildren<PlayerSummonMount>(true);
             if (playerSummonMount != null)
             {
                 playerSummonMount.OnDurationUpdated += HandleDurationUpdated;
@@ -60,8 +70,16 @@ public class SummonMountUI : MonoBehaviour
                 playerSummonMount.OnAbilityTriggered += HandleAbilityTriggered;
             }
 
+            if (keybindGlyph != null && Player.Instance.InputSettings != null)
+            {
+                InputActionMap map = Player.Instance.InputSettings.GetRebindableActionMap();
+                InputAction action = map != null ? map.FindAction("SummonMount") : null;
+                if (action != null) keybindGlyph.SetAction(action);
+                else Debug.LogError("SummonMountUI: no SummonMount action on the player's Controls map.", this);
+            }
+
             playerInput = Player.Instance.GetComponentInChildren<PlayerInput>();
-            if (playerInput != null)
+            if (keybindGlyph == null && playerInput != null)
             {
                 playerInput.onControlsChanged += OnControlsChanged;
                 UpdateKeybindIcons(playerInput.currentControlScheme);
@@ -85,8 +103,10 @@ public class SummonMountUI : MonoBehaviour
     }
 
     [Header("Slot Container")]
-    [Tooltip("The root GameObject of the entire mount slot (including frame, keybind, icon).")]
+    [Tooltip("The root GameObject of the entire mount slot (including frame, keybind, icon). Hidden through its CanvasGroup.")]
     [SerializeField] private GameObject rootContainer;
+
+    private CanvasGroup rootGroup;
 
     private void Awake()
     {
@@ -104,6 +124,11 @@ public class SummonMountUI : MonoBehaviour
                 curr = curr.parent;
             }
         }
+        if (rootContainer != null)
+        {
+            rootGroup = rootContainer.GetComponent<CanvasGroup>();
+            if (rootGroup == null) Debug.LogError("SummonMountUI: rootContainer needs a CanvasGroup to hide the slot.", this);
+        }
     }
 
     private void Update()
@@ -111,12 +136,9 @@ public class SummonMountUI : MonoBehaviour
         if (anyError) return;
 
         bool isUnlocked = playerSummonMount != null && playerSummonMount.IsAbilityUnlocked;
-        if (rootContainer != null)
+        if (rootGroup != null)
         {
-            if (rootContainer.activeSelf != isUnlocked)
-            {
-                rootContainer.SetActive(isUnlocked);
-            }
+            rootGroup.alpha = isUnlocked ? 1f : 0f;
         }
         else if (skillIcon != null && skillIcon.gameObject.activeSelf != isUnlocked)
         {
@@ -136,7 +158,7 @@ public class SummonMountUI : MonoBehaviour
     {
         skillIcon.color = activeDurationColor;
         radialFillImage.fillAmount = max > 0 ? current / max : 0;
-        timerText.text = current.ToString("0.0");
+        timerText.text = Mathf.CeilToInt(current).ToString();
     }
 
     private void HandleCooldownUpdated(float current, float max)
@@ -144,7 +166,7 @@ public class SummonMountUI : MonoBehaviour
         skillIcon.color = cooldownColor;
         // Fill drains over time (or grows, up to preference. Buffs drain)
         radialFillImage.fillAmount = max > 0 ? current / max : 0;
-        timerText.text = current.ToString("0.0");
+        timerText.text = current > 0f ? Mathf.CeilToInt(current).ToString() : "";
     }
 
     private void HandleAbilityReady()

@@ -598,9 +598,7 @@ public class SurvivorsSpawner : MonoBehaviour
     {
         if (def != null && !string.IsNullOrEmpty(def.id))
         {
-            if (string.Equals(def.id, "bubbler", StringComparison.OrdinalIgnoreCase) ||
-                def.id.IndexOf("shield", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                def.id.IndexOf("bubbler", StringComparison.OrdinalIgnoreCase) >= 0)
+            if (SectorSpawnRules.IsShielderId(def.id))
             {
                 return true;
             }
@@ -610,8 +608,7 @@ public class SurvivorsSpawner : MonoBehaviour
         {
             if (prefab.GetComponent<BubblerCaster>() != null ||
                 prefab.GetComponent<BubbleShield>() != null ||
-                prefab.name.IndexOf("bubbler", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                prefab.name.IndexOf("shield", StringComparison.OrdinalIgnoreCase) >= 0)
+                prefab.name.IndexOf("bubbler", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 return true;
             }
@@ -620,9 +617,13 @@ public class SurvivorsSpawner : MonoBehaviour
         return false;
     }
 
+    /// <summary>The fodder-floor enemy: the scene's <see cref="SceneEnemyRoster" /> override, else the pacing asset's.</summary>
+    private string FodderId =>
+        SceneEnemyRoster.FodderOverride ?? (pacingConfig != null ? pacingConfig.fodderEnemyId : "goblin");
+
     private SpawnType SelectSpawnTypeForWave(int waveNumber)
     {
-        string fodderId = pacingConfig != null ? pacingConfig.fodderEnemyId : "goblin";
+        string fodderId = FodderId;
         float fodderShare = pacingConfig != null ? pacingConfig.fodderShare : 0.6f;
 
         string[] allowed = null;
@@ -640,10 +641,21 @@ public class SurvivorsSpawner : MonoBehaviour
                 fodder = type;
             }
 
+            bool sceneRoster = SceneEnemyRoster.Active;
             if (allowed != null && allowed.Length > 0)
             {
-                // Objective override (e.g. Goblin Rush): its list replaces the threat gating.
+                // Objective override (e.g. Goblin Rush): its list replaces the threat gating. In a scene
+                // with its own roster it only narrows that roster (no goblins in the Graveyard); an empty
+                // overlap falls back to the scene's fodder.
                 if (!type.def.enabled || Array.IndexOf(allowed, type.def.id) < 0) continue;
+                if (sceneRoster && !SceneEnemyRoster.Allows(type.def.id)) continue;
+            }
+            else if (sceneRoster)
+            {
+                // Scene roster (e.g. the Graveyard's skeletons): its list replaces the threat gating;
+                // each row's unlockWave still staggers the tougher types in.
+                if (!SceneEnemyRoster.Allows(type.def.id)
+                    || !SectorSpawnRules.IsUnlockedInSceneRoster(type.def.enabled, type.def.unlockWave, waveNumber)) continue;
             }
             else if (!SectorSpawnRules.IsUnlocked(type.def, waveNumber, currentThreat))
             {
@@ -827,7 +839,7 @@ public class SurvivorsSpawner : MonoBehaviour
     /// </summary>
     public void DebugSpawnBurst(int count)
     {
-        string fodderId = pacingConfig != null ? pacingConfig.fodderEnemyId : "goblin";
+        string fodderId = FodderId;
         for (int i = 0; i < count; i++)
         {
             DebugSpawnEnemyType(fodderId);

@@ -9,30 +9,95 @@ using UnityEngine.SceneManagement;
 using UnityEditor.SceneManagement;
 
 /// <summary>
-///     Bakes the fodder goblin's idle, run and attack into a <see cref="BakedCrowdAnimationSO" /> for
-///     <see cref="BakedCrowdRenderer" />: samples the clips through a PlayableGraph on a temporary
-///     prefab instance (the attack is the controller's upper-body-masked Attack layer over idle legs,
-///     and again over run legs), writes each frame's bone skin matrices to a float texture, and copies
-///     the body mesh with its bone indices/weights moved into UV4/UV5. Existing output assets are
-///     rewritten in place so their GUIDs, and the tuning fields on the SO, survive a re-bake.
+///     Bakes each crowd enemy's idle, run and attack (see <see cref="Targets" />: the fodder goblin and
+///     the skeletons) into a <see cref="BakedCrowdAnimationSO" /> for <see cref="BakedCrowdRenderer" />:
+///     samples the clips through a PlayableGraph on a temporary prefab instance (the attack is the
+///     controller's upper-body-masked Attack layer over idle legs, and again over run legs), writes
+///     each frame's bone skin matrices to a float texture, and copies the body mesh with its bone
+///     indices/weights moved into UV4/UV5. Existing output assets are rewritten in place so their
+///     GUIDs, and the tuning fields on the SO, survive a re-bake.
 ///
-///     It also records <see cref="FallVariations" /> real ragdoll deaths: a goblin posed from an idle
-///     frame is launched the way <see cref="KnockbackReceiver" /> throws a corpse, simulated in an
-///     isolated preview physics scene on flat ground until it settles, and its bones are captured each
-///     step as a non-looping clip (the last frame is the corpse pose). Hard landings are logged as
-///     <see cref="BakedCrowdAnimationSO.ImpactEvent" />s so the baked fall bleeds where a real one would.
+///     Held props (a sword, a shield: active MeshRenderers parented under the rig's bones) are merged
+///     into the baked mesh, every vertex weighted fully to the bone the prop hangs off, so the crowd
+///     draws them in the same instanced call. A prop must share the body's material (the Synty
+///     PolygonDungeon atlas), since the crowd draws one material.
 ///
-///     Re-run after changing the goblin's body mesh, rig or any of the three clips.
+///     It also records real ragdoll falls: a goblin posed from an idle frame is launched the way
+///     <see cref="KnockbackReceiver" /> throws a corpse, simulated in an isolated preview physics scene
+///     on flat ground until it settles, and its bones are captured each step as a non-looping clip
+///     (the last frame is the landed pose). The pelvis's horizontal travel is taken out, so the clip
+///     is the tumble in place and the runtime <see cref="BakedFallBody" /> supplies the travel. Hard
+///     landings are logged as <see cref="BakedCrowdAnimationSO.ImpactEvent" />s so the baked fall
+///     bleeds where a real one would.
+///
+///     The first <see cref="DeathFallCount" /> variations are the deaths. More are recorded until
+///     <see cref="MinGetUpFalls" /> land face-up, the way the GetUp clip starts: each face-up fall gets
+///     its own copy of the get-up, turned and shifted so its first frame lies where the fall landed,
+///     plus where the body stands at the end. Face-up falls serve non-lethal flings as well as deaths.
+///
+///     Re-run after changing a crowd enemy's body mesh, props, rig, ragdoll or any of the baked clips.
+///     A new crowd enemy is a <see cref="Targets" /> entry plus a manifest entry wiring
+///     <see cref="BakedCrowdAgent" /> to <see cref="EnsureDataAsset" />; generate the prefab first,
+///     then bake.
 /// </summary>
 public static class BakedCrowdBaker
 {
-    private const string PrefabPath = "Assets/Bladehold/Bladehold Prefabs/Goblin Enemy Variant.prefab";
+    private const string PrefabFolder = "Assets/Bladehold/Bladehold Prefabs/";
     private const string OutputFolder = "Assets/Bladehold/Bladehold Animations/Crowd";
-    public const string DataPath = OutputFolder + "/Goblin Crowd Animation.asset";
-    private const string TexturePath = OutputFolder + "/Goblin Crowd Bones.asset";
-    private const string MeshPath = OutputFolder + "/Goblin Crowd Mesh.asset";
-    private const string MaterialPath = OutputFolder + "/Goblin Crowd.mat";
     private const string ShaderName = "Bladehold/Baked Crowd Lit";
+
+    /// <summary>Every baked crowd enemy: (crowd name, which names its output assets; source prefab).</summary>
+    private static readonly (string crowdName, string prefabName)[] Targets =
+    {
+        ("Goblin", "Goblin Enemy Variant"),
+        ("Skeleton Soldier", "Skeleton Soldier Enemy Variant"),
+        ("Skeleton Soldier Shield", "Skeleton Soldier Shield Enemy Variant"),
+        ("Skeleton Knight", "Skeleton Knight Enemy Variant"),
+        ("Skeleton Knight Shield", "Skeleton Knight Shield Enemy Variant"),
+    };
+
+    public static string DataPathFor(string crowdName) => $"{OutputFolder}/{crowdName} Crowd Animation.asset";
+    private static string TexturePathFor(string crowdName) => $"{OutputFolder}/{crowdName} Crowd Bones.asset";
+    private static string MeshPathFor(string crowdName) => $"{OutputFolder}/{crowdName} Crowd Mesh.asset";
+    private static string MaterialPathFor(string crowdName) => $"{OutputFolder}/{crowdName} Crowd.mat";
+
+    /// <summary>
+    ///     The crowd's data asset, created empty (its playback tuning copied from the goblin's) when
+    ///     it doesn't exist yet, so the prefab generator can wire it before the first bake fills it in
+    ///     place.
+    /// </summary>
+    public static BakedCrowdAnimationSO EnsureDataAsset(string crowdName)
+    {
+        string path = DataPathFor(crowdName);
+        BakedCrowdAnimationSO data = AssetDatabase.LoadAssetAtPath<BakedCrowdAnimationSO>(path);
+        if (data != null) return data;
+
+        EnsureOutputFolder();
+        data = ScriptableObject.CreateInstance<BakedCrowdAnimationSO>();
+        BakedCrowdAnimationSO goblin = AssetDatabase.LoadAssetAtPath<BakedCrowdAnimationSO>(DataPathFor("Goblin"));
+        if (goblin != null)
+        {
+            EditorUtility.CopySerialized(goblin, data);
+            data.mesh = null;
+            data.material = null;
+            data.boneTexture = null;
+            data.boneCount = 0;
+            data.clips = Array.Empty<BakedCrowdAnimationSO.Clip>();
+            data.deathClips = Array.Empty<int>();
+            data.impacts = Array.Empty<BakedCrowdAnimationSO.ImpactEvent>();
+            data.getUpClip = -1;
+        }
+        AssetDatabase.CreateAsset(data, path);
+        return data;
+    }
+
+    private static void EnsureOutputFolder()
+    {
+        if (!AssetDatabase.IsValidFolder(OutputFolder))
+        {
+            AssetDatabase.CreateFolder("Assets/Bladehold/Bladehold Animations", "Crowd");
+        }
+    }
 
     private const float BakeFps = 60f;
     private const string IdleStateName = "Idle_Standing";
@@ -40,22 +105,46 @@ public static class BakedCrowdBaker
     private const string RunTreeName = "Run_F_Incline_BlendTree";
     private const string AttackLayerName = "Attack";
     private const string AttackStateName = "Attack";
+    private const string GetUpStateName = "GetUp";
 
     // Ragdoll fall recordings: (launch strength multiplier, sideways angle in degrees), one clip each.
+    // Past these, FallSettings generates more until enough land face-up.
     private static readonly Vector2[] FallVariations =
     {
         new Vector2(1.0f, 0f), new Vector2(1.5f, 18f), new Vector2(0.8f, -15f),
         new Vector2(2.0f, -8f), new Vector2(1.2f, 28f), new Vector2(1.7f, -25f),
     };
+    private const int DeathFallCount = 6;
+    private const int MinGetUpFalls = 4;
+    private const int MaxFallCandidates = 48;
+    // The belly faces at least this far up (dot with world up) for a fall to count as face-up.
+    private const float FaceUpDot = 0.5f;
     private const float FallMinSeconds = 1.0f;
     private const float FallMaxSeconds = 4.0f;
     private const float FallLiftMetres = 0.03f;
 
-    [MenuItem("Bladehold/Crowd/Bake Goblin Crowd Animation")]
-    public static void Bake()
+    [MenuItem("Bladehold/Crowd/Bake Crowd Animations")]
+    public static void BakeAll()
     {
-        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
-        if (prefab == null) throw new InvalidOperationException($"Goblin prefab not found: {PrefabPath}");
+        try
+        {
+            for (int i = 0; i < Targets.Length; i++)
+            {
+                (string crowdName, string prefabName) = Targets[i];
+                EditorUtility.DisplayProgressBar("Baking crowd animations", crowdName, (float)i / Targets.Length);
+                Bake(crowdName, PrefabFolder + prefabName + ".prefab");
+            }
+        }
+        finally
+        {
+            EditorUtility.ClearProgressBar();
+        }
+    }
+
+    private static void Bake(string crowdName, string prefabPath)
+    {
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+        if (prefab == null) throw new InvalidOperationException($"{crowdName} prefab not found: {prefabPath} (run Bladehold > Generate Enemy Prefabs first).");
         Shader shader = Shader.Find(ShaderName);
         if (shader == null) throw new InvalidOperationException($"Shader '{ShaderName}' not found.");
 
@@ -68,7 +157,7 @@ public static class BakedCrowdBaker
             Animator animator = instance.GetComponentInChildren<Animator>();
             SkinnedMeshRenderer body = FindActiveBody(instance);
             AnimatorController controller = animator.runtimeAnimatorController as AnimatorController;
-            if (controller == null) throw new InvalidOperationException("The goblin rig has no AnimatorController.");
+            if (controller == null) throw new InvalidOperationException($"The {crowdName} rig has no AnimatorController (override controllers aren't supported).");
 
             AnimationClip idleClip = FindStateClip(controller.layers[0].stateMachine, IdleStateName);
             float runReferenceSpeed;
@@ -76,6 +165,7 @@ public static class BakedCrowdBaker
             AnimatorControllerLayer attackLayer = FindLayer(controller, AttackLayerName);
             AnimationClip attackClip = FindStateClip(attackLayer.stateMachine, AttackStateName);
             if (attackLayer.avatarMask == null) throw new InvalidOperationException("The Attack layer has no avatar mask.");
+            AnimationClip getUpClip = FindStateClip(controller.layers[0].stateMachine, GetUpStateName);
 
             animator.applyRootMotion = false;
             // A PlayableGraph doesn't write transforms in edit mode on its own; AnimationMode's graph
@@ -95,33 +185,63 @@ public static class BakedCrowdBaker
             clips.Add(SampleClip(graph, output, animator, bones, bindposes, rows, "Run", runClip, null, null, true, runReferenceSpeed));
             clips.Add(SampleClip(graph, output, animator, bones, bindposes, rows, "Attack", idleClip, attackClip, attackLayer.avatarMask, false, 0f));
             clips.Add(SampleClip(graph, output, animator, bones, bindposes, rows, "Attack (moving)", runClip, attackClip, attackLayer.avatarMask, false, 0f));
+            int getUpIndex = clips.Count;
+            clips.Add(SampleClip(graph, output, animator, bones, bindposes, rows, "Get Up", getUpClip, null, null, false, 0f));
             AnimationMode.StopAnimationMode();
 
+            int hipsBone = Array.IndexOf(bones, animator.GetBoneTransform(HumanBodyBones.Hips));
+            int headBone = Array.IndexOf(bones, animator.GetBoneTransform(HumanBodyBones.Head));
+            Transform chestTransform = animator.GetBoneTransform(HumanBodyBones.Chest);
+            if (chestTransform == null) chestTransform = animator.GetBoneTransform(HumanBodyBones.Spine);
+            int chestBone = Array.IndexOf(bones, chestTransform);
+            if (hipsBone < 0 || headBone < 0 || chestBone < 0) throw new InvalidOperationException($"The {crowdName} body isn't skinned to its hips, chest/spine and head bones.");
+
+            // The get-up starts lying face-up: its chest axis that points up there is the belly.
+            BakedCrowdAnimationSO.Clip getUp = clips[getUpIndex];
+            Color[] getUpStart = rows[getUp.startFrame];
+            Vector3 bellyLocal = Quaternion.Inverse(BoneInRig(getUpStart, chestBone, bindposes).rotation) * Vector3.up;
+
             var deathClips = new List<int>();
+            var getUpFalls = new List<int>();
             var impacts = new List<BakedCrowdAnimationSO.ImpactEvent>();
             BakedCrowdAnimationSO.Clip idle = clips[BakedCrowdAnimationSO.ClipIdle];
-            for (int v = 0; v < FallVariations.Length; v++)
+            for (int v = 0; v < MaxFallCandidates && (deathClips.Count < DeathFallCount || getUpFalls.Count < MinGetUpFalls); v++)
             {
-                deathClips.Add(clips.Count);
                 Color[] startPose = rows[idle.startFrame + (v * 17) % idle.frameCount];
-                clips.Add(RecordFall(prefab, v, FallVariations[v], startPose, clips.Count, rows, impacts));
-            }
+                var fallRows = new List<Color[]>();
+                var fallImpacts = new List<BakedCrowdAnimationSO.ImpactEvent>();
+                BakedCrowdAnimationSO.Clip fall = RecordFall(prefab, v, FallSettings(v), startPose, clips.Count, rows.Count, fallRows, fallImpacts);
 
-            if (!AssetDatabase.IsValidFolder(OutputFolder))
+                Matrix4x4 landedChest = BoneInRig(fallRows[fallRows.Count - 1], chestBone, bindposes);
+                bool faceUp = (landedChest.rotation * bellyLocal).y >= FaceUpDot;
+                bool keep = deathClips.Count < DeathFallCount || (faceUp && getUpFalls.Count < MinGetUpFalls);
+                if (!keep) continue;
+
+                rows.AddRange(fallRows);
+                impacts.AddRange(fallImpacts);
+                deathClips.Add(clips.Count);
+                if (faceUp) getUpFalls.Add(clips.Count);
+                clips.Add(fall);
+            }
+            if (getUpFalls.Count < MinGetUpFalls)
             {
-                AssetDatabase.CreateFolder("Assets/Bladehold/Bladehold Animations", "Crowd");
+                Debug.LogWarning($"[BakedCrowdBaker] Only {getUpFalls.Count} of {MaxFallCandidates} recorded falls landed face-up; non-lethal baked flings have fewer variations.");
             }
 
-            Texture2D texture = WriteTexture(rows, bones.Length * 3);
-            Mesh mesh = WriteMesh(body.sharedMesh);
-            Material material = WriteMaterial(shader, body.sharedMaterial, texture);
-
-            BakedCrowdAnimationSO data = AssetDatabase.LoadAssetAtPath<BakedCrowdAnimationSO>(DataPath);
-            if (data == null)
+            foreach (int fallIndex in getUpFalls)
             {
-                data = ScriptableObject.CreateInstance<BakedCrowdAnimationSO>();
-                AssetDatabase.CreateAsset(data, DataPath);
+                BakedCrowdAnimationSO.Clip fall = clips[fallIndex];
+                fall.getUpClip = clips.Count;
+                clips.Add(AlignGetUp(fall, getUp, rows, bindposes, hipsBone, headBone));
             }
+
+            EnsureOutputFolder();
+            List<MeshRenderer> props = FindProps(animator.transform, body);
+            Texture2D texture = WriteTexture(crowdName, rows, bones.Length * 3);
+            Mesh mesh = WriteMesh(crowdName, body, props);
+            Material material = WriteMaterial(crowdName, shader, body.sharedMaterial, texture);
+
+            BakedCrowdAnimationSO data = EnsureDataAsset(crowdName);
             data.mesh = mesh;
             data.material = material;
             data.boneTexture = texture;
@@ -130,12 +250,14 @@ public static class BakedCrowdBaker
             data.clips = clips.ToArray();
             data.deathClips = deathClips.ToArray();
             data.impacts = impacts.ToArray();
+            data.getUpClip = getUpIndex;
             EditorUtility.SetDirty(data);
             AssetDatabase.SaveAssets();
 
-            Debug.Log($"[BakedCrowdBaker] Baked {bones.Length} bones, {rows.Count} frames at {BakeFps} fps " +
+            Debug.Log($"[BakedCrowdBaker] {crowdName}: baked {bones.Length} bones, {rows.Count} frames at {BakeFps} fps " +
                       $"(idle '{idleClip.name}', run '{runClip.name}' @ {runReferenceSpeed} m/s, attack '{attackClip.name}', " +
-                      $"{deathClips.Count} ragdoll falls with {impacts.Count} impacts) into {DataPath}.");
+                      $"get-up '{getUpClip.name}', {deathClips.Count} ragdoll falls ({getUpFalls.Count} face-up with a get-up) " +
+                      $"with {impacts.Count} impacts, {props.Count} merged props) into {DataPathFor(crowdName)}.");
         }
         finally
         {
@@ -151,7 +273,41 @@ public static class BakedCrowdBaker
         {
             if (smr.enabled) return smr;
         }
-        throw new InvalidOperationException("The goblin prefab has no active SkinnedMeshRenderer.");
+        throw new InvalidOperationException($"'{instance.name}' has no active SkinnedMeshRenderer.");
+    }
+
+    /// <summary>The held props: active MeshRenderers under the rig, each hanging off one of the body's bones.</summary>
+    private static List<MeshRenderer> FindProps(Transform rig, SkinnedMeshRenderer body)
+    {
+        var props = new List<MeshRenderer>();
+        foreach (MeshRenderer renderer in rig.GetComponentsInChildren<MeshRenderer>(false))
+        {
+            if (!renderer.enabled) continue;
+            MeshFilter filter = renderer.GetComponent<MeshFilter>();
+            if (filter == null || filter.sharedMesh == null) continue;
+            if (renderer.sharedMaterial != body.sharedMaterial || renderer.sharedMaterials.Length != 1)
+            {
+                throw new InvalidOperationException(
+                    $"Prop '{renderer.name}' doesn't use the body's material '{body.sharedMaterial.name}'; the baked crowd draws a single material.");
+            }
+            if (PropBone(renderer.transform, body.bones) < 0)
+            {
+                throw new InvalidOperationException($"Prop '{renderer.name}' isn't parented under any of the body's bones.");
+            }
+            props.Add(renderer);
+        }
+        return props;
+    }
+
+    /// <summary>Index into <paramref name="bones" /> of the nearest bone above <paramref name="prop" />, or -1.</summary>
+    private static int PropBone(Transform prop, Transform[] bones)
+    {
+        for (Transform t = prop.parent; t != null; t = t.parent)
+        {
+            int index = Array.IndexOf(bones, t);
+            if (index >= 0) return index;
+        }
+        return -1;
     }
 
     private static AnimatorControllerLayer FindLayer(AnimatorController controller, string layerName)
@@ -285,13 +441,24 @@ public static class BakedCrowdBaker
         return clip;
     }
 
+    /// <summary>Variation <paramref name="v" />'s (launch strength multiplier, sideways angle): the fixed list, then a deterministic spread.</summary>
+    private static Vector2 FallSettings(int v)
+    {
+        if (v < FallVariations.Length) return FallVariations[v];
+        float strength = 0.8f + (v * 0.618034f % 1f) * 1.2f;
+        float angle = (v * 37 % 61) - 30f;
+        return new Vector2(strength, angle);
+    }
+
     /// <summary>
-    ///     Simulates one real ragdoll death in an isolated preview physics scene and records it as a clip.
-    ///     The launch copies KnockbackReceiver's death throw (flat push + lift, tumble spin, a kicked
-    ///     limb), thrown along the rig's -Z.
+    ///     Simulates one real ragdoll fall in an isolated preview physics scene and records it as a clip
+    ///     into <paramref name="rows" /> / <paramref name="impacts" /> (frames numbered from
+    ///     <paramref name="startFrame" />). The launch copies KnockbackReceiver's death throw (flat push +
+    ///     lift, tumble spin, a kicked limb), thrown along the rig's -Z. The pelvis's horizontal travel
+    ///     is subtracted from every frame and impact.
     /// </summary>
     private static BakedCrowdAnimationSO.Clip RecordFall(GameObject prefab, int variation, Vector2 settings, Color[] startPose,
-        int clipIndex, List<Color[]> rows, List<BakedCrowdAnimationSO.ImpactEvent> impacts)
+        int clipIndex, int startFrame, List<Color[]> rows, List<BakedCrowdAnimationSO.ImpactEvent> impacts)
     {
         Scene scene = EditorSceneManager.NewPreviewScene();
         try
@@ -318,13 +485,13 @@ public static class BakedCrowdBaker
             KnockbackConfigSO knockbackConfig = LoadKnockbackConfig(instance);
             if (ragdollConfig == null || knockbackConfig == null)
             {
-                throw new InvalidOperationException("The goblin prefab needs EnemyRagdoll and KnockbackReceiver configs to record ragdoll falls.");
+                throw new InvalidOperationException($"{prefab.name} needs EnemyRagdoll and KnockbackReceiver configs to record ragdoll falls.");
             }
 
             Transform hips = animator.GetBoneTransform(HumanBodyBones.Hips);
             Rigidbody[] bodies = hips.GetComponentsInChildren<Rigidbody>(true);
             Rigidbody pelvis = hips.GetComponent<Rigidbody>();
-            if (bodies.Length < 2 || pelvis == null) throw new InvalidOperationException("The goblin prefab has no baked ragdoll bodies.");
+            if (bodies.Length < 2 || pelvis == null) throw new InvalidOperationException($"{prefab.name} has no baked ragdoll bodies.");
             var boneColliders = new HashSet<Collider>(hips.GetComponentsInChildren<Collider>(true));
             foreach (Collider collider in instance.GetComponentsInChildren<Collider>(true))
             {
@@ -348,7 +515,20 @@ public static class BakedCrowdBaker
             Rigidbody kicked = bodies[1 + random.Next(bodies.Length - 1)];
             kicked.linearVelocity += noise.normalized * 1.2f;
 
-            var clip = new BakedCrowdAnimationSO.Clip { name = "Ragdoll Fall " + (variation + 1), startFrame = rows.Count, loop = false };
+            var clip = new BakedCrowdAnimationSO.Clip
+            {
+                name = "Ragdoll Fall " + (variation + 1),
+                startFrame = startFrame,
+                loop = false,
+                throwDirection = flatDir,
+                launchVelocity = launch,
+                getUpClip = -1,
+            };
+            Vector3 startHips = rig.InverseTransformPoint(hips.position);
+            // The hold point for long flights: the body is half down (head at 60% of its standing height).
+            Transform head = animator.GetBoneTransform(HumanBodyBones.Head);
+            float startHeadHeight = head.position.y;
+            float halfDown = -1f;
             var lastVelocity = new Vector3[bodies.Length];
             var nextImpact = new float[bodies.Length];
             for (int b = 0; b < bodies.Length; b++) lastVelocity[b] = bodies[b].linearVelocity;
@@ -357,12 +537,15 @@ public static class BakedCrowdBaker
             float dt = 1f / BakeFps;
             float time = 0f;
             float settled = 0f;
-            rows.Add(CaptureRow(bones, bindposes, rig));
+            rows.Add(CaptureRow(bones, bindposes, rig, Vector3.zero));
             while (time < FallMaxSeconds)
             {
                 physics.Simulate(dt);
                 time += dt;
-                rows.Add(CaptureRow(bones, bindposes, rig));
+                Vector3 travel = rig.InverseTransformPoint(hips.position) - startHips;
+                travel.y = 0f;
+                rows.Add(CaptureRow(bones, bindposes, rig, travel));
+                if (halfDown < 0f && head.position.y < startHeadHeight * 0.6f) halfDown = time;
 
                 for (int b = 0; b < bodies.Length; b++)
                 {
@@ -384,7 +567,7 @@ public static class BakedCrowdBaker
                     {
                         clip = clipIndex,
                         time = time,
-                        localPoint = rig.InverseTransformPoint(contact),
+                        localPoint = rig.InverseTransformPoint(contact) - travel,
                         intensity = speedFactor * partMultiplier / maxMultiplier,
                         decalSize = partMultiplier * Mathf.Lerp(ragdollConfig.minDecalSize, ragdollConfig.maxDecalSize, speedFactor),
                     });
@@ -397,8 +580,9 @@ public static class BakedCrowdBaker
                 }
             }
 
-            clip.frameCount = rows.Count - clip.startFrame;
+            clip.frameCount = rows.Count;
             clip.length = (clip.frameCount - 1) / BakeFps;
+            clip.airborneHoldTime = halfDown > 0f ? halfDown : clip.length * 0.5f;
             return clip;
         }
         finally
@@ -424,9 +608,85 @@ public static class BakedCrowdBaker
         }
     }
 
-    private static Color[] CaptureRow(Transform[] bones, Matrix4x4[] bindposes, Transform rig)
+    /// <summary>
+    ///     A copy of <paramref name="getUp" /> turned and shifted (about world up, in rig space) so its
+    ///     first frame's body line (hips to head) lies along <paramref name="fall" />'s landed one, with
+    ///     where the root ends up standing.
+    /// </summary>
+    private static BakedCrowdAnimationSO.Clip AlignGetUp(BakedCrowdAnimationSO.Clip fall, BakedCrowdAnimationSO.Clip getUp,
+        List<Color[]> rows, Matrix4x4[] bindposes, int hipsBone, int headBone)
     {
-        Matrix4x4 toRig = rig.worldToLocalMatrix;
+        Color[] landed = rows[fall.startFrame + fall.frameCount - 1];
+        Color[] lying = rows[getUp.startFrame];
+        Vector3 fallHips = BoneInRig(landed, hipsBone, bindposes).GetPosition();
+        Vector3 fallHead = BoneInRig(landed, headBone, bindposes).GetPosition();
+        Vector3 getUpHips = BoneInRig(lying, hipsBone, bindposes).GetPosition();
+        Vector3 getUpHead = BoneInRig(lying, headBone, bindposes).GetPosition();
+
+        Vector3 fallLine = fallHead - fallHips;
+        Vector3 getUpLine = getUpHead - getUpHips;
+        fallLine.y = 0f;
+        getUpLine.y = 0f;
+        float yaw = Vector3.SignedAngle(getUpLine, fallLine, Vector3.up);
+        Quaternion turn = Quaternion.AngleAxis(yaw, Vector3.up);
+        Vector3 offset = (fallHips + fallHead) * 0.5f - turn * ((getUpHips + getUpHead) * 0.5f);
+        offset.y = 0f;
+        Matrix4x4 align = Matrix4x4.TRS(offset, turn, Vector3.one);
+
+        var clip = new BakedCrowdAnimationSO.Clip
+        {
+            name = "Get Up (" + fall.name + ")",
+            startFrame = rows.Count,
+            frameCount = getUp.frameCount,
+            length = getUp.length,
+            loop = false,
+            getUpClip = -1,
+            standPosition = offset,
+            standYaw = yaw,
+        };
+        for (int f = 0; f < getUp.frameCount; f++)
+        {
+            Color[] source = rows[getUp.startFrame + f];
+            var row = new Color[source.Length];
+            for (int b = 0; b < source.Length / 3; b++)
+            {
+                WriteSkin(row, b, align * ReadSkin(source, b));
+            }
+            rows.Add(row);
+        }
+        return clip;
+    }
+
+    private static Matrix4x4 ReadSkin(Color[] row, int bone)
+    {
+        Matrix4x4 skin = Matrix4x4.identity;
+        for (int r = 0; r < 3; r++)
+        {
+            Color c = row[bone * 3 + r];
+            skin.SetRow(r, new Vector4(c.r, c.g, c.b, c.a));
+        }
+        return skin;
+    }
+
+    private static void WriteSkin(Color[] row, int bone, Matrix4x4 skin)
+    {
+        for (int r = 0; r < 3; r++)
+        {
+            Vector4 v = skin.GetRow(r);
+            row[bone * 3 + r] = new Color(v.x, v.y, v.z, v.w);
+        }
+    }
+
+    /// <summary>A baked bone's own transform in rig space (its skin matrix without the bind pose).</summary>
+    private static Matrix4x4 BoneInRig(Color[] row, int bone, Matrix4x4[] bindposes)
+    {
+        return ReadSkin(row, bone) * bindposes[bone].inverse;
+    }
+
+    /// <summary>One frame's skin matrices in rig space, shifted back by <paramref name="travel" /> (rig space).</summary>
+    private static Color[] CaptureRow(Transform[] bones, Matrix4x4[] bindposes, Transform rig, Vector3 travel)
+    {
+        Matrix4x4 toRig = Matrix4x4.Translate(-travel) * rig.worldToLocalMatrix;
         var row = new Color[bones.Length * 3];
         for (int b = 0; b < bones.Length; b++)
         {
@@ -467,9 +727,11 @@ public static class BakedCrowdBaker
         return depth;
     }
 
-    private static Texture2D WriteTexture(List<Color[]> rows, int width)
+
+    private static Texture2D WriteTexture(string crowdName, List<Color[]> rows, int width)
     {
-        Texture2D texture = AssetDatabase.LoadAssetAtPath<Texture2D>(TexturePath);
+        string path = TexturePathFor(crowdName);
+        Texture2D texture = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         bool isNew = texture == null;
         if (isNew)
         {
@@ -479,7 +741,7 @@ public static class BakedCrowdBaker
         {
             texture.Reinitialize(width, rows.Count, TextureFormat.RGBAHalf, false);
         }
-        texture.name = "Goblin Crowd Bones";
+        texture.name = crowdName + " Crowd Bones";
         texture.filterMode = FilterMode.Point;
         texture.wrapMode = TextureWrapMode.Clamp;
         var pixels = new Color[width * rows.Count];
@@ -490,54 +752,114 @@ public static class BakedCrowdBaker
         texture.SetPixels(pixels);
         // Stays readable: BakedCrowdAgent reads it on the CPU to pose the real skeleton on promotion.
         texture.Apply(false, false);
-        if (isNew) AssetDatabase.CreateAsset(texture, TexturePath);
+        if (isNew) AssetDatabase.CreateAsset(texture, path);
         else EditorUtility.SetDirty(texture);
         return texture;
     }
 
-    private static Mesh WriteMesh(Mesh source)
+    /// <summary>
+    ///     The body mesh with its skinning moved into UV4/UV5, plus each prop merged into submesh 0.
+    ///     A prop vertex is moved into the body's bind space through its bone (bindpose⁻¹ · bone⁻¹ ·
+    ///     prop), so skinning it fully to that bone puts it back on the hand in every frame.
+    /// </summary>
+    private static Mesh WriteMesh(string crowdName, SkinnedMeshRenderer body, List<MeshRenderer> props)
     {
-        Mesh mesh = AssetDatabase.LoadAssetAtPath<Mesh>(MeshPath);
+        Mesh source = body.sharedMesh;
+        string path = MeshPathFor(crowdName);
+        Mesh mesh = AssetDatabase.LoadAssetAtPath<Mesh>(path);
         bool isNew = mesh == null;
         if (isNew) mesh = new Mesh();
         mesh.Clear();
-        mesh.name = "Goblin Crowd Mesh";
-        mesh.indexFormat = source.indexFormat;
-        mesh.vertices = source.vertices;
-        mesh.normals = source.normals;
-        mesh.tangents = source.tangents;
-        mesh.uv = source.uv;
+        mesh.name = crowdName + " Crowd Mesh";
 
-        BoneWeight[] weights = source.boneWeights;
-        var indices = new List<Vector4>(weights.Length);
-        var values = new List<Vector4>(weights.Length);
-        foreach (BoneWeight w in weights)
+        var vertices = new List<Vector3>(source.vertices);
+        var normals = new List<Vector3>(source.normals);
+        var tangents = new List<Vector4>(source.tangents);
+        var uvs = new List<Vector2>(source.uv);
+        var indices = new List<Vector4>(vertices.Count);
+        var values = new List<Vector4>(vertices.Count);
+        foreach (BoneWeight w in source.boneWeights)
         {
             indices.Add(new Vector4(w.boneIndex0, w.boneIndex1, w.boneIndex2, w.boneIndex3));
             values.Add(new Vector4(w.weight0, w.weight1, w.weight2, w.weight3));
         }
-        mesh.SetUVs(4, indices);
-        mesh.SetUVs(5, values);
+        if (tangents.Count != vertices.Count)
+        {
+            tangents = new List<Vector4>(new Vector4[vertices.Count]);
+        }
 
-        mesh.subMeshCount = source.subMeshCount;
+        var submeshes = new List<int>[source.subMeshCount];
         for (int s = 0; s < source.subMeshCount; s++)
         {
-            mesh.SetTriangles(source.GetTriangles(s), s);
+            submeshes[s] = new List<int>(source.GetTriangles(s));
+        }
+
+        Transform[] bones = body.bones;
+        Matrix4x4[] bindposes = source.bindposes;
+        foreach (MeshRenderer prop in props)
+        {
+            Mesh propMesh = prop.GetComponent<MeshFilter>().sharedMesh;
+            int bone = PropBone(prop.transform, bones);
+            Matrix4x4 toBind = bindposes[bone].inverse * bones[bone].worldToLocalMatrix * prop.transform.localToWorldMatrix;
+            int offset = vertices.Count;
+
+            Vector3[] propVertices = propMesh.vertices;
+            Vector3[] propNormals = propMesh.normals;
+            Vector4[] propTangents = propMesh.tangents;
+            Vector2[] propUvs = propMesh.uv;
+            for (int v = 0; v < propVertices.Length; v++)
+            {
+                vertices.Add(toBind.MultiplyPoint3x4(propVertices[v]));
+                normals.Add(v < propNormals.Length ? toBind.MultiplyVector(propNormals[v]).normalized : Vector3.up);
+                if (v < propTangents.Length)
+                {
+                    Vector3 tangent = toBind.MultiplyVector(propTangents[v]).normalized;
+                    tangents.Add(new Vector4(tangent.x, tangent.y, tangent.z, propTangents[v].w));
+                }
+                else
+                {
+                    tangents.Add(new Vector4(1f, 0f, 0f, 1f));
+                }
+                uvs.Add(v < propUvs.Length ? propUvs[v] : Vector2.zero);
+                indices.Add(new Vector4(bone, 0f, 0f, 0f));
+                values.Add(new Vector4(1f, 0f, 0f, 0f));
+            }
+            for (int s = 0; s < propMesh.subMeshCount; s++)
+            {
+                foreach (int index in propMesh.GetTriangles(s))
+                {
+                    submeshes[0].Add(index + offset);
+                }
+            }
+        }
+
+        mesh.indexFormat = vertices.Count > 65535 ? UnityEngine.Rendering.IndexFormat.UInt32 : source.indexFormat;
+        mesh.SetVertices(vertices);
+        mesh.SetNormals(normals);
+        mesh.SetTangents(tangents);
+        mesh.SetUVs(0, uvs);
+        mesh.SetUVs(4, indices);
+        mesh.SetUVs(5, values);
+        mesh.subMeshCount = submeshes.Length;
+        for (int s = 0; s < submeshes.Length; s++)
+        {
+            mesh.SetTriangles(submeshes[s], s);
         }
         mesh.RecalculateBounds();
         mesh.UploadMeshData(false);
-        if (isNew) AssetDatabase.CreateAsset(mesh, MeshPath);
+        if (isNew) AssetDatabase.CreateAsset(mesh, path);
         else EditorUtility.SetDirty(mesh);
         return mesh;
     }
 
-    private static Material WriteMaterial(Shader shader, Material source, Texture2D boneTexture)
+    private static Material WriteMaterial(string crowdName, Shader shader, Material source, Texture2D boneTexture)
     {
-        Material material = AssetDatabase.LoadAssetAtPath<Material>(MaterialPath);
+        string path = MaterialPathFor(crowdName);
+        Material material = AssetDatabase.LoadAssetAtPath<Material>(path);
         bool isNew = material == null;
         if (isNew) material = new Material(shader);
         material.shader = shader;
-        material.name = "Goblin Crowd";
+        material.name = crowdName + " Crowd";
 
         // The Synty Generic_Basic body material's look, mapped onto URP Lit's inputs.
         if (source != null)
@@ -554,7 +876,7 @@ public static class BakedCrowdBaker
         material.enableInstancing = true;
         material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.AlphaTest;
 
-        if (isNew) AssetDatabase.CreateAsset(material, MaterialPath);
+        if (isNew) AssetDatabase.CreateAsset(material, path);
         else EditorUtility.SetDirty(material);
         return material;
     }

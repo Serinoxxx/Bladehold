@@ -669,6 +669,42 @@ public static class WeaponReachBenchmark
             failedCount++;
         }
 
+        // 7E2: Ranked meta perks: each purchased rank is one more copy of the id (Supply Cache +20/40/60/80, Greed +10/20/30%)
+        try
+        {
+            SaveData save = SaveSystem.Load() ?? new SaveData();
+            save.purchasedMetaPerks.Clear();
+            for (int i = 0; i < 3; i++) save.purchasedMetaPerks.Add(RunSession.SupplyCachePerkId);
+            save.purchasedMetaPerks.Add("greed");
+            save.purchasedMetaPerks.Add("greed");
+            SaveSystem.Save(save);
+
+            RunSession.StartNewRun();
+            int startSupply = RunSession.InRunSupply; // 60 base + 60 at rank 3
+            RunSession.AddInRunGold(100);             // +20% at greed rank 2 -> 120
+            int expectedSupply = RunSession.BaseStartingSupply + 60;
+
+            if (RunSession.GetMetaPerkRank(RunSession.SupplyCachePerkId) == 3 && startSupply == expectedSupply && RunSession.InRunGold == 120)
+            {
+                sb.AppendLine($"  - Ranked Meta Perks: Supply Cache rank 3 -> {startSupply} starting supply, Greed rank 2 -> 100g became {RunSession.InRunGold}g. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Ranked perks: supply {startSupply} (expected {expectedSupply}), gold {RunSession.InRunGold} (expected 120)!");
+                failedCount++;
+            }
+
+            save.purchasedMetaPerks.Clear();
+            SaveSystem.Save(save);
+            RunSession.StartNewRun();
+        }
+        catch (Exception ex)
+        {
+            sb.AppendLine($"  - Ranked meta perk test exception: {ex.Message} [FAILED]");
+            failedCount++;
+        }
+
         // 7F: ShieldBreaker Weapon Upgrade (+200% damage to shielded targets)
         try
         {
@@ -3359,6 +3395,58 @@ public static class WeaponReachBenchmark
             sb.Append(RunCaptainMograChecks(out int mograPassed, out int mograFailed));
             passedCount += mograPassed;
             failedCount += mograFailed;
+        }
+
+        // 29. BAKED CROWD ENEMIES: each is mapped, its bake is filled in and matches the prefab's
+        // body bones, and its held props are both hidden by the agent and merged into the baked mesh.
+        {
+            sb.AppendLine("\n[29] Baked Crowd Enemies");
+            EnemyPrefabMapSO crowdMap = AssetDatabase.LoadAssetAtPath<EnemyPrefabMapSO>("Assets/Bladehold/Bladehold Scripts/Enemies/EnemyPrefabMap.asset");
+            foreach (string crowdId in new[] { "goblin", "skeleton_soldier", "skeleton_soldier_shield", "skeleton_knight", "skeleton_knight_shield" })
+            {
+                try
+                {
+                    GameObject crowdPrefab = crowdMap != null ? crowdMap.FindPrefab(crowdId) : null;
+                    BakedCrowdAgent crowdAgent = crowdPrefab != null ? crowdPrefab.GetComponent<BakedCrowdAgent>() : null;
+                    var crowdSo = crowdAgent != null ? new SerializedObject(crowdAgent) : null;
+                    var crowdData = crowdSo?.FindProperty("crowdData").objectReferenceValue as BakedCrowdAnimationSO;
+                    var crowdBody = crowdSo?.FindProperty("bodyRenderer").objectReferenceValue as SkinnedMeshRenderer;
+                    int propCount = crowdSo != null ? crowdSo.FindProperty("propRenderers").arraySize : -1;
+
+                    int expectedVerts = crowdBody != null ? crowdBody.sharedMesh.vertexCount : -1;
+                    var heldProps = new List<MeshRenderer>();
+                    if (crowdBody != null)
+                    {
+                        foreach (MeshRenderer held in crowdPrefab.GetComponentInChildren<Animator>(true).GetComponentsInChildren<MeshRenderer>(false))
+                        {
+                            heldProps.Add(held);
+                            expectedVerts += held.GetComponent<MeshFilter>().sharedMesh.vertexCount;
+                        }
+                    }
+
+                    bool baked = crowdData != null && crowdData.mesh != null && crowdData.material != null && crowdData.boneTexture != null
+                                 && crowdData.clips != null && crowdData.clips.Length >= 5 && crowdData.deathClips != null && crowdData.deathClips.Length > 0;
+                    bool bonesMatch = baked && crowdBody != null && crowdBody.bones.Length == crowdData.boneCount;
+                    bool propsWired = propCount == heldProps.Count;
+                    bool propsMerged = baked && crowdData.mesh.vertexCount == expectedVerts;
+                    if (baked && bonesMatch && propsWired && propsMerged)
+                    {
+                        sb.AppendLine($"  - {crowdId}: baked ({crowdData.clips.Length} clips, {crowdData.boneCount} bones), {heldProps.Count} held prop(s) hidden while baked and merged into the crowd mesh. [PASSED]");
+                        passedCount++;
+                    }
+                    else
+                    {
+                        sb.AppendLine($"  - [FAIL] {crowdId}: prefab={crowdPrefab != null}, agent={crowdAgent != null}, baked={baked}, bonesMatch={bonesMatch}, " +
+                                      $"propsWired={propsWired} ({propCount} vs {heldProps.Count}), propsMerged={propsMerged} (re-run Generate Enemy Prefabs, then Bladehold/Crowd/Bake Crowd Animations)!");
+                        failedCount++;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    sb.AppendLine($"  - {crowdId} crowd check exception: {ex.Message} [FAILED]");
+                    failedCount++;
+                }
+            }
         }
 
         sb.AppendLine("\n=================================================");

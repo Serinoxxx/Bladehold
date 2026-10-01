@@ -18,7 +18,7 @@ MonoBehaviour:
   baseArrowSpeed: 100
   arrowGravity: 0
   arrowRadius: 0.05
-  chargeTimePerLevel: 0
+  chargeTimePerLevel: 0.33333334
   baseMaxChargeLevels: 3
   baseChargeDamageBonus: 0.5
   baseKnockback: 0

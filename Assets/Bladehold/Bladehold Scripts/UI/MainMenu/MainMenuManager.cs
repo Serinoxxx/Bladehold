@@ -7,14 +7,17 @@ using TMPro;
 namespace Bladehold.UI
 {
     /// <summary>
-    ///     The boot scene (build index 0): title screen with Start, Settings and Quit. Start prewarms
-    ///     shaders behind a loading bar, then loads the Meta Area hub, where every run begins.
+    ///     The boot scene (build index 0): title screen with Start, Replay Tutorial, Settings and Quit. Start
+    ///     (and Replay Tutorial) opens the <see cref="SaveSlotsScreen" />; once a slot is picked it prewarms
+    ///     shaders behind a loading bar, then loads the Meta Area hub, where every run begins, or the
+    ///     tutorial's first scene until the slot's <see cref="SaveData.tutorialCompleted" /> is set.
     /// </summary>
     public class MainMenuManager : MonoBehaviour
     {
         [Header("Screens")]
         public GameObject titleScreen;
         public GameObject settingsScreen;
+        public SaveSlotsScreen saveSlotsScreen;
         public GameObject loadingScreen;
 
         [Header("Loading")]
@@ -35,7 +38,14 @@ namespace Bladehold.UI
 
         private void Awake()
         {
+            // No slot is active on the title screen; the save slot screen picks one.
+            SaveSystem.DeselectSlot();
             EnsureLoadingReferences();
+            if (saveSlotsScreen != null)
+            {
+                saveSlotsScreen.onSlotReady = () => StartCoroutine(LoadMetaArea());
+                saveSlotsScreen.onBack = OnBackToTitle;
+            }
         }
 
 #if UNITY_EDITOR
@@ -63,6 +73,10 @@ namespace Bladehold.UI
 
         private void Start()
         {
+            if (saveSlotsScreen == null)
+            {
+                Debug.LogError("[MainMenuManager] Save Slots Screen is not assigned.", this);
+            }
             CursorLockManager.SetUnlock("MainMenu_" + GetInstanceID(), true);
             if (prewarmInBackgroundOnStart && prewarmVariants != null && !prewarmVariants.isWarmedUp)
             {
@@ -93,14 +107,25 @@ namespace Bladehold.UI
             if (titleScreen) titleScreen.SetActive(false);
             if (settingsScreen) settingsScreen.SetActive(false);
             if (loadingScreen) loadingScreen.SetActive(false);
+            if (saveSlotsScreen) saveSlotsScreen.gameObject.SetActive(false);
 
             if (screen) screen.SetActive(true);
         }
 
         public void OnPlayClicked()
         {
-            StartCoroutine(LoadMetaArea());
+            forceTutorial = false;
+            ShowScreen(saveSlotsScreen != null ? saveSlotsScreen.gameObject : null);
         }
+
+        /// <summary>Title screen Replay Tutorial: pick a slot, then play the tutorial again without touching its completed flag.</summary>
+        public void OnReplayTutorialClicked()
+        {
+            forceTutorial = true;
+            ShowScreen(saveSlotsScreen != null ? saveSlotsScreen.gameObject : null);
+        }
+
+        private bool forceTutorial;
 
         public void OnSettingsClicked()
         {
@@ -150,6 +175,16 @@ namespace Bladehold.UI
 
             // 2. Scene loading phase
             string sceneToLoad = string.IsNullOrEmpty(metaAreaSceneName) ? "Bladehold Meta Area Scene" : metaAreaSceneName;
+            // First launch (or Replay Tutorial) goes to the tutorial instead of the hub.
+            if (forceTutorial || !SaveSystem.Load().tutorialCompleted)
+            {
+                TutorialConfigSO tutorial = TutorialConfigSO.Load();
+                if (tutorial != null && !string.IsNullOrEmpty(tutorial.firstSceneName))
+                {
+                    sceneToLoad = tutorial.firstSceneName;
+                    TutorialRun.Begin();
+                }
+            }
 
             var meta = AreaDatabase.GetMetadata(sceneToLoad);
             string enteringName = !string.IsNullOrEmpty(meta?.displayName) ? meta.displayName : sceneToLoad;

@@ -2244,7 +2244,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0.25101697, y: 0.6809607, z: 0.5555087, w: 0.405824}
   m_LocalPosition: {x: -0.108, y: -0.057, z: -0.113}
-  m_LocalScale: {x: 2, y: 2, z: 2}
+  m_LocalScale: {x: 1.25, y: 1.25, z: 1.25}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4757391975161002744}
@@ -5875,6 +5875,7 @@ MonoBehaviour:
   aiAnimation: {fileID: 6692864577859927326}
   aiAttack: {fileID: 4121884362856687115}
   config: {fileID: 11400000, guid: 2aee244ee24a4bf4fbdb917cff62562a, type: 2}
+  crowdAgent: {fileID: 0}
   knockdownTrigger: Knockdown
   getUpStateName: GetUp
   cheerTrigger: Cheer
@@ -5928,6 +5929,7 @@ MonoBehaviour:
   config: {fileID: 11400000, guid: 0dc3a05117208104ebded74f15a5fa59, type: 2}
   corpseDespawner: {fileID: 5221524456309136764}
   bloodImpactFeedback: {fileID: 4789307483127319865}
+  crowdAgent: {fileID: 0}
 --- !u!114 &8187149605379624136
 MonoBehaviour:
   m_ObjectHideFlags: 0

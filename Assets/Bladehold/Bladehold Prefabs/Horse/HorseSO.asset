@@ -30,7 +30,7 @@ MonoBehaviour:
   trampleMinDamageFraction: 1
   hitSpeedLossFraction: 0
   hitSpeedLossPerResistance: 0
-  chargeDamage: 20
+  chargeDamage: 5
   damageType: 1
   knockbackForce: 7
   hitCooldownSeconds: 0.2

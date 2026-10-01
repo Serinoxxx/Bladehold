@@ -20,7 +20,7 @@ MonoBehaviour:
   sceneName: Bladehold Rest Area Scene
   nodeType: 1
   tierIndex: 6
-  mapPosition: {x: 1100, y: 90}
+  mapPosition: {x: 1440, y: 0}
   captainName: 
   difficultyTier: 1
   clanBuff: {fileID: 0}

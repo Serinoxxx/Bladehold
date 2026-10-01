@@ -2574,7 +2574,7 @@ MonoBehaviour:
   breakFeedback: {fileID: 4173943416366903437}
   supplyPopupPrefab: {fileID: 5445448510257546009, guid: 0c337af341cc6e840986619c86ca00fb, type: 3}
   interactionRadius: 3.5
-  range: 18
+  range: 36
   fireInterval: 4.5
   netRadius: 4
   rootDuration: 3.5

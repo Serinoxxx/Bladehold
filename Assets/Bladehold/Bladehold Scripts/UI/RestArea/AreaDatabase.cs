@@ -152,6 +152,15 @@ namespace Bladehold.UI
                 "Hold the elevated stone battlements against Captain Fraglob and his vanguard. High elevation, windy battlements."
             ));
 
+            // Tier 2A (campaign): Graveyard
+            Register(new AreaMetadata(
+                "Bladehold Graveyard",
+                2,
+                "Graveyard",
+                "The Restless Dead",
+                "The dead have risen in the old graveyard beyond the north wall. Skeleton legions shamble through the green fog with Captain Mogra Hexfang at their back; hold the two stone bridges over the spike pit and send the bones back to the grave."
+            ));
+
             // Tier 2B: Desert Gate
             Register(new AreaMetadata(
                 "Bladehold Desert Gate",

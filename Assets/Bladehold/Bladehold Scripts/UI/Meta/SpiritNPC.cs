@@ -7,10 +7,14 @@ using UnityEngine;
 [RequireComponent(typeof(Interactable))]
 public class SpiritNPC : MonoBehaviour
 {
+    /// <summary>The Meta Area's Spirit, if present.</summary>
+    public static SpiritNPC Instance { get; private set; }
+
     private Interactable interactable;
 
     private void Awake()
     {
+        Instance = this;
         interactable = GetComponent<Interactable>();
         interactable.PromptText = "Commune with Spirit (Meta Upgrades)";
         interactable.OnInteractedEvent += HandleCommune;
@@ -18,6 +22,7 @@ public class SpiritNPC : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (Instance == this) Instance = null;
         if (interactable != null)
         {
             interactable.OnInteractedEvent -= HandleCommune;

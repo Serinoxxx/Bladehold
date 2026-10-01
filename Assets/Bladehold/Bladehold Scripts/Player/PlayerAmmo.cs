@@ -33,7 +33,7 @@ public class PlayerAmmo : MonoBehaviour
                 float val = stats.GetValue(StatType.MaxAmmo);
                 if (val > 0f) return Mathf.RoundToInt(val);
             }
-            return RunSession.HasMetaPerk("deep_quiver") ? 25 : 20;
+            return RunSession.MetaMaxAmmo;
         }
     }
 
@@ -107,10 +107,10 @@ public class PlayerAmmo : MonoBehaviour
             stats.SetBase(StatType.MaxAmmo, 20f);
         }
 
-        // Deep Quiver permanent meta perk: +5 capacity
+        // Deep Quiver permanent meta perk: +5 capacity per rank
         if (RunSession.HasMetaPerk("deep_quiver") && stats != null)
         {
-            stats.AddModifier(StatType.MaxAmmo, ModifierKind.Flat, 5f);
+            stats.AddModifier(StatType.MaxAmmo, ModifierKind.Flat, RunSession.GetMetaPerkValue("deep_quiver", 5f));
         }
 
         // Clamp in-run ammo to current max capacity

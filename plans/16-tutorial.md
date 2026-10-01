@@ -20,12 +20,14 @@ Main Menu "New Game" ─► tutorialCompleted? ──yes──► Meta Area (as 
                  (free ammo crate in the room in case arrows run out)
    5 Exit        walk through the door ─► T2
  T2 Arena (Bladehold Tutorial Arena.unity)
-   6 Fight       2 goblins rush in; kill both  (death = reload T2)
+   6 Fight       6 goblins rush in (3 rounds of 2); kill them all  (death = reload T2)
    7 Exit        cage gate slides open ─► T3
  T3 Outer field (Bladehold Tutorial Gate.unity, generated once)
    8 Build       walk to the marked plot, [E], build an Arrow Tower
    9 Ready       hold [T] to start the wave
-  10 Wave        20 goblins, gate + tower + you
+  10 Wave 1      10 goblins, gate + tower + you
+  11 Mount       summon the horse (X)
+  12 Waves 2-3   hold Ready, then 15 and 20 goblins (no wave cards)
       death ─► Meta Area (as today)      victory ─► Campaign Map (as today)
 ```
 
@@ -39,11 +41,43 @@ Main Menu "New Game" ─► tutorialCompleted? ──yes──► Meta Area (as 
 | When is it "done"? | `SaveData.tutorialCompleted` is set on **entering T3**. |
 | Skip / replay | **Skip Tutorial** in the pause menu (sets the flag, loads the Meta Area). A **Replay Tutorial** button in Settings. |
 | Run state in T3 | `RunSession.StartNewRun()` runs on entering T3, with no campaign. Victory goes through `DeathScreen`'s no-campaign branch → fresh campaign → map. Gold and supply don't carry over. Goblin Blood does. |
-| Mount / ultimate | Off in all three scenes (`SceneAbilityRules`). |
+| Mount / ultimate | Ultimate off in all three scenes (`SceneAbilityRules`). **Mount on in T3** (2026-10-01 playtest): after wave 1, a `MountStep` teaches summoning the horse before waves 2-3. |
 | Cobwebs | **Hanging banners** instead: no Synty pack has cobweb art. |
 | T3 scene | **Generate once with `/generate-defense-scene`, then hand/MCP-edit it like any other scene.** Never regenerate it: add a warning to the spec asset's name/notes and to the skill's stock-scenes list. |
 | Bow charge time | **Full draw = 1 s.** See Numbers: this is a global change. |
 | Enemies in T2 | A small `TutorialEncounter` spawner (see Code). Not `SurvivorsSpawner`. |
+
+## Progress
+
+**Session 1 (2026-09-30): Phases A-I done** (Unity MCP connected; Unity and `dotnet build` both clean). The whole T1 → T2 → T3 → Campaign Map flow was play-tested by driving it from code. The human-judgement leftovers are in [`plans/editor/16-tutorial.md`](editor/16-tutorial.md).
+
+**Code:**
+- `Bladehold Scripts/Tutorial/`:
+  - Core: `TutorialDirector`, `TutorialStep` + `ReachAreaStep` / `DestroyTargetsStep` / `KillEnemiesStep` / `BuildDefenseStep` / `WaveEventStep`.
+  - Pieces: `TutorialEncounter`, `TutorialBreakable`, `TutorialDropPlatform`, `TutorialGateOpener`, `TutorialSceneExit`, `TutorialFallRespawn`.
+  - UI and state: `TutorialHintUI`, `TutorialHint`, `TutorialRun`, `TutorialConfigSO`, `TutorialTelemetry`.
+  - First-time tips: `FirstTimeHints` + `FirstTimeHintsWatcher`.
+- `UI/IWaypointSource`.
+
+**Hooks into existing code:**
+- `SaveData.tutorialCompleted` / `seenHints`, with the migration in `SaveSystem.Load`.
+- `MainMenuManager` routing + `OnReplayTutorialClicked`.
+- `DeathScreen` reload branch and tutorial victory → `StartNewRun`.
+- `TowerPlot.OnBuilt`.
+- `ObjectiveWaypointTrackerUI.RegisterSource`.
+- `RoundPacingConfigSO.rollWaveClans`.
+- `PauseMenuView.skipTutorialButton`.
+- Accessors: `AmmoChest` free prompt, `GameLoopManager.IsChoosingCard`, `GateRepairStation.Instance`, `SpiritNPC.Instance`, `Gate.Health`.
+- `DefenseSceneDefaults` gets a Kingdom palette + the tutorial spec.
+
+**Deviations from the plan above:**
+- **Save migration:** `runsAttempted` is never incremented (it's always 1), so the plan's migration by run count wouldn't work. Instead, any save file whose JSON has no `tutorialCompleted` key loads as completed.
+- **No `forceFodderOnly` flag:** `fodderShare = 1` already forces every spawn to be the fodder goblin (`SectorSpawnRules.MustSpawnFodder`).
+- **Fixed waves could still roll a clan modifier**, so `RoundPacingConfigSO.rollWaveClans` (off on the tutorial pacing) strips it.
+- **No `SpawnEnemyAt` overload:** `TutorialEncounter` instantiates from the prefab map + roster itself.
+- **T1/T2 are kit-built shells dressed with props copied from the demo rooms**, not whole copied demo rooms. The demo's rooms overlap across levels, so they don't lift out cleanly.
+- **T2 walks and bakes on a flat `NavFloor` slab with the tile colliders stripped.** The Synty tiles' bevelled edges split the NavMesh at every 5 m seam, which left goblins with partial paths.
+- **`BuildDefenseStep` also completes if the wave starts without a build**, so holding Ready early can't soft-lock the tutorial.
 
 ## Numbers (checked against current code)
 

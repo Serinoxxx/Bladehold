@@ -19,7 +19,7 @@ MonoBehaviour:
   sceneName: Bladehold Frozen Pass Scene
   nodeType: 0
   tierIndex: 3
-  mapPosition: {x: 500, y: 240}
+  mapPosition: {x: 660, y: 225}
   captainName: Captain Kombusta
   difficultyTier: 2
   clanBuff: {fileID: 0}

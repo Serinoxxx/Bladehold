@@ -14,7 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MetaPerkDefinitionSO
   id: deep_quiver
   displayName: Deep Quiver
-  description: Increases maximum ammunition capacity by +5.
+  description: Increases maximum ammunition capacity by +{0}.
   tier: 1
   goblinBloodCost: 10
+  rankCosts: 0a0000000f0000001400000019000000
+  rankValues:
+  - 5
+  - 10
+  - 15
+  - 20
   icon: {fileID: 21300000, guid: 292f10bb6e73b634092f51637f59f3e8, type: 3}
+  prerequisites: []

@@ -6,11 +6,11 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Bladehold/Bladehold Scenes/Bladehold Fishing Pond.unity
-    guid: 49a02343e8d11844bb00bad5b22a6076
-  - enabled: 1
     path: Assets/Bladehold/Bladehold Scenes/MainMenu.unity
     guid: bf8df976c17c4d544b4105f5c71faabc
+  - enabled: 1
+    path: Assets/Bladehold/Bladehold Scenes/Bladehold Fishing Pond.unity
+    guid: 49a02343e8d11844bb00bad5b22a6076
   - enabled: 1
     path: Assets/Bladehold/Bladehold Scenes/Bladehold Rest Area Scene.unity
     guid: 3b7b951e57e8aab44af1e330cf4af0dc
@@ -59,6 +59,18 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Bladehold/Bladehold Scenes/Bladehold Princess Sanctuary.unity
     guid: c6633094b0e0aff408b6610e2fb102d5
+  - enabled: 1
+    path: Assets/Bladehold/Bladehold Scenes/Bladehold Tutorial Dungeon.unity
+    guid: d7bc53bd7ac4b4643818a8df93a12f23
+  - enabled: 1
+    path: Assets/Bladehold/Bladehold Scenes/Bladehold Tutorial Arena.unity
+    guid: 70466dad4c2a54e418d785be4ff55552
+  - enabled: 1
+    path: Assets/Bladehold/Bladehold Scenes/Bladehold Tutorial Gate.unity
+    guid: 103970cb441619c478826aa9447a252b
+  - enabled: 1
+    path: Assets/Bladehold/Bladehold Scenes/Bladehold Graveyard.unity
+    guid: 2c805faf52333084381cffca4550a704
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: 38f78d68449feb14783c9753605fe827, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

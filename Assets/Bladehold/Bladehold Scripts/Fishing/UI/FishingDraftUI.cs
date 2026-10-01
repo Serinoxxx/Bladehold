@@ -55,11 +55,6 @@ public class FishingDraftUI : MonoBehaviour
 
     private void Start()
     {
-        if (iconsConfig == null)
-        {
-            iconsConfig = Resources.Load<SkillTreeIconsSO>("SkillTreeIcons");
-        }
-
         if (modalPanel == null)
         {
             Debug.LogError("[FishingDraftUI] modalPanel is not assigned.", this);
@@ -73,13 +68,29 @@ public class FishingDraftUI : MonoBehaviour
                 Debug.LogError($"[FishingDraftUI] Card slot {i} is missing its root or selectButton.", this);
                 anyError = true;
             }
-            else if (cardSlots[i].iconImage == null)
+        }
+
+        ResolveIcons();
+    }
+
+    /// <summary>
+    ///     Loads the icon set and finds each card's "Icon" child if not wired. Also called when a draft
+    ///     opens, since a draft can be queued before Start runs (UI object inactive at scene load).
+    /// </summary>
+    private void ResolveIcons()
+    {
+        if (iconsConfig == null)
+        {
+            iconsConfig = Resources.Load<SkillTreeIconsSO>("SkillTreeIcons");
+        }
+
+        foreach (CardSlotUI slot in cardSlots)
+        {
+            if (slot == null || slot.root == null || slot.iconImage != null) continue;
+            Transform iconT = slot.root.transform.Find("Icon");
+            if (iconT != null)
             {
-                Transform iconT = cardSlots[i].root.transform.Find("Icon");
-                if (iconT != null)
-                {
-                    cardSlots[i].iconImage = iconT.GetComponent<Image>();
-                }
+                slot.iconImage = iconT.GetComponent<Image>();
             }
         }
     }
@@ -122,6 +133,8 @@ public class FishingDraftUI : MonoBehaviour
 
         // All cards maxed out
         if (currentChoices.Count == 0) return;
+
+        ResolveIcons();
 
         for (int i = 0; i < cardSlots.Length; i++)
         {

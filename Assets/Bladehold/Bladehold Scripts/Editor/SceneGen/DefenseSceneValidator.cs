@@ -140,7 +140,8 @@ public static class DefenseSceneValidator
             {
                 var p = new Vector3(b.x, 0f, hf.RavineCentreZ(ri, b.x));
                 var filter = new NavMeshQueryFilter { agentTypeID = largeId, areaMask = NavMesh.AllAreas };
-                if (!NavMesh.SamplePosition(p, out NavMeshHit hit, 1f, filter) || hit.position.y < -1f)
+                // 3 m reach: an arched deck crests ~2 m above the rims. The floor is far below that.
+                if (!NavMesh.SamplePosition(p, out NavMeshHit hit, 3f, filter) || hit.position.y < -1f)
                     fails.Add($"Bridge at x={b.x} on ravine {ri} has no Large Enemy NavMesh on its deck.");
             }
         }
@@ -183,7 +184,7 @@ public static class DefenseSceneValidator
                 Vector3 cross = Vector3.Lerp(c[k], c[k + 1], t);
                 bool onBridge = false;
                 foreach (BridgeSpec b in r.bridges)
-                    onBridge |= Mathf.Abs(cross.x - b.x) <= 2.5f * b.tilesWide + 0.5f;
+                    onBridge |= Mathf.Abs(cross.x - b.x) <= DefenseSceneGenerator.BridgeHalfWidth(spec.palette, b) + 0.5f;
                 if (!onBridge) return $"crosses ravine {i} at x={cross.x:F0} without a bridge.";
             }
         }

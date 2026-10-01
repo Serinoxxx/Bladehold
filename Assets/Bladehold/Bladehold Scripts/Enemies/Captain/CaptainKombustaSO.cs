@@ -22,6 +22,9 @@ public class CaptainKombustaSO : ScriptableObject
     [Tooltip("Distance from target to qualify for dynamite special attack (default: 5m or more).")]
     public float dynamiteTriggerDistance = 5.0f;
 
+    [Tooltip("Farthest the target can be for a dynamite throw. The volley only starts, and each stick is only thrown, between the trigger distance and this.")]
+    public float dynamiteMaxRange = 15.0f;
+
     [Tooltip("Total number of dynamite sticks thrown per volley (default: 10).")]
     public int dynamiteCount = 10;
 

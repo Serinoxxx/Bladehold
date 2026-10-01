@@ -6,7 +6,8 @@ using UnityEngine.UI;
 ///     Contextual HUD element displayed while aiming ranged weapons (Bow, Thrown Axe, Wand).
 ///     Shows the current and maximum ammunition under the crosshairs (e.g. '10/20 [arrow icon]')
 ///     and displays a bold red 'OUT OF AMMO' warning center-screen when ammunition is depleted.
-///     Fades in/out with weapon aim states matching BowCrosshairUI.
+///     Fades in/out with weapon aim states matching BowCrosshairUI. Counter and warning stay hidden
+///     while <see cref="PlayerAmmo.InfiniteAmmo" /> is on (the Fishing Pond's free arrows).
 /// </summary>
 public class BowAmmoUI : MonoBehaviour
 {
@@ -103,6 +104,15 @@ public class BowAmmoUI : MonoBehaviour
         }
     }
 
+    private bool IsInfiniteAmmo
+    {
+        get
+        {
+            ResolveAmmoComponent();
+            return playerAmmo != null && playerAmmo.InfiniteAmmo;
+        }
+    }
+
     private int GetEffectiveCurrentAmmo()
     {
         return RunSession.CurrentAmmo;
@@ -119,7 +129,7 @@ public class BowAmmoUI : MonoBehaviour
             float val = Player.Instance.Stats.GetValue(StatType.MaxAmmo);
             if (val > 0f) return Mathf.RoundToInt(val);
         }
-        return RunSession.HasMetaPerk("deep_quiver") ? 25 : 20;
+        return RunSession.MetaMaxAmmo;
     }
 
     private void HandleAmmoChanged(int current, int max)
@@ -137,7 +147,7 @@ public class BowAmmoUI : MonoBehaviour
 
         if (outOfAmmoText != null)
         {
-            outOfAmmoText.gameObject.SetActive(current <= 0);
+            outOfAmmoText.gameObject.SetActive(current <= 0 && !IsInfiniteAmmo);
         }
     }
 
@@ -164,11 +174,15 @@ public class BowAmmoUI : MonoBehaviour
         }
 
         int curr = GetEffectiveCurrentAmmo();
-        int max = GetEffectiveMaxAmmo();
+
+        // Free arrows (the Fishing Pond): no counter or warning, just the crosshair.
+        bool infinite = IsInfiniteAmmo;
+        if (ammoCountText.gameObject.activeSelf == infinite) ammoCountText.gameObject.SetActive(!infinite);
+        if (arrowIcon.gameObject.activeSelf == infinite) arrowIcon.gameObject.SetActive(!infinite);
 
         if (outOfAmmoText != null)
         {
-            bool showWarning = isAiming && (curr <= 0);
+            bool showWarning = isAiming && !infinite && (curr <= 0);
             if (outOfAmmoText.gameObject.activeSelf != showWarning)
             {
                 outOfAmmoText.gameObject.SetActive(showWarning);

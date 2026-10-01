@@ -795,76 +795,14 @@ public static class SetupGameLoopAssets
         GameObject canvasGo = new GameObject("MetaUpgradesCanvas");
         Canvas canvas = canvasGo.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvasGo.AddComponent<UnityEngine.UI.CanvasScaler>();
+        var scaler = canvasGo.AddComponent<UnityEngine.UI.CanvasScaler>();
+        scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920f, 1080f);
+        scaler.matchWidthOrHeight = 1f;
         canvasGo.AddComponent<UnityEngine.UI.GraphicRaycaster>();
 
         MetaUpgradesUI metaUI = canvasGo.AddComponent<MetaUpgradesUI>();
-
-        GameObject root = new GameObject("WindowRoot", typeof(RectTransform));
-        root.transform.SetParent(canvasGo.transform, false);
-        UnityEngine.UI.Image rootImg = root.AddComponent<UnityEngine.UI.Image>();
-        rootImg.color = new Color(0.08f, 0.1f, 0.14f, 0.96f);
-        RectTransform rootRect = root.GetComponent<RectTransform>();
-        rootRect.sizeDelta = new Vector2(1000f, 650f);
-
-        // Currency text
-        GameObject bloodGo = new GameObject("GoblinBloodText", typeof(RectTransform));
-        bloodGo.transform.SetParent(root.transform, false);
-        TMPro.TextMeshProUGUI bloodTxt = bloodGo.AddComponent<TMPro.TextMeshProUGUI>();
-        bloodTxt.text = "Goblin Blood: 0";
-        bloodTxt.fontSize = 26;
-        bloodGo.GetComponent<RectTransform>().anchoredPosition = new Vector2(-300f, 275f);
-
-        GameObject metalGo = new GameObject("OrcishMetalText", typeof(RectTransform));
-        metalGo.transform.SetParent(root.transform, false);
-        TMPro.TextMeshProUGUI metalTxt = metalGo.AddComponent<TMPro.TextMeshProUGUI>();
-        metalTxt.text = "Orcish Metal: 0";
-        metalTxt.fontSize = 26;
-        metalGo.GetComponent<RectTransform>().anchoredPosition = new Vector2(50f, 275f);
-
-        // Close button
-        GameObject closeGo = new GameObject("CloseButton", typeof(RectTransform));
-        closeGo.transform.SetParent(root.transform, false);
-        UnityEngine.UI.Button closeBtn = closeGo.AddComponent<UnityEngine.UI.Button>();
-        closeGo.AddComponent<UnityEngine.UI.Image>().color = new Color(0.8f, 0.2f, 0.2f);
-        closeGo.GetComponent<RectTransform>().anchoredPosition = new Vector2(450f, 275f);
-        closeGo.GetComponent<RectTransform>().sizeDelta = new Vector2(60f, 40f);
-
-        // Tier rows
-        GameObject t1 = new GameObject("Tier1_Row", typeof(RectTransform), typeof(UnityEngine.UI.HorizontalLayoutGroup));
-        t1.transform.SetParent(root.transform, false);
-        t1.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, 150f);
-        t1.GetComponent<UnityEngine.UI.HorizontalLayoutGroup>().spacing = 30f;
-
-        GameObject t2 = new GameObject("Tier2_Row", typeof(RectTransform), typeof(UnityEngine.UI.HorizontalLayoutGroup));
-        t2.transform.SetParent(root.transform, false);
-        t2.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, -20f);
-        t2.GetComponent<UnityEngine.UI.HorizontalLayoutGroup>().spacing = 30f;
-
-        GameObject t3 = new GameObject("Tier3_Row", typeof(RectTransform), typeof(UnityEngine.UI.HorizontalLayoutGroup));
-        t3.transform.SetParent(root.transform, false);
-        t3.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, -190f);
-        t3.GetComponent<UnityEngine.UI.HorizontalLayoutGroup>().spacing = 30f;
-
-        var so = new SerializedObject(metaUI);
-        so.FindProperty("windowRoot").objectReferenceValue = root;
-        so.FindProperty("closeButton").objectReferenceValue = closeBtn;
-        so.FindProperty("goblinBloodText").objectReferenceValue = bloodTxt;
-        so.FindProperty("orcishMetalText").objectReferenceValue = metalTxt;
-        so.FindProperty("tier1RowContainer").objectReferenceValue = t1.transform;
-        so.FindProperty("tier2RowContainer").objectReferenceValue = t2.transform;
-        so.FindProperty("tier3RowContainer").objectReferenceValue = t3.transform;
-
-        SerializedProperty perksProp = so.FindProperty("allPerks");
-        perksProp.ClearArray();
-        string[] perkGuids = AssetDatabase.FindAssets("t:MetaPerkDefinitionSO");
-        for (int i = 0; i < perkGuids.Length; i++)
-        {
-            perksProp.InsertArrayElementAtIndex(i);
-            perksProp.GetArrayElementAtIndex(i).objectReferenceValue = AssetDatabase.LoadAssetAtPath<MetaPerkDefinitionSO>(AssetDatabase.GUIDToAssetPath(perkGuids[i]));
-        }
-
-        so.ApplyModifiedProperties();
+        MetaUpgradesUIBuilder.Build(metaUI);
     }
 
     [MenuItem("Bladehold/Run Full Game Loop Integration Test")]

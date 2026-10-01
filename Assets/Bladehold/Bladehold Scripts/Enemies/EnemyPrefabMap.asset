@@ -85,3 +85,11 @@ MonoBehaviour:
     prefab: {fileID: 3025528930395546268, guid: 3c159508dad39e3479a52644ccf14462, type: 3}
   - id: hexer
     prefab: {fileID: 8155354714374837732, guid: 3ba8f209d6e3f99478c8eab5a70962dc, type: 3}
+  - id: skeleton_soldier
+    prefab: {fileID: 2418264734039994934, guid: 7f3a3b2898df1a642bc213faf4bffaee, type: 3}
+  - id: skeleton_soldier_shield
+    prefab: {fileID: 817107883178474232, guid: 6082089017b9a2d4ba0464057fcc0c80, type: 3}
+  - id: skeleton_knight
+    prefab: {fileID: 4433978554270544240, guid: 78c567a1aa1c910418699322c9ca20a9, type: 3}
+  - id: skeleton_knight_shield
+    prefab: {fileID: 940034811320357533, guid: 74a03cf338940f24987bf6be470c4d4a, type: 3}

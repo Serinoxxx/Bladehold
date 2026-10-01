@@ -979,12 +979,14 @@ MonoBehaviour:
   health: {fileID: 2416392165065999887}
   animator: {fileID: 1638963520121624715}
   bodyRenderer: {fileID: 1586114936138099649}
+  propRenderers: []
   agent: {fileID: 7080334578233263117}
   aiAttack: {fileID: 8780529840763675578}
   knockbackReceiver: {fileID: 8743446565083701594}
   ragdoll: {fileID: 2774917170554717151}
   goldenGoblin: {fileID: 6572349470805921892}
   impulseGoblin: {fileID: 6790884973619429240}
+  corpseDespawner: {fileID: 8820226531336169178}
 --- !u!1 &2890684999563868791
 GameObject:
   m_ObjectHideFlags: 0

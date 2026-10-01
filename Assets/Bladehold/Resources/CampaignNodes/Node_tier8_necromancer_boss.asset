@@ -19,7 +19,7 @@ MonoBehaviour:
   sceneName: Bladehold Necromancer Crypt
   nodeType: 7
   tierIndex: 8
-  mapPosition: {x: 1750, y: -150}
+  mapPosition: {x: 2220, y: -150}
   captainName: Malakor the Defiler
   difficultyTier: 4
   clanBuff: {fileID: 0}

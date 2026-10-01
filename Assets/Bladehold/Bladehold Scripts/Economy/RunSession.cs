@@ -83,6 +83,8 @@ public static class RunSession
     // Castle Campaign Progression State
     public static bool IsCampaignRun { get; set; } = false;
     public static string CampaignCurrentNodeId { get; set; } = null;
+    /// <summary>The node the player last cleared: their spot on the campaign map (null = at the start).</summary>
+    public static string CampaignLastCompletedNodeId { get; set; } = null;
     public static List<string> CampaignCompletedNodeIds { get; } = new List<string>();
     public static List<string> CampaignAvailableNodeIds { get; } = new List<string>();
 
@@ -94,6 +96,46 @@ public static class RunSession
         SaveData data = SaveSystem.Load();
         return data != null && data.purchasedMetaPerks != null && data.purchasedMetaPerks.Contains(perkId);
     }
+
+    /// <summary>
+    ///     Owned rank of a meta perk: each purchased rank is one more copy of its id in
+    ///     <see cref="SaveData.purchasedMetaPerks" />, so saves from before ranks existed read as rank 1.
+    /// </summary>
+    public static int GetMetaPerkRank(string perkId)
+    {
+        SaveData data = SaveSystem.Load();
+        if (data == null || data.purchasedMetaPerks == null) return 0;
+        int rank = 0;
+        foreach (string id in data.purchasedMetaPerks)
+        {
+            if (id == perkId) rank++;
+        }
+        return rank;
+    }
+
+    /// <summary>
+    ///     Total effect of a meta perk at its owned rank, from its MetaPerkDefinitionSO.rankValues (0 when unowned).
+    ///     <paramref name="fallbackRank1Value" /> is used for an owned perk if the catalog or its values are missing.
+    /// </summary>
+    public static float GetMetaPerkValue(string perkId, float fallbackRank1Value)
+    {
+        int rank = GetMetaPerkRank(perkId);
+        if (rank <= 0) return 0f;
+        MetaPerkCatalogSO catalog = MetaPerkCatalogSO.Instance;
+        MetaPerkDefinitionSO perk = catalog != null ? catalog.Find(perkId) : null;
+        if (perk == null || perk.rankValues == null || perk.rankValues.Length == 0)
+        {
+            if (catalog == null) Debug.LogError($"[RunSession] No MetaPerkCatalog in Resources: meta perk '{perkId}' falls back to its rank-1 value.");
+            return fallbackRank1Value;
+        }
+        return perk.ValueAtRank(rank);
+    }
+
+    public const string SupplyCachePerkId = "supply_cache";
+    public const int BaseStartingSupply = 60;
+
+    /// <summary>Max ammo before draft upgrades: the base 20 plus Deep Quiver.</summary>
+    public static int MetaMaxAmmo => 20 + Mathf.RoundToInt(GetMetaPerkValue("deep_quiver", 5f));
 
     /// <summary>
     ///     Checks if a specific weapon is unlocked in SaveData.
@@ -168,26 +210,28 @@ public static class RunSession
         RangedUltimateCharge = 0f;
         FortressGateCurrentHealth = -1f;
         FortressGateMaxHealth = -1f;
-        DraftRerollsRemaining = HasMetaPerk("master_tactician") ? 1 : 0;
+        DraftRerollsRemaining = Mathf.RoundToInt(GetMetaPerkValue("master_tactician", 1f));
         SecondWindUsed = false;
         InRunUpgradeLevels.Clear();
         MeleeUltimateId = null;
         RangedUltimateId = null;
         ConsumedBuffFish.Clear();
 
-        // War Chest perk grants 75 starting gold
-        InRunGold = HasMetaPerk("war_chest") ? 75 : 0;
+        // War Chest perk grants starting gold (75 at rank 1)
+        InRunGold = Mathf.RoundToInt(GetMetaPerkValue("war_chest", 75f));
         OnInRunGoldChanged?.Invoke(InRunGold);
 
-        InRunSupply = 60;
+        // Supply Cache perk adds starting supply (+20 per rank)
+        InRunSupply = BaseStartingSupply + Mathf.RoundToInt(GetMetaPerkValue(SupplyCachePerkId, 20f));
         OnInRunSupplyChanged?.Invoke(InRunSupply);
 
-        CurrentAmmo = HasMetaPerk("deep_quiver") ? 25 : 20;
+        CurrentAmmo = MetaMaxAmmo;
         OnAmmoChanged?.Invoke(CurrentAmmo, CurrentAmmo);
 
         // Reset Castle Campaign State
         IsCampaignRun = false;
         CampaignCurrentNodeId = null;
+        CampaignLastCompletedNodeId = null;
         CampaignCompletedNodeIds.Clear();
         CampaignAvailableNodeIds.Clear();
     }
@@ -240,16 +284,16 @@ public static class RunSession
             }
         }
 
-        // 3. Reapply Agility permanent meta perk (+1 dash charge)
+        // 3. Reapply Agility permanent meta perk (+1 dash charge per rank)
         if (HasMetaPerk("agility") && player.Stats != null)
         {
-            player.Stats.AddModifier(StatType.DodgeMaxCharges, ModifierKind.Flat, 1f);
+            player.Stats.AddModifier(StatType.DodgeMaxCharges, ModifierKind.Flat, GetMetaPerkValue("agility", 1f));
         }
 
-        // 3b. Reapply Deep Quiver permanent meta perk (+5 max ammo)
+        // 3b. Reapply Deep Quiver permanent meta perk (+5 max ammo per rank)
         if (HasMetaPerk("deep_quiver") && player.Stats != null)
         {
-            player.Stats.AddModifier(StatType.MaxAmmo, ModifierKind.Flat, 5f);
+            player.Stats.AddModifier(StatType.MaxAmmo, ModifierKind.Flat, GetMetaPerkValue("deep_quiver", 5f));
         }
 
         // 4. Reapply all drafted mid-run upgrades from InRunUpgradeLevels
@@ -308,10 +352,10 @@ public static class RunSession
     {
         if (amount <= 0) return;
 
-        // Greed perk gives +10% gold from all sources
+        // Greed perk gives +10% gold from all sources per rank
         if (HasMetaPerk("greed"))
         {
-            amount = Mathf.RoundToInt(amount * 1.10f);
+            amount = Mathf.RoundToInt(amount * (1f + GetMetaPerkValue("greed", 10f) / 100f));
         }
 
         InRunGold += amount;
@@ -354,9 +398,9 @@ public static class RunSession
             float maxStat = Player.Instance.Stats.GetValue(StatType.MaxAmmo);
             if (maxStat > 0f) max = Mathf.RoundToInt(maxStat);
         }
-        else if (HasMetaPerk("deep_quiver"))
+        else
         {
-            max = 25;
+            max = MetaMaxAmmo;
         }
 
         CurrentAmmo = Mathf.Clamp(CurrentAmmo + amount, 0, max);
@@ -375,9 +419,9 @@ public static class RunSession
             float maxStat = Player.Instance.Stats.GetValue(StatType.MaxAmmo);
             if (maxStat > 0f) max = Mathf.RoundToInt(maxStat);
         }
-        else if (HasMetaPerk("deep_quiver"))
+        else
         {
-            max = 25;
+            max = MetaMaxAmmo;
         }
 
         OnAmmoChanged?.Invoke(CurrentAmmo, max);

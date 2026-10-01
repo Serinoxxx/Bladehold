@@ -24,6 +24,18 @@ internal static class EnemyManifest
         public Vector3 localPosition;
     }
 
+    /// <summary>A held prop (weapon, shield) built under a rig bone from an existing Synty prefab's
+    /// mesh and materials. Found by name on re-runs; its pose is re-applied every pass.</summary>
+    internal class PropSpec
+    {
+        public string name;
+        /// <summary>Prefab whose first MeshFilter/MeshRenderer supplies the mesh and materials.</summary>
+        public string sourcePrefabPath;
+        public string boneName;
+        public Vector3 localPosition;
+        public Vector3 localEuler;
+    }
+
     /// <summary>A per-enemy ScriptableObject asset, created at
     /// <c>Enemies/&lt;soFolder&gt;/&lt;assetName&gt;.asset</c> when missing. An existing asset is
     /// never overwritten — designer tuning survives re-runs — so <see cref="initDefaults" /> only
@@ -79,6 +91,14 @@ internal static class EnemyManifest
         /// <see cref="GoldenGoblin" />/<see cref="ImpulseGoblin" />).</summary>
         public Type[] removeComponents;
 
+        /// <summary>Optional: the name of one of the rig's alternate body SkinnedMeshRenderers (the
+        /// Synty character rigs carry every body of the pack, switched off) to show instead of the
+        /// base's; every other body on the rig is switched off.</summary>
+        public string bodyName;
+
+        /// <summary>Held props built under rig bones (see <see cref="PropSpec" />).</summary>
+        public PropSpec[] props;
+
         public ChildSpec[] children;
         public SoSpec[] assets;
         public ComponentSpec[] components;
@@ -96,39 +116,8 @@ internal static class EnemyManifest
         {
             id = "goblin",
             prefabName = "Goblin Enemy Variant",
-            components = new[]
-            {
-                // The bulk of the horde: drawn baked (idle/run/attack) until anything else happens to it.
-                // Bake data comes from Bladehold/Crowd/Bake Goblin Crowd Animation (BakedCrowdBaker).
-                new ComponentSpec
-                {
-                    type = typeof(BakedCrowdAgent),
-                    wire = (so, ctx) =>
-                    {
-                        EnemyPrefabGenerator.SetReference(so, "crowdData", LoadAsset<BakedCrowdAnimationSO>(BakedCrowdBaker.DataPath));
-                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
-                        EnemyPrefabGenerator.SetReference(so, "animator", ctx.ChildAnimator);
-                        EnemyPrefabGenerator.SetReference(so, "bodyRenderer", ActiveBody(ctx.Root));
-                        EnemyPrefabGenerator.SetReference(so, "agent", ctx.Root.GetComponent<UnityEngine.AI.NavMeshAgent>());
-                        EnemyPrefabGenerator.SetReference(so, "aiAttack", ctx.Root.GetComponent<AIAttack>());
-                        EnemyPrefabGenerator.SetReference(so, "knockbackReceiver", ctx.Root.GetComponent<KnockbackReceiver>());
-                        EnemyPrefabGenerator.SetReference(so, "goldenGoblin", ctx.Root.GetComponent<GoldenGoblin>());
-                        EnemyPrefabGenerator.SetReference(so, "ragdoll", ctx.Root.GetComponent<EnemyRagdoll>());
-                        EnemyPrefabGenerator.SetReference(so, "impulseGoblin", ctx.Root.GetComponent<ImpulseGoblin>());
-                    },
-                },
-                // Hand the goblin to the crowd for real ragdolls (promote first) and over-cap baked falls.
-                new ComponentSpec
-                {
-                    type = typeof(EnemyRagdoll),
-                    wire = (so, ctx) => EnemyPrefabGenerator.SetReference(so, "crowdAgent", ctx.Root.GetComponent<BakedCrowdAgent>()),
-                },
-                new ComponentSpec
-                {
-                    type = typeof(KnockbackReceiver),
-                    wire = (so, ctx) => EnemyPrefabGenerator.SetReference(so, "crowdAgent", ctx.Root.GetComponent<BakedCrowdAgent>()),
-                },
-            },
+            // The bulk of the horde: drawn baked (idle/run/attack) until anything else happens to it.
+            components = CrowdComponents("Goblin"),
         },
 
         // Golden Goblin: dedicated fleeing enemy type — fast, doesn't attack, runs around and away from player.
@@ -1189,6 +1178,7 @@ internal static class EnemyManifest
                         data.baseMeleeDamage = 20f;
                         data.baseMoveSpeed = 3.8f;
                         data.dynamiteTriggerDistance = 5.0f;
+                        data.dynamiteMaxRange = 15.0f;
                         data.dynamiteCount = 10;
                         data.dynamiteInterval = 1.0f;
                         data.dynamiteDamage = 20.0f;
@@ -1222,6 +1212,11 @@ internal static class EnemyManifest
                             EnemyPrefabGenerator.SetReference(so, "attack", attackComp);
                         }
                         EnemyPrefabGenerator.SetReference(so, "animator", ctx.ChildAnimator);
+                        var knockbackComp = ctx.Root.GetComponent<KnockbackReceiver>();
+                        if (knockbackComp != null)
+                        {
+                            EnemyPrefabGenerator.SetReference(so, "knockback", knockbackComp);
+                        }
                         var hl = ctx.Root.GetComponentInChildren<HighlightEffect>();
                         if (hl != null)
                         {
@@ -1293,7 +1288,142 @@ internal static class EnemyManifest
                 }
             }
         },
+
+        // Skeletons: baked crowd fodder like the goblin, built on the goblin itself (the Synty goblin
+        // rig carries the skeleton bodies as alternates, so rig, ragdoll and crowd setup carry over).
+        // Sword in hand, optional shield; the swing is Skeleton Sword AC, a copy of the lean goblin
+        // controller with a Synty sword attack. Bake data: Bladehold/Crowd/Bake Crowd Animations.
+        Skeleton("skeleton_soldier", "Skeleton Soldier", "Character_Skeleton_Soldier_01", SoldierSword, null),
+        Skeleton("skeleton_soldier_shield", "Skeleton Soldier Shield", "Character_Skeleton_Soldier_01", SoldierSword, SoldierShield),
+        Skeleton("skeleton_knight", "Skeleton Knight", "Character_Skeleton_Knight", KnightSword, null),
+        Skeleton("skeleton_knight_shield", "Skeleton Knight Shield", "Character_Skeleton_Knight", KnightSword, KnightShield),
     };
+
+    private const string SoldierSword = "Assets/Synty/Weapons/SM_Wep_BrokenSword_01/SM_Wep_BrokenSword_01.prefab";
+    private const string KnightSword = "Assets/Synty/Weapons/SM_Wep_Ornate_Sword_02/SM_Wep_Ornate_Sword_02.prefab";
+    private const string SoldierShield = "Assets/Synty/PolygonDungeon/Prefabs/Weapons/SM_Wep_Shield_Bone_01.prefab";
+    private const string KnightShield = "Assets/Synty/PolygonDungeon/Prefabs/Weapons/SM_Wep_Shield_Heater_01.prefab";
+
+    /// <summary>
+    ///     A skeleton crowd enemy: a variant of the fodder goblin with a skeleton body, a sword in the
+    ///     right hand (the Assassin's grip) and optionally a shield on the left forearm (the
+    ///     Bulwark's, moved onto the goblin rig). Every weapon shares the body's PolygonDungeon
+    ///     material, which the crowd bake needs.
+    /// </summary>
+    private static EnemySpec Skeleton(string id, string crowdName, string bodyName, string swordPath, string shieldPath)
+    {
+        var props = new System.Collections.Generic.List<PropSpec>
+        {
+            new PropSpec
+            {
+                name = "Weapon_Sword",
+                sourcePrefabPath = swordPath,
+                boneName = "Hand_R",
+                localPosition = new Vector3(0.123f, 0.021f, 0.063f),
+                localEuler = new Vector3(0f, 90f, 270f),
+            },
+        };
+        if (shieldPath != null)
+        {
+            props.Add(new PropSpec
+            {
+                name = "Weapon_Shield",
+                sourcePrefabPath = shieldPath,
+                boneName = "Hand_L",
+                localPosition = new Vector3(-0.144f, -0.084f, 0f),
+                localEuler = new Vector3(273.1f, 226.4f, 309.3f),
+            });
+        }
+        var components = new System.Collections.Generic.List<ComponentSpec>(CrowdComponents(crowdName));
+        SoSpec[] assets = null;
+        if (shieldPath != null)
+        {
+            // The shield takes the sting out of arrows: projectile hits at half damage (one shared asset).
+            assets = new[] { new SoSpec { soType = typeof(ProjectileResistanceSO), assetName = "SkeletonShieldProjectileResistanceSO" } };
+            components.Add(new ComponentSpec
+            {
+                type = typeof(ProjectileResistance),
+                wire = (so, ctx) =>
+                {
+                    EnemyPrefabGenerator.SetReference(so, "data", ctx.LoadedAsset("SkeletonShieldProjectileResistanceSO"));
+                    EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                },
+            });
+        }
+        return new EnemySpec
+        {
+            id = id,
+            soFolder = shieldPath != null ? "Skeletons" : null,
+            prefabName = crowdName + " Enemy Variant",
+            basePrefabPath = "Assets/Bladehold/Bladehold Prefabs/Goblin Enemy Variant.prefab",
+            bodyName = bodyName,
+            props = props.ToArray(),
+            animatorOverridePath = "Assets/Bladehold/Bladehold Animations/Skeleton Sword AC.controller",
+            // Golden and impulse are goblin variants.
+            removeComponents = new[] { typeof(GoldenGoblin), typeof(ImpulseGoblin) },
+            assets = assets,
+            components = components.ToArray(),
+        };
+    }
+
+    /// <summary>
+    ///     The baked-crowd wiring (see <see cref="BakedCrowdBaker" />): the agent, pointed at this
+    ///     crowd's bake data and held props, and the ragdoll/knockback hand-offs to it (real ragdolls
+    ///     promote first; past the cap, baked falls).
+    /// </summary>
+    private static ComponentSpec[] CrowdComponents(string crowdName)
+    {
+        return new[]
+        {
+            new ComponentSpec
+            {
+                type = typeof(BakedCrowdAgent),
+                wire = (so, ctx) =>
+                {
+                    EnemyPrefabGenerator.SetReference(so, "crowdData", BakedCrowdBaker.EnsureDataAsset(crowdName));
+                    EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                    EnemyPrefabGenerator.SetReference(so, "animator", ctx.ChildAnimator);
+                    EnemyPrefabGenerator.SetReference(so, "bodyRenderer", ActiveBody(ctx.Root));
+                    EnemyPrefabGenerator.SetReference(so, "agent", ctx.Root.GetComponent<UnityEngine.AI.NavMeshAgent>());
+                    EnemyPrefabGenerator.SetReference(so, "aiAttack", ctx.Root.GetComponent<AIAttack>());
+                    EnemyPrefabGenerator.SetReference(so, "knockbackReceiver", ctx.Root.GetComponent<KnockbackReceiver>());
+                    EnemyPrefabGenerator.SetReference(so, "goldenGoblin", ctx.Root.GetComponent<GoldenGoblin>());
+                    EnemyPrefabGenerator.SetReference(so, "ragdoll", ctx.Root.GetComponent<EnemyRagdoll>());
+                    EnemyPrefabGenerator.SetReference(so, "impulseGoblin", ctx.Root.GetComponent<ImpulseGoblin>());
+
+                    SerializedProperty props = so.FindProperty("propRenderers");
+                    if (props == null) throw new InvalidOperationException("BakedCrowdAgent has no serialized 'propRenderers' — renamed?");
+                    MeshRenderer[] held = HeldProps(ctx.ChildAnimator);
+                    props.arraySize = held.Length;
+                    for (int i = 0; i < held.Length; i++)
+                    {
+                        props.GetArrayElementAtIndex(i).objectReferenceValue = held[i];
+                    }
+                },
+            },
+            new ComponentSpec
+            {
+                type = typeof(EnemyRagdoll),
+                wire = (so, ctx) => EnemyPrefabGenerator.SetReference(so, "crowdAgent", ctx.Root.GetComponent<BakedCrowdAgent>()),
+            },
+            new ComponentSpec
+            {
+                type = typeof(KnockbackReceiver),
+                wire = (so, ctx) => EnemyPrefabGenerator.SetReference(so, "crowdAgent", ctx.Root.GetComponent<BakedCrowdAgent>()),
+            },
+        };
+    }
+
+    /// <summary>The visible MeshRenderers under the rig: the held props the crowd bake merges in.</summary>
+    private static MeshRenderer[] HeldProps(Animator rig)
+    {
+        var held = new System.Collections.Generic.List<MeshRenderer>();
+        foreach (MeshRenderer renderer in rig.GetComponentsInChildren<MeshRenderer>(false))
+        {
+            if (renderer.enabled) held.Add(renderer);
+        }
+        return held.ToArray();
+    }
 
     /// <summary>Loads a projectile prefab's component for wiring, throwing when the prefab is
     /// missing or lacks the component — a silent null here would only surface as a Start error at

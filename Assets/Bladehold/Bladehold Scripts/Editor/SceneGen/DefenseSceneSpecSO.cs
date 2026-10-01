@@ -72,6 +72,12 @@ public class DefenseSceneSpecSO : ScriptableObject
     [Tooltip("Objective markers are chosen from this Z band (and must still clear tower range).")]
     public Vector2 objectiveZRange = new Vector2(90f, 150f);
 
+    [Header("Enemies")]
+    [Tooltip("Roster ids this scene's sector waves spawn, replacing the threat curve (a SceneEnemyRoster is placed). Empty = the normal curve.")]
+    public List<string> enemyRosterIds = new List<string>();
+    [Tooltip("Fodder-floor enemy for this scene. Empty = the pacing asset's (goblin).")]
+    public string fodderEnemyId = "";
+
     [Header("Scatter")]
     [Tooltip("Scales every scatter density. 0 = structures only.")]
     public float scatterDensity = 1f;

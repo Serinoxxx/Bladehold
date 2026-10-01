@@ -272,6 +272,10 @@ public class CampaignTooltipUI : MonoBehaviour
                     actionPromptText.text = DemoConfigSO.LockedPrompt;
                     actionPromptText.color = demoLockedPromptColor;
                     break;
+                case CampaignNodeButtonUI.NodeVisualStatus.Bypassed:
+                    actionPromptText.text = Loc.Get("campaign.tooltip.bypassed", "Out of reach: your route has moved past it");
+                    actionPromptText.color = lockedPromptColor;
+                    break;
                 case CampaignNodeButtonUI.NodeVisualStatus.Locked:
                 default:
                     actionPromptText.text = Loc.Get("campaign.tooltip.locked", "Locked: clear a connected sector first");

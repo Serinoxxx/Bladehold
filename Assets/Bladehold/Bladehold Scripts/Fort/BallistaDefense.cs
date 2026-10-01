@@ -7,7 +7,7 @@ using UnityEngine;
 public class BallistaDefense : DefenseStructure
 {
     [Header("Ballista Config")]
-    [SerializeField] private float range = 22f;
+    [SerializeField] private float range = 44f;
     [SerializeField] private float fireInterval = 3.0f;
     [SerializeField] private float boltSpeed = 35f;
     [SerializeField] private float boltDamage = 31f;

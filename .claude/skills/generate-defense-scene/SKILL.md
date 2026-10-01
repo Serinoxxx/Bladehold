@@ -20,7 +20,9 @@ followed by a rule check. Code: `Assets/Bladehold/Bladehold Scripts/Editor/Scene
 | `DefenseSceneGenerator` | Orchestrates the stages. It also builds the castle, bridges, spikes, SpikePit volumes and play-area boundary, bakes the NavMesh, and lays out the gameplay. |
 | `DefenseSceneValidator` | Checks the gameplay rules (below). |
 | `PrefabMeasure` | Mesh-measured bounds, footprints and grounding for any prefab. |
-| `DefenseSceneDefaults` | Builds the stock assets in `Assets/Bladehold/Config/SceneGen/`: `SpikePitConfig`, Outer Gate spec + Alpine palette (tier 1), Desert Gate spec + Arid palette (tier 2, two ravines). One menu item per scene, so new stock scenes get a `Create<Scene>` builder here too. |
+| `DefenseSceneDefaults` | Builds the stock assets in `Assets/Bladehold/Config/SceneGen/`: `SpikePitConfig`, Outer Gate spec + Alpine palette (tier 1), Desert Gate spec + Arid palette (tier 2, two ravines), Tutorial Gate spec + Kingdom palette (plan 16, no ravines). One menu item per scene, so new stock scenes get a `Create<Scene>` builder here too. |
+
+**Exception: the Tutorial Gate is generated once, then hand-edited.** `TutorialGate_DefenseSpec_GENERATED_ONCE.asset` produced `Bladehold Tutorial Gate.unity`, and the tutorial director, steps, waypoints, ammo chest and tutorial pacing were then placed on top. Regenerating it wipes all of that. Edit the scene directly instead. The Kingdom palette (grass terrain layers built from the Fantasy Kingdom ground textures) is free to reuse for other scenes.
 
 Runtime piece: `Hazards/SpikePit.cs` + `SpikePitConfigSO` (one heavy hit on landing, 12 by default, so
 normal 10-HP goblins die. A shared registry means walking along the floor between boxes isn't a second
@@ -55,6 +57,17 @@ Both are **opt-in per palette**. The Alpine palette leaves them empty, so the Ou
   - **Filtering.** Demo scenes group by type, not by cluster, so harvest spatially. Filter out off-theme props: the Arid demo has sci-fi hoses, solar panels and beacons, plus lava and sulphur pools.
   - **Placement.** `PlacePropClusters` stamps them on an 11 m grid in the open field. Only the core (0.4 × radius) must be clear. The whole group gets a random yaw and each piece is re-grounded, and any piece landing in a `KeepClear` lane is dropped. Pieces under 1.5 m tall lose their colliders. Taller rocks and dead trees keep theirs, so they become NavMesh obstacles the validator re-checks.
   - **Harvest in code.** The palette builder in `DefenseSceneDefaults` calls the harvester, so re-running the menu item re-harvests.
+
+## Night scenes: lanterns, fog, glow, stone bridges, enemy lists (Graveyard)
+
+All opt-in per palette or spec. Empty or zero values leave the other stock scenes unchanged (the rules run last and return before touching the RNG).
+- **`lanterns`**: lamps down both road edges every `lanternSpacing`, at the bridge corners and either side of the gate. Colliders are stripped. Every instance of these prefabs under Scatter, cluster pieces included, gets a shadowless point light (`lanternLight*`). PC is Forward+, so ~85 lights is fine.
+- **`groundFog`**: particle fog on a grid, plus a line along each ravine floor, tinted by `groundFogTint` and prewarmed. It only animates in Play mode, so edit-mode screenshots won't show it.
+- **`ravineGlow*`**: point lights low in the pits, so the ravines read at night.
+- **`bridgeSpan`**: one arched piece per crossing (Kingdom `SM_Env_Bridge_Stone_01`, 20 m), used instead of tiles. It's widened by `bridgeSpanWidthScale`, and the ends are seated `DeckRise` above the rims by raycasting the piece's own deck. The deck crests about 2 m up, so the validator probes 3 m.
+- **Spec `enemyRosterIds` / `fodderEnemyId`**: places a `SceneEnemyRoster` (see `Waves/CLAUDE.md`).
+- Roads: when the inner ravine has no centre bridge, a trunk road runs from where the side roads meet to the gate.
+- Grave plots are procedural `PropCluster`s built in code (`GraveyardClusters`), not harvested from a demo scene.
 
 ## Workflow (via `/unity-editor-mcp`)
 
