@@ -50,9 +50,29 @@ Tools are `mcp__UnityMCP__*` (`execute_code`, `manage_scene`, `manage_prefabs`, 
 
 ## When the bridge is down
 
-1. **Stuck behind a dialog** (timeouts like "ping not answered" while Unity is open): check `%LOCALAPPDATA%\Unity\Editor\Editor.log` (tail it, grep `ShowModal|DisplayDialog`), then run `pwsh -File .claude/skills/unity-editor-mcp/scripts/dismiss-unity-modals.ps1` to **list** native dialogs. `-Dismiss` presses Enter (the dialog's default button, e.g. "Save"), so only use it when that default is fine. Otherwise tell Lance what's open.
-2. **Server dead:** the log is at `Library/MCPForUnity/Logs/server-launch-8080.log`. Preferred fix: Lance opens `Window > MCP for Unity` (Ctrl+Shift+M) and starts the server, since the package launches it with its pidfile and instance token. Headless: capture the running server's command line (`Get-CimInstance Win32_Process | ? CommandLine -match 'mcp-for-unity'`), stop those processes, then relaunch that same `uvx.exe --from "mcpforunityserver==<package version>" mcp-for-unity --transport http --http-url http://127.0.0.1:8080 …` with `Start-Process -WindowStyle Hidden`.
-3. Verify with `read_console`. If Claude Code's MCP client still shows it disconnected, Lance reconnects it via `/mcp`.
+First check which side is broken. Read `mcpforunity://instances` (the MCP server answers even when Unity doesn't):
+- **Tools fail with `no_unity_session` and `instance_count` is 0:** the server is up but no Editor is attached (step 3).
+- **The tools themselves are gone or refuse to connect:** the server is down (step 3), then Lance runs `/mcp`.
+- **The server is fine but the Editor doesn't answer:** step 1 or 2.
+
+1. **Stuck behind a dialog** (timeouts like "ping not answered" while Unity is open). Check `%LOCALAPPDATA%\Unity\Editor\Editor.log` (tail it, grep `ShowModal|DisplayDialog`). Then run `pwsh -File .claude/skills/unity-editor-mcp/scripts/dismiss-unity-modals.ps1` to **list** native dialogs. `-Dismiss` presses Enter (the dialog's default button, e.g. "Save"), so only use it when that default is fine. Otherwise click a specific button via UI Automation (below), or tell Lance what's open. `(Get-Process Unity).MainWindowTitle` names the dialog at a glance.
+2. **Hung Editor.** Signs: `Editor.log` stops growing for minutes, often right after a domain reload, with the last lines `[MODES] ModeService…` / `ScheduleIndexationOnStartup`. A reload after our script edits did this on 2026-10-02.
+   - **Ask Lance before killing it** (unsaved scene/prefab work is lost).
+   - **Kill** the Editor and its `AssetImportWorker*` children: `Get-CimInstance Win32_Process -Filter "Name='Unity.exe'"`, where the worker command lines contain `-batchMode … AssetImportWorker`.
+   - **Relaunch:** `Start-Process "C:\Program Files\Unity\Hub\Editor\6000.3.10f1\Editor\Unity.exe" -ArgumentList '-projectPath "C:\Users\lance\source\repos\My project"'`. Licensing works while Unity Hub is running.
+   - **Watch out for a startup modal.** A force-kill usually leaves a **"Recovering Scene Backups"** dialog ("copy and preserve these backups in Assets/_Recovery/?"), which blocks loading at ~35 log lines.
+     - Inspect `Temp/__Backupscenes/*.backup` (binary; `Library/LastSceneManagerSetup.txt` names the scene) and compare its time with the scene's last save/commit.
+     - Copy it to the scratchpad, then answer **No** so nothing lands in `Assets/`.
+     - Click a named button with UI Automation: `AutomationElement.FromHandle(MainWindowHandle)` → `FindFirst(Descendants, NameProperty "No")`. Unity's buttons are Panes with no InvokePattern, so read `BoundingRectangle` and click it with `SetCursorPos` + `mouse_event`.
+   - A "No windows found in layout" exception plus a Synty Sidekick `ModularCharacterWindow.OnDestroy` NRE on that first load are harmless (the layout resets to default).
+3. **No server, or a stale one.** The package launches the server **from the Editor** with `--unity-instance-token <token>` and a pidfile (`Library/MCPForUnity/RunState/mcp_http_8080.pid`).
+   - **A server left over from a killed Editor** (its parent PID is gone) carries the old token, and the new Editor won't attach to it. Stop the whole tree (`Get-CimInstance Win32_Process | ? CommandLine -match 'mcp-for-unity'`: cmd → uvx → uv → mcp-for-unity.exe → python ×2).
+   - **The Editor only starts a server on load when the EditorPref `MCPForUnity.AutoStartOnLoad` is on.** It was off until 2026-10-02 and is now on. Otherwise Lance clicks Start in `Window > MCP for Unity` (Ctrl+Shift+M).
+   - **Headless EditorPrefs:** registry `HKCU:\Software\Unity Technologies\Unity Editor 5.x`, value name `<key>_h<hash>`. The hash is djb2-xor (`h=5381; h=(h*33)^ord(c)`, 32-bit), so `MCPForUnity.AutoStartOnLoad_h2539145689`, a DWORD (1 = true).
+   - **Re-run the auto-start hook with a domain reload:** `pwsh -File .claude/skills/unity-editor-mcp/scripts/kick-unity-reload.ps1 -Reload`. It writes a throwaway editor script and bounces focus, because Unity only refreshes when its window *gains* focus, and a touched timestamp isn't a change.
+     - Wait for `Session connected` in `Editor.log`, then run `-Cleanup` (one more reload) and check `git status` is clean of `McpKickTemp`.
+     - Wait in an `until grep …; do sleep 3; done` loop, not chained sleeps.
+4. **Verify** with `read_console` or `mcpforunity://instances`. Claude Code's client usually drops when the server restarts, so **Lance must run `/mcp` → reconnect UnityMCP**; an agent can't. Ask once, after the server is confirmed up, not before.
 
 ## Finish
 
