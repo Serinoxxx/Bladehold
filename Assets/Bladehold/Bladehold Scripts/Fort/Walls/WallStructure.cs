@@ -19,6 +19,9 @@ using UnityEngine.AI;
 ///     - <b>Upgrades</b> (<see cref="IUpgradeable" />, opened from the <see cref="WallCraftingStation" />):
 ///       material tier, Repair +N, spikes (thorns on every melee hit), one element (boiling oil, icy water
 ///       or lightning arcs, triggered when attacked), and Deconstruct with a full refund.
+///     - <b>Ladder</b>: a sloped ladder on the castle side climbs to the top of one side section so the
+///       player can look (and shoot) over the wall; an invisible parapet collider along the top stops them
+///       walking over it. Both go when the wall falls.
 ///     - <b>Damage you can read from afar</b>: segments swap to damaged variants and looping smoke/fire
 ///       starts at the <see cref="WallConfigSO" /> light/medium/heavy thresholds. At 0 HP it collapses to
 ///       rubble and stops blocking (the plot can rebuild it during prep).
@@ -68,6 +71,8 @@ public class WallStructure : MonoBehaviour, IUpgradeable
     private float nextElementTime;
     private int enemyMask;
     private Transform fixture;
+    private GameObject ladder;
+    private BoxCollider parapet;
     private readonly StructureUpgradeState upgrades = new StructureUpgradeState();
     private readonly List<Transform> segments = new List<Transform>();
     private readonly List<GameObject> spikeProps = new List<GameObject>();
@@ -152,6 +157,7 @@ public class WallStructure : MonoBehaviour, IUpgradeable
         health.OnDied += HandleDied;
 
         BuildSideBlockers();
+        BuildLadder();
         RebuildSegments();
         door.Init(this, art);
         initialised = true;
@@ -357,6 +363,8 @@ public class WallStructure : MonoBehaviour, IUpgradeable
         if (fixture != null) Destroy(fixture.gameObject);
         foreach (BoxCollider c in sideColliders) if (c != null) c.enabled = false;
         foreach (NavMeshObstacle o in sideObstacles) if (o != null) o.enabled = false;
+        if (ladder != null) Destroy(ladder);
+        if (parapet != null) parapet.enabled = false;
         door.Collapse();
 
         // Heavy smoke lingers over the rubble, then dies down.
@@ -414,6 +422,148 @@ public class WallStructure : MonoBehaviour, IUpgradeable
             obstacle.carveOnlyStationary = false;
             sideObstacles.Add(obstacle);
         }
+    }
+
+    /// <summary>
+    ///     A ladder up the castle side of whichever side section has the clearer ground behind it (walls are
+    ///     often wedged between rocks), sloped at <see cref="WallConfigSO.ladderAngle" />,
+    ///     with its top at the wall's crown so a player standing there can see over it. The art is
+    ///     scaled to fit; the walkable ramp under it is a separate slab on the player's ground layer that
+    ///     meets the same top edge but never exceeds the player's slope limit. A parapet collider on the
+    ///     Fortification layer (which player and tower shots ignore) runs along the top above the crown.
+    /// </summary>
+    private void BuildLadder()
+    {
+        float height = art != null ? art.wallHeight : 3.5f;
+        float doorWidth = art != null ? art.doorWidth : 3f;
+        float angle = art != null ? art.ladderAngle : 45f;
+        float ladderWidth = art != null ? art.ladderWidth : 1.4f;
+        float sideLength = (width - doorWidth) * 0.5f;
+        float run = height / Mathf.Tan(angle * Mathf.Deg2Rad);
+        float x = doorWidth * 0.5f + sideLength * 0.5f;
+        int blockedRight = LadderObstruction(x, height, run, ladderWidth);
+        int blockedLeft = LadderObstruction(-x, height, run, ladderWidth);
+        if (blockedLeft < blockedRight ||
+            (blockedLeft == blockedRight && LadderArtOverlap(-x, height, run, ladderWidth) < LadderArtOverlap(x, height, run, ladderWidth)))
+        {
+            x = -x;
+        }
+        var topEdge = new Vector3(x, height, -Thickness * 0.5f);
+
+        parapet = gameObject.AddComponent<BoxCollider>();
+        parapet.center = new Vector3(0f, height + (art != null ? art.parapetHeight : 2f) * 0.5f, 0f);
+        parapet.size = new Vector3(width, art != null ? art.parapetHeight : 2f, Thickness);
+
+        ladder = new GameObject("Ladder");
+        ladder.transform.SetParent(transform, false);
+        ladder.transform.localPosition = topEdge;
+
+        // Art: pivot at its base, leaning +Y towards the wall (local +Z) so its top lands on the crown edge.
+        if (art != null && art.ladder != null)
+        {
+            float length = height / Mathf.Sin(angle * Mathf.Deg2Rad);
+            var pivot = new GameObject("Art").transform;
+            pivot.SetParent(ladder.transform, false);
+            pivot.localPosition = new Vector3(0f, -height, -run);
+            GameObject go = Instantiate(art.ladder, pivot);
+            go.transform.localPosition = Vector3.zero;
+            go.transform.localRotation = Quaternion.identity;
+            StripColliders(go);
+            SetLayerRecursive(go, gameObject.layer);
+            Bounds b = LocalRendererBounds(go, pivot);
+            if (b.size.y > 0.01f && b.size.x > 0.01f)
+            {
+                go.transform.localScale = new Vector3(ladderWidth / b.size.x, length / b.size.y, 1f);
+                // Sit the rungs' front face on the slope line so feet on the ramp touch them.
+                go.transform.localPosition = new Vector3(0f, 0f, b.size.z * 0.5f);
+            }
+            // Measured upright above; lean it only now so the bounds aren't inflated by the tilt.
+            pivot.localRotation = Quaternion.Euler(90f - angle, 0f, 0f);
+        }
+
+        // Walkable ramp, from the ground up to the same top edge. 1° under the slope limit so it never slides.
+        float walkAngle = angle;
+        CharacterController cc = Player.Instance != null ? Player.Instance.GetComponent<CharacterController>() : null;
+        if (cc != null) walkAngle = Mathf.Min(angle, cc.slopeLimit - 1f);
+        float rampLength = height / Mathf.Sin(walkAngle * Mathf.Deg2Rad);
+        const float slab = 0.2f;
+        var ramp = new GameObject("Ramp");
+        ramp.transform.SetParent(ladder.transform, false);
+        ramp.transform.localRotation = Quaternion.Euler(90f - walkAngle, 0f, 0f);
+        int ground = LayerMask.NameToLayer("Environment");
+        ramp.layer = ground >= 0 ? ground : 0;
+        BoxCollider box = ramp.AddComponent<BoxCollider>();
+        // Ramp's local origin is the top edge; the slab hangs down its local -Y, walkable face on local -Z.
+        box.center = new Vector3(0f, -rampLength * 0.5f, slab * 0.5f);
+        box.size = new Vector3(ladderWidth, rampLength, slab);
+    }
+
+    /// <summary>How many sample points along a ladder at local <paramref name="x" /> are inside scenery (rocks, buildings, terrain).</summary>
+    private int LadderObstruction(float x, float height, float run, float ladderWidth)
+    {
+        int mask = ~LayerMask.GetMask("Player", "Enemy", "Ragdoll", "Ignore Raycast", PlayerBarrier.FortificationLayerName);
+        float radius = ladderWidth * 0.5f;
+        int blocked = 0;
+        const int samples = 8;
+        for (int i = 0; i < samples; i++)
+        {
+            float t = (i + 0.5f) / samples;
+            // Just above the slope line, so the ground the ladder stands on doesn't count.
+            var local = new Vector3(x, t * height + radius + 0.15f, -Thickness * 0.5f - (1f - t) * run);
+            Vector3 point = transform.TransformPoint(local);
+            // Mesh colliders are hollow (a sphere inside a boulder overlaps nothing), so also line-test from
+            // the doorway column, which is always open, out to the ladder's far edge.
+            Vector3 from = transform.TransformPoint(new Vector3(0f, local.y, local.z));
+            Vector3 farEdge = transform.TransformPoint(local + new Vector3(Mathf.Sign(x) * radius, 0f, 0f));
+            if (Physics.CheckSphere(point, radius, mask, QueryTriggerInteraction.Ignore) ||
+                Physics.Linecast(from, farEdge, mask, QueryTriggerInteraction.Ignore)) blocked++;
+        }
+        return blocked;
+    }
+
+    /// <summary>
+    ///     Tiebreak for <see cref="LadderObstruction" />: how much scenery mesh (by renderer bounds) sits in the
+    ///     ladder's footprint. Big Synty rocks often carry colliders far smaller than their mesh, so a ladder
+    ///     the physics test calls clear can still be buried in one.
+    /// </summary>
+    private float LadderArtOverlap(float x, float height, float run, float ladderWidth)
+    {
+        Vector3 centre = transform.TransformPoint(new Vector3(x, height * 0.5f + 0.3f, -Thickness * 0.5f - run * 0.5f));
+        Vector3 size = transform.rotation * new Vector3(ladderWidth, height - 0.6f, run);
+        var footprint = new Bounds(centre, new Vector3(Mathf.Abs(size.x), Mathf.Abs(size.y), Mathf.Abs(size.z)));
+        int skip = LayerMask.GetMask("Player", "Enemy", "Ragdoll", "UI", PlayerBarrier.FortificationLayerName);
+        float total = 0f;
+        foreach (MeshRenderer r in FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None))
+        {
+            if (!r.enabled || ((1 << r.gameObject.layer) & skip) != 0 || r.transform.IsChildOf(transform)) continue;
+            Bounds b = r.bounds;
+            if (!b.Intersects(footprint)) continue;
+            Vector3 min = Vector3.Max(b.min, footprint.min), max = Vector3.Min(b.max, footprint.max);
+            Vector3 d = max - min;
+            total += Mathf.Max(0f, d.x) * Mathf.Max(0f, d.y) * Mathf.Max(0f, d.z);
+        }
+        return total;
+    }
+
+    /// <summary>Mesh bounds of <paramref name="go" /> in <paramref name="space" />'s local frame (exact for any world rotation, unlike Renderer.bounds).</summary>
+    private static Bounds LocalRendererBounds(GameObject go, Transform space)
+    {
+        bool any = false;
+        var b = new Bounds();
+        foreach (MeshFilter mf in go.GetComponentsInChildren<MeshFilter>())
+        {
+            if (mf.sharedMesh == null) continue;
+            Bounds mb = mf.sharedMesh.bounds;
+            Matrix4x4 toSpace = space.worldToLocalMatrix * mf.transform.localToWorldMatrix;
+            for (int i = 0; i < 8; i++)
+            {
+                Vector3 corner = mb.center + Vector3.Scale(mb.extents, new Vector3((i & 1) == 0 ? -1 : 1, (i & 2) == 0 ? -1 : 1, (i & 4) == 0 ? -1 : 1));
+                Vector3 local = toSpace.MultiplyPoint3x4(corner);
+                if (!any) { b = new Bounds(local, Vector3.zero); any = true; }
+                else b.Encapsulate(local);
+            }
+        }
+        return b;
     }
 
     /// <summary>(Re)spawns the segment art for the current tier and damage stage across both sides of the doorway.</summary>

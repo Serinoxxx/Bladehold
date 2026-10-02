@@ -10,26 +10,29 @@ using UnityEngine.AI;
 ///     avoidance steer off it, while the wall's target claim stops them at the face. It won't shut on
 ///     anything standing in the doorway.
 ///
-///     Sits at the doorway's centre (local X across the bridge). The leaf art hangs off a hinge child at
-///     the left jamb and swings; the blocker collider doesn't move.
+///     Sits at the doorway's centre (local X across the bridge). The leaf art sits on a mount child at
+///     the left jamb that slides straight down into the ground to open (and is hidden once fully sunk, so
+///     it never pokes out under a bridge deck), then rises back up to shut; the blocker collider doesn't move.
 /// </summary>
 public class WallDoor : MonoBehaviour, IInteractable
 {
     [SerializeField] private float interactionRadius = 3f;
-    [Tooltip("Door swings open (creak, latch).")]
+    [Tooltip("Door grinds down into the ground (chains, stone scrape).")]
     [SerializeField] private MMF_Player openFeedback;
-    [Tooltip("Door slams shut (thud, bar drops).")]
+    [Tooltip("Door rises back up and locks (grind, thud).")]
     [SerializeField] private MMF_Player closeFeedback;
     [Tooltip("Tried to shut it on something in the doorway (rattle).")]
     [SerializeField] private MMF_Player blockedFeedback;
 
     private WallStructure wall;
     private WallConfigSO art;
-    private Transform hinge;
+    private Transform mount;
     private GameObject leaf;
+    private Renderer[] leafRenderers = System.Array.Empty<Renderer>();
+    private float sinkDepth;
     private BoxCollider blocker;
     private NavMeshObstacle obstacle;
-    private Coroutine swing;
+    private Coroutine slide;
     private bool collapsed;
     private readonly Collider[] doorwayBuffer = new Collider[8];
 
@@ -64,9 +67,10 @@ public class WallDoor : MonoBehaviour, IInteractable
         float height = wallArt != null ? wallArt.wallHeight : 3.5f;
         float thickness = wallArt != null ? wallArt.wallThickness : 0.8f;
 
-        hinge = new GameObject("Hinge").transform;
-        hinge.SetParent(transform, false);
-        hinge.localPosition = new Vector3(-doorWidth * 0.5f, 0f, 0f);
+        mount = new GameObject("Mount").transform;
+        mount.SetParent(transform, false);
+        mount.localPosition = new Vector3(-doorWidth * 0.5f, 0f, 0f);
+        sinkDepth = height + 0.2f;
 
         blocker = gameObject.AddComponent<BoxCollider>();
         blocker.center = new Vector3(0f, height * 0.5f, 0f);
@@ -87,12 +91,20 @@ public class WallDoor : MonoBehaviour, IInteractable
         art = wallArt;
         if (leaf != null) Destroy(leaf);
         WallConfigSO.TierArt tierArt = art != null && wall != null ? art.Tier(wall.Upgrades.materialTier) : null;
-        if (tierArt == null || tierArt.door == null || hinge == null) return;
-        leaf = Instantiate(tierArt.door, hinge);
+        leafRenderers = System.Array.Empty<Renderer>();
+        if (tierArt == null || tierArt.door == null || mount == null) return;
+        leaf = Instantiate(tierArt.door, mount);
         leaf.transform.localPosition = Vector3.zero;
         leaf.transform.localRotation = Quaternion.identity;
         foreach (Collider c in leaf.GetComponentsInChildren<Collider>(true)) Destroy(c);
         foreach (Transform t in leaf.GetComponentsInChildren<Transform>(true)) t.gameObject.layer = gameObject.layer;
+        leafRenderers = leaf.GetComponentsInChildren<Renderer>(true);
+
+        // Sink far enough that the tallest leaf art (palisade logs overshoot the wall) ends fully underground.
+        float top = 0f;
+        foreach (Renderer r in leafRenderers) top = Mathf.Max(top, r.bounds.max.y - mount.position.y);
+        if (slide == null) sinkDepth = Mathf.Max(sinkDepth, top + 0.2f);
+        SetLeafVisible(!IsOpen || slide != null);
     }
 
     public void Interact(Player player)
@@ -114,8 +126,8 @@ public class WallDoor : MonoBehaviour, IInteractable
         obstacle.enabled = !open;
         MMF_Player fb = open ? openFeedback : closeFeedback;
         if (fb != null) fb.PlayFeedbacks(transform.position + Vector3.up);
-        if (swing != null) StopCoroutine(swing);
-        swing = StartCoroutine(Swing(open ? (art != null ? art.doorOpenAngle : 100f) : 0f));
+        if (slide != null) StopCoroutine(slide);
+        slide = StartCoroutine(Slide(open ? -sinkDepth : 0f));
         if (wall != null) wall.OnDoorChanged();
     }
 
@@ -139,19 +151,28 @@ public class WallDoor : MonoBehaviour, IInteractable
         return count > 0;
     }
 
-    private IEnumerator Swing(float targetAngle)
+    private IEnumerator Slide(float targetY)
     {
-        if (hinge == null) yield break;
-        Quaternion from = hinge.localRotation;
-        // Swings inwards (towards the castle, local -Z).
-        Quaternion to = Quaternion.Euler(0f, targetAngle, 0f);
-        float duration = art != null ? art.doorSwingSeconds : 0.6f;
+        if (mount == null) yield break;
+        SetLeafVisible(true);
+        Vector3 from = mount.localPosition;
+        Vector3 to = new Vector3(from.x, targetY, from.z);
+        // Duration scales with how far it still has to go, so reversing mid-slide isn't slower.
+        float fullDuration = art != null ? art.doorSlideSeconds : 0.8f;
+        float duration = fullDuration * Mathf.Clamp01(Mathf.Abs(targetY - from.y) / Mathf.Max(0.01f, sinkDepth));
         for (float t = 0f; t < duration; t += Time.deltaTime)
         {
-            hinge.localRotation = Quaternion.Slerp(from, to, Mathf.SmoothStep(0f, 1f, t / duration));
+            mount.localPosition = Vector3.Lerp(from, to, Mathf.SmoothStep(0f, 1f, t / duration));
             yield return null;
         }
-        hinge.localRotation = to;
-        swing = null;
+        mount.localPosition = to;
+        // Fully sunk: hide it so it doesn't show through under a bridge deck.
+        if (IsOpen) SetLeafVisible(false);
+        slide = null;
+    }
+
+    private void SetLeafVisible(bool visible)
+    {
+        foreach (Renderer r in leafRenderers) if (r != null) r.enabled = visible;
     }
 }

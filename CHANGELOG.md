@@ -13,6 +13,7 @@
 - Added an ammo chest by the main gate in the gate battles
 - Added rocky chokepoints with wall spots to the tutorial's gate battle
 - Added a tutorial step that teaches building a wall and shows goblins going round it to another gap
+- Added a ladder on the castle side of every wall so you can climb up and look over it
 
 ### Fixes
 

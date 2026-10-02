@@ -89,6 +89,7 @@ public static class FortWallAssetsBuilder
         string barrel = Dn + "Props/SM_Prop_Barrel_02.prefab";
         string crystal = Fk + "Items/SM_Item_Crystal_03.prefab";
         string workbench = Fk + "Props/Furniture/SM_Prop_Workbench_01.prefab";
+        string ladder = Fk + "Props/SM_Prop_Ladder_01.prefab";
         string fire = Fk + "FX/FX_Fire_01.prefab";
         string smokeLight = Fk + "FX/FX_Smoke_Light_01.prefab";
         string smokeDark = Fk + "FX/FX_Smoke_Dark_01.prefab";
@@ -115,10 +116,13 @@ public static class FortWallAssetsBuilder
         GameObject metalMedium = Wrap("Wall_Metal_Segment_MediumDamage", P(dTop1, -half), P(dTop2, half));
         GameObject metalHeavy = Wrap("Wall_Metal_Segment_HeavyDamage", P(dMid1, -half), P(dMid2, half));
 
-        // Doors: hinge at the root, leaf along +X to the door width.
+        // Doors: pivot at the left jamb's base, leaf along +X to the door width (sinks straight down to open).
         GameObject woodDoor = Wrap("Wall_Wood_Door", Palisade(logSpike, DoorWidth, 0, 0, DoorWidth * 0.5f));
         GameObject stoneDoor = Wrap("Wall_Stone_Door", Palisade(logSpike, DoorWidth, 0, 0, DoorWidth * 0.5f, 1.1f));
         GameObject metalDoor = Wrap("Wall_Metal_Door", P(metalFence, new Vector3(DoorWidth * 0.5f, 0f, 0f), Vector3.zero, new Vector3(DoorWidth / 2.5f, WallHeight / 2.44f, 3f)));
+
+        // Upright ladder, base-centred; WallStructure leans and stretches it to the wall.
+        GameObject ladderProp = Wrap("Wall_Ladder", P(ladder));
 
         GameObject spikesProp = Wrap("Wall_Spikes", P(goblinSpikes, Vector3.zero, Vector3.zero, new Vector3(SegmentLength / 4.28f, 0.5f, 0.8f)));
         GameObject fireFixture = Wrap("Wall_Fixture_BoilingOil", P(cauldron), P(fire, new Vector3(0f, 0.2f, 0f), Vector3.zero, Vector3.one * 0.6f));
@@ -140,6 +144,7 @@ public static class FortWallAssetsBuilder
         wallConfig.doorWidth = DoorWidth;
         wallConfig.wallHeight = WallHeight;
         if (wallConfig.spikesProp == null) wallConfig.spikesProp = spikesProp;
+        if (wallConfig.ladder == null) wallConfig.ladder = ladderProp;
         if (wallConfig.fireFixture == null) wallConfig.fireFixture = fireFixture;
         if (wallConfig.iceFixture == null) wallConfig.iceFixture = iceFixture;
         if (wallConfig.lightningFixture == null) wallConfig.lightningFixture = stormFixture;

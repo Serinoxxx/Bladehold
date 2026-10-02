@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 /// <summary>
 ///     Art and layout for plan-17 walls: the segment prefab per material tier (wood, stone, metal) and per
@@ -22,7 +23,7 @@ public class WallConfigSO : ScriptableObject
         public GameObject segmentHeavyDamage;
         [Tooltip("Length of one segment along local X, metres (measured from the prefab; used for tiling).")]
         [Min(0.5f)] public float segmentLength = 4f;
-        [Tooltip("Door leaf for this tier. Pivot at the hinge, closed along local X.")]
+        [Tooltip("Door leaf for this tier. Pivot at the base of the left jamb, closed along local X. Sinks straight down to open.")]
         public GameObject door;
         [Tooltip("Rubble pile spawned per segment when this tier's wall falls.")]
         public GameObject rubble;
@@ -38,9 +39,19 @@ public class WallConfigSO : ScriptableObject
     [Min(1f)] public float wallHeight = 3.5f;
     [Tooltip("Collider depth (thickness) of the wall.")]
     [Min(0.3f)] public float wallThickness = 0.8f;
-    [Tooltip("Door swing when opened, degrees.")]
-    public float doorOpenAngle = 100f;
-    [Min(0.05f)] public float doorSwingSeconds = 0.6f;
+    [Tooltip("Seconds for the door to sink into the ground (or rise back up).")]
+    [FormerlySerializedAs("doorSwingSeconds")]
+    [Min(0.05f)] public float doorSlideSeconds = 0.8f;
+
+    [Header("Ladder (lets the player look over the wall)")]
+    [Tooltip("Ladder art, upright: pivot at the base centre, rungs climbing local +Y, facing -Z. Scaled to fit the wall height and ladderWidth.")]
+    public GameObject ladder;
+    [Tooltip("Ladder slope from the ground, degrees. The walkable ramp under it never goes steeper than the player's slope limit.")]
+    [Range(20f, 60f)] public float ladderAngle = 45f;
+    [Tooltip("Width of the ladder (art and walkable ramp), metres.")]
+    [Min(0.6f)] public float ladderWidth = 1.4f;
+    [Tooltip("Height of the invisible rail above the wall top, so a player who climbed the ladder can't walk over the wall.")]
+    [Min(0.5f)] public float parapetHeight = 2f;
 
     [Header("Upgrade props")]
     [Tooltip("Spike row placed along the outside face of each segment when Spikes is bought. Pivot at the base centre, length along local X.")]

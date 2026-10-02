@@ -40,7 +40,12 @@
     - Spikes: 1 damage back per **melee** hit.
     - One element: boiling oil (`BurningOilZone`), icy water (`WallIcyWaterZone`) or lightning arcs, each triggered when the wall is hit, on a cooldown.
     - Deconstruct (100% refund).
-- **`WallDoor`**: `[E]` opens/shuts it. It won't shut on anything in the doorway.
+- **`WallDoor`**: `[E]` opens/shuts it. It slides straight down into the ground (`WallConfigSO.doorSlideSeconds`) and its art is hidden once fully sunk, so it never shows under a bridge deck. It won't shut on anything in the doorway.
+- **Ladder** (`WallStructure.BuildLadder`): a ladder at `WallConfigSO.ladderAngle` (45°) up the castle side of one side section, top at the crown, so the player can see and shoot over the wall.
+  - It goes on whichever side is clearer: a physics test first, then renderer bounds as a tiebreak, because big Synty rocks' colliders are much smaller than their meshes.
+  - The walkable part is a separate `Ramp` slab on the **Environment** layer (the player's ground mask is Default + Environment), kept 1° under the player's `CharacterController.slopeLimit` (45) so the player doesn't slide.
+  - An invisible **parapet** collider (Fortification, `parapetHeight`) runs along the crown so the player can't walk over the wall. Shots still pass because `PlayerBarrier` strips Fortification.
+  - Ladder and parapet go when the wall collapses.
 - **Routing (`WallNavCost`)**: a standing wall with its door shut prices its area at `wallAreaCost`, so enemies route over another bridge unless the detour is longer.
   - Costs are applied **per agent** by `AIMovement` when `WallNavCost.Version` changes. Never `NavMesh.SetAreaCost`.
   - Siege units (`WallNavCost.IsSiege`: `SiegeUnit` marker, troll, sapper, ram, captains) keep cost 1 and walk straight in.

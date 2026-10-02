@@ -40,8 +40,11 @@ MonoBehaviour:
   doorWidth: 3
   wallHeight: 5
   wallThickness: 0.8
-  doorOpenAngle: 100
-  doorSwingSeconds: 0.6
+  doorSlideSeconds: 0.9
+  ladder: {fileID: 5220509504981494330, guid: 9c2c2c4959f5f474d97fdb61125fba56, type: 3}
+  ladderAngle: 45
+  ladderWidth: 1.4
+  parapetHeight: 2
   spikesProp: {fileID: 96086656089419407, guid: 633bc3a90235b0849ba80d3e02e9ad2d, type: 3}
   fireFixture: {fileID: 4209840179229513753, guid: 06d9222e589743749a884933bb09f88c, type: 3}
   iceFixture: {fileID: 3343031480636199301, guid: 8e45114c2a4cdb445877ceefd13479d6, type: 3}
