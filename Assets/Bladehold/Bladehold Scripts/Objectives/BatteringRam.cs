@@ -38,6 +38,12 @@ public class BatteringRam : MonoBehaviour
     [Tooltip("Interval in seconds between ramming impacts.")]
     [SerializeField] private float ramInterval = 5.0f;
 
+    [Header("Walls (plan 17)")]
+    [Tooltip("A shut wall closer than this ahead stops the ram, which batters it down before rolling on.")]
+    [SerializeField] private float wallDetectRange = 4f;
+    [Tooltip("Damage dealt to a wall per ram impact.")]
+    [SerializeField] private float wallDamage = 50f;
+
     [Tooltip("Transform of the ramming log (e.g. SM_Wep_Rammer_Log_01).")]
     [SerializeField] private Transform ramLogTransform;
 
@@ -235,10 +241,65 @@ public class BatteringRam : MonoBehaviour
 
         if (!hasReachedGate)
         {
+            if (UpdateWallBreach()) return;
             CheckEnemyProximity();
             DriveMovement();
             CheckGateArrival();
         }
+    }
+
+    private WallStructure wallTarget;
+    private Coroutine wallRamRoutine;
+
+    /// <summary>
+    ///     Siege behaviour (plan 17): a shut wall in the ram's path stops it, and it rams the wall until it
+    ///     falls or its door opens. The ram hasn't "reached the gate", so its escorts keep forming up just
+    ///     ahead of it, at the wall, where the wall makes them attack it too. Returns true while ramming.
+    /// </summary>
+    private bool UpdateWallBreach()
+    {
+        if (wallTarget != null && !wallTarget.IsBlocking)
+        {
+            if (wallRamRoutine != null) StopCoroutine(wallRamRoutine);
+            wallRamRoutine = null;
+            wallTarget = null;
+            if (ramLogTransform != null)
+            {
+                ramLogTransform.localPosition = initialLogLocalPos;
+                ramLogTransform.localRotation = initialLogLocalRot;
+            }
+            return false;
+        }
+
+        if (wallTarget == null)
+        {
+            WallStructure wall = WallStructure.FindBlockingAhead(transform.position, wallDetectRange);
+            if (wall == null) return false;
+            wallTarget = wall;
+            if (agent != null && agent.isOnNavMesh)
+            {
+                agent.isStopped = true;
+                agent.velocity = Vector3.zero;
+            }
+            Vector3 toWall = wall.GetAttackPoint(transform.position) - transform.position;
+            toWall.y = 0f;
+            if (toWall.sqrMagnitude > 0.001f) transform.rotation = Quaternion.LookRotation(-wall.transform.forward);
+            wallRamRoutine = StartCoroutine(WallRamRoutine());
+        }
+        return true;
+    }
+
+    private IEnumerator WallRamRoutine()
+    {
+        yield return new WaitForSeconds(0.5f);
+        while (!isDestroyed && wallTarget != null && wallTarget.IsBlocking)
+        {
+            float cycleStartTime = Time.time;
+            yield return PlayRamLogAnimation();
+            float elapsed = Time.time - cycleStartTime;
+            yield return new WaitForSeconds(Mathf.Max(0.1f, ramInterval - elapsed));
+        }
+        wallRamRoutine = null;
     }
 
     /// <summary>
@@ -467,6 +528,21 @@ public class BatteringRam : MonoBehaviour
     private void TriggerImpact()
     {
         Vector3 pos = impactPoint != null ? impactPoint.position : transform.position + transform.forward * 3f + Vector3.up * 1.5f;
+
+        // A wall in the way takes the hit instead (plan 17). Source = the ram, so wall spikes bite back.
+        if (wallTarget != null && wallTarget.IsBlocking)
+        {
+            wallTarget.Damageable.ReceiveDamage(new Damage
+            {
+                value = wallDamage,
+                type = DamageType.blunt,
+                unparryable = true,
+                source = health,
+                sourcePosition = pos
+            });
+            if (impactFeedback != null) impactFeedback.PlayFeedbacks(pos);
+            return;
+        }
 
         // 1. Deliver 50 damage to the gate
         if (targetGate == null || targetGate.IsDestroyed)

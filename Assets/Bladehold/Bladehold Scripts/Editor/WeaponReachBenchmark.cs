@@ -1133,7 +1133,7 @@ public static class WeaponReachBenchmark
 
             GameObject arrowPrefabObj = new GameObject("TestArrowTower");
             ArrowTowerDefense arrowComp = arrowPrefabObj.AddComponent<ArrowTowerDefense>();
-            testPlot.SetPrefabs(arrowPrefabObj, null, null, null, null, null);
+            testPlot.SetPrefabs(arrowPrefabObj, null, null, null);
 
             testPlot.BuildDefense(FortDefenseType.ArrowSlits, level: 1, supply: 50, instant: true);
             bool plotOccupied = testPlot.IsOccupied && testPlot.CurrentDefense != null;
@@ -1823,34 +1823,26 @@ public static class WeaponReachBenchmark
         sb.AppendLine("\n### 16. ELEMENTAL TOWER & DEFENSE UPGRADES BENCHMARK");
         try
         {
+            // 16A: plan 17 moved elements onto each tower (upgrade wheel); the fortress-wide cards are gone.
             DraftUpgradeService draftService = DraftUpgradeService.GetOrCreateInstance();
-            string[] towerCardIds = new string[]
+            string[] removedCardIds =
             {
-                "elem_frost_arrows",
-                "elem_glacial_catapult",
-                "elem_lightning_arrows",
-                "elem_tempest_catapult",
-                "elem_fire_arrows",
-                "elem_pyroclast_catapult"
+                "elem_frost_arrows", "elem_glacial_catapult", "elem_lightning_arrows", "elem_tempest_catapult",
+                "elem_fire_arrows", "elem_pyroclast_catapult", "elem_fire_fortress_pyre", "elem_light_tesla_spire",
+                "elem_ice_permafrost"
             };
-
-            int loadedCards = 0;
-            foreach (var cardId in towerCardIds)
+            int lingering = 0;
+            foreach (string cardId in removedCardIds)
             {
-                var def = draftService.GetById(cardId);
-                if (def != null && !string.IsNullOrEmpty(def.displayName))
+                if (draftService.GetById(cardId) != null)
                 {
-                    loadedCards++;
-                }
-                else
-                {
-                    sb.AppendLine($"  - [FAIL] Card {cardId} missing from Draft Catalog!");
+                    lingering++;
+                    sb.AppendLine($"  - [FAIL] Removed fortress card {cardId} is still in the Draft Catalog!");
                 }
             }
-
-            if (loadedCards == towerCardIds.Length)
+            if (lingering == 0)
             {
-                sb.AppendLine($"  - Draft Catalog: All 6 elemental defense cards loaded successfully. [PASSED]");
+                sb.AppendLine("  - Draft Catalog: the 9 fortress elemental cards are gone (elements are per tower now). [PASSED]");
                 passedCount++;
             }
             else
@@ -1858,36 +1850,54 @@ public static class WeaponReachBenchmark
                 failedCount++;
             }
 
-            // 16B: Arrow Tower Fire Rate & Damage Math
+            // 16B: upgrade wheel on an Arrow Tower: fire-rate tiers, one locked element, 100% deconstruct refund.
             GameObject towerObj = new GameObject("Benchmark_ArrowTower");
             ArrowTowerDefense arrowTower = towerObj.AddComponent<ArrowTowerDefense>();
+            GameObject dummyPlayerObj = new GameObject("Benchmark_TowerRules");
+            DefenseSceneRules rules = dummyPlayerObj.AddComponent<DefenseSceneRules>();
+            FortUpgradeConfigSO upgradeConfig = ScriptableObject.CreateInstance<FortUpgradeConfigSO>();
+            rules.SetConfig(upgradeConfig);
 
+            int supplyBefore = RunSession.InRunSupply;
+            RunSession.InRunSupply = 1000;
+            RunSession.AddCrystals(StructureElement.Fire, 3);
+            arrowTower.BuildCostPaid = 30;
             float baseInterval = arrowTower.GetEffectiveFireInterval();
-            float baseDamage = arrowTower.GetEffectiveArrowDamage();
 
-            GameObject dummyPlayerObj = new GameObject("Benchmark_TowerPlayer");
-            PlayerStats pStats = dummyPlayerObj.AddComponent<PlayerStats>();
-
-            pStats.SetBase(StatType.TowerLightningArrows, 1f);
-            pStats.SetBase(StatType.TowerArrowFireRateBonus, 0.50f);
-            pStats.SetBase(StatType.TowerFireArrows, 1f);
-            pStats.SetBase(StatType.TowerArrowDamageBonus, 0.40f);
-            pStats.SetBase(StatType.AllDamageMultiplier, 1.0f);
-
-            // Temporarily set Player.Instance stats proxy
-            float boostedInterval = arrowTower.GetEffectiveFireInterval();
-            float boostedDamage = arrowTower.GetEffectiveArrowDamage();
-
-            if (boostedInterval <= baseInterval && boostedDamage >= baseDamage)
+            UpgradeOption FindOption(string prefix)
             {
-                sb.AppendLine($"  - Arrow Tower Stats: Attack interval reduced ({baseInterval:F2}s -> {boostedInterval:F2}s) & Damage boosted ({baseDamage} -> {boostedDamage}). [PASSED]");
+                var list = new List<UpgradeOption>();
+                arrowTower.BuildUpgradeOptions(list);
+                return list.Find(o => o.label == prefix || (prefix == "Fire Rate" && o.label.StartsWith(prefix)));
+            }
+
+            bool boughtRate = FindOption("Fire Rate")?.TryPurchase() == true && FindOption("Fire Rate")?.TryPurchase() == true;
+            float boostedInterval = arrowTower.GetEffectiveFireInterval();
+            float expected = Mathf.Max(0.12f, baseInterval / upgradeConfig.FireRateMultiplier(2));
+            bool boughtFire = FindOption("Fire")?.TryPurchase() == true;
+            UpgradeOption ice = FindOption("Ice");
+            bool iceLocked = ice != null && ice.IsBlocked && !ice.TryPurchase();
+            int expectedRefund = 30 + upgradeConfig.fireRateCosts[0] + upgradeConfig.fireRateCosts[1];
+            int refund = arrowTower.DeconstructRefund;
+            int firePaidBack = arrowTower.Upgrades.CrystalsSpent(StructureElement.Fire);
+            arrowTower.RefundCrystals();
+            int fireAfterRefund = RunSession.GetCrystals(StructureElement.Fire);
+
+            if (boughtRate && Mathf.Abs(boostedInterval - expected) < 0.001f && boughtFire && arrowTower.Element == StructureElement.Fire &&
+                iceLocked && refund == expectedRefund && firePaidBack == 3 && fireAfterRefund == 3)
+            {
+                sb.AppendLine($"  - Upgrade wheel: Fire Rate II {baseInterval:F2}s -> {boostedInterval:F2}s, Fire element locks Ice, deconstruct refunds {refund} supply + 3 crystals. [PASSED]");
                 passedCount++;
             }
             else
             {
-                sb.AppendLine($"  - [FAIL] Arrow Tower stats did not scale correctly! Interval: {boostedInterval}, Damage: {boostedDamage}");
+                sb.AppendLine($"  - [FAIL] Upgrade wheel: rate={boughtRate} ({boostedInterval:F3} vs {expected:F3}), fire={boughtFire} elem={arrowTower.Element}, iceLocked={iceLocked}, refund={refund}/{expectedRefund}, crystals={firePaidBack}/{fireAfterRefund}");
                 failedCount++;
             }
+            RunSession.TrySpendCrystals(StructureElement.Fire, RunSession.GetCrystals(StructureElement.Fire));
+            RunSession.InRunSupply = supplyBefore;
+            rules.SetConfig(null);
+            UnityEngine.Object.DestroyImmediate(upgradeConfig);
 
             // 16C: Slippery Ice Zone & Player Ice Slide
             GameObject playerGo = new GameObject("Benchmark_IcePlayer");
@@ -2046,7 +2056,7 @@ public static class WeaponReachBenchmark
             // 17E: Verify default supply initialization (supply = -1) builds with full supply
             GameObject arrowPrefab = new GameObject("Benchmark_ArrowTower");
             arrowPrefab.AddComponent<ArrowTowerDefense>();
-            testPlot.SetPrefabs(arrowPrefab, null, null, null, null, null);
+            testPlot.SetPrefabs(arrowPrefab, null, null, null);
 
             testPlot.BuildDefense(FortDefenseType.ArrowSlits, level: 1, supply: -1, instant: true);
             DefenseStructure builtDef = testPlot.CurrentDefense;

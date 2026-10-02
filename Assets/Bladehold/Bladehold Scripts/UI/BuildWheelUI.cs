@@ -8,7 +8,14 @@ using UnityEngine.UI;
 
 /// <summary>
 ///     Radial / Circular build wheel UI for constructing battlefield defenses on TowerPlots.
-///     Displays 6 defense options with costs in Supply, description, and affordability state.
+///     Displays the defense options with costs in Supply, description, and affordability state.
+///
+///     It doubles as the plan-17 upgrade wheel (<see cref="OpenUpgrades" />): a tower or a wall's
+///     crafting station hands it an <see cref="IUpgradeable" />, whose <see cref="UpgradeOption" />
+///     list becomes the slices (supply and/or crystal prices, blocked reasons). Slices are cloned from
+///     the first authored <see cref="BuildWheelButton" /> as needed and laid out round the authored
+///     ring, so the option count is free. The wheel stays open after a purchase (so you can refill and
+///     upgrade in one visit) and refreshes; Deconstruct closes it.
 /// </summary>
 public class BuildWheelUI : MonoBehaviour
 {
@@ -89,25 +96,21 @@ public class BuildWheelUI : MonoBehaviour
             displayName = "Net Thrower",
             supplyCost = 35,
             description = "Launches heavy rope nets that immobilize and root groups of enemies in place."
-        },
-        new DefenseOption
-        {
-            defenseType = FortDefenseType.Spikes,
-            displayName = "Spike Trap",
-            supplyCost = 25,
-            description = "Concealed ground spikes that impale passing enemies for devastating damage."
-        },
-        new DefenseOption
-        {
-            defenseType = FortDefenseType.BurningOil,
-            displayName = "Oil Vat",
-            supplyCost = 30,
-            description = "Spills a pool of boiling oil that slows foes by 50% and scorches them."
         }
     };
 
     private TowerPlot activePlot;
     private bool isOpen = false;
+
+    private IUpgradeable upgradeTarget;
+    private readonly List<UpgradeOption> upgradeOptions = new List<UpgradeOption>();
+    private bool IsUpgradeMode => upgradeTarget != null;
+
+    // The authored ring the slices sit on (captured once from the authored buttons).
+    private bool ringCaptured;
+    private Vector2 ringCentre;
+    private float ringRadius;
+    private float ringStartAngle;
 
     public bool IsOpen => isOpen;
 
@@ -173,6 +176,12 @@ public class BuildWheelUI : MonoBehaviour
     {
         if (!isOpen) return;
 
+        if (upgradeTarget != null && !upgradeTarget.IsUpgradeTargetAlive)
+        {
+            Close();
+            return;
+        }
+
         // Cancel on Escape or B (Keyboard or Gamepad)
         bool cancelPressed = false;
         Keyboard keyboard = Keyboard.current;
@@ -196,6 +205,7 @@ public class BuildWheelUI : MonoBehaviour
     public void Open(TowerPlot plot)
     {
         activePlot = plot;
+        upgradeTarget = null;
         isOpen = true;
 
         gameObject.SetActive(true);
@@ -208,10 +218,29 @@ public class BuildWheelUI : MonoBehaviour
         RefreshUI();
     }
 
+    /// <summary>Opens the wheel as an upgrade wheel for a tower or wall (plan 17).</summary>
+    public void OpenUpgrades(IUpgradeable target)
+    {
+        if (target == null) return;
+        activePlot = null;
+        upgradeTarget = target;
+        isOpen = true;
+
+        gameObject.SetActive(true);
+        if (wheelPanel != null && wheelPanel != gameObject) wheelPanel.SetActive(true);
+
+        CursorLockManager.SetUnlock("BuildWheel", true);
+        PauseMenuController.Instance?.SetToggleEnabled(false);
+
+        RefreshUI();
+    }
+
     public void Close()
     {
         isOpen = false;
         activePlot = null;
+        upgradeTarget = null;
+        upgradeOptions.Clear();
 
         if (wheelPanel != null && wheelPanel != gameObject) wheelPanel.SetActive(false);
         gameObject.SetActive(false);
@@ -222,6 +251,12 @@ public class BuildWheelUI : MonoBehaviour
 
     public void RefreshUI()
     {
+        if (IsUpgradeMode)
+        {
+            RefreshUpgradeUI();
+            return;
+        }
+
         int playerSupply = RunSession.InRunSupply;
 
         if (supplyLabel != null)
@@ -242,6 +277,25 @@ public class BuildWheelUI : MonoBehaviour
         // 1. If dedicated BuildWheelButtons are present, configure them
         if (wheelButtons != null && wheelButtons.Count > 0)
         {
+            int offered = 0;
+            foreach (DefenseOption o in defenseOptions)
+            {
+                if (IsOffered(o.defenseType)) offered++;
+            }
+            EnsureButtonCount(defenseOptions.Count);
+            for (int i = defenseOptions.Count; i < wheelButtons.Count; i++)
+            {
+                if (wheelButtons[i] != null) wheelButtons[i].gameObject.SetActive(false);
+            }
+            int slot = 0;
+            for (int i = 0; i < defenseOptions.Count && i < wheelButtons.Count; i++)
+            {
+                if (wheelButtons[i] != null && IsOffered(defenseOptions[i].defenseType))
+                {
+                    PlaceOnRing(wheelButtons[i], slot++, offered);
+                }
+            }
+
             for (int i = 0; i < defenseOptions.Count && i < wheelButtons.Count; i++)
             {
                 BuildWheelButton btn = wheelButtons[i];
@@ -336,7 +390,7 @@ public class BuildWheelUI : MonoBehaviour
     {
         if (descriptionLabel != null)
         {
-            descriptionLabel.text = "Choose a defense structure to protect the gates.";
+            descriptionLabel.text = IsUpgradeMode ? "Choose an upgrade." : "Choose a defense structure to protect the gates.";
         }
     }
 
@@ -369,13 +423,22 @@ public class BuildWheelUI : MonoBehaviour
                 supplyPopupPrefab.Spawn(plotPos + Vector3.up * 1.8f, $"-{opt.supplyCost} Supply");
             }
 
-            targetPlot.BuildDefense(opt.defenseType);
+            targetPlot.BuildDefense(opt.defenseType, buildCost: opt.supplyCost);
             Debug.Log($"[BuildWheelUI] Constructed {opt.displayName} on plot {targetPlot.PlotIndex}!");
         }
     }
 
     public void OnHoverSlice(int index)
     {
+        if (IsUpgradeMode)
+        {
+            if (descriptionLabel != null && index >= 0 && index < upgradeOptions.Count)
+            {
+                descriptionLabel.text = upgradeOptions[index].description;
+            }
+            return;
+        }
+
         if (index >= 0 && index < defenseOptions.Count && descriptionLabel != null)
         {
             DefenseOption opt = defenseOptions[index];
@@ -384,6 +447,125 @@ public class BuildWheelUI : MonoBehaviour
                 ? opt.description
                 : $"{opt.description}\n<size=85%>{rangeLine}</size>";
         }
+    }
+
+    // ---- Upgrade wheel (plan 17) ---------------------------------------------------------------
+
+    private void RefreshUpgradeUI()
+    {
+        upgradeOptions.Clear();
+        upgradeTarget.BuildUpgradeOptions(upgradeOptions);
+
+        if (supplyLabel != null) supplyLabel.text = CurrencySummary();
+        if (headerText != null) headerText.text = upgradeTarget.UpgradeTitle.ToUpperInvariant();
+        if (descriptionLabel != null) descriptionLabel.text = "Choose an upgrade.";
+
+        EnsureButtonCount(upgradeOptions.Count);
+        for (int i = 0; i < wheelButtons.Count; i++)
+        {
+            BuildWheelButton btn = wheelButtons[i];
+            if (btn == null) continue;
+            bool used = i < upgradeOptions.Count;
+            btn.gameObject.SetActive(used);
+            if (!used) continue;
+
+            UpgradeOption opt = upgradeOptions[i];
+            int index = i;
+            PlaceOnRing(btn, i, upgradeOptions.Count);
+            btn.Setup(opt.label, opt.CostLabel, opt.icon, opt.IsAvailable,
+                () => OnSelectUpgrade(index),
+                () => OnHoverSlice(index),
+                () => OnUnhoverSlice());
+        }
+
+        // Legacy slice buttons have no upgrade layout.
+        foreach (Button b in sliceButtons)
+        {
+            if (b != null) b.gameObject.SetActive(false);
+        }
+    }
+
+    private void OnSelectUpgrade(int index)
+    {
+        if (!isOpen || upgradeTarget == null || index < 0 || index >= upgradeOptions.Count) return;
+        UpgradeOption opt = upgradeOptions[index];
+        Vector3 anchor = upgradeTarget.UpgradeAnchor;
+        if (!opt.TryPurchase()) return;
+
+        if (opt.supplyCost > 0 || opt.crystalCost > 0)
+        {
+            if (buildFeedback != null) buildFeedback.PlayFeedbacks(anchor);
+            if (supplyPopupPrefab != null)
+            {
+                string spent = opt.supplyCost > 0 ? $"-{opt.supplyCost} Supply" : $"-{opt.crystalCost} {opt.crystalElement.CrystalName()}";
+                supplyPopupPrefab.Spawn(anchor + Vector3.up * 0.4f, spent);
+            }
+        }
+
+        if (opt.closesWheel || upgradeTarget == null || !upgradeTarget.IsUpgradeTargetAlive) Close();
+        else RefreshUI();
+    }
+
+    /// <summary>"Supply: 120   Fire 2  Ice 0  Storm 1" with element colours.</summary>
+    private static string CurrencySummary()
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.Append($"Supply: <color=#FFD700>{RunSession.InRunSupply}</color>");
+        foreach (StructureElement e in StructureElements.All)
+        {
+            string name = e == StructureElement.Lightning ? "Storm" : e.ToString();
+            sb.Append($"   <color={e.Hex()}>{name} {RunSession.GetCrystals(e)}</color>");
+        }
+        return sb.ToString();
+    }
+
+    /// <summary>Clones the first authored slice until there are <paramref name="count" /> buttons.</summary>
+    private void EnsureButtonCount(int count)
+    {
+        if (wheelButtons == null || wheelButtons.Count == 0 || wheelButtons[0] == null) return;
+        CaptureRing();
+        BuildWheelButton template = wheelButtons[0];
+        while (wheelButtons.Count < count)
+        {
+            BuildWheelButton clone = Instantiate(template, template.transform.parent);
+            clone.name = $"Slice_{wheelButtons.Count}_Runtime";
+            wheelButtons.Add(clone);
+        }
+    }
+
+    /// <summary>Remembers the ring the authored slices sit on: their centroid, mean radius and first angle.</summary>
+    private void CaptureRing()
+    {
+        if (ringCaptured) return;
+        Vector2 sum = Vector2.zero;
+        int n = 0;
+        foreach (BuildWheelButton b in wheelButtons)
+        {
+            if (b == null || !(b.transform is RectTransform rt)) continue;
+            sum += rt.anchoredPosition;
+            n++;
+        }
+        if (n == 0) return;
+        ringCentre = sum / n;
+        float r = 0f;
+        foreach (BuildWheelButton b in wheelButtons)
+        {
+            if (b == null || !(b.transform is RectTransform rt)) continue;
+            r += (rt.anchoredPosition - ringCentre).magnitude;
+        }
+        ringRadius = r / n;
+        Vector2 first = ((RectTransform)wheelButtons[0].transform).anchoredPosition - ringCentre;
+        ringStartAngle = Mathf.Atan2(first.y, first.x);
+        ringCaptured = ringRadius > 1f;
+    }
+
+    /// <summary>Slot <paramref name="slot" /> of <paramref name="count" /> evenly round the ring, clockwise from the first authored slice.</summary>
+    private void PlaceOnRing(BuildWheelButton button, int slot, int count)
+    {
+        CaptureRing();
+        if (!ringCaptured || count <= 0 || !(button.transform is RectTransform rt)) return;
+        float angle = ringStartAngle - slot * (Mathf.PI * 2f / count);
+        rt.anchoredPosition = ringCentre + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * ringRadius;
     }
 
     /// <summary>

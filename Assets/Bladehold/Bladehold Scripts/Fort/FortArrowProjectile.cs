@@ -138,15 +138,6 @@ public class FortArrowProjectile : MonoBehaviour
 
                 if (Player.Instance != null && Player.Instance.Stats != null)
                 {
-                    float pyreBonus = Player.Instance.Stats.GetValue(StatType.FireFortressPyreBonus);
-                    if (pyreBonus > 0f)
-                    {
-                        if (targetHealth.GetComponent<EnemyStatusManager>()?.HasStatus("Fire") == true)
-                        {
-                            damage.value *= (1f + pyreBonus);
-                        }
-                    }
-
                     if (Time.time - targetHealth.LastPlayerRangedHitTime <= 5.0f)
                     {
                         float focusBonus = Player.Instance.Stats.GetValue(StatType.FortFocusFireBonus);

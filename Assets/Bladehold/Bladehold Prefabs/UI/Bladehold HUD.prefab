@@ -27596,18 +27596,6 @@ MonoBehaviour:
     description: Launches heavy rope nets that immobilize and root groups of enemies
       in place.
     icon: {fileID: 21300000, guid: 5916e1780090d4d4a97f13e812cc9047, type: 3}
-  - defenseType: 2
-    displayName: Spike Trap
-    supplyCost: 25
-    description: Concealed ground spikes that impale passing enemies for devastating
-      damage.
-    icon: {fileID: 21300000, guid: 7eebe99fff17838428c10e12099a621e, type: 3}
-  - defenseType: 1
-    displayName: Oil Vat
-    supplyCost: 30
-    description: Spills a pool of boiling oil that slows foes by 50% and scorches
-      them.
-    icon: {fileID: 21300000, guid: 5859596c4c6a08149899bef8bedf5a94, type: 3}
 --- !u!1 &8771039722232197389
 GameObject:
   m_ObjectHideFlags: 0

@@ -101,6 +101,9 @@ public class DefenseBiomePaletteSO : ScriptableObject
     public UnityEngine.Rendering.VolumeProfile volumeProfile;
     public Color sunColor = new Color(1f, 0.95f, 0.88f);
     public float sunIntensity = 1.3f;
+    [Tooltip("Elemental crystal bias for this biome (x Fire, y Ice, z Storm), copied onto the scene's SceneCrystalBias. Desert leans Fire, Alpine Ice, Graveyard/forest Storm; grassy scenes stay even.")]
+    public Vector3 crystalBias = Vector3.one;
+
     public Vector3 sunEuler = new Vector3(38f, -35f, 0f);
     public Color fogColor = new Color(0.62f, 0.7f, 0.78f);
     public float fogDensity = 0.006f;

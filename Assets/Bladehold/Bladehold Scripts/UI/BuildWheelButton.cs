@@ -90,6 +90,31 @@ public class BuildWheelButton : MonoBehaviour, IPointerEnterHandler, IPointerExi
         SetAffordable(canAfford);
     }
 
+    /// <summary>Upgrade-wheel slice (plan 17): the cost line is pre-formatted rich text (supply and/or crystals, or a blocked reason).</summary>
+    public void Setup(
+        string displayName,
+        string costRichText,
+        Sprite icon,
+        bool available,
+        Action onClick,
+        Action onHover = null,
+        Action onUnhover = null)
+    {
+        onClickCallback = onClick;
+        onHoverCallback = onHover;
+        onUnhoverCallback = onUnhover;
+
+        if (titleText != null) titleText.text = displayName;
+        if (costText != null) costText.text = costRichText;
+        if (iconImage != null)
+        {
+            iconImage.sprite = icon;
+            iconImage.gameObject.SetActive(icon != null);
+        }
+
+        SetAffordable(available);
+    }
+
     public void SetAffordable(bool canAfford)
     {
         isAffordable = canAfford;

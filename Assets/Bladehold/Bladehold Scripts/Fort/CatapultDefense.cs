@@ -171,7 +171,7 @@ public class CatapultDefense : DefenseStructure
         if (armTransform != null) armTransform.localRotation = armInitialLocalRot;
 
         isFiring = false;
-        nextFireTime = Time.time + fireInterval;
+        nextFireTime = Time.time + fireInterval / FireRateMultiplier;
     }
 
     private void ExecuteFire(Vector3 targetPos)
@@ -179,9 +179,10 @@ public class CatapultDefense : DefenseStructure
 
         Vector3 spawnPos = launchPoint != null ? launchPoint.position : transform.position + Vector3.up * 2f;
 
-        bool hasIce = Player.Instance != null && Player.Instance.Stats != null && Player.Instance.Stats.GetValue(StatType.TowerSlipperyGround) > 0f;
-        bool hasLightning = Player.Instance != null && Player.Instance.Stats != null && Player.Instance.Stats.GetValue(StatType.TowerStormCloud) > 0f;
-        bool hasFire = Player.Instance != null && Player.Instance.Stats != null && Player.Instance.Stats.GetValue(StatType.TowerRollingFireball) > 0f;
+        // The tower's own element (plan 17): Ice = slippery ground, Storm = storm cloud, Fire = rolling fireball.
+        bool hasIce = Element == StructureElement.Ice;
+        bool hasLightning = Element == StructureElement.Lightning;
+        bool hasFire = Element == StructureElement.Fire;
 
         float effectiveSplashDamage = splashDamage;
         if (Player.Instance != null && Player.Instance.Stats != null)

@@ -74,12 +74,14 @@ public static class DefenseSceneGenerator
         BuildRavines(ctx, env);
         DefenseSceneScatter.Scatter(ctx, env);
         BuildPlayAreaBoundary(ctx, env);
+        PlaceWallPlots(ctx);
 
         BakeNavMesh(ctx, env.gameObject, dataFolder);
         EditorSceneManager.SaveScene(scene);
 
         SetupSurvivorsSceneTool.RunSetup(gate, false, false);
         LayoutGameplay(ctx, gate);
+        PlaceFortRules(ctx);
 
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene);
@@ -608,6 +610,129 @@ public static class DefenseSceneGenerator
     {
         GameObject go = GameObject.Find(name);
         if (go != null) go.transform.position = pos;
+    }
+
+    // ---------------------------------------------------------------- walls (plan 17)
+
+    public const string WallPlotPrefabPath = "Assets/Bladehold/Bladehold Prefabs/Defenses/Walls/WallPlot.prefab";
+    public const string FortRulesPrefabPath = "Assets/Bladehold/Bladehold Prefabs/Defenses/FortRules.prefab";
+    public const string AmmoChestPrefabPath = "Assets/Bladehold/Bladehold Prefabs/Economy/AmmoChest.prefab";
+    private const int MaxWallPlots = 8;
+
+    /// <summary>
+    ///     One <see cref="WallPlot" /> per bridge, across the deck just in from the gate-side rim (the pit
+    ///     closes the sides), each on its own NavMesh area "WallPlot{i}" via a
+    ///     <see cref="NavMeshModifierVolume" /> so <see cref="WallNavCost" /> can price it at runtime.
+    ///     Runs before the bake. The crafting bench goes on the gate-side rim beside the bridge.
+    /// </summary>
+    private static void PlaceWallPlots(DefenseBuildContext ctx)
+    {
+        DefenseSceneSpecSO spec = ctx.Spec;
+        if (!spec.wallPlotsOnBridges || ctx.Bridges.Count == 0) return;
+        var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(WallPlotPrefabPath);
+        if (prefab == null)
+        {
+            Debug.LogError($"{Tag} No WallPlot prefab at {WallPlotPrefabPath}; no wall plots placed.");
+            return;
+        }
+
+        var root = new GameObject("Wall Plots").transform;
+        var bridges = new List<BridgeFootprint>(ctx.Bridges);
+        bridges.Sort((a, b) => a.ravine != b.ravine ? a.ravine.CompareTo(b.ravine) : a.centre.x.CompareTo(b.centre.x));
+        Physics.SyncTransforms();
+
+        for (int i = 0; i < bridges.Count && i < MaxWallPlots; i++)
+        {
+            BridgeFootprint bf = bridges[i];
+            RavineSpec r = spec.ravines[bf.ravine];
+            float z = bf.centre.y - r.topWidth * 0.5f + spec.wallPlotInset;
+            float x = bf.centre.x;
+            float y = DeckHeight(x, z, ctx.Ground(x, z));
+            float width = bf.halfWidth * 2f + 0.6f;
+            int area = NavMesh.GetAreaFromName(WallPlot.AreaName(i));
+            if (area < 0)
+            {
+                Debug.LogError($"{Tag} NavMesh area '{WallPlot.AreaName(i)}' is missing from NavMeshAreas; wall plot {i} skipped.");
+                continue;
+            }
+
+            var plot = (GameObject)PrefabUtility.InstantiatePrefab(prefab, root);
+            plot.name = $"WallPlot_{i + 1}";
+            plot.transform.SetPositionAndRotation(new Vector3(x, y, z), Quaternion.identity);
+            var so = new SerializedObject(plot.GetComponent<WallPlot>());
+            so.FindProperty("plotIndex").intValue = i;
+            so.FindProperty("width").floatValue = width;
+            so.ApplyModifiedPropertiesWithoutUndo();
+
+            var volGo = new GameObject("NavArea");
+            volGo.transform.SetParent(plot.transform, false);
+            var vol = volGo.AddComponent<NavMeshModifierVolume>();
+            vol.area = area;
+            vol.center = new Vector3(0f, 2f, 0f);
+            vol.size = new Vector3(width + 2f, 8f, 3f);
+
+            WallCraftingStation station = plot.GetComponentInChildren<WallCraftingStation>(true);
+            if (station != null)
+            {
+                float sx = x + bf.halfWidth + 2f;
+                float sz = bf.centre.y - bf.halfLength - 1.5f;
+                station.transform.SetPositionAndRotation(new Vector3(sx, ctx.Ground(sx, sz), sz), Quaternion.Euler(0f, -90f, 0f));
+                foreach (Collider c in station.GetComponentsInChildren<Collider>(true)) Object.DestroyImmediate(c);
+            }
+        }
+    }
+
+    /// <summary>Top of whatever collider is under (x, z) (the bridge deck), else the terrain height.</summary>
+    private static float DeckHeight(float x, float z, float fallback)
+    {
+        RaycastHit[] hits = Physics.RaycastAll(new Vector3(x, fallback + 30f, z), Vector3.down, 60f, ~0, QueryTriggerInteraction.Ignore);
+        float best = float.NaN;
+        foreach (RaycastHit h in hits)
+        {
+            if (h.collider is TerrainCollider) continue;
+            if (float.IsNaN(best) || h.point.y > best) best = h.point.y;
+        }
+        return float.IsNaN(best) ? fallback : best;
+    }
+
+    /// <summary>The fort-rules prefab (upgrade wheel, crystal rewards, biome crystal bias) and the gate ammo chest.</summary>
+    private static void PlaceFortRules(DefenseBuildContext ctx)
+    {
+        DefenseSceneSpecSO spec = ctx.Spec;
+        if (spec.placeFortRules)
+        {
+            var rulesPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(FortRulesPrefabPath);
+            if (rulesPrefab == null) Debug.LogError($"{Tag} No FortRules prefab at {FortRulesPrefabPath}.");
+            else
+            {
+                var rules = (GameObject)PrefabUtility.InstantiatePrefab(rulesPrefab);
+                rules.name = "FortRules";
+                SceneCrystalBias bias = rules.GetComponent<SceneCrystalBias>();
+                if (bias != null)
+                {
+                    Vector3 w = spec.palette.crystalBias;
+                    var so = new SerializedObject(bias);
+                    so.FindProperty("fireWeight").floatValue = w.x;
+                    so.FindProperty("iceWeight").floatValue = w.y;
+                    so.FindProperty("lightningWeight").floatValue = w.z;
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                }
+            }
+        }
+
+        if (spec.placeAmmoChest)
+        {
+            var chestPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(AmmoChestPrefabPath);
+            if (chestPrefab == null) Debug.LogError($"{Tag} No AmmoChest prefab at {AmmoChestPrefabPath}.");
+            else
+            {
+                var chest = (GameObject)PrefabUtility.InstantiatePrefab(chestPrefab);
+                chest.name = "AmmoChest_Gate";
+                Vector3 pos = ctx.OnNavMesh(spec.ammoChestPosition);
+                Vector3 toGate = new Vector3(-pos.x, 0f, -pos.z);
+                chest.transform.SetPositionAndRotation(pos, toGate.sqrMagnitude > 0.01f ? Quaternion.LookRotation(toGate) : Quaternion.identity);
+            }
+        }
     }
 
     private static void PlaceTowerPlots(DefenseBuildContext ctx)

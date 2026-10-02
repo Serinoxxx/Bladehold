@@ -41,6 +41,35 @@ public class AITargetSelector : MonoBehaviour
 
     private bool HasTowerTarget => towerTarget != null && towerTarget.isActiveAndEnabled && !towerTarget.IsDepleted;
 
+    private WallStructure wallTarget;
+
+    /// <summary>
+    ///     Points this enemy at a shut wall it has walked up to (plan 17; the wall assigns itself to every
+    ///     enemy at its outside face). While the wall blocks, it beats every other target except a player
+    ///     standing on the enemy's side of it, so nothing walks through a shut door to reach the hero.
+    ///     Clears itself when the wall falls or its door opens.
+    /// </summary>
+    public void SetWallTarget(WallStructure wall)
+    {
+        wallTarget = wall;
+    }
+
+    /// <summary>The wall being attacked, or null.</summary>
+    public WallStructure WallTarget => wallTarget != null && wallTarget.IsBlocking ? wallTarget : null;
+
+    private bool UseWallTarget()
+    {
+        if (wallTarget == null) return false;
+        if (!wallTarget.IsBlocking)
+        {
+            wallTarget = null;
+            return false;
+        }
+        // A player out here on the same side takes priority; one behind the wall doesn't.
+        if (ShouldTargetPlayer() && Player.Instance != null && wallTarget.IsOutside(Player.Instance.transform.position)) return false;
+        return true;
+    }
+
     private WardenEscort escortLeader;
     private int escortSlot;
 
@@ -89,6 +118,7 @@ public class AITargetSelector : MonoBehaviour
     {
         get
         {
+            if (UseWallTarget()) return false;
             if (HasTowerTarget) return false;
             if (HoldingFormation) return false;
             if (ShouldTargetPlayer()) return true;
@@ -108,6 +138,7 @@ public class AITargetSelector : MonoBehaviour
     {
         get
         {
+            if (UseWallTarget()) return wallTarget.GetAttackPoint(transform.position);
             if (HasTowerTarget) return towerTarget.transform.position;
             if (HoldingFormation) return escortLeader.GetSlotPosition(escortSlot);
 
@@ -157,6 +188,7 @@ public class AITargetSelector : MonoBehaviour
     {
         get
         {
+            if (UseWallTarget()) return wallTarget.Damageable;
             if (HasTowerTarget) return null;
             if (HoldingFormation) return null;
 

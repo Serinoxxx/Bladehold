@@ -11,21 +11,21 @@ NavMeshProjectSettings:
     cost: 1
   - name: Jump
     cost: 2
-  - name: 
+  - name: WallPlot0
     cost: 1
-  - name: 
+  - name: WallPlot1
     cost: 1
-  - name: 
+  - name: WallPlot2
     cost: 1
-  - name: 
+  - name: WallPlot3
     cost: 1
-  - name: 
+  - name: WallPlot4
     cost: 1
-  - name: 
+  - name: WallPlot5
     cost: 1
-  - name: 
+  - name: WallPlot6
     cost: 1
-  - name: 
+  - name: WallPlot7
     cost: 1
   - name: 
     cost: 1

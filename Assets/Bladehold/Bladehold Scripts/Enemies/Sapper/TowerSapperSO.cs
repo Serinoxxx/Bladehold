@@ -21,4 +21,7 @@ public class TowerSapperSO : ScriptableObject
     [Header("Animation")]
     [Tooltip("Animator trigger fired on each drain tick (the hacking swing).")]
     public string drainTrigger = "Attack";
+
+    [Tooltip("HP a sapper hacks off a shut wall per drain tick when a wall is in its way (plan 17).")]
+    [Min(0f)] public float wallDamagePerTick = 8f;
 }

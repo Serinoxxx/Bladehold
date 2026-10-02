@@ -20,8 +20,6 @@ public class TowerPlot : MonoBehaviour, IInteractable
     [SerializeField] private GameObject catapultPrefab;
     [SerializeField] private GameObject ballistaPrefab;
     [SerializeField] private GameObject netThrowerPrefab;
-    [SerializeField] private GameObject spikeTrapPrefab;
-    [SerializeField] private GameObject oilVatPrefab;
 
     public int PlotIndex
     {
@@ -112,7 +110,7 @@ public class TowerPlot : MonoBehaviour, IInteractable
     /// <summary>Raised once a defence finishes building on any plot (after the assembly animation, if any).</summary>
     public static event Action<TowerPlot> OnBuilt;
 
-    public void BuildDefense(FortDefenseType type, int level = 1, int supply = -1, bool instant = false)
+    public void BuildDefense(FortDefenseType type, int level = 1, int supply = -1, bool instant = false, int buildCost = 0)
     {
         if (IsOccupied || IsBuilding) return;
 
@@ -138,6 +136,7 @@ public class TowerPlot : MonoBehaviour, IInteractable
                 CurrentDefense = structure;
                 structure.OwnerPlot = this;
                 structure.PlotIndex = plotIndex;
+                structure.BuildCostPaid = buildCost;
                 structure.InitState(level, supply, -1);
             }
             OnBuilt?.Invoke(this);
@@ -155,6 +154,7 @@ public class TowerPlot : MonoBehaviour, IInteractable
             {
                 structure.OwnerPlot = this;
                 structure.PlotIndex = plotIndex;
+                structure.BuildCostPaid = buildCost;
                 structure.InitState(level, supply, -1);
             }
             OnBuilt?.Invoke(this);
@@ -189,20 +189,17 @@ public class TowerPlot : MonoBehaviour, IInteractable
             FortDefenseType.Catapult => catapultPrefab,
             FortDefenseType.Ballista => ballistaPrefab,
             FortDefenseType.NetThrower => netThrowerPrefab,
-            FortDefenseType.Spikes => spikeTrapPrefab,
-            FortDefenseType.BurningOil => oilVatPrefab,
             _ => null
         };
     }
 
-    public void SetPrefabs(GameObject arrow, GameObject cat, GameObject bal, GameObject net, GameObject spikes, GameObject oil)
+    /// <summary>Test hook (benchmarks build towers on a code-made plot).</summary>
+    public void SetPrefabs(GameObject arrow, GameObject cat, GameObject bal, GameObject net)
     {
         arrowTowerPrefab = arrow;
         catapultPrefab = cat;
         ballistaPrefab = bal;
         netThrowerPrefab = net;
-        spikeTrapPrefab = spikes;
-        oilVatPrefab = oil;
     }
 
 #if UNITY_EDITOR

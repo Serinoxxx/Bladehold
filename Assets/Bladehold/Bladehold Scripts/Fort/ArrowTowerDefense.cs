@@ -68,22 +68,10 @@ public class ArrowTowerDefense : DefenseStructure
         }
     }
 
+    /// <summary>Seconds between shots, shortened by the upgrade wheel's Fire Rate tiers.</summary>
     public float GetEffectiveFireInterval()
     {
-        float interval = fireInterval;
-        if (Player.Instance != null && Player.Instance.Stats != null)
-        {
-            float rateBonus = Player.Instance.Stats.GetValue(StatType.TowerArrowFireRateBonus);
-            if (Player.Instance.Stats.GetValue(StatType.TowerLightningArrows) > 0f && rateBonus <= 0f)
-            {
-                rateBonus = 0.50f;
-            }
-            if (rateBonus > 0f)
-            {
-                interval /= (1f + rateBonus);
-            }
-        }
-        return Mathf.Max(0.12f, interval);
+        return Mathf.Max(0.12f, fireInterval / FireRateMultiplier);
     }
 
     public float GetEffectiveArrowDamage()
@@ -91,15 +79,6 @@ public class ArrowTowerDefense : DefenseStructure
         float dmg = arrowDamage;
         if (Player.Instance != null && Player.Instance.Stats != null)
         {
-            float dmgBonus = Player.Instance.Stats.GetValue(StatType.TowerArrowDamageBonus);
-            if (Player.Instance.Stats.GetValue(StatType.TowerFireArrows) > 0f && dmgBonus <= 0f)
-            {
-                dmgBonus = 0.40f;
-            }
-            if (dmgBonus > 0f)
-            {
-                dmg *= (1f + dmgBonus);
-            }
             dmg *= Player.Instance.Stats.GetValue(StatType.AllDamageMultiplier);
         }
         return dmg;
@@ -143,9 +122,10 @@ public class ArrowTowerDefense : DefenseStructure
         Vector3 dir = (aimPoint - spawnPos).normalized;
         if (dir == Vector3.zero) dir = transform.forward;
 
-        bool isFrost = Player.Instance != null && Player.Instance.Stats != null && Player.Instance.Stats.GetValue(StatType.TowerFrostArrows) > 0f;
-        bool isLightning = Player.Instance != null && Player.Instance.Stats != null && Player.Instance.Stats.GetValue(StatType.TowerLightningArrows) > 0f;
-        bool isFire = Player.Instance != null && Player.Instance.Stats != null && Player.Instance.Stats.GetValue(StatType.TowerFireArrows) > 0f;
+        // The tower's own element (plan 17 upgrade wheel).
+        bool isFrost = Element == StructureElement.Ice;
+        bool isLightning = Element == StructureElement.Lightning;
+        bool isFire = Element == StructureElement.Fire;
 
         float finalDamage = GetEffectiveArrowDamage();
 
@@ -175,9 +155,7 @@ public class ArrowTowerDefense : DefenseStructure
             };
             target.ReceiveDamage(dmg);
 
-            if (isFire) EnemyStatusManager.GetOrAdd(target)?.ApplyStatus("Fire");
-            if (isFrost) EnemyStatusManager.GetOrAdd(target)?.ApplyStatus("Ice", 0.5f);
-            if (isLightning) EnemyStatusManager.GetOrAdd(target)?.ApplyStatus("Lightning");
+            ApplyElementTo(target);
         }
 
         if (fireFeedback != null)

@@ -78,6 +78,18 @@ public class DefenseSceneSpecSO : ScriptableObject
     [Tooltip("Fodder-floor enemy for this scene. Empty = the pacing asset's (goblin).")]
     public string fodderEnemyId = "";
 
+    [Header("Walls and fort rules (plan 17)")]
+    [Tooltip("Put a wall plot on every bridge (up to 8), across the deck just in from the gate-side rim, with its crafting bench on the rim beside the bridge.")]
+    public bool wallPlotsOnBridges = true;
+    [Tooltip("How far in from the gate-side rim the wall sits on the bridge deck, metres.")]
+    public float wallPlotInset = 1.5f;
+    [Tooltip("Place the fort-rules prefab (upgrade wheel, crystal rewards, crystal biome bias).")]
+    public bool placeFortRules = true;
+    [Tooltip("Place an ammo chest by the main gate.")]
+    public bool placeAmmoChest = true;
+    [Tooltip("Ammo chest position (outside the gate, beside the apron).")]
+    public Vector2 ammoChestPosition = new Vector2(8f, 5f);
+
     [Header("Scatter")]
     [Tooltip("Scales every scatter density. 0 = structures only.")]
     public float scatterDensity = 1f;

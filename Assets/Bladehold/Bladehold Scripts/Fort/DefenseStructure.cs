@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using MoreMountains.Feedbacks;
 using UnityEngine;
 
@@ -6,9 +7,12 @@ using UnityEngine;
 ///     Base class for all interactive battlefield defenses built on Tower Plots.
 ///     Consumes Supply as it attacks, breaks when reaching 0 Supply, and can be
 ///     repaired/resupplied or upgraded via player interaction [E].
+///     In a defense scene (<see cref="DefenseSceneRules.UpgradeWheelActive" />) [E] opens the plan-17
+///     upgrade wheel instead: Refill, Fire Rate tiers, Spikes, one element, Deconstruct. The tower stays
+///     at level 1 there; what was bought lives in <see cref="Upgrades" />.
 ///     Ignored by enemy AI.
 /// </summary>
-public abstract class DefenseStructure : MonoBehaviour, IInteractable
+public abstract class DefenseStructure : MonoBehaviour, IInteractable, IUpgradeable
 {
     [Header("Defense Identity")]
     [SerializeField] protected FortDefenseType defenseType;
@@ -82,9 +86,56 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
     /// <summary>Supply the player has paid to upgrade this tower (free level-ups via SetLevel/InitState don't count).</summary>
     public int UpgradeSupplySpent => upgradeSupplySpent;
     /// <summary>What dismantling this tower hands back: its remaining supply plus everything spent upgrading it.</summary>
-    public int DismantleRefund => Mathf.Max(0, currentSupply) + upgradeSupplySpent;
+    public int DismantleRefund => Mathf.Max(0, currentSupply) + upgradeSupplySpent + upgrades.supplySpent;
 
     private int upgradeSupplySpent;
+
+    private readonly StructureUpgradeState upgrades = new StructureUpgradeState();
+    private TowerSpikeRing spikeRing;
+    /// <summary>Supply paid on the build wheel for this tower (refunded in full by Deconstruct).</summary>
+    public int BuildCostPaid { get; set; }
+    /// <summary>Supply paid refilling from the upgrade wheel; Deconstruct refunds what's still unfired.</summary>
+    private int refillSupplyPaid;
+
+    /// <summary>What the upgrade wheel has bought on this tower.</summary>
+    public StructureUpgradeState Upgrades => upgrades;
+    /// <summary>This tower's element (plan 17), None until one is bought.</summary>
+    public StructureElement Element => upgrades.element;
+    /// <summary>True when [E] opens the upgrade wheel (defense scenes) rather than refill/level-up.</summary>
+    public static bool UsesUpgradeWheel => DefenseSceneRules.UpgradeWheelActive;
+
+    /// <summary>Shots-per-second multiplier from the Fire Rate tiers; divide intervals by it.</summary>
+    protected float FireRateMultiplier
+    {
+        get
+        {
+            FortUpgradeConfigSO config = DefenseSceneRules.Config;
+            return config != null ? config.FireRateMultiplier(upgrades.fireRateTier) : 1f;
+        }
+    }
+
+    /// <summary>Applies this tower's element status to a target it just hit (no-op for None).</summary>
+    protected void ApplyElementTo(Health target)
+    {
+        if (target == null || target.IsDead || Element == StructureElement.None) return;
+        EnemyStatusManager status = EnemyStatusManager.GetOrAdd(target);
+        if (status == null) return;
+        if (Element == StructureElement.Ice)
+        {
+            FortUpgradeConfigSO config = DefenseSceneRules.Config;
+            status.ApplyStatus("Ice", config != null ? config.towerIceStacks : 0.5f);
+        }
+        else
+        {
+            status.ApplyStatus(Element.StatusId());
+        }
+    }
+
+    /// <summary>
+    ///     What Deconstruct hands back: the build cost, every upgrade, and whatever paid-for refill ammo
+    ///     is still unfired. Never more than was paid, so build-and-deconstruct can't farm supply.
+    /// </summary>
+    public int DeconstructRefund => BuildCostPaid + upgrades.supplySpent + upgradeSupplySpent + Mathf.Min(refillSupplyPaid, Mathf.Max(0, currentSupply));
     public bool RotateToTarget
     {
         get => rotateToTarget;
@@ -221,6 +272,14 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
 
     public virtual void Interact(Player player)
     {
+        if (UsesUpgradeWheel)
+        {
+            BuildWheelUI wheel = BuildWheelUI.Instance;
+            if (wheel != null) wheel.OpenUpgrades(this);
+            else Debug.LogWarning("[DefenseStructure] BuildWheelUI.Instance is not found in the scene.");
+            return;
+        }
+
         if (currentSupply < maxSupply)
         {
             // Resupply
@@ -279,6 +338,13 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
 
     public virtual void UpdatePrompt()
     {
+        if (UsesUpgradeWheel)
+        {
+            PromptText = currentSupply <= 0 ? "[NO SUPPLY] Upgrade / Refill" : "Upgrade";
+            if (IsHexed) PromptText = $"[HEXED] {PromptText}";
+            return;
+        }
+
         if (currentSupply <= 0)
         {
             PromptText = $"[NO SUPPLY] Resupply ({maxSupply} Supply)";
@@ -324,4 +390,190 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable
     }
 
     protected abstract void ApplyLevelStats(int level);
+
+    // ---- Upgrade wheel (plan 17) -------------------------------------------------------------
+
+    public virtual string UpgradeTitle => $"{TowerDisplayName}  ({currentSupply}/{maxSupply} ammo)";
+
+    protected virtual string TowerDisplayName => defenseType switch
+    {
+        FortDefenseType.ArrowSlits => "Arrow Tower",
+        FortDefenseType.NetThrower => "Net Thrower",
+        _ => defenseType.ToString()
+    };
+
+    public Vector3 UpgradeAnchor => transform.position + Vector3.up * 2.2f;
+    public bool IsUpgradeTargetAlive => this != null && isActiveAndEnabled;
+
+    public virtual void BuildUpgradeOptions(List<UpgradeOption> options)
+    {
+        FortUpgradeConfigSO config = DefenseSceneRules.Config;
+        if (config == null) return;
+
+        // Refill: partial when the player can't cover all of it.
+        int missing = maxSupply - currentSupply;
+        int refillCost = Mathf.Min(missing, RunSession.InRunSupply);
+        options.Add(new UpgradeOption
+        {
+            label = "Refill Ammo",
+            description = "Top this tower's ammo back up from your supply.",
+            icon = config.refillIcon,
+            supplyCost = Mathf.Max(1, refillCost),
+            blockedReason = missing <= 0 ? "Full" : RunSession.InRunSupply <= 0 ? "No Supply" : null,
+            onPurchase = () => Refill(refillCost)
+        });
+
+        int tier = upgrades.fireRateTier;
+        bool maxed = tier >= config.FireRateTiers;
+        options.Add(new UpgradeOption
+        {
+            label = maxed ? "Fire Rate (Max)" : $"Fire Rate {ToRoman(tier + 1)}",
+            description = maxed
+                ? $"Firing {Mathf.RoundToInt((config.FireRateMultiplier(tier) - 1f) * 100f)}% faster."
+                : $"Fire {Mathf.RoundToInt((config.FireRateMultiplier(tier + 1) - 1f) * 100f)}% faster than base.",
+            icon = config.fireRateIcon,
+            supplyCost = maxed ? 0 : config.fireRateCosts[tier],
+            blockedReason = maxed ? "Max" : null,
+            onPurchase = () =>
+            {
+                upgrades.fireRateTier++;
+                upgrades.RecordSupply(config.fireRateCosts[tier]);
+                OnUpgradeBought();
+                return true;
+            }
+        });
+
+        options.Add(new UpgradeOption
+        {
+            label = "Spikes",
+            description = "A ring of stakes round the base that stabs enemies inside the blind spot.",
+            icon = config.spikesIcon,
+            supplyCost = config.towerSpikesCost,
+            blockedReason = upgrades.hasSpikes ? "Built" : config.towerSpikeRingPrefab == null ? "Unavailable" : null,
+            onPurchase = () =>
+            {
+                upgrades.hasSpikes = true;
+                upgrades.RecordSupply(config.towerSpikesCost);
+                AttachSpikeRing(config);
+                OnUpgradeBought();
+                return true;
+            }
+        });
+
+        AddElementOptions(options, upgrades, config, TowerElementBlurb, _ =>
+        {
+            OnUpgradeBought();
+            OnElementChanged();
+        });
+
+        int refund = DeconstructRefund;
+        options.Add(new UpgradeOption
+        {
+            label = "Deconstruct",
+            description = "Take the tower down and get back everything you paid (unfired refill ammo included).",
+            icon = config.deconstructIcon,
+            costOverride = $"<color=#7CFC7C>{upgrades.DescribeRefund(refund)}</color>",
+            closesWheel = true,
+            onPurchase = Deconstruct
+        });
+    }
+
+    /// <summary>The wheel's Fire / Ice / Storm slices, shared by towers and walls: one element, locked once bought.</summary>
+    public static void AddElementOptions(List<UpgradeOption> options, StructureUpgradeState state, FortUpgradeConfigSO config,
+        Func<StructureElement, string> blurb, Action<StructureElement> onBought)
+    {
+        foreach (StructureElement element in StructureElements.All)
+        {
+            StructureElement e = element;
+            string blocked = null;
+            if (state.element == e) blocked = "Active";
+            else if (state.HasElement) blocked = "Locked";
+
+            options.Add(new UpgradeOption
+            {
+                label = e == StructureElement.Lightning ? "Storm" : e.ToString(),
+                description = blurb(e) + (state.HasElement ? "" : "\n<size=85%>One element per structure, locked once chosen.</size>"),
+                icon = config.ElementIcon(e),
+                crystalElement = e,
+                crystalCost = config.elementCrystalCost,
+                blockedReason = blocked,
+                onPurchase = () =>
+                {
+                    if (state.HasElement) return false;
+                    state.element = e;
+                    state.RecordCrystals(e, config.elementCrystalCost);
+                    onBought(e);
+                    return true;
+                }
+            });
+        }
+    }
+
+    protected virtual string TowerElementBlurb(StructureElement element)
+    {
+        return element switch
+        {
+            StructureElement.Fire => "Shots set enemies on fire.",
+            StructureElement.Ice => "Shots chill and slow; enough chill freezes.",
+            StructureElement.Lightning => "Shots shock their target.",
+            _ => ""
+        };
+    }
+
+    /// <summary>Subclass hook for element-specific setup.</summary>
+    protected virtual void OnElementChanged() { }
+
+    private void OnUpgradeBought()
+    {
+        if (upgradeFeedback != null) upgradeFeedback.PlayFeedbacks(transform.position);
+        UpdatePrompt();
+    }
+
+    private bool Refill(int cost)
+    {
+        if (cost <= 0) return false;
+        currentSupply = Mathf.Min(maxSupply, currentSupply + cost);
+        refillSupplyPaid += cost;
+        if (repairFeedback != null) repairFeedback.PlayFeedbacks(transform.position);
+        if (supplyPopupPrefab != null) supplyPopupPrefab.Spawn(transform.position + Vector3.up * 2.2f, $"-{cost} Supply");
+        UpdatePrompt();
+        OnSupplyChanged?.Invoke(currentSupply, maxSupply);
+        return true;
+    }
+
+    private void AttachSpikeRing(FortUpgradeConfigSO config)
+    {
+        if (spikeRing != null || config.towerSpikeRingPrefab == null) return;
+        spikeRing = Instantiate(config.towerSpikeRingPrefab, transform.position, transform.rotation, transform);
+        spikeRing.Init(this, config);
+    }
+
+    /// <summary>Upgrade-wheel Deconstruct: refunds <see cref="DeconstructRefund" /> and every crystal, then clears the plot.</summary>
+    public bool Deconstruct()
+    {
+        int refund = DeconstructRefund;
+        string popup = upgrades.DescribeRefund(refund);
+        RunSession.AddInRunSupply(refund);
+        upgrades.RefundCrystals();
+        if (supplyPopupPrefab != null && !string.IsNullOrEmpty(popup))
+        {
+            supplyPopupPrefab.Spawn(transform.position + Vector3.up * 2.5f, popup);
+        }
+        if (breakFeedback != null) breakFeedback.PlayFeedbacks(transform.position);
+
+        if (OwnerPlot != null) OwnerPlot.ClearDefense();
+        else Destroy(gameObject);
+        return true;
+    }
+
+    /// <summary>Sector-end dismantle: crystals spent on this tower go back too.</summary>
+    public void RefundCrystals()
+    {
+        upgrades.RefundCrystals();
+    }
+
+    private static string ToRoman(int n)
+    {
+        return n switch { 1 => "I", 2 => "II", 3 => "III", 4 => "IV", 5 => "V", _ => n.ToString() };
+    }
 }

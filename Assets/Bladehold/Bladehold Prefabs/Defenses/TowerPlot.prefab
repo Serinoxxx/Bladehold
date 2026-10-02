@@ -53,8 +53,6 @@ MonoBehaviour:
   catapultPrefab: {fileID: 6875935595063796285, guid: 1a70772028137ee4e8814b1e2fc0f081, type: 3}
   ballistaPrefab: {fileID: 8099945612240998284, guid: f3a43c8c39d0c794ab3336cff8ab82b5, type: 3}
   netThrowerPrefab: {fileID: 8299130097084516598, guid: e354854dedec3984cb9d8afba14730ce, type: 3}
-  spikeTrapPrefab: {fileID: 1074906803333359602, guid: 226a0ccfbaf59e641b213d2fc493f601, type: 3}
-  oilVatPrefab: {fileID: 2506775072686236971, guid: d2458f2a2d39c15448edf06f471aa09f, type: 3}
 --- !u!1001 &1245145326868821853
 PrefabInstance:
   m_ObjectHideFlags: 0

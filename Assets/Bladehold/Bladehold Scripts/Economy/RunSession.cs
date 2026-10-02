@@ -77,6 +77,44 @@ public static class RunSession
     public static int InRunSupply { get; set; } = 60;
     public static event Action<int> OnInRunSupplyChanged;
 
+    /// <summary>
+    ///     Elemental crystals (plan 17), indexed by <see cref="StructureElement" /> (slot 0 unused). Spent on
+    ///     the upgrade wheel to give one tower or wall its element. Earned from elite drops, wave clears,
+    ///     objectives and elemental fish; carried across sectors like supply and reset on a new run.
+    /// </summary>
+    private static readonly int[] crystals = new int[4];
+    public static event Action<StructureElement, int> OnCrystalsChanged;
+
+    public static int GetCrystals(StructureElement element)
+    {
+        return element == StructureElement.None ? 0 : crystals[(int)element];
+    }
+
+    public static void AddCrystals(StructureElement element, int amount)
+    {
+        if (amount <= 0 || element == StructureElement.None) return;
+        crystals[(int)element] += amount;
+        OnCrystalsChanged?.Invoke(element, crystals[(int)element]);
+    }
+
+    public static bool TrySpendCrystals(StructureElement element, int amount)
+    {
+        if (amount <= 0) return true;
+        if (element == StructureElement.None || crystals[(int)element] < amount) return false;
+        crystals[(int)element] -= amount;
+        OnCrystalsChanged?.Invoke(element, crystals[(int)element]);
+        return true;
+    }
+
+    private static void ResetCrystals()
+    {
+        foreach (StructureElement element in StructureElements.All)
+        {
+            crystals[(int)element] = 0;
+            OnCrystalsChanged?.Invoke(element, 0);
+        }
+    }
+
     public static int CurrentAmmo { get; set; } = 20;
     public static event Action<int, int> OnAmmoChanged;
 
@@ -224,6 +262,7 @@ public static class RunSession
         // Supply Cache perk adds starting supply (+20 per rank)
         InRunSupply = BaseStartingSupply + Mathf.RoundToInt(GetMetaPerkValue(SupplyCachePerkId, 20f));
         OnInRunSupplyChanged?.Invoke(InRunSupply);
+        ResetCrystals();
 
         CurrentAmmo = MetaMaxAmmo;
         OnAmmoChanged?.Invoke(CurrentAmmo, CurrentAmmo);

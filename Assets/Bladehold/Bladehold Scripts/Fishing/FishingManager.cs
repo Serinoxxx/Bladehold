@@ -24,6 +24,8 @@ public class FishingManager : MonoBehaviour
     [Header("State")]
     [SerializeField] private FishingState currentState = FishingState.WaitingToStart;
     [SerializeField] private float totalFrenzyDuration = 60f;
+    [Tooltip("Elemental buff fish (Fire, Frost, Spark) also pay crystals of their element (plan 17).")]
+    [SerializeField] private CrystalConfigSO crystalConfig;
     private float frenzyTimeRemaining;
 
     [Header("Pond Geometry")]
@@ -181,6 +183,7 @@ public class FishingManager : MonoBehaviour
         if (frenzyStartFeedback == null) Debug.LogError("[FishingManager] frenzyStartFeedback is not assigned.", this);
         if (fishHighlightProfile == null) Debug.LogError("[FishingManager] fishHighlightProfile is not assigned: fish types have no outline.", this);
         if (catchPopupPrefab == null) Debug.LogError("[FishingManager] catchPopupPrefab is not assigned: catches show no \"+N\" popup.", this);
+        if (crystalConfig == null) Debug.LogError("[FishingManager] crystalConfig is not assigned: elemental fish pay no crystals.", this);
         if (tallyUI == null) { Debug.LogError("[FishingManager] tallyUI is not assigned: the pond can't be left without it.", this); anyError = true; }
         if (CampaignManager.Instance == null) { Debug.LogError("[FishingManager] No CampaignManager: can't return to the map.", this); anyError = true; }
 
@@ -362,6 +365,14 @@ public class FishingManager : MonoBehaviour
             int buffGold = Mathf.RoundToInt(15 * fatMultiplier);
             sessionGold += buffGold;
             popupText = $"{fish.buffType} Fish! +{buffGold} Gold";
+
+            StructureElement crystal = CrystalFor(fish.buffType);
+            int crystals = crystalConfig != null ? crystalConfig.elementalFishCrystals : 0;
+            if (crystal != StructureElement.None && crystals > 0)
+            {
+                RunSession.AddCrystals(crystal, crystals);
+                popupText += $", +{crystals} {crystal.CrystalName()}";
+            }
         }
         else
         {
@@ -409,6 +420,18 @@ public class FishingManager : MonoBehaviour
         {
             ShowCatch(fish.transform.position, popupText, popupColor);
         }
+    }
+
+    /// <summary>The crystal an elemental buff fish pays, or None.</summary>
+    private static StructureElement CrystalFor(BuffFishType type)
+    {
+        return type switch
+        {
+            BuffFishType.Fire => StructureElement.Fire,
+            BuffFishType.Frost => StructureElement.Ice,
+            BuffFishType.Spark => StructureElement.Lightning,
+            _ => StructureElement.None
+        };
     }
 
     private void ShowCatch(Vector3 position, string popupText, Color popupColor)

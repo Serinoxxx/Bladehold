@@ -91,6 +91,14 @@ public class TowerSapper : MonoBehaviour
     {
         if (anyError || isDead || playerDead) return;
 
+        // A shut wall in the way (plan 17): sabotage it instead, from the outside face.
+        WallStructure wall = targetSelector.WallTarget;
+        if (wall != null)
+        {
+            SapWall(wall);
+            return;
+        }
+
         if (!IsValidTarget(currentTower))
         {
             ReleaseTower();
@@ -119,6 +127,32 @@ public class TowerSapper : MonoBehaviour
         animator.SetTrigger(drainTriggerHash);
         if (drainFeedback != null) drainFeedback.PlayFeedbacks(currentTower.transform.position);
         currentTower.ConsumeSupply(data.drainPerTick);
+    }
+
+    private void SapWall(WallStructure wall)
+    {
+        Vector3 spot = wall.GetAttackPoint(transform.position);
+        bool inRange = IsWithinFlatDistance(transform.position, spot, data.drainRange);
+        if (inRange != isPlanted)
+        {
+            isPlanted = inRange;
+            movement.SetMovementPaused(inRange);
+        }
+        if (!inRange) return;
+
+        Vector3 toWall = -wall.transform.forward;
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(toWall), 360f * Time.deltaTime);
+        if (Time.time < nextDrainTime) return;
+        nextDrainTime = Time.time + data.drainInterval;
+        animator.SetTrigger(drainTriggerHash);
+        if (drainFeedback != null) drainFeedback.PlayFeedbacks(spot + Vector3.up);
+        wall.Damageable.ReceiveDamage(new Damage
+        {
+            value = data.wallDamagePerTick,
+            type = DamageType.blunt,
+            source = health,
+            sourcePosition = transform.position
+        });
     }
 
     private void ReleaseTower()

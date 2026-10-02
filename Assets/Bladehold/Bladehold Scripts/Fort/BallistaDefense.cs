@@ -163,7 +163,7 @@ public class BallistaDefense : DefenseStructure
         yield return new WaitForSeconds(0.15f);
 
         isFiring = false;
-        nextFireTime = Time.time + fireInterval;
+        nextFireTime = Time.time + fireInterval / FireRateMultiplier;
     }
 
     private void ExecuteFire(Health target)
@@ -180,6 +180,7 @@ public class BallistaDefense : DefenseStructure
             if (proj != null)
             {
                 proj.Init(dir, boltSpeed, boltDamage, pierceCount, knockbackAway, knockbackUp);
+                proj.SetElement(Element);
             }
         }
         else
@@ -207,6 +208,7 @@ public class BallistaDefense : DefenseStructure
                         source = Player.Instance != null ? Player.Instance.Damageable : null
                     };
                     h.ReceiveDamage(dmg);
+                    ApplyElementTo(h);
                     pierced++;
                     if (pierced >= pierceCount) break;
                 }

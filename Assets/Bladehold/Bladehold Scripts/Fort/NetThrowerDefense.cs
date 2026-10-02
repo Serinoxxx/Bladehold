@@ -173,7 +173,7 @@ public class NetThrowerDefense : DefenseStructure
         }
 
         isFiring = false;
-        nextFireTime = Time.time + fireInterval;
+        nextFireTime = Time.time + fireInterval / FireRateMultiplier;
     }
 
     private void LaunchNetAt(Vector3 targetPos)
@@ -241,6 +241,7 @@ public class NetThrowerDefense : DefenseStructure
                 source = Player.Instance != null ? Player.Instance.Damageable : null
             };
             h.ReceiveDamage(dmg);
+            ApplyElementTo(h);
         }
     }
 

@@ -73,6 +73,9 @@ public class AIMovement : MonoBehaviour
         }
     }
 
+    private bool isSiege;
+    private int appliedWallNavVersion = -1;
+
     private void Start()
     {
 
@@ -115,6 +118,7 @@ public class AIMovement : MonoBehaviour
         lastUpdateTime = Time.time - Random.value * movementSO.updateInterval;
 
         player = Player.Instance;
+        isSiege = WallNavCost.IsSiege(gameObject);
 
         // Movement reacts to death; Health never reaches back into this component.
         health.OnDied += HandleDied;
@@ -241,6 +245,13 @@ public class AIMovement : MonoBehaviour
                 }
                 agent.angularSpeed = baseAngularSpeed * turnMultiplier;
             }
+        }
+
+        // Wall plots (plan 17): non-siege agents price shut walls' NavMesh areas so they route round.
+        if (!isSiege && agent != null && agent.isOnNavMesh && appliedWallNavVersion != WallNavCost.Version)
+        {
+            WallNavCost.ApplyTo(agent);
+            appliedWallNavVersion = WallNavCost.Version;
         }
 
         // Far agents repath less often — with the stagger above, ~300 agents spread their

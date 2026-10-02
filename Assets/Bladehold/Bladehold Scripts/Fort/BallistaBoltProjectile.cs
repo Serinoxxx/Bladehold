@@ -85,6 +85,7 @@ public class BallistaBoltProjectile : MonoBehaviour
                 };
 
                 targetHealth.ReceiveDamage(dmg);
+                ApplyElement(targetHealth);
 
                 pierceRemaining--;
                 if (pierceRemaining <= 0)
@@ -104,5 +105,19 @@ public class BallistaBoltProjectile : MonoBehaviour
         Vector3 flat = new Vector3(flightDir.x, 0f, flightDir.z);
         flat = flat.sqrMagnitude > 0.0001f ? flat.normalized : Vector3.zero;
         return flat * away + Vector3.up * up;
+    }
+
+    private StructureElement element = StructureElement.None;
+
+    /// <summary>The firing ballista's element (plan 17); every bolt hit applies its status.</summary>
+    public void SetElement(StructureElement value)
+    {
+        element = value;
+    }
+
+    private void ApplyElement(Health target)
+    {
+        if (element == StructureElement.None || target == null || target.IsDead) return;
+        EnemyStatusManager.GetOrAdd(target)?.ApplyStatus(element.StatusId());
     }
 }
