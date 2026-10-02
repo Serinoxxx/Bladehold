@@ -28,6 +28,19 @@ Runtime piece: `Hazards/SpikePit.cs` + `SpikePitConfigSO` (one heavy hit on land
 normal 10-HP goblins die. A shared registry means walking along the floor between boxes isn't a second
 fall.)
 
+## Walls, fort rules and the gate ammo chest (plan 17)
+
+- **Wall plots.** `PlaceWallPlots` runs before the NavMesh bake. It puts one `WallPlot` prefab (`Bladehold Prefabs/Defenses/Walls/WallPlot.prefab`) across every bridge deck, `wallPlotInset` (1.5 m) in from the gate-side rim. The cap is 8, sorted by ravine then x.
+  - Each plot gets a `NavMeshModifierVolume` on its own area `WallPlot{i}` (NavMeshAreas 3–10). Runtime `WallNavCost` prices that area while the wall stands shut.
+  - The crafting bench goes on the gate-side rim beside the bridge, with its colliders stripped.
+  - Spec switch: `wallPlotsOnBridges`.
+- **Fort rules.** `PlaceFortRules` instantiates `Bladehold Prefabs/Defenses/FortRules.prefab` (`DefenseSceneRules` for the upgrade wheel, `CrystalRewards`, `SceneCrystalBias`). It copies the palette's `crystalBias` (x Fire, y Ice, z Storm): Arid 3/1/1, Alpine 1/3/1, Graveyard 1/1/3, Kingdom even.
+  - Spec switch: `placeFortRules`.
+- **Ammo chest.** `Bladehold Prefabs/Economy/AmmoChest.prefab` goes at `ammoChestPosition` (8, 5), outside the gate, facing it.
+  - Spec switch: `placeAmmoChest`.
+- **Check after a regeneration:** each plot's `NavMesh.SamplePosition` area mask equals `1 << GetAreaFromName("WallPlot{i}")`.
+- **Tutorial Gate** has no bridges. Its 3 wall plots sit in gaps in a hand-placed rock line (`Wall Chokepoints`). Never regenerate it.
+
 ## Frame and rules the generator enforces
 
 - **Frame.** The gate is at the origin facing +Z, enemies come from +Z, the castle is behind at −Z, and the battlefield is at y = 0.

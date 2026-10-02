@@ -129,6 +129,7 @@ public static class DefenseSceneDefaults
     private static DefenseBiomePaletteSO CreateAlpinePalette()
     {
         var p = LoadOrCreate<DefenseBiomePaletteSO>(AlpinePalettePath);
+        p.crystalBias = new Vector3(1f, 3f, 1f); // plan 17: Alpine leans Ice
         string ap = $"{Alpine}/Prefabs";
 
         p.ground = Layer("layer_snow_albedosnow_normalb05780438ad4031");
@@ -236,6 +237,7 @@ public static class DefenseSceneDefaults
     private static DefenseBiomePaletteSO CreateAridPalette()
     {
         var p = LoadOrCreate<DefenseBiomePaletteSO>(AridPalettePath);
+        p.crystalBias = new Vector3(3f, 1f, 1f); // plan 17: Desert leans Fire
         string ap = $"{Arid}/Prefabs";
 
         p.ground = Layer("Sand_01", Arid);
@@ -520,6 +522,7 @@ public static class DefenseSceneDefaults
     private static DefenseBiomePaletteSO CreateGraveyardPalette()
     {
         var p = LoadOrCreate<DefenseBiomePaletteSO>(GraveyardPalettePath);
+        p.crystalBias = new Vector3(1f, 1f, 3f); // plan 17: Graveyard leans Storm
         string env = $"{Kingdom}/Environments";
         string props = $"{Kingdom}/Props";
         string ef = $"{Enchanted}/Prefabs";

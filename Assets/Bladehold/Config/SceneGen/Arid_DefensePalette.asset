@@ -1685,6 +1685,8 @@ MonoBehaviour:
   wallTower: {fileID: 1098612053194580, guid: 8cb498ab8ebea3640a0c9b12de1c91f6, type: 3}
   bridgeTile: {fileID: 1240066901670736, guid: 3c3791d604bc6104fa09b77432654cb6, type: 3}
   bridgePillar: {fileID: 1271835995646666, guid: 2a70b5473e2e3394da62b94507333f12, type: 3}
+  bridgeSpan: {fileID: 0}
+  bridgeSpanWidthScale: 1
   pitSpikes:
   - {fileID: 134976, guid: 71b973d16356c61458cb853ecb1850ca, type: 3}
   defenseStakes:
@@ -1708,10 +1710,24 @@ MonoBehaviour:
   - {fileID: 1894982720226970, guid: b26e035715d763f409a7e837ae204dab, type: 3}
   - {fileID: 1092251644890200, guid: 29fd7b3d4b3dabe4388eac10c6617909, type: 3}
   - {fileID: 1368671110142866, guid: 1892a9bbd9c37a049b7326377596c2df, type: 3}
+  lanterns: []
+  lanternScale: {x: 1, y: 1}
+  lanternSpacing: 14
+  lanternLightColor: {r: 1, g: 0.72, b: 0.38, a: 1}
+  lanternLightIntensity: 3
+  lanternLightRange: 9
+  lanternLightHeight: 0.8
+  groundFog: []
+  groundFogTint: {r: 1, g: 1, b: 1, a: 1}
+  groundFogSpacing: 32
+  ravineGlowIntensity: 0
+  ravineGlowColor: {r: 0.35, g: 1, b: 0.45, a: 1}
+  ravineGlowRange: 11
   skybox: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
   volumeProfile: {fileID: 11400000, guid: 05af2db787825cf46806d2892d04fb2f, type: 2}
   sunColor: {r: 1, g: 0.86, b: 0.68, a: 1}
   sunIntensity: 1.5
+  crystalBias: {x: 3, y: 1, z: 1}
   sunEuler: {x: 42, y: -40, z: 0}
   fogColor: {r: 0.82, g: 0.62, b: 0.46, a: 1}
   fogDensity: 0.003

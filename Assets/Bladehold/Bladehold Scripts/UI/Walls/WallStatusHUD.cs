@@ -50,6 +50,14 @@ public class WallStatusHUD : MonoBehaviour
                 icon.Bind(plot);
                 icons.Add(plot, icon);
             }
+
+            // Left to right in plot order, so icon N matches wall N whatever order plots registered in.
+            var ordered = new List<WallPlot>(icons.Keys);
+            ordered.Sort((a, b) => a.PlotIndex.CompareTo(b.PlotIndex));
+            for (int i = 0; i < ordered.Count; i++)
+            {
+                if (ordered[i] != null && icons[ordered[i]] != null) icons[ordered[i]].transform.SetSiblingIndex(i);
+            }
         }
 
         if (root != null && root != gameObject) root.SetActive(count > 0);

@@ -115,6 +115,18 @@ public class BuildWheelButton : MonoBehaviour, IPointerEnterHandler, IPointerExi
         SetAffordable(available);
     }
 
+    /// <summary>
+    ///     Resets the click wiring to this button's own callback. The build wheel's legacy slice-button
+    ///     path clears the same Button's listeners, so the upgrade wheel calls this before reusing it.
+    /// </summary>
+    public void RebindClick()
+    {
+        Button b = Button;
+        if (b == null) return;
+        b.onClick.RemoveAllListeners();
+        b.onClick.AddListener(HandleClick);
+    }
+
     public void SetAffordable(bool canAfford)
     {
         isAffordable = canAfford;

@@ -348,6 +348,13 @@ public class BuildWheelUI : MonoBehaviour
 
     private void SetupButtons()
     {
+        // The upgrade wheel configures its own slices; Start can run after OpenUpgrades on first open.
+        if (IsUpgradeMode)
+        {
+            RefreshUI();
+            return;
+        }
+
         if (wheelButtons != null && wheelButtons.Count > 0)
         {
             for (int i = 0; i < defenseOptions.Count && i < wheelButtons.Count; i++)
@@ -472,16 +479,18 @@ public class BuildWheelUI : MonoBehaviour
             UpgradeOption opt = upgradeOptions[i];
             int index = i;
             PlaceOnRing(btn, i, upgradeOptions.Count);
+            btn.RebindClick();
             btn.Setup(opt.label, opt.CostLabel, opt.icon, opt.IsAvailable,
                 () => OnSelectUpgrade(index),
                 () => OnHoverSlice(index),
                 () => OnUnhoverSlice());
         }
 
-        // Legacy slice buttons have no upgrade layout.
+        // Legacy slice buttons have no upgrade layout. They're often the same objects as the wheel
+        // buttons, so only hide ones that aren't.
         foreach (Button b in sliceButtons)
         {
-            if (b != null) b.gameObject.SetActive(false);
+            if (b != null && b.GetComponent<BuildWheelButton>() == null) b.gameObject.SetActive(false);
         }
     }
 

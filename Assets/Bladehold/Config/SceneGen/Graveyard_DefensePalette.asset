@@ -424,6 +424,7 @@ MonoBehaviour:
   volumeProfile: {fileID: 11400000, guid: 071aa1dc47766d549b369e02a5c9e493, type: 2}
   sunColor: {r: 0.55, g: 0.72, b: 0.68, a: 1}
   sunIntensity: 0.6
+  crystalBias: {x: 1, y: 1, z: 3}
   sunEuler: {x: 28, y: -50, z: 0}
   fogColor: {r: 0.17, g: 0.32, b: 0.21, a: 1}
   fogDensity: 0.0065

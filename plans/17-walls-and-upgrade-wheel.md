@@ -174,3 +174,24 @@
 - **Global area cost:** `NavMesh.SetAreaCost` is global and agents re-path lazily. Paths need forcing to refresh near walls when a wall changes state, or enemies already committed to a bridge will walk into a just-closed door (which is acceptable: they attack it).
 - **Area budget:** 8 wall areas is plenty (max 3 bridges today), and the Unity cap is 32.
 - **Tutorial Gate layout:** if it has no bridges, it gets no wall plots unless we pick spots by hand.
+
+## Progress
+
+**Session 1 (2026-10-02): all phases (A–I) done.** Unity MCP was connected. `dotnet build` and Unity are clean, and the benchmark shows 170 passed / 3 failed. The 3 failures are pre-existing and unrelated: Bulwark and Bannerman rig checks, and the victory-screen label.
+- **Code:** see `Fort/CLAUDE.md` (Walls, Crystals).
+- **Assets:** built by `Editor/FortWallAssetsBuilder` (create-only, placeholder art).
+- **Scenes:** Outer Gate, Desert Gate and Graveyard were regenerated (validator passed). Tutorial Gate got a hand-placed rock chokepoint line with 3 wall plots and a rebaked NavMesh.
+- **Play-checked in Outer Gate:**
+  - Routing around a shut wall.
+  - Goblins claiming and hitting a wall.
+  - Door open → pass-through.
+  - Troll siege with escorts joining.
+  - Spike thorns.
+  - Damage stages, collapse to rubble.
+  - Upgrade wheel purchases via real button clicks.
+  - HUD crystal counters and the wall row.
+- **Not play-checked:** battering ram breaching, sapper on a wall, captains, crystal drops and wave rewards. These are covered by code review only and are listed in the checklist.
+
+## Needs Lance in the Editor
+
+Moved to its own checklist: [`plans/editor/17-walls-and-upgrade-wheel.md`](editor/17-walls-and-upgrade-wheel.md).

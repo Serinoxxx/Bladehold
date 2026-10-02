@@ -71,7 +71,7 @@ public class WallStructure : MonoBehaviour, IUpgradeable
     private readonly StructureUpgradeState upgrades = new StructureUpgradeState();
     private readonly List<Transform> segments = new List<Transform>();
     private readonly List<GameObject> spikeProps = new List<GameObject>();
-    private readonly List<ParticleSystem> smoke = new List<ParticleSystem>();
+    private readonly List<GameObject> smoke = new List<GameObject>();
     private readonly List<BoxCollider> sideColliders = new List<BoxCollider>();
     private readonly List<NavMeshObstacle> sideObstacles = new List<NavMeshObstacle>();
     private readonly Collider[] scanBuffer = new Collider[64];
@@ -360,9 +360,10 @@ public class WallStructure : MonoBehaviour, IUpgradeable
         door.Collapse();
 
         // Heavy smoke lingers over the rubble, then dies down.
-        foreach (ParticleSystem ps in smoke)
+        foreach (GameObject fx in smoke)
         {
-            if (ps != null) ps.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            if (fx == null) continue;
+            foreach (ParticleSystem ps in fx.GetComponentsInChildren<ParticleSystem>()) ps.Stop(true, ParticleSystemStopBehavior.StopEmitting);
         }
 
         RefreshNavCost();
@@ -464,17 +465,17 @@ public class WallStructure : MonoBehaviour, IUpgradeable
     /// <summary>Looping smoke/fire for the current damage stage, one emitter per side so it reads from a distance.</summary>
     private void RefreshSmoke()
     {
-        foreach (ParticleSystem ps in smoke) if (ps != null) Destroy(ps.gameObject);
+        foreach (GameObject fx in smoke) if (fx != null) Destroy(fx);
         smoke.Clear();
-        ParticleSystem prefab = art != null ? art.DamageVfx(damageStage) : null;
+        GameObject prefab = art != null ? art.DamageVfx(damageStage) : null;
         if (prefab == null) return;
         float sideCentre = art.doorWidth * 0.5f + (width - art.doorWidth) * 0.25f;
         foreach (int side in new[] { -1, 1 })
         {
-            ParticleSystem ps = Instantiate(prefab, transform);
-            ps.transform.localPosition = new Vector3(side * sideCentre, art.wallHeight * 0.6f, 0f);
-            ps.Play();
-            smoke.Add(ps);
+            GameObject fx = Instantiate(prefab, transform);
+            fx.transform.localPosition = new Vector3(side * sideCentre, art.wallHeight * 0.6f, 0f);
+            foreach (ParticleSystem ps in fx.GetComponentsInChildren<ParticleSystem>()) ps.Play();
+            smoke.Add(fx);
         }
     }
 

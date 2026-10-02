@@ -4,6 +4,15 @@
 
 ### New Features
 
+- Added walls: build one at a workbench beside each bridge, open and shut its gate with E, and upgrade it from wood to stone to metal
+- Added wall upgrades: repairs, spikes that hurt melee attackers, and one element per wall (boiling oil, icy water or lightning)
+- Added an upgrade wheel for towers: refill ammo, faster fire rate, a spike ring, one element (fire, ice or storm) and deconstruct for a full refund
+- Added fire, ice and storm crystals for elemental upgrades, dropped by special enemies, siege enemies and captains, earned from waves and objectives, and caught as elemental fish; each battlefield favours one kind
+- Added enemies routing around walled bridges, while trolls, battering rams, sappers and captains smash straight through with their escorts
+- Added wall health bars, smoke and fire as walls take damage, and a wall status row above the gate health bar
+- Added an ammo chest by the main gate in the gate battles
+- Added rocky chokepoints with wall spots to the tutorial's gate battle
+
 ### Fixes
 
 - Fixed the horse sometimes refusing to move from a standstill until forward was held for a few seconds
@@ -12,6 +21,9 @@
 ### Balance Changes
 
 ### General Changes
+
+- Removed the Oil Vat and Spike Trap towers; boiling oil and spikes are now wall and tower upgrades
+- Removed the fortress elemental battle cards; towers now get their element from the upgrade wheel
 
 ## [0.1.31] - 2026-10-01
 

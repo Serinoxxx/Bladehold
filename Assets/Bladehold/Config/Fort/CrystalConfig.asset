@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bfde5ba9ef037b48bb6f2a9fc86e49a, type: 3}
+  m_Name: CrystalConfig
+  m_EditorClassIdentifier: Assembly-CSharp::CrystalConfigSO
+  fodderIds:
+  - goblin
+  - skeleton_soldier
+  - skeleton_soldier_shield
+  - skeleton_knight
+  - skeleton_knight_shield
+  eliteDropChance: 0.2
+  eliteDropAmount: 1
+  siegeDropAmount: 2
+  captainDropAmount: 3
+  pickupPrefab: {fileID: 2833465138114365547, guid: 42586a2cd8312564894fc0db4295cd0b, type: 3}
+  waveClearCrystals: 1
+  objectiveCrystals: 1
+  elementalFishCrystals: 1

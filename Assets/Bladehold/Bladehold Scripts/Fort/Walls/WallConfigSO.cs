@@ -57,9 +57,10 @@ public class WallConfigSO : ScriptableObject
     [Range(0f, 1f)] public float mediumDamageAt = 0.5f;
     [Tooltip("At or below this HP fraction: heavy damage (fire).")]
     [Range(0f, 1f)] public float heavyDamageAt = 0.25f;
-    public ParticleSystem lightDamageVfx;
-    public ParticleSystem mediumDamageVfx;
-    public ParticleSystem heavyDamageVfx;
+    [Tooltip("Looping effect prefabs (any number of particle systems); spawned once per side of the doorway.")]
+    public GameObject lightDamageVfx;
+    public GameObject mediumDamageVfx;
+    public GameObject heavyDamageVfx;
 
     public TierArt Tier(int tier)
     {
@@ -98,7 +99,7 @@ public class WallConfigSO : ScriptableObject
         };
     }
 
-    public ParticleSystem DamageVfx(int stage)
+    public GameObject DamageVfx(int stage)
     {
         return stage switch
         {

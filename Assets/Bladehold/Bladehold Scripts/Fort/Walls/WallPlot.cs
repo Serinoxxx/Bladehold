@@ -23,6 +23,9 @@ public class WallPlot : MonoBehaviour
     [SerializeField] private WallCraftingStation station;
     [Tooltip("Shown while the plot is empty (stakes / chalk outline marking where the wall goes).")]
     [SerializeField] private GameObject emptyMarker;
+    [Tooltip("Marker stakes moved to the wall's two ends (the plot's width varies per bridge).")]
+    [SerializeField] private Transform markerLeft;
+    [SerializeField] private Transform markerRight;
     [Tooltip("Played when a wall is built (hammering, dust).")]
     [SerializeField] private MMF_Player buildFeedback;
     [SerializeField] private DamageNumbersPro.DamageNumber popupPrefab;
@@ -60,6 +63,8 @@ public class WallPlot : MonoBehaviour
         else WallNavCost.SetCost(navArea, 1f);
 
         if (station != null) station.Init(this);
+        if (markerLeft != null) markerLeft.localPosition = new Vector3(-width * 0.5f, markerLeft.localPosition.y, markerLeft.localPosition.z);
+        if (markerRight != null) markerRight.localPosition = new Vector3(width * 0.5f, markerRight.localPosition.y, markerRight.localPosition.z);
         if (TowerPlotManager.Instance != null) TowerPlotManager.Instance.RegisterWallPlot(this);
         RefreshMarker();
     }

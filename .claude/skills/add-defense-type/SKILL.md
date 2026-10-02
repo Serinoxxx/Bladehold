@@ -14,17 +14,24 @@ Read `Assets/Bladehold/Bladehold Scripts/Fort/CLAUDE.md` first. A defence is: an
 | Lobbed AoE projectile | `CatapultDefense` + `CatapultProjectile` |
 | Piercing line shot | `BallistaDefense` + `BallistaBoltProjectile` |
 | Crowd control (root) | `NetThrowerDefense` + `NetProjectile` |
-| Ground trap, no turret | `SpikeTrapDefense` |
-| Persistent zone | `OilVatDefense` + `BurningOilZone` |
+| Ground trap / blind-spot cover | `TowerSpikeRing` (the Spikes upgrade; the Spike Trap tower was removed in plan 17) |
+| Persistent zone | `BurningOilZone` (now the Fire wall upgrade; the Oil Vat tower was removed) |
 
 ## 1. Enum (`Fort/FortDefenseType.cs`)
 
-**Append** a value to `FortDefenseType`. Never reorder or remove: `BuildWheelUI.defenseOptions` on the HUD prefab and every tower serialize the int. (`FortSocketType` is dead, left over from the deleted socket fortress.)
+Add a value with an **explicit int** to `FortDefenseType` (next free number; 1 and 2 were the removed Oil Vat / Spike Trap and must never be reused). Never renumber: `BuildWheelUI.defenseOptions` on the HUD prefab and every tower serialize the int. (`FortSocketType` is dead, left over from the deleted socket fortress.)
 
 ## 2. The subclass (`Fort/<Name>Defense.cs`)
 
 What the base (`DefenseStructure`) already does, so don't redo it:
-- `[E]` interaction: refill from the player's pool while below max supply, otherwise upgrade (up to `maxLevel` 3). Refill and upgrade work any time, not just during prep.
+- `[E]` interaction, which has two modes:
+  - **Defense scenes** (a `DefenseSceneRules` is present): it opens the plan-17 **upgrade wheel**: Refill, Fire Rate I–III, Spikes, one element, Deconstruct. The tower stays level 1 there.
+  - **Older scenes:** refill from the player's pool while below max supply, otherwise upgrade (up to `maxLevel` 3).
+  - Either way it works any time, not just during prep.
+- **Upgrade-wheel hooks your subclass must honour:**
+  - Divide your fire interval by `FireRateMultiplier`.
+  - Call `ApplyElementTo(target)` on every hit (or pass `Element` to your projectile).
+  - Override `TowerElementBlurb` if the element does something special for this tower (the catapult's elements spawn fireball / ice / storm-cloud zones).
 - The prompt text, `AllActive` registration (which drives the HUD "NO SUPPLY" marker in `UI/ObjectiveWaypointTrackerUI`), `InteractableRegistry`, and `DismantleRefund` (remaining supply + paid upgrade spend).
 - The repair/upgrade/break feedbacks and the supply popup.
 
@@ -41,7 +48,7 @@ What you write:
 
 House rule: tunables live on a `ScriptableObject`. The six existing towers predate that: their per-level numbers are hard-coded in each `ApplyLevelStats` switch, and costs are code constants. For a new tower, add a `<Name>DefenseSO` (`[CreateAssetMenu(menuName = "Scriptable Objects/Defenses/...")]`) with per-level rows (damage, interval, range, radius…) and optional supply/upgrade overrides. Put the asset in `Bladehold Config/`, reference it from the prefab, null-check it in `Start` (set `anyError`, early-out of `Update`) and read it in `ApplyLevelStats`.
 
-Draft-card hooks (e.g. `TowerArrowDamageBonus`): read via `Player.Instance.Stats.GetValue(StatType.X)`. Append new `StatType` values at the **end** of the enum, never mid-list. The cards themselves are rows in `Resources/DraftUpgrades.csv` (Elemental category, `SLOT_FORTRESS`). Tesla Spire and Permafrost in `TowerPlotManager` already apply to any built tower, with no work needed.
+Draft-card hooks: read via `Player.Instance.Stats.GetValue(StatType.X)`. Append new `StatType` values at the **end** of the enum, never mid-list. The fortress elemental cards (`SLOT_FORTRESS`, Tesla Spire, Permafrost, Fire/Frost/Lightning Arrows, the catapult cards) were **removed in plan 17**. Tower elements now come from the upgrade wheel (`Element`), so don't add new tower element cards.
 
 ## 4. The prefab (`Bladehold Prefabs/Defenses/Defense_<Name>.prefab`)
 
