@@ -192,6 +192,8 @@
   - HUD crystal counters and the wall row.
 - **Not play-checked:** battering ram breaching, sapper on a wall, captains, crystal drops and wave rewards. These are covered by code review only and are listed in the checklist.
 
+**Follow-up (2026-10-02):** the tutorial now teaches walls. `Tutorial/BuildWallStep` runs after the mount step in Tutorial Gate and points at the centre gap's workbench, and its second hint line explains the rerouting.
+
 ## Needs Lance in the Editor
 
 Moved to its own checklist: [`plans/editor/17-walls-and-upgrade-wheel.md`](editor/17-walls-and-upgrade-wheel.md).

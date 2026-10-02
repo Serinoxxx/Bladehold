@@ -35018,6 +35018,7 @@ Transform:
   - {fileID: 871178383}
   - {fileID: 95481906}
   - {fileID: 1064198375}
+  - {fileID: 1238240738}
   - {fileID: 1037433361}
   - {fileID: 319234335}
   m_Father: {fileID: 0}
@@ -50631,6 +50632,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4257972153753668, guid: 23e06cc63cc3eb74791ede84dc942e66, type: 3}
   m_PrefabInstance: {fileID: 1065757268}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1067217219
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1067217220}
+  m_Layer: 0
+  m_Name: Step11b_Wall
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1067217220
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1067217219}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1836542383}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1071361323
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -58587,6 +58619,75 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4176354919613106, guid: b932914ce87c734468a4c00f71611068, type: 3}
   m_PrefabInstance: {fileID: 1234759498}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1238240737
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1238240738}
+  - component: {fileID: 1238240739}
+  m_Layer: 0
+  m_Name: Step11b_Wall
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1238240738
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1238240737}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 752869200}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1238240739
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1238240737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c424d0e35d95cad4fbbb99621ab3d628, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BuildWallStep
+  stepId: Wall
+  waypointTarget: {fileID: 1323933793}
+  waypointOffset: {x: 0, y: 1.5, z: 0}
+  hint:
+    locKey: tutorial.wall
+    english: Build a wall at the workbench by the marked gap
+    actionName: Interact
+    kbmPath: 
+    gamepadPath: 
+  secondaryHint:
+    locKey: tutorial.wall_reroute
+    english: Goblins go round a walled gap. Wall every gap and they have to break
+      through
+    actionName: 
+    kbmPath: 
+    gamepadPath: 
+  startFeedback: {fileID: 0}
+  completeFeedback: {fileID: 0}
+  onStepStarted:
+    m_PersistentCalls:
+      m_Calls: []
+  onStepCompleted:
+    m_PersistentCalls:
+      m_Calls: []
+  targetPlot: {fileID: 1323933794}
 --- !u!1001 &1239649791
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -63502,6 +63603,22 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7252143402711652458, guid: acb9f645ac3c9f2438da08c934ee4951, type: 3}
   m_PrefabInstance: {fileID: 1323933791}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &1323933793 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8218960856394418212, guid: acb9f645ac3c9f2438da08c934ee4951, type: 3}
+  m_PrefabInstance: {fileID: 1323933791}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1323933794 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5101430491628222591, guid: acb9f645ac3c9f2438da08c934ee4951, type: 3}
+  m_PrefabInstance: {fileID: 1323933791}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37d117bb4d9dfce42bbabdac8097337f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WallPlot
 --- !u!1001 &1324488942
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -90045,6 +90162,7 @@ MonoBehaviour:
   - {fileID: 871178384}
   - {fileID: 95481907}
   - {fileID: 1064198376}
+  - {fileID: 1238240739}
   - {fileID: 1037433362}
   - {fileID: 319234334}
   exit: {fileID: 0}
@@ -90074,7 +90192,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1067217220}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1837255954

@@ -12,6 +12,7 @@
 - Added wall health bars, smoke and fire as walls take damage, and a wall status row above the gate health bar
 - Added an ammo chest by the main gate in the gate battles
 - Added rocky chokepoints with wall spots to the tutorial's gate battle
+- Added a tutorial step that teaches building a wall and shows goblins going round it to another gap
 
 ### Fixes
 

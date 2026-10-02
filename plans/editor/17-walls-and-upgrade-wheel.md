@@ -44,7 +44,12 @@ All of these are clones of the Arrow Tower's Repair/Upgrade/Break players (or th
 - [ ] **Look at the chokepoint line** (`Wall Chokepoints` root, `Rocks` + `Wall Plots`). It's 36 Synty cliff rocks across the field at z ≈ 50, with 3 gaps at x = −22, 2, 26, each holding a wall plot.
   - The NavMesh was rebaked, and every spawn still reaches the gate through the gaps (Humanoid and Large Enemy).
   - If you move rocks, rebake (`NavMesh` object, both surfaces). No rock gap may be wider than a wall (7.6 m), or enemies walk round it.
-- [ ] **Decide whether the tutorial should teach walls** (a step "build a wall at the marked gap"). Right now they're just there to use.
+- [ ] **Tutorial wall step (added 2026-10-02).** The new step `Step11b_Wall` (`BuildWallStep`) comes after Mount and before the second Ready.
+  - **Waypoint:** the centre gap's workbench (`WallPlot_2`).
+  - **Line 1:** "Build a wall at the workbench by the marked gap".
+  - **Line 2:** "Goblins go round a walled gap. Wall every gap and they have to break through" (`tutorial.wall` / `tutorial.wall_reroute` in `Strings.csv`, English only).
+  - **Path check:** with that wall up, wave 2's three centre spawns path through the left gap instead.
+  - **Playtest:** the step completes on building there (or on starting the wave). Wave 2 visibly swerves round the wall, and supply after wave 1 covers the 40-supply wall.
 
 ## Playtest
 

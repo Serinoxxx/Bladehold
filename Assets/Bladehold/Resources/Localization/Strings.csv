@@ -519,6 +519,8 @@ tutorial.wave,Tutorial step: survive the wave,Defend the gate! Defeat every gobl
 tutorial.wave_first,Tutorial step: first of three waves,Defend the gate! Defeat the first wave,,,,,,,,
 tutorial.mount,Tutorial step: summon the horse between waves,Summon your warhorse,,,,,,,,
 tutorial.mount_trample,"Tutorial step: summon the horse, second line",Ride through goblins to trample them,,,,,,,,
+tutorial.wall,Tutorial step: build a wall in a chokepoint,Build a wall at the workbench by the marked gap,,,,,,,,
+tutorial.wall_reroute,"Tutorial step: build a wall, second line",Goblins go round a walled gap. Wall every gap and they have to break through,,,,,,,,
 tutorial.ready_next,Tutorial step: start the second wave,Hold to start the next wave,,,,,,,,
 tutorial.wave_rest,Tutorial step: last two waves,Hold the gate through the last two waves,,,,,,,,
 tutorial.exit,Tutorial: all steps done in a scene,Head through the door,,,,,,,,
