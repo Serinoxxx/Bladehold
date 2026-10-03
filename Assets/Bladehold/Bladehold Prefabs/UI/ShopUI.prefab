@@ -230,7 +230,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: -30}
-  m_SizeDelta: {x: 1080, y: 420}
+  m_SizeDelta: {x: 1640, y: 420}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2903065273355779001
 MonoBehaviour:
@@ -510,7 +510,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: -20}
-  m_SizeDelta: {x: 1150, y: 680}
+  m_SizeDelta: {x: 1720, y: 680}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2305941800415419177
 CanvasRenderer:
@@ -1238,6 +1238,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 81efd18f7a0909a40a2722e6b287d14a, type: 2}
   - {fileID: 11400000, guid: 91a214eabddd4557b9a605bfd0e0b6a8, type: 2}
   ultimateConfig: {fileID: 11400000, guid: aa9b2451ba6a7454392485c02d3fc79e, type: 2}
+  replacementMountItem: {fileID: 0}
   shopPanel: {fileID: 2469670472168727604}
   goldLabel: {fileID: 2246940765165224931}
   closeButton: {fileID: 2509999035455932394}

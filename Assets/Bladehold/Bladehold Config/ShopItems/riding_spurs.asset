@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c47697d1235bcf946b2de45026a8cf17, type: 3}
+  m_Name: riding_spurs
+  m_EditorClassIdentifier: Assembly-CSharp::ShopItemSO
+  itemId: riding_spurs
+  displayName: Riding Spurs
+  description: Your warhorse is 10% faster for the rest of this run.
+  goldCost: 30
+  icon: {fileID: 21300000, guid: 9914b508864bec1489d0affab3bbe4bf, type: 3}
+  effectType: 8
+  effectValue: 0.1
+  durationWaves: 0
+  stat: 59
+  statKind: 0

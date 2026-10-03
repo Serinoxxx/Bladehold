@@ -434,6 +434,18 @@ public class MinimapUI : MonoBehaviour
 
     // ---- Per frame -----------------------------------------------------------------------------
 
+    /// <summary>
+    ///     The collapsed map sits in the top-right corner, where wide modal panels (shop, draft cards) reach.
+    ///     While another screen holds the cursor unlocked, the collapsed map fades out so it never shows
+    ///     through or pokes past a modal; the expanded map (which unlocks the cursor itself) stays visible.
+    /// </summary>
+    private void FadeForModals()
+    {
+        bool modalOpen = !expanded && transition <= 0.001f && CursorLockManager.IsCursorUnlocked;
+        float target = modalOpen ? 0f : 1f;
+        frameGroup.alpha = Mathf.MoveTowards(frameGroup.alpha, target, Time.unscaledDeltaTime * 8f);
+    }
+
     private void Update()
     {
         if (anyError || !ready) return;
@@ -441,6 +453,7 @@ public class MinimapUI : MonoBehaviour
 
         HandleInput();
         AnimateTransition(now);
+        FadeForModals();
 
         if (now >= nextPlotSync)
         {

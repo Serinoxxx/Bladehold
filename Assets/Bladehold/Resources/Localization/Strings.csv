@@ -622,3 +622,5 @@ settings.header_action,Rebind grid column header,Action,Action,Azione,Aktion,Acc
 settings.cancel,Confirm dialog cancel button,Cancel,Annuler,Annulla,Abbrechen,Cancelar,Отмена,取消,キャンセル,취소
 hint.select,Control hint label (menus),Select,Choisir,Seleziona,Auswählen,Seleccionar,Выбрать,选择,決定,선택
 hint.navigate,Control hint label (menus),Navigate,Naviguer,Naviga,Navigieren,Navegar,Навигация,导航,移動,이동
+hud.mount.fallen,HUD status under the horse bars once the warhorse has died,Fallen: buy a new warhorse at the shop,Tombé : achetez un nouveau destrier à la boutique,Caduto: compra un nuovo destriero al negozio,Gefallen: Kaufe im Laden ein neues Schlachtross,Caído: compra un nuevo corcel en la tienda,Пал: купите нового боевого коня в лавке,已阵亡：在商店购买新战马,倒れた：ショップで新しい軍馬を購入,쓰러짐: 상점에서 새 군마를 구입하세요
+hud.mount.charge_ready,HUD tag on the horse stamina bar when a Shift-charge can start,Charge ready,Charge prête,Carica pronta,Sturmangriff bereit,Carga lista,Атака готова,冲锋就绪,突撃準備完了,돌격 준비 완료

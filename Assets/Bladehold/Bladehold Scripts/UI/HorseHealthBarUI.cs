@@ -1,89 +1,67 @@
 using MoreMountains.Tools;
+using TMPro;
 using UnityEngine;
 
 /// <summary>
-///     Drives a screen-space <see cref="MMProgressBar" /> for the currently mounted horse's health.
-///     Subscribes to <see cref="PlayerMount.OnMountedChanged" /> and re-wires the horse's
-///     <see cref="Health.OnHealthChanged" /> each time the player mounts a different horse.
-///     Pair this with <see cref="HorseBarGroupUI" /> for the mount/dismount show-hide animation.
+///     The warhorse's health bar. Polls <see cref="PlayerMount.MountHealthFraction" /> — the live horse
+///     while riding it, the banked value between summons — and pushes changes into an
+///     <see cref="MMProgressBar" /> with <c>UpdateBar</c> only when the value actually moves, so hits
+///     still get the bump and trailing delayed bar. Visibility belongs to <see cref="HorseBarGroupUI" />.
 /// </summary>
 public class HorseHealthBarUI : MonoBehaviour
 {
-    [Tooltip("The player's mount component. Auto-wired from Player.Instance if left empty.")]
+    [Tooltip("The player's mount. Resolved from Player.Instance's root if left empty.")]
     [SerializeField] private PlayerMount mount;
 
     [Tooltip("The MMProgressBar that visualises the horse's health.")]
     [SerializeField] private MMProgressBar progressBar;
 
-    private Health _currentHorseHealth;
-    private bool _anyError;
+    [Tooltip("Optional: percentage label over the bar.")]
+    [SerializeField] private TMP_Text valueLabel;
+
+    private float shownFraction = -1f;
+    private bool anyError;
 
     private void Start()
     {
         if (mount == null && Player.Instance != null)
-            mount = Player.Instance.GetComponent<PlayerMount>();
-
-        if (mount == null)
-            mount = FindObjectOfType<PlayerMount>();
-
+        {
+            mount = Player.Instance.transform.root.GetComponentInChildren<PlayerMount>(true);
+        }
         if (mount == null)
         {
-            Debug.LogError("[HorseHealthBarUI] PlayerMount not found — assign it or ensure Player.Instance has one.");
-            _anyError = true;
+            Debug.LogError("[HorseHealthBarUI] PlayerMount not found — assign it or ensure Player.Instance has one.", this);
+            anyError = true;
         }
-
         if (progressBar == null)
         {
-            Debug.LogError("[HorseHealthBarUI] MMProgressBar not assigned.");
-            _anyError = true;
+            Debug.LogError("[HorseHealthBarUI] MMProgressBar not assigned.", this);
+            anyError = true;
         }
-
-        if (_anyError) return;
-
-        mount.OnMountedChanged += HandleMountedChanged;
-
-        // If already mounted at Start (e.g. StartMountedSpawner), sync immediately.
-        if (mount.IsMounted)
-            HandleMountedChanged(true);
     }
 
-    private void OnDestroy()
+    private void Update()
     {
-        if (mount != null)
-            mount.OnMountedChanged -= HandleMountedChanged;
+        if (anyError) return;
 
-        UnsubscribeHorseHealth();
-    }
-
-    private void HandleMountedChanged(bool mounted)
-    {
-        UnsubscribeHorseHealth();
-
-        if (!mounted) return;
-
-        HorseMotor horse = mount.CurrentHorse;
-        if (horse == null) return;
-
-        // HorseMotor stores its Health on the same GameObject by convention.
-        _currentHorseHealth = horse.GetComponent<Health>();
-        if (_currentHorseHealth == null) return;
-
-        _currentHorseHealth.OnHealthChanged += RefreshHorseHealth;
-        RefreshHorseHealth(); // immediate sync
-    }
-
-    private void UnsubscribeHorseHealth()
-    {
-        if (_currentHorseHealth != null)
+        float fraction = mount.MountHealthFraction;
+        if (shownFraction < 0f)
         {
-            _currentHorseHealth.OnHealthChanged -= RefreshHorseHealth;
-            _currentHorseHealth = null;
+            progressBar.SetBar01(fraction);
         }
-    }
+        else if (Mathf.Abs(fraction - shownFraction) > 0.001f)
+        {
+            progressBar.UpdateBar01(fraction);
+        }
+        else
+        {
+            return;
+        }
 
-    private void RefreshHorseHealth()
-    {
-        if (_currentHorseHealth == null) return;
-        progressBar.UpdateBar(_currentHorseHealth.CurrentHealth, 0f, _currentHorseHealth.MaxHealth);
+        shownFraction = fraction;
+        if (valueLabel != null)
+        {
+            valueLabel.text = Mathf.CeilToInt(fraction * 100f) + "%";
+        }
     }
 }

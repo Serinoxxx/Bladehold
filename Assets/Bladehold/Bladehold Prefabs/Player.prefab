@@ -3689,8 +3689,6 @@ MonoBehaviour:
   playerMount: {fileID: 1504036595472203636}
   player: {fileID: 4146729303150882357}
   inputReader: {fileID: 6872381413864324108}
-  spawnPosition: {fileID: 7221494747159862080}
-  horsePrefab: {fileID: 858813099922789300, guid: 057db930a61e9c64189b4bd589b8770a, type: 3}
   spawnFeedback: {fileID: 6715754465383031624}
   despawnFeedback: {fileID: 8675917126501382681}
   errorFeedback: {fileID: 0}
@@ -78792,6 +78790,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
       insertIndex: -1
       addedObject: {fileID: 703679297598991780}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6200648853516137169}
   m_SourcePrefab: {fileID: 100100000, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}
 --- !u!4 &190421269890890082 stripped
 Transform:
@@ -79812,6 +79813,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DamageBlocker
   health: {fileID: 46043393445266479}
   stats: {fileID: 5156588240620538864}
+  dodge: {fileID: 0}
   blockFeedback: {fileID: 1374386820902637959}
 --- !u!114 &9219490616039227213
 MonoBehaviour:
@@ -80093,6 +80095,9 @@ MonoBehaviour:
   ridingLayerName: Riding
   mountFeedback: {fileID: 1728939308097273906}
   dismountFeedback: {fileID: 1545244807824927532}
+  mountLostFeedback: {fileID: 0}
+  loyalSteedFeedback: {fileID: 0}
+  loyalSteedHealthFraction: 0.3
   horsePrefab: {fileID: 0}
 --- !u!114 &518862848152106909
 MonoBehaviour:
@@ -80147,6 +80152,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Parry
   health: {fileID: 46043393445266479}
   stats: {fileID: 5156588240620538864}
+  dodge: {fileID: 0}
   parryFeedback: {fileID: 4418131176179029935}
   facingDotThreshold: 0.3
 --- !u!114 &8676661925207136709
@@ -80249,6 +80255,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAmmo
   outOfAmmoFeedback: {fileID: 5203353892859031318}
+--- !u!114 &6200648853516137169
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8033356972124291578}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40b50051f92c3a94e92103db93e3ba5b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MountChargeAbilities
+  mount: {fileID: 1504036595472203636}
+  fireTrailVfxPrefab: {fileID: 0}
+  frostPulseFeedback: {fileID: 0}
+  enemyLayers:
+    serializedVersion: 2
+    m_Bits: 128
 --- !u!4 &8319765117670202089 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8013909246233647550, guid: b9745fea1f5904242a93d6838cb1b985, type: 3}

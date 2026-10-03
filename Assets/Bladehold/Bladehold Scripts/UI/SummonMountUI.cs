@@ -32,6 +32,11 @@ public class SummonMountUI : MonoBehaviour
     public Color activeDurationColor = Color.cyan;
     public Color cooldownColor = Color.red;
     public Color readyColor = Color.white;
+    [Tooltip("Icon tint while the run's warhorse is dead (replace it at the shop).")]
+    public Color lostColor = new Color(0.62f, 0.24f, 0.2f, 0.8f);
+
+    [Tooltip("Ride durations at or above this many seconds count as unlimited: no countdown is shown.")]
+    [SerializeField] private float unlimitedDurationSeconds = 600f;
 
     [Header("Feedbacks")]
     public MMF_Player cooldownFinishedFeedback;
@@ -146,6 +151,14 @@ public class SummonMountUI : MonoBehaviour
             if (keybindIcon != null) keybindIcon.gameObject.SetActive(isUnlocked);
         }
 
+        if (isUnlocked && playerSummonMount.IsMountLost && !playerSummonMount.IsHorseActive)
+        {
+            if (radialFillImage != null) radialFillImage.fillAmount = 0f;
+            if (timerText != null) timerText.text = "";
+            if (skillIcon != null) skillIcon.color = lostColor;
+            return;
+        }
+
         if (isUnlocked && playerSummonMount != null && !playerSummonMount.IsHorseActive && !playerSummonMount.IsCooldownActive)
         {
             if (radialFillImage != null) radialFillImage.fillAmount = 0f;
@@ -157,12 +170,22 @@ public class SummonMountUI : MonoBehaviour
     private void HandleDurationUpdated(float current, float max)
     {
         skillIcon.color = activeDurationColor;
+        if (max >= unlimitedDurationSeconds)
+        {
+            // An unlimited ride (the basic warhorse): no countdown, the slot just reads "riding".
+            radialFillImage.fillAmount = 0f;
+            timerText.text = "";
+            return;
+        }
         radialFillImage.fillAmount = max > 0 ? current / max : 0;
         timerText.text = Mathf.CeilToInt(current).ToString();
     }
 
     private void HandleCooldownUpdated(float current, float max)
     {
+        // A dead horse reads as "lost" (Update), not as a countdown.
+        if (playerSummonMount != null && playerSummonMount.IsMountLost) return;
+
         skillIcon.color = cooldownColor;
         // Fill drains over time (or grows, up to preference. Buffs drain)
         radialFillImage.fillAmount = max > 0 ? current / max : 0;

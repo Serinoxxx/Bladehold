@@ -20,7 +20,7 @@ Play-checked in `Bladehold Outer Gate`. Prep: routes fan from the 10 spawns thro
 - [ ] **Look and feel:** `Bladehold Prefabs/UI/Minimap/Minimap.prefab` (open it in game with **M** / gamepad **Back**). Judge:
   - the Synty art choices: `Minimap_Box_01` chrome (`SPR_FantasyWarrior_Frame_Box_11` border, glow shadow, vignette), parchment legend and tooltip;
   - Texturina headers and Grenze body text;
-  - the corner size and position (600×600, sitting above the gate HP bar);
+  - the corner size and position (600×600; moved to the top-right corner on 2026-10-04, see `mount-charge-and-hud.md`);
   - the expanded size (`MinimapConfig` → **Expanded Size** 1720, **Expanded Offset** (180, −20));
   - layout at 16:9 and ultrawide.
 - [ ] **Animation feel:** `MinimapConfig` → **Expand Seconds** 0.32 / **Collapse Seconds** 0.24, plus the **Expand Curve** (overshoots to 1.035 and settles). The open/close sounds are empty: `MinimapUI` → **Expand Feedback** / **Collapse Feedback** are optional `MMF_Player` slots *(human intervention: pick sounds)*.

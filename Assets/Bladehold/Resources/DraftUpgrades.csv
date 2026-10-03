@@ -39,3 +39,9 @@ elem_ice_ice_shards,Ice Shards,Elemental,,Ice,0,4,Ranged kills shatter enemies i
 duo_thermal_shock,Thermal Shock,Elemental,,,0,4,Enemies afflicted by Fire and Ice take massive burst damage.,Thermal Shock bursts hit even harder,DuoThermalShock,Flat,1|1.5|2|2.5,thermal_shock,,TRUE,Fire|Ice,slot:Fire;slot:Ice
 duo_plasma_overload,Plasma Overload,Elemental,,,0,4,Fire and Lightning cause explosions.,Plasma explosions deal more damage,DuoPlasmaOverload,Flat,1|1.5|2|2.5,plasma_overload,,TRUE,Fire|Lightning,slot:Fire;slot:Lightning
 duo_superconductor,Superconductor,Elemental,,,0,4,Ice and Lightning create larger chain lightning.,Superconductor lightning deals more damage,DuoSuperconductor,Flat,1|1.5|2|2.5,superconductor,,TRUE,Ice|Lightning,slot:Lightning;card:elem_ice_deep_freeze
+mount_blazing_hooves,Blazing Hooves,Weapon,,,0,4,"While charging, your horse leaves a trail of fire that burns enemies.",Hotter fire trail,HorseChargeFireTrailDPS,Flat,4|6|8|10,Aura_Burn_nb,,,,
+mount_frost_wake,Frost Wake,Weapon,,,0,4,"While charging, enemies near your horse are chilled.",Wider frost aura,HorseChargeFrostRadius,Flat,3|4|5|6,Skill_FrostNova_nb,,,,
+mount_battering_ram,Battering Ram,Weapon,,,0,4,Your horse's trample hits harder.,Even harder trample,HorseTrampleDamageMultiplier,Flat,0.3|0.6|0.9|1.2,Push_nobg,,,,
+mount_bloodlust,Bloodlust,Weapon,,,0,4,Enemies your horse tramples to death refund charge stamina.,More stamina per trample kill,HorseTrampleKillStamina,Flat,3|5|7|9,Bloodlust,,,,
+mount_iron_barding,Iron Barding,Weapon,,,0,4,Your horse takes less damage while charging.,Tougher barding,HorseChargeDamageReduction,Flat,0.2|0.3|0.4|0.5,Skill_ShieldWall_nb,,,,
+mount_eager_steed,Eager Steed,Weapon,,,0,4,Your kills fill the horse's charge stamina faster.,Even faster charge build-up,HorseStaminaGainMultiplier,Flat,0.25|0.5|0.75|1,Skill_HorseAcceleration_nb,,,,

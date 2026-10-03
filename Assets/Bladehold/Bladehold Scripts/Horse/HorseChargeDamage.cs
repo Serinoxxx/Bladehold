@@ -29,6 +29,9 @@ public class HorseChargeDamage : MonoBehaviour
     /// <summary>Fired once per trample hit with the victim and the (approximate) hit point.</summary>
     public event Action<IDamageable, Vector3> OnHit;
 
+    /// <summary>Fired when a trample hit kills its victim (alive before the hit, dead after).</summary>
+    public event Action<IDamageable> OnKill;
+
     /// <summary>True while a charge is active (between BeginCharge and EndCharge).</summary>
     public bool IsCharging { get; private set; }
 
@@ -43,6 +46,7 @@ public class HorseChargeDamage : MonoBehaviour
     private IDamageable rider;
     private float damagePerHit;
     private float speedFactor = 1f;
+    private float knockbackFactor = 1f;
     private bool drivingChargeAnimation;
     private bool anyError = false;
 
@@ -123,6 +127,7 @@ public class HorseChargeDamage : MonoBehaviour
         rider = riderDamageable;
         damagePerHit = damage;
         speedFactor = 1f;
+        knockbackFactor = 1f;
         drivingChargeAnimation = driveChargeAnimation;
         IsCharging = true;
 
@@ -139,7 +144,18 @@ public class HorseChargeDamage : MonoBehaviour
     /// </summary>
     public void SetSpeedFactor(float factor)
     {
-        speedFactor = Mathf.Max(0f, factor);
+        SetFactors(factor, factor);
+    }
+
+    /// <summary>
+    ///     Like <see cref="SetSpeedFactor" /> but scales damage and knockback separately, so the
+    ///     player's horse can still shoulder enemies aside while riding without charging (low damage,
+    ///     some knockback) and hit at full strength once the charge starts.
+    /// </summary>
+    public void SetFactors(float damageFactor, float knockbackScale)
+    {
+        speedFactor = Mathf.Max(0f, damageFactor);
+        knockbackFactor = Mathf.Max(0f, knockbackScale);
     }
 
     /// <summary>Closes the trample window and prunes expired re-hit cooldown entries.</summary>
@@ -200,12 +216,19 @@ public class HorseChargeDamage : MonoBehaviour
             bool isPlayer = (rider != null && Player.Instance != null && (ReferenceEquals(rider, Player.Instance.Damageable) || ReferenceEquals(rider, Player.Instance.Health)))
                 || (source != null && Player.Instance != null && (ReferenceEquals(source, Player.Instance.Damageable) || ReferenceEquals(source, Player.Instance.Health)));
 
+            Health victimHealth = damageable as Health;
+            if (victimHealth == null && damageable is Component victimComponent)
+            {
+                victimHealth = victimComponent.GetComponentInParent<Health>();
+            }
+            bool wasAlive = victimHealth != null && !victimHealth.IsDead;
+
             damageable.ReceiveDamage(new Damage
             {
                 value = damagePerHit * speedFactor,
                 type = horseData.damageType,
                 sourcePosition = transform.position,
-                knockbackForce = horseData.knockbackForce * speedFactor,
+                knockbackForce = horseData.knockbackForce * knockbackFactor,
                 source = source,
                 unparryable = true,
                 isPlayerDamage = isPlayer,
@@ -220,6 +243,10 @@ public class HorseChargeDamage : MonoBehaviour
                 ? collider.ClosestPoint(center)
                 : collider.bounds.ClosestPoint(center);
             OnHit?.Invoke(damageable, hitPoint);
+            if (wasAlive && victimHealth.IsDead)
+            {
+                OnKill?.Invoke(damageable);
+            }
         }
     }
 }

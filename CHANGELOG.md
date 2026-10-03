@@ -17,6 +17,11 @@
 - Added button icons to the Controls tab for every keyboard, mouse and gamepad binding
 - Added a Graphics tab to the settings menu with field of view and post-processing (bloom, vignette, exposure) options
 - Added switching settings tabs with Q/E or LB/RB
+- Added a charge meter for your warhorse: kills fill it (fastest on foot), and holding Sprint while riding spends it on a full-power trample that ploughs through enemies without slowing
+- Added permanent horse loss: your warhorse keeps its wounds between summons and areas, and if it dies you must buy a Replacement Warhorse at the Rest Area shop
+- Added horse items to the shop: Horse Poultice, Barding Plates, Sack of Carrots and Riding Spurs
+- Added horse perks to the Spirit: War-Bred Steed, Stable Hand, Cavalry Drills and Loyal Steed
+- Added horse upgrade cards: Blazing Hooves, Frost Wake, Battering Ram, Bloodlust, Iron Barding and Eager Steed
 
 ### Fixes
 
@@ -26,11 +31,18 @@
 
 ### Balance Changes
 
+- Reduced trample damage while riding without charging: the horse now shoves enemies aside and gets bogged down in crowds until you charge
+- Reduced passive horse stamina regeneration: stamina now comes mainly from kills
+
 ### General Changes
 
 - Removed the Oil Vat and Spike Trap towers; boiling oil and spikes are now wall and tower upgrades
 - Removed the fortress elemental battle cards; towers now get their element from the upgrade wheel
 - Updated the settings menu with a new look, hover and click sounds, highlights on the row under the cursor or gamepad focus, and a layout that fits any screen shape
+- Added horse health and charge bars above your health bar, shown whenever you have a horse
+- Moved the minimap to the top-right corner; it now fades out while the shop and other menus are open
+- Widened the Rest Area shop so every offer fits on screen
+- Removed the full ride-timer bar that stayed on screen while riding the basic warhorse
 
 ## [0.1.31] - 2026-10-01
 

@@ -161,6 +161,8 @@ public class PlayerSummonMount : MonoBehaviour
     /// <summary>True when the mount can be summoned here: unlocked and allowed by the scene's <see cref="SceneAbilityRules" />. SummonMountUI hides the slot when false.</summary>
     public bool IsAbilityUnlocked => SceneAbilityRules.MountAllowed && player != null && player.Stats != null && player.Stats.GetValue(StatType.SummonMountUnlocked) > 0f;
     public bool IsHorseActive => playerMount != null && playerMount.IsMounted;
+    /// <summary>True once the run's warhorse has died (summoning locked until a replacement is bought).</summary>
+    public bool IsMountLost => playerMount != null && playerMount.IsMountLost;
     public bool IsCooldownActive => playerMount != null && !playerMount.IsMounted && playerMount.MountRemainingCooldown > 0f;
     public float RemainingDuration => playerMount != null ? playerMount.MountRemainingDuration : 0f;
     public float MaxDuration => playerMount != null ? playerMount.MaxMountDuration : 0f;

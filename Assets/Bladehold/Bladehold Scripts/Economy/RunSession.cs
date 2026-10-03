@@ -215,6 +215,70 @@ public static class RunSession
         if (slot == UltimateSlot.Melee) MeleeUltimateCharge = charge;
         else RangedUltimateCharge = charge;
     }
+    // ---- The player's mount (the summoned warhorse) ----
+    // The horse is one animal for the whole run: its health and banked charge stamina carry across
+    // summons and scenes, and once it dies it stays dead until a Replacement Warhorse is bought at the
+    // Rest Area shop. PlayerMount reads/writes these; the HUD and shop observe them.
+
+    /// <summary>Meta perk ids that touch the mount (the id string is the contract with the perk assets).</summary>
+    public const string WarBredPerkId = "war_bred";
+    public const string StableHandPerkId = "stable_hand";
+    public const string CavalryDrillsPerkId = "cavalry_drills";
+    public const string LoyalSteedPerkId = "loyal_steed";
+
+    /// <summary>The horse's health as a 0..1 fraction of its max, kept between summons and scenes.</summary>
+    public static float MountHealthFraction { get; set; } = 1f;
+
+    /// <summary>Banked charge stamina as a 0..1 fraction. Kills on foot fill it even while dismounted.</summary>
+    public static float MountStaminaFraction { get; set; } = 1f;
+
+    /// <summary>True once the horse has died this run: summoning is locked until a replacement is bought.</summary>
+    public static bool MountLost { get; private set; }
+
+    /// <summary>True once Loyal Steed has saved the horse this run.</summary>
+    public static bool LoyalSteedUsed { get; set; }
+
+    /// <summary>Raised whenever the mount is lost or replaced (true = lost).</summary>
+    public static event Action<bool> OnMountLostChanged;
+
+    public static void MarkMountLost()
+    {
+        if (MountLost) return;
+        MountLost = true;
+        MountHealthFraction = 0f;
+        OnMountLostChanged?.Invoke(true);
+    }
+
+    /// <summary>A new horse: full health and a full charge (the Replacement Warhorse shop item).</summary>
+    public static void ReplaceMount()
+    {
+        MountHealthFraction = 1f;
+        MountStaminaFraction = 1f;
+        bool wasLost = MountLost;
+        MountLost = false;
+        if (wasLost) OnMountLostChanged?.Invoke(false);
+    }
+
+    /// <summary>A run-long stat modifier bought at the shop (horse barding, spurs…), re-applied every scene.</summary>
+    public struct RunStatModifier
+    {
+        public StatType stat;
+        public ModifierKind kind;
+        public float amount;
+    }
+
+    public static readonly List<RunStatModifier> ShopStatModifiers = new List<RunStatModifier>();
+
+    /// <summary>Records a shop stat modifier for the run and applies it to <paramref name="player" /> now.</summary>
+    public static void AddShopStatModifier(StatType stat, ModifierKind kind, float amount, Player player)
+    {
+        ShopStatModifiers.Add(new RunStatModifier { stat = stat, kind = kind, amount = amount });
+        if (player != null && player.Stats != null)
+        {
+            player.Stats.AddModifier(stat, kind, amount);
+        }
+    }
+
     public static float FortressGateCurrentHealth { get; set; } = -1f;
     public static float FortressGateMaxHealth { get; set; } = -1f;
 
@@ -254,6 +318,15 @@ public static class RunSession
         MeleeUltimateId = null;
         RangedUltimateId = null;
         ConsumedBuffFish.Clear();
+        MountHealthFraction = 1f;
+        MountStaminaFraction = 1f;
+        LoyalSteedUsed = false;
+        ShopStatModifiers.Clear();
+        if (MountLost)
+        {
+            MountLost = false;
+            OnMountLostChanged?.Invoke(false);
+        }
 
         // War Chest perk grants starting gold (75 at rank 1)
         InRunGold = Mathf.RoundToInt(GetMetaPerkValue("war_chest", 75f));
@@ -333,6 +406,34 @@ public static class RunSession
         if (HasMetaPerk("deep_quiver") && player.Stats != null)
         {
             player.Stats.AddModifier(StatType.MaxAmmo, ModifierKind.Flat, GetMetaPerkValue("deep_quiver", 5f));
+        }
+
+        // 3c. Mount meta perks: War-Bred (+% horse health) and Cavalry Drills (+% stamina from kills).
+        if (player.Stats != null)
+        {
+            if (HasMetaPerk(WarBredPerkId))
+            {
+                player.Stats.AddModifier(StatType.HorseMaxHealthMultiplier, ModifierKind.Flat, GetMetaPerkValue(WarBredPerkId, 15f) / 100f);
+            }
+            if (HasMetaPerk(CavalryDrillsPerkId))
+            {
+                player.Stats.AddModifier(StatType.HorseStaminaGainMultiplier, ModifierKind.Flat, GetMetaPerkValue(CavalryDrillsPerkId, 25f) / 100f);
+            }
+        }
+
+        // 3d. Stable Hand: a living horse recovers some health each time the player enters a new area.
+        if (!MountLost && HasMetaPerk(StableHandPerkId))
+        {
+            MountHealthFraction = Mathf.Min(1f, MountHealthFraction + GetMetaPerkValue(StableHandPerkId, 15f) / 100f);
+        }
+
+        // 3e. Shop stat modifiers (horse barding, spurs, sugar cubes).
+        if (player.Stats != null)
+        {
+            foreach (RunStatModifier modifier in ShopStatModifiers)
+            {
+                player.Stats.AddModifier(modifier.stat, modifier.kind, modifier.amount);
+            }
         }
 
         // 4. Reapply all drafted mid-run upgrades from InRunUpgradeLevels

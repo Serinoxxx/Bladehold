@@ -13,14 +13,15 @@ using UnityEngine.AI;
 ///     <see cref="ClearRider" />. All tunables live on <see cref="HorseSO" />; speeds scale with
 ///     the <see cref="StatType.HorseSpeedMultiplier" /> stat (the "Thoroughbred" line).
 ///
-///     The shared <see cref="HorseChargeDamage" /> trample window is speed-gated, not
-///     charge-gated: it opens whenever momentum passes
-///     <see cref="HorseSO.trampleMinSpeedFraction" /> of max speed (charging or not), with damage
-///     and impulse scaled by current speed — full values only at full charge speed. Each victim
-///     trampled bleeds a fraction of the horse's speed scaled by that victim's
-///     <see cref="ImpulseReceiver" /> resistance, so a charge through goblins barely slows while a
-///     Troll stops it dead. Charging drains a stamina pool; an emptied pool locks charging until
-///     it recovers past <see cref="HorseSO.exhaustedRecoveryFraction" />.
+///     The shared <see cref="HorseChargeDamage" /> trample window is speed-gated: it opens whenever
+///     momentum passes <see cref="HorseSO.trampleMinSpeedFraction" /> of max speed. How hard it hits
+///     depends on the charge: riding without charging ("cruise") applies the Cruise fractions on
+///     <see cref="HorseSO" /> (a light shove that bogs down in a crowd), while a Shift-charge hits at
+///     full strength with the charging speed-loss / crowd-drag values (tuned to plough straight
+///     through). Charging drains stamina; stamina is earned mainly by kills (see
+///     <see cref="AddStamina" />, fed by <c>PlayerMount</c>), with only a small passive trickle, so
+///     the charge is a burst you build up rather than a cooldown. An emptied pool locks charging
+///     until it recovers past <see cref="HorseSO.exhaustedRecoveryFraction" />.
 ///
 ///     Enemies never physically block the horse: <see cref="SetRider" /> excludes
 ///     <see cref="HorseSO.crowdLayers" /> from the CharacterController, and each frame the moving
@@ -70,6 +71,15 @@ public class HorseMotor : MonoBehaviour
 
     /// <summary>True while an emptied stamina pool locks charging (clears at the recovery threshold).</summary>
     public bool IsExhausted { get; private set; }
+
+    /// <summary>Size of the stamina pool (from <see cref="HorseSO.maxStamina" />).</summary>
+    public float MaxStamina => horseData != null ? horseData.maxStamina : 100f;
+
+    /// <summary>The horse's tuning (instanced per mount definition), for systems that scale with it.</summary>
+    public HorseSO Data => horseData;
+
+    /// <summary>Raised when the player's trample kills an enemy (alive before the hit, dead after).</summary>
+    public event System.Action<IDamageable> OnTrampleKill;
 
     /// <summary>The horse's own Health, for the mount's damage forwarding and death handling.</summary>
     public Health Health => health;
@@ -170,6 +180,13 @@ public class HorseMotor : MonoBehaviour
         {
             health.ImmuneToPlayerDamage = true;
         }
+
+        // Initialised here, not in Start: PlayerMount restores the banked stamina right after
+        // Instantiate, and Start would run afterwards and refill it.
+        if (horseData != null)
+        {
+            Stamina = horseData.maxStamina;
+        }
     }
 
     private void Start()
@@ -205,10 +222,10 @@ public class HorseMotor : MonoBehaviour
             Debug.LogWarning("HorseMotor has no Rider Seat assigned; the player cannot be seated on this horse.", this);
         }
 
-        Stamina = horseData.maxStamina;
-
         health.OnDied += HandleDied;
+        health.ScaleDamageTaken += HandleScaleDamageTaken;
         chargeDamage.OnHit += HandleTrampleHit;
+        chargeDamage.OnKill += HandleTrampleKill;
     }
 
     private void OnDestroy()
@@ -217,10 +234,30 @@ public class HorseMotor : MonoBehaviour
         if (health != null)
         {
             health.OnDied -= HandleDied;
+            health.ScaleDamageTaken -= HandleScaleDamageTaken;
         }
         if (chargeDamage != null)
         {
             chargeDamage.OnHit -= HandleTrampleHit;
+            chargeDamage.OnKill -= HandleTrampleKill;
+        }
+    }
+
+    /// <summary>Sets stamina to a 0..1 fraction of the pool (PlayerMount restores the banked value on mount).</summary>
+    public void SetNormalizedStamina(float fraction)
+    {
+        Stamina = Mathf.Clamp01(fraction) * MaxStamina;
+        IsExhausted = Stamina <= 0f;
+    }
+
+    /// <summary>Adds raw stamina (kills, cards); clears exhaustion once past the recovery threshold.</summary>
+    public void AddStamina(float amount)
+    {
+        if (amount <= 0f || horseData == null) return;
+        Stamina = Mathf.Min(horseData.maxStamina, Stamina + amount);
+        if (IsExhausted && Stamina >= horseData.maxStamina * horseData.exhaustedRecoveryFraction)
+        {
+            IsExhausted = false;
         }
     }
 
@@ -335,7 +372,7 @@ public class HorseMotor : MonoBehaviour
         bool wantsCharge = sprintHeld && move.y > 0f && !IsExhausted;
         float effectiveMax = EffectiveSpeed(wantsCharge ? horseData.chargeSpeed : horseData.maxSpeed);
 
-        UpdateCrowd(dt);
+        UpdateCrowd(dt, wantsCharge);
 
         // A MountStopper dead ahead is a wall: arriving with momentum rears the horse in place,
         // and either way the horse can't push forward into it — steer round or back off.
@@ -478,7 +515,12 @@ public class HorseMotor : MonoBehaviour
 
         if (IsTrampling)
         {
-            chargeDamage.SetSpeedFactor(TrampleDamageFactor(effectiveMaxSpeed));
+            // Charging hits at full strength; cruising is a light shove (HorseSO Cruise fractions).
+            float momentum = TrampleDamageFactor(effectiveMaxSpeed);
+            float damageMultiplier = stats != null ? Mathf.Max(0f, stats.GetValue(StatType.HorseTrampleDamageMultiplier)) : 1f;
+            float damageFactor = momentum * damageMultiplier * (IsCharging ? 1f : horseData.cruiseDamageFraction);
+            float knockbackFactor = momentum * (IsCharging ? 1f : horseData.cruiseKnockbackFraction);
+            chargeDamage.SetFactors(damageFactor, knockbackFactor);
         }
     }
 
@@ -490,7 +532,7 @@ public class HorseMotor : MonoBehaviour
     ///     <see cref="HorseSO.crowdMinSpeedFraction" />) so a horde eases the horse off rather than
     ///     stopping it. Dead, ragdolling, and knocked-down enemies are left alone.
     /// </summary>
-    private void UpdateCrowd(float dt)
+    private void UpdateCrowd(float dt, bool charging)
     {
         crowdFactor = 1f;
         stopperAhead = null;
@@ -555,7 +597,9 @@ public class HorseMotor : MonoBehaviour
             agent.Move(lateral.normalized * (horseData.crowdPushSpeed * speedFraction * falloff * dt));
         }
 
-        crowdFactor = Mathf.Max(horseData.crowdMinSpeedFraction, 1f - horseData.crowdDragPerEnemy * frontCount);
+        float dragPerEnemy = charging ? horseData.crowdDragPerEnemy : horseData.cruiseCrowdDragPerEnemy;
+        float minFraction = charging ? horseData.crowdMinSpeedFraction : horseData.cruiseCrowdMinSpeedFraction;
+        crowdFactor = Mathf.Max(minFraction, 1f - dragPerEnemy * frontCount);
     }
 
     /// <summary>
@@ -590,8 +634,29 @@ public class HorseMotor : MonoBehaviour
             }
         }
 
-        float loss = Mathf.Clamp01(horseData.hitSpeedLossFraction + horseData.hitSpeedLossPerResistance * resistance);
+        float baseLoss = IsCharging ? horseData.hitSpeedLossFraction : horseData.cruiseHitSpeedLossFraction;
+        float perResistance = IsCharging ? horseData.hitSpeedLossPerResistance : horseData.cruiseHitSpeedLossPerResistance;
+        float loss = Mathf.Clamp01(baseLoss + perResistance * resistance);
         CurrentSpeed *= 1f - loss;
+    }
+
+    /// <summary>Bloodlust: trample kills refund stamina (HorseTrampleKillStamina) and are re-raised for listeners.</summary>
+    private void HandleTrampleKill(IDamageable victim)
+    {
+        if (inputReader == null) return;
+
+        if (stats != null)
+        {
+            AddStamina(stats.GetValue(StatType.HorseTrampleKillStamina));
+        }
+        OnTrampleKill?.Invoke(victim);
+    }
+
+    /// <summary>Iron Barding: a charging, player-ridden horse takes HorseChargeDamageReduction less damage.</summary>
+    private float HandleScaleDamageTaken(Damage damage)
+    {
+        if (!IsCharging || stats == null) return 1f;
+        return 1f - Mathf.Clamp(stats.GetValue(StatType.HorseChargeDamageReduction), 0f, 0.9f);
     }
 
     /// <summary>

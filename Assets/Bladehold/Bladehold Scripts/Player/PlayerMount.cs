@@ -26,6 +26,14 @@ using UnityEngine.InputSystem;
 ///     non-visual reach (<see cref="DamageTrigger.SetReachBonus" /> — saddle height would otherwise
 ///     put grounded enemies outside the arc) and never carves the horse
 ///     (<see cref="DamageTrigger.SetIgnoredTarget" /> / <see cref="PlayerBow.SetIgnoredTarget" />).
+///
+///     The summoned warhorse is ONE animal for the whole run (<see cref="RunSession.MountHealthFraction" />,
+///     <see cref="RunSession.MountStaminaFraction" />): dismounting and re-summoning keeps its wounds and
+///     its banked charge stamina, and when it dies it is gone (<see cref="RunSession.MountLost" />) until a
+///     Replacement Warhorse is bought at the Rest Area shop. Charge stamina is earned by the player's kills
+///     — full value on foot, <see cref="HorseSO.mountedKillStaminaFraction" /> from the saddle — and banks
+///     while dismounted, so fighting on foot builds the next trample. Loyal Steed (meta perk) saves the
+///     horse from one lethal blow per run.
 /// </summary>
 public class PlayerMount : MonoBehaviour
 {
@@ -69,6 +77,14 @@ public class PlayerMount : MonoBehaviour
     [SerializeField] private MMF_Player mountFeedback;
     [Tooltip("Optional: played the moment the player dismounts.")]
     [SerializeField] private MMF_Player dismountFeedback;
+    [Tooltip("Optional: played when the run's warhorse dies for good (it must be replaced at the shop).")]
+    [SerializeField] private MMF_Player mountLostFeedback;
+    [Tooltip("Optional: played when Loyal Steed saves the horse from a lethal blow.")]
+    [SerializeField] private MMF_Player loyalSteedFeedback;
+
+    [Tooltip("Health fraction the horse comes back with after Loyal Steed saves it.")]
+    [Range(0.05f, 1f)]
+    [SerializeField] private float loyalSteedHealthFraction = 0.3f;
 
     [Header("Summon / Mount Configuration")]
     [SerializeField] private GameObject horsePrefab;
@@ -80,6 +96,8 @@ public class PlayerMount : MonoBehaviour
     public event Action OnMountCastCompleted;
     public event Action<float, float> OnMountDurationChanged;
     public event Action<float, float> OnMountCooldownChanged;
+    /// <summary>Raised when the run's warhorse dies for good.</summary>
+    public event Action OnMountLost;
 
     /// <summary>True while seated on a horse.</summary>
     public bool IsMounted => currentHorse != null;
@@ -98,6 +116,47 @@ public class PlayerMount : MonoBehaviour
 
     /// <summary>The horse being ridden, or null.</summary>
     public HorseMotor CurrentHorse => currentHorse;
+
+    /// <summary>True while riding the run's summoned warhorse (not a scene or ultimate horse).</summary>
+    public bool IsRidingRunMount => currentHorse != null && isRunMount;
+
+    /// <summary>True once the run's warhorse has died; summoning is locked until a replacement is bought.</summary>
+    public bool IsMountLost => RunSession.MountLost;
+
+    /// <summary>0..1 health of the run's warhorse: live while riding it, otherwise the banked value.</summary>
+    public float MountHealthFraction
+    {
+        get
+        {
+            if (RunSession.MountLost) return 0f;
+            if (IsRidingRunMount && horseHealthRestored && currentHorseHealth != null && currentHorseHealth.MaxHealth > 0f)
+            {
+                return Mathf.Clamp01(currentHorseHealth.CurrentHealth / currentHorseHealth.MaxHealth);
+            }
+            return Mathf.Clamp01(RunSession.MountHealthFraction);
+        }
+    }
+
+    /// <summary>0..1 charge stamina: the ridden horse's live pool, otherwise the banked value.</summary>
+    public float MountStaminaFraction => currentHorse != null ? currentHorse.NormalizedStamina : (RunSession.MountLost ? 0f : Mathf.Clamp01(RunSession.MountStaminaFraction));
+
+    /// <summary>True while the ridden horse is exhausted (charging locked until stamina recovers).</summary>
+    public bool IsMountExhausted => currentHorse != null && currentHorse.IsExhausted;
+
+    /// <summary>True when there's enough stamina to start a charge (past the exhaustion recovery threshold).</summary>
+    public bool IsChargeReady
+    {
+        get
+        {
+            if (currentHorse != null) return !currentHorse.IsExhausted && currentHorse.Stamina > 0f;
+            HorseSO data = StaminaConfig;
+            float threshold = data != null ? data.exhaustedRecoveryFraction : 0.35f;
+            return !RunSession.MountLost && RunSession.MountStaminaFraction >= threshold;
+        }
+    }
+
+    /// <summary>The ridden horse's charge state, for HUD feedback.</summary>
+    public bool IsCharging => currentHorse != null && currentHorse.IsCharging;
 
     /// <summary>The player's CharacterController, for <see cref="HorseMountable" />'s airborne check.</summary>
     public CharacterController CharacterController => characterController;
@@ -128,6 +187,10 @@ public class PlayerMount : MonoBehaviour
     private float maxMountCooldown = 90f;
     private GameObject summonedHorseInstance;
     private MountDefinitionSO equippedMountDef;
+    private bool isRunMount;
+    private bool horseHealthRestored;
+    private HorseSO staminaConfig;
+    private GameLoopManager subscribedLoop;
 
     /// <summary>Horses whose max health already got the Barded Steed multiplier — applied once per horse, not per mount.</summary>
     private readonly HashSet<Health> scaledHorses = new HashSet<Health>();
@@ -253,6 +316,12 @@ public class PlayerMount : MonoBehaviour
         stats.SetBase(StatType.HorseMaxHealthMultiplier, 1f);
         stats.SetBase(StatType.HorseSpeedMultiplier, 1f);
         stats.SetBase(StatType.HorseHealFromPacks, 0f);
+        stats.SetBase(StatType.HorseStaminaGainMultiplier, 1f);
+        stats.SetBase(StatType.HorseTrampleDamageMultiplier, 1f);
+        stats.SetBase(StatType.HorseChargeFireTrailDPS, 0f);
+        stats.SetBase(StatType.HorseChargeFrostRadius, 0f);
+        stats.SetBase(StatType.HorseTrampleKillStamina, 0f);
+        stats.SetBase(StatType.HorseChargeDamageReduction, 0f);
 
         isMountedHash = Animator.StringToHash(isMountedBool);
         horseSpeedHash = Animator.StringToHash(horseSpeedFloat);
@@ -282,6 +351,12 @@ public class PlayerMount : MonoBehaviour
         health.OnDied += HandlePlayerDied;
         health.OnDamaged += HandleDamageWhileCasting;
         inputReader.onDismountPerformed += HandleDismountPressed;
+
+        if (GameLoopManager.Instance != null)
+        {
+            subscribedLoop = GameLoopManager.Instance;
+            subscribedLoop.OnEnemyKilledEvent += HandleEnemyKilled;
+        }
     }
 
     private void OnDestroy()
@@ -299,6 +374,94 @@ public class PlayerMount : MonoBehaviour
         if (currentHorseHealth != null)
         {
             currentHorseHealth.OnDied -= HandleHorseDied;
+            currentHorseHealth.TryPreventDeath -= HandleHorseLethalHit;
+        }
+        if (subscribedLoop != null)
+        {
+            subscribedLoop.OnEnemyKilledEvent -= HandleEnemyKilled;
+        }
+    }
+
+    /// <summary>The stamina tuning (HorseSO) of the horse prefab, for banking stamina while dismounted.</summary>
+    private HorseSO StaminaConfig
+    {
+        get
+        {
+            if (staminaConfig == null)
+            {
+                GameObject prefab = ResolveHorsePrefab();
+                HorseMotor motor = prefab != null ? prefab.GetComponentInChildren<HorseMotor>(true) : null;
+                staminaConfig = motor != null ? motor.Data : null;
+            }
+            return staminaConfig;
+        }
+    }
+
+    private GameObject ResolveHorsePrefab()
+    {
+        if (horsePrefab == null)
+        {
+            horsePrefab = Resources.Load<GameObject>("Horse") ??
+                          Resources.Load<GameObject>("Prefabs/Horse/Horse");
+        }
+        return horsePrefab;
+    }
+
+    /// <summary>
+    ///     Kills the player lands fill the warhorse's charge stamina: full <see cref="HorseSO.staminaPerKill" />
+    ///     on foot, <see cref="HorseSO.mountedKillStaminaFraction" /> of it from the saddle. Trample kills
+    ///     are the horse's own (their damage source is the horse) and earn nothing here — Bloodlust
+    ///     refunds those in <see cref="HorseMotor" />.
+    /// </summary>
+    private void HandleEnemyKilled(Health enemy)
+    {
+        if (anyError || enemy == null || RunSession.MountLost) return;
+
+        Player player = Player.Instance;
+        if (player == null) return;
+        IDamageable killer = enemy.LastDamageSource;
+        if (killer == null || (!ReferenceEquals(killer, player.Damageable) && !ReferenceEquals(killer, player.Health))) return;
+
+        HorseSO data = currentHorse != null && currentHorse.Data != null ? currentHorse.Data : StaminaConfig;
+        if (data == null) return;
+
+        float amount = data.staminaPerKill * Mathf.Max(0f, stats.GetValue(StatType.HorseStaminaGainMultiplier));
+        if (IsMounted)
+        {
+            amount *= data.mountedKillStaminaFraction;
+        }
+        AddMountStamina(amount);
+    }
+
+    /// <summary>Adds raw stamina to the ridden horse, or banks it for the next summon while on foot.</summary>
+    public void AddMountStamina(float amount)
+    {
+        if (amount <= 0f || RunSession.MountLost) return;
+
+        if (currentHorse != null)
+        {
+            currentHorse.AddStamina(amount);
+            if (isRunMount)
+            {
+                RunSession.MountStaminaFraction = currentHorse.NormalizedStamina;
+            }
+            return;
+        }
+
+        HorseSO data = StaminaConfig;
+        float max = data != null && data.maxStamina > 0f ? data.maxStamina : 100f;
+        RunSession.MountStaminaFraction = Mathf.Clamp01(RunSession.MountStaminaFraction + amount / max);
+    }
+
+    /// <summary>Heals the run's warhorse by a fraction of its max health (the shop's Horse Poultice).</summary>
+    public void HealMount(float fraction)
+    {
+        if (RunSession.MountLost || fraction <= 0f) return;
+
+        RunSession.MountHealthFraction = Mathf.Min(1f, RunSession.MountHealthFraction + fraction);
+        if (IsRidingRunMount && currentHorseHealth != null && !currentHorseHealth.IsDead)
+        {
+            currentHorseHealth.Heal(currentHorseHealth.MaxHealth * fraction);
         }
     }
 
@@ -367,9 +530,18 @@ public class PlayerMount : MonoBehaviour
             {
                 animator.SetFloat(horseSpeedHash, currentHorse.NormalizedSpeed);
             }
+
+            SyncRunMountState();
         }
         else
         {
+            // Banked stamina trickles back while on foot at the horse's passive rate.
+            HorseSO data = StaminaConfig;
+            if (data != null && !RunSession.MountLost && data.maxStamina > 0f && RunSession.MountStaminaFraction < 1f)
+            {
+                RunSession.MountStaminaFraction = Mathf.Min(1f, RunSession.MountStaminaFraction + data.staminaRegenPerSecond * Time.deltaTime / data.maxStamina);
+            }
+
             if (mountRemainingCooldown > 0f)
             {
                 mountRemainingCooldown = Mathf.Max(0f, mountRemainingCooldown - Time.deltaTime);
@@ -531,7 +703,13 @@ public class PlayerMount : MonoBehaviour
         HorseMotor horse = currentHorse;
         Health horseHealth = currentHorseHealth;
 
+        SyncRunMountState();
+        StopAllCoroutines();
+        isRunMount = false;
+        horseHealthRestored = false;
+
         currentHorseHealth.OnDied -= HandleHorseDied;
+        currentHorseHealth.TryPreventDeath -= HandleHorseLethalHit;
 
         horse.ClearRider();
         if (currentProxy != null)
@@ -662,8 +840,76 @@ public class PlayerMount : MonoBehaviour
 
     private void HandleHorseDied()
     {
+        // The run's warhorse is gone for good: summoning locks until a replacement is bought.
+        bool wasRunMount = isRunMount;
+
         // The horse's own HorseAnimation plays the death; the rider just gets off the corpse.
         Dismount();
+
+        if (wasRunMount)
+        {
+            RunSession.MarkMountLost();
+            if (mountLostFeedback != null)
+            {
+                mountLostFeedback.PlayFeedbacks();
+            }
+            OnMountLost?.Invoke();
+            Debug.Log("[PlayerMount] The warhorse has fallen. Buy a Replacement Warhorse at the Rest Area shop.");
+        }
+    }
+
+    /// <summary>
+    ///     Loyal Steed (meta perk): the first lethal blow on the run's warhorse each run sends it fleeing
+    ///     instead of killing it. The rider is thrown off and the horse returns at
+    ///     <see cref="loyalSteedHealthFraction" /> on the next summon.
+    /// </summary>
+    private bool HandleHorseLethalHit()
+    {
+        if (!isRunMount || RunSession.LoyalSteedUsed || !RunSession.HasMetaPerk(RunSession.LoyalSteedPerkId)) return false;
+
+        RunSession.LoyalSteedUsed = true;
+        Health horseHealth = currentHorseHealth;
+        horseHealth.Revive(1f);
+
+        Dismount();
+        // Dismount banked the 1 HP it was revived with; the horse rests up to the Loyal Steed fraction.
+        RunSession.MountHealthFraction = loyalSteedHealthFraction;
+
+        if (loyalSteedFeedback != null)
+        {
+            loyalSteedFeedback.PlayFeedbacks();
+        }
+        Debug.Log("[PlayerMount] Loyal Steed: the warhorse fled instead of falling.");
+        return true;
+    }
+
+    /// <summary>Writes the ridden run mount's live health and stamina back to RunSession.</summary>
+    private void SyncRunMountState()
+    {
+        if (!isRunMount || currentHorse == null) return;
+
+        RunSession.MountStaminaFraction = currentHorse.NormalizedStamina;
+        if (horseHealthRestored && currentHorseHealth != null && !currentHorseHealth.IsDead && currentHorseHealth.MaxHealth > 0f)
+        {
+            RunSession.MountHealthFraction = Mathf.Clamp01(currentHorseHealth.CurrentHealth / currentHorseHealth.MaxHealth);
+        }
+    }
+
+    /// <summary>
+    ///     Health.Start refills a freshly spawned horse, so its banked wounds are restored a frame later.
+    ///     Until then <see cref="MountHealthFraction" /> keeps reporting the banked value.
+    /// </summary>
+    private System.Collections.IEnumerator RestoreRunMountHealth(Health horseHealth, float fraction)
+    {
+        yield return null;
+        if (horseHealth != null && !horseHealth.IsDead && isRunMount && currentHorseHealth == horseHealth)
+        {
+            if (fraction < 0.999f)
+            {
+                horseHealth.SetCurrentHealth(horseHealth.MaxHealth * Mathf.Clamp01(fraction));
+            }
+            horseHealthRestored = true;
+        }
     }
 
     private void HandlePlayerDied()
@@ -678,6 +924,12 @@ public class PlayerMount : MonoBehaviour
     public bool TryStartMountCast()
     {
         if (anyError || IsMounted || isCasting || !SceneAbilityRules.MountAllowed) return false;
+
+        if (RunSession.MountLost)
+        {
+            Debug.Log("[PlayerMount] The warhorse is dead. Buy a Replacement Warhorse at the Rest Area shop.");
+            return false;
+        }
 
         if (mountRemainingCooldown > 0f)
         {
@@ -710,15 +962,9 @@ public class PlayerMount : MonoBehaviour
         isCasting = false;
         castProgress = 0f;
 
-        if (horsePrefab == null)
+        if (RunSession.MountLost || ResolveHorsePrefab() == null)
         {
-            horsePrefab = Resources.Load<GameObject>("Horse") ??
-                          Resources.Load<GameObject>("Prefabs/Horse/Horse");
-        }
-
-        if (horsePrefab == null)
-        {
-            Debug.LogError("[PlayerMount] No horse prefab found to summon!");
+            if (!RunSession.MountLost) Debug.LogError("[PlayerMount] No horse prefab found to summon!");
             return;
         }
 
@@ -735,8 +981,20 @@ public class PlayerMount : MonoBehaviour
             motor.ApplyMountDefinition(def);
         }
 
+        // The run's warhorse keeps its banked stamina (set before TryMount so the HUD never sees a full
+        // pool flash); its wounds come back a frame later (see RestoreRunMountHealth).
+        if (motor != null)
+        {
+            motor.SetNormalizedStamina(RunSession.MountStaminaFraction);
+        }
+
         if (motor != null && TryMount(motor))
         {
+            isRunMount = true;
+            horseHealthRestored = false;
+            currentHorseHealth.TryPreventDeath += HandleHorseLethalHit;
+            StartCoroutine(RestoreRunMountHealth(currentHorseHealth, RunSession.MountHealthFraction));
+
             maxMountDuration = def != null && def.mountDuration > 0f ? def.mountDuration : 30f;
             mountRemainingDuration = maxMountDuration;
             OnMountCastCompleted?.Invoke();

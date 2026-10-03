@@ -10,6 +10,8 @@ using UnityEngine.UI;
 ///     and processes item purchases. On top of those it always offers the ultimates of the equipped
 ///     weapons while the run has a free ultimate slot (<see cref="DraftUpgradeService.GetShopUltimates" />),
 ///     priced by <see cref="UltimateShopConfigSO" />. Ultimate offers never take one of the item slots.
+///     The same featured row pins a Replacement Warhorse while the run's horse is dead
+///     (<see cref="RunSession.MountLost" />), so losing the mount is always fixable here, for a price.
 /// </summary>
 public class ShopUI : MonoBehaviour
 {
@@ -18,6 +20,8 @@ public class ShopUI : MonoBehaviour
     [Header("Shop Stock Config")]
     [SerializeField] private List<ShopItemSO> itemPool = new List<ShopItemSO>();
     [SerializeField] private UltimateShopConfigSO ultimateConfig;
+    [Tooltip("Pinned in the featured row while the run's warhorse is dead (effect type ReplaceMount).")]
+    [SerializeField] private ShopItemSO replacementMountItem;
 
     [Header("UI References")]
     [SerializeField] private GameObject shopPanel;
@@ -50,6 +54,10 @@ public class ShopUI : MonoBehaviour
         {
             Debug.LogError("[ShopUI] No UltimateShopConfigSO assigned, so the shop can't sell ultimates.");
             anyError = true;
+        }
+        if (replacementMountItem == null)
+        {
+            Debug.LogError("[ShopUI] No Replacement Warhorse item assigned, so a dead horse can't be replaced.");
         }
     }
 
@@ -90,6 +98,10 @@ public class ShopUI : MonoBehaviour
 
         int slotCount = RunSession.HasMetaPerk("deep_pockets") ? 4 : 3;
         List<ShopItemSO> candidates = new List<ShopItemSO>(itemPool);
+        // A poultice is useless for a dead or unhurt horse; the replacement is pinned, never rolled.
+        candidates.RemoveAll(item => item == null
+            || item.effectType == ShopItemEffectType.ReplaceMount
+            || (item.effectType == ShopItemEffectType.HealMount && (RunSession.MountLost || RunSession.MountHealthFraction >= 0.999f)));
 
         for (int i = 0; i < slotCount && candidates.Count > 0; i++)
         {
@@ -124,6 +136,14 @@ public class ShopUI : MonoBehaviour
             offer.effectType = ShopItemEffectType.UnlockUltimate;
             ultimateStock.Add(offer);
         }
+
+        if (RunSession.MountLost && replacementMountItem != null)
+        {
+            ShopItemSO offer = Instantiate(replacementMountItem);
+            offer.hideFlags = HideFlags.DontSave;
+            offer.name = replacementMountItem.name;
+            ultimateStock.Add(offer);
+        }
     }
 
     private void ClearUltimateStock()
@@ -149,11 +169,40 @@ public class ShopUI : MonoBehaviour
         if (sharedRow) used = PopulateSlots(slotsContainer, used, ultimateStock, UltimateSlotIndexBase);
         HideSlotsFrom(slotsContainer, used);
 
+        FitRow(slotsContainer);
+
         if (!sharedRow)
         {
             int usedUltimate = PopulateSlots(ultimateSlotsContainer, 0, ultimateStock, UltimateSlotIndexBase);
             HideSlotsFrom(ultimateSlotsContainer, usedUltimate);
+            FitRow(ultimateSlotsContainer);
         }
+    }
+
+    /// <summary>
+    ///     Scales a slot row down uniformly when its active slots are wider than the row (Deep Pockets plus
+    ///     two ultimates plus a pinned replacement horse is seven cards), so no offer is ever pushed off the panel.
+    /// </summary>
+    private static void FitRow(Transform container)
+    {
+        RectTransform row = container as RectTransform;
+        if (row == null) return;
+
+        HorizontalLayoutGroup layout = container.GetComponent<HorizontalLayoutGroup>();
+        float spacing = layout != null ? layout.spacing : 0f;
+        float needed = 0f;
+        int active = 0;
+        foreach (Transform child in container)
+        {
+            if (!child.gameObject.activeSelf) continue;
+            RectTransform slot = child as RectTransform;
+            needed += slot != null ? slot.rect.width : 0f;
+            active++;
+        }
+        needed += Mathf.Max(0, active - 1) * spacing;
+
+        float scale = needed > row.rect.width && needed > 0f ? row.rect.width / needed : 1f;
+        row.localScale = new Vector3(scale, scale, 1f);
     }
 
     /// <summary>Fills container children from <paramref name="firstChild" /> on; returns the next free child index.</summary>
@@ -258,7 +307,8 @@ public class ShopUI : MonoBehaviour
             {
                 if (!isUltimate) purchasedSlotIndices.Add(slotIndex);
                 ApplyItemEffect(item);
-                // Owning an ultimate removes the other weapon's offer or re-prices it (second_ultimate perk).
+                // Owning an ultimate removes the other weapon's offer or re-prices it (second_ultimate perk);
+                // buying the replacement horse removes its pinned offer.
                 if (isUltimate) GenerateUltimateStock();
                 if (goldLabel != null)
                 {
@@ -330,6 +380,26 @@ public class ShopUI : MonoBehaviour
                 {
                     Debug.LogError($"[ShopUI] '{item.itemId}' is not an ultimate in the draft catalog.");
                 }
+                break;
+
+            case ShopItemEffectType.ReplaceMount:
+                RunSession.ReplaceMount();
+                break;
+
+            case ShopItemEffectType.HealMount:
+                PlayerMount mount = p != null ? p.transform.root.GetComponentInChildren<PlayerMount>(true) : null;
+                if (mount != null)
+                {
+                    mount.HealMount(item.effectValue);
+                }
+                else if (!RunSession.MountLost)
+                {
+                    RunSession.MountHealthFraction = Mathf.Min(1f, RunSession.MountHealthFraction + item.effectValue);
+                }
+                break;
+
+            case ShopItemEffectType.RunStatModifier:
+                RunSession.AddShopStatModifier(item.stat, item.statKind, item.effectValue, p);
                 break;
 
             case ShopItemEffectType.AmmoRefill:

@@ -407,6 +407,20 @@ public enum StatType
     // --- Dodge i-frames (appended so existing serialized values keep their indices) ---
     /// <summary>Seconds of invulnerability from the start of a dodge (covers the dash plus a short grace).</summary>
     DodgeIFrameDuration,
+
+    // --- Mount charge (base set by PlayerMount / MountChargeAbilities; appended to keep indices) ---
+    /// <summary>Unitless multiplier on horse stamina gained from kills (base 1.0). Sugar Cubes, Spurred Fury.</summary>
+    HorseStaminaGainMultiplier,
+    /// <summary>Unitless multiplier on charge trample damage (base 1.0). Battering Ram card.</summary>
+    HorseTrampleDamageMultiplier,
+    /// <summary>Fire DPS of the trail a charging horse leaves behind (base 0 = locked). Blazing Hooves card.</summary>
+    HorseChargeFireTrailDPS,
+    /// <summary>Radius in metres of the chill aura around a charging horse (base 0 = locked). Frost Wake card.</summary>
+    HorseChargeFrostRadius,
+    /// <summary>Stamina refunded per enemy killed by the trample (base 0). Bloodlust card.</summary>
+    HorseTrampleKillStamina,
+    /// <summary>Fraction of damage a charging horse ignores (base 0, 0.3 = 30% less). Iron Barding card.</summary>
+    HorseChargeDamageReduction,
 }
 
 /// <summary>

@@ -19,6 +19,9 @@ public class SummonCastBarUI : MonoBehaviour
 
 
     [SerializeField]  private PlayerSummonMount playerSummonMount;
+
+    [Tooltip("Ride durations at or above this many seconds count as unlimited: the bar hides once mounted instead of showing a ride timer.")]
+    [SerializeField] private float unlimitedDurationSeconds = 600f;
     private bool anyError;
 
     private void Start()
@@ -128,6 +131,13 @@ public class SummonCastBarUI : MonoBehaviour
     
     private void HandleDurationUpdated(float current, float max)
     {
+        if (max >= unlimitedDurationSeconds)
+        {
+            // An unlimited ride (the basic warhorse) has no timer worth showing.
+            canvasGroup.alpha = 0f;
+            return;
+        }
+
         canvasGroup.alpha = 1f;
         if (castLabel != null) castLabel.text = "Mounted";
         progressBar.SetBar(current, 0f, max);

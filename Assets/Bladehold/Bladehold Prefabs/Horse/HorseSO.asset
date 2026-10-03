@@ -24,12 +24,20 @@ MonoBehaviour:
   chargeMinSpeedFraction: 0.5
   maxStamina: 100
   staminaDrainPerSecond: 25
-  staminaRegenPerSecond: 15
+  staminaRegenPerSecond: 2
+  staminaPerKill: 8
+  mountedKillStaminaFraction: 0.5
   exhaustedRecoveryFraction: 0.35
-  trampleMinSpeedFraction: 0
+  trampleMinSpeedFraction: 0.3
   trampleMinDamageFraction: 1
   hitSpeedLossFraction: 0
   hitSpeedLossPerResistance: 0
+  cruiseDamageFraction: 0.15
+  cruiseKnockbackFraction: 0.5
+  cruiseHitSpeedLossFraction: 0.15
+  cruiseHitSpeedLossPerResistance: 0.02
+  cruiseCrowdDragPerEnemy: 0.12
+  cruiseCrowdMinSpeedFraction: 0.35
   chargeDamage: 5
   damageType: 1
   knockbackForce: 7

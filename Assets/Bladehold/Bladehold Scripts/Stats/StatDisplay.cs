@@ -108,6 +108,15 @@ public static class StatDisplay
         { StatType.ConduitChainChance, new Info("Chain Chance", StatFormat.Percent) },
         { StatType.BowUnstableOrbs, new Info("Unstable Orbs", StatFormat.Integer) },
 
+        { StatType.HorseMaxHealthMultiplier, new Info("Horse Health", StatFormat.Multiplier) },
+        { StatType.HorseSpeedMultiplier, new Info("Horse Speed", StatFormat.Multiplier) },
+        { StatType.HorseStaminaGainMultiplier, new Info("Stamina from Kills", StatFormat.Multiplier) },
+        { StatType.HorseTrampleDamageMultiplier, new Info("Trample Damage", StatFormat.Multiplier) },
+        { StatType.HorseChargeFireTrailDPS, new Info("Fire Trail DPS", StatFormat.Number) },
+        { StatType.HorseChargeFrostRadius, new Info("Frost Wake Radius", StatFormat.Number) },
+        { StatType.HorseTrampleKillStamina, new Info("Stamina per Trample Kill", StatFormat.Number) },
+        { StatType.HorseChargeDamageReduction, new Info("Charging Damage Reduction", StatFormat.Percent) },
+
         { StatType.FlamingArrowsDamagePercent, new Info("Fire Damage", StatFormat.Percent) },
         { StatType.FlamingArrowsBomberDetonateChance, new Info("Bomber Detonate Chance", StatFormat.Percent) },
 

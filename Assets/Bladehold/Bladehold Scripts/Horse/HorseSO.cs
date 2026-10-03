@@ -49,15 +49,22 @@ public class HorseSO : ScriptableObject
     [Tooltip("Stamina drained per second while actually charging (Shift held at charging speed).")]
     public float staminaDrainPerSecond = 25f;
 
-    [Tooltip("Stamina regained per second while not charging.")]
-    public float staminaRegenPerSecond = 15f;
+    [Tooltip("Passive stamina trickle per second while not charging. Kept small: stamina is earned by kills (Stamina Per Kill), so the charge is a burst you build up, not a cooldown.")]
+    public float staminaRegenPerSecond = 2f;
+
+    [Tooltip("Stamina gained for each enemy the player kills on foot (scaled by the HorseStaminaGainMultiplier stat). Banked even while dismounted, so fighting on foot charges the next trample.")]
+    public float staminaPerKill = 8f;
+
+    [Tooltip("Fraction of Stamina Per Kill earned for kills made from the saddle without trampling (mounted sword/bow). Trample kills earn nothing unless a card (Bloodlust) adds it.")]
+    [Range(0f, 1f)]
+    public float mountedKillStaminaFraction = 0.5f;
 
     [Tooltip("Fraction of Max Stamina an exhausted horse must recover before it can charge again — hysteresis so charging doesn't stutter on/off at empty.")]
     [Range(0f, 1f)]
     public float exhaustedRecoveryFraction = 0.35f;
 
-    [Header("Trample (player mode)")]
-    [Tooltip("Fraction of (stat-scaled) Max Speed above which the horse tramples anything it runs into, charging or not. Below it the horse is harmless.")]
+    [Header("Trample while charging (player mode)")]
+    [Tooltip("Fraction of (stat-scaled) Max Speed above which the horse tramples anything it runs into, charging or not. Below it the horse is harmless. Riding without charging applies the Cruise fractions below on top.")]
     [Range(0f, 1f)]
     public float trampleMinSpeedFraction = 0.55f;
 
@@ -65,12 +72,36 @@ public class HorseSO : ScriptableObject
     [Range(0f, 1f)]
     public float trampleMinDamageFraction = 0.35f;
 
-    [Tooltip("Fraction of current speed the horse loses per victim trampled, before the per-resistance term — running through a horde bleeds momentum.")]
+    [Tooltip("While charging: fraction of current speed the horse loses per victim trampled, before the per-resistance term. 0 = a charge never slows.")]
     [Range(0f, 1f)]
     public float hitSpeedLossFraction = 0.04f;
 
-    [Tooltip("Extra fraction of current speed lost per point of the victim's impulse resistance (the roster CSV column) — heavies like the Troll (50) stop a charge dead.")]
+    [Tooltip("While charging: extra fraction of current speed lost per point of the victim's impulse resistance (the roster CSV column) — heavies like the Troll (50) stop a charge dead.")]
     public float hitSpeedLossPerResistance = 0.02f;
+
+    [Header("Cruise: riding without charging (player mode)")]
+    [Tooltip("Fraction of the trample's damage dealt while riding without charging. Low on purpose: plain riding shoulders enemies aside, the charge is what kills.")]
+    [Range(0f, 1f)]
+    public float cruiseDamageFraction = 0.15f;
+
+    [Tooltip("Fraction of the trample's knockback applied while riding without charging.")]
+    [Range(0f, 1f)]
+    public float cruiseKnockbackFraction = 0.5f;
+
+    [Tooltip("Fraction of current speed lost per victim while riding without charging — a horde bogs a cruising horse down.")]
+    [Range(0f, 1f)]
+    public float cruiseHitSpeedLossFraction = 0.15f;
+
+    [Tooltip("Extra fraction of speed lost per point of victim impulse resistance while riding without charging.")]
+    public float cruiseHitSpeedLossPerResistance = 0.02f;
+
+    [Tooltip("Crowd drag per enemy in the front arc while riding without charging (charging uses Crowd Drag Per Enemy).")]
+    [Range(0f, 1f)]
+    public float cruiseCrowdDragPerEnemy = 0.12f;
+
+    [Tooltip("Floor for the crowd drag multiplier while riding without charging.")]
+    [Range(0f, 1f)]
+    public float cruiseCrowdMinSpeedFraction = 0.35f;
 
     [Header("Charge damage (both modes — the TrollSlamAttackSO shape)")]
     [Tooltip("Damage per trample hit at full charge speed in player mode (scaled down toward Trample Min Damage Fraction at lower speeds). The knight's AI charge overrides this via HorseChargeDamage.BeginCharge (roster damage × MountedKnightSO.chargeDamageMultiplier).")]
@@ -103,16 +134,29 @@ public class HorseSO : ScriptableObject
     [Tooltip("Lateral nudge speed in m/s applied to enemies inside the scan at full (non-charge) speed — scales down with horse speed and with distance from the scan centre.")]
     public float crowdPushSpeed = 4f;
 
-    [Tooltip("Fraction of target speed lost per enemy in the front half of the scan — riding into a crowd eases the horse off instead of hard-stopping it.")]
+    [Tooltip("While charging: fraction of target speed lost per enemy in the front half of the scan. 0 = a charge ploughs straight through.")]
     [Range(0f, 1f)]
     public float crowdDragPerEnemy = 0.12f;
 
-    [Tooltip("Floor for the crowd drag multiplier — even a wall of enemies never drags the target speed below this fraction.")]
+    [Tooltip("While charging: floor for the crowd drag multiplier — even a wall of enemies never drags the target speed below this fraction.")]
     [Range(0f, 1f)]
     public float crowdMinSpeedFraction = 0.35f;
 
     [Tooltip("How fast (m/s²) CurrentSpeed is pulled down toward the speed the CharacterController actually achieved when level geometry blocks it — prevents banked speed from bursting out the moment an obstruction clears.")]
     public float blockedSpeedReconcileRate = 30f;
+
+    [Header("Charge card effects (player mode, see MountChargeAbilities)")]
+    [Tooltip("Blazing Hooves: metres galloped between fire trail segments while charging.")]
+    public float fireTrailSpacing = 1.2f;
+
+    [Tooltip("Blazing Hooves: seconds each fire trail segment burns.")]
+    public float fireTrailLifetime = 3f;
+
+    [Tooltip("Frost Wake: seconds between chill pulses around a charging horse.")]
+    public float frostPulseInterval = 0.4f;
+
+    [Tooltip("Frost Wake: chill stacks applied per pulse (EnemyStatusManager.ApplyStatus slow override, the slippery-ice value).")]
+    public float frostChillStacks = 0.5f;
 
     [Header("Mount stoppers (player mode)")]
     [Tooltip("How far ahead of the horse's origin (m) a MountStopper enemy's origin can be and still count as directly in the horse's path.")]
