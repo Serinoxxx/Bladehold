@@ -44,6 +44,15 @@ public static class WallNavCost
         }
     }
 
+    /// <summary>Writes every known wall-area cost onto a path query (the minimap's predicted routes).</summary>
+    public static void ApplyTo(ref NavMeshQueryFilter filter)
+    {
+        foreach (KeyValuePair<int, float> pair in costs)
+        {
+            filter.SetAreaCost(pair.Key, pair.Value);
+        }
+    }
+
     /// <summary>
     ///     Siege units (battering ram, troll, sapper, captains, or anything tagged with
     ///     <see cref="SiegeUnit" />) ignore wall cost and smash walls in their path.

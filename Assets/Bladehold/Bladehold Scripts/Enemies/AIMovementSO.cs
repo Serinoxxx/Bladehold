@@ -36,6 +36,8 @@ public class AIMovementSO : ScriptableObject
     [Header("Facing")]
     [Tooltip("Degrees per second the enemy keeps turning toward its target after the NavMeshAgent has stopped at its stopping distance (agents only auto-rotate while moving).")]
     public float stoppedTurnSpeed = 240f;
+    [Tooltip("Degrees per second the NavMeshAgent turns while moving. 0 or less keeps the prefab agent's own Angular Speed. Lower it for heavies the player should be able to circle behind (Bulwark).")]
+    public float agentAngularSpeed = 0f;
 
     [Header("Animation Gaits")]
     [Tooltip("Top speed of the walk gait. Gait thresholds are derived halfway between these three speeds.")]

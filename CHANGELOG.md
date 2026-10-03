@@ -14,11 +14,15 @@
 - Added rocky chokepoints with wall spots to the tutorial's gate battle
 - Added a tutorial step that teaches building a wall and shows goblins going round it to another gap
 - Added a ladder on the castle side of every wall so you can climb up and look over it
+- Added button icons to the Controls tab for every keyboard, mouse and gamepad binding
+- Added a Graphics tab to the settings menu with field of view and post-processing (bloom, vignette, exposure) options
+- Added switching settings tabs with Q/E or LB/RB
 
 ### Fixes
 
 - Fixed the horse sometimes refusing to move from a standstill until forward was held for a few seconds
 - Fixed the camera sometimes getting stuck with the mouse cursor showing after changing areas
+- Fixed gamepad selection getting stuck on an invisible button in the settings menu
 
 ### Balance Changes
 
@@ -26,6 +30,7 @@
 
 - Removed the Oil Vat and Spike Trap towers; boiling oil and spikes are now wall and tower upgrades
 - Removed the fortress elemental battle cards; towers now get their element from the upgrade wheel
+- Updated the settings menu with a new look, hover and click sounds, highlights on the row under the cursor or gamepad focus, and a layout that fits any screen shape
 
 ## [0.1.31] - 2026-10-01
 

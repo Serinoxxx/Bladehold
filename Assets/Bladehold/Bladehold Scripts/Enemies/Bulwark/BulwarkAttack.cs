@@ -236,6 +236,14 @@ public class BulwarkAttack : MonoBehaviour
             return;
         }
 
+        // BlockHit is an Any State transition on the upper-body layer, so firing it mid-swing
+        // cancels the swing visually while AIAttack's apex still lands — the shield shrugs the
+        // hit off instead and the swing plays through.
+        if (aiAttack != null && aiAttack.IsAttacking)
+        {
+            return;
+        }
+
         if (animator != null)
         {
             animator.SetTrigger(blockHitHash);

@@ -3365,6 +3365,18 @@ public static class WeaponReachBenchmark
                         WaveCard draftCard = WaveCardGenerator.Build(cfg, offenceRow, 3, null, WaveBonusType.DraftPick, false, stale, new System.Random(1));
                         Check(draftCard.bonusAmount == WaveChoiceConfigSO.BySkulls(cfg.draftPicksBySkulls, 3),
                             $"3-skull draft bonus gives {draftCard.bonusAmount} picks", $"3-skull draft bonus gave {draftCard.bonusAmount} picks");
+
+                        // Every wave pays a weapon draft; skulls add rerolls, never extra picks.
+                        Check(cfg.draftPicksPerWave >= 1, $"Every wave pays {cfg.draftPicksPerWave} weapon draft pick(s)", "draftPicksPerWave is 0: waves pay no weapon draft");
+                        Check(!cfg.bonusPool.Exists(o => o != null && o.type == WaveBonusType.DraftPick && o.weight > 0f),
+                            "DraftPick is out of the bonus pool (drafts are guaranteed, not rolled)", "DraftPick is still in the wave card bonus pool");
+                        for (int sk = 1; sk <= WaveChoiceConfigSO.MaxSkulls; sk++)
+                        {
+                            WaveCard skullCard = WaveCardGenerator.Build(cfg, offenceRow, sk, null, WaveBonusType.None, false, stale, new System.Random(1));
+                            int expected = Mathf.Max(0, WaveChoiceConfigSO.BySkulls(cfg.draftRerollsBySkulls, sk));
+                            Check(skullCard.draftRerolls == expected, $"{sk}-skull card's draft has {skullCard.draftRerolls} reroll(s)",
+                                $"{sk}-skull card has {skullCard.draftRerolls} rerolls, expected {expected}");
+                        }
                     }
                     WaveObjectiveDefinition defenceRow = catalog.Get("kill_enemies");
                     if (defenceRow != null)

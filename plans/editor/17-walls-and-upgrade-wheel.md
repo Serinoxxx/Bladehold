@@ -46,15 +46,20 @@ All of these are clones of the Arrow Tower's Repair/Upgrade/Break players (or th
 
 - [ ] **Upgrade wheel.** E on a tower in a defense scene opens it.
   - Up to 7 slices: Refill, Fire Rate I–III, Spikes, Fire / Ice / Storm, Deconstruct. Extra slices are cloned from `Slice_0`, and all slices are re-laid round the authored ring (radius 380).
-  - Check the 7-slice spacing, the two-line cost text (supply + crystals), the greyed "Max / Locked / Built / Full" states, and the header's "Supply · Fire · Ice · Storm" line.
+  - Check the 7-slice spacing, the one-line slice cost ("10 Supply + 1 Storm"), the greyed "Max / Locked / Built / Full" states, and the header's "Supply · Fire · Ice · Storm" line.
   - **Gamepad:** check focus moves round 7 slices.
+- [ ] **Wheel details panel + readable costs (2026-10-03).** Both wheels now show hover details in a box to the right of the wheel (`Bladehold HUD` → `BuildWheelModal/CenterContainer/DetailsPanel`, `BuildWheelDetailsPanel`). It has the icon, name, each cost against what you hold ("60 Supply (you have 20)"), the description, and range/blind spot or the blocked reason. The old bottom `DescriptionText` is switched off.
+  - Unaffordable slices are now darkened (icon, tracery and background ×0.7), not faded to 50% alpha. Slice label plates are darker and the cost text is bigger (auto-size 20–32).
+  - Check the panel clears the wheel at 16:10 and 4:3 (it sits 640 units right of centre on the 3840×2160 reference), and that long upgrade descriptions don't push it off-screen.
+  - **Gamepad:** the panel follows pad focus (`ISelectHandler`). But unaffordable slices are non-interactable, so the pad can't focus them to read why. Decide whether that matters.
+  - Scene-local wheel copies (the Castle scenes are binary, so I couldn't check) without a `detailsPanel` fall back to the old bottom label.
 - [ ] **Build wheel** now has 4 options (oil and spikes removed), re-spaced round the ring automatically.
 - [ ] **Wall HP bar** (`Wall.prefab` → `HealthBar`, world-space, 3 m wide over the wall). It shows when you're within 14 m or for 4 s after a hit, and the frame tints to the wall's element.
 - [ ] **HUD wall row** (`Bladehold HUD` → `Bottom Right/Wall Status`, icons from `UI/WallStatusIcon.prefab`), above the gate bar.
   - One icon per plot, numbered left to right. HP fill goes green/yellow/red, the frame flashes when hit, an X means breached, "OPEN" means the door is open, and unbuilt plots are dimmed.
   - The icons are small at the HUD's 0.27 canvas scale.
 - [ ] **HUD crystal counters** (`Top Left/Currencies/CrystalsUI`, cloned from SupplyUI, crystal icons tinted orange/blue/yellow). Hidden until you own a crystal.
-- [ ] **Wheel icons** on `Config/Fort/FortUpgradeConfig.asset` (Wheel icons section) are borrowed Synty/skill icons. Swap them if you want bespoke ones (`/generate-sprite-variants`).
+- [x] **Wheel icons** on `Config/Fort/FortUpgradeConfig.asset` (Wheel icons section): bespoke generated icons wired 2026-10-03 (`Art/Icons/Skills/Base/`: refill, fire_rate, tower_spikes, repair, wall_material, deconstruct, crystal_*), also used by the build wheel and the HUD crystal counters.
 
 ## Tutorial Gate
 

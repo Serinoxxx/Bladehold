@@ -32,7 +32,10 @@ public class UpgradeOption
 
     public bool IsAvailable => !IsBlocked && CanAfford && onPurchase != null;
 
-    /// <summary>Rich-text cost line, red when unaffordable.</summary>
+    /// <summary>
+    ///     One-line rich-text cost for the wheel slice ("10 Supply + 1 Storm"), red when unaffordable.
+    ///     The wheel's details panel shows the full breakdown against what the player holds.
+    /// </summary>
     public string CostLabel
     {
         get
@@ -48,9 +51,10 @@ public class UpgradeOption
             if (crystalCost > 0)
             {
                 string c = RunSession.GetCrystals(crystalElement) >= crystalCost ? crystalElement.Hex() : "#FF5555";
-                parts.Add($"<color={c}>{crystalCost} {crystalElement.CrystalName()}</color>");
+                string shortName = crystalElement == StructureElement.Lightning ? "Storm" : crystalElement.ToString();
+                parts.Add($"<color={c}>{crystalCost} {shortName}</color>");
             }
-            return parts.Count > 0 ? string.Join("\n", parts) : "<color=#FFD700>Free</color>";
+            return parts.Count > 0 ? string.Join(" + ", parts) : "<color=#FFD700>Free</color>";
         }
     }
 

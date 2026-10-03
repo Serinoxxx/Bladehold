@@ -52,6 +52,7 @@
 - **Routing (`WallNavCost`)**: a standing wall with its door shut prices its area at `wallAreaCost`, so enemies route over another bridge unless the detour is longer.
   - Costs are applied **per agent** by `AIMovement` when `WallNavCost.Version` changes. Never `NavMesh.SetAreaCost`.
   - Siege units (`WallNavCost.IsSiege`: `SiegeUnit` marker, troll, sapper, ram, captains) keep cost 1 and walk straight in.
+  - The battlefield minimap (`UI/Minimap/MinimapUI`) predicts the horde's routes with the same costs (`WallNavCost.ApplyTo(ref NavMeshQueryFilter)`), re-pathing whenever `Version` moves. A new cost source must go through `WallNavCost` or the map's arrows will lie.
 - **What actually stops enemies is targeting**, because NavMeshAgents ignore colliders.
   - Every 0.25 s a blocking wall gives each enemy in a box on its outside face `AITargetSelector.SetWallTarget(this)`, and does the same for enemies within 10 m of any siege unit there (escorts clear the path with it).
   - The wall target beats everything except a player on the enemy's side of the wall. The wall target clears when the wall falls or the door opens.

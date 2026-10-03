@@ -49,6 +49,8 @@ public class BuildWheelUI : MonoBehaviour
     [SerializeField] private TMP_Text supplyLabel;
     [SerializeField] private TMP_Text descriptionLabel;
     [SerializeField] private Button closeButton;
+    [Tooltip("Details box beside the wheel (icon, cost breakdown, description, stats). When unset, the hover text falls back to descriptionLabel.")]
+    [SerializeField] private BuildWheelDetailsPanel detailsPanel;
 
     [Header("Range Summary (hover line under the description)")]
     [Tooltip("Max range below this reads as Short; below Long reads as Medium; at or above Long reads as Long.")]
@@ -105,6 +107,8 @@ public class BuildWheelUI : MonoBehaviour
     private IUpgradeable upgradeTarget;
     private readonly List<UpgradeOption> upgradeOptions = new List<UpgradeOption>();
     private bool IsUpgradeMode => upgradeTarget != null;
+    // Slice under the pointer / pad focus, so a refresh (after buying an upgrade) keeps its details up.
+    private int hoveredIndex = -1;
 
     // The authored ring the slices sit on (captured once from the authored buttons).
     private bool ringCaptured;
@@ -206,6 +210,7 @@ public class BuildWheelUI : MonoBehaviour
     {
         activePlot = plot;
         upgradeTarget = null;
+        hoveredIndex = -1;
         isOpen = true;
 
         gameObject.SetActive(true);
@@ -224,6 +229,7 @@ public class BuildWheelUI : MonoBehaviour
         if (target == null) return;
         activePlot = null;
         upgradeTarget = target;
+        hoveredIndex = -1;
         isOpen = true;
 
         gameObject.SetActive(true);
@@ -269,10 +275,7 @@ public class BuildWheelUI : MonoBehaviour
             headerText.text = "SELECT DEFENCE TO CONSTRUCT";
         }
 
-        if (descriptionLabel != null)
-        {
-            descriptionLabel.text = "Choose a structure to build at this plot.";
-        }
+        ShowIdleDetails();
 
         // 1. If dedicated BuildWheelButtons are present, configure them
         if (wheelButtons != null && wheelButtons.Count > 0)
@@ -317,6 +320,8 @@ public class BuildWheelUI : MonoBehaviour
                 );
             }
         }
+
+        if (hoveredIndex >= 0) OnHoverSlice(hoveredIndex);
 
         // 2. Also refresh legacy sliceButtons if wired
         if (sliceButtons != null && sliceButtons.Count > 0)
@@ -395,6 +400,28 @@ public class BuildWheelUI : MonoBehaviour
 
     public void OnUnhoverSlice()
     {
+        hoveredIndex = -1;
+        ShowIdleDetails();
+    }
+
+    /// <summary>Nothing hovered: the details box (or the legacy label) shows a prompt.</summary>
+    private void ShowIdleDetails()
+    {
+        if (detailsPanel != null)
+        {
+            if (IsUpgradeMode)
+            {
+                detailsPanel.ShowPrompt(Loc.Get("buildwheel.upgrade_idle_title", "Upgrades"),
+                    Loc.Get("buildwheel.upgrade_idle_body", "Hover an upgrade to see what it does and what it costs."));
+            }
+            else
+            {
+                detailsPanel.ShowPrompt(Loc.Get("buildwheel.build_idle_title", "Build a Defence"),
+                    Loc.Get("buildwheel.build_idle_body", "Hover a structure to see what it does and what it costs."));
+            }
+            return;
+        }
+
         if (descriptionLabel != null)
         {
             descriptionLabel.text = IsUpgradeMode ? "Choose an upgrade." : "Choose a defense structure to protect the gates.";
@@ -437,23 +464,55 @@ public class BuildWheelUI : MonoBehaviour
 
     public void OnHoverSlice(int index)
     {
+        hoveredIndex = index;
         if (IsUpgradeMode)
         {
-            if (descriptionLabel != null && index >= 0 && index < upgradeOptions.Count)
+            if (index < 0 || index >= upgradeOptions.Count) return;
+            UpgradeOption up = upgradeOptions[index];
+            if (detailsPanel != null)
             {
-                descriptionLabel.text = upgradeOptions[index].description;
+                string blocked = up.IsBlocked ? $"<color=#B8AE9C>{up.blockedReason}</color>" : null;
+                detailsPanel.Show(up.label, up.icon, UpgradeCostLines(up), up.description, blocked);
+            }
+            else if (descriptionLabel != null)
+            {
+                descriptionLabel.text = up.description;
             }
             return;
         }
 
-        if (index >= 0 && index < defenseOptions.Count && descriptionLabel != null)
+        if (index < 0 || index >= defenseOptions.Count) return;
+        DefenseOption opt = defenseOptions[index];
+        string rangeLine = GetRangeSummary(opt.defenseType);
+        if (detailsPanel != null)
         {
-            DefenseOption opt = defenseOptions[index];
-            string rangeLine = GetRangeSummary(opt.defenseType);
+            string cost = BuildWheelDetailsPanel.CostLine(opt.supplyCost, RunSession.InRunSupply, "Supply", "#FFD700");
+            detailsPanel.Show(opt.displayName, opt.icon, cost, opt.description, rangeLine);
+        }
+        else if (descriptionLabel != null)
+        {
             descriptionLabel.text = string.IsNullOrEmpty(rangeLine)
                 ? opt.description
                 : $"{opt.description}\n<size=85%>{rangeLine}</size>";
         }
+    }
+
+    /// <summary>One line per currency the upgrade costs, each against what the player holds.</summary>
+    private static string UpgradeCostLines(UpgradeOption opt)
+    {
+        if (opt.IsBlocked) return null;
+        if (!string.IsNullOrEmpty(opt.costOverride)) return opt.costOverride;
+        var lines = new List<string>();
+        if (opt.supplyCost > 0)
+        {
+            lines.Add(BuildWheelDetailsPanel.CostLine(opt.supplyCost, RunSession.InRunSupply, "Supply", "#FFD700"));
+        }
+        if (opt.crystalCost > 0)
+        {
+            lines.Add(BuildWheelDetailsPanel.CostLine(opt.crystalCost, RunSession.GetCrystals(opt.crystalElement),
+                opt.crystalElement.CrystalName(), opt.crystalElement.Hex()));
+        }
+        return lines.Count > 0 ? string.Join("\n", lines) : "<color=#FFD700>Free</color>";
     }
 
     // ---- Upgrade wheel (plan 17) ---------------------------------------------------------------
@@ -465,7 +524,7 @@ public class BuildWheelUI : MonoBehaviour
 
         if (supplyLabel != null) supplyLabel.text = CurrencySummary();
         if (headerText != null) headerText.text = upgradeTarget.UpgradeTitle.ToUpperInvariant();
-        if (descriptionLabel != null) descriptionLabel.text = "Choose an upgrade.";
+        ShowIdleDetails();
 
         EnsureButtonCount(upgradeOptions.Count);
         for (int i = 0; i < wheelButtons.Count; i++)
@@ -485,6 +544,7 @@ public class BuildWheelUI : MonoBehaviour
                 () => OnHoverSlice(index),
                 () => OnUnhoverSlice());
         }
+        if (hoveredIndex >= 0) OnHoverSlice(hoveredIndex);
 
         // Legacy slice buttons have no upgrade layout. They're often the same objects as the wheel
         // buttons, so only hide ones that aren't.

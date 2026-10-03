@@ -9,7 +9,7 @@ using UnityEngine.UI;
 ///     Manages the defense icon, title text, supply cost badge, affordability visual states,
 ///     and pointer hover/click interactions.
 /// </summary>
-public class BuildWheelButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class BuildWheelButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, ISelectHandler, IDeselectHandler
 {
     [Header("Core References")]
     [SerializeField] private Button button;
@@ -26,7 +26,9 @@ public class BuildWheelButton : MonoBehaviour, IPointerEnterHandler, IPointerExi
     [Header("Colors")]
     [SerializeField] private Color normalCostColor = new Color(1f, 0.85f, 0.2f, 1f); // Gold
     [SerializeField] private Color unaffordableCostColor = new Color(1f, 0.3f, 0.3f, 1f); // Red
-    [SerializeField] private float unaffordableAlpha = 0.5f;
+    [Tooltip("Unaffordable slices darken their icon and tracery by this much instead of fading, so the red cost stays readable.")]
+    [Range(0f, 1f)]
+    [SerializeField] private float unaffordableDim = 0.7f;
 
     private Action onClickCallback;
     private Action onHoverCallback;
@@ -135,10 +137,13 @@ public class BuildWheelButton : MonoBehaviour, IPointerEnterHandler, IPointerExi
             button.interactable = canAfford;
         }
 
-        if (canvasGroup != null)
-        {
-            canvasGroup.alpha = canAfford ? 1f : unaffordableAlpha;
-        }
+        // Darken rather than fade: the title and red cost keep full opacity. The slice background
+        // darkens through the Button's disabled tint. The dim goes on the CanvasRenderer, not
+        // Image.color, so slices cloned from a dimmed template don't inherit it.
+        if (canvasGroup != null) canvasGroup.alpha = 1f;
+        Color dim = canAfford ? Color.white : new Color(unaffordableDim, unaffordableDim, unaffordableDim, 1f);
+        if (iconImage != null) iconImage.canvasRenderer.SetColor(dim);
+        if (traceryImage != null) traceryImage.canvasRenderer.SetColor(dim);
     }
 
     private void HandleClick()
@@ -156,6 +161,19 @@ public class BuildWheelButton : MonoBehaviour, IPointerEnterHandler, IPointerExi
     }
 
     public void OnPointerExit(PointerEventData eventData)
+    {
+        if (highlightGlow != null) highlightGlow.SetActive(false);
+        onUnhoverCallback?.Invoke();
+    }
+
+    // Pad focus drives the details panel the same way the mouse does.
+    public void OnSelect(BaseEventData eventData)
+    {
+        if (highlightGlow != null) highlightGlow.SetActive(true);
+        onHoverCallback?.Invoke();
+    }
+
+    public void OnDeselect(BaseEventData eventData)
     {
         if (highlightGlow != null) highlightGlow.SetActive(false);
         onUnhoverCallback?.Invoke();

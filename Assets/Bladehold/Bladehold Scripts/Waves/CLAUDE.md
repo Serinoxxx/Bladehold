@@ -4,11 +4,11 @@ Every battle scene runs the same loop: `GameLoopManager` + `SurvivorsSpawner` + 
 
 ## Sector sequence (5 waves, plan 15 wave choice)
 
-1. **Wave 1 is fixed**: a 1-skull Hold the Gate card (`WaveChoiceConfigSO.firstWave`) with a rolled clan. There's no draft. Prep (build towers) → **hold Ready** → 3-2-1 → `StartWave`.
+1. **Wave 1 is fixed**: a 1-skull Hold the Gate card (`WaveChoiceConfigSO.firstWave`) with a rolled clan. There's no wave-card draw. Prep (build towers) → **hold Ready** → 3-2-1 → `StartWave`.
 2. **Waves 2-4 are drafted** (`GameLoopManager.BeginIntermission` → `WaveCardGenerator.Roll` → `SurvivorsCardSelectUI.OpenWaveChoice`). Each of the 3 cards bundles:
    - an objective (a `Config/WaveObjectives.csv` row: stance, timer, fail rule);
    - 1-3 skulls with a clan modifier (`WarBannerClanSO`, magnitude scaled by skulls);
-   - a reward bundle: gold + supply + one bonus.
+   - a reward bundle: gold + supply + one bonus (Goblin Blood / Orcish Metal / Troll Heart), plus draft rerolls by skulls (`draftRerollsBySkulls`, 0/1/1).
 
    There's always ≥1 Defence and ≥1 Offence card, and last wave's objective is down-weighted. The campaign node's `clanBuff` is weighted ×2. Skull odds come from the SO's table by wave and `SectorThreat.Current` (the node's `tierIndex`).
 3. **Prep**: `IsPrepPhase` is true from the moment the field clears until Ready. It's the only window where tower plots and the `Fort/GateRepairStation` (hold [E], supply → gate HP) work.
@@ -34,14 +34,15 @@ Every battle scene runs the same loop: `GameLoopManager` + `SurvivorsSpawner` + 
    - A 45 s lightning backstop covers a stalled rout.
    - **Defence** objectives can't fail: their risk is gate damage, and the gate falling ends the run (`Gate.OnAnyGateDestroyed`). Gate HP carries across sectors.
    - **Offence** objectives fail on their timer or when the target escapes. Failure loses the card reward only.
-6. **Reward** (success only): the bundle is auto-granted (gold, supply, then Goblin Blood / Orcish Metal / Troll Heart max HP / draft picks, which open the skill-card modal in a chain). `WaveClearedBannerUI` pops the reward line. Then, after `rewardPopupSeconds`, the next draft opens.
+6. **Reward**: every wave pays a **weapon draft** (`WaveChoiceConfigSO.draftPicksPerWave`, 1), the build's guaranteed floor. On success the card's bundle comes first (gold, supply, then Goblin Blood / Orcish Metal / Troll Heart max HP), then the draft opens with the card's `draftRerolls` (a Reroll button on the modal that swaps all three cards). A failed objective loses the bundle and the rerolls but still pays the draft (`draftOnFailedWave`). Skulls buy more resources and rerolls, never extra picks. `DraftPick` is out of the bonus pool; the enum value and its `draftPicksBySkulls` path stay for a designer who re-adds it. `WaveClearedBannerUI` pops the reward line. Then, after `rewardPopupSeconds`, the next wave-card draw opens.
 7. **Wave 5 is fixed**: `defeat_captain` (Captain Assault, `Objectives/DefeatCaptainObjective`). It spawns the node's captain at a tier set by sector threat (`GameLoopManager.CaptainTierForThreat`: Enraged at threat 1-2, Nightmare at 3-5, Omega at 6+), and killing the captain resolves the wave. If the objective is missing from the scene, the manager spawns the captain itself and falls back to a random objective.
-8. **Victory**: resolving wave 5 → `TriggerVictory` → `DeathScreen.ShowVictory` → back to the Campaign Map.
+8. **Victory**: resolving wave 5 → the captain's draft (`draftAfterFinalWave`) → `TriggerVictory` → `DeathScreen.ShowVictory` → back to the Campaign Map.
 
 ## Rewards inside a sector
 
 - Per kill: in-run gold, plus a chance of supply (bigger enemies give more). This is always kept, win or fail.
 - Wave clear: +30 supply (always kept), plus the regeneration / Special Herbs heals.
+- Every wave: one weapon draft (rerolls on 2+ skull cards that succeed).
 - A successful objective: the card's bundle. Offence pays ×1.5 and skulls pay ×1 / ×1.5 / ×2.25, all on `WaveChoiceConfigSO`.
 
 ## Gotchas

@@ -114,6 +114,16 @@ public class HorseSO : ScriptableObject
     [Tooltip("How fast (m/s²) CurrentSpeed is pulled down toward the speed the CharacterController actually achieved when level geometry blocks it — prevents banked speed from bursting out the moment an obstruction clears.")]
     public float blockedSpeedReconcileRate = 30f;
 
+    [Header("Mount stoppers (player mode)")]
+    [Tooltip("How far ahead of the horse's origin (m) a MountStopper enemy's origin can be and still count as directly in the horse's path.")]
+    public float mountStopReach = 2.2f;
+
+    [Tooltip("How far to either side of the horse's centre line (m) a MountStopper enemy can be and still count as in its path.")]
+    public float mountStopHalfWidth = 1.1f;
+
+    [Tooltip("Forward speed (m/s) at or above which running into a MountStopper rears the horse. Below it the horse just can't push forward.")]
+    public float mountStopMinRearSpeed = 2.5f;
+
     [Header("Mounting")]
     [Tooltip("Local-space offset from the horse where the player lands on dismount (x = to the side).")]
     public Vector3 dismountLocalOffset = new Vector3(1.4f, 0f, 0f);

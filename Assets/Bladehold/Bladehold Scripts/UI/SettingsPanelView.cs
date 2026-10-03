@@ -8,13 +8,15 @@ using UnityEngine.UI;
 /// <summary>
 ///     Settings sub-panel shown from the pause menu, split into two tabs: <b>General</b> (audio
 ///     sliders, sensitivity/invert controls, a field of view slider, max ragdolls) and
-///     <b>Controls</b> (a generically-built list of every remappable binding on the vendored
+///     <b>Controls</b> (camera sensitivity/invert plus a generically-built list of every remappable binding on the vendored
 ///     Controls asset, one row per action with separate Keyboard/Mouse and Gamepad columns).
 ///     Reset Settings (settings back to defaults, progress untouched) and Delete Save (progress
 ///     wiped, settings kept) sit below the tabs. Every control reads and writes through
 ///     <see cref="GameSettingsService" /> — this view never touches <see cref="SaveData" /> or the
 ///     vendored input asset directly. Refreshes from current settings whenever shown, always
-///     reopening on the General tab.
+///     reopening on the General tab. An optional third <b>Graphics</b> tab (field of view and post
+///     processing) sits beside them. Tabs cycle with Q/E or LB/RB (glyphs shown either side of the
+///     tab bar), and under a pad each tab switch focuses that tab's first control.
 /// </summary>
 public class SettingsPanelView : MonoBehaviour
 {
@@ -29,6 +31,11 @@ public class SettingsPanelView : MonoBehaviour
     [SerializeField] private Color tabUnselectedColor = new Color(0.329f, 0.282f, 0.239f, 1f);
     [SerializeField] private Color tabSelectedTextColor = new Color(0.220f, 0.180f, 0.140f, 1f);
     [SerializeField] private Color tabUnselectedTextColor = new Color(0.774f, 0.745f, 0.660f, 1f);
+    [Tooltip("Optional glyphs either side of the tab bar showing the previous/next tab shortcut (Q/E, LB/RB).")]
+    [SerializeField] private InputGlyph tabPrevGlyph;
+    [SerializeField] private InputGlyph tabNextGlyph;
+    [Tooltip("Optional: the panel's focus controller — its default moves to each tab's first control so pad focus follows tab switches.")]
+    [SerializeField] private MenuFocusController focusController;
 
     [Header("Audio")]
     [SerializeField] private Slider masterVolumeSlider;
@@ -54,6 +61,10 @@ public class SettingsPanelView : MonoBehaviour
     [Tooltip("Parent under which one RebindButtonView is instantiated per remappable action row.")]
     [SerializeField] private Transform rebindListParent;
     [SerializeField] private RebindButtonView rebindRowPrefab;
+    [Tooltip("Optional: control above the rebind grid (pad Up from its first row lands here).")]
+    [SerializeField] private Selectable rebindGridAbove;
+    [Tooltip("Optional: control below the rebind grid (pad Down from its last row lands here).")]
+    [SerializeField] private Selectable rebindGridBelow;
 
     [Header("Post Processing")]
     [SerializeField] private Toggle postProcessingEnabledToggle;
@@ -69,6 +80,10 @@ public class SettingsPanelView : MonoBehaviour
     private readonly List<RebindButtonView> rebindRows = new List<RebindButtonView>();
     private bool rebindRowsBuilt = false;
     private bool anyError = false;
+    private InputActionMap tabActionMap;
+    private InputAction tabPrevAction;
+    private InputAction tabNextAction;
+    private int currentTab;
 
     /// <summary>One rebind row being assembled: an action's KBM and Gamepad bindings paired by display label.</summary>
     private class RowSlot
@@ -151,6 +166,16 @@ public class SettingsPanelView : MonoBehaviour
         generalTabButton.onClick.AddListener(ShowGeneralTab);
         controlsTabButton.onClick.AddListener(ShowControlsTab);
         if (postProcessingTabButton != null) postProcessingTabButton.onClick.AddListener(ShowPostProcessingTab);
+
+        tabActionMap = new InputActionMap("SettingsTabs");
+        tabPrevAction = tabActionMap.AddAction("TabPrev", InputActionType.Button);
+        tabPrevAction.AddBinding("<Keyboard>/q");
+        tabPrevAction.AddBinding("<Gamepad>/leftShoulder");
+        tabNextAction = tabActionMap.AddAction("TabNext", InputActionType.Button);
+        tabNextAction.AddBinding("<Keyboard>/e");
+        tabNextAction.AddBinding("<Gamepad>/rightShoulder");
+        if (tabPrevGlyph != null) tabPrevGlyph.SetAction(tabPrevAction);
+        if (tabNextGlyph != null) tabNextGlyph.SetAction(tabNextAction);
     }
 
     private void OnEnable()
@@ -161,7 +186,29 @@ public class SettingsPanelView : MonoBehaviour
         }
         RefreshFromSettings();
         BuildRebindRowsIfNeeded();
-        ShowGeneralTab();
+        ShowTab(0, instant: true);
+        if (tabActionMap != null) tabActionMap.Enable();
+    }
+
+    private void OnDisable()
+    {
+        if (tabActionMap != null) tabActionMap.Disable();
+    }
+
+    private void Update()
+    {
+        if (anyError || tabActionMap == null || RebindButtonView.AnyRebindActive || (confirmDialog != null && confirmDialog.IsOpen))
+        {
+            return;
+        }
+        if (tabPrevAction.WasPressedThisFrame())
+        {
+            CycleTab(-1);
+        }
+        else if (tabNextAction.WasPressedThisFrame())
+        {
+            CycleTab(+1);
+        }
     }
 
     private void OnDestroy()
@@ -188,25 +235,80 @@ public class SettingsPanelView : MonoBehaviour
         if (generalTabButton != null) generalTabButton.onClick.RemoveListener(ShowGeneralTab);
         if (controlsTabButton != null) controlsTabButton.onClick.RemoveListener(ShowControlsTab);
         if (postProcessingTabButton != null) postProcessingTabButton.onClick.RemoveListener(ShowPostProcessingTab);
+        if (tabActionMap != null) tabActionMap.Dispose();
     }
 
-    private void ShowGeneralTab() => ShowTab(general: true, controls: false, postProcessing: false);
-    private void ShowControlsTab() => ShowTab(general: false, controls: true, postProcessing: false);
-    private void ShowPostProcessingTab() => ShowTab(general: false, controls: false, postProcessing: true);
+    private void ShowGeneralTab() => ShowTab(0);
+    private void ShowControlsTab() => ShowTab(1);
+    private void ShowPostProcessingTab() => ShowTab(2);
 
-    private void ShowTab(bool general, bool controls, bool postProcessing)
+    private int TabCount => postProcessingTabButton != null && postProcessingTabContent != null ? 3 : 2;
+
+    private void CycleTab(int direction)
     {
-        if (generalTabContent != null) generalTabContent.SetActive(general);
-        if (controlsTabContent != null) controlsTabContent.SetActive(controls);
-        if (postProcessingTabContent != null) postProcessingTabContent.SetActive(postProcessing);
-        TintTabButton(generalTabButton, general);
-        TintTabButton(controlsTabButton, controls);
-        TintTabButton(postProcessingTabButton, postProcessing);
+        int next = (currentTab + direction + TabCount) % TabCount;
+        ShowTab(next);
+        Button tabButton = TabButton(next);
+        UISelectableJuice juice = tabButton != null ? tabButton.GetComponent<UISelectableJuice>() : null;
+        if (juice != null)
+        {
+            // Same squash + click sound as pressing the tab, so a shortcut switch feels like a press.
+            juice.OnSubmit(null);
+        }
     }
 
-    private void TintTabButton(Button tabButton, bool selected)
+    private Button TabButton(int index) => index == 0 ? generalTabButton : index == 1 ? controlsTabButton : postProcessingTabButton;
+    private GameObject TabContent(int index) => index == 0 ? generalTabContent : index == 1 ? controlsTabContent : postProcessingTabContent;
+
+    private void ShowTab(int index, bool instant = false)
     {
-        if (tabButton != null && tabButton.targetGraphic != null)
+        currentTab = index;
+        for (int i = 0; i < 3; i++)
+        {
+            GameObject content = TabContent(i);
+            if (content != null) content.SetActive(i == index);
+            TintTabButton(TabButton(i), i == index, instant);
+        }
+        FocusFirstControl(TabContent(index));
+    }
+
+    /// <summary>Points pad focus (and the focus controller's default) at the tab's first navigable control.</summary>
+    private void FocusFirstControl(GameObject content)
+    {
+        if (content == null)
+        {
+            return;
+        }
+        foreach (Selectable candidate in content.GetComponentsInChildren<Selectable>())
+        {
+            if (candidate.IsInteractable() && candidate.navigation.mode != Navigation.Mode.None && !(candidate is Scrollbar))
+            {
+                if (focusController != null)
+                {
+                    focusController.SetDefaultSelectable(candidate);
+                }
+                else if (InputDeviceWatcher.GamepadActive)
+                {
+                    candidate.Select();
+                }
+                return;
+            }
+        }
+    }
+
+    private void TintTabButton(Button tabButton, bool selected, bool instant)
+    {
+        if (tabButton == null)
+        {
+            return;
+        }
+        SettingsTabButton styled = tabButton.GetComponent<SettingsTabButton>();
+        if (styled != null)
+        {
+            styled.SetSelected(selected, instant);
+            return;
+        }
+        if (tabButton.targetGraphic != null)
         {
             tabButton.targetGraphic.color = selected ? tabSelectedColor : tabUnselectedColor;
             var txt = tabButton.GetComponentInChildren<TMP_Text>();
@@ -322,7 +424,7 @@ public class SettingsPanelView : MonoBehaviour
         }
     }
 
-    private Button FindColumnNeighbor(int rowIndex, int direction, bool kbmColumn)
+    private Selectable FindColumnNeighbor(int rowIndex, int direction, bool kbmColumn)
     {
         for (int i = rowIndex + direction; i >= 0 && i < rebindRows.Count; i += direction)
         {
@@ -332,10 +434,11 @@ public class SettingsPanelView : MonoBehaviour
                 return candidate;
             }
         }
-        return null;
+        // Off either end of the grid: hand off to the controls around it.
+        return direction < 0 ? rebindGridAbove : rebindGridBelow;
     }
 
-    private static void SetColumnNavigation(Button button, Button up, Button down, Button left, Button right)
+    private static void SetColumnNavigation(Button button, Selectable up, Selectable down, Selectable left, Selectable right)
     {
         if (button == null)
         {

@@ -67,6 +67,9 @@ public class WaveCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
     [SerializeField] private Sprite goblinBloodSprite;
     [SerializeField] private Sprite orcishMetalSprite;
     [SerializeField] private Sprite trollHeartSprite;
+    [Tooltip("The weapon draft's rerolls (2+ skulls): dice icon + '+1 draft reroll'.")]
+    [SerializeField] private GameObject rerollRow;
+    [SerializeField] private TMP_Text rerollText;
     [SerializeField] private GameObject freshRow;
     [SerializeField] private TMP_Text freshText;
 
@@ -114,6 +117,10 @@ public class WaveCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
         if (hoverEnterFeedback == null || hoverExitFeedback == null || selectFeedback == null)
         {
             Debug.LogError($"[WaveCardUI] {name} is missing hover/select MMF_Player feedbacks.", this);
+        }
+        if (rerollRow == null || rerollText == null)
+        {
+            Debug.LogError($"[WaveCardUI] {name} is missing rerollRow/rerollText; 2+ skull cards won't show their draft reroll.", this);
         }
     }
 
@@ -191,6 +198,10 @@ public class WaveCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
                 bonusIcon.enabled = bonusIcon.sprite != null;
             }
         }
+
+        // Every wave pays a weapon draft; skulls add rerolls to it.
+        SetRowShown(rerollRow, card.draftRerolls > 0);
+        if (rerollText != null) rerollText.text = card.RerollText;
 
         SetRowShown(freshRow, card.isFresh);
         if (card.isFresh && freshText != null)

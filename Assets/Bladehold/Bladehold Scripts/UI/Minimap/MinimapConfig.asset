@@ -1,0 +1,215 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c20eef76980642c42bfb8d716bec0df1, type: 3}
+  m_Name: MinimapConfig
+  m_EditorClassIdentifier: Assembly-CSharp::MinimapConfigSO
+  expandedSize: 1720
+  expandedOffset: {x: 180, y: -20}
+  expandSeconds: 0.32
+  collapseSeconds: 0.24
+  expandCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 2.6
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.75
+      value: 1.035
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  collapseCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  backdropAlpha: 0.65
+  collapsedMarkerScale: 0.55
+  expandedMarkerScale: 1
+  fitToNavMesh: 1
+  paddingMeters: 10
+  minMapMeters: 60
+  maxMapMeters: 420
+  orientGateAtBottom: 1
+  snapOrientationTo90: 1
+  snapshotResolution: 1024
+  snapshotCullingMask:
+    serializedVersion: 2
+    m_Bits: 4294951961
+  snapshotHeightAbove: 80
+  disableFogForSnapshot: 1
+  snapshotTint: {r: 0.56, g: 0.55, b: 0.53, a: 1}
+  pathAgentTypeName: Humanoid
+  pathRefreshSeconds: 0.75
+  spawnSampleRadius: 8
+  gateSampleRadius: 10
+  spawnClusterMeters: 6
+  pathColor: {r: 1, g: 0.93, b: 0.8, a: 0.85}
+  pathWidthCollapsed: 13
+  pathWidthExpanded: 22
+  chevronSpacing: 1.35
+  marchSpeed: 1.6
+  dotSizePerAgentRadius: 60
+  minDotSize: 20
+  maxDotSize: 84
+  collapsedDotScale: 0.8
+  enemyColor: {r: 1, g: 0.16, b: 0.14, a: 1}
+  siegeColor: {r: 1, g: 0.55, b: 0.08, a: 1}
+  captainColor: {r: 0.78, g: 0.35, b: 1, a: 1}
+  dotOutlineColor: {r: 0.08, g: 0.04, b: 0.03, a: 0.85}
+  dotOutlineFraction: 0.4
+  spawnPopSeconds: 0.4
+  spawnPopCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 5
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.55
+      value: 1.45
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  wallHealthy: {r: 0.55, g: 0.85, b: 0.4, a: 1}
+  wallDamaged: {r: 0.95, g: 0.75, b: 0.25, a: 1}
+  wallCritical: {r: 0.95, g: 0.3, b: 0.25, a: 1}
+  wallUnbuilt: {r: 1, g: 1, b: 1, a: 0.35}
+  wallRubble: {r: 0.45, g: 0.38, b: 0.33, a: 1}
+  hitFlash: {r: 1, g: 1, b: 1, a: 1}
+  hitFlashSeconds: 1.2
+  minWallLength: 30
+  towerIcons:
+  - type: 0
+    icon: {fileID: 21300000, guid: cd23f8300febe1d448f17bca2d217cc8, type: 3}
+  - type: 3
+    icon: {fileID: 21300000, guid: fd1a32261e639ab468277d46832940b7, type: 3}
+  - type: 4
+    icon: {fileID: 21300000, guid: 2e9e55258bae3f8498b6b53dacd2d4a7, type: 3}
+  - type: 5
+    icon: {fileID: 21300000, guid: 4797e205313193f47b3f2ac4943bee31, type: 3}
+  emptyPlotColor: {r: 1, g: 1, b: 1, a: 0.45}
+  builtPlotColor: {r: 0.98, g: 0.85, b: 0.5, a: 1}
+  noSupplyColor: {r: 0.95, g: 0.3, b: 0.25, a: 1}
+  legend:
+  - locKey: minimap.legend_you
+    english: You
+    icon: {fileID: 21300000, guid: 2601efe7b1e90d74ab9233bcfc9ad37e, type: 3}
+    color: {r: 1, g: 1, b: 1, a: 1}
+    iconSize: 46
+  - locKey: minimap.legend_gate
+    english: Main gate
+    icon: {fileID: 21300000, guid: c3fff03da3a454f4ea0bb5536651de4b, type: 3}
+    color: {r: 1, g: 1, b: 1, a: 1}
+    iconSize: 46
+  - locKey: minimap.legend_tower
+    english: Tower plot
+    icon: {fileID: 21300000, guid: 70af468f3a7e73841988aee7126e7af9, type: 3}
+    color: {r: 0.98, g: 0.85, b: 0.5, a: 1}
+    iconSize: 42
+  - locKey: minimap.legend_wall
+    english: Wall (colour = HP)
+    icon: {fileID: 21300000, guid: 5eacea6e3c56a8f418e9cb70882c6eea, type: 3}
+    color: {r: 0.55, g: 0.85, b: 0.4, a: 1}
+    iconSize: 34
+  - locKey: minimap.legend_spawn
+    english: Enemy spawn
+    icon: {fileID: 21300000, guid: beb58d80ece1125479ed57b077003fbf, type: 3}
+    color: {r: 1, g: 0.55, b: 0.5, a: 1}
+    iconSize: 44
+  - locKey: minimap.legend_route
+    english: Predicted route
+    icon: {fileID: 21300000, guid: 04fc74cf61b5e3a45913f7e459c9906d, type: 3}
+    color: {r: 1, g: 0.93, b: 0.8, a: 0.85}
+    iconSize: 46
+  - locKey: minimap.legend_enemy
+    english: Enemy
+    icon: {fileID: 21300000, guid: 252672e43e9285b49855f83d0e021540, type: 3}
+    color: {r: 1, g: 0.16, b: 0.14, a: 1}
+    iconSize: 26
+  - locKey: minimap.legend_large
+    english: Large enemy
+    icon: {fileID: 21300000, guid: 252672e43e9285b49855f83d0e021540, type: 3}
+    color: {r: 1, g: 0.16, b: 0.14, a: 1}
+    iconSize: 38
+  - locKey: minimap.legend_siege
+    english: Siege unit
+    icon: {fileID: 21300000, guid: 252672e43e9285b49855f83d0e021540, type: 3}
+    color: {r: 1, g: 0.55, b: 0.08, a: 1}
+    iconSize: 30
+  - locKey: minimap.legend_captain
+    english: Captain
+    icon: {fileID: 21300000, guid: 252672e43e9285b49855f83d0e021540, type: 3}
+    color: {r: 0.78, g: 0.35, b: 1, a: 1}
+    iconSize: 38

@@ -91,7 +91,6 @@ public class WaveChoiceConfigSO : ScriptableObject
 
     public List<WaveBonusOption> bonusPool = new List<WaveBonusOption>
     {
-        new WaveBonusOption { type = WaveBonusType.DraftPick, weight = 3f, baseAmount = 1 },
         new WaveBonusOption { type = WaveBonusType.GoblinBlood, weight = 2f, baseAmount = 2 },
         new WaveBonusOption { type = WaveBonusType.OrcishMetal, weight = 2f, baseAmount = 2 },
         new WaveBonusOption { type = WaveBonusType.TrollHeart, weight = 1f, baseAmount = 25 }
@@ -100,11 +99,21 @@ public class WaveChoiceConfigSO : ScriptableObject
     [Min(0f)] public float defenceRewardMultiplier = 1f;
     [Min(0f)] public float offenceRewardMultiplier = 1.5f;
 
-    [Tooltip("Draft picks granted by a DraftPick bonus, per skull (element 0 = 1 skull).")]
+    [Tooltip("Extra draft picks granted by a DraftPick bonus, per skull (element 0 = 1 skull). DraftPick is out of the default bonus pool: every wave already pays a weapon draft (see Weapon Draft).")]
     public int[] draftPicksBySkulls = { 1, 1, 2 };
 
     [Tooltip("Reward bonus in percent when the objective wasn't played last wave (0 = off).")]
     [Min(0f)] public float varietyBonusPercent = 10f;
+
+    [Header("Weapon Draft")]
+    [Tooltip("Weapon draft picks paid after every wave (the build's guaranteed floor), on top of the card's bundle.")]
+    [Min(0)] public int draftPicksPerWave = 1;
+    [Tooltip("A failed objective still pays the wave's draft (without its rerolls); only the card's bundle is lost.")]
+    public bool draftOnFailedWave = true;
+    [Tooltip("Killing the captain on the final wave pays a draft before the victory screen.")]
+    public bool draftAfterFinalWave = true;
+    [Tooltip("Rerolls on the wave's draft, per skull (element 0 = 1 skull). Harder cards earn a better shot at the right card, not more cards.")]
+    public int[] draftRerollsBySkulls = { 0, 1, 1 };
 
     [Header("Skull Scaling (element 0 = 1 skull)")]
     public float[] rewardMultiplierBySkulls = { 1f, 1.5f, 2.25f };

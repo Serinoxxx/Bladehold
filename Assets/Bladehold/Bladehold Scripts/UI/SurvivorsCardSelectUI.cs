@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 ///     3-Card Level-Up Selection Modal for Survivors mode.
@@ -38,6 +39,13 @@ public class SurvivorsCardSelectUI : MonoBehaviour
     [Tooltip("Pad focus for the modal; the first wave card becomes its default.")]
     [SerializeField] private MenuFocusController focusController;
 
+    [Header("Reroll")]
+    [Tooltip("Rerolls all three skill cards; shown only on a draft opened with rerolls (2+ skull wave cards).")]
+    [SerializeField] private Button rerollButton;
+
+    [Tooltip("The reroll button's label, e.g. 'Reroll (1)'.")]
+    [SerializeField] private TextMeshProUGUI rerollLabel;
+
     [Header("Sidebar Reference")]
     [Tooltip("Right-side player info and acquired skills sidebar.")]
     [SerializeField] private SurvivorsPlayerInfoSidebarUI sidebar;
@@ -66,6 +74,7 @@ public class SurvivorsCardSelectUI : MonoBehaviour
     private Coroutine enableButtonsCoroutine;
     private Coroutine closeRoutine;
     private bool hasBanishedThisDraft = false;
+    private int rerollsRemaining;
 
     private void Awake()
     {
@@ -105,6 +114,16 @@ public class SurvivorsCardSelectUI : MonoBehaviour
         {
             waveCardsRow.gameObject.SetActive(false);
         }
+
+        if (rerollButton == null)
+        {
+            Debug.LogError("[SurvivorsCardSelectUI] rerollButton is not assigned; drafts with rerolls can't offer them.", this);
+        }
+        else
+        {
+            rerollButton.onClick.AddListener(OnRerollClicked);
+            rerollButton.gameObject.SetActive(false);
+        }
     }
 
     private void OnDestroy()
@@ -120,9 +139,10 @@ public class SurvivorsCardSelectUI : MonoBehaviour
 
     /// <summary>
     ///     Opens the card selection modal, pauses gameplay, and populates 3 card choices.
-    ///     Can be targeted to a specific DraftCategory (Weapon or Elemental).
+    ///     Can be targeted to a specific DraftCategory (Weapon or Elemental). <paramref name="rerolls" /> shows
+    ///     the reroll button, which swaps all three cards for fresh ones.
     /// </summary>
-    public void OpenDraft(DraftCategory? category = null, Action onComplete = null)
+    public void OpenDraft(DraftCategory? category = null, Action onComplete = null, int rerolls = 0)
     {
         if (SurvivorsCardSelector.Instance == null)
         {
@@ -149,18 +169,21 @@ public class SurvivorsCardSelectUI : MonoBehaviour
         }
 
         hasBanishedThisDraft = false;
+        rerollsRemaining = Mathf.Max(0, rerolls);
         waveChoiceOpen = false;
         ShowWaveRow(false);
+        RefreshRerollButton();
 
         if (headerText != null)
         {
             string catName = category switch
             {
-                DraftCategory.Weapon => "WEAPON UPGRADE",
-                DraftCategory.Elemental => "ELEMENTAL UPGRADE",
-                _ => "UPGRADE DRAFT"
+                DraftCategory.Weapon => Loc.Get("draft.header.weapon", "Weapon Upgrade"),
+                DraftCategory.Elemental => Loc.Get("draft.header.elemental", "Elemental Upgrade"),
+                _ => Loc.Get("draft.header.upgrade", "Upgrade Draft")
             };
-            headerText.text = $"<color=#FFD700>{catName}</color>\n<size=20>Choose 1 of 3 upgrades</size>";
+            // Same ink colour as the wave choice header; the subtitle at 60% stays readable on the parchment.
+            headerText.text = $"{catName}\n<size=60%>{Loc.Get("draft.header.subtitle", "Choose 1 of 3 upgrades")}</size>";
         }
 
         List<SkillNode> offered = SurvivorsCardSelector.Instance.GetRandomSkillCards(3, category: activeCategory);
@@ -220,6 +243,8 @@ public class SurvivorsCardSelectUI : MonoBehaviour
         }
 
         waveChoiceOpen = true;
+        rerollsRemaining = 0;
+        RefreshRerollButton();
         onWaveCardPicked = onPicked;
         pickedWaveCard = null;
         onDraftCompletedCallback = null;
@@ -300,7 +325,7 @@ public class SurvivorsCardSelectUI : MonoBehaviour
         if (waveCardsRow != null) waveCardsRow.gameObject.SetActive(showWave);
         if (!showWave && focusController != null && cards.Length > 0 && cards[0] != null)
         {
-            focusController.SetDefaultSelectable(cards[0].GetComponent<UnityEngine.UI.Selectable>());
+            focusController.SetDefaultSelectable(cards[0].GetComponent<Selectable>());
         }
     }
 
@@ -317,6 +342,41 @@ public class SurvivorsCardSelectUI : MonoBehaviour
         {
             if (view != null) view.SetInteractable(interactable);
         }
+        if (rerollButton != null) rerollButton.interactable = interactable && rerollsRemaining > 0;
+    }
+
+    private void RefreshRerollButton()
+    {
+        if (rerollButton == null) return;
+        bool show = !waveChoiceOpen && rerollsRemaining > 0;
+        rerollButton.gameObject.SetActive(show);
+        if (show && rerollLabel != null)
+        {
+            rerollLabel.text = Loc.Get("draft.reroll", "Reroll ({0})").Replace("{0}", rerollsRemaining.ToString());
+        }
+    }
+
+    /// <summary>Swaps all three offered cards for ones not just shown (falling back to any eligible card when the pool is thin).</summary>
+    private void OnRerollClicked()
+    {
+        if (waveChoiceOpen || rerollsRemaining <= 0 || closeRoutine != null) return;
+        if (Time.unscaledTime - modalOpenedUnscaledTime < clickDelaySeconds) return;
+        if (SurvivorsCardSelector.Instance == null) return;
+
+        List<SkillNode> fresh = SurvivorsCardSelector.Instance.GetRandomSkillCards(3, currentOfferedNodes, activeCategory);
+        if (fresh.Count < 3)
+        {
+            List<SkillNode> exclude = new List<SkillNode>(fresh);
+            fresh.AddRange(SurvivorsCardSelector.Instance.GetRandomSkillCards(3 - fresh.Count, exclude, activeCategory));
+        }
+        if (fresh.Count == 0) return;
+
+        rerollsRemaining--;
+        currentOfferedNodes.Clear();
+        currentOfferedNodes.AddRange(fresh);
+        PopulateCards(currentOfferedNodes);
+        // A pad focused on the button when it hides falls back to the first card (MenuFocusController).
+        RefreshRerollButton();
     }
 
     private IEnumerator EnableButtonsAfterDelay(float delay)
@@ -470,6 +530,7 @@ public class SurvivorsCardSelectUI : MonoBehaviour
         }
 
         SetButtonsInteractable(false);
+        rerollsRemaining = 0;
         closeRoutine = StartCoroutine(CloseModalWithFadeRoutine());
     }
 

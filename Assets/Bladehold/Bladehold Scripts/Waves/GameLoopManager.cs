@@ -687,7 +687,9 @@ public class GameLoopManager : MonoBehaviour
 
             OnWaveResolved?.Invoke(clearedWave, success, card);
             OnWaveCleared?.Invoke(clearedWave, "Sector Defended");
-            TriggerVictory();
+            int finalPicks = success && waveChoiceConfig != null && waveChoiceConfig.draftAfterFinalWave ? waveChoiceConfig.draftPicksPerWave : 0;
+            Summary.draftPicks += finalPicks;
+            OpenDraftPicks(finalPicks, 0, TriggerVictory);
             return;
         }
 
@@ -705,7 +707,10 @@ public class GameLoopManager : MonoBehaviour
         else
         {
             OnWaveCleared?.Invoke(clearedWave, success ? "Wave Cleared" : "Objective Failed");
-            StartCoroutine(NextIntermissionAfterPopup(clearedWave + 1));
+            // A failed objective loses the card's bundle, not the build's guaranteed draft (rerolls are part of the bundle).
+            int picks = waveChoiceConfig != null && (success || waveChoiceConfig.draftOnFailedWave) ? waveChoiceConfig.draftPicksPerWave : 0;
+            Summary.draftPicks += picks;
+            OpenDraftPicks(picks, 0, () => StartCoroutine(NextIntermissionAfterPopup(clearedWave + 1)));
         }
     }
 
@@ -721,7 +726,11 @@ public class GameLoopManager : MonoBehaviour
         BeginIntermission(nextWave);
     }
 
-    /// <summary>Pays a card's bundle: gold, supply, then the bonus (a draft pick opens the skill-card modal, chained).</summary>
+    /// <summary>
+    ///     Pays a card's bundle: gold, supply, the bonus, then the wave's weapon draft
+    ///     (<see cref="WaveChoiceConfigSO.draftPicksPerWave" /> plus any DraftPick bonus, chained skill-card modals,
+    ///     the first carrying the card's <see cref="WaveCard.draftRerolls" />).
+    /// </summary>
     private void GrantCardReward(WaveCard card, Action onComplete)
     {
         List<string> parts = new List<string>();
@@ -736,11 +745,11 @@ public class GameLoopManager : MonoBehaviour
             parts.Add(Loc.Get("wave.reward.supply", "+{0} supply").Replace("{0}", card.supply.ToString(CultureInfo.InvariantCulture)));
         }
 
-        int draftPicks = 0;
+        int draftPicks = waveChoiceConfig != null ? waveChoiceConfig.draftPicksPerWave : 1;
         switch (card.bonusType)
         {
             case WaveBonusType.DraftPick:
-                draftPicks = Mathf.Max(1, card.bonusAmount);
+                draftPicks += Mathf.Max(1, card.bonusAmount);
                 break;
             case WaveBonusType.GoblinBlood:
                 RunSession.AddGoblinBlood(card.bonusAmount);
@@ -772,17 +781,18 @@ public class GameLoopManager : MonoBehaviour
         OnWaveRewardGranted?.Invoke(card, desc);
         Debug.Log($"[GameLoopManager] Wave card reward: {desc}");
 
-        OpenDraftPicks(draftPicks, onComplete);
+        OpenDraftPicks(draftPicks, card.draftRerolls, onComplete);
     }
 
-    private void OpenDraftPicks(int remaining, Action onComplete)
+    /// <summary>Opens <paramref name="remaining" /> weapon drafts in a chain; <paramref name="rerolls" /> go on the first.</summary>
+    private void OpenDraftPicks(int remaining, int rerolls, Action onComplete)
     {
         if (remaining <= 0 || SurvivorsCardSelectUI.Instance == null)
         {
             onComplete?.Invoke();
             return;
         }
-        SurvivorsCardSelectUI.Instance.OpenDraft(null, () => OpenDraftPicks(remaining - 1, onComplete));
+        SurvivorsCardSelectUI.Instance.OpenDraft(null, () => OpenDraftPicks(remaining - 1, 0, onComplete), rerolls);
     }
 
     private void PlayRewardFeedback(WaveCard card)

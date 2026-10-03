@@ -2824,7 +2824,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9dbf4e97b5f30f4591fff22df9502a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
-  key: endscreen.hero_crit
+  key: stat.CritChance
 --- !u!1 &1689189131655962221
 GameObject:
   m_ObjectHideFlags: 0
@@ -12113,7 +12113,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9dbf4e97b5f30f4591fff22df9502a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
-  key: endscreen.hero_melee
+  key: sidebar.melee_damage
 --- !u!1 &7194152726310221053
 GameObject:
   m_ObjectHideFlags: 0
@@ -12285,7 +12285,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9dbf4e97b5f30f4591fff22df9502a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
-  key: endscreen.hero_speed
+  key: stat.MoveSpeed
 --- !u!1 &7353620360774047872
 GameObject:
   m_ObjectHideFlags: 0
@@ -13193,7 +13193,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9dbf4e97b5f30f4591fff22df9502a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LocalizedText
-  key: endscreen.hero_ranged
+  key: sidebar.ranged_damage
 --- !u!1 &8078163720439963829
 GameObject:
   m_ObjectHideFlags: 0

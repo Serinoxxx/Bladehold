@@ -69,3 +69,6 @@ Thumbs.db
 
 # .agents/skills is a directory junction to .claude/skills (see CLAUDE.md "Project skills")
 /.agents/skills
+
+# Unity MCP screenshot output
+/Captures/

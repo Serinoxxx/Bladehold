@@ -98,6 +98,43 @@ namespace Bladehold.Tools
                 }
             }
             bmp.UnlockBits(data);
+
+            // Clean up any AI-generated outer white border / framing artifact
+            // Flood-fill from canvas perimeter to remove any non-black connected regions touching edges
+            var queue = new Queue<(int x, int y)>();
+            var visited = new bool[w, h];
+
+            for (int x = 0; x < w; x++)
+            {
+                if (alpha[x, 0] > 0f) { queue.Enqueue((x, 0)); visited[x, 0] = true; }
+                if (alpha[x, h - 1] > 0f) { queue.Enqueue((x, h - 1)); visited[x, h - 1] = true; }
+            }
+            for (int y = 0; y < h; y++)
+            {
+                if (alpha[0, y] > 0f && !visited[0, y]) { queue.Enqueue((0, y)); visited[0, y] = true; }
+                if (alpha[w - 1, y] > 0f && !visited[w - 1, y]) { queue.Enqueue((w - 1, y)); visited[w - 1, y] = true; }
+            }
+
+            int[] dx = { 0, 0, 1, -1 };
+            int[] dy = { 1, -1, 0, 0 };
+
+            while (queue.Count > 0)
+            {
+                var (cx, cy) = queue.Dequeue();
+                alpha[cx, cy] = 0f;
+
+                for (int i = 0; i < 4; i++)
+                {
+                    int nx = cx + dx[i];
+                    int ny = cy + dy[i];
+                    if (nx >= 0 && nx < w && ny >= 0 && ny < h && !visited[nx, ny] && alpha[nx, ny] > 0f)
+                    {
+                        visited[nx, ny] = true;
+                        queue.Enqueue((nx, ny));
+                    }
+                }
+            }
+
             return alpha;
         }
 

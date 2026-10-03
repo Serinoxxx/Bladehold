@@ -715,6 +715,9 @@ public class SurvivorsSpawner : MonoBehaviour
         return picked;
     }
 
+    /// <summary>The scene's spawn points (authored or auto-discovered under "Spawnpoints"); may be empty.</summary>
+    public IReadOnlyList<Transform> SpawnPoints => spawnPoints ?? System.Array.Empty<Transform>();
+
     /// <summary>The spawn point closest to <paramref name="from" /> (where routed stragglers flee to).</summary>
     public Vector3 NearestSpawnPoint(Vector3 from)
     {

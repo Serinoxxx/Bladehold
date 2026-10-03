@@ -5445,6 +5445,7 @@ GameObject:
   - component: {fileID: 8187149605379624136}
   - component: {fileID: 7655775733471174784}
   - component: {fileID: 3803492860994446663}
+  - component: {fileID: 4261959534470987908}
   m_Layer: 7
   m_Name: Bulwark Enemy Variant
   m_TagString: Untagged
@@ -5519,7 +5520,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AIMovement
   agent: {fileID: 2233948559631319250}
-  movementSO: {fileID: 11400000, guid: 12c4a1b98935e144fbb340671b8eef6b, type: 2}
+  movementSO: {fileID: 11400000, guid: 3c72702eff4f7794e8029d062abd6fe6, type: 2}
   health: {fileID: 5898420762609303171}
   targetSelector: {fileID: 3468669529558729217}
   aggroFeedback: {fileID: 0}
@@ -5827,7 +5828,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AIAttack
   animator: {fileID: 2970501339503913651}
   health: {fileID: 5898420762609303171}
-  attackData: {fileID: 11400000, guid: 9be715cbbce5a2a4fa016e21b6a1c596, type: 2}
+  attackData: {fileID: 11400000, guid: 97916e64587a18f4abfdbacfa0f670f5, type: 2}
   targetSelector: {fileID: 3468669529558729217}
   startAttackFeedback: {fileID: 8072303099686055765}
   attackHitFeedback: {fileID: 6620229360546536887}
@@ -5993,6 +5994,21 @@ MonoBehaviour:
   staggerTrigger: Stagger
   shieldBrokenTrigger: ShieldBroken
   staggerDuration: 0.8
+--- !u!114 &4261959534470987908
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6748165462985918841}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e1ae98e67bbdd1418ecf6015338d1f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MountStopper
+  data: {fileID: 11400000, guid: a9779a6865249ac40bfe3b8ebe512fc6, type: 2}
+  health: {fileID: 5898420762609303171}
+  knockbackReceiver: {fileID: 4594059272953804380}
 --- !u!1 &6774616082276638828
 GameObject:
   m_ObjectHideFlags: 0

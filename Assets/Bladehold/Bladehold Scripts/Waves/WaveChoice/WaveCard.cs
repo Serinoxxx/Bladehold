@@ -32,6 +32,8 @@ public class WaveCard
     public int supply;
     public WaveBonusType bonusType;
     public int bonusAmount;
+    /// <summary>Rerolls on the weapon draft this wave pays on success (from <see cref="WaveChoiceConfigSO.draftRerollsBySkulls" />).</summary>
+    public int draftRerolls;
 
     public string ObjectiveId => objective != null ? objective.id : "";
     public bool HasClan => clan != null && clan.buffType != BannerBuffType.None;
@@ -76,6 +78,13 @@ public class WaveCard
         WaveBonusType.TrollHeart => Loc.Get("wave.reward.troll_heart", "Troll Heart: +{0} max HP").Replace("{0}", bonusAmount.ToString(CultureInfo.InvariantCulture)),
         _ => ""
     };
+
+    /// <summary>"+1 draft reroll" for the weapon draft this wave pays; blank when the card has none.</summary>
+    public string RerollText => draftRerolls <= 0
+        ? ""
+        : draftRerolls > 1
+            ? Loc.Get("wave.reward.reroll_many", "+{0} draft rerolls").Replace("{0}", draftRerolls.ToString(CultureInfo.InvariantCulture))
+            : Loc.Get("wave.reward.reroll_one", "+1 draft reroll");
 
     public static string FormatSeconds(float seconds)
     {

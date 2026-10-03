@@ -22,10 +22,16 @@ public class InputGlyph : MonoBehaviour
     [SerializeField] private Image image;
     [Tooltip("Text overlaid on the blank keycap for controls without a dedicated sprite (e.g. rebound keys).")]
     [SerializeField] private TMP_Text overlayText;
+    [Tooltip("Optional: when set, keys without dedicated art draw on this 9-sliced keycap instead of the map's blank keycaps, and the glyph widens to fit the key name (the settings rebind grid, where 'Left Shift' must stay legible).")]
+    [SerializeField] private Sprite stretchKeycap;
+    [Tooltip("Horizontal padding (px) around the key name on the stretch keycap.")]
+    [SerializeField] private float stretchPadding = 16f;
 
     private InputAction action;
     private string fixedKbmPath;
     private string fixedGamepadPath;
+    private int fixedBindingIndex = -1;
+    private ControlScheme fixedScheme;
 
     private void OnValidate()
     {
@@ -58,6 +64,22 @@ public class InputGlyph : MonoBehaviour
         action = newAction;
         fixedKbmPath = null;
         fixedGamepadPath = null;
+        fixedBindingIndex = -1;
+        Refresh();
+    }
+
+    /// <summary>
+    ///     Pins this glyph to one binding of an action, always drawn in the given family regardless of
+    ///     the active device — for the settings rebind grid, whose Keyboard/Mouse and Gamepad columns
+    ///     show side by side. Still follows the binding's rebind overrides. Pass index -1 to show nothing.
+    /// </summary>
+    public void SetBinding(InputAction newAction, int bindingIndex, ControlScheme scheme)
+    {
+        action = bindingIndex >= 0 ? newAction : null;
+        fixedKbmPath = null;
+        fixedGamepadPath = null;
+        fixedBindingIndex = bindingIndex;
+        fixedScheme = scheme;
         Refresh();
     }
 
@@ -70,6 +92,7 @@ public class InputGlyph : MonoBehaviour
     {
         fixedKbmPath = kbmPath;
         fixedGamepadPath = gamepadPath;
+        fixedBindingIndex = -1;
         action = null;
         Refresh();
     }
@@ -79,10 +102,21 @@ public class InputGlyph : MonoBehaviour
 
     private void HandleSchemeChanged(ControlScheme scheme) => Refresh();
 
-    private void Refresh()
+    /// <summary>Re-resolves the glyph now, e.g. right after a rebind finishes.</summary>
+    public void Refresh()
     {
-        string fixedPath = InputDeviceWatcher.GamepadActive ? fixedGamepadPath : fixedKbmPath;
-        string path = action != null ? ResolveActionPath() : fixedPath;
+        bool pinned = action != null && fixedBindingIndex >= 0;
+        ControlScheme scheme = pinned ? fixedScheme : InputDeviceWatcher.Current;
+        string fixedPath = scheme == ControlScheme.Gamepad ? fixedGamepadPath : fixedKbmPath;
+        string path;
+        if (pinned)
+        {
+            path = fixedBindingIndex < action.bindings.Count ? action.bindings[fixedBindingIndex].effectivePath : null;
+        }
+        else
+        {
+            path = action != null ? ResolveActionPath() : fixedPath;
+        }
         HasBinding = !string.IsNullOrEmpty(path);
         if (!HasBinding)
         {
@@ -91,7 +125,7 @@ public class InputGlyph : MonoBehaviour
         }
 
         string controlName = LastPathComponent(path);
-        Sprite sprite = glyphMap != null ? glyphMap.Resolve(InputDeviceWatcher.Current, controlName) : null;
+        Sprite sprite = glyphMap != null ? glyphMap.Resolve(scheme, controlName) : null;
         if (sprite != null)
         {
             SetVisual(sprite, null);
@@ -101,6 +135,11 @@ public class InputGlyph : MonoBehaviour
         // No dedicated art: blank keycap + the control's short human-readable name ("F", "Left Shift").
         string label = InputControlPath.ToHumanReadableString(
             path, InputControlPath.HumanReadableStringOptions.OmitDevice);
+        if (stretchKeycap != null)
+        {
+            SetVisual(stretchKeycap, label, stretch: true);
+            return;
+        }
         Sprite keycap = glyphMap != null
             ? (label.Length > 2 ? glyphMap.BlankKeycapWide : glyphMap.BlankKeycap)
             : null;
@@ -150,17 +189,44 @@ public class InputGlyph : MonoBehaviour
         return slash >= 0 && slash + 1 < path.Length ? path.Substring(slash + 1) : path;
     }
 
-    private void SetVisual(Sprite sprite, string label)
+    private void SetVisual(Sprite sprite, string label, bool stretch = false)
     {
         if (image != null)
         {
             image.sprite = sprite;
             image.enabled = sprite != null;
+            if (stretchKeycap != null)
+            {
+                image.type = stretch ? Image.Type.Sliced : Image.Type.Simple;
+                image.preserveAspect = !stretch;
+            }
         }
         if (overlayText != null)
         {
             overlayText.text = label ?? "";
             overlayText.gameObject.SetActive(!string.IsNullOrEmpty(label));
+        }
+        if (stretchKeycap != null)
+        {
+            FitWidth(stretch ? label : null);
+        }
+    }
+
+    /// <summary>Square for sprite glyphs; as wide as the key name (never narrower than square) on the stretch keycap.</summary>
+    private void FitWidth(string label)
+    {
+        var rt = (RectTransform)transform;
+        float height = rt.rect.height > 0f ? rt.rect.height : rt.sizeDelta.y;
+        float width = height;
+        if (!string.IsNullOrEmpty(label) && overlayText != null)
+        {
+            width = Mathf.Max(height, overlayText.GetPreferredValues(label, 9999f, height).x + stretchPadding);
+        }
+        rt.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
+        var layout = GetComponent<LayoutElement>();
+        if (layout != null)
+        {
+            layout.preferredWidth = width;
         }
     }
 }

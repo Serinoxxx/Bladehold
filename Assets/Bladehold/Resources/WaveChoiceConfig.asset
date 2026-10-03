@@ -35,9 +35,6 @@ MonoBehaviour:
   - gold: 80
     supply: 40
   bonusPool:
-  - type: 1
-    weight: 3
-    baseAmount: 1
   - type: 2
     weight: 2
     baseAmount: 2

@@ -19,6 +19,9 @@ public class ConfirmDialog : MonoBehaviour
     [SerializeField] private Button cancelButton;
     [SerializeField] private float fadeDuration = 0.15f;
 
+    /// <summary>True while the dialog is showing — owners suppress their own shortcuts (tab switching) meanwhile.</summary>
+    public bool IsOpen => canvasGroup != null && canvasGroup.interactable;
+
     private Action onConfirm;
     private Action onCancel;
     private bool anyError = false;

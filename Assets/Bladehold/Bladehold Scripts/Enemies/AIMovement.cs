@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using MoreMountains.Feedbacks;
 using UnityEngine;
 using UnityEngine.AI;
@@ -14,6 +15,17 @@ public class AIMovement : MonoBehaviour
 
     Player player;
     Health playerHealth;
+
+    static readonly List<AIMovement> active = new List<AIMovement>();
+
+    /// <summary>
+    ///     Every enabled enemy mover in the scene, corpses included until their component is disabled or
+    ///     destroyed (check <see cref="IsDead" />). The minimap reads this for its enemy dots.
+    /// </summary>
+    public static IReadOnlyList<AIMovement> Active => active;
+
+    public NavMeshAgent Agent => agent;
+    public bool IsDead => isDead || (health != null && health.IsDead);
 
     bool isDead = false;
     bool playerDead = false;
@@ -103,6 +115,10 @@ public class AIMovement : MonoBehaviour
         }
 
         agent.speed = BaseSpeed;
+        if (movementSO.agentAngularSpeed > 0f)
+        {
+            agent.angularSpeed = movementSO.agentAngularSpeed;
+        }
         baseAngularSpeed = agent.angularSpeed;
 
         // Avoidance is applied in code so the prefab's NavMeshAgent stays untouched. Start in the
@@ -138,11 +154,17 @@ public class AIMovement : MonoBehaviour
 
     private void OnEnable()
     {
+        if (!active.Contains(this)) active.Add(this);
         isTurningPaused = false;
         if (agent != null && agent.isOnNavMesh)
         {
             agent.updateRotation = true;
         }
+    }
+
+    private void OnDisable()
+    {
+        active.Remove(this);
     }
 
     private void OnDestroy()

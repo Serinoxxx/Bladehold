@@ -20,6 +20,8 @@ Things that need your hands, eyes or judgement in the Unity Editor. Items marked
 - [Troll sliding / warping](editor/troll-movement.md) (agent double-scale fixed in code; walk-speed sync and a playtest left)
 - [Enemy spawn/death prewarm](editor/enemy-prewarm.md) (wired by YAML, not yet opened in the Editor; needs a hitch check and a shader-variant re-collect)
 - [17: Walls, upgrade wheel, crystals](editor/17-walls-and-upgrade-wheel.md) (built and play-checked; the wall is now one hand-placed gatehouse model that needs fitting per scene; MMF content and UI are placeholders for your pass)
+- [Battlefield minimap](editor/battlefield-minimap.md) (built and play-checked in Outer Gate; needs your UI review, other gate scenes and two decisions)
+- [Settings menu restyle](editor/settings-menu-restyle.md) (built and play-checked; needs your UI review and two small decisions)
 
 ## A. Triage first (biggest win)
 

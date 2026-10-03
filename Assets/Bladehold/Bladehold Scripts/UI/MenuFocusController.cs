@@ -34,6 +34,19 @@ public class MenuFocusController : MonoBehaviour
     [Tooltip("Suppresses the B-cancel poll, for panels whose B press means something else while open.")]
     [SerializeField] private bool disableCancel = false;
 
+    private CanvasGroup canvasGroup;
+
+    /// <summary>
+    ///     A panel faded out through its own CanvasGroup (e.g. the confirm dialog, which stays active
+    ///     at alpha 0) is closed: it must neither grab focus nor trap it.
+    /// </summary>
+    private bool PanelOpen => canvasGroup == null || canvasGroup.interactable;
+
+    private void Awake()
+    {
+        canvasGroup = GetComponent<CanvasGroup>();
+    }
+
     private void OnEnable()
     {
         InputDeviceWatcher.SchemeChanged += HandleSchemeChanged;
@@ -50,7 +63,7 @@ public class MenuFocusController : MonoBehaviour
 
     private void Update()
     {
-        if (!InputDeviceWatcher.GamepadActive || EventSystem.current == null)
+        if (!InputDeviceWatcher.GamepadActive || EventSystem.current == null || !PanelOpen)
         {
             return;
         }
@@ -62,7 +75,9 @@ public class MenuFocusController : MonoBehaviour
         }
 
         GameObject selected = EventSystem.current.currentSelectedGameObject;
-        bool selectionDead = selected == null || !selected.activeInHierarchy;
+        Selectable selectedControl = selected != null ? selected.GetComponent<Selectable>() : null;
+        // A selection left on a control that can't be used (e.g. inside a dialog that just faded out) is as good as dead.
+        bool selectionDead = selected == null || !selected.activeInHierarchy || (selectedControl != null && !selectedControl.IsInteractable());
         bool selectionEscaped = !selectionDead && restrictTo != null && !selected.transform.IsChildOf(restrictTo);
 
         if (selectionDead || selectionEscaped)
@@ -80,7 +95,10 @@ public class MenuFocusController : MonoBehaviour
 
         if (scheme == ControlScheme.Gamepad)
         {
-            SelectDefault();
+            if (PanelOpen)
+            {
+                SelectDefault();
+            }
         }
         else
         {
@@ -102,7 +120,7 @@ public class MenuFocusController : MonoBehaviour
     /// <summary>Focuses the default control — also callable by panel code after it swaps tab content.</summary>
     public void SelectDefault()
     {
-        if (EventSystem.current == null || defaultSelectable == null || !defaultSelectable.isActiveAndEnabled)
+        if (EventSystem.current == null || defaultSelectable == null || !defaultSelectable.isActiveAndEnabled || !PanelOpen)
         {
             return;
         }

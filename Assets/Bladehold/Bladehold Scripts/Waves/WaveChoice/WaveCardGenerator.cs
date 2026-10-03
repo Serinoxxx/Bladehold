@@ -91,6 +91,7 @@ public static class WaveCardGenerator
             modifierScale = WaveChoiceConfigSO.BySkulls(config.modifierMagnitudeBySkulls, skulls),
             enemyHealthMultiplier = WaveChoiceConfigSO.BySkulls(config.enemyHealthMultiplierBySkulls, skulls),
             killQuotaMultiplier = WaveChoiceConfigSO.BySkulls(config.killQuotaMultiplierBySkulls, skulls),
+            draftRerolls = Mathf.Max(0, WaveChoiceConfigSO.BySkulls(config.draftRerollsBySkulls, skulls)),
             hasCaptain = config.captainOnThreeSkulls && skulls >= 3,
             captainName = RollCaptainName(config, objective, skulls, ctx, rng),
             isFresh = config.varietyBonusPercent > 0f && !string.IsNullOrEmpty(ctx.lastObjectiveId) &&

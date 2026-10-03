@@ -36,6 +36,8 @@
     - Bake: the first 6 variations are the deaths; more are recorded until 4 land face-up. Tunables (sphere radius/friction, settle, timeout, get-up crossfade) are under "Baked falls" on the crowd SO.
   - `AIAttack.OnAttackStarted` drives the baked attack; `SlowStatus`'s `animator.speed` still scales baked playback.
   - Re-bake with **Bladehold/Crowd/Bake Crowd Animations** (`Editor/BakedCrowdBaker`, every type in about 10 s) after changing a crowd enemy's body, props, rig, ragdoll or those clips. The SO's playback tuning survives a re-bake.
+- **Halts mounts (`MountStopper` + `MountStopperSO`).** This is an enemy attribute: add the component to make the player's ridden horse treat the enemy as a wall. `HorseMotor`'s crowd scan finds one squarely ahead: arriving with momentum rears the horse in place, and it can never push forward into the enemy or shoulder it aside. Set the arc on the SO; `requireShieldBlock` defers to the enemy's `IShieldBlocker`, so a broken shield or an approach from behind rides through. Only the Bulwark has it today.
+- **Heavies get their own `AIMovementSO`/`AIAttackSO`.** Don't share the goblin's. Set `windupToApex` to when the swing clip actually connects, and keep `attackCooldown` at least as long as the clip. `AIMovementSO.agentAngularSpeed` overrides the agent's moving turn rate (0 = prefab value), and `stoppedTurnSpeed` is the in-range turn rate. Lower both for anything the player should be able to circle behind (Bulwark: 70 / 75).
 - Special attack components sit beside their SOs (`*Attack.cs` + `*AttackSO.cs`), with per-enemy folders for bigger kits (`Bulwark/`, `Bannerman/`, `Bomber/`, `Assassin/`, `Captain/`, …).
 
 ## Captains

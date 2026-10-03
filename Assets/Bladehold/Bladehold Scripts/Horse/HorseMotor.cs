@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using Synty.AnimationBaseLocomotion.Samples.InputSystem;
 using UnityEngine;
 using UnityEngine.AI;
@@ -25,7 +26,9 @@ using UnityEngine.AI;
 ///     <see cref="HorseSO.crowdLayers" /> from the CharacterController, and each frame the moving
 ///     horse laterally nudges overlapping enemies' NavMeshAgents aside (the
 ///     <see cref="KnockbackReceiver" /> agent.Move idiom) while enemies in the front arc apply a
-///     soft drag on target speed instead of a hard stop. If level geometry does block the
+///     soft drag on target speed instead of a hard stop. The exception is a
+///     <see cref="MountStopper" /> enemy (the Bulwark): one squarely ahead is a wall — the horse
+///     rears in place and can't push forward into it. If level geometry does block the
 ///     controller, <see cref="CurrentSpeed" /> is reconciled down to the movement actually
 ///     achieved, so speed can't be "banked" against an obstruction and burst out when it clears.
 /// </summary>
@@ -38,6 +41,8 @@ public class HorseMotor : MonoBehaviour
     [SerializeField] private HorseAnimation horseAnimation;
     [Tooltip("The saddle transform the mounted player is parented to.")]
     [SerializeField] private Transform riderSeat;
+    [Tooltip("Optional: played when the horse runs into a MountStopper enemy and rears (impact thud, whinny, screenshake).")]
+    [SerializeField] private MMF_Player mountStopFeedback;
 
     /// <summary>Signed forward speed in m/s (negative = reversing).</summary>
     public float CurrentSpeed { get; private set; }
@@ -53,6 +58,9 @@ public class HorseMotor : MonoBehaviour
 
     /// <summary>True while the horse is fast enough to trample — the damage window, open with or without Shift.</summary>
     public bool IsTrampling { get; private set; }
+
+    /// <summary>True while the horse is locked in a rear after running into a <see cref="MountStopper" />.</summary>
+    public bool IsRearing => Time.time < rearLockUntil;
 
     /// <summary>Current stamina, drained by charging (see <see cref="HorseSO.maxStamina" />).</summary>
     public float Stamina { get; private set; }
@@ -80,6 +88,8 @@ public class HorseMotor : MonoBehaviour
     private bool sprintHeld;
     private float verticalVelocity;
     private float crowdFactor = 1f;
+    private MountStopper stopperAhead;
+    private float rearLockUntil;
     private readonly Collider[] crowdBuffer = new Collider[MaxCrowdResults];
     private readonly HashSet<NavMeshAgent> crowdScratch = new HashSet<NavMeshAgent>();
     private bool anyError = false;
@@ -258,6 +268,8 @@ public class HorseMotor : MonoBehaviour
         sprintHeld = false;
         CurrentSpeed = 0f;
         TurnInput = 0f;
+        stopperAhead = null;
+        rearLockUntil = 0f;
         riderDamageable = null;
 
         if (characterController != null)
@@ -325,8 +337,28 @@ public class HorseMotor : MonoBehaviour
 
         UpdateCrowd(dt);
 
+        // A MountStopper dead ahead is a wall: arriving with momentum rears the horse in place,
+        // and either way the horse can't push forward into it — steer round or back off.
+        if (stopperAhead != null && CurrentSpeed > 0f)
+        {
+            if (!IsRearing && CurrentSpeed >= horseData.mountStopMinRearSpeed)
+            {
+                Rear(stopperAhead.RearLockSeconds);
+            }
+            CurrentSpeed = 0f;
+        }
+        bool rearing = IsRearing;
+        if (rearing)
+        {
+            wantsCharge = false;
+        }
+
         float targetSpeed;
-        if (move.y > 0f)
+        if (rearing || (stopperAhead != null && move.y > 0f))
+        {
+            targetSpeed = 0f;
+        }
+        else if (move.y > 0f)
         {
             targetSpeed = effectiveMax * move.y * crowdFactor;
         }
@@ -356,7 +388,7 @@ public class HorseMotor : MonoBehaviour
         CurrentSpeed = Mathf.MoveTowards(CurrentSpeed, targetSpeed, rate * dt);
 
         // Steering: full rate regardless of speed feels responsive; the blend tree leans via Turn.
-        TurnInput = Mathf.Clamp(move.x, -1f, 1f);
+        TurnInput = rearing ? 0f : Mathf.Clamp(move.x, -1f, 1f);
         if (TurnInput != 0f)
         {
             transform.Rotate(0f, TurnInput * horseData.turnDegreesPerSecond * dt, 0f);
@@ -461,6 +493,7 @@ public class HorseMotor : MonoBehaviour
     private void UpdateCrowd(float dt)
     {
         crowdFactor = 1f;
+        stopperAhead = null;
         if (horseData.crowdPushRadius <= 0f || horseData.crowdLayers.value == 0)
         {
             return;
@@ -494,6 +527,18 @@ public class HorseMotor : MonoBehaviour
             if (ahead > 0f)
             {
                 frontCount++;
+            }
+
+            // Mount stoppers (the Bulwark's shield wall) are never shouldered aside: one squarely
+            // in the horse's path stops it outright (see Update).
+            if (agent.TryGetComponent(out MountStopper stopper) && stopper.Halts(transform, health))
+            {
+                float sideways = Mathf.Abs(Vector3.Dot(toEnemy, transform.right));
+                if (stopperAhead == null && ahead > 0f && ahead <= horseData.mountStopReach && sideways <= horseData.mountStopHalfWidth)
+                {
+                    stopperAhead = stopper;
+                }
+                continue;
             }
 
             // A standing horse doesn't shove anyone; the nudge scales up with momentum.
@@ -547,6 +592,26 @@ public class HorseMotor : MonoBehaviour
 
         float loss = Mathf.Clamp01(horseData.hitSpeedLossFraction + horseData.hitSpeedLossPerResistance * resistance);
         CurrentSpeed *= 1f - loss;
+    }
+
+    /// <summary>
+    ///     The horse ran into a <see cref="MountStopper" />: kill the charge and trample, play the
+    ///     rear, and lock movement and steering for <paramref name="lockSeconds" />.
+    /// </summary>
+    private void Rear(float lockSeconds)
+    {
+        rearLockUntil = Time.time + lockSeconds;
+        StopCharging();
+        StopTrampling();
+
+        if (horseAnimation != null)
+        {
+            horseAnimation.TriggerRear();
+        }
+        if (mountStopFeedback != null)
+        {
+            mountStopFeedback.PlayFeedbacks();
+        }
     }
 
     private void StopCharging()

@@ -57,7 +57,10 @@ public class AIAttack : MonoBehaviour
         damageMultiplier = Mathf.Max(0f, value);
     }
 
-    public float BaseDamage => (damageOverride ?? (attackData != null ? attackData.damage : 0f)) * damageMultiplier;
+    /// <summary>True from the start of an attack's wind-up until its apex resolves.</summary>
+    public bool IsAttacking => attackRoutine != null;
+
+    public float BaseDamage =>(damageOverride ?? (attackData != null ? attackData.damage : 0f)) * damageMultiplier;
 
     private void OnValidate()
     {
