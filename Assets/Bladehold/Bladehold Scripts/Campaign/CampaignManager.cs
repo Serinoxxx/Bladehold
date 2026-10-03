@@ -413,6 +413,7 @@ public class CampaignManager : MonoBehaviour
         Time.timeScale = 1f;
         RunSession.ClearRun();
         RestoreFromRunSession();
+        FirstRunGift.TryGrant();
         OnCampaignStateChanged?.Invoke();
 
         if (Bladehold.UI.LoadingScreenManager.Instance != null)

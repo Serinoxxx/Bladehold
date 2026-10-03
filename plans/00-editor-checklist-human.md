@@ -8,7 +8,7 @@ Things that need your hands, eyes or judgement in the Unity Editor. Items marked
 - [04: Fishing Pond](editor/04-fishing.md) (the pond has no exit until this is done)
 - [05: Balance Tree Editor](editor/05-balance-tree.md)
 - [06: Sector difficulty + roster](editor/06-sector-difficulty.md) (Fraglob captain has no prefab yet)
-- [07: Demo gating](editor/07-demo-gating.md) (demo end panel needed in the Campaign Map scene)
+- [07: Demo gating](editor/07-demo-gating.md) (§6: shorter demo (tier-3 cutoff, 3 waves) and first-run gift need a playtest)
 - [08: Legacy cleanup](editor/08-legacy-cleanup.md) (cleanup tool already run by an agent, 2026-09-26)
 - [09: Visuals + MMF](editor/09-visuals-mmf.md) (tower build feedbacks empty until wired)
 - [15: Wave choice draft](editor/15-wave-choice.md) (wave card UI review; flow still uses banners until Phase C)
@@ -19,7 +19,7 @@ Things that need your hands, eyes or judgement in the Unity Editor. Items marked
 - [Skeleton crowd enemies](editor/skeleton-crowd-enemies.md) (generated and baked; needs your Play-mode check and weapon poses)
 - [Troll sliding / warping](editor/troll-movement.md) (agent double-scale fixed in code; walk-speed sync and a playtest left)
 - [Enemy spawn/death prewarm](editor/enemy-prewarm.md) (wired by YAML, not yet opened in the Editor; needs a hitch check and a shader-variant re-collect)
-- [17: Walls, upgrade wheel, crystals](editor/17-walls-and-upgrade-wheel.md) (built and play-checked in Outer Gate; all wall art, MMF content and UI are placeholders for your pass)
+- [17: Walls, upgrade wheel, crystals](editor/17-walls-and-upgrade-wheel.md) (built and play-checked; the wall is now one hand-placed gatehouse model that needs fitting per scene; MMF content and UI are placeholders for your pass)
 
 ## A. Triage first (biggest win)
 

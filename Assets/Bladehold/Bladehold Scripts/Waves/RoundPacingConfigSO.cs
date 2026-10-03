@@ -33,6 +33,9 @@ public class RoundPacingConfigSO : ScriptableObject
     [Tooltip("Waves per sector before victory.")]
     public int wavesPerRound = 5;
 
+    /// <summary><see cref="wavesPerRound" /> after the demo's cap (<see cref="DemoConfigSO.maxWavesPerSector" />). Read this, not the raw field.</summary>
+    public int WavesPerSector => DemoConfigSO.CapWavesPerSector(wavesPerRound);
+
     [Header("Threat Scaling")]
     [Tooltip("Kill quota growth per threat level above 1 (0.1 = +10% per level, so threat 5 is +40%).")]
     [Min(0f)] public float quotaGrowthPerThreat = 0.1f;

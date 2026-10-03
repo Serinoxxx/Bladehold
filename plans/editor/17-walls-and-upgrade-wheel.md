@@ -2,20 +2,37 @@
 
 From [`plans/17-walls-and-upgrade-wheel.md`](../17-walls-and-upgrade-wheel.md), 2026-10-02. Unity MCP was connected. Everything below is built, wired and play-checked in Outer Gate; what's left is art, feel and your review. Tick items off as you go and delete the file when it's empty.
 
-**All the wall art is placeholder.** Re-skin it freely. `Bladehold > Fort > Build Wall & Upgrade Assets` (`FortWallAssetsBuilder`) only creates what's missing, so your swaps survive a re-run. `Build(rebuild: true)` overwrites them.
+**The wall is one hand-placed model** (since 2026-10-03; see "Single-model wall" below). `Bladehold Prefabs/Defenses/Walls/Wall.prefab` → `Model/ShortWallWithGate` is nested in `WallPlot.prefab`. `Build(rebuild: true)` on `FortWallAssetsBuilder` overwrites it.
+
+## Single-model wall (2026-10-03, Unity MCP connected)
+
+**What's done:**
+- The three tier models are gone. Upgrades swap every Castle_Wall material slot on the model: `WallConfig.asset → tiers[0..2].material` = Castle_Wall_01/02/03, names Wood/Stone/Metal.
+- Damage shows as smoke/fire only.
+- At 0 HP the model sinks into the ground and `Rubble` appears.
+- The player climbs the model's own stairs onto the walkway; the ladder and parapet are gone.
+- Building rises out of the ground like the arrow tower, and wall workbenches get prep "BUILD" waypoints.
+- Prefab restructured by the agent: your ShortWallWithGate moved under `Model`, shifted (-0.28, 0, +1.58) so the portcullis sits on the doorway. `WallConfig.doorWidth` = 4.5 to match it.
+- Play-checked in Tutorial Gate: rise, Wood → Stone material swap, collapse sink + rubble, workbench waypoints, no console errors.
+- The Tutorial Gate's lost `Bladehold HUD` was restored from the last commit and its 11 scene references re-pointed.
+- Code: `Fort/Walls/WallStructure.cs`, `WallPlot.cs`, `WallDoor.cs`, `WallConfigSO.cs`, `Fort/DefenseAssemblyAnimation.cs` (`PlayRise`), `UI/ObjectiveWaypointTrackerUI.cs` (`AddWallPlotTargets`).
+
+- [ ] **Fit each scene's wall to its plot.** The gatehouse is about 17 m wide; plots are 5.6–10.6 m.
+  - **Where:** `WallPlot_N/Wall/Model` in every scene with wall plots. Edits there are per-plot overrides.
+  - **Keep the portcullis inside the cyan gizmo box** (the doorway that actually blocks). The orange box is the plot `width`: the invisible side blockers that stop enemies. The model's own walls only stop the player.
+  - If you move the gate off the Wall origin, move the whole `Model`, not the gate alone; the door's blocker is fixed at the origin.
+- [ ] **Walkable layers.** `Floor_*` and `Stairs_*` pieces are on **Environment**, everything else on **Fortification**. Any walkable piece you add needs the Environment layer, or the player can't stand on it properly.
+  - **Verify:** in Play, walk up the stairs onto the walkway, shoot over the battlements, and confirm you can't step off the outside.
+- [ ] **Rubble** (`Wall/Rubble`, three stone piles, hidden): place it to taste, or swap in other art.
+- [ ] **Tier names:** all three tiers are castle stone now, so "Wood / Stone / Metal" reads oddly. Rename in `WallConfig.asset → tiers[].displayName` (e.g. Stone / Reinforced / Fortified).
+- [ ] **Rise and collapse look:** build during prep (it rises about 1.35 s with dust and a slam), then kill it (DevConsole). It should sink over `collapseSinkSeconds` (1.4) and leave rubble. On bridge plots the buried part may show under the deck while it moves.
+- [ ] **Prep waypoints:** each wall workbench shows a gold "BUILD" marker until a wall stands on it, then a faded one.
 
 ## Art (your call)
 
-- [ ] **Wall segments per tier and damage stage.** All in `Assets/Bladehold/Config/Fort/WallConfig.asset` → `tiers[0..2]` (wood, stone, metal).
-  - **Slots per tier:** `segment`, `segmentLight/Medium/HeavyDamage`, `door`, `rubble`.
-  - **Pivot rules:** segments are base-centred with their length along local X, and `segmentLength` is the tiling length (5 m now). A door's pivot is at the hinge, with the leaf along +X to `doorWidth` (3 m).
-  - **The placeholders** are in `Bladehold Prefabs/Defenses/Walls/Art/`:
-    - Wood: a log palisade.
-    - Stone: Synty castle walls, using the destroyed-wall halves for medium/heavy damage.
-    - Metal: stone plus an iron spike crown, with a metal-fence gate.
 - [ ] **Damage smoke/fire** (`lightDamageVfx` / `mediumDamageVfx` / `heavyDamageVfx`, at 75/50/25% HP).
   - The heavy stage's black smoke (`FX_Smoke_Dark_01`) is very large. Good for spotting from afar, but probably too much. Scale down `Wall_Damage_*_VFX` in `Art/`.
-- [ ] **Upgrade props:** `spikesProp` (goblin spikes along the outside face) and `fire/ice/lightningFixture` (cauldron, barrels, log + crystal on top of the wall over the door).
+- [ ] **Upgrade props:** `Wall/Spikes` (goblin spikes along the outside face) and `Wall/Fixture_BoilingOil`, `Fixture_IcyWater`, `Fixture_LightningRod` (cauldron, barrels, log + crystal). They're still laid out for the old 10 m wall at y = 5 over the origin, so reposition them onto the gatehouse.
 - [ ] **Crafting bench** (`WallPlot.prefab` → `CraftingStation`, a Synty workbench) and the **empty-plot stakes** (`EmptyMarker/Stake_L`, `Stake_R`, moved to the plot's ends at runtime).
 - [ ] **Crystal pickup** (`Walls/CrystalPickup.prefab`): an enlarged `SM_Item_Crystal_03`, tinted per element at runtime through `tintRenderers`, with a point light.
 

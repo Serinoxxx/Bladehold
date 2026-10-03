@@ -31,6 +31,13 @@ public class TutorialConfigSO : ScriptableObject
     [Tooltip("Pause between a step completing and the next one starting, so the completion chime lands.")]
     [Min(0f)] public float stepAdvanceDelay = 0.75f;
 
+    [Header("First-run gift")]
+    [Tooltip("Goblin Blood granted the first time a run ends (death or campaign end), so the player can buy their first meta perks. Tier-1 perks cost 10.")]
+    [Min(0)] public int firstRunGiftGoblinBlood = 30;
+
+    [Tooltip("Orcish Metal granted alongside it, enough to forge a first new weapon (the Mace costs 10).")]
+    [Min(0)] public int firstRunGiftOrcishMetal = 10;
+
     private static TutorialConfigSO cached;
 
     public static TutorialConfigSO Load()

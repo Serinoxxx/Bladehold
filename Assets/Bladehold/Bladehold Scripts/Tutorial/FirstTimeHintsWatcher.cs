@@ -9,6 +9,8 @@ using UnityEngine;
 ///     - Gate repair: prep phase with the gate below max and a <see cref="GateRepairStation" /> (waypoint on it).
 ///     - Tower restock: any <see cref="DefenseStructure" /> at or under half supply (waypoint on it).
 ///     - Wave cards: the wave choice opens (<see cref="GameLoopManager.IsChoosingCard" />).
+///     - Meta gift: the first-run gift has been paid and a <see cref="WeaponPedestal" /> has a weapon the
+///       player can now afford (waypoint on it). Shown before the Meta Spirit hint, which waits for it.
 ///     - Meta Spirit: a <see cref="SpiritNPC" /> is in the scene and the player has Goblin Blood.
 ///     - Fishing Pond: a <see cref="FishingManager" /> is in the scene (free arrows, bow only).
 /// </summary>
@@ -27,6 +29,10 @@ public class FirstTimeHintsWatcher : MonoBehaviour, IWaypointSource
         "Defence keeps you at the gate. Offence pays more, but leaves your towers to hold alone.");
     [SerializeField] private TutorialHint metaSpiritHint = TutorialHint.Of("hint.meta_spirit",
         "Spend Goblin Blood with the Spirit for permanent upgrades.");
+    [SerializeField] private TutorialHint metaGiftHint = TutorialHint.Of("hint.meta_gift",
+        "The Spirit has gifted you Goblin Blood and Orcish Metal. Forge a new weapon here, then see the Spirit for permanent upgrades.", "Interact");
+    [Tooltip("The gift hint is longer to read, so it stays up longer than the others.")]
+    [SerializeField] private float giftHintSeconds = 10f;
     [SerializeField] private TutorialHint fishingPondHint = TutorialHint.Of("hint.fishing_pond",
         "Arrows are unlimited here, so shoot freely! It's just you and your bow: no sword, mount or ultimate.", "Aim");
     [Tooltip("The Fishing Pond hint is longer to read, so it stays up longer than the others.")]
@@ -76,6 +82,7 @@ public class FirstTimeHintsWatcher : MonoBehaviour, IWaypointSource
         CheckGateDamaged();
         CheckGateRepair();
         CheckTowerRestock();
+        CheckMetaGift();
         CheckMetaSpirit();
         CheckFishingPond();
     }
@@ -136,9 +143,24 @@ public class FirstTimeHintsWatcher : MonoBehaviour, IWaypointSource
         FirstTimeHints.TryShow(FirstTimeHints.FishingPond, fishingPondHint, fishingHintSeconds);
     }
 
+    private void CheckMetaGift()
+    {
+        if (FirstTimeHints.HasSeen(FirstTimeHints.MetaGift) || TutorialHintUI.Instance.IsShowing) return;
+        if (!FirstRunGift.IsGranted) return;
+        foreach (WeaponPedestal pedestal in WeaponPedestal.All)
+        {
+            if (pedestal != null && pedestal.CanAffordUnlock)
+            {
+                FirstTimeHints.TryShow(FirstTimeHints.MetaGift, metaGiftHint, giftHintSeconds, pedestal.transform);
+                return;
+            }
+        }
+    }
+
     private void CheckMetaSpirit()
     {
-        if (FirstTimeHints.HasSeen(FirstTimeHints.MetaSpirit)) return;
+        // Waits for the gift hint (or any other) to finish rather than replacing it.
+        if (FirstTimeHints.HasSeen(FirstTimeHints.MetaSpirit) || TutorialHintUI.Instance.IsShowing) return;
         if (SaveSystem.Load().goblinBlood <= 0) return;
         SpiritNPC spirit = SpiritNPC.Instance;
         if (spirit != null)

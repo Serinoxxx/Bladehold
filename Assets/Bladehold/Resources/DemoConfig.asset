@@ -23,7 +23,8 @@ MonoBehaviour:
   allowedMounts:
   - {fileID: 11400000, guid: 523761c2ff7540a4a944b925db9c2710, type: 2}
   maxMetaPerkTier: 1
-  campaignCutoffTier: 4
+  campaignCutoffTier: 3
+  maxWavesPerSector: 3
   steamStoreUrl: 
   lockedLabel: LOCKED FOR DEMO
   lockedPrompt: Not available in the demo

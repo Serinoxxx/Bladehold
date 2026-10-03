@@ -818,7 +818,7 @@ public class SurvivorsSpawner : MonoBehaviour
         InitializeIfNeeded();
         if (anyError) return;
 
-        int lastWave = pacingConfig != null ? pacingConfig.wavesPerRound : 5;
+        int lastWave = pacingConfig != null ? pacingConfig.WavesPerSector : 5;
         int threat = SectorThreat.Current;
         string fodderId = FodderId;
         foreach (SpawnType type in spawnTypes)

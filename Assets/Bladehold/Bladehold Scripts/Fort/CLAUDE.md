@@ -30,22 +30,25 @@
 
 - **`WallPlot`** sits across a bridge deck (local +Z faces the enemy). The generator puts one on every bridge (up to 8). In the Tutorial Gate they're hand-placed between big rocks.
   - Its footprint is baked onto its own NavMesh area `WallPlot{index}` (areas 3–10, via a `NavMeshModifierVolume` child).
-  - Build, rebuild and upgrade happen at its **`WallCraftingStation`** (castle side): build/rebuild in prep, upgrade any time.
+  - Build, rebuild and upgrade happen at its **`WallCraftingStation`** (castle side): build/rebuild in prep, upgrade any time. During prep, `ObjectiveWaypointTrackerUI` marks each workbench like a tower plot: a gold "BUILD" marker until a wall stands, then a plain one.
 - **`WallStructure`**: `Health` (immune to the player), tier HP from `FortUpgradeConfigSO`.
-  - Segments are tiled across the width from `WallConfigSO` art, with a doorway in the middle. The two side sections carve the NavMesh.
-  - **Damage stages**: segments swap to damaged art and looping smoke/fire starts at 75/50/25% HP. At 0 HP it collapses to rubble and stops blocking.
+  - **One hand-placed model, not generated.** `Wall.prefab` is nested in `WallPlot.prefab` as the plot's `wallTemplate`. Its children: `Model` (Lance's `Bladehold Prefabs/Buildings/ShortWallWithGate`, a gatehouse with stairs, a roof walkway, battlements and a portcullis gate), `Rubble`, `Spikes` and three `Fixture_*`.
+    - Lance fits each scene's walls by hand (prefab overrides on the plot instance); never re-tile them in code.
+    - At runtime `WallPlot.Awake` hides the template and each build **clones** it, so per-scene overrides carry over.
+    - **Tiers are material swaps.** Every model material slot that uses a `WallConfigSO.tiers[].material` (Castle_Wall_01/02/03) becomes the current tier's. Wood/iron slots are untouched. There are no damaged models: damage is the smoke/fire FX only.
+    - **Colliders:** the model keeps its own, on the layers authored in the prefab. Floors and stairs are on **Environment** (walkable; the player climbs the stairs onto the walkway), everything else on **Fortification** (player and tower shots pass). `FortWallAssetsBuilder.SetModelLayers` sets them by name ("Floor"/"Stairs"). Decor colliders (portcullis, spikes, fixtures, rubble) are stripped.
+    - The prefab has a `NavMeshModifier` set to ignore-from-build, so the template visible in edit mode is never baked.
+    - **What blocks enemies isn't the model.** It's the side blockers (which carve) and the door blocker, built at the wall's origin from the plot `width` and `WallConfigSO` (`doorWidth` 4.5 to match the portcullis, `wallThickness`). The plot gizmo draws them (orange box, cyan doorway); keep the portcullis in the cyan box.
+  - **Building** raises the clone out of the ground with the towers' `DefenseAssemblyAnimation.PlayRise` (`WallPlot.assemblyAnimationPrefab`, the same prefab as TowerPlot's). It sinks it by its art height and plays dust along the width, then the slam.
+  - **Damage stages**: looping smoke/fire starts at 75/50/25% HP. At 0 HP the model's colliders go off, it sinks into the ground over `collapseSinkSeconds`, the `Rubble` appears, and it stops blocking.
   - **Upgrades** (`IUpgradeable`):
     - Material wood → stone → metal (HP fraction preserved).
     - Repair +10.
     - Spikes: 1 damage back per **melee** hit.
     - One element: boiling oil (`BurningOilZone`), icy water (`WallIcyWaterZone`) or lightning arcs, each triggered when the wall is hit, on a cooldown.
     - Deconstruct (100% refund).
-- **`WallDoor`**: `[E]` opens/shuts it. It slides straight down into the ground (`WallConfigSO.doorSlideSeconds`) and its art is hidden once fully sunk, so it never shows under a bridge deck. It won't shut on anything in the doorway.
-- **Ladder** (`WallStructure.BuildLadder`): a ladder at `WallConfigSO.ladderAngle` (45°) up the castle side of one side section, top at the crown, so the player can see and shoot over the wall.
-  - It goes on whichever side is clearer: a physics test first, then renderer bounds as a tiebreak, because big Synty rocks' colliders are much smaller than their meshes.
-  - The walkable part is a separate `Ramp` slab on the **Environment** layer (the player's ground mask is Default + Environment), kept 1° under the player's `CharacterController.slopeLimit` (45) so the player doesn't slide.
-  - An invisible **parapet** collider (Fortification, `parapetHeight`) runs along the crown so the player can't walk over the wall. Shots still pass because `PlayerBarrier` strips Fortification.
-  - Ladder and parapet go when the wall collapses.
+- **`WallDoor`**: `[E]` opens/shuts it. At build it moves the model's `doorLeaf` (the portcullis) onto its sliding `Mount`. It slides straight down into the ground (`WallConfigSO.doorSlideSeconds`) and its art is hidden once fully sunk, so it never shows under a bridge deck. It won't shut on anything in the doorway.
+- **Getting up the wall**: the model's own wooden stairs and roof walkway (Environment layer). Its battlements (Fortification) stop the player walking off the outside. There's no generated ladder or parapet any more.
 - **Routing (`WallNavCost`)**: a standing wall with its door shut prices its area at `wallAreaCost`, so enemies route over another bridge unless the detour is longer.
   - Costs are applied **per agent** by `AIMovement` when `WallNavCost.Version` changes. Never `NavMesh.SetAreaCost`.
   - Siege units (`WallNavCost.IsSiege`: `SiegeUnit` marker, troll, sapper, ram, captains) keep cost 1 and walk straight in.

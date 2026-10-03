@@ -560,6 +560,7 @@ public class DeathScreen : MonoBehaviour
         CursorLockManager.SetUnlock("DeathScreen", false);
         RunSession.ClearRun();
         TutorialRun.End();
+        FirstRunGift.TryGrant();
         if (Bladehold.UI.LoadingScreenManager.Instance != null)
         {
             Bladehold.UI.LoadingScreenManager.Instance.LoadScene(

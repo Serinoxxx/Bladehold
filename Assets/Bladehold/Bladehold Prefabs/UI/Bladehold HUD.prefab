@@ -2306,6 +2306,14 @@ MonoBehaviour:
     actionName: 
     kbmPath: 
     gamepadPath: 
+  metaGiftHint:
+    locKey: hint.meta_gift
+    english: The Spirit has gifted you Goblin Blood and Orcish Metal. Forge a new
+      weapon here, then see the Spirit for permanent upgrades.
+    actionName: Interact
+    kbmPath: 
+    gamepadPath: 
+  giftHintSeconds: 10
   fishingPondHint:
     locKey: hint.fishing_pond
     english: 'Arrows are unlimited here, so shoot freely! It''s just you and your
@@ -11634,7 +11642,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 292b62035ab5469419328d1d248102d0, type: 3}
+  m_Sprite: {fileID: 21300000, guid: e68fce407cf35b5488b84b5f7100fcb0, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -15241,7 +15249,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 292b62035ab5469419328d1d248102d0, type: 3}
+  m_Sprite: {fileID: 21300000, guid: ddd3d3f927d23c54c8786b8d059b260c, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -18678,7 +18686,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 292b62035ab5469419328d1d248102d0, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 4d2d86161637ad546bf4d2f4fbf583fd, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -28497,25 +28505,25 @@ MonoBehaviour:
     displayName: Arrow Tower
     supplyCost: 30
     description: Rapidly fires light piercing arrows at the closest incoming enemy.
-    icon: {fileID: 21300000, guid: b14ff20f763da794ca22b4556f1fb2b5, type: 3}
+    icon: {fileID: 21300000, guid: cd23f8300febe1d448f17bca2d217cc8, type: 3}
   - defenseType: 3
     displayName: Catapult
     supplyCost: 45
     description: Lobs fiery boulders that detonate with massive area splash fire
       damage.
-    icon: {fileID: 21300000, guid: 3b0695fbfd3fb5a4c9ad2bb5d8c5e2fa, type: 3}
+    icon: {fileID: 21300000, guid: fd1a32261e639ab468277d46832940b7, type: 3}
   - defenseType: 4
     displayName: Ballista
     supplyCost: 50
     description: Punches through multiple foes in a straight line with heavy damage
       and knockback.
-    icon: {fileID: 21300000, guid: cadbb0c5767173c48bf0427a15513e62, type: 3}
+    icon: {fileID: 21300000, guid: 2e9e55258bae3f8498b6b53dacd2d4a7, type: 3}
   - defenseType: 5
     displayName: Net Thrower
     supplyCost: 35
     description: Launches heavy rope nets that immobilize and root groups of enemies
       in place.
-    icon: {fileID: 21300000, guid: 5916e1780090d4d4a97f13e812cc9047, type: 3}
+    icon: {fileID: 21300000, guid: 4797e205313193f47b3f2ac4943bee31, type: 3}
 --- !u!1 &8771039722232197389
 GameObject:
   m_ObjectHideFlags: 0

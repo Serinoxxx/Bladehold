@@ -8,17 +8,23 @@ using UnityEngine.AI;
 ///     generator's <c>NavMeshModifierVolume</c>), which <see cref="WallNavCost" /> prices while a wall
 ///     stands. Local +Z faces the enemy.
 ///
-///     The player builds, upgrades and deconstructs through the plot's <see cref="WallCraftingStation" />
-///     on the castle side; the wall itself only carries the door. A fallen wall leaves rubble and the plot
-///     can be rebuilt at wood tier during prep (upgrades are lost with it). Registered with
-///     <see cref="TowerPlotManager" /> so the sector-end dismantle refunds standing walls.
+///     The wall is authored in place as a child (<see cref="wallTemplate" />: one hand-placed model plus
+///     rubble, spikes and fixtures, fitted per scene in edit mode against this plot's gizmo; hidden at runtime).
+///     Building clones it and raises the clone out of the ground with the towers'
+///     <see cref="DefenseAssemblyAnimation" />. The player builds, upgrades and deconstructs through the
+///     plot's <see cref="WallCraftingStation" /> on the castle side; the wall itself only carries the door.
+///     A fallen wall leaves rubble and the plot can be rebuilt at wood tier during prep (upgrades are lost
+///     with it). Registered with <see cref="TowerPlotManager" /> so the sector-end dismantle refunds standing walls.
 /// </summary>
 public class WallPlot : MonoBehaviour
 {
     [SerializeField] private int plotIndex;
     [Tooltip("Wall length across the bridge, metres.")]
     [Min(4f)] [SerializeField] private float width = 10f;
-    [SerializeField] private WallStructure wallPrefab;
+    [Tooltip("The hand-placed wall under this plot. Hidden at runtime and cloned on each build; preview and fit it in edit mode.")]
+    [SerializeField] private WallStructure wallTemplate;
+    [Tooltip("The towers' build animation; the wall rises out of the ground with its tremor, dust and slam.")]
+    [SerializeField] private DefenseAssemblyAnimation assemblyAnimationPrefab;
     [SerializeField] private WallConfigSO wallConfig;
     [SerializeField] private WallCraftingStation station;
     [Tooltip("Shown while the plot is empty (stakes / chalk outline marking where the wall goes).")]
@@ -38,6 +44,7 @@ public class WallPlot : MonoBehaviour
     public int PlotIndex => plotIndex;
     public float Width => width;
     public WallStructure Wall => wall;
+    public WallCraftingStation Station => station;
     public bool HasStandingWall => wall != null && wall.IsStanding;
     public bool HasRubble => rubble != null;
     public static int BuildCost => DefenseSceneRules.Config != null ? DefenseSceneRules.Config.wallBuildCost : 40;
@@ -48,11 +55,19 @@ public class WallPlot : MonoBehaviour
     private void OnValidate()
     {
         if (station == null) station = GetComponentInChildren<WallCraftingStation>(true);
+        if (wallTemplate == null) wallTemplate = GetComponentInChildren<WallStructure>(true);
+    }
+
+    private void Awake()
+    {
+        // Left visible in edit mode for previewing; never live itself.
+        if (wallTemplate != null) wallTemplate.gameObject.SetActive(false);
     }
 
     private void Start()
     {
-        if (wallPrefab == null) { Debug.LogError($"[WallPlot] {name}: wallPrefab is not assigned.", this); anyError = true; }
+        if (wallTemplate == null) { Debug.LogError($"[WallPlot] {name}: wallTemplate is not assigned.", this); anyError = true; }
+        if (assemblyAnimationPrefab == null) Debug.LogError($"[WallPlot] {name}: assemblyAnimationPrefab is not assigned; walls will appear without rising.", this);
         if (wallConfig == null) { Debug.LogError($"[WallPlot] {name}: wallConfig is not assigned.", this); anyError = true; }
         if (station == null) { Debug.LogError($"[WallPlot] {name}: station is not assigned.", this); anyError = true; }
         if (buildFeedback == null) Debug.LogError($"[WallPlot] {name}: buildFeedback is not assigned.", this);
@@ -83,22 +98,40 @@ public class WallPlot : MonoBehaviour
         int cost = BuildCost;
         if (!RunSession.TrySpendInRunSupply(cost)) return false;
 
-        BuildWall(cost);
+        BuildWall(cost, animate: true);
         if (buildFeedback != null) buildFeedback.PlayFeedbacks(transform.position + Vector3.up);
         if (popupPrefab != null) popupPrefab.Spawn(transform.position + Vector3.up * 2.5f, $"-{cost} Supply");
         return true;
     }
 
-    /// <summary>Spawns the wall without charging (tests and TryBuild).</summary>
-    public WallStructure BuildWall(int buildCostPaid)
+    /// <summary>Clones the template into a live wall without charging (tests and TryBuild). <paramref name="animate" /> raises it out of the ground.</summary>
+    public WallStructure BuildWall(int buildCostPaid, bool animate = false)
     {
         if (rubble != null) Destroy(rubble.gameObject);
         rubble = null;
-        wall = Instantiate(wallPrefab, transform.position, transform.rotation, transform);
+        // The template is inactive, so the clone is too: activate it (Awake) before Init, as Init expects.
+        wall = Instantiate(wallTemplate, wallTemplate.transform.parent);
+        wall.transform.SetLocalPositionAndRotation(wallTemplate.transform.localPosition, wallTemplate.transform.localRotation);
         wall.name = $"Wall_{plotIndex}";
+        wall.gameObject.SetActive(true);
         wall.Init(this, wallConfig, width, navArea, buildCostPaid);
         RefreshMarker();
+        if (animate && assemblyAnimationPrefab != null) RaiseWall(wall);
         return wall;
+    }
+
+    /// <summary>Sinks the new wall below its art's height and lets the assembly animation raise it back up.</summary>
+    private void RaiseWall(WallStructure target)
+    {
+        Transform t = target.transform;
+        float top = 0f;
+        foreach (Renderer r in target.GetComponentsInChildren<Renderer>())
+        {
+            if (r.enabled && !(r is ParticleSystemRenderer)) top = Mathf.Max(top, r.bounds.max.y - t.position.y);
+        }
+        DefenseAssemblyAnimation anim = Instantiate(assemblyAnimationPrefab, t.position, t.rotation);
+        anim.name = $"AssemblyAnim_Wall_{plotIndex}";
+        anim.PlayRise(target.gameObject, t.position, t.rotation, Mathf.Max(3.5f, top + 0.3f), new Vector3(width * 0.5f, 0f, 0.6f));
     }
 
     /// <summary>The wall reached 0 HP: keep it as rubble until a rebuild.</summary>
@@ -154,10 +187,18 @@ public class WallPlot : MonoBehaviour
 #if UNITY_EDITOR
     private void OnDrawGizmos()
     {
-        Gizmos.matrix = transform.localToWorldMatrix;
+        // What actually blocks: the side sections across the width, and the doorway (cyan) the gate leaf
+        // should fill. Fit the model's gate to the cyan box; the arrow points at the enemy.
+        Transform origin = wallTemplate != null ? wallTemplate.transform : transform;
+        Gizmos.matrix = origin.localToWorldMatrix;
+        float height = wallConfig != null ? wallConfig.wallHeight : 3f;
+        float thickness = wallConfig != null ? wallConfig.wallThickness : 0.8f;
+        float doorWidth = wallConfig != null ? wallConfig.doorWidth : 3f;
         Gizmos.color = HasStandingWall ? Color.green : new Color(1f, 0.6f, 0f);
-        Gizmos.DrawWireCube(new Vector3(0f, 1.5f, 0f), new Vector3(width, 3f, 0.8f));
+        Gizmos.DrawWireCube(new Vector3(0f, height * 0.5f, 0f), new Vector3(width, height, thickness));
         Gizmos.DrawLine(Vector3.zero, Vector3.forward * 3f);
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireCube(new Vector3(0f, height * 0.5f, 0f), new Vector3(doorWidth, height, thickness));
     }
 #endif
 }

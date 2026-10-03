@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using MoreMountains.Feedbacks;
 using UnityEngine;
@@ -19,12 +20,18 @@ using UnityEngine.AI;
 ///     - <b>Upgrades</b> (<see cref="IUpgradeable" />, opened from the <see cref="WallCraftingStation" />):
 ///       material tier, Repair +N, spikes (thorns on every melee hit), one element (boiling oil, icy water
 ///       or lightning arcs, triggered when attacked), and Deconstruct with a full refund.
-///     - <b>Ladder</b>: a sloped ladder on the castle side climbs to the top of one side section so the
-///       player can look (and shoot) over the wall; an invisible parapet collider along the top stops them
-///       walking over it. Both go when the wall falls.
-///     - <b>Damage you can read from afar</b>: segments swap to damaged variants and looping smoke/fire
-///       starts at the <see cref="WallConfigSO" /> light/medium/heavy thresholds. At 0 HP it collapses to
-///       rubble and stops blocking (the plot can rebuild it during prep).
+///     - <b>One hand-placed model</b>: the wall lives (inactive at runtime) as a child of its
+///       <see cref="WallPlot" />, holding a single building under <see cref="model" /> (stairs, walkway,
+///       battlements, gate) plus rubble, spikes and element fixtures, all authored in place. Building clones
+///       that template, so per-scene fitting carries over. Material upgrades swap every model slot that uses
+///       a <see cref="WallConfigSO.tiers" /> material (Castle_Wall_01/02/03) to the new tier's.
+///     - <b>Colliders</b>: the model keeps its own, on the layers authored in the prefab: stairs and floors on
+///       Environment (walkable), walls and battlements on Fortification (player and tower shots pass). Decor
+///       (door leaf, spikes, fixtures, rubble) is stripped. What blocks enemies is separate: the side blockers
+///       and door blocker built from the plot width and <see cref="WallConfigSO" /> at the wall's origin.
+///     - <b>Damage you can read from afar</b>: looping smoke/fire starts at the <see cref="WallConfigSO" />
+///       light/medium/heavy thresholds (the model itself doesn't change). At 0 HP the model sinks into the
+///       ground, leaving its rubble, and stops blocking (the plot can rebuild it during prep).
 /// </summary>
 public class WallStructure : MonoBehaviour, IUpgradeable
 {
@@ -35,9 +42,21 @@ public class WallStructure : MonoBehaviour, IUpgradeable
     public static event Action<WallStructure> OnAnyWallBuilt;
 
     [SerializeField] private Health health;
-    [Tooltip("Spawned segment art goes under this child.")]
-    [SerializeField] private Transform visualsRoot;
     [SerializeField] private WallDoor door;
+
+    [Header("Art (hand-placed)")]
+    [Tooltip("The wall building. Its colliders and layers are used as authored; tier materials are swapped on upgrade; it sinks away when the wall falls.")]
+    [SerializeField] private Transform model;
+    [Tooltip("The gate leaf inside the model (the portcullis). Moved onto the door's sliding mount at build.")]
+    [SerializeField] private GameObject doorLeaf;
+    [Tooltip("Shown when the wall falls, as the model sinks away.")]
+    [SerializeField] private GameObject rubble;
+    [Tooltip("Spike row along the outside face, shown when Spikes is bought.")]
+    [SerializeField] private GameObject spikes;
+    [Tooltip("Element fixtures on top of the wall: boiling-oil cauldron, icy-water barrels, lightning rod.")]
+    [SerializeField] private GameObject fireFixture;
+    [SerializeField] private GameObject iceFixture;
+    [SerializeField] private GameObject lightningFixture;
 
     [Header("Enemy detection")]
     [Tooltip("Depth of the box in front of the outside face; enemies inside it attack the wall.")]
@@ -70,13 +89,10 @@ public class WallStructure : MonoBehaviour, IUpgradeable
     private float nextScan;
     private float nextElementTime;
     private int enemyMask;
-    private Transform fixture;
-    private GameObject ladder;
-    private BoxCollider parapet;
     private readonly StructureUpgradeState upgrades = new StructureUpgradeState();
-    private readonly List<Transform> segments = new List<Transform>();
-    private readonly List<GameObject> spikeProps = new List<GameObject>();
     private readonly List<GameObject> smoke = new List<GameObject>();
+    // Every model material slot that uses a tier material, swapped on material upgrades.
+    private readonly List<(Renderer renderer, int slot)> tierSlots = new List<(Renderer, int)>();
     private readonly List<BoxCollider> sideColliders = new List<BoxCollider>();
     private readonly List<NavMeshObstacle> sideObstacles = new List<NavMeshObstacle>();
     private readonly Collider[] scanBuffer = new Collider[64];
@@ -104,9 +120,19 @@ public class WallStructure : MonoBehaviour, IUpgradeable
         if (door == null) door = GetComponentInChildren<WallDoor>(true);
     }
 
+    // Registered while enabled, so the inactive template under the plot never counts as a wall.
+    private void OnEnable()
+    {
+        if (!all.Contains(this)) all.Add(this);
+    }
+
+    private void OnDisable()
+    {
+        all.Remove(this);
+    }
+
     private void Awake()
     {
-        all.Add(this);
         if (health == null) health = GetComponent<Health>();
         if (health != null) health.ImmuneToPlayerDamage = true;
         int mask = LayerMask.GetMask("Enemy");
@@ -116,7 +142,10 @@ public class WallStructure : MonoBehaviour, IUpgradeable
     private void Start()
     {
         if (health == null) { Debug.LogError($"[WallStructure] {name}: Health is not assigned.", this); anyError = true; }
-        if (visualsRoot == null) { Debug.LogError($"[WallStructure] {name}: visualsRoot is not assigned.", this); anyError = true; }
+        if (model == null) { Debug.LogError($"[WallStructure] {name}: model is not assigned.", this); anyError = true; }
+        if (doorLeaf == null) Debug.LogError($"[WallStructure] {name}: doorLeaf is not assigned.", this);
+        if (rubble == null) Debug.LogError($"[WallStructure] {name}: rubble is not assigned.", this);
+        if (spikes == null) Debug.LogError($"[WallStructure] {name}: spikes is not assigned.", this);
         if (door == null) { Debug.LogError($"[WallStructure] {name}: door is not assigned.", this); anyError = true; }
         if (hitFeedback == null) Debug.LogError($"[WallStructure] {name}: hitFeedback is not assigned.", this);
         if (stageDropFeedback == null) Debug.LogError($"[WallStructure] {name}: stageDropFeedback is not assigned.", this);
@@ -129,7 +158,6 @@ public class WallStructure : MonoBehaviour, IUpgradeable
 
     private void OnDestroy()
     {
-        all.Remove(this);
         if (health != null)
         {
             health.OnDamaged -= HandleDamaged;
@@ -139,7 +167,7 @@ public class WallStructure : MonoBehaviour, IUpgradeable
         if (navArea >= 0) WallNavCost.SetCost(navArea, 1f);
     }
 
-    /// <summary>Called by the plot right after Instantiate (before Start).</summary>
+    /// <summary>Called by the plot right after cloning the template and activating the clone (before Start).</summary>
     public void Init(WallPlot owner, WallConfigSO wallArt, float plotWidth, int area, int buildCost)
     {
         plot = owner;
@@ -148,7 +176,7 @@ public class WallStructure : MonoBehaviour, IUpgradeable
         navArea = area;
         BuildCostPaid = buildCost;
 
-        SetLayerRecursive(gameObject, LayerMask.NameToLayer(PlayerBarrier.FortificationLayerName));
+        PrepareAuthoredArt();
         FortUpgradeConfigSO config = Config;
         health.SetMaxHealth(config != null ? config.WallHealth(0) : 150f);
         health.ImmuneToPlayerDamage = true;
@@ -157,9 +185,9 @@ public class WallStructure : MonoBehaviour, IUpgradeable
         health.OnDied += HandleDied;
 
         BuildSideBlockers();
-        BuildLadder();
-        RebuildSegments();
-        door.Init(this, art);
+        door.Init(this, art, doorLeaf);
+        RefreshArt();
+        RefreshFixture();
         initialised = true;
         RefreshNavCost();
         OnAnyWallBuilt?.Invoke(this);
@@ -334,7 +362,7 @@ public class WallStructure : MonoBehaviour, IUpgradeable
         {
             bool worse = stage > damageStage;
             damageStage = stage;
-            RebuildSegments();
+            RefreshArt();
             if (worse && stageDropFeedback != null) stageDropFeedback.PlayFeedbacks(transform.position + Vector3.up * 1.5f);
         }
         OnStateChanged?.Invoke(this);
@@ -346,26 +374,18 @@ public class WallStructure : MonoBehaviour, IUpgradeable
         collapsed = true;
         if (collapseFeedback != null) collapseFeedback.PlayFeedbacks(transform.position + Vector3.up);
 
-        WallConfigSO.TierArt tierArt = art != null ? art.Tier(upgrades.materialTier) : null;
-        foreach (Transform seg in segments)
-        {
-            if (seg == null) continue;
-            if (tierArt != null && tierArt.rubble != null)
-            {
-                GameObject rubble = Instantiate(tierArt.rubble, seg.position, seg.rotation, transform);
-                StripColliders(rubble);
-            }
-            Destroy(seg.gameObject);
-        }
-        segments.Clear();
-        foreach (GameObject spike in spikeProps) if (spike != null) Destroy(spike);
-        spikeProps.Clear();
-        if (fixture != null) Destroy(fixture.gameObject);
+        RefreshArt();
+        RefreshFixture();
         foreach (BoxCollider c in sideColliders) if (c != null) c.enabled = false;
         foreach (NavMeshObstacle o in sideObstacles) if (o != null) o.enabled = false;
-        if (ladder != null) Destroy(ladder);
-        if (parapet != null) parapet.enabled = false;
         door.Collapse();
+        if (rubble != null) rubble.SetActive(true);
+        if (model != null)
+        {
+            // Nobody stands on a sinking building: its stairs and walkway go at once.
+            foreach (Collider c in model.GetComponentsInChildren<Collider>()) c.enabled = false;
+            StartCoroutine(SinkModel());
+        }
 
         // Heavy smoke lingers over the rubble, then dies down.
         foreach (GameObject fx in smoke)
@@ -425,191 +445,78 @@ public class WallStructure : MonoBehaviour, IUpgradeable
     }
 
     /// <summary>
-    ///     A ladder up the castle side of whichever side section has the clearer ground behind it (walls are
-    ///     often wedged between rocks), sloped at <see cref="WallConfigSO.ladderAngle" />,
-    ///     with its top at the wall's crown so a player standing there can see over it. The art is
-    ///     scaled to fit; the walkable ramp under it is a separate slab on the player's ground layer that
-    ///     meets the same top edge but never exceeds the player's slope limit. A parapet collider on the
-    ///     Fortification layer (which player and tower shots ignore) runs along the top above the crown.
+    ///     Readies the cloned template's hand-placed art. The model's colliders and layers are used as authored
+    ///     (walkable stairs/floors on Environment, the rest on Fortification). Decor colliders (spikes, fixtures,
+    ///     rubble) are stripped and everything outside the model goes on Fortification, which player and tower
+    ///     shots ignore. Also finds the model's tier-material slots for upgrades.
     /// </summary>
-    private void BuildLadder()
+    private void PrepareAuthoredArt()
     {
-        float height = art != null ? art.wallHeight : 3.5f;
-        float doorWidth = art != null ? art.doorWidth : 3f;
-        float angle = art != null ? art.ladderAngle : 45f;
-        float ladderWidth = art != null ? art.ladderWidth : 1.4f;
-        float sideLength = (width - doorWidth) * 0.5f;
-        float run = height / Mathf.Tan(angle * Mathf.Deg2Rad);
-        float x = doorWidth * 0.5f + sideLength * 0.5f;
-        int blockedRight = LadderObstruction(x, height, run, ladderWidth);
-        int blockedLeft = LadderObstruction(-x, height, run, ladderWidth);
-        if (blockedLeft < blockedRight ||
-            (blockedLeft == blockedRight && LadderArtOverlap(-x, height, run, ladderWidth) < LadderArtOverlap(x, height, run, ladderWidth)))
+        int fort = LayerMask.NameToLayer(PlayerBarrier.FortificationLayerName);
+        if (fort >= 0) gameObject.layer = fort;
+        // The door's hand-placed blocker is the one collider outside the model that must survive.
+        Collider doorBlocker = door != null ? door.Blocker : null;
+        foreach (Transform child in transform)
         {
-            x = -x;
+            if (child == model) continue;
+            foreach (Collider c in child.GetComponentsInChildren<Collider>(true))
+                if (c != doorBlocker) Destroy(c);
+            SetLayerRecursive(child.gameObject, fort);
         }
-        var topEdge = new Vector3(x, height, -Thickness * 0.5f);
+        if (doorLeaf != null) SetLayerRecursive(doorLeaf, fort);
+        if (rubble != null) rubble.SetActive(false);
 
-        parapet = gameObject.AddComponent<BoxCollider>();
-        parapet.center = new Vector3(0f, height + (art != null ? art.parapetHeight : 2f) * 0.5f, 0f);
-        parapet.size = new Vector3(width, art != null ? art.parapetHeight : 2f, Thickness);
-
-        ladder = new GameObject("Ladder");
-        ladder.transform.SetParent(transform, false);
-        ladder.transform.localPosition = topEdge;
-
-        // Art: pivot at its base, leaning +Y towards the wall (local +Z) so its top lands on the crown edge.
-        if (art != null && art.ladder != null)
+        tierSlots.Clear();
+        if (model == null || art == null) return;
+        foreach (Renderer r in model.GetComponentsInChildren<Renderer>(true))
         {
-            float length = height / Mathf.Sin(angle * Mathf.Deg2Rad);
-            var pivot = new GameObject("Art").transform;
-            pivot.SetParent(ladder.transform, false);
-            pivot.localPosition = new Vector3(0f, -height, -run);
-            GameObject go = Instantiate(art.ladder, pivot);
-            go.transform.localPosition = Vector3.zero;
-            go.transform.localRotation = Quaternion.identity;
-            StripColliders(go);
-            SetLayerRecursive(go, gameObject.layer);
-            Bounds b = LocalRendererBounds(go, pivot);
-            if (b.size.y > 0.01f && b.size.x > 0.01f)
+            Material[] mats = r.sharedMaterials;
+            for (int i = 0; i < mats.Length; i++)
             {
-                go.transform.localScale = new Vector3(ladderWidth / b.size.x, length / b.size.y, 1f);
-                // Sit the rungs' front face on the slope line so feet on the ramp touch them.
-                go.transform.localPosition = new Vector3(0f, 0f, b.size.z * 0.5f);
-            }
-            // Measured upright above; lean it only now so the bounds aren't inflated by the tilt.
-            pivot.localRotation = Quaternion.Euler(90f - angle, 0f, 0f);
-        }
-
-        // Walkable ramp, from the ground up to the same top edge. 1° under the slope limit so it never slides.
-        float walkAngle = angle;
-        CharacterController cc = Player.Instance != null ? Player.Instance.GetComponent<CharacterController>() : null;
-        if (cc != null) walkAngle = Mathf.Min(angle, cc.slopeLimit - 1f);
-        float rampLength = height / Mathf.Sin(walkAngle * Mathf.Deg2Rad);
-        const float slab = 0.2f;
-        var ramp = new GameObject("Ramp");
-        ramp.transform.SetParent(ladder.transform, false);
-        ramp.transform.localRotation = Quaternion.Euler(90f - walkAngle, 0f, 0f);
-        int ground = LayerMask.NameToLayer("Environment");
-        ramp.layer = ground >= 0 ? ground : 0;
-        BoxCollider box = ramp.AddComponent<BoxCollider>();
-        // Ramp's local origin is the top edge; the slab hangs down its local -Y, walkable face on local -Z.
-        box.center = new Vector3(0f, -rampLength * 0.5f, slab * 0.5f);
-        box.size = new Vector3(ladderWidth, rampLength, slab);
-    }
-
-    /// <summary>How many sample points along a ladder at local <paramref name="x" /> are inside scenery (rocks, buildings, terrain).</summary>
-    private int LadderObstruction(float x, float height, float run, float ladderWidth)
-    {
-        int mask = ~LayerMask.GetMask("Player", "Enemy", "Ragdoll", "Ignore Raycast", PlayerBarrier.FortificationLayerName);
-        float radius = ladderWidth * 0.5f;
-        int blocked = 0;
-        const int samples = 8;
-        for (int i = 0; i < samples; i++)
-        {
-            float t = (i + 0.5f) / samples;
-            // Just above the slope line, so the ground the ladder stands on doesn't count.
-            var local = new Vector3(x, t * height + radius + 0.15f, -Thickness * 0.5f - (1f - t) * run);
-            Vector3 point = transform.TransformPoint(local);
-            // Mesh colliders are hollow (a sphere inside a boulder overlaps nothing), so also line-test from
-            // the doorway column, which is always open, out to the ladder's far edge.
-            Vector3 from = transform.TransformPoint(new Vector3(0f, local.y, local.z));
-            Vector3 farEdge = transform.TransformPoint(local + new Vector3(Mathf.Sign(x) * radius, 0f, 0f));
-            if (Physics.CheckSphere(point, radius, mask, QueryTriggerInteraction.Ignore) ||
-                Physics.Linecast(from, farEdge, mask, QueryTriggerInteraction.Ignore)) blocked++;
-        }
-        return blocked;
-    }
-
-    /// <summary>
-    ///     Tiebreak for <see cref="LadderObstruction" />: how much scenery mesh (by renderer bounds) sits in the
-    ///     ladder's footprint. Big Synty rocks often carry colliders far smaller than their mesh, so a ladder
-    ///     the physics test calls clear can still be buried in one.
-    /// </summary>
-    private float LadderArtOverlap(float x, float height, float run, float ladderWidth)
-    {
-        Vector3 centre = transform.TransformPoint(new Vector3(x, height * 0.5f + 0.3f, -Thickness * 0.5f - run * 0.5f));
-        Vector3 size = transform.rotation * new Vector3(ladderWidth, height - 0.6f, run);
-        var footprint = new Bounds(centre, new Vector3(Mathf.Abs(size.x), Mathf.Abs(size.y), Mathf.Abs(size.z)));
-        int skip = LayerMask.GetMask("Player", "Enemy", "Ragdoll", "UI", PlayerBarrier.FortificationLayerName);
-        float total = 0f;
-        foreach (MeshRenderer r in FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None))
-        {
-            if (!r.enabled || ((1 << r.gameObject.layer) & skip) != 0 || r.transform.IsChildOf(transform)) continue;
-            Bounds b = r.bounds;
-            if (!b.Intersects(footprint)) continue;
-            Vector3 min = Vector3.Max(b.min, footprint.min), max = Vector3.Min(b.max, footprint.max);
-            Vector3 d = max - min;
-            total += Mathf.Max(0f, d.x) * Mathf.Max(0f, d.y) * Mathf.Max(0f, d.z);
-        }
-        return total;
-    }
-
-    /// <summary>Mesh bounds of <paramref name="go" /> in <paramref name="space" />'s local frame (exact for any world rotation, unlike Renderer.bounds).</summary>
-    private static Bounds LocalRendererBounds(GameObject go, Transform space)
-    {
-        bool any = false;
-        var b = new Bounds();
-        foreach (MeshFilter mf in go.GetComponentsInChildren<MeshFilter>())
-        {
-            if (mf.sharedMesh == null) continue;
-            Bounds mb = mf.sharedMesh.bounds;
-            Matrix4x4 toSpace = space.worldToLocalMatrix * mf.transform.localToWorldMatrix;
-            for (int i = 0; i < 8; i++)
-            {
-                Vector3 corner = mb.center + Vector3.Scale(mb.extents, new Vector3((i & 1) == 0 ? -1 : 1, (i & 2) == 0 ? -1 : 1, (i & 4) == 0 ? -1 : 1));
-                Vector3 local = toSpace.MultiplyPoint3x4(corner);
-                if (!any) { b = new Bounds(local, Vector3.zero); any = true; }
-                else b.Encapsulate(local);
+                if (art.IsTierMaterial(mats[i])) tierSlots.Add((r, i));
             }
         }
-        return b;
     }
 
-    /// <summary>(Re)spawns the segment art for the current tier and damage stage across both sides of the doorway.</summary>
-    private void RebuildSegments()
+    /// <summary>Shows the current tier's material on the model, the spikes if bought, and the damage smoke.</summary>
+    private void RefreshArt()
     {
-        foreach (Transform seg in segments) if (seg != null) Destroy(seg.gameObject);
-        segments.Clear();
-        foreach (GameObject spike in spikeProps) if (spike != null) Destroy(spike);
-        spikeProps.Clear();
-        if (art == null || visualsRoot == null) return;
-
-        WallConfigSO.TierArt tierArt = art.Tier(upgrades.materialTier);
-        GameObject prefab = art.SegmentFor(upgrades.materialTier, damageStage);
-        if (tierArt == null || prefab == null) return;
-
-        float sideLength = (width - art.doorWidth) * 0.5f;
-        int perSide = Mathf.Max(1, Mathf.RoundToInt(sideLength / tierArt.segmentLength));
-        float scaleX = sideLength / (perSide * tierArt.segmentLength);
-        int fort = gameObject.layer;
-        foreach (int side in new[] { -1, 1 })
+        if (spikes != null) spikes.SetActive(upgrades.hasSpikes && !collapsed);
+        if (collapsed) return;
+        Material tierMaterial = art != null && art.Tier(upgrades.materialTier) != null ? art.Tier(upgrades.materialTier).material : null;
+        if (tierMaterial != null)
         {
-            for (int k = 0; k < perSide; k++)
+            foreach ((Renderer r, int slot) in tierSlots)
             {
-                float x = side * (art.doorWidth * 0.5f + (k + 0.5f) * tierArt.segmentLength * scaleX);
-                GameObject seg = Instantiate(prefab, visualsRoot);
-                seg.transform.localPosition = new Vector3(x, 0f, 0f);
-                seg.transform.localRotation = Quaternion.identity;
-                seg.transform.localScale = new Vector3(scaleX, 1f, 1f);
-                StripColliders(seg);
-                SetLayerRecursive(seg, fort);
-                segments.Add(seg.transform);
-
-                if (upgrades.hasSpikes && art.spikesProp != null)
-                {
-                    GameObject spike = Instantiate(art.spikesProp, visualsRoot);
-                    spike.transform.localPosition = new Vector3(x, 0f, Thickness * 0.5f + 0.4f);
-                    spike.transform.localRotation = Quaternion.identity;
-                    spike.transform.localScale = new Vector3(scaleX, 1f, 1f);
-                    StripColliders(spike);
-                    SetLayerRecursive(spike, fort);
-                    spikeProps.Add(spike);
-                }
+                if (r == null) continue;
+                Material[] mats = r.sharedMaterials;
+                if (mats[slot] == tierMaterial) continue;
+                mats[slot] = tierMaterial;
+                r.sharedMaterials = mats;
             }
         }
-
         RefreshSmoke();
+    }
+
+    /// <summary>The fallen wall's model sinks by its own height into the ground, then hides; the rubble stays.</summary>
+    private IEnumerator SinkModel()
+    {
+        float top = 0f;
+        foreach (Renderer r in model.GetComponentsInChildren<Renderer>())
+        {
+            if (!(r is ParticleSystemRenderer)) top = Mathf.Max(top, r.bounds.max.y - model.position.y);
+        }
+        Vector3 from = model.localPosition;
+        Vector3 to = from - transform.InverseTransformVector(Vector3.up) * (top + 0.3f);
+        float duration = art != null ? art.collapseSinkSeconds : 1.4f;
+        for (float t = 0f; t < duration; t += Time.deltaTime)
+        {
+            // Ease in: it gives way slowly, then drops.
+            float k = t / duration;
+            model.localPosition = Vector3.Lerp(from, to, k * k);
+            yield return null;
+        }
+        model.gameObject.SetActive(false);
     }
 
     /// <summary>Looping smoke/fire for the current damage stage, one emitter per side so it reads from a distance.</summary>
@@ -631,21 +538,10 @@ public class WallStructure : MonoBehaviour, IUpgradeable
 
     private void RefreshFixture()
     {
-        if (fixture != null) Destroy(fixture.gameObject);
-        fixture = null;
-        GameObject prefab = art != null ? art.ElementFixture(upgrades.element) : null;
-        if (prefab == null) return;
-        GameObject go = Instantiate(prefab, transform);
-        go.transform.localPosition = new Vector3(0f, art.wallHeight, 0f);
-        go.transform.localRotation = Quaternion.identity;
-        StripColliders(go);
-        SetLayerRecursive(go, gameObject.layer);
-        fixture = go.transform;
-    }
-
-    private static void StripColliders(GameObject go)
-    {
-        foreach (Collider c in go.GetComponentsInChildren<Collider>(true)) Destroy(c);
+        StructureElement element = collapsed ? StructureElement.None : upgrades.element;
+        if (fireFixture != null) fireFixture.SetActive(element == StructureElement.Fire);
+        if (iceFixture != null) iceFixture.SetActive(element == StructureElement.Ice);
+        if (lightningFixture != null) lightningFixture.SetActive(element == StructureElement.Lightning);
     }
 
     private static void SetLayerRecursive(GameObject go, int layer)
@@ -683,8 +579,7 @@ public class WallStructure : MonoBehaviour, IUpgradeable
                 upgrades.materialTier++;
                 upgrades.RecordSupply(materialCost);
                 health.SetMaxHealth(config.WallHealth(upgrades.materialTier), true);
-                RebuildSegments();
-                door.SetArt(art);
+                RefreshArt();
                 OnUpgraded();
                 return true;
             }
@@ -718,7 +613,7 @@ public class WallStructure : MonoBehaviour, IUpgradeable
             {
                 upgrades.hasSpikes = true;
                 upgrades.RecordSupply(config.wallSpikesCost);
-                RebuildSegments();
+                RefreshArt();
                 OnUpgraded();
                 return true;
             }

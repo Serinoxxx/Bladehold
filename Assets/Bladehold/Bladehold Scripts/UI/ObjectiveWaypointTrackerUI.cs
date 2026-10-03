@@ -162,6 +162,7 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
         if (loop != null && loop.IsAwaitingReady && TowerPlotManager.Instance != null)
         {
             AddTowerPlotTargets(TowerPlotManager.Instance.Plots);
+            AddWallPlotTargets(TowerPlotManager.Instance.WallPlots);
         }
 
         // Non-objective sources (the tutorial's step waypoints, first-encounter hints)
@@ -334,6 +335,25 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
             targetBuffer.Add(new ObjectiveWaypointTarget(
                 plot.transform,
                 worldOffset: plot.BuildPosition - plot.transform.position + towerPlotOffset,
+                customIcon: icon,
+                tintColor: empty ? towerPlotEmptyTint : towerPlotBuiltTint,
+                label: empty ? Loc.Get("wave.prep.plot", "BUILD") : null
+            ));
+        }
+    }
+
+    // Each wall plot's workbench gets the same treatment: gold "BUILD" while there's no standing wall
+    // (empty or rubble), a plain marker once built (it still opens the upgrade wheel).
+    private void AddWallPlotTargets(IReadOnlyList<WallPlot> plots)
+    {
+        Sprite icon = towerPlotIcon != null ? towerPlotIcon : defaultObjectiveIcon;
+        foreach (WallPlot plot in plots)
+        {
+            if (plot == null || !plot.isActiveAndEnabled || plot.Station == null) continue;
+            bool empty = !plot.HasStandingWall;
+            targetBuffer.Add(new ObjectiveWaypointTarget(
+                plot.Station.transform,
+                worldOffset: towerPlotOffset,
                 customIcon: icon,
                 tintColor: empty ? towerPlotEmptyTint : towerPlotBuiltTint,
                 label: empty ? Loc.Get("wave.prep.plot", "BUILD") : null

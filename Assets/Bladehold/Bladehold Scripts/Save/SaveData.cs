@@ -57,6 +57,9 @@ public class SaveData
     /// <summary>Ids of the one-time first-encounter hints already shown (see <see cref="FirstTimeHints" />).</summary>
     public List<string> seenHints = new List<string>();
 
+    /// <summary>True once the first run's end has paid out the onboarding gift (see <see cref="FirstRunGift" />).</summary>
+    public bool firstRunGiftGranted;
+
     /// <summary>When this save slot was started (UTC <see cref="DateTime.Ticks" />; 0 = unknown).</summary>
     public long createdUtcTicks;
 
@@ -150,6 +153,7 @@ public class SaveData
         purchasedMetaPerks.Clear();
         tutorialCompleted = defaults.tutorialCompleted;
         seenHints.Clear();
+        firstRunGiftGranted = defaults.firstRunGiftGranted;
     }
 
     /// <summary>

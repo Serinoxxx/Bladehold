@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -46,7 +47,34 @@ public class WeaponPedestal : MonoBehaviour
     private Transform playerTransform;
     private PlayerInteraction playerInteraction;
 
+    private static readonly List<WeaponPedestal> all = new List<WeaponPedestal>();
+
+    /// <summary>Every enabled pedestal in the scene (the Meta Area's weapon rack).</summary>
+    public static IReadOnlyList<WeaponPedestal> All => all;
+
     public WeaponDefinitionSO WeaponData => weaponData;
+
+    /// <summary>True when this weapon is still locked, allowed in the demo, and the player has the Orcish Metal for it.</summary>
+    public bool CanAffordUnlock
+    {
+        get
+        {
+            if (weaponData == null || DemoConfigSO.IsWeaponLocked(weaponData)) return false;
+            SaveData data = SaveSystem.Load();
+            bool isUnlocked = data.unlockedWeapons != null && data.unlockedWeapons.Contains(weaponData.id);
+            return !isUnlocked && data.orcishMetal >= weaponData.orcishMetalUnlockCost;
+        }
+    }
+
+    private void OnEnable()
+    {
+        all.Add(this);
+    }
+
+    private void OnDisable()
+    {
+        all.Remove(this);
+    }
 
     public void Initialize()
     {

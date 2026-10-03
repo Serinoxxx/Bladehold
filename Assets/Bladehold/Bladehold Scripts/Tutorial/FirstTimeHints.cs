@@ -4,7 +4,7 @@ using UnityEngine;
 /// <summary>
 ///     One-time contextual hints (plan 16, phase I): the first time the gate takes damage, a tower runs
 ///     low, the gate needs repair, the wave cards open, the player returns to the Meta Area with
-///     Goblin Blood, or reaches the Fishing Pond. Each id shows once per save (<see cref="SaveData.seenHints" />), on
+///     Goblin Blood, comes back with the first-run gift (<see cref="FirstRunGift" />), or reaches the Fishing Pond. Each id shows once per save (<see cref="SaveData.seenHints" />), on
 ///     <see cref="TutorialHintUI" /> as a timed overlay, with an optional HUD waypoint while it's up.
 ///     Triggers live in <see cref="FirstTimeHintsWatcher" />.
 /// </summary>
@@ -15,6 +15,7 @@ public static class FirstTimeHints
     public const string TowerRestock = "tower_restock";
     public const string WaveCards = "wave_cards";
     public const string MetaSpirit = "meta_spirit";
+    public const string MetaGift = "meta_gift";
     public const string FishingPond = "fishing_pond";
 
     public static bool HasSeen(string id)

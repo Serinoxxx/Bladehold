@@ -255,6 +255,11 @@ public class DevConsole : MonoBehaviour
             RunSession.AddInRunGold(10000);
         }
 
+        if (GUILayout.Button("+100 Supply", GUILayout.Height(ButtonHeight)))
+        {
+            RunSession.AddInRunSupply(100);
+        }
+
         if (GUILayout.Button("Die", GUILayout.Height(ButtonHeight)))
         {
             isGodMode = false;

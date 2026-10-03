@@ -11,6 +11,7 @@ using UnityEngine;
 ///     For 1-2 piece models, the structure smoothly rises out of the ground with
 ///     rumbling tremors, ground dust, and a heavy lock-in slam.
 ///     Spawned by <see cref="TowerPlot"/> from an authored prefab; all audio/VFX/shake live in its MMF players.
+///     <see cref="WallPlot"/> reuses the rise for walls through <see cref="PlayRise"/>.
 /// </summary>
 public class DefenseAssemblyAnimation : MonoBehaviour
 {
@@ -40,6 +41,22 @@ public class DefenseAssemblyAnimation : MonoBehaviour
         StartCoroutine(AssemblyRoutine(plotPosition, rotation, defensePrefab, onComplete));
     }
 
+    /// <summary>
+    ///     Raises an already-built object (a wall) from <paramref name="depth"/> below <paramref name="targetPos"/>
+    ///     with the same tremor, dust and slam, then destroys this animator. Dust puffs land within
+    ///     <paramref name="dustExtents"/> (local half-extents) of the target.
+    /// </summary>
+    public void PlayRise(GameObject structureObj, Vector3 targetPos, Quaternion rotation, float depth, Vector3 dustExtents)
+    {
+        StartCoroutine(RiseThenFinish(structureObj, targetPos, rotation, depth, dustExtents));
+    }
+
+    private IEnumerator RiseThenFinish(GameObject structureObj, Vector3 targetPos, Quaternion rotation, float depth, Vector3 dustExtents)
+    {
+        yield return StartCoroutine(RiseFromGroundRoutine(structureObj, targetPos, rotation, depth, dustExtents));
+        Destroy(gameObject);
+    }
+
     private IEnumerator AssemblyRoutine(Vector3 plotPos, Quaternion rotation, GameObject defensePrefab, Action<DefenseStructure> onComplete)
     {
         if (defensePrefab == null)
@@ -60,7 +77,7 @@ public class DefenseAssemblyAnimation : MonoBehaviour
         if (renderers.Length <= 2)
         {
             // --- Mode A: 1 or 2 pieces -> Rise out of the ground with tremor & dust ---
-            yield return StartCoroutine(RiseFromGroundRoutine(finalStructureObj, plotPos, rotation));
+            yield return StartCoroutine(RiseFromGroundRoutine(finalStructureObj, plotPos, rotation, 3.5f, new Vector3(0.8f, 0f, 0.8f)));
         }
         else
         {
@@ -78,9 +95,8 @@ public class DefenseAssemblyAnimation : MonoBehaviour
         Destroy(gameObject);
     }
 
-    private IEnumerator RiseFromGroundRoutine(GameObject structureObj, Vector3 targetPos, Quaternion rotation)
+    private IEnumerator RiseFromGroundRoutine(GameObject structureObj, Vector3 targetPos, Quaternion rotation, float riseDepth, Vector3 dustExtents)
     {
-        float riseDepth = 3.5f;
         Vector3 startPos = targetPos - Vector3.up * riseDepth;
 
         // Enable structure object but disable gameplay scripts while rising
@@ -88,16 +104,21 @@ public class DefenseAssemblyAnimation : MonoBehaviour
         structureObj.transform.rotation = rotation;
         structureObj.SetActive(true);
 
-        MonoBehaviour[] scripts = structureObj.GetComponentsInChildren<MonoBehaviour>(true);
-        foreach (var s in scripts)
+        // Only what was on gets switched off, so only that is switched back on afterwards.
+        var scripts = new List<MonoBehaviour>();
+        foreach (var s in structureObj.GetComponentsInChildren<MonoBehaviour>(true))
         {
+            if (!s.enabled) continue;
             s.enabled = false;
+            scripts.Add(s);
         }
 
-        Collider[] cols = structureObj.GetComponentsInChildren<Collider>(true);
-        foreach (var c in cols)
+        var cols = new List<Collider>();
+        foreach (var c in structureObj.GetComponentsInChildren<Collider>(true))
         {
+            if (!c.enabled) continue;
             c.enabled = false;
+            cols.Add(c);
         }
 
         float elapsed = 0f;
@@ -105,6 +126,8 @@ public class DefenseAssemblyAnimation : MonoBehaviour
 
         while (elapsed < riseDuration)
         {
+            // Cleared mid-rise (sector end, deconstruct): nothing left to raise.
+            if (structureObj == null) yield break;
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / riseDuration);
 
@@ -125,7 +148,8 @@ public class DefenseAssemblyAnimation : MonoBehaviour
             if (dustTimer >= 0.22f)
             {
                 dustTimer = 0f;
-                Vector3 dustPos = targetPos + new Vector3(UnityEngine.Random.Range(-0.8f, 0.8f), 0.1f, UnityEngine.Random.Range(-0.8f, 0.8f));
+                Vector3 dustPos = targetPos + rotation * new Vector3(UnityEngine.Random.Range(-dustExtents.x, dustExtents.x), 0.1f,
+                    UnityEngine.Random.Range(-dustExtents.z, dustExtents.z));
                 PlayAt(riseDustFeedback, dustPos);
             }
 

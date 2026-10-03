@@ -25,5 +25,5 @@ MonoBehaviour:
   chargeDamage: 15
   knockbackForce: 14
   castTime: 0.5
-  mountDuration: 30
-  mountCooldown: 30
+  mountDuration: 999
+  mountCooldown: 1

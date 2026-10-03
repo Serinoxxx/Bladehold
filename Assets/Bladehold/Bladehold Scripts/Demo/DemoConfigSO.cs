@@ -35,6 +35,9 @@ public class DemoConfigSO : ScriptableObject
     [Tooltip("Clearing any node on this tier ends the demo (Thanks for playing screen, then back to the Meta Area). Nodes on later tiers are visible but locked.")]
     [Min(1)] public int campaignCutoffTier = 4;
 
+    [Tooltip("Waves per combat sector in the demo, so a battle is about 10 minutes instead of 20. 0 = use the pacing config's count. Enemies that unlock on later waves (the Bomber, wave 4) don't appear.")]
+    [Min(0)] public int maxWavesPerSector = 3;
+
     [Tooltip("Steam store page opened by the demo end screen's Wishlist button.")]
     public string steamStoreUrl = "";
 
@@ -128,6 +131,13 @@ public class DemoConfigSO : ScriptableObject
     {
         DemoConfigSO cfg = Active;
         return cfg != null && node != null && node.tierIndex >= cfg.campaignCutoffTier;
+    }
+
+    /// <summary>A pacing config's waves per sector, capped by the demo's <see cref="maxWavesPerSector" />.</summary>
+    public static int CapWavesPerSector(int waves)
+    {
+        DemoConfigSO cfg = Active;
+        return cfg != null && cfg.maxWavesPerSector > 0 ? Mathf.Min(waves, cfg.maxWavesPerSector) : waves;
     }
 
 #if UNITY_EDITOR

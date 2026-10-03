@@ -41,12 +41,12 @@ MonoBehaviour:
   icyWaterPrefab: {fileID: 3042228312029467092, guid: 9d3a146f09dad774cb3f7e515066932c, type: 3}
   wallLightningDamage: 12
   wallLightningTargets: 3
-  refillIcon: {fileID: 21300000, guid: b14ff20f763da794ca22b4556f1fb2b5, type: 3}
-  fireRateIcon: {fileID: 21300000, guid: edeb3b01fa4dca646b25f956c1a045f4, type: 3}
-  spikesIcon: {fileID: 21300000, guid: 7eebe99fff17838428c10e12099a621e, type: 3}
-  repairIcon: {fileID: 21300000, guid: 2a01d30c31d57684d93a2166bdbd2c8f, type: 3}
-  materialIcon: {fileID: 21300000, guid: e1914b4a18a849954c4a9d25dfeff4f2, type: 3}
-  deconstructIcon: {fileID: 21300000, guid: 2936bab001ad902428051df5bdbdd2df, type: 3}
-  fireIcon: {fileID: 21300000, guid: 90ba5b75baf67ac4fbaf0158bcc5d7b2, type: 3}
-  iceIcon: {fileID: 21300000, guid: 71d00b8390a1ac049a6ff1cc0e3bdb09, type: 3}
-  lightningIcon: {fileID: 21300000, guid: 9ce4b9e3bc266cc44a843e600a409922, type: 3}
+  refillIcon: {fileID: 21300000, guid: 0f31748c118a3314285a91085819f414, type: 3}
+  fireRateIcon: {fileID: 21300000, guid: 30c20679a9497e5409c81b4d4fa34be3, type: 3}
+  spikesIcon: {fileID: 21300000, guid: 950dfac4036b8f246a13b1243cc2207d, type: 3}
+  repairIcon: {fileID: 21300000, guid: f711d4a2c2285fb4a98469e346df0113, type: 3}
+  materialIcon: {fileID: 21300000, guid: da81494e70459354f858a9748adb2f6d, type: 3}
+  deconstructIcon: {fileID: 21300000, guid: 7332a3b40bc49c743982c6703635b5b0, type: 3}
+  fireIcon: {fileID: 21300000, guid: e68fce407cf35b5488b84b5f7100fcb0, type: 3}
+  iceIcon: {fileID: 21300000, guid: 4d2d86161637ad546bf4d2f4fbf583fd, type: 3}
+  lightningIcon: {fileID: 21300000, guid: ddd3d3f927d23c54c8786b8d059b260c, type: 3}

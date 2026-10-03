@@ -14,41 +14,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WallConfigSO
   tiers:
   - displayName: Wood
-    segment: {fileID: 2558980054161388815, guid: 2e4f39e3670d3a24d9e265ae8463640a, type: 3}
-    segmentLightDamage: {fileID: 7068883508586557449, guid: f8f071dbcef248a4d8b4aaefe747a645, type: 3}
-    segmentMediumDamage: {fileID: 6435054503842883263, guid: e9c3511e30f94434283d0cb78ac39fba, type: 3}
-    segmentHeavyDamage: {fileID: 5798444389005276067, guid: 386a8b741609ba546a644145a0172058, type: 3}
-    segmentLength: 5
-    door: {fileID: 8093072556825565515, guid: b26b5b25dd6792242904c41931f24d53, type: 3}
-    rubble: {fileID: 9024699303088665876, guid: 9df3e6b84725e70449f48fd349bd6b5d, type: 3}
+    material: {fileID: 2100000, guid: f36af89dacada404ab5564fde90d6059, type: 2}
   - displayName: Stone
-    segment: {fileID: 3112086259215442740, guid: e85a27f5871f88948831100bf8486a69, type: 3}
-    segmentLightDamage: {fileID: 8273614368239720624, guid: 78e8d8b0f32ef3747bded67ca0149a9e, type: 3}
-    segmentMediumDamage: {fileID: 5579428750400683667, guid: aa72ce85accac6b45a1f83e99a107d87, type: 3}
-    segmentHeavyDamage: {fileID: 8577958867127906584, guid: f10b70f26164b724681969271c380430, type: 3}
-    segmentLength: 5
-    door: {fileID: 1989320385079085042, guid: 8dfc415e06f75644daf7311fd1de09b6, type: 3}
-    rubble: {fileID: 163724328724052485, guid: 1db23b25c5aed3e44a9705de79eb6083, type: 3}
+    material: {fileID: 2100000, guid: 9041ebb311bcfd04291ba12574da82ff, type: 2}
   - displayName: Metal
-    segment: {fileID: 3072938856300643889, guid: ed58d9c11b7cd63468955d2cef808bb7, type: 3}
-    segmentLightDamage: {fileID: 5304089923013630360, guid: 457afd52f5df91d46bc355b95bd3c068, type: 3}
-    segmentMediumDamage: {fileID: 4139998605724461288, guid: 20e9d581feab1d240b0a377ec51f8ce5, type: 3}
-    segmentHeavyDamage: {fileID: 2542941754936893405, guid: 0db28fb3d8a7b5b4b9691e60cd2e023d, type: 3}
-    segmentLength: 5
-    door: {fileID: 1422675527674734723, guid: a66096b4dfded4845b8ef80cfd643153, type: 3}
-    rubble: {fileID: 163724328724052485, guid: 1db23b25c5aed3e44a9705de79eb6083, type: 3}
-  doorWidth: 3
+    material: {fileID: 2100000, guid: 1a64941ef3e92344390ca89589cf3341, type: 2}
+  doorWidth: 5.19
   wallHeight: 5
   wallThickness: 0.8
   doorSlideSeconds: 0.9
-  ladder: {fileID: 5220509504981494330, guid: 9c2c2c4959f5f474d97fdb61125fba56, type: 3}
-  ladderAngle: 45
-  ladderWidth: 1.4
-  parapetHeight: 2
-  spikesProp: {fileID: 96086656089419407, guid: 633bc3a90235b0849ba80d3e02e9ad2d, type: 3}
-  fireFixture: {fileID: 4209840179229513753, guid: 06d9222e589743749a884933bb09f88c, type: 3}
-  iceFixture: {fileID: 3343031480636199301, guid: 8e45114c2a4cdb445877ceefd13479d6, type: 3}
-  lightningFixture: {fileID: 7659309032900737770, guid: b9c91041f707db741bf4bc0612833aee, type: 3}
+  collapseSinkSeconds: 1.4
   lightDamageAt: 0.75
   mediumDamageAt: 0.5
   heavyDamageAt: 0.25

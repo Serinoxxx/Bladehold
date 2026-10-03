@@ -211,7 +211,7 @@ public class GameLoopManager : MonoBehaviour
     private static CampaignNodeSO CurrentCampaignNode =>
         CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive ? CampaignManager.Instance.CurrentNode : null;
 
-    private int TotalWaves => pacingConfig != null ? pacingConfig.wavesPerRound : 5;
+    private int TotalWaves => pacingConfig != null ? pacingConfig.WavesPerSector : 5;
 
     public void OnEnemyKilled(Health enemyHealth)
     {

@@ -42,7 +42,8 @@ public class KillRemainingEnemiesObjective : MonoBehaviour, ISurvivorsObjective
 
     private void Awake()
     {
-        EnsureSkullIcon();
+        // The tracker's Instance may not be assigned yet this early; StartObjective retries (and logs if still missing).
+        EnsureSkullIcon(logIfMissing: false);
     }
 
     public void SetSkullIcon(Sprite sprite)
@@ -50,7 +51,7 @@ public class KillRemainingEnemiesObjective : MonoBehaviour, ISurvivorsObjective
         skullIcon = sprite;
     }
 
-    private void EnsureSkullIcon()
+    private void EnsureSkullIcon(bool logIfMissing = true)
     {
         if (skullIcon != null) return;
 
@@ -60,7 +61,8 @@ public class KillRemainingEnemiesObjective : MonoBehaviour, ISurvivorsObjective
             return;
         }
 
-        Debug.LogError("[KillRemainingEnemiesObjective] No skull icon: assign skullIcon or the tracker's cleanupEnemySkullIcon.", this);
+        if (logIfMissing)
+            Debug.LogError("[KillRemainingEnemiesObjective] No skull icon: assign skullIcon or the tracker's cleanupEnemySkullIcon.", this);
     }
 
     public void StartObjective()

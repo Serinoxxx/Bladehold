@@ -37,6 +37,14 @@ A clean save in a player build can only reach demo content, and flipping `DemoCo
 - Drafts: already filtered to equipped weapons (ultimates included; duos are weapon-agnostic); added an explicit demo-lock skip as a backstop.
 - Data: sword ult label → BLADE TEMPEST, mace → SEISMIC QUAKE (matches its draft card), staff ultimate lookup moved to the ranged slot.
 
+## Rescope for a shorter demo (2026-10-02)
+
+A full demo clear was running past an hour (up to 4 battles × 5 waves at ~4 min each), against a 20–30 min target, so it was cut back:
+- **Cutoff tier 4 → 3** (`DemoConfig.campaignCutoffTier`). Every route is now Outer Gate, then a tier-2 node, then a tier-3 node: 1–3 battles, with pond nodes on the map in tiers 2 and 3. Great Hall / Captain Fraglob becomes a locked teaser.
+- **3 waves per sector in the demo** (`DemoConfig.maxWavesPerSector`, read through `RoundPacingConfigSO.WavesPerSector` by `GameLoopManager` and `SurvivorsSpawner`'s prewarm). 0 turns the cap off. Trade-off: anything with `unlockWave` ≥ 4 in `Enemies.csv` (the Bomber; the Troll is threat-gated out anyway) never appears in the demo.
+- **First-run gift** (`Tutorial/FirstRunGift.cs`): the first time a run ends (defeat via `DeathScreen.ReturnToMetaScene`, or the campaign/demo end via `CampaignManager.EndCampaign`) the save gets 30 Goblin Blood + 10 Orcish Metal (`TutorialConfig.firstRunGift*`), once per save (`SaveData.firstRunGiftGranted`). That's the Mace plus three tier-1 perks. Winning without dying pays it too, so a skilled player still gets the meta loop.
+- **Gift hint:** `FirstTimeHints.MetaGift` (`hint.meta_gift`) shows in the Meta Area with a waypoint on the first affordable weapon pedestal (`WeaponPedestal.All` / `CanAffordUnlock`), then the existing Spirit hint follows. Meta hints now wait for any showing hint instead of replacing it.
+
 ## Needs Lance in the Editor
 
 Moved to its own checklist: [`plans/editor/07-demo-gating.md`](editor/07-demo-gating.md).

@@ -532,6 +532,7 @@ hint.gate_repair,First-time hint,Repair the gate with supply during prep. Supply
 hint.tower_restock,First-time hint,Towers run out of ammo. Use a tower to restock it with supply.,,,,,,,,
 hint.wave_cards,First-time hint,"Defence keeps you at the gate. Offence pays more, but leaves your towers to hold alone.",,,,,,,,
 hint.meta_spirit,First-time hint,Spend Goblin Blood with the Spirit for permanent upgrades.,,,,,,,,
+hint.meta_gift,First-time hint (Meta Area after the first run; points at an affordable weapon pedestal),"The Spirit has gifted you Goblin Blood and Orcish Metal. Forge a new weapon here, then see the Spirit for permanent upgrades.",,,,,,,,
 hint.fishing_pond,First-time hint,"Arrows are unlimited here, so shoot freely! It's just you and your bow: no sword, mount or ultimate.",,,,,,,,
 ammo_chest.prompt_free,Free ammo crate prompt ({0} = arrows),Take {0} arrows,,,,,,,,
 saveslots.title,Save slot screen heading,Choose Your Save,,,,,,,,
