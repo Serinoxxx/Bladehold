@@ -7,6 +7,7 @@ public class AnimationEvents : MonoBehaviour
     [SerializeField] SwordHitFeedback swordHitFeedback;
     [Tooltip("Played on every footstep animation event (assign a Sound feedback with several clips/random pitch — left/right foot both call the same method).")]
     [SerializeField] MMF_Player footstepFeedback;
+    private PlayerDodge playerDodge;
 
     /// <summary>
     ///     Points the attack events at the equipped weapon. Called by
@@ -27,6 +28,11 @@ public class AnimationEvents : MonoBehaviour
 
     public void OneHandedSwordAttack()
     {
+        if (playerDodge == null) playerDodge = GetComponentInParent<PlayerDodge>() ?? GetComponentInChildren<PlayerDodge>();
+        if (playerDodge != null && playerDodge.ConsumeNimbleSwingHit())
+        {
+            return;
+        }
         oneHandedSwordDamageTrigger.Activate();
     }
 

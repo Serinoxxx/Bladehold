@@ -21,6 +21,7 @@ public class PlayerSummonMount : MonoBehaviour
 
     [Header("Feedback")]
     [SerializeField] private MMF_Player spawnFeedback;
+    [Tooltip("Played where a live summoned horse vanishes on dismount (the summon's smoke puff). A horse that dies ragdolls instead.")]
     [SerializeField] private MMF_Player despawnFeedback;
     [Tooltip("Played when a summon press is refused (on cooldown, blocked by the scene).")]
     [SerializeField] private MMF_Player errorFeedback;
@@ -70,6 +71,7 @@ public class PlayerSummonMount : MonoBehaviour
         playerMount.OnMountDurationChanged += HandleDurationChanged;
         playerMount.OnMountCooldownChanged += HandleCooldownChanged;
         playerMount.OnMountedChanged += HandleMountedChanged;
+        playerMount.OnSummonedHorseVanished += HandleHorseVanished;
     }
 
     private void OnDestroy()
@@ -83,6 +85,7 @@ public class PlayerSummonMount : MonoBehaviour
             playerMount.OnMountDurationChanged -= HandleDurationChanged;
             playerMount.OnMountCooldownChanged -= HandleCooldownChanged;
             playerMount.OnMountedChanged -= HandleMountedChanged;
+            playerMount.OnSummonedHorseVanished -= HandleHorseVanished;
         }
     }
 
@@ -150,12 +153,14 @@ public class PlayerSummonMount : MonoBehaviour
     {
         if (mounted) return;
         lastDismountFrame = Time.frameCount;
-        if (despawnFeedback != null)
-        {
-            despawnFeedback.transform.position = transform.position;
-            despawnFeedback.PlayFeedbacks();
-        }
         OnCooldownUpdated?.Invoke(playerMount.MountRemainingCooldown, playerMount.MaxMountCooldown);
+    }
+
+    private void HandleHorseVanished(Vector3 horsePosition)
+    {
+        if (despawnFeedback == null) return;
+        despawnFeedback.transform.position = horsePosition;
+        despawnFeedback.PlayFeedbacks();
     }
 
     /// <summary>True when the mount can be summoned here: unlocked and allowed by the scene's <see cref="SceneAbilityRules" />. SummonMountUI hides the slot when false.</summary>

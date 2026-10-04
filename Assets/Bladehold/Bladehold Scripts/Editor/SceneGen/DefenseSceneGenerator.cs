@@ -82,6 +82,7 @@ public static class DefenseSceneGenerator
         SetupSurvivorsSceneTool.RunSetup(gate, false, false);
         LayoutGameplay(ctx, gate);
         PlaceFortRules(ctx);
+        WorldEventsSceneSetup.Place(ctx.Spec.palette.worldEventIds);
 
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene);

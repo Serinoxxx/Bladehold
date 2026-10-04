@@ -21,6 +21,16 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private float chargeTimePerLevel = 0.33f;
     [Tooltip("Optional reference to PlayerDodge, used for dodge-synergy attack upgrades (like Axe Power Dash).")]
     [SerializeField] private PlayerDodge playerDodge;
+    [Tooltip("Picks the swing side (left/right/overhead) from the look just before each press.")]
+    [SerializeField] private SwingDirectionSelector swingDirection;
+
+    [Header("Axe draft cards (optional feedback)")]
+    [Tooltip("Optional: Power Dash cue played when a charge starts inside the post-dash window (the charge will fill faster). Leave empty for none.")]
+    [SerializeField] private MMF_Player powerDashChargeFeedback;
+    [Tooltip("Optional: Heavy Stance shield gained on a fully charged release (shield shimmer + clang). Leave empty for none.")]
+    [SerializeField] private MMF_Player heavyStanceShieldFeedback;
+    [Tooltip("Optional: Heavy Stance shield absorbing a hit (block clang). Leave empty for none.")]
+    [SerializeField] private MMF_Player heavyStanceAbsorbFeedback;
 
     [Header("Earth Splitter")]
     [Tooltip("Red box telegraph prefab shown in front of the player when Earth Splitter is at full charge.")]
@@ -42,6 +52,7 @@ public class PlayerAttack : MonoBehaviour
     private float shieldExpireTime = 0f;
 
     private bool charging;
+    private bool powerDashLatched;
     private float chargeStartTime;
     private bool subscribed;
     private bool anyError = false;
@@ -59,6 +70,9 @@ public class PlayerAttack : MonoBehaviour
     ///     Damage multiplier for the current swing. Scales continuously from 0.1x (uncharged) to 2.0x (base level 1 charge).
     /// </summary>
     public float AttackDamageMultiplier { get; private set; } = 1f;
+
+    /// <summary>True when the swing in progress is an overhead chop (DamageTrigger applies its bonus).</summary>
+    public bool IsOverheadSwing => swingDirection != null && swingDirection.Current == SwingDirection.Overhead;
 
     /// <summary>
     ///     The damage multiplier for a fully charged attack at maximum charge levels,
@@ -83,21 +97,29 @@ public class PlayerAttack : MonoBehaviour
             if (stats != null)
             {
                 float powerDash = stats.GetValue(StatType.AxePowerDashChargeSpeed);
-                if (powerDash > 0f)
+                // Latched at press time while charging, so the window closing mid-hold can't make the
+                // charge (and the charge bar) run backwards.
+                bool boosted = charging ? powerDashLatched : IsPowerDashWindowOpen();
+                if (powerDash > 0f && boosted)
                 {
-                    if (playerDodge == null && Player.Instance != null)
-                    {
-                        playerDodge = Player.Instance.GetComponentInChildren<PlayerDodge>();
-                    }
-
-                    if (playerDodge != null && (playerDodge.IsDodging || playerDodge.TimeSinceDodge <= 2.5f))
-                    {
-                        time /= (1f + powerDash);
-                    }
+                    time /= (1f + powerDash);
                 }
             }
             return time;
         }
+    }
+
+    private bool IsPowerDashWindowOpen()
+    {
+        if (stats == null || stats.GetValue(StatType.AxePowerDashChargeSpeed) <= 0f)
+        {
+            return false;
+        }
+        if (playerDodge == null && Player.Instance != null)
+        {
+            playerDodge = Player.Instance.GetComponentInChildren<PlayerDodge>();
+        }
+        return playerDodge != null && (playerDodge.IsDodging || playerDodge.TimeSinceDodge <= 2.5f);
     }
 
     /// <summary>Total time in seconds required to reach maximum charge levels.</summary>
@@ -144,6 +166,10 @@ public class PlayerAttack : MonoBehaviour
         {
             playerDodge = GetComponent<PlayerDodge>() ?? GetComponentInParent<PlayerDodge>() ?? GetComponentInChildren<PlayerDodge>();
         }
+        if (swingDirection == null)
+        {
+            swingDirection = GetComponent<SwingDirectionSelector>();
+        }
     }
 
     private void Start()
@@ -162,6 +188,8 @@ public class PlayerAttack : MonoBehaviour
         // Missing feedbacks only cost looks and sound, so they don't set anyError.
         if (earthSplitterFeedback == null) Debug.LogError("PlayerAttack: earthSplitterFeedback is not assigned.", this);
         if (rockExplosionFeedback == null) Debug.LogError("PlayerAttack: rockExplosionFeedback is not assigned.", this);
+        // Without it every swing is the default forehand; the attack itself still works.
+        if (swingDirection == null) Debug.LogError("PlayerAttack: swingDirection is not assigned.", this);
 
         if (playerDodge == null)
         {
@@ -330,14 +358,23 @@ public class PlayerAttack : MonoBehaviour
         // Ignore presses while melee attack is on cooldown (prevents interrupting a swing in progress).
         if (animController != null && animController.IsAttackOnCooldown) return;
 
+        // Runs before the animation controller's own press handler fires StartAttack (this
+        // handler sees the cooldown still open), so the windup picks up this direction.
+        if (swingDirection != null) swingDirection.Latch();
+
         ChargeLevel = 0;
         AttackDamageMultiplier = 0.1f;
         HideTelegraph();
 
         if (MaxChargeLevels <= 0) return;
 
+        powerDashLatched = IsPowerDashWindowOpen();
         charging = true;
         chargeStartTime = Time.time;
+        if (powerDashLatched && powerDashChargeFeedback != null)
+        {
+            powerDashChargeFeedback.PlayFeedbacks(transform.position);
+        }
     }
 
     private void HandleReleased()
@@ -355,6 +392,10 @@ public class PlayerAttack : MonoBehaviour
             {
                 currentShieldHP = shieldAmount;
                 shieldExpireTime = Time.time + 2.0f;
+                if (heavyStanceShieldFeedback != null)
+                {
+                    heavyStanceShieldFeedback.PlayFeedbacks(transform.position);
+                }
             }
         }
 
@@ -451,6 +492,10 @@ public class PlayerAttack : MonoBehaviour
     {
         if (Time.time <= shieldExpireTime && currentShieldHP > 0f && damage != null && damage.value > 0f)
         {
+            if (heavyStanceAbsorbFeedback != null)
+            {
+                heavyStanceAbsorbFeedback.PlayFeedbacks(transform.position);
+            }
             if (damage.value <= currentShieldHP)
             {
                 currentShieldHP -= damage.value;

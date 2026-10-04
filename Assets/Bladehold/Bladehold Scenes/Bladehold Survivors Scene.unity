@@ -5990,13 +5990,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerPlotManager
   plots: []
-  teslaInterval: 5
-  teslaRange: 35
-  permafrostInterval: 1
-  permafrostRadius: 8
-  permafrostSlowAmount: 0.35
-  permafrostSlowDuration: 2
-  teslaStrikeFeedback: {fileID: 0}
 --- !u!4 &209368895
 Transform:
   m_ObjectHideFlags: 0
@@ -27048,6 +27041,109 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4088333443922168, guid: 8fdf76bb00590644187149f7a1e30ae9, type: 3}
   m_PrefabInstance: {fileID: 1216528302}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &1218051596
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 3266799806725487869, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4325343878794403951, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6493874847250006861, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6493874847250006861, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6493874847250006861, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6493874847250006861, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6493874847250006861, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6493874847250006861, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6493874847250006861, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6493874847250006861, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6493874847250006861, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6493874847250006861, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7300254089460948151, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_Name
+      value: WorldEvents
+      objectReference: {fileID: 0}
+    - target: {fileID: 7370798318931599966, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: events.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7370798318931599966, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: 'events.Array.data[1]'
+      value: 
+      objectReference: {fileID: 1218051598}
+    - target: {fileID: 7370798318931599966, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: 'events.Array.data[2]'
+      value: 
+      objectReference: {fileID: 1218051597}
+    - target: {fileID: 8070778386719742643, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+--- !u!114 &1218051597 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5096382712462570091, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+  m_PrefabInstance: {fileID: 1218051596}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02780606c716ed340b247d0c34317581, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GoblinCaravanEvent
+--- !u!114 &1218051598 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4208164106314383498, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+  m_PrefabInstance: {fileID: 1218051596}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0047c94c0c7c9064d9388e88930cf314, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StampedeEvent
 --- !u!1001 &1220418162
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -49415,3 +49511,4 @@ SceneRoots:
   - {fileID: 782441117}
   - {fileID: 562240122}
   - {fileID: 209368895}
+  - {fileID: 1218051596}

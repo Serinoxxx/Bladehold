@@ -451,6 +451,7 @@ MonoBehaviour:
   sunColor: {r: 1, g: 0.93, b: 0.8, a: 1}
   sunIntensity: 1.45
   crystalBias: {x: 1, y: 1, z: 1}
+  worldEventIds: []
   sunEuler: {x: 40, y: -30, z: 0}
   fogColor: {r: 0.66, g: 0.78, b: 0.86, a: 1}
   fogDensity: 0.0028

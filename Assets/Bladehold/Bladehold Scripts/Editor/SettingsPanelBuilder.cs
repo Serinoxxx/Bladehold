@@ -293,6 +293,11 @@ public static class SettingsPanelBuilder
             fso.ApplyModifiedPropertiesWithoutUndo();
         }
 
+        UIThemeScope scope = panel.GetComponent<UIThemeScope>();
+        if (scope == null) scope = panel.gameObject.AddComponent<UIThemeScope>();
+        scope.Configure(UIMenuId.Settings);
+        JoinTheme(panel);
+
         ApplyExternalReferences(panel, remaps);
         ApplyButtonListeners(panel, listeners);
         EditorUtility.SetDirty(view);
@@ -788,6 +793,8 @@ public static class SettingsPanelBuilder
             var highlight = go.AddComponent<SettingsRowHighlight>();
             highlight.Configure(bg, accentImage, label, kbm);
 
+            JoinTheme(go.transform);
+
             var view = go.AddComponent<RebindButtonView>();
             var so = new SerializedObject(view);
             Set(so, "label", label);
@@ -879,11 +886,7 @@ public static class SettingsPanelBuilder
         Set(so, "background", bg);
         Set(so, "label", label);
         Set(so, "underline", underline);
-        Set(so, "backgroundSelected", Parchment);
-        Set(so, "backgroundUnselected", Hex("2A241ECC"));
-        Set(so, "labelSelected", TextOnParchment);
-        Set(so, "labelUnselected", TextOnDark);
-        so.ApplyModifiedPropertiesWithoutUndo();
+        so.ApplyModifiedPropertiesWithoutUndo(); // colours are theme roles (SettingsTabButton defaults).
         Juice(button, visual, hotImage, click, 1.05f, 0.95f);
         return button;
     }
@@ -1136,6 +1139,34 @@ public static class SettingsPanelBuilder
             }
         }
         return null;
+    }
+
+    // ───────────────────────────────────────────────── theme
+
+    /// <summary>
+    ///     The layout above paints with the Ember Gold literals (this file's palette, which is also
+    ///     <see cref="UIThemeSO" />'s defaults). Tag every graphic by that palette so it becomes a theme
+    ///     role, then repaint from the Settings menu's current theme.
+    /// </summary>
+    private static void JoinTheme(Transform root)
+    {
+        UIThemeTools.EnsureThemeAssets();
+        UIThemeSO palette = ScriptableObject.CreateInstance<UIThemeSO>();
+        palette.headerFont = headerFont;
+        palette.bodyFont = bodyFont;
+        try
+        {
+            UIThemeTools.TagByPalette(root, palette);
+        }
+        finally
+        {
+            Object.DestroyImmediate(palette);
+        }
+        UIThemeSO theme = UITheme.For(UIMenuId.Settings);
+        foreach (UIThemedGraphic themed in root.GetComponentsInChildren<UIThemedGraphic>(true))
+        {
+            themed.Apply(theme);
+        }
     }
 
     // ───────────────────────────────────────────────── primitives

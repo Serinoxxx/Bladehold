@@ -1407,24 +1407,46 @@ public static class WeaponReachBenchmark
             }
             UnityEngine.Object.DestroyImmediate(mountDummy);
 
-            // 11E: Sword Blade Tempest Signature Ultimate Verification
-            GameObject tempestDummy = new GameObject("Benchmark_TempestDummy");
-            SwordBladeTempestUltimate tempest = tempestDummy.AddComponent<SwordBladeTempestUltimate>();
-            if (tempest is IUltimateHandler ultimateHandler && ultimateHandler.BaseDuration > 0f)
+            // 11E: Moonlight Edge / Seismic Quake / Axe Storm are on Player.prefab with config and required feedback wired.
+            GameObject ultPlayerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/Player.prefab");
+            var ultimateWiring = new (Type type, string[] fields)[]
             {
-                sb.AppendLine($"  - Sword Blade Tempest Ultimate: Implements IUltimateHandler with BaseDuration={ultimateHandler.BaseDuration:F1}s. [PASSED]");
-                passedCount++;
-            }
-            else
+                (typeof(SwordMoonlightEdgeUltimate), new[] { "config", "crescentPrefab", "activateFeedback", "crescentLaunchFeedback" }),
+                (typeof(MaceUltimate), new[] { "config", "leapFeedback", "slamFeedback", "aftershockFeedback" }),
+                (typeof(ThrowingAxeUltimate), new[] { "config", "activateFeedback", "ricochetFeedback" }),
+            };
+            foreach (var (type, fields) in ultimateWiring)
             {
-                sb.AppendLine("  - [FAIL] SwordBladeTempestUltimate does not correctly implement IUltimateHandler or BaseDuration is invalid!");
-                failedCount++;
+                Component handler = ultPlayerPrefab != null ? ultPlayerPrefab.GetComponent(type) : null;
+                if (handler == null)
+                {
+                    sb.AppendLine($"  - [FAIL] {type.Name} is not on the Player.prefab root!");
+                    failedCount++;
+                    continue;
+                }
+                var so = new SerializedObject(handler);
+                var missing = new List<string>();
+                foreach (string field in fields)
+                {
+                    SerializedProperty prop = so.FindProperty(field);
+                    if (prop == null || prop.objectReferenceValue == null) missing.Add(field);
+                }
+                float baseDuration = ((IUltimateHandler)handler).BaseDuration;
+                if (missing.Count == 0 && baseDuration > 0f)
+                {
+                    sb.AppendLine($"  - {type.Name}: wired, BaseDuration={baseDuration:F1}s. [PASSED]");
+                    passedCount++;
+                }
+                else
+                {
+                    sb.AppendLine($"  - [FAIL] {type.Name}: missing [{string.Join(", ", missing)}], BaseDuration={baseDuration:F1}s!");
+                    failedCount++;
+                }
             }
-            UnityEngine.Object.DestroyImmediate(tempestDummy);
         }
         catch (Exception ex)
         {
-            sb.AppendLine($"  - Mount System & Blade Tempest benchmark exception: {ex.Message} [FAILED]");
+            sb.AppendLine($"  - Mount System & weapon ultimate benchmark exception: {ex.Message} [FAILED]");
             failedCount++;
         }
 

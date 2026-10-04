@@ -98,6 +98,8 @@ public class PlayerMount : MonoBehaviour
     public event Action<float, float> OnMountCooldownChanged;
     /// <summary>Raised when the run's warhorse dies for good.</summary>
     public event Action OnMountLost;
+    /// <summary>Raised with the horse's position when a live summoned horse vanishes on dismount (a dead one stays as a ragdoll corpse).</summary>
+    public event Action<Vector3> OnSummonedHorseVanished;
 
     /// <summary>True while seated on a horse.</summary>
     public bool IsMounted => currentHorse != null;
@@ -355,7 +357,7 @@ public class PlayerMount : MonoBehaviour
         if (GameLoopManager.Instance != null)
         {
             subscribedLoop = GameLoopManager.Instance;
-            subscribedLoop.OnEnemyKilledEvent += HandleEnemyKilled;
+            subscribedLoop.OnEnemyKilledEvent += CreditPlayerKill;
         }
     }
 
@@ -378,7 +380,7 @@ public class PlayerMount : MonoBehaviour
         }
         if (subscribedLoop != null)
         {
-            subscribedLoop.OnEnemyKilledEvent -= HandleEnemyKilled;
+            subscribedLoop.OnEnemyKilledEvent -= CreditPlayerKill;
         }
     }
 
@@ -411,9 +413,11 @@ public class PlayerMount : MonoBehaviour
     ///     Kills the player lands fill the warhorse's charge stamina: full <see cref="HorseSO.staminaPerKill" />
     ///     on foot, <see cref="HorseSO.mountedKillStaminaFraction" /> of it from the saddle. Trample kills
     ///     are the horse's own (their damage source is the horse) and earn nothing here — Bloodlust
-    ///     refunds those in <see cref="HorseMotor" />.
+    ///     refunds those in <see cref="HorseMotor" />. Wave kills arrive through
+    ///     <see cref="GameLoopManager.OnEnemyKilledEvent" />; enemies spawned outside a wave (the tutorial's
+    ///     <see cref="TutorialEncounter" />) call this directly.
     /// </summary>
-    private void HandleEnemyKilled(Health enemy)
+    public void CreditPlayerKill(Health enemy)
     {
         if (anyError || enemy == null || RunSession.MountLost) return;
 
@@ -788,7 +792,12 @@ public class PlayerMount : MonoBehaviour
 
         if (summonedHorseInstance != null)
         {
-            Destroy(summonedHorseInstance, 0.5f);
+            // A dead horse is left to its HorseRagdoll and CorpseDespawner; a live one vanishes in a puff.
+            if (!horseHealth.IsDead)
+            {
+                OnSummonedHorseVanished?.Invoke(horse.transform.position);
+                Destroy(summonedHorseInstance);
+            }
             summonedHorseInstance = null;
         }
 

@@ -64,6 +64,14 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
     [SerializeField] private MMF_Player drawFeedback;
     [Tooltip("Played on every throw.")]
     [SerializeField] private MMF_Player throwFeedback;
+    [Tooltip("Optional: Bloodsplosion card - gore burst + boom at the killed enemy. Leave empty for just the blood decal.")]
+    [SerializeField] private MMF_Player bloodsplosionFeedback;
+    [Tooltip("Optional: First Strike card - heavy impact sting at the hit point when the full-health bonus applies. Leave empty for just the crit-style number.")]
+    [SerializeField] private MMF_Player firstStrikeFeedback;
+    [Tooltip("Optional: Boomerang card - whoosh where a boomeranging axe turns around. Leave empty for silence.")]
+    [SerializeField] private MMF_Player boomerangTurnFeedback;
+    [Tooltip("Optional: Boomerang card - catch sound when a returning axe reaches the thrower. Leave empty for silence.")]
+    [SerializeField] private MMF_Player boomerangCatchFeedback;
 
     [Header("Class mechanics (optional)")]
     [Tooltip("Optional: the Rage buff. While raging, throw damage scales by its multiplier. Defaults to the one on this GameObject.")]
@@ -80,8 +88,17 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
     /// <summary>Fired once per throw (hit or miss), the moment the axe leaves the hand — for cosmetic listeners.</summary>
     public event Action OnThrown;
 
-    /// <summary>Set during the Axe Vortex ultimate to enable instant charge and multi-fan throws.</summary>
+    /// <summary>Set during the Axe Storm ultimate to enable instant charge and multi-fan throws.</summary>
     public bool IsVortexUltimateActive { get; set; } = false;
+
+    /// <summary>Axe Storm: extra enemies each axe bounces to while <see cref="IsVortexUltimateActive" /> (set by <see cref="ThrowingAxeUltimate" />).</summary>
+    public int UltimateRicochets { get; set; }
+
+    /// <summary>Axe Storm: how far an axe looks for its next ricochet target, in metres.</summary>
+    public float UltimateRicochetRange { get; set; }
+
+    /// <summary>Fired when an axe bounces off an enemy toward the next one, with the bounce point and the new direction.</summary>
+    public event Action<Vector3, Vector3> OnRicochet;
 
     /// <summary>True while the aim button is held and the throw is winding up.</summary>
     public bool IsAiming { get; private set; }
@@ -558,6 +575,8 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
             // visually (the SwordRange localScale convention).
             visualScale = width / Mathf.Max(0.05f, config.baseWidth),
             spinTopDPS = spinTopDPS,
+            ricochets = IsVortexUltimateActive ? UltimateRicochets : 0,
+            ricochetRange = UltimateRicochetRange,
         };
     }
 
@@ -660,6 +679,36 @@ public class PlayerThrownAxe : MonoBehaviour, IChargedAimWeapon
     public void ReportHit(IDamageable target, Damage damage, Vector3 hitPoint)
     {
         OnHit?.Invoke(target, damage, hitPoint);
+    }
+
+    /// <summary>Card feedback hooks for the in-flight <see cref="AxeProjectile" /> (a spawned prefab can't own authored players).</summary>
+    public void PlayBloodsplosionFeedback(Vector3 point)
+    {
+        if (bloodsplosionFeedback != null) bloodsplosionFeedback.PlayFeedbacks(point);
+    }
+
+    /// <summary>See <see cref="PlayBloodsplosionFeedback" />.</summary>
+    public void PlayFirstStrikeFeedback(Vector3 point)
+    {
+        if (firstStrikeFeedback != null) firstStrikeFeedback.PlayFeedbacks(point);
+    }
+
+    /// <summary>See <see cref="PlayBloodsplosionFeedback" />.</summary>
+    public void PlayBoomerangTurnFeedback(Vector3 point)
+    {
+        if (boomerangTurnFeedback != null) boomerangTurnFeedback.PlayFeedbacks(point);
+    }
+
+    /// <summary>See <see cref="PlayBloodsplosionFeedback" />.</summary>
+    public void PlayBoomerangCatchFeedback(Vector3 point)
+    {
+        if (boomerangCatchFeedback != null) boomerangCatchFeedback.PlayFeedbacks(point);
+    }
+
+    /// <summary>Called by an <see cref="AxeProjectile" /> when it bounces to a new target (Axe Storm).</summary>
+    public void ReportRicochet(Vector3 point, Vector3 newDirection)
+    {
+        OnRicochet?.Invoke(point, newDirection);
     }
 
     /// <summary>Distance-sorts cast hits without allocating a comparison delegate per sweep (the PlayerBow shape). Shared with <see cref="AxeProjectile" />.</summary>

@@ -1728,6 +1728,9 @@ MonoBehaviour:
   sunColor: {r: 1, g: 0.86, b: 0.68, a: 1}
   sunIntensity: 1.5
   crystalBias: {x: 3, y: 1, z: 1}
+  worldEventIds:
+  - eruption
+  - caravan
   sunEuler: {x: 42, y: -40, z: 0}
   fogColor: {r: 0.82, g: 0.62, b: 0.46, a: 1}
   fogDensity: 0.003

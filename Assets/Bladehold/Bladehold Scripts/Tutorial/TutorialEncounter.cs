@@ -12,6 +12,9 @@ using UnityEngine.AI;
 ///     <see cref="EnemyDefinitionApplier" />). Deliberately not a SurvivorsSpawner: that one auto-starts a
 ///     real wave when no GameLoopManager is present. With no Gate or objective in the scene the enemies'
 ///     <see cref="AITargetSelector" /> falls through to the player, so they rush straight in.
+///     <see cref="holdPosition" /> roots them where they spawn instead (T3's practice targets and the
+///     warband to charge through). Because these enemies never pass through <see cref="GameLoopManager" />,
+///     the encounter credits the player's kills to the horse's charge stamina itself.
 /// </summary>
 public class TutorialEncounter : MonoBehaviour
 {
@@ -26,6 +29,8 @@ public class TutorialEncounter : MonoBehaviour
     [Min(0f)] [SerializeField] private float secondsBetweenRounds = 2.5f;
     [Tooltip("Random horizontal offset around the spawn point, so stacked spawns don't overlap.")]
     [Min(0f)] [SerializeField] private float spawnScatter = 1.5f;
+    [Tooltip("Root the enemies where they spawn (agent speed 0): a stationary group to shoot, cut down or charge through. Knockback still shoves them.")]
+    [SerializeField] private bool holdPosition;
 
     [Tooltip("Optional: played at each spawn point as its enemy appears (bark, dust puff). Leave empty for none.")]
     [SerializeField] private MMF_Player spawnFeedback;
@@ -112,6 +117,11 @@ public class TutorialEncounter : MonoBehaviour
 
         GameObject enemy = Instantiate(prefab, pos, point.rotation);
         EnemyDefinitionApplier.Apply(enemy, def);
+        if (holdPosition && enemy.TryGetComponent(out AIMovement movement))
+        {
+            // A speed multiplier rather than SetMovementPaused, which attack components toggle off again.
+            movement.SetSpeedMultiplier(0f);
+        }
         if (spawnFeedback != null) spawnFeedback.PlayFeedbacks(pos);
 
         Health health = enemy.GetComponent<Health>();
@@ -126,12 +136,25 @@ public class TutorialEncounter : MonoBehaviour
         {
             if (alive[i] == null || alive[i].IsDead)
             {
-                if (alive[i] != null) alive[i].OnDied -= HandleDied;
+                if (alive[i] != null)
+                {
+                    alive[i].OnDied -= HandleDied;
+                    CreditMountStamina(alive[i]);
+                }
                 alive.RemoveAt(i);
             }
         }
         OnAliveCountChanged?.Invoke(alive.Count + pending, total);
         if (alive.Count == 0 && pending == 0) OnAllDead?.Invoke();
+    }
+
+    /// <summary>The wave path (GameLoopManager.OnEnemyKilledEvent) never sees these enemies, so pass the kill on here.</summary>
+    private static void CreditMountStamina(Health enemy)
+    {
+        if (!SceneAbilityRules.MountAllowed || Player.Instance == null) return;
+        // PlayerMount sits on the player root; Player.Instance is on the Synty character child.
+        PlayerMount mount = Player.Instance.transform.root.GetComponentInChildren<PlayerMount>(true);
+        if (mount != null) mount.CreditPlayerKill(enemy);
     }
 
     private EnemyDefinition FindDefinition(string id)

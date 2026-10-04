@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ea72054793e6564b9c7a646c3e04eba, type: 3}
+  m_Name: BlizzardEvent
+  m_EditorClassIdentifier: Assembly-CSharp::BlizzardEventSO
+  id: blizzard
+  titleKey: world_event.blizzard.title
+  title: Blizzard
+  taglineKey: world_event.blizzard.tagline
+  tagline: A killing frost sweeps the field.
+  icon: {fileID: 21300000, guid: 6080d2b1b6bd55a43ade5e9bb1e82e64, type: 3}
+  accentColor: {r: 0.55, g: 0.85, b: 1, a: 1}
+  effects:
+  - positive: 1
+    icon: {fileID: 21300000, guid: 064fd1eaaa425e447ab48003c1e44a79, type: 3}
+    textKey: world_event.blizzard.boon1
+    text: +{0}% damage to chilled foes
+  - positive: 1
+    icon: {fileID: 21300000, guid: 6080d2b1b6bd55a43ade5e9bb1e82e64, type: 3}
+    textKey: world_event.blizzard.boon2
+    text: Gusts chill every enemy
+  - positive: 0
+    icon: {fileID: 21300000, guid: 2b3889a2bb9beb444adf6734821e1c02, type: 3}
+    textKey: world_event.blizzard.peril1
+    text: Gales shove you around
+  - positive: 0
+    icon: {fileID: 21300000, guid: c02992b43bce2754887ea1d2e2ba697e, type: 3}
+    textKey: world_event.blizzard.peril2
+    text: 'Whiteout: hard to see'
+  duration: 45
+  hazardGraceSeconds: 3
+  fadeSeconds: 2.5
+  weight: 1
+  minWave: 2
+  hasBuff: 1
+  buffStat: 205
+  buffKind: 0
+  buffAmount: 0.5
+  gustInterval: {x: 6, y: 9}
+  gustWarningSeconds: 1.5
+  gustSeconds: 2.2
+  playerShoveSpeed: 3.5
+  enemyShoveSpeed: 5
+  gustRadius: 45
+  directionWobbleDegrees: 40
+  gustsChillEnemies: 1

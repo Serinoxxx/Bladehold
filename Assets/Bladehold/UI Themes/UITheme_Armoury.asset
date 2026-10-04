@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c6a1269d4c11b24ba3e83a9fef92153, type: 3}
+  m_Name: UITheme_Armoury
+  m_EditorClassIdentifier: Assembly-CSharp::UIThemeSO
+  dimmer: {r: 0.050980393, g: 0.050980393, b: 0.078431375, a: 0.72156864}
+  window: {r: 0.07058824, g: 0.08235294, b: 0.09411765, a: 0.92156863}
+  frame: {r: 0.6156863, g: 0.65882355, b: 0.69803923, a: 0.9019608}
+  well: {r: 0.039215688, g: 0.047058824, b: 0.05490196, a: 0.8509804}
+  accent: {r: 0.9490196, g: 0.85490197, b: 0.63529414, a: 1}
+  accentMuted: {r: 0.56078434, g: 0.60784316, b: 0.64705884, a: 1}
+  text: {r: 0.8509804, g: 0.8666667, b: 0.8784314, a: 1}
+  textDim: {r: 0.59607846, g: 0.6313726, b: 0.65882355, a: 1}
+  parchment: {r: 0.79607844, g: 0.81960785, b: 0.8352941, a: 1}
+  textOnParchment: {r: 0.22352941, g: 0.2509804, b: 0.28235295, a: 1}
+  ghost: {r: 0.13333334, g: 0.15294118, b: 0.17254902, a: 0.8}
+  cost: {r: 1, g: 0.7137255, b: 0.28235295, a: 1}
+  danger: {r: 0.6431373, g: 0.34509805, b: 0.27058825, a: 1}
+  success: {r: 0.56078434, g: 0.7607843, b: 0.47843137, a: 1}
+  headerFont: {fileID: 11400000, guid: fcfcd7da3c44c554db6791d28dd79a59, type: 2}
+  bodyFont: {fileID: 11400000, guid: 3cd57b48cb32aa2408ee0460d689be68, type: 2}

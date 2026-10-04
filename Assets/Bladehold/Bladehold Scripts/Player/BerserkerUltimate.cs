@@ -1,4 +1,5 @@
 using System;
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 /// <summary>
@@ -8,6 +9,9 @@ using UnityEngine;
 ///     - Drives an override animation layer via start and stop triggers.
 ///     - Spawns the whirlwind particle VFX (same as the Assassin enemy variant).
 ///     - Retains damage reduction from the Thick Skin skill tree node.
+///     Also owns the short "mini-spin" the Celebratory Spin draft card triggers on axe kills
+///     (<see cref="TryStartMiniSpin" />): same spin, VFX and whirlwind hitbox, no damage reduction,
+///     and the real ultimate cleanly takes it over instead of being cut short by it.
 /// </summary>
 public class BerserkerUltimate : MonoBehaviour, IUltimateHandler
 {
@@ -28,6 +32,8 @@ public class BerserkerUltimate : MonoBehaviour, IUltimateHandler
     [SerializeField] private GameObject whirlwindVfxPrefab;
     [Tooltip("Offset relative to the player where the whirlwind VFX is anchored.")]
     [SerializeField] private Vector3 vfxOffset = new Vector3(0f, 0.2f, 0f);
+    [Tooltip("Optional: whoosh played when a Celebratory Spin mini-whirlwind starts. Leave empty for silence.")]
+    [SerializeField] private MMF_Player miniSpinFeedback;
 
     [Header("Whirlwind Mechanics")]
     [Tooltip("Minimum cooldown between hits on the same enemy while spinning.")]
@@ -49,6 +55,8 @@ public class BerserkerUltimate : MonoBehaviour, IUltimateHandler
 
     private float ultimateEndTime;
     private bool isRunning;
+    private bool isMiniSpinning;
+    private float miniSpinEndTime;
     private bool anyError = false;
     private float currentSpinAngle;
     private Quaternion originalSpinLocalRotation = Quaternion.identity;
@@ -116,6 +124,9 @@ public class BerserkerUltimate : MonoBehaviour, IUltimateHandler
             return;
         }
 
+        // A Celebratory Spin in progress hands over to the ultimate (which restarts the whirlwind itself).
+        EndMiniSpin();
+
         this.controller = controller;
         float duration = player.Stats.GetValue(StatType.UltimateDurationSeconds);
         if (duration <= 0f) duration = BaseDuration;
@@ -171,8 +182,101 @@ public class BerserkerUltimate : MonoBehaviour, IUltimateHandler
         }
     }
 
+    /// <summary>True while a Celebratory Spin mini-whirlwind (not the ultimate) is spinning.</summary>
+    public bool IsMiniSpinning => isMiniSpinning;
+
+    /// <summary>
+    ///     Celebratory Spin: a short whirlwind with the equipped melee weapon. Extends a spin already in
+    ///     progress. Returns false (does nothing) while the ultimate itself is running.
+    /// </summary>
+    public bool TryStartMiniSpin(float duration)
+    {
+        FindDependencies();
+        if (anyError || isRunning || duration <= 0f || player == null)
+        {
+            return false;
+        }
+
+        if (isMiniSpinning)
+        {
+            miniSpinEndTime = Mathf.Max(miniSpinEndTime, Time.time + duration);
+            return true;
+        }
+
+        activeTrigger = PlayerWeaponManager.Instance != null ? PlayerWeaponManager.Instance.ActiveMeleeTrigger : null;
+        if (activeTrigger == null || activeTrigger.IsWhirlwindActive)
+        {
+            activeTrigger = null;
+            return false;
+        }
+
+        isMiniSpinning = true;
+        miniSpinEndTime = Time.time + duration;
+        currentSpinAngle = 0f;
+        if (spinTransform != null)
+        {
+            originalSpinLocalRotation = spinTransform.localRotation;
+        }
+
+        if (animator != null)
+        {
+            if (stopTriggerHash != 0) animator.ResetTrigger(stopTriggerHash);
+            if (startTriggerHash != 0) animator.SetTrigger(startTriggerHash);
+        }
+        if (whirlwindVfxPrefab != null)
+        {
+            activeWhirlwindVfx = Instantiate(whirlwindVfxPrefab, player.transform.position + vfxOffset, Quaternion.identity, player.transform);
+        }
+        if (miniSpinFeedback != null)
+        {
+            miniSpinFeedback.PlayFeedbacks(player.transform.position);
+        }
+
+        activeTrigger.StartWhirlwind(hitInterval);
+        return true;
+    }
+
+    private void EndMiniSpin()
+    {
+        if (!isMiniSpinning) return;
+        isMiniSpinning = false;
+
+        if (activeTrigger != null)
+        {
+            activeTrigger.StopWhirlwind();
+            activeTrigger = null;
+        }
+        if (animator != null)
+        {
+            if (startTriggerHash != 0) animator.ResetTrigger(startTriggerHash);
+            if (stopTriggerHash != 0) animator.SetTrigger(stopTriggerHash);
+        }
+        if (activeWhirlwindVfx != null)
+        {
+            Destroy(activeWhirlwindVfx);
+            activeWhirlwindVfx = null;
+        }
+        if (spinTransform != null)
+        {
+            spinTransform.localRotation = originalSpinLocalRotation;
+        }
+    }
+
     private void Update()
     {
+        if (!anyError && isMiniSpinning)
+        {
+            if (Time.time >= miniSpinEndTime || (player != null && player.Health != null && player.Health.IsDead))
+            {
+                EndMiniSpin();
+            }
+            else if (rotateCharacter && spinTransform != null)
+            {
+                currentSpinAngle = (currentSpinAngle + spinDegreesPerSecond * Time.deltaTime) % 360f;
+                spinTransform.localRotation = Quaternion.Euler(0f, currentSpinAngle, 0f);
+            }
+        }
+
         if (anyError || !isRunning) return;
 
         if (Time.time >= ultimateEndTime)
@@ -190,7 +294,7 @@ public class BerserkerUltimate : MonoBehaviour, IUltimateHandler
 
     private void LateUpdate()
     {
-        if (anyError || !isRunning) return;
+        if (anyError || (!isRunning && !isMiniSpinning)) return;
 
         // Maintain spin rotation after animator passes
         if (rotateCharacter && spinTransform != null)
@@ -254,6 +358,7 @@ public class BerserkerUltimate : MonoBehaviour, IUltimateHandler
 
     private void OnDisable()
     {
+        EndMiniSpin();
         if (isRunning)
         {
             End();

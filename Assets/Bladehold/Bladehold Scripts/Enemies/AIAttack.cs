@@ -29,6 +29,7 @@ public class AIAttack : MonoBehaviour
     private int staggerTriggerHash;
     private float? damageOverride;
     private Coroutine attackRoutine;
+    private SlowStatus slowStatus;
     private Transform player;
     private IDamageable playerDamageable;
     private Health playerHealth;
@@ -252,10 +253,23 @@ public class AIAttack : MonoBehaviour
         // Do not attack if there is no damageable target (e.g. flocking to an objective and waiting for player)
         if (CurrentTargetDamageable() == null) return;
 
-        if (attackRoutine == null && IsTargetInRange())
+        if (attackRoutine == null && !IsStunned() && IsTargetInRange())
         {
             attackRoutine = StartCoroutine(PrepareAndAttack());
         }
+    }
+
+    /// <summary>
+    ///     True while a full stop (mace stun, axe fear, Frozen) holds this enemy. SlowStatus is added at
+    ///     runtime on first slow, so it's looked up lazily and cached once found.
+    /// </summary>
+    private bool IsStunned()
+    {
+        if (slowStatus == null && !TryGetComponent(out slowStatus))
+        {
+            return false;
+        }
+        return slowStatus.IsStunned;
     }
 
     /// <summary>The current target's damage sink — the selector's pick (gate or player), else the player.</summary>
@@ -312,7 +326,7 @@ public class AIAttack : MonoBehaviour
             yield return new WaitForSeconds(attackData.preAttackDelay);
         }
 
-        if (isDead || playerDead || !IsTargetInRange())
+        if (isDead || playerDead || IsStunned() || !IsTargetInRange())
         {
             attackRoutine = null;
             yield break;
@@ -337,8 +351,9 @@ public class AIAttack : MonoBehaviour
 
         // Only connect if this goblin is still alive, the run is still going, and the target it
         // wound up on (re-resolved — it may have switched between player and gate) is still in range.
+        // A stun landing during the wind-up (Concussive Impact, fear, Frozen) interrupts the blow.
         IDamageable target = CurrentTargetDamageable();
-        if (!isDead && !playerDead && target != null && IsTargetInRange())
+        if (!isDead && !playerDead && !IsStunned() && target != null && IsTargetInRange())
         {
             target.ReceiveDamage(new Damage
             {

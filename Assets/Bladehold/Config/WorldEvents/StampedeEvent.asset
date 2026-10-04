@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3dd283fc0fa05914aa20a08c4c25f97b, type: 3}
+  m_Name: StampedeEvent
+  m_EditorClassIdentifier: Assembly-CSharp::StampedeEventSO
+  id: stampede
+  titleKey: world_event.stampede.title
+  title: Stampede
+  taglineKey: world_event.stampede.tagline
+  tagline: The ground trembles. Something's coming.
+  icon: {fileID: 21300000, guid: e26b3511739656b4aae99ff22d7c1305, type: 3}
+  accentColor: {r: 0.85, g: 0.65, b: 0.35, a: 1}
+  effects:
+  - positive: 1
+    icon: {fileID: 21300000, guid: d4863f6771b41e24d9a1cefacfae8dad, type: 3}
+    textKey: world_event.stampede.boon1
+    text: +{0}% move speed
+  - positive: 1
+    icon: {fileID: 21300000, guid: e26b3511739656b4aae99ff22d7c1305, type: 3}
+    textKey: world_event.stampede.boon2
+    text: Herds trample enemies
+  - positive: 0
+    icon: {fileID: 21300000, guid: 51f9a0feacaabea4393bfbdbc86a8c54, type: 3}
+    textKey: world_event.stampede.peril1
+    text: Clear the marked lanes
+  duration: 40
+  hazardGraceSeconds: 3
+  fadeSeconds: 2.5
+  weight: 1
+  minWave: 2
+  hasBuff: 1
+  buffStat: 2
+  buffKind: 1
+  buffAmount: 0.15
+  runInterval: {x: 5, y: 8}
+  targetPlayerChance: 0.5
+  telegraphSeconds: 2.2
+  laneWidth: 5
+  laneLength: 60
+  minLaneLength: 24
+  herdSpeed: 20
+  herdSize: {x: 5, y: 7}
+  herdDepth: 6
+  trampleDamage:
+    playerDamage: 10
+    enemyDamage: 40
+    enemyMaxHealthFraction: 0.5
+    enemyDamageCap: 200
+    knockbackForce: 7

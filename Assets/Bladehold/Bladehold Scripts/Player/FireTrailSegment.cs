@@ -47,7 +47,9 @@ public class FireTrailSegment : MonoBehaviour
 
     private void TickDamage(float interval)
     {
-        int count = Physics.OverlapSphereNonAlloc(transform.position, 1.2f, hitBuffer);
+        // Enemy layer only: the player's own horse (Blazing Hooves trail), the Gate, walls and towers
+        // all have Health and must never burn in the player's fire.
+        int count = Physics.OverlapSphereNonAlloc(transform.position, 1.2f, hitBuffer, LayerMask.GetMask("Enemy"), QueryTriggerInteraction.Collide);
         HashSet<Health> processed = new HashSet<Health>();
 
         for (int i = 0; i < count; i++)

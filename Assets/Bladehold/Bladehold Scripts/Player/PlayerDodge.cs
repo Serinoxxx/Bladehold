@@ -50,6 +50,10 @@ public class PlayerDodge : MonoBehaviour
     private bool isDodging;
     private bool anyError;
     private float lastDodgeEndTime = -999f;
+    // Nimble Strike's swing animation is cosmetic: the dash-path sphere already deals its damage, so the
+    // swing's hitbox animation event is swallowed once inside this window (else every enemy is hit twice,
+    // the swing at whatever charge multiplier the last real attack left behind).
+    private float nimbleSwingSuppressUntil = -999f;
     private int attackTriggerHash;
     private bool loggedMissingTrailVfx;
     private float invulnerableUntilTime = -999f;
@@ -78,6 +82,20 @@ public class PlayerDodge : MonoBehaviour
     public bool IsInvulnerable => Time.time < invulnerableUntilTime;
     public float TimeSinceDodge => Time.time - lastDodgeEndTime;
     public bool IsLungeWindowActive => isDodging || (TimeSinceDodge <= 1.0f);
+
+    /// <summary>
+    ///     True (once) when a melee hitbox event belongs to Nimble Strike's cosmetic swing and should not
+    ///     deal damage. Called by <see cref="AnimationEvents.OneHandedSwordAttack" />.
+    /// </summary>
+    public bool ConsumeNimbleSwingHit()
+    {
+        if (Time.time > nimbleSwingSuppressUntil)
+        {
+            return false;
+        }
+        nimbleSwingSuppressUntil = -999f;
+        return true;
+    }
 
     private void OnValidate()
     {
@@ -352,6 +370,7 @@ public class PlayerDodge : MonoBehaviour
 
         if (nimbleStrike > 0f)
         {
+            nimbleSwingSuppressUntil = Time.time + effectiveDashDuration + 0.5f;
             TriggerNimbleAttack();
         }
 

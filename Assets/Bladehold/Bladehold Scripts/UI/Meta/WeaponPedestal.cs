@@ -49,6 +49,9 @@ public class WeaponPedestal : MonoBehaviour
 
     private static readonly List<WeaponPedestal> all = new List<WeaponPedestal>();
 
+    /// <summary>The Pedestals menu theme (scope on the pedestal root) for state colours.</summary>
+    private UIThemeSO Theme => UITheme.For(this);
+
     /// <summary>Every enabled pedestal in the scene (the Meta Area's weapon rack).</summary>
     public static IReadOnlyList<WeaponPedestal> All => all;
 
@@ -226,7 +229,7 @@ public class WeaponPedestal : MonoBehaviour
             if (costLabel != null)
             {
                 costLabel.text = DemoConfigSO.LockedLabel;
-                costLabel.color = Color.white;
+                costLabel.color = Theme.Get(UIColorRole.TextDim);
             }
             interactable.PromptText = DemoConfigSO.LockedPrompt;
             interactable.CanInteract = false;
@@ -238,7 +241,7 @@ public class WeaponPedestal : MonoBehaviour
             if (statusLabel != null)
             {
                 statusLabel.text = "EQUIPPED";
-                statusLabel.color = Color.green;
+                statusLabel.color = Theme.Get(UIColorRole.Success);
             }
             if (costLabel != null) costLabel.text = "";
             interactable.PromptText = "Equipped";
@@ -249,7 +252,7 @@ public class WeaponPedestal : MonoBehaviour
             if (statusLabel != null)
             {
                 statusLabel.text = "UNLOCKED";
-                statusLabel.color = Color.white;
+                statusLabel.color = Theme.Get(UIColorRole.Text);
             }
             if (costLabel != null) costLabel.text = "";
             interactable.PromptText = $"Equip {weaponData.displayName}";
@@ -261,11 +264,15 @@ public class WeaponPedestal : MonoBehaviour
             int currentMetal = data != null ? data.orcishMetal : 0;
             bool canAfford = currentMetal >= weaponData.orcishMetalUnlockCost;
 
-            if (statusLabel != null) statusLabel.text = "LOCKED";
+            if (statusLabel != null)
+            {
+                statusLabel.text = "LOCKED";
+                statusLabel.color = Theme.Get(UIColorRole.TextDim);
+            }
             if (costLabel != null)
             {
                 costLabel.text = $"{weaponData.orcishMetalUnlockCost} Metal";
-                costLabel.color = canAfford ? Color.white : Color.red;
+                costLabel.color = Theme.Get(canAfford ? UIColorRole.Cost : UIColorRole.Danger);
             }
 
             interactable.PromptText = $"Unlock {weaponData.displayName} ({weaponData.orcishMetalUnlockCost} Metal)";

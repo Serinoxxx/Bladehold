@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d669d88b45809548927554c8baa9b7b, type: 3}
+  m_Name: EruptionEvent
+  m_EditorClassIdentifier: Assembly-CSharp::EruptionEventSO
+  id: eruption
+  titleKey: world_event.eruption.title
+  title: Eruption
+  taglineKey: world_event.eruption.tagline
+  tagline: The mountain wakes. Fire rains from the sky.
+  icon: {fileID: 21300000, guid: e9d9f46f0cf03be4782ad85a3f8a2be6, type: 3}
+  accentColor: {r: 1, g: 0.45, b: 0.12, a: 1}
+  effects:
+  - positive: 1
+    icon: {fileID: 21300000, guid: e25faef8c6bba804698975d73b939ca3, type: 3}
+    textKey: world_event.eruption.boon1
+    text: +{0}% Fire damage
+  - positive: 1
+    icon: {fileID: 21300000, guid: c2c35eea2047bc64b880be3c543b5767, type: 3}
+    textKey: world_event.eruption.boon2
+    text: Meteors hit enemies too
+  - positive: 0
+    icon: {fileID: 21300000, guid: 51f9a0feacaabea4393bfbdbc86a8c54, type: 3}
+    textKey: world_event.eruption.peril1
+    text: Dodge the red circles
+  - positive: 0
+    icon: {fileID: 21300000, guid: e9d9f46f0cf03be4782ad85a3f8a2be6, type: 3}
+    textKey: world_event.eruption.peril2
+    text: Magma pools linger
+  duration: 40
+  hazardGraceSeconds: 3
+  fadeSeconds: 2.5
+  weight: 1
+  minWave: 2
+  hasBuff: 1
+  buffStat: 203
+  buffKind: 0
+  buffAmount: 0.5
+  volleyInterval: {x: 1.8, y: 2.8}
+  meteorsPerVolley: {x: 2, y: 3}
+  targetPlayerChance: 0.25
+  targetEnemyChance: 0.45
+  scatterRadius: 22
+  telegraphSeconds: 1.6
+  fallSeconds: 0.6
+  impactRadius: 3.5
+  impactDamage:
+    playerDamage: 6
+    enemyDamage: 30
+    enemyMaxHealthFraction: 0.35
+    enemyDamageCap: 150
+    knockbackForce: 4
+  poolChance: 0.5
+  poolRadius: 2.2
+  poolSeconds: 5
+  poolTickDamage:
+    playerDamage: 1.5
+    enemyDamage: 4
+    enemyMaxHealthFraction: 0.04
+    enemyDamageCap: 25
+    knockbackForce: 0

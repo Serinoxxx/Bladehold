@@ -160,7 +160,7 @@ public class DraftUpgradeService : MonoBehaviour
                 if (token.Length == 0) continue;
                 if (!IsValidRequirement(token))
                 {
-                    Report($"Draft '{def.id}' has unknown requirement '{token}'. Expected ultimate, slot:<Element> or card:<id>. Requirement ignored.");
+                    Report($"Draft '{def.id}' has unknown requirement '{token}'. Expected ultimate, mount, slot:<Element> or card:<id>. Requirement ignored.");
                     continue;
                 }
                 def.requires.Add(token);
@@ -522,6 +522,7 @@ public class DraftUpgradeService : MonoBehaviour
     private static bool IsValidRequirement(string token)
     {
         if (token.Equals("ultimate", StringComparison.OrdinalIgnoreCase)) return true;
+        if (token.Equals("mount", StringComparison.OrdinalIgnoreCase)) return true;
         if (token.StartsWith("card:", StringComparison.OrdinalIgnoreCase)) return token.Length > 5;
         if (token.StartsWith("slot:", StringComparison.OrdinalIgnoreCase))
         {
@@ -534,7 +535,8 @@ public class DraftUpgradeService : MonoBehaviour
     /// <summary>
     ///     True when every token in <see cref="DraftUpgradeDefinition.requires" /> holds for the current run:
     ///     <c>ultimate</c> (an ultimate is owned), <c>slot:Fire</c> (Fire is imbued on at least one slot, so hits
-    ///     apply its status) and <c>card:&lt;id&gt;</c> (that card is owned). <paramref name="missing" /> names the
+    ///     apply its status), <c>card:&lt;id&gt;</c> (that card is owned) and <c>mount</c> (the run's warhorse is
+    ///     still alive, see <see cref="RunSession.MountLost" />). <paramref name="missing" /> names the
     ///     first one that fails, for debug tools.
     /// </summary>
     public static bool MeetsRequirements(DraftUpgradeDefinition def, out string missing)
@@ -558,6 +560,11 @@ public class DraftUpgradeService : MonoBehaviour
             {
                 string cardId = token.Substring(5);
                 if (RunSession.GetUpgradeLevel(cardId) <= 0) { missing = $"Needs {cardId}"; return false; }
+            }
+            else if (token.Equals("mount", StringComparison.OrdinalIgnoreCase))
+            {
+                // Horse cards are dead weight once the warhorse is permanently lost.
+                if (RunSession.MountLost) { missing = "Needs a living warhorse"; return false; }
             }
         }
         return true;
@@ -814,7 +821,7 @@ public class DraftUpgradeService : MonoBehaviour
             return found != null ? found : targetGo.AddComponent<T>();
         }
 
-        if (ultimateId.StartsWith("sword_blade", StringComparison.OrdinalIgnoreCase)) return FindOrAdd<SwordBladeTempestUltimate>();
+        if (ultimateId.StartsWith("sword_blade", StringComparison.OrdinalIgnoreCase)) return FindOrAdd<SwordMoonlightEdgeUltimate>();
         if (ultimateId.StartsWith("sword_mount", StringComparison.OrdinalIgnoreCase)) return FindOrAdd<SwordMountUltimate>();
         if (ultimateId.StartsWith("axe_bladestorm", StringComparison.OrdinalIgnoreCase)) return FindOrAdd<BerserkerUltimate>();
         if (ultimateId.StartsWith("bow_stream", StringComparison.OrdinalIgnoreCase)) return FindOrAdd<RangerUltimate>();

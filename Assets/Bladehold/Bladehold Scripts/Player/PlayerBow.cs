@@ -120,6 +120,10 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
     [SerializeField] private MMF_Player fireFeedback;
     [Tooltip("Played at the Impulse blast centre for each enemy the blast hits (bloody burst).")]
     [SerializeField] private MMF_Player impulseBlastHitFeedback;
+    [Tooltip("Optional: burst + whoosh at the player when Desperate Volley fires its ring. Leave empty for just the normal fire sound.")]
+    [SerializeField] private MMF_Player desperateVolleyFeedback;
+    [Tooltip("Optional: ricochet ping played at each Bouncer hop. Leave empty for silent hops (the tracer still draws).")]
+    [SerializeField] private MMF_Player bounceFeedback;
 
     [Header("Skill integrations (optional)")]
     [Tooltip("The player's Impulse buff, for the Impulse Arrow skill. Defaults to Player.Instance's.")]
@@ -807,15 +811,22 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
             forward = Vector3.forward;
         }
 
+        // Volley arrows are fully charged: without the override they'd read the (usually zero)
+        // in-progress draw and deal 10% damage with no bounce chance.
+        int fullChargeLevel = Mathf.Max(1, MaxChargeLevels);
         for (int i = 0; i < arrowCount; i++)
         {
             Vector3 dir = Quaternion.Euler(0f, i * (360f / arrowCount), 0f) * forward;
-            FireArrow(origin, dir, 1f, isMainArrow: (i == 0));
+            FireArrow(origin, dir, 1f, isMainArrow: (i == 0), fullChargeLevel, fullChargeLevel);
         }
 
         if (fireFeedback != null)
         {
             fireFeedback.PlayFeedbacks();
+        }
+        if (desperateVolleyFeedback != null)
+        {
+            desperateVolleyFeedback.PlayFeedbacks(transform.position);
         }
         if (hasAimAnimatorParams && playerAnimator != null)
         {
@@ -1004,13 +1015,14 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
             chainLightning.TryChain(target, damage.value, endPoint);
         }
 
-        // Bounce Shot: chance to arc to one additional nearby enemy for the same damage.
-        // Chance is scaled by charging the bow further.
+        // Bounce Shot: chance to arc to nearby enemies for the same damage. A partial draw
+        // scales the chance down, so a fully drawn shot (ratio >= 1) always uses the full chance;
+        // quick taps still get at least half of it rather than almost never bouncing.
         float baseBounceChance = stats.GetValue(StatType.BowBounceChance);
         if (baseBounceChance > 0f)
         {
             float actualRatio = chargeRatio >= 0f ? chargeRatio : chargeLevel;
-            float bounceChance = baseBounceChance * actualRatio;
+            float bounceChance = baseBounceChance * Mathf.Clamp(actualRatio, 0.5f, 1f);
             if (UnityEngine.Random.value < bounceChance)
             {
                 TryBounce(target, damage, endPoint);
@@ -1263,6 +1275,10 @@ public class PlayerBow : MonoBehaviour, IChargedAimWeapon
             best.ReceiveDamage(bounceDamage);
             OnHit?.Invoke(best, bounceDamage, bestPosition);
             SpawnTracer(currentPoint, bestPosition);
+            if (bounceFeedback != null)
+            {
+                bounceFeedback.PlayFeedbacks(bestPosition);
+            }
             currentPoint = bestPosition;
         }
     }

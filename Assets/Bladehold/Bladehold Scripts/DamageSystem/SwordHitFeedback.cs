@@ -30,6 +30,7 @@ public class SwordHitFeedback : MonoBehaviour
     [SerializeField] private float damageForMaxIntensity = 20f;
 
     private int blockedTriggerHash;
+    private PlayerDodge playerDodge;
     private bool anyError = false;
 
     private void OnValidate()
@@ -87,11 +88,41 @@ public class SwordHitFeedback : MonoBehaviour
 
     private void HandleHit(IDamageable target, Damage damage, Vector3 point)
     {
-        MMF_Player feedback = PickHitFeedback(target, damage.isCritical);
+        MMF_Player feedback = PickHitFeedback(target, damage.isCritical || IsEmpoweredHit(target));
         if (feedback == null) return;
 
         float intensity = damageForMaxIntensity > 0f ? Mathf.Clamp01(damage.value / damageForMaxIntensity) : 1f;
         feedback.PlayFeedbacks(point, intensity);
+    }
+
+    /// <summary>
+    ///     Draft-card empowered melee hits get the heavier crit feedback even when they didn't crit, so the
+    ///     card reads on screen: a Lunge Mastery hit (inside the post-dash lunge window) or a ShieldBreaker
+    ///     hit on a shielded target.
+    /// </summary>
+    private bool IsEmpoweredHit(IDamageable target)
+    {
+        if (!damageTrigger.ReadsPlayerStats || Player.Instance == null || Player.Instance.Stats == null)
+        {
+            return false;
+        }
+        PlayerStats stats = Player.Instance.Stats;
+
+        if (stats.GetValue(StatType.SwordShieldBreakerBonus) > 0f && target is Component shieldTarget &&
+            DamageTrigger.IsShieldedTarget(shieldTarget))
+        {
+            return true;
+        }
+
+        if (stats.GetValue(StatType.SwordLungeDamageBonus) > 0f)
+        {
+            if (playerDodge == null) playerDodge = Player.Instance.transform.root.GetComponentInChildren<PlayerDodge>();
+            if (playerDodge != null && playerDodge.IsLungeWindowActive)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     private MMF_Player PickHitFeedback(IDamageable target, bool isCritical)

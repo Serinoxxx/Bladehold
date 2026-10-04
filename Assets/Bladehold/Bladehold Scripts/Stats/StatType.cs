@@ -421,6 +421,16 @@ public enum StatType
     HorseTrampleKillStamina,
     /// <summary>Fraction of damage a charging horse ignores (base 0, 0.3 = 30% less). Iron Barding card.</summary>
     HorseChargeDamageReduction,
+    /// <summary>Moonlight Edge crescent damage as a multiple of SwordDamage (registered by SwordMoonlightEdgeUltimate).</summary>
+    UltimateMoonlightCrescentDamage,
+    /// <summary>Seismic Quake aftershock damage per mace swing during the ultimate (registered by MaceUltimate).</summary>
+    UltimateMaceAftershockDamage,
+    /// <summary>Extra enemies each Axe Storm throw bounces to (registered by ThrowingAxeUltimate).</summary>
+    UltimateAxeRicochetCount,
+    /// <summary>Like Butter: subtracted from the cleave falloff (DamageTriggerSO.cleaveDamageReduction) so extra targets in a swing keep more damage. Base 0, registered by DamageTrigger.</summary>
+    CleaveFalloffReduction,
+    /// <summary>Damage multiplier on overhead chops (look up before swinging). Base from SwingDirectionSO, registered by SwingDirectionSelector.</summary>
+    OverheadSwingDamageMultiplier,
 }
 
 /// <summary>

@@ -38,6 +38,9 @@ public class MountPedestal : MonoBehaviour
     [SerializeField] private float focusDistance = 5.0f;
     [SerializeField] private float fadeSpeed = 8f;
 
+    /// <summary>The Pedestals menu theme (scope on the pedestal root) for state colours.</summary>
+    private UIThemeSO Theme => UITheme.For(this);
+
     private Interactable interactable;
     private Vector3 baseMountPosition;
     private GameObject spawnedModel;
@@ -221,7 +224,7 @@ public class MountPedestal : MonoBehaviour
             if (costLabel != null)
             {
                 costLabel.text = DemoConfigSO.LockedLabel;
-                costLabel.color = Color.white;
+                costLabel.color = Theme.Get(UIColorRole.TextDim);
             }
             if (interactable != null)
             {
@@ -236,7 +239,7 @@ public class MountPedestal : MonoBehaviour
             if (statusLabel != null)
             {
                 statusLabel.text = "EQUIPPED";
-                statusLabel.color = Color.green;
+                statusLabel.color = Theme.Get(UIColorRole.Success);
             }
             if (costLabel != null) costLabel.text = "";
             if (interactable != null)
@@ -250,7 +253,7 @@ public class MountPedestal : MonoBehaviour
             if (statusLabel != null)
             {
                 statusLabel.text = "UNLOCKED";
-                statusLabel.color = Color.white;
+                statusLabel.color = Theme.Get(UIColorRole.Text);
             }
             if (costLabel != null) costLabel.text = "";
             if (interactable != null)
@@ -267,12 +270,12 @@ public class MountPedestal : MonoBehaviour
             if (statusLabel != null)
             {
                 statusLabel.text = "LOCKED";
-                statusLabel.color = new Color(0.9f, 0.4f, 0.4f);
+                statusLabel.color = Theme.Get(UIColorRole.TextDim);
             }
             if (costLabel != null)
             {
                 costLabel.text = $"{mountData.orcishMetalUnlockCost} Metal";
-                costLabel.color = canAfford ? Color.white : Color.red;
+                costLabel.color = Theme.Get(canAfford ? UIColorRole.Cost : UIColorRole.Danger);
             }
             if (interactable != null)
             {

@@ -23,6 +23,7 @@ Every plan follows `/CLAUDE.md` (source of truth). Key rules: no visuals or fall
 | 12 | [Mount from start + fishing restrictions](12-mount-and-fishing-restrictions.md) | Fix | none |
 | 15 | [Wave choice draft (replaces war banners)](15-wave-choice-draft.md) | Feature (core loop) | 01, 06 |
 | 16 | [Tutorial level](16-tutorial.md) | Feature (onboarding) | 12, 15 |
+| 18 | [Biome world events](18-world-events.md) | Feature (built on request during the freeze) | 15 |
 
 ## Roadmap to Next Fest (Feb 27 2027)
 

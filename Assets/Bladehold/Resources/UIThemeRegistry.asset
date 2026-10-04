@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 963d9581af507154ba9caa7b8e8a9a74, type: 3}
+  m_Name: UIThemeRegistry
+  m_EditorClassIdentifier: Assembly-CSharp::UIThemeRegistrySO
+  globalTheme: {fileID: 11400000, guid: 4bf90d912acab8743b2ade04311f27b5, type: 2}
+  useMenuOverrides: 1
+  menuOverrides:
+  - menu: 5
+    theme: {fileID: 11400000, guid: 65aa5c70321445e46b388b662e70a943, type: 2}
+  - menu: 4
+    theme: {fileID: 11400000, guid: b4614f831db565a4a9b0f80a14b61ada, type: 2}
+  - menu: 6
+    theme: {fileID: 11400000, guid: eddf4aa5d1949164f98b509fe786e89a, type: 2}

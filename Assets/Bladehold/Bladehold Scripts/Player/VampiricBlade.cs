@@ -62,6 +62,7 @@ public class VampiricBlade : MonoBehaviour
         }
 
         stats.SetBase(StatType.LifeStealPercent, 0f);
+        stats.SetBase(StatType.SwordVampireBladeHeal, 0f);
         swordTrigger.OnHit += HandleHit;
     }
 
@@ -81,12 +82,16 @@ public class VampiricBlade : MonoBehaviour
         }
 
         float fraction = stats.GetValue(StatType.LifeStealPercent);
-        if (fraction <= 0f)
+        // Vampire Blade draft card: a flat heal per melee hit. A hit stopped by a Bulwark's shield
+        // didn't draw blood, so it doesn't heal.
+        float flatHeal = target is IShieldBlocker ? 0f : stats.GetValue(StatType.SwordVampireBladeHeal);
+        float heal = Mathf.Max(0f, damage.value * fraction) + Mathf.Max(0f, flatHeal);
+        if (heal <= 0f || health.IsDead || health.CurrentHealth >= health.MaxHealth)
         {
             return;
         }
 
-        health.Heal(damage.value * fraction);
+        health.Heal(heal);
 
         if (lifestealFeedback != null)
         {

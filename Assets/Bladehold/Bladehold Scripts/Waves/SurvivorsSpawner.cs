@@ -883,11 +883,29 @@ public class SurvivorsSpawner : MonoBehaviour
         }
     }
 
-    private GameObject SpawnEnemyForType(SpawnType type)
+    /// <summary>
+    ///     Spawns one enemy of type <paramref name="id" /> at <paramref name="position" /> (snapped to the NavMesh) as
+    ///     part of the current wave: it's tracked as alive, its kill pays like a wave kill, and the wave can't be
+    ///     wiped while it lives. World events use it (the Blood Moon's risen skeletons, the caravan's escorts).
+    ///     Returns null when the id has no prefab in this scene's roster.
+    /// </summary>
+    public GameObject SpawnEnemyAt(string id, Vector3 position)
+    {
+        SpawnType type = spawnTypes.Find(t => t.def != null && t.def.id == id);
+        if (type == null)
+        {
+            Debug.LogError($"[SurvivorsSpawner] SpawnEnemyAt: no spawn type '{id}' in this scene's roster.", this);
+            return null;
+        }
+        if (NavMesh.SamplePosition(position, out NavMeshHit hit, 4f, NavMesh.AllAreas)) position = hit.position;
+        return SpawnEnemyForType(type, position, countsForWave: true);
+    }
+
+    private GameObject SpawnEnemyForType(SpawnType type, Vector3? position = null, bool countsForWave = false)
     {
         if (type == null || type.prefab == null) return null;
 
-        Vector3 spawnPos = ResolveSpawnPosition();
+        Vector3 spawnPos = position ?? ResolveSpawnPosition();
         GameObject enemy = Instantiate(type.prefab, spawnPos, Quaternion.identity);
         EnemyDefinitionApplier.Apply(enemy, type.def);
         if (GameLoopManager.Instance != null) GameLoopManager.Instance.ApplyWaveModifiers(enemy);
@@ -908,6 +926,14 @@ public class SurvivorsSpawner : MonoBehaviour
                 type.aliveInstances.Remove(health);
                 type.alive = Mathf.Max(0, type.alive - 1);
                 aliveCount = Mathf.Max(0, aliveCount - 1);
+
+                if (!countsForWave) return;
+                GameLoopManager.Instance?.OnEnemyKilled(health);
+                if (remainingToSpawn <= 0 && aliveCount <= 0 && isSpawningActive && !KeepTrickling)
+                {
+                    StopSpawning();
+                    OnWaveWiped?.Invoke();
+                }
             };
             health.OnDied += handler;
         }

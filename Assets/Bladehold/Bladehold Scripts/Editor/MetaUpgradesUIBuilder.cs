@@ -7,32 +7,23 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-///     Builds the Spirit's meta upgrade window: the MetaPerkCard prefab, the window layout under a
-///     MetaUpgradesUI's WindowRoot (tier sections on the left, details panel on the right), and the
+///     Builds the Spirit's meta upgrade window in the shared menu style (<see cref="BladeholdUIKit" />,
+///     themed as <see cref="UIMenuId.MetaPerks" />): a dimmed backdrop, a framed window with a title
+///     and close button, scrolling tier sections of perk cards on the left, a details panel on the
+///     right and a wallet footer. Also builds the MetaPerkCard prefab and syncs the
 ///     Resources/MetaPerkCatalog asset. Re-runnable: it replaces everything under WindowRoot.
 /// </summary>
 public static class MetaUpgradesUIBuilder
 {
     private const string CardPrefabPath = "Assets/Bladehold/Bladehold Prefabs/UI/MetaPerkCard.prefab";
     private const string CatalogPath = "Assets/Bladehold/Resources/MetaPerkCatalog.asset";
-    private const string TexturinaPath = "Assets/Synty/InterfaceFantasyWarriorHUD/Fonts/Texturina/Texturina_18pt-SemiBold SDF.asset";
-    private const string GrenzePath = "Assets/Synty/InterfaceFantasyWarriorHUD/Fonts/Grenze/Grenze-SemiBold SDF 1.asset";
-    private const string SpriteHud = "Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/HUD/";
-    private const string SpriteFw = "Assets/Synty/InterfaceFantasyWarriorHUD/Sprites/FantasyWarrior/";
 
-    private static readonly Color PanelColor = Hex("374046");
-    private static readonly Color DeepPanelColor = Hex("1C2226E6");
-    private static readonly Color HeaderTextColor = Hex("A7D2E7");
-    private static readonly Color CardNameColor = Hex("9FD6EC");
-    private static readonly Color BodyTextColor = Hex("D9D1BF");
-    private static readonly Color MutedTextColor = Hex("B0B0B0");
-    private static readonly Color GoldColor = Hex("FFD170");
-    private static readonly Color ButtonColor = Hex("4A5760");
-
+    private const float WindowWidth = 1320f;
+    private const float WindowHeight = 900f;
     private const float CardWidth = 140f;
-    private const float CardHeight = 160f;
+    private const float CardHeight = 170f;
     private const int CardsPerRow = 5;
-    private const float CardSpacing = 10f;
+    private const float CardSpacing = 12f;
 
     [MenuItem("Bladehold/UI/Rebuild Meta Upgrades Window")]
     public static void RebuildInOpenScene()
@@ -51,208 +42,205 @@ public static class MetaUpgradesUIBuilder
     public static void Build(MetaUpgradesUI ui)
     {
         SyncCatalog();
+        BladeholdUIKit.Begin(UIMenuId.MetaPerks);
         MetaPerkCardUI cardPrefab = BuildCardPrefab();
-
-        TMP_FontAsset texturina = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(TexturinaPath);
-        TMP_FontAsset grenze = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(GrenzePath);
 
         Transform rootT = ui.transform.Find("WindowRoot");
         if (rootT == null)
         {
-            rootT = NewRect("WindowRoot", ui.transform).transform;
+            rootT = BladeholdUIKit.NewUI("WindowRoot", ui.transform);
         }
         GameObject root = rootT.gameObject;
         for (int i = rootT.childCount - 1; i >= 0; i--) Object.DestroyImmediate(rootT.GetChild(i).gameObject);
         foreach (MenuFocusController old in root.GetComponents<MenuFocusController>()) Object.DestroyImmediate(old);
+        foreach (UIThemedGraphic old in root.GetComponents<UIThemedGraphic>()) Object.DestroyImmediate(old);
+        Image oldImage = root.GetComponent<Image>();
+        if (oldImage != null) Object.DestroyImmediate(oldImage);
 
+        // Root: full-screen dimmer that blocks clicks to the world behind.
         RectTransform rootRect = (RectTransform)rootT;
-        rootRect.anchorMin = rootRect.anchorMax = rootRect.pivot = new Vector2(0.5f, 0.5f);
-        rootRect.anchoredPosition = Vector2.zero;
-        rootRect.sizeDelta = new Vector2(1280f, 860f);
-        Image rootImg = root.GetComponent<Image>();
-        if (rootImg == null) rootImg = root.AddComponent<Image>();
-        if (rootImg.sprite == null) rootImg.sprite = LoadSprite(SpriteHud + "SPR_HUD_FantasyWarrior_Example_Background.png");
+        BladeholdUIKit.Stretch(rootRect);
+        BladeholdUIKit.Scope(root, UIMenuId.MetaPerks);
+        BladeholdUIKit.Img(rootRect, BladeholdUIKit.White, UIColorRole.Dimmer, raycast: true);
+        BladeholdUIKit.SetFeedbacks(rootT);
 
-        Image frame = NewImage("Frame", rootT, LoadSprite(SpriteFw + "SPR_FantasyWarrior_Frame_Box_Small_03.png"), Color.white);
-        Stretch(frame.rectTransform, 0f);
-        frame.raycastTarget = false;
+        // Laid out in 1920×1080 units whatever the host canvas's reference.
+        RectTransform space = BladeholdUIKit.NewUI("DesignSpace", rootT);
+        BladeholdUIKit.Stretch(space);
+        space.gameObject.AddComponent<DesignResolutionScaler>();
 
-        // Header: currencies (left), title (centre), close (right), divider
-        RectTransform currencies = NewRect("Currencies", rootT);
-        TopLeft(currencies, 56f, -34f, 360f, 56f);
-        HorizontalLayoutGroup curLayout = currencies.gameObject.AddComponent<HorizontalLayoutGroup>();
-        curLayout.spacing = 10f;
-        curLayout.childAlignment = TextAnchor.MiddleLeft;
-        curLayout.childControlWidth = curLayout.childControlHeight = true;
-        curLayout.childForceExpandWidth = curLayout.childForceExpandHeight = false;
-        NewIcon("BloodIcon", currencies, FindSprite("ICON_SM_Item_Bottle_03_Bonus"), Color.white, 48f);
-        TMP_Text bloodText = NewText("GoblinBloodText", currencies, texturina, "0", 30f, Hex("C23B3B"), TextAlignmentOptions.MidlineLeft);
-        AddLayoutSize(bloodText.gameObject, 90f, 48f);
-        NewIcon("MetalIcon", currencies, FindSprite("ICON_SM_Item_Ingot_Iron_01"), Hex("AADDB9"), 48f);
-        TMP_Text metalText = NewText("OrcishMetalText", currencies, texturina, "0", 30f, Hex("9FCCA6"), TextAlignmentOptions.MidlineLeft);
-        AddLayoutSize(metalText.gameObject, 90f, 48f);
+        RectTransform window = BladeholdUIKit.NewUI("Window", space);
+        BladeholdUIKit.Place(window, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(WindowWidth, WindowHeight));
+        BladeholdUIKit.WindowChrome(window);
 
-        TMP_Text title = NewText("TitleText", rootT, texturina, "SANCTUARY OF SPIRITS", 30f, HeaderTextColor, TextAlignmentOptions.Center);
-        TopCentre(title.rectTransform, -34f, 600f, 52f);
+        // Header: title (centre), close (right), divider.
+        RectTransform header = BladeholdUIKit.NewUI("Header", window);
+        BladeholdUIKit.AnchorTop(header, 0f, 92f);
+        BladeholdUIKit.Title(header, "Sanctuary of Spirits", 40f, 300f);
+        Button closeButton = BladeholdUIKit.CloseButton(header);
+        BladeholdUIKit.Place((RectTransform)closeButton.transform, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-32f, 0f), new Vector2(56f, 56f));
+        RectTransform divider = BladeholdUIKit.NewUI("HeaderDivider", window);
+        BladeholdUIKit.AnchorTop(divider, 96f, 10f, 48f);
+        BladeholdUIKit.Divider(divider);
 
-        Button closeButton = NewButton("CloseButton", rootT, LoadSprite(SpriteHud + "SPR_HUD_FantasyWarrior_Box_Small_Parchment_01.png"), Hex("AABDC9"));
-        TopRight((RectTransform)closeButton.transform, -46f, -36f, 48f, 48f);
-        TMP_Text closeText = NewText("CloseText", closeButton.transform, texturina, "X", 22f, Hex("4A3F35"), TextAlignmentOptions.Center);
-        Stretch(closeText.rectTransform, 0f);
+        const float bodyTop = 122f;
+        const float bodyBottom = 100f;
+        float listWidth = CardsPerRow * CardWidth + (CardsPerRow - 1) * CardSpacing + 48f;
 
-        Image divider = NewImage("HeaderDivider", rootT, LoadSprite(SpriteHud + "SPR_HUD_FantasyWarrior_Line_01.png"), Hex("B6D0E8"));
-        divider.type = Image.Type.Sliced;
-        TopStretch(divider.rectTransform, -104f, 48f, 4f);
+        // Left: scrollable tier sections in a well.
+        RectTransform listWell = BladeholdUIKit.NewUI("ListWell", window);
+        listWell.anchorMin = new Vector2(0f, 0f);
+        listWell.anchorMax = new Vector2(0f, 1f);
+        listWell.pivot = new Vector2(0f, 1f);
+        listWell.offsetMin = new Vector2(40f, bodyBottom);
+        listWell.offsetMax = new Vector2(40f + listWidth, -bodyTop);
+        BladeholdUIKit.Well(listWell);
 
-        // Left: scrollable tier sections
-        const float bodyTop = -124f;
-        const float bodyBottom = 44f;
-        float listWidth = CardsPerRow * CardWidth + (CardsPerRow - 1) * CardSpacing + 24f;
-        Image listBg = NewImage("ListBackground", rootT, LoadSprite(SpriteHud + "SPR_HUD_FantasyWarrior_Box_Background_01.png"), Hex("1C222699"));
-        listBg.type = Image.Type.Sliced;
-        listBg.raycastTarget = false;
-        listBg.rectTransform.anchorMin = new Vector2(0f, 0f);
-        listBg.rectTransform.anchorMax = new Vector2(0f, 1f);
-        listBg.rectTransform.pivot = new Vector2(0f, 1f);
-        listBg.rectTransform.offsetMin = new Vector2(40f, bodyBottom - 8f);
-        listBg.rectTransform.offsetMax = new Vector2(56f + listWidth, bodyTop + 8f);
-
-        RectTransform scroll = NewRect("TierScroll", rootT);
-        scroll.anchorMin = new Vector2(0f, 0f);
-        scroll.anchorMax = new Vector2(0f, 1f);
-        scroll.pivot = new Vector2(0f, 1f);
-        scroll.offsetMin = new Vector2(48f, bodyBottom);
-        scroll.offsetMax = new Vector2(48f + listWidth, bodyTop);
+        RectTransform scroll = BladeholdUIKit.NewUI("TierScroll", listWell);
+        BladeholdUIKit.Stretch(scroll, 12f, 6f, 6f, 6f);
         ScrollRect scrollRect = scroll.gameObject.AddComponent<ScrollRect>();
         scrollRect.horizontal = false;
         scrollRect.movementType = ScrollRect.MovementType.Clamped;
-        scrollRect.scrollSensitivity = 30f;
+        scrollRect.scrollSensitivity = 40f;
+        scrollRect.decelerationRate = 0.12f;
         scroll.gameObject.AddComponent<ScrollRectAutoScroll>();
 
-        RectTransform viewport = NewRect("Viewport", scroll);
-        Stretch(viewport, 0f);
+        RectTransform viewport = BladeholdUIKit.NewUI("Viewport", scroll);
+        BladeholdUIKit.Stretch(viewport, 0f, 14f, 0f, 0f);
         viewport.gameObject.AddComponent<RectMask2D>();
-        viewport.gameObject.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0f);
+        BladeholdUIKit.HitArea(viewport);
 
-        RectTransform content = NewRect("Content", viewport);
+        RectTransform content = BladeholdUIKit.NewUI("Content", viewport);
         content.anchorMin = new Vector2(0f, 1f);
         content.anchorMax = new Vector2(1f, 1f);
         content.pivot = new Vector2(0.5f, 1f);
         content.offsetMin = content.offsetMax = Vector2.zero;
         VerticalLayoutGroup contentLayout = content.gameObject.AddComponent<VerticalLayoutGroup>();
-        contentLayout.spacing = 14f;
-        contentLayout.padding = new RectOffset(12, 12, 2, 12);
+        contentLayout.spacing = 10f;
+        contentLayout.padding = new RectOffset(4, 4, 0, 16);
         contentLayout.childControlWidth = contentLayout.childControlHeight = true;
         contentLayout.childForceExpandWidth = true;
         contentLayout.childForceExpandHeight = false;
         content.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
         scrollRect.viewport = viewport;
         scrollRect.content = content;
+        scrollRect.verticalScrollbar = BuildScrollbar(scroll);
+        scrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
 
-        string[] tierNames = { "I · COMMON BLESSINGS", "II · ANCIENT PROWESS", "III · LEGENDARY MASTERY" };
+        string[] tierNames = { "I · Common Blessings", "II · Ancient Prowess", "III · Legendary Mastery" };
         int[] unlockCosts = { 0, 5, 10 };
         var sections = new List<(Transform grid, TMP_Text label, Button unlock, TMP_Text unlockText, int cost)>();
         for (int t = 0; t < 3; t++)
         {
-            RectTransform section = NewRect($"Tier{t + 1}_Section", content);
+            RectTransform section = BladeholdUIKit.NewUI($"Tier{t + 1}_Section", content);
             VerticalLayoutGroup sectionLayout = section.gameObject.AddComponent<VerticalLayoutGroup>();
             sectionLayout.spacing = 12f;
             sectionLayout.childControlWidth = sectionLayout.childControlHeight = true;
             sectionLayout.childForceExpandWidth = true;
             sectionLayout.childForceExpandHeight = false;
 
-            RectTransform header = NewRect("Header", section);
-            AddLayoutSize(header.gameObject, -1f, 34f);
-            HorizontalLayoutGroup headerLayout = header.gameObject.AddComponent<HorizontalLayoutGroup>();
-            headerLayout.spacing = 12f;
-            headerLayout.childAlignment = TextAnchor.MiddleLeft;
-            headerLayout.childControlWidth = headerLayout.childControlHeight = true;
-            headerLayout.childForceExpandWidth = false;
-            headerLayout.childForceExpandHeight = true;
-
-            TMP_Text label = NewText("Label", header, texturina, tierNames[t], 19f, MutedTextColor, TextAlignmentOptions.MidlineLeft);
-            label.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1f;
+            // Section header: spaced label + rule (as in settings), unlock button on the right.
+            RectTransform head = BladeholdUIKit.NewUI("Header", section);
+            BladeholdUIKit.Size(head.gameObject, -1f, 54f);
+            TextMeshProUGUI label = BladeholdUIKit.Txt(BladeholdUIKit.NewUI("Label", head), tierNames[t], UIFontRole.Header, 22f, UIColorRole.AccentMuted, TextAlignmentOptions.BottomLeft);
+            BladeholdUIKit.Stretch(label.rectTransform, 4f, 250f, 0f, 10f);
+            label.characterSpacing = 4f;
+            label.fontStyle = FontStyles.UpperCase;
+            label.textWrappingMode = TextWrappingModes.NoWrap;
+            RectTransform rule = BladeholdUIKit.NewUI("Rule", head);
+            BladeholdUIKit.AnchorBottom(rule, 4f, 2f);
+            BladeholdUIKit.Img(rule, BladeholdUIKit.White, UIColorRole.AccentMuted, 0.25f);
 
             Button unlock = null;
             TMP_Text unlockText = null;
             if (t > 0)
             {
-                unlock = NewButton("UnlockButton", header, LoadSprite(SpriteFw + "SPR_FantasyWarrior_Bar_Horizontal_05.png"), ButtonColor);
-                AddLayoutSize(unlock.gameObject, 240f, 34f);
-                unlockText = NewText("Text", unlock.transform, grenze, "Unlock", 17f, Color.white, TextAlignmentOptions.Center);
-                Stretch(unlockText.rectTransform, 0f);
+                unlock = BladeholdUIKit.Button("UnlockButton", head, "Unlock", BladeholdUIKit.ButtonStyle.Primary, out TextMeshProUGUI unlockLabel, 18f);
+                BladeholdUIKit.Place((RectTransform)unlock.transform, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(0f, 12f), new Vector2(236f, 38f));
+                unlockText = unlockLabel;
             }
 
-            RectTransform grid = NewRect("Cards", section);
+            RectTransform grid = BladeholdUIKit.NewUI("Cards", section);
             GridLayoutGroup gridLayout = grid.gameObject.AddComponent<GridLayoutGroup>();
             gridLayout.cellSize = new Vector2(CardWidth, CardHeight);
             gridLayout.spacing = new Vector2(CardSpacing, CardSpacing);
             gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
             gridLayout.constraintCount = CardsPerRow;
             gridLayout.childAlignment = TextAnchor.UpperLeft;
-            gridLayout.padding = new RectOffset(0, 0, 4, 0);
+            gridLayout.padding = new RectOffset(8, 0, 4, 4);
 
             sections.Add((grid, label, unlock, unlockText, unlockCosts[t]));
         }
 
-        // Right: details panel
-        RectTransform details = NewRect("Details", rootT);
+        // Right: details panel.
+        RectTransform details = BladeholdUIKit.NewUI("Details", window);
         details.anchorMin = new Vector2(0f, 0f);
         details.anchorMax = new Vector2(1f, 1f);
         details.pivot = new Vector2(0.5f, 1f);
-        details.offsetMin = new Vector2(48f + listWidth + 24f, bodyBottom);
-        details.offsetMax = new Vector2(-48f, bodyTop);
-        Image detailsBg = details.gameObject.AddComponent<Image>();
-        detailsBg.sprite = LoadSprite(SpriteHud + "SPR_HUD_FantasyWarrior_Box_Background_01.png");
-        detailsBg.type = Image.Type.Sliced;
-        detailsBg.color = DeepPanelColor;
-        Image detailsFrame = NewImage("Frame", details, LoadSprite(SpriteFw + "SPR_FantasyWarrior_Frame_Box_10.png"), Color.white);
-        detailsFrame.type = Image.Type.Sliced;
-        Stretch(detailsFrame.rectTransform, -10f);
-        detailsFrame.raycastTarget = false;
+        details.offsetMin = new Vector2(40f + listWidth + 24f, bodyBottom);
+        details.offsetMax = new Vector2(-40f, -bodyTop);
+        BladeholdUIKit.Well(details);
 
-        Image detailIcon = NewImage("Icon", details, null, Color.white);
+        RectTransform iconBack = BladeholdUIKit.NewUI("IconBack", details);
+        BladeholdUIKit.Place(iconBack, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -28f), new Vector2(150f, 150f));
+        BladeholdUIKit.Img(iconBack, BladeholdUIKit.Diamond, UIColorRole.Accent, 0.12f);
+        RectTransform iconRect = BladeholdUIKit.NewUI("Icon", details);
+        BladeholdUIKit.Place(iconRect, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -39f), new Vector2(128f, 128f));
+        Image detailIcon = iconRect.gameObject.AddComponent<Image>();
         detailIcon.preserveAspect = true;
-        TopCentre(detailIcon.rectTransform, -36f, 128f, 128f);
+        detailIcon.raycastTarget = false;
 
-        TMP_Text detailName = NewText("Name", details, texturina, "Perk", 28f, HeaderTextColor, TextAlignmentOptions.Center);
-        TopStretch(detailName.rectTransform, -176f, 20f, 40f);
-        TMP_Text detailRank = NewText("Rank", details, grenze, "Tier I", 19f, MutedTextColor, TextAlignmentOptions.Center);
-        TopStretch(detailRank.rectTransform, -216f, 20f, 28f);
+        TextMeshProUGUI detailName = BladeholdUIKit.Txt(BladeholdUIKit.NewUI("Name", details), "Perk", UIFontRole.Header, 30f, UIColorRole.Accent, TextAlignmentOptions.Center);
+        BladeholdUIKit.AnchorTop(detailName.rectTransform, 186f, 42f, 20f);
+        detailName.enableAutoSizing = true;
+        detailName.fontSizeMin = 18f;
+        detailName.fontSizeMax = 30f;
+        TextMeshProUGUI detailRank = BladeholdUIKit.Txt(BladeholdUIKit.NewUI("Rank", details), "Tier I", UIFontRole.Body, 20f, UIColorRole.TextDim, TextAlignmentOptions.Center);
+        BladeholdUIKit.AnchorTop(detailRank.rectTransform, 228f, 28f, 20f);
+        RectTransform detailDivider = BladeholdUIKit.NewUI("Divider", details);
+        BladeholdUIKit.AnchorTop(detailDivider, 264f, 8f, 40f);
+        BladeholdUIKit.Divider(detailDivider);
 
-        Image detailDivider = NewImage("Divider", details, LoadSprite(SpriteHud + "SPR_HUD_FantasyWarrior_Line_01.png"), Hex("B6D0E8AA"));
-        detailDivider.type = Image.Type.Sliced;
-        TopStretch(detailDivider.rectTransform, -254f, 50f, 3f);
-
-        RectTransform body = NewRect("Body", details);
-        body.anchorMin = new Vector2(0f, 0f);
-        body.anchorMax = new Vector2(1f, 1f);
-        body.offsetMin = new Vector2(28f, 116f);
-        body.offsetMax = new Vector2(-28f, -272f);
+        RectTransform body = BladeholdUIKit.NewUI("Body", details);
+        BladeholdUIKit.Stretch(body, 30f, 30f, 288f, 112f);
         VerticalLayoutGroup bodyLayout = body.gameObject.AddComponent<VerticalLayoutGroup>();
         bodyLayout.spacing = 18f;
         bodyLayout.childAlignment = TextAnchor.UpperCenter;
         bodyLayout.childControlWidth = bodyLayout.childControlHeight = true;
         bodyLayout.childForceExpandWidth = true;
         bodyLayout.childForceExpandHeight = false;
-        TMP_Text detailCurrent = NewText("Current", body, grenze, "", 22f, BodyTextColor, TextAlignmentOptions.Top);
-        detailCurrent.textWrappingMode = TextWrappingModes.Normal;
-        TMP_Text detailNext = NewText("Next", body, grenze, "", 20f, GoldColor, TextAlignmentOptions.Top);
-        detailNext.textWrappingMode = TextWrappingModes.Normal;
+        TextMeshProUGUI detailCurrent = BladeholdUIKit.Txt(BladeholdUIKit.NewUI("Current", body), "", UIFontRole.Body, 23f, UIColorRole.Text, TextAlignmentOptions.Top);
+        TextMeshProUGUI detailNext = BladeholdUIKit.Txt(BladeholdUIKit.NewUI("Next", body), "", UIFontRole.Body, 21f, UIColorRole.Accent, TextAlignmentOptions.Top);
 
-        Button buyButton = NewButton("BuyButton", details, LoadSprite(SpriteFw + "SPR_FantasyWarrior_Bar_Horizontal_05.png"), ButtonColor);
-        RectTransform buyRect = (RectTransform)buyButton.transform;
-        buyRect.anchorMin = buyRect.anchorMax = new Vector2(0.5f, 0f);
-        buyRect.pivot = new Vector2(0.5f, 0f);
-        buyRect.anchoredPosition = new Vector2(0f, 46f);
-        buyRect.sizeDelta = new Vector2(300f, 56f);
-        TMP_Text buyText = NewText("Text", buyButton.transform, grenze, "Learn", 22f, Color.white, TextAlignmentOptions.Center);
-        Stretch(buyText.rectTransform, 0f);
+        Button buyButton = BladeholdUIKit.Button("BuyButton", details, "Learn", BladeholdUIKit.ButtonStyle.Primary, out TextMeshProUGUI buyText, 24f);
+        BladeholdUIKit.Place((RectTransform)buyButton.transform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 36f), new Vector2(300f, 58f));
+
+        // Footer: wallet (left).
+        RectTransform footer = BladeholdUIKit.NewUI("Footer", window);
+        BladeholdUIKit.AnchorBottom(footer, 22f, 60f, 40f);
+        RectTransform footerLine = BladeholdUIKit.NewUI("Divider", footer);
+        BladeholdUIKit.AnchorTop(footerLine, -10f, 8f, 8f);
+        BladeholdUIKit.Divider(footerLine, 0.35f);
+        RectTransform wallet = BladeholdUIKit.NewUI("Currencies", footer);
+        wallet.anchorMin = new Vector2(0f, 0f);
+        wallet.anchorMax = new Vector2(0f, 1f);
+        wallet.pivot = new Vector2(0f, 0.5f);
+        wallet.sizeDelta = new Vector2(600f, 0f);
+        wallet.anchoredPosition = new Vector2(8f, 0f);
+        HorizontalLayoutGroup walletLayout = wallet.gameObject.AddComponent<HorizontalLayoutGroup>();
+        walletLayout.spacing = 10f;
+        walletLayout.childAlignment = TextAnchor.MiddleLeft;
+        walletLayout.childControlWidth = walletLayout.childControlHeight = true;
+        walletLayout.childForceExpandWidth = walletLayout.childForceExpandHeight = false;
+        TMP_Text bloodText = Currency(wallet, "GoblinBlood", "ICON_SM_Item_Bottle_03_Bonus", BladeholdUIKit.Hex("E06A5E"));
+        RectTransform gap = BladeholdUIKit.NewUI("Gap", wallet);
+        BladeholdUIKit.Size(gap.gameObject, 24f, 10f);
+        TMP_Text metalText = Currency(wallet, "OrcishMetal", "ICON_SM_Item_Ingot_Iron_01", BladeholdUIKit.Hex("AADDB9"));
 
         // Pad focus: trap inside the window, B closes it. The default card is set at runtime.
         MenuFocusController focus = root.AddComponent<MenuFocusController>();
         var focusSo = new SerializedObject(focus);
-        focusSo.FindProperty("restrictTo").objectReferenceValue = rootRect;
+        focusSo.FindProperty("restrictTo").objectReferenceValue = window;
         focusSo.ApplyModifiedPropertiesWithoutUndo();
         UnityEventTools.AddVoidPersistentListener(GetOnCancel(focus), ui.Close);
 
@@ -315,66 +303,79 @@ public static class MetaUpgradesUIBuilder
 
     private static MetaPerkCardUI BuildCardPrefab()
     {
-        TMP_FontAsset texturina = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(TexturinaPath);
-        TMP_FontAsset grenze = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(GrenzePath);
-
         GameObject card = new GameObject("MetaPerkCard", typeof(RectTransform));
+        card.layer = LayerMask.NameToLayer("UI");
         try
         {
-            ((RectTransform)card.transform).sizeDelta = new Vector2(CardWidth, CardHeight);
-            Image bg = card.AddComponent<Image>();
-            bg.sprite = LoadSprite(SpriteHud + "SPR_HUD_FantasyWarrior_Box_Background_01.png");
-            bg.type = Image.Type.Sliced;
-            bg.color = PanelColor;
+            RectTransform cardRect = (RectTransform)card.transform;
+            cardRect.sizeDelta = new Vector2(CardWidth, CardHeight);
+            BladeholdUIKit.HitArea(cardRect);
             CanvasGroup group = card.AddComponent<CanvasGroup>();
-            Button button = card.AddComponent<Button>();
-            button.targetGraphic = bg;
-            ColorBlock colors = button.colors;
-            colors.highlightedColor = new Color(1.25f, 1.25f, 1.25f, 1f);
-            colors.selectedColor = new Color(1.25f, 1.25f, 1.25f, 1f);
-            colors.pressedColor = new Color(0.8f, 0.8f, 0.8f, 1f);
-            colors.colorMultiplier = 1.4f;
-            button.colors = colors;
+            BladeholdUIKit.SetFeedbacks(cardRect);
 
-            Image frame = NewImage("Frame", card.transform, LoadSprite(SpriteFw + "SPR_FantasyWarrior_Frame_Box_10.png"), Color.white);
-            frame.type = Image.Type.Sliced;
-            frame.raycastTarget = false;
-            Stretch(frame.rectTransform, -10f);
+            // Visual scales on hover/press; the root keeps the grid cell still.
+            RectTransform visual = BladeholdUIKit.NewUI("Visual", cardRect);
+            BladeholdUIKit.Stretch(visual);
+            Image bg = BladeholdUIKit.Img(visual, BladeholdUIKit.White, UIColorRole.Well);
+            RectTransform sheen = BladeholdUIKit.NewUI("Sheen", visual);
+            BladeholdUIKit.Stretch(sheen);
+            BladeholdUIKit.Img(sheen, BladeholdUIKit.GradientV, UIColorRole.Accent, 0.05f);
+            RectTransform frame = BladeholdUIKit.NewUI("Frame", visual);
+            BladeholdUIKit.Stretch(frame, -2f, -2f, -2f, -2f);
+            BladeholdUIKit.Img(frame, BladeholdUIKit.FrameSmall, UIColorRole.AccentMuted, 0.55f, sliced: true, ppu: 4f);
+            RectTransform glow = BladeholdUIKit.NewUI("HoverGlow", visual);
+            BladeholdUIKit.Stretch(glow, -4f, -4f, -4f, -4f);
+            Image glowImage = BladeholdUIKit.Img(glow, BladeholdUIKit.FrameSmall, UIColorRole.Accent, sliced: true, ppu: 4f);
 
-            Image highlight = NewImage("SelectedHighlight", card.transform, LoadSprite(SpriteFw + "SPR_FantasyWarrior_Frame_Box_10.png"), GoldColor);
-            highlight.type = Image.Type.Sliced;
-            highlight.raycastTarget = false;
-            Stretch(highlight.rectTransform, -14f);
+            RectTransform highlight = BladeholdUIKit.NewUI("SelectedHighlight", visual);
+            BladeholdUIKit.Stretch(highlight, -6f, -6f, -6f, -6f);
+            BladeholdUIKit.Img(highlight, BladeholdUIKit.FrameSmall, UIColorRole.Accent, sliced: true, ppu: 3f);
+            RectTransform highlightFill = BladeholdUIKit.NewUI("Fill", highlight);
+            BladeholdUIKit.Stretch(highlightFill, 6f, 6f, 6f, 6f);
+            BladeholdUIKit.Img(highlightFill, BladeholdUIKit.GradientV, UIColorRole.Accent, 0.14f);
             highlight.gameObject.SetActive(false);
 
-            Image icon = NewImage("Icon", card.transform, null, Color.white);
+            RectTransform iconBack = BladeholdUIKit.NewUI("IconBack", visual);
+            BladeholdUIKit.Place(iconBack, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -8f), new Vector2(72f, 72f));
+            BladeholdUIKit.Img(iconBack, BladeholdUIKit.Diamond, UIColorRole.Accent, 0.1f);
+            RectTransform iconRect = BladeholdUIKit.NewUI("Icon", visual);
+            BladeholdUIKit.Place(iconRect, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -14f), new Vector2(60f, 60f));
+            Image icon = iconRect.gameObject.AddComponent<Image>();
             icon.preserveAspect = true;
             icon.raycastTarget = false;
-            TopCentre(icon.rectTransform, -10f, 54f, 54f);
 
-            TMP_Text nameText = NewText("Name", card.transform, texturina, "Perk Name", 16f, CardNameColor, TextAlignmentOptions.Center);
-            TopStretch(nameText.rectTransform, -64f, 8f, 34f);
+            TextMeshProUGUI nameText = BladeholdUIKit.Txt(BladeholdUIKit.NewUI("Name", visual), "Perk Name", UIFontRole.Header, 16f, UIColorRole.Text, TextAlignmentOptions.Center);
+            BladeholdUIKit.AnchorTop(nameText.rectTransform, 84f, 38f, 8f);
             nameText.enableAutoSizing = true;
             nameText.fontSizeMin = 12f;
             nameText.fontSizeMax = 16f;
-            nameText.textWrappingMode = TextWrappingModes.Normal;
 
-            RectTransform pips = NewRect("Pips", card.transform);
-            TopStretch(pips, -100f, 10f, 8f);
+            RectTransform pips = BladeholdUIKit.NewUI("Pips", visual);
+            BladeholdUIKit.AnchorTop(pips, 126f, 8f, 12f);
             HorizontalLayoutGroup pipLayout = pips.gameObject.AddComponent<HorizontalLayoutGroup>();
             pipLayout.spacing = 4f;
             pipLayout.childAlignment = TextAnchor.MiddleCenter;
             pipLayout.childControlWidth = pipLayout.childControlHeight = true;
             pipLayout.childForceExpandWidth = pipLayout.childForceExpandHeight = false;
-            Image pip = NewImage("Pip", pips, null, Color.white);
+            RectTransform pipRect = BladeholdUIKit.NewUI("Pip", pips);
+            Image pip = pipRect.gameObject.AddComponent<Image>();
+            pip.sprite = BladeholdUIKit.White;
             pip.raycastTarget = false;
-            AddLayoutSize(pip.gameObject, 20f, 8f);
+            BladeholdUIKit.Size(pipRect.gameObject, 18f, 6f);
 
-            TMP_Text costText = NewText("Cost", card.transform, grenze, "10 Blood", 16f, GoldColor, TextAlignmentOptions.Center);
-            TopStretch(costText.rectTransform, -110f, 12f, 22f);
+            // Cost colour is set per state at runtime (MetaPerkCardUI), so it isn't a themed graphic.
+            TextMeshProUGUI costText = BladeholdUIKit.Txt(BladeholdUIKit.NewUI("Cost", visual), "10 Blood", UIFontRole.Body, 17f, UIColorRole.Cost, TextAlignmentOptions.Center);
+            BladeholdUIKit.Unthemed(costText);
+            BladeholdUIKit.AnchorBottom(costText.rectTransform, 6f, 24f, 8f);
+            costText.textWrappingMode = TextWrappingModes.NoWrap;
             costText.enableAutoSizing = true;
             costText.fontSizeMin = 10f;
-            costText.fontSizeMax = 16f;
+            costText.fontSizeMax = 17f;
+
+            Button button = card.AddComponent<Button>();
+            button.targetGraphic = bg;
+            button.colors = BladeholdUIKit.Tint(Color.white, Color.white, BladeholdUIKit.Hex("D8D8D8"));
+            BladeholdUIKit.Juice(button, visual, glowImage, 1.05f, 0.96f);
 
             MetaPerkCardUI cardUI = card.AddComponent<MetaPerkCardUI>();
             var so = new SerializedObject(cardUI);
@@ -397,6 +398,43 @@ public static class MetaUpgradesUIBuilder
         }
     }
 
+    /// <summary>Currency icon + amount for the wallet. Currency colours are their own identity, not theme roles.</summary>
+    private static TMP_Text Currency(RectTransform wallet, string name, string iconName, Color color)
+    {
+        RectTransform iconRect = BladeholdUIKit.NewUI(name + "Icon", wallet);
+        Image icon = iconRect.gameObject.AddComponent<Image>();
+        icon.sprite = BladeholdUIKit.FindSprite(iconName);
+        icon.preserveAspect = true;
+        icon.raycastTarget = false;
+        BladeholdUIKit.Size(iconRect.gameObject, 44f, 44f);
+        TextMeshProUGUI amount = BladeholdUIKit.Txt(BladeholdUIKit.NewUI(name + "Text", wallet), "0", UIFontRole.Header, 30f, UIColorRole.Text, TextAlignmentOptions.MidlineLeft);
+        BladeholdUIKit.Unthemed(amount);
+        amount.color = color;
+        BladeholdUIKit.Size(amount.gameObject, 90f, 44f);
+        return amount;
+    }
+
+    private static Scrollbar BuildScrollbar(RectTransform scroll)
+    {
+        RectTransform bar = BladeholdUIKit.NewUI("Scrollbar", scroll);
+        bar.anchorMin = new Vector2(1f, 0f);
+        bar.anchorMax = new Vector2(1f, 1f);
+        bar.pivot = new Vector2(1f, 0.5f);
+        bar.sizeDelta = new Vector2(8f, 0f);
+        BladeholdUIKit.Img(bar, BladeholdUIKit.White, UIColorRole.Text, 0.06f, raycast: true);
+        Scrollbar scrollbar = bar.gameObject.AddComponent<Scrollbar>();
+        scrollbar.direction = Scrollbar.Direction.BottomToTop;
+        RectTransform area = BladeholdUIKit.NewUI("Sliding Area", bar);
+        BladeholdUIKit.Stretch(area);
+        RectTransform handle = BladeholdUIKit.NewUI("Handle", area);
+        BladeholdUIKit.Stretch(handle);
+        scrollbar.handleRect = handle;
+        scrollbar.targetGraphic = BladeholdUIKit.Img(handle, BladeholdUIKit.White, UIColorRole.AccentMuted, raycast: true);
+        scrollbar.navigation = new Navigation { mode = Navigation.Mode.None };
+        scrollbar.colors = BladeholdUIKit.Tint(new Color(1f, 1f, 1f, 0.7f), Color.white, Color.white);
+        return scrollbar;
+    }
+
     private static UnityEngine.Events.UnityEvent GetOnCancel(MenuFocusController focus)
     {
         var field = typeof(MenuFocusController).GetField("onCancel", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
@@ -407,120 +445,5 @@ public static class MetaUpgradesUIBuilder
             field.SetValue(focus, evt);
         }
         return evt;
-    }
-
-    // ---------- small builders ----------
-
-    private static RectTransform NewRect(string name, Transform parent)
-    {
-        var go = new GameObject(name, typeof(RectTransform));
-        go.layer = LayerMask.NameToLayer("UI");
-        go.transform.SetParent(parent, false);
-        return (RectTransform)go.transform;
-    }
-
-    private static Image NewImage(string name, Transform parent, Sprite sprite, Color color)
-    {
-        RectTransform rt = NewRect(name, parent);
-        Image img = rt.gameObject.AddComponent<Image>();
-        img.sprite = sprite;
-        img.color = color;
-        return img;
-    }
-
-    private static void NewIcon(string name, Transform parent, Sprite sprite, Color color, float size)
-    {
-        Image img = NewImage(name, parent, sprite, color);
-        img.preserveAspect = true;
-        img.raycastTarget = false;
-        AddLayoutSize(img.gameObject, size, size);
-    }
-
-    private static TMP_Text NewText(string name, Transform parent, TMP_FontAsset font, string text, float size, Color color, TextAlignmentOptions align)
-    {
-        RectTransform rt = NewRect(name, parent);
-        TextMeshProUGUI tmp = rt.gameObject.AddComponent<TextMeshProUGUI>();
-        if (font != null) tmp.font = font;
-        tmp.text = text;
-        tmp.fontSize = size;
-        tmp.color = color;
-        tmp.alignment = align;
-        tmp.raycastTarget = false;
-        tmp.textWrappingMode = TextWrappingModes.NoWrap;
-        return tmp;
-    }
-
-    private static Button NewButton(string name, Transform parent, Sprite sprite, Color color)
-    {
-        Image img = NewImage(name, parent, sprite, color);
-        img.type = Image.Type.Sliced;
-        Button b = img.gameObject.AddComponent<Button>();
-        b.targetGraphic = img;
-        return b;
-    }
-
-    private static void AddLayoutSize(GameObject go, float width, float height)
-    {
-        LayoutElement le = go.GetComponent<LayoutElement>();
-        if (le == null) le = go.AddComponent<LayoutElement>();
-        if (width >= 0f) { le.preferredWidth = width; le.minWidth = width; }
-        if (height >= 0f) { le.preferredHeight = height; le.minHeight = height; }
-    }
-
-    private static void Stretch(RectTransform rt, float inset)
-    {
-        rt.anchorMin = Vector2.zero;
-        rt.anchorMax = Vector2.one;
-        rt.offsetMin = new Vector2(inset, inset);
-        rt.offsetMax = new Vector2(-inset, -inset);
-    }
-
-    private static void TopLeft(RectTransform rt, float x, float y, float w, float h)
-    {
-        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0f, 1f);
-        rt.anchoredPosition = new Vector2(x, y);
-        rt.sizeDelta = new Vector2(w, h);
-    }
-
-    private static void TopRight(RectTransform rt, float x, float y, float w, float h)
-    {
-        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(1f, 1f);
-        rt.anchoredPosition = new Vector2(x, y);
-        rt.sizeDelta = new Vector2(w, h);
-    }
-
-    private static void TopCentre(RectTransform rt, float y, float w, float h)
-    {
-        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 1f);
-        rt.anchoredPosition = new Vector2(0f, y);
-        rt.sizeDelta = new Vector2(w, h);
-    }
-
-    /// <summary>Full width minus <paramref name="sideMargin" /> each side, top edge at <paramref name="y" />.</summary>
-    private static void TopStretch(RectTransform rt, float y, float sideMargin, float h)
-    {
-        rt.anchorMin = new Vector2(0f, 1f);
-        rt.anchorMax = new Vector2(1f, 1f);
-        rt.pivot = new Vector2(0.5f, 1f);
-        rt.offsetMin = new Vector2(sideMargin, y - h);
-        rt.offsetMax = new Vector2(-sideMargin, y);
-    }
-
-    private static Sprite LoadSprite(string path) => AssetDatabase.LoadAssetAtPath<Sprite>(path);
-
-    private static Sprite FindSprite(string name)
-    {
-        foreach (string guid in AssetDatabase.FindAssets(name + " t:Sprite"))
-        {
-            string path = AssetDatabase.GUIDToAssetPath(guid);
-            if (System.IO.Path.GetFileNameWithoutExtension(path) == name) return AssetDatabase.LoadAssetAtPath<Sprite>(path);
-        }
-        return null;
-    }
-
-    private static Color Hex(string hex)
-    {
-        ColorUtility.TryParseHtmlString("#" + hex, out Color c);
-        return c;
     }
 }

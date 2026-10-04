@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using HighlightPlus;
+using MoreMountains.Feedbacks;
 using Synty.AnimationBaseLocomotion.Samples;
 using UnityEngine;
 using UnityEngine.AI;
@@ -45,6 +46,10 @@ public class PlayerWeaponManager : MonoBehaviour
     [SerializeField] private ChainLightning chainLightning;
     [SerializeField] private ImpulseHitFeedback impulseHitFeedback;
     [SerializeField] private PlayerMount playerMount;
+    [Tooltip("Optional: runs Celebratory Spin's mini-whirlwind. Defaults to the one on the player prefab.")]
+    [SerializeField] private BerserkerUltimate berserkerUltimate;
+    [Tooltip("Optional: Fear the Axe's terror pulse (shout/burst) played at the killed enemy. Leave empty for just the per-enemy status pop.")]
+    [SerializeField] private MMF_Player fearFeedback;
     [SerializeField] private PlayerBow playerBow;
     [SerializeField] private PlayerThrownAxe playerThrownAxe;
 
@@ -124,18 +129,31 @@ public class PlayerWeaponManager : MonoBehaviour
     {
         if (Player.Instance == null || Player.Instance.Stats == null) return;
         
+        // Both axe kill cards need the axe in hand (drafting is weapon-gated, but stats outlive a swap)
+        // and a melee-capable player: no spinning out of the saddle.
+        bool axeEquipped = CurrentMeleeId.Equals("axe", StringComparison.OrdinalIgnoreCase);
+        bool canMelee = SceneAbilityRules.MeleeAllowed && (playerMount == null || !playerMount.IsMounted);
+
         float duration = Player.Instance.Stats.GetValue(StatType.AxeCelebratorySpinDuration);
-        if (duration > 0f && ActiveMeleeTrigger != null && !ActiveMeleeTrigger.IsWhirlwindActive)
+        if (duration > 0f && axeEquipped && canMelee)
         {
-            StartCoroutine(CelebratorySpinRoutine(duration));
+            if (berserkerUltimate == null) berserkerUltimate = transform.root.GetComponentInChildren<BerserkerUltimate>(true);
+            if (berserkerUltimate != null)
+            {
+                berserkerUltimate.TryStartMiniSpin(duration);
+            }
         }
 
         float fearDuration = Player.Instance.Stats.GetValue(StatType.AxeFearDuration);
         if (fearDuration > 0f && enemyHealth != null)
         {
-            if (CurrentMeleeId.Equals("axe", StringComparison.OrdinalIgnoreCase))
+            if (axeEquipped)
             {
-                Collider[] hits = Physics.OverlapSphere(enemyHealth.transform.position, 6f);
+                if (fearFeedback != null)
+                {
+                    fearFeedback.PlayFeedbacks(enemyHealth.transform.position);
+                }
+                Collider[] hits = Physics.OverlapSphere(enemyHealth.transform.position, 6f, LayerMask.GetMask("Enemy"), QueryTriggerInteraction.Collide);
                 HashSet<Health> affected = new HashSet<Health>();
                 foreach (Collider hit in hits)
                 {
@@ -144,7 +162,15 @@ public class PlayerWeaponManager : MonoBehaviour
                     {
                         if (affected.Add(targetHealth))
                         {
-                            SlowStatus.GetOrAdd(targetHealth)?.ApplySlow(1.0f, fearDuration);
+                            SlowStatus fear = SlowStatus.GetOrAdd(targetHealth);
+                            if (fear != null)
+                            {
+                                fear.ApplySlow(1.0f, fearDuration);
+                                if (ElementalEffectsManager.Instance != null)
+                                {
+                                    ElementalEffectsManager.Instance.PlayAt(ElementalEffectsManager.Instance.statusAppliedFeedback, targetHealth.transform.position + Vector3.up * 1.6f);
+                                }
+                            }
                             if (targetHealth.TryGetComponent<NavMeshAgent>(out var agent) && agent.isOnNavMesh)
                             {
                                 agent.velocity = Vector3.zero;
@@ -152,30 +178,6 @@ public class PlayerWeaponManager : MonoBehaviour
                         }
                     }
                 }
-            }
-        }
-    }
-
-    private System.Collections.IEnumerator CelebratorySpinRoutine(float duration)
-    {
-        ActiveMeleeTrigger.StartWhirlwind();
-        
-        if (animator != null)
-        {
-            animator.ResetTrigger("StopWhirlwind");
-            animator.SetTrigger("StartWhirlwind");
-        }
-
-        yield return new WaitForSeconds(duration);
-
-        if (ActiveMeleeTrigger != null && ActiveMeleeTrigger.IsWhirlwindActive)
-        {
-            // Only stop if the ultimate didn't take over
-            ActiveMeleeTrigger.StopWhirlwind();
-            if (animator != null)
-            {
-                animator.ResetTrigger("StartWhirlwind");
-                animator.SetTrigger("StopWhirlwind");
             }
         }
     }

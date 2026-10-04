@@ -20,8 +20,12 @@ public class SlowStatus : MonoBehaviour
     private AIMovement movement;
     private Health health;
 
+    // Two tracks so a short hard stop (stun, fear, Frozen — fraction 1) never inherits a long chill's
+    // duration, and a chill doesn't end when a stun does: partial slows keep the strongest fraction and
+    // longest time; full stops keep their own timer and override while it runs.
     private float slowFraction;
     private float remainingSeconds;
+    private float stunRemainingSeconds;
     private float baseAnimatorSpeed = 1f;
     private float fallbackAgentSpeed;
     private bool slowActive;
@@ -29,8 +33,11 @@ public class SlowStatus : MonoBehaviour
     /// <summary>True while any slow is active — the "Ice Breaker" melee-bonus check.</summary>
     public bool IsSlowed => slowActive;
 
-    /// <summary>Strongest active slow fraction (0-1), 0 while unslowed.</summary>
-    public float CurrentSlowFraction => slowActive ? slowFraction : 0f;
+    /// <summary>Strongest active slow fraction (0-1), 0 while unslowed. 1 while stunned.</summary>
+    public float CurrentSlowFraction => !slowActive ? 0f : (stunRemainingSeconds > 0f ? 1f : slowFraction);
+
+    /// <summary>True while a full stop (fraction 1: stun, fear, Frozen) is running.</summary>
+    public bool IsStunned => slowActive && stunRemainingSeconds > 0f;
 
     /// <summary>
     ///     Resolves <paramref name="target" /> (any collider/damageable component on an enemy) to its
@@ -106,10 +113,17 @@ public class SlowStatus : MonoBehaviour
             slowActive = true;
         }
 
-        remainingSeconds = Mathf.Max(remainingSeconds, durationSeconds);
-        if (fraction > slowFraction)
+        if (fraction >= 1f)
         {
-            slowFraction = fraction;
+            stunRemainingSeconds = Mathf.Max(stunRemainingSeconds, durationSeconds);
+        }
+        else
+        {
+            remainingSeconds = Mathf.Max(remainingSeconds, durationSeconds);
+            if (fraction > slowFraction)
+            {
+                slowFraction = fraction;
+            }
         }
         ApplyMultipliers();
     }
@@ -121,16 +135,28 @@ public class SlowStatus : MonoBehaviour
             return;
         }
 
-        remainingSeconds -= Time.deltaTime;
+        bool wasStunned = stunRemainingSeconds > 0f;
+        stunRemainingSeconds = Mathf.Max(0f, stunRemainingSeconds - Time.deltaTime);
+        remainingSeconds = Mathf.Max(0f, remainingSeconds - Time.deltaTime);
         if (remainingSeconds <= 0f)
         {
+            slowFraction = 0f;
+        }
+
+        if (stunRemainingSeconds <= 0f && remainingSeconds <= 0f)
+        {
             ClearSlow();
+        }
+        else if (wasStunned && stunRemainingSeconds <= 0f)
+        {
+            // Stun ended inside a longer chill: drop back to the chill's speed.
+            ApplyMultipliers();
         }
     }
 
     private void ApplyMultipliers()
     {
-        float multiplier = 1f - slowFraction;
+        float multiplier = 1f - CurrentSlowFraction;
         if (agent != null && agent.enabled)
         {
             agent.speed = UnslowedAgentSpeed() * multiplier;
@@ -146,6 +172,7 @@ public class SlowStatus : MonoBehaviour
         slowActive = false;
         slowFraction = 0f;
         remainingSeconds = 0f;
+        stunRemainingSeconds = 0f;
 
         if (agent != null && agent.enabled)
         {

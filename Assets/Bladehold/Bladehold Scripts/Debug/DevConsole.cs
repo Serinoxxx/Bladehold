@@ -21,6 +21,7 @@ public class DevConsole : MonoBehaviour
 
     private bool visible;
     private int spawnTypeIndex;
+    private int worldEventIndex;
     private BannerDifficultyTier captainSpawnTier = BannerDifficultyTier.Enraged;
     private int objectiveIndex;
     private int waveChoicePreviewWave = 2;
@@ -43,10 +44,10 @@ public class DevConsole : MonoBehaviour
 
     private static readonly UltimateOption[] AvailableUltimates = new[]
     {
-        new UltimateOption { id = "sword_blade_tempest", displayName = "Blade Tempest" },
+        new UltimateOption { id = "sword_blade_tempest", displayName = "Moonlight Edge" },
         new UltimateOption { id = "axe_bladestorm_ult", displayName = "Bladestorm" },
         new UltimateOption { id = "bow_stream_ult", displayName = "Arrow Stream" },
-        new UltimateOption { id = "taxe_vortex_ult", displayName = "Axe Vortex" },
+        new UltimateOption { id = "taxe_vortex_ult", displayName = "Axe Storm" },
         new UltimateOption { id = "mace_earthshaker_ult", displayName = "Seismic Quake" },
     };
 
@@ -283,6 +284,7 @@ public class DevConsole : MonoBehaviour
         DrawObjectiveControls();
         DrawEnemySpawnControls();
         DrawCaptainSpawnControls();
+        DrawWorldEventControls();
         DrawLanguageControls();
         DrawRageReadout();
         DrawImbuementReadout();
@@ -822,6 +824,48 @@ public class DevConsole : MonoBehaviour
                 SurvivorsSpawner.Instance.DebugSpawnEnemyType(selected.id);
             }
         }
+    }
+
+    /// <summary>
+    ///     World-event cheat: a ◄/► picker over this scene's <see cref="WorldEventDirector" /> events, Start (ends
+    ///     any running one first, skips the wave roll) and Stop. Hidden in scenes without a director.
+    /// </summary>
+    private void DrawWorldEventControls()
+    {
+        WorldEventDirector director = WorldEventDirector.Instance;
+        if (director == null || director.Events.Count == 0)
+        {
+            return;
+        }
+        IReadOnlyList<WorldEvent> events = director.Events;
+        worldEventIndex = Mathf.Clamp(worldEventIndex, 0, events.Count - 1);
+
+        GUILayout.Label("World Event");
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("<", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
+        {
+            worldEventIndex = (worldEventIndex - 1 + events.Count) % events.Count;
+        }
+        WorldEvent selected = events[worldEventIndex];
+        string label = selected != null && selected.Config != null ? selected.Config.title : "(missing)";
+        GUILayout.Label(label, GUILayout.ExpandWidth(true));
+        if (GUILayout.Button(">", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
+        {
+            worldEventIndex = (worldEventIndex + 1) % events.Count;
+        }
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button($"Start {label}", GUILayout.Height(ButtonHeight)))
+        {
+            director.StartEvent(selected);
+        }
+        string running = director.ActiveEvent != null && director.ActiveEvent.Config != null ? director.ActiveEvent.Config.title : "none";
+        if (GUILayout.Button($"Stop ({running})", GUILayout.Height(ButtonHeight)))
+        {
+            director.StopActive();
+        }
+        GUILayout.EndHorizontal();
     }
 
     /// <summary>

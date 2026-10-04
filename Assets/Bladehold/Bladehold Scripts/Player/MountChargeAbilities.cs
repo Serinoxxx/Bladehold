@@ -12,7 +12,8 @@ using UnityEngine;
 ///         <item><b>Frost Wake</b> (<see cref="StatType.HorseChargeFrostRadius" />): every
 ///         <see cref="HorseSO.frostPulseInterval" /> seconds, chills enemies within the radius.</item>
 ///     </list>
-///     Battering Ram, Bloodlust and Iron Barding are plain stats read by <see cref="HorseMotor" />.
+///     Battering Ram, Bloodlust and Iron Barding are plain stats read by <see cref="HorseMotor" />;
+///     this component only adds Bloodlust's feedback, by listening to <see cref="HorseMotor.OnTrampleKill" />.
 ///     All stats start at 0 (locked), registered by <see cref="PlayerMount" />.
 /// </summary>
 public class MountChargeAbilities : MonoBehaviour
@@ -22,8 +23,11 @@ public class MountChargeAbilities : MonoBehaviour
     [Tooltip("Optional: parked VFX for each fire trail segment. Falls back to ElementalEffectsManager.fireStatusVfx.")]
     [SerializeField] private GameObject fireTrailVfxPrefab;
 
-    [Tooltip("Optional: played at the horse on each Frost Wake pulse (frost burst, crackle).")]
+    [Tooltip("Optional: played at the horse on each Frost Wake pulse that chills at least one enemy (frost burst, crackle). Its particle feedback must use the Script position mode.")]
     [SerializeField] private MMF_Player frostPulseFeedback;
+
+    [Tooltip("Optional: played at the victim when a trample kill refunds charge stamina (Bloodlust): blood burst + a short gulp/whinny. Leave empty for silence. Its particle feedback must use the Script position mode.")]
+    [SerializeField] private MMF_Player trampleKillFeedback;
 
     [Tooltip("Layers Frost Wake scans for enemies.")]
     [SerializeField] private LayerMask enemyLayers = 1 << 7;
@@ -39,6 +43,7 @@ public class MountChargeAbilities : MonoBehaviour
     private float nextFrostPulseTime;
     private bool loggedMissingTrailVfx;
     private bool anyError = false;
+    private HorseMotor subscribedHorse;
 
     private void OnValidate()
     {
@@ -70,6 +75,11 @@ public class MountChargeAbilities : MonoBehaviour
         if (anyError) return;
 
         HorseMotor horse = mount.CurrentHorse;
+        if (horse != subscribedHorse)
+        {
+            SubscribeHorse(horse);
+        }
+
         bool charging = horse != null && horse.IsCharging && horse.Data != null;
         if (!charging)
         {
@@ -102,6 +112,37 @@ public class MountChargeAbilities : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        SubscribeHorse(null);
+    }
+
+    /// <summary>Follows the ridden horse (summons replace it) so Bloodlust's kill feedback hooks the live one.</summary>
+    private void SubscribeHorse(HorseMotor horse)
+    {
+        if (subscribedHorse != null)
+        {
+            subscribedHorse.OnTrampleKill -= HandleTrampleKill;
+        }
+        subscribedHorse = horse;
+        if (subscribedHorse != null)
+        {
+            subscribedHorse.OnTrampleKill += HandleTrampleKill;
+        }
+    }
+
+    private void HandleTrampleKill(IDamageable victim)
+    {
+        if (anyError || trampleKillFeedback == null || stats.GetValue(StatType.HorseTrampleKillStamina) <= 0f)
+        {
+            return;
+        }
+
+        Vector3 position = victim is Component component ? component.transform.position
+            : (subscribedHorse != null ? subscribedHorse.transform.position : transform.position);
+        trampleKillFeedback.PlayFeedbacks(position);
+    }
+
     private void SpawnFireTrailSegment(Vector3 position, float dps, float lifetime)
     {
         GameObject vfx = fireTrailVfxPrefab;
@@ -125,6 +166,7 @@ public class MountChargeAbilities : MonoBehaviour
     {
         int count = Physics.OverlapSphereNonAlloc(center, radius, frostBuffer, enemyLayers, QueryTriggerInteraction.Ignore);
         frostScratch.Clear();
+        int chilled = 0;
         for (int i = 0; i < count; i++)
         {
             Health enemyHealth = frostBuffer[i].GetComponentInParent<Health>();
@@ -136,10 +178,12 @@ public class MountChargeAbilities : MonoBehaviour
             if (status != null)
             {
                 status.ApplyStatus("Ice", stacks);
+                chilled++;
             }
         }
 
-        if (frostPulseFeedback != null)
+        // Only when something was caught: an empty pulse every 0.4s would just be noise.
+        if (chilled > 0 && frostPulseFeedback != null)
         {
             frostPulseFeedback.PlayFeedbacks(center);
         }

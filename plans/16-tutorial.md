@@ -27,6 +27,11 @@ Main Menu "New Game" ─► tutorialCompleted? ──yes──► Meta Area (as 
    9 Ready       hold [T] to start the wave
   10 Wave 1      10 goblins, gate + tower + you
   11 Mount       summon the horse (X)
+  11b Charge     hold Shift until the horse is winded (stamina topped up first)
+  11c Kills      4 rooted goblins: sword/bow kills refill charge stamina (half from the saddle)
+  11d Carrots    bar set to 0, ride over 3 placed carrots
+  11e Warband    10 rooted goblins, stamina held full: charge through them
+  11f Wall       build a wall at the workbench
   12 Waves 2-3   hold Ready, then 15 and 20 goblins (no wave cards)
       death ─► Meta Area (as today)      victory ─► Campaign Map (as today)
 ```

@@ -58,6 +58,7 @@ public static class StatDisplay
         { StatType.ChargeDamageBonus, new Info("Charge Damage / level", StatFormat.Percent) },
         { StatType.MaxChargeLevels, new Info("Charge Levels", StatFormat.Integer) },
         { StatType.MaxHitsPerSwing, new Info("Cut-through", StatFormat.Integer) },
+        { StatType.CleaveFalloffReduction, new Info("Cleave Falloff Reduction", StatFormat.Percent) },
         { StatType.GoldDropMultiplier, new Info("Gold Drop", StatFormat.Multiplier) },
         { StatType.LifeStealPercent, new Info("Life Steal", StatFormat.Percent) },
         { StatType.BlockCooldown, new Info("Auto-block", StatFormat.Seconds) },
@@ -116,6 +117,10 @@ public static class StatDisplay
         { StatType.HorseChargeFrostRadius, new Info("Frost Wake Radius", StatFormat.Number) },
         { StatType.HorseTrampleKillStamina, new Info("Stamina per Trample Kill", StatFormat.Number) },
         { StatType.HorseChargeDamageReduction, new Info("Charging Damage Reduction", StatFormat.Percent) },
+
+        { StatType.UltimateMoonlightCrescentDamage, new Info("Crescent Damage", StatFormat.Multiplier) },
+        { StatType.UltimateMaceAftershockDamage, new Info("Aftershock Damage", StatFormat.Number) },
+        { StatType.UltimateAxeRicochetCount, new Info("Ricochets", StatFormat.Integer) },
 
         { StatType.FlamingArrowsDamagePercent, new Info("Fire Damage", StatFormat.Percent) },
         { StatType.FlamingArrowsBomberDetonateChance, new Info("Bomber Detonate Chance", StatFormat.Percent) },

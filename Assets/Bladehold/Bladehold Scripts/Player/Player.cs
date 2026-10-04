@@ -130,6 +130,7 @@ public class Player : MonoBehaviour
             // Lunge mastery bases (0 = no bonus)
             Stats.SetBase(StatType.SwordLungeDamageBonus, 0f);
             Stats.SetBase(StatType.SwordLungeCritBonus, 0f);
+            Stats.SetBase(StatType.SwordShieldBreakerBonus, 0f);
 
             // Bow auto-shot on dash base (0 = locked, 1 = dash fires fully charged auto-shot)
             Stats.SetBase(StatType.BowAutoShotOnDash, 0f);

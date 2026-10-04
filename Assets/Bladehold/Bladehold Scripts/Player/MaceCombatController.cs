@@ -6,23 +6,68 @@ using UnityEngine.AI;
 
 /// <summary>
 ///     Handles passive combat mechanics for the 2H Mace:
-///     - Concussive Stun on hit (via SlowStatus 100% slow)
-///     - Extra knockback impulse
-///     - Ground shockwaves when releasing charged strikes
+///     - Concussive Stun on hit (via SlowStatus 100% slow; AIAttack won't swing while stunned)
+///     - Armor Shatter feedback (the damage bonus itself is applied in DamageTrigger)
+///     - Ground shockwaves when releasing fully charged strikes (once per swing)
+///     Colossal Force's knockback is applied in DamageTrigger by scaling Damage.knockbackForce, so
+///     KnockbackReceiver handles the slide/knockdown/fling and its own feedbacks.
 /// </summary>
 public class MaceCombatController : MonoBehaviour
 {
+    // "Heavy" for Armor Shatter: knockback resistance of a brute or tougher (brute 3, big ork / knight /
+    // bulwark / dome warden 4, trolls and bosses 50), or a beefy health pool (spearman / bulwark 40+).
+    private const float HeavyKnockbackResistance = 3f;
+    private const float HeavyMaxHealth = 40f;
+    private const float ShockwaveRadius = 4.5f;
+
     [SerializeField] private PlayerStats playerStats;
     [SerializeField] private PlayerAttack playerAttack;
     [Tooltip("MMF_Player played at the shockwave origin (rock burst + impact sound). Its particle feedback must use the Script position mode.")]
     [SerializeField] private MMF_Player shockwaveFeedback;
+    [Tooltip("Optional: played at the hit point when Concussive Impact stuns an enemy (dizzy burst + thud). Leave empty for silence.")]
+    [SerializeField] private MMF_Player stunFeedback;
+    [Tooltip("Optional: played at the hit point when Armor Shatter's bonus applies (armor crack + metal crunch). Leave empty for silence.")]
+    [SerializeField] private MMF_Player armorShatterFeedback;
 
     private DamageTrigger subscribedTrigger;
+    private bool shockwaveFiredThisSwing;
+    private int enemyLayerMask;
+
+    /// <summary>True while the equipped melee weapon is the mace (gates the mace-only draft cards).</summary>
+    public static bool IsMaceEquipped =>
+        PlayerWeaponManager.Instance != null &&
+        string.Equals(PlayerWeaponManager.Instance.CurrentMeleeId, "mace", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>Armor Shatter's target test: shielded (bubble / Bulwark shield) or heavy.</summary>
+    public static bool IsArmorShatterTarget(Component target)
+    {
+        if (target == null)
+        {
+            return false;
+        }
+        if (DamageTrigger.IsShieldedTarget(target))
+        {
+            return true;
+        }
+
+        Health health = target.GetComponentInParent<Health>();
+        if (health == null)
+        {
+            return false;
+        }
+        if (health.MaxHealth >= HeavyMaxHealth)
+        {
+            return true;
+        }
+        KnockbackReceiver knockback = health.GetComponent<KnockbackReceiver>();
+        return knockback != null && knockback.CurrentResistance >= HeavyKnockbackResistance;
+    }
 
     private void Awake()
     {
         if (playerStats == null) playerStats = GetComponentInParent<PlayerStats>() ?? GetComponentInChildren<PlayerStats>();
         if (playerAttack == null) playerAttack = GetComponentInParent<PlayerAttack>() ?? GetComponentInChildren<PlayerAttack>();
+        enemyLayerMask = LayerMask.GetMask("Enemy");
     }
 
     private void Start()
@@ -71,6 +116,7 @@ public class MaceCombatController : MonoBehaviour
         if (trigger == null) return;
         subscribedTrigger = trigger;
         subscribedTrigger.OnHit += HandleMeleeHit;
+        subscribedTrigger.OnActivated += HandleSwingStarted;
     }
 
     private void UnhookTrigger()
@@ -78,52 +124,59 @@ public class MaceCombatController : MonoBehaviour
         if (subscribedTrigger != null)
         {
             subscribedTrigger.OnHit -= HandleMeleeHit;
+            subscribedTrigger.OnActivated -= HandleSwingStarted;
             subscribedTrigger = null;
         }
     }
 
+    private void HandleSwingStarted()
+    {
+        shockwaveFiredThisSwing = false;
+    }
+
     private void HandleMeleeHit(IDamageable target, Damage damageDealt, Vector3 hitPoint)
     {
-        if (PlayerWeaponManager.Instance == null || 
-            !string.Equals(PlayerWeaponManager.Instance.CurrentMeleeId, "mace", StringComparison.OrdinalIgnoreCase))
+        if (!IsMaceEquipped || playerStats == null)
         {
             return;
         }
 
-        if (playerStats == null) return;
+        Component comp = target as Component;
 
-        // 1. Concussive Stun
+        // 1. Armor Shatter feedback (bonus damage already applied by DamageTrigger)
+        if (armorShatterFeedback != null && comp != null &&
+            playerStats.GetValue(StatType.MaceArmorShatterBonus) > 0f && IsArmorShatterTarget(comp))
+        {
+            armorShatterFeedback.PlayFeedbacks(hitPoint);
+        }
+
+        // 2. Concussive Stun
         float stunDuration = playerStats.GetValue(StatType.MaceStunDuration);
-        if (stunDuration > 0f && target is Component comp)
+        if (stunDuration > 0f && comp != null)
         {
             SlowStatus slow = SlowStatus.GetOrAdd(comp);
             if (slow != null)
             {
+                bool wasStunned = slow.IsStunned;
                 slow.ApplySlow(1.0f, stunDuration);
-            }
-            if (comp.TryGetComponent<NavMeshAgent>(out var agent) && agent.isOnNavMesh)
-            {
-                agent.velocity = Vector3.zero;
-            }
-        }
-
-        // 2. Concussive Knockback Bonus
-        float knockbackMult = playerStats.GetValue(StatType.MaceKnockbackMultiplier);
-        if (knockbackMult > 0f && target is Component compTarget)
-        {
-            Health enemyHealth = compTarget.GetComponentInParent<Health>();
-            if (enemyHealth != null && enemyHealth.TryGetComponent<Rigidbody>(out var rb) && !rb.isKinematic)
-            {
-                Vector3 knockDir = (enemyHealth.transform.position - transform.position).normalized;
-                knockDir.y = 0.25f;
-                rb.AddForce(knockDir * 12f * knockbackMult, ForceMode.Impulse);
+                if (slow.TryGetComponent<NavMeshAgent>(out var agent) && agent.isOnNavMesh)
+                {
+                    agent.velocity = Vector3.zero;
+                }
+                // Only on a fresh stun, so a cleave through a stunned pack doesn't stack the sound.
+                if (!wasStunned && stunFeedback != null)
+                {
+                    stunFeedback.PlayFeedbacks(hitPoint);
+                }
             }
         }
 
-        // 3. Charged Shockwave
+        // 3. Charged Shockwave: once per fully charged swing, not once per enemy the swing hits.
         float shockwaveDmg = playerStats.GetValue(StatType.MaceShockwaveDamage);
-        if (shockwaveDmg > 0f && playerAttack != null && playerAttack.ChargeLevel >= 1)
+        if (shockwaveDmg > 0f && !shockwaveFiredThisSwing && playerAttack != null &&
+            playerAttack.ChargeLevel >= Mathf.Max(1, playerAttack.MaxChargeLevels))
         {
+            shockwaveFiredThisSwing = true;
             Vector3 origin = hitPoint != Vector3.zero ? hitPoint : transform.position + transform.forward * 1.5f;
             TriggerShockwave(origin, shockwaveDmg);
         }
@@ -136,33 +189,36 @@ public class MaceCombatController : MonoBehaviour
             shockwaveFeedback.PlayFeedbacks(position);
         }
 
-        Collider[] hits = Physics.OverlapSphere(position, 4.5f);
+        float allDamage = playerStats.GetValue(StatType.AllDamageMultiplier);
+        float finalDamage = damage * (allDamage > 0f ? allDamage : 1f);
+        float knockback = finalDamage * playerStats.GetValue(StatType.KnockbackForce) *
+                          (1f + Mathf.Max(0f, playerStats.GetValue(StatType.MaceKnockbackMultiplier)));
+        IDamageable source = Player.Instance != null ? Player.Instance.Damageable : null;
+        string element = RunSession.GetActiveElement("SLOT_MELEE");
+
+        // Enemy layer only: the castle Gate, walls and towers have Health but must not be hit.
+        Collider[] hits = Physics.OverlapSphere(position, ShockwaveRadius, enemyLayerMask, QueryTriggerInteraction.Collide);
         HashSet<Health> processed = new HashSet<Health>();
 
         foreach (var col in hits)
         {
             Health h = col.GetComponentInParent<Health>();
-            if (h != null && !h.IsDead && h.transform.root != transform.root)
+            if (h == null || h.IsDead || h.transform.root == transform.root || !processed.Add(h))
             {
-                if (processed.Add(h))
-                {
-                    Damage waveDmg = new Damage
-                    {
-                        value = damage,
-                        source = playerStats != null ? playerStats.GetComponent<Health>() : null,
-                        sourcePosition = position,
-                        unparryable = true
-                    };
-                    h.ReceiveDamage(waveDmg);
-
-                    if (h.TryGetComponent<Rigidbody>(out var rb) && !rb.isKinematic)
-                    {
-                        Vector3 pushDir = (h.transform.position - position).normalized;
-                        pushDir.y = 0.3f;
-                        rb.AddForce(pushDir * 8f, ForceMode.Impulse);
-                    }
-                }
+                continue;
             }
+
+            h.ReceiveDamage(new Damage
+            {
+                value = finalDamage,
+                type = DamageType.blunt,
+                source = source,
+                sourcePosition = position,
+                knockbackForce = knockback,
+                isPlayerDamage = true,
+                elementId = element,
+                unparryable = true
+            });
         }
     }
 }

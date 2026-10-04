@@ -218,6 +218,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4091894705380858, guid: 4b6fcb8e3035f79438ac1e8d590423f0, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5985942623241342582}
+    - targetCorrespondingSourceObject: {fileID: 4091894705380858, guid: 4b6fcb8e3035f79438ac1e8d590423f0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7177238864951520695}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1666109015589508, guid: 4b6fcb8e3035f79438ac1e8d590423f0, type: 3}
       insertIndex: -1
@@ -245,8 +248,80 @@ MonoBehaviour:
   lingerSeconds: 0.15
   catchRadius: 0.75
   maxLifetimeSeconds: 15
+  ricochetVisual: {fileID: 3598492229747723925}
 --- !u!4 &2506652297511602660 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4091894705380858, guid: 4b6fcb8e3035f79438ac1e8d590423f0, type: 3}
   m_PrefabInstance: {fileID: 2506221812036654110}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &7334471248851049378
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 2506652297511602660}
+    m_Modifications:
+    - target: {fileID: 455965295270770197, guid: ec32d8f0906018542971f56fb3d5ce57, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 455965295270770197, guid: ec32d8f0906018542971f56fb3d5ce57, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 455965295270770197, guid: ec32d8f0906018542971f56fb3d5ce57, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 455965295270770197, guid: ec32d8f0906018542971f56fb3d5ce57, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 455965295270770197, guid: ec32d8f0906018542971f56fb3d5ce57, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 455965295270770197, guid: ec32d8f0906018542971f56fb3d5ce57, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 455965295270770197, guid: ec32d8f0906018542971f56fb3d5ce57, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 455965295270770197, guid: ec32d8f0906018542971f56fb3d5ce57, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 455965295270770197, guid: ec32d8f0906018542971f56fb3d5ce57, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 455965295270770197, guid: ec32d8f0906018542971f56fb3d5ce57, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6068933803215738167, guid: ec32d8f0906018542971f56fb3d5ce57, type: 3}
+      propertyPath: m_Name
+      value: AxeRicochetTrail
+      objectReference: {fileID: 0}
+    - target: {fileID: 6068933803215738167, guid: ec32d8f0906018542971f56fb3d5ce57, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: ec32d8f0906018542971f56fb3d5ce57, type: 3}
+--- !u!1 &3598492229747723925 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6068933803215738167, guid: ec32d8f0906018542971f56fb3d5ce57, type: 3}
+  m_PrefabInstance: {fileID: 7334471248851049378}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &7177238864951520695 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 455965295270770197, guid: ec32d8f0906018542971f56fb3d5ce57, type: 3}
+  m_PrefabInstance: {fileID: 7334471248851049378}
   m_PrefabAsset: {fileID: 0}

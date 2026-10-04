@@ -83,6 +83,10 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
         public float visualScale;
         /// <summary>Spin Top upgrade: AoE DPS dealt in a radius around the flying axe (0 = disabled).</summary>
         public float spinTopDPS;
+        /// <summary>Axe Storm ultimate: enemies left to bounce to after a hit (0 = no ricochet).</summary>
+        public int ricochets;
+        /// <summary>Axe Storm ultimate: search radius for the next ricochet target, in metres.</summary>
+        public float ricochetRange;
     }
 
     [Tooltip("Local axis the axe tumbles around in flight.")]
@@ -95,6 +99,14 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
     [SerializeField] private float catchRadius = 0.75f;
     [Tooltip("Safety despawn for a boomeranging axe whose return target vanished mid-flight.")]
     [SerializeField] private float maxLifetimeSeconds = 15f;
+    [Tooltip("Optional: extra trail/glow shown on ultimate (ricocheting) axes and Spin Top vortex axes. Leave empty for none.")]
+    [SerializeField] private GameObject ricochetVisual;
+    [Tooltip("Spin Top: seconds a lodged vortex axe keeps spinning and shredding in place before it stops.")]
+    [SerializeField] private float lodgedVortexSeconds = 1.5f;
+    [Tooltip("Radius of the Spin Top vortex, in metres.")]
+    [SerializeField] private float vortexRadius = 2.5f;
+    [Tooltip("Radius of the Bloodsplosion burst, in metres.")]
+    [SerializeField] private float bloodsplosionRadius = 4f;
 
     private enum FlightState
     {
@@ -115,6 +127,8 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
     private int damaged;
     private bool launched;
     private float vortexTimer;
+    private float lodgedAt = -1f;
+    private int enemyLayerMask;
 
     /// <summary>Sends the axe flying. Damage happens as it travels; the prefab is destroyed when it lodges, is caught, or times out.</summary>
     public void Launch(PlayerThrownAxe thrower, LaunchSpec spec)
@@ -127,6 +141,8 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
         hitTargets.Clear();
         launched = true;
         vortexTimer = 0f;
+        lodgedAt = -1f;
+        enemyLayerMask = LayerMask.GetMask("Enemy");
 
         if (spec.spinTopDPS > 0f)
         {
@@ -143,13 +159,21 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
         {
             transform.localScale = Vector3.one * spec.visualScale;
         }
+        if (ricochetVisual != null)
+        {
+            ricochetVisual.SetActive(spec.ricochets > 0 || spec.spinTopDPS > 0f);
+        }
 
         Destroy(gameObject, maxLifetimeSeconds);
     }
 
+    /// <summary>Spin Top: a lodged vortex axe keeps spinning (and ticking) in place for a short while.</summary>
+    private bool LodgedVortexActive => state == FlightState.Lodged && spec.spinTopDPS > 0f && lodgedAt >= 0f &&
+                                       Time.time - lodgedAt < lodgedVortexSeconds;
+
     private void Update()
     {
-        if (!launched || state == FlightState.Lodged)
+        if (!launched || (state == FlightState.Lodged && !LodgedVortexActive))
         {
             return;
         }
@@ -158,20 +182,20 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
 
     private void FixedUpdate()
     {
-        if (!launched || state == FlightState.Lodged)
+        if (!launched)
         {
             return;
         }
-
-        if (spec.spinTopDPS > 0f)
+        if (state == FlightState.Lodged)
         {
-            vortexTimer += Time.fixedDeltaTime;
-            if (vortexTimer >= 0.25f)
+            if (LodgedVortexActive)
             {
-                vortexTimer -= 0.25f;
-                PerformVortexTick();
+                TickVortex();
             }
+            return;
         }
+
+        TickVortex();
 
         Vector3 from = transform.position;
         Vector3 direction;
@@ -193,6 +217,7 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
             Vector3 home = spec.returnTarget.position - from;
             if (home.magnitude <= catchRadius)
             {
+                if (thrower != null) thrower.PlayBoomerangCatchFeedback(spec.returnTarget.position);
                 Destroy(gameObject);
                 return;
             }
@@ -277,6 +302,7 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
             Damage damage = thrower.CreateHitDamage(spec.chargeLevel, spec.painBonus, from, spec.chargeRatio);
 
             Health targetHealth = null;
+            bool firstStrikeHit = false;
             if (damageable is Component comp)
             {
                 targetHealth = comp.GetComponentInParent<Health>();
@@ -286,6 +312,9 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
                     if (firstStrike > 0f)
                     {
                         damage.value *= (1f + firstStrike);
+                        // Cosmetic only (crit-style number / crit feedback): the bonus is already in the value.
+                        damage.isCritical = true;
+                        firstStrikeHit = true;
                     }
                 }
             }
@@ -298,52 +327,19 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
             damageable.ReceiveDamage(damage);
             thrower.ReportHit(damageable, damage, hitPoint);
             damaged++;
+            if (firstStrikeHit)
+            {
+                thrower.PlayFirstStrikeFeedback(hitPoint);
+            }
 
             if (targetHealth != null && targetHealth.IsDead)
             {
-                float bloodsplosionDamage = (Player.Instance != null && Player.Instance.Stats != null)
-                    ? Player.Instance.Stats.GetValue(StatType.AxeBloodsplosionDamage)
-                    : 0f;
+                HandleAxeKill(targetHealth, hitPoint);
+            }
 
-                if (bloodsplosionDamage > 0f)
-                {
-                    // Perform an AoE blood explosion around hitPoint (radius ~4f)
-                    Collider[] nearbyColliders = Physics.OverlapSphere(hitPoint, 4f);
-                    HashSet<Health> affectedHealths = new HashSet<Health>();
-
-                    for (int n = 0; n < nearbyColliders.Length; n++)
-                    {
-                        Health nearby = nearbyColliders[n].GetComponentInParent<Health>();
-                        if (nearby != null && !nearby.IsDead && nearby != targetHealth && affectedHealths.Add(nearby))
-                        {
-                            // Ensure not player
-                            if (Player.Instance != null && (nearby == Player.Instance.Health || nearby.GetComponentInParent<Player>() != null))
-                            {
-                                continue;
-                            }
-
-                            nearby.ReceiveDamage(new Damage
-                            {
-                                value = bloodsplosionDamage,
-                                type = DamageType.blunt,
-                                source = thrower.Damageable,
-                                isPlayerDamage = true,
-                                sourcePosition = hitPoint
-                            });
-                        }
-                    }
-
-                    // Spawn blood decal if available
-                    EnemyRagdoll ragdoll = targetHealth.GetComponentInParent<EnemyRagdoll>();
-                    RagdollConfigSO ragdollConfig = ragdoll != null ? ragdoll.Config : null;
-                    if (ragdollConfig != null)
-                    {
-                        BloodDecalManager.SpawnDecal(hitPoint, Vector3.up, 1.5f, ragdollConfig);
-                    }
-                }
-
-                // Ice Shards on Ranged Kill: shatter killed enemies into an 8-way projectile burst
-                TriggerIceShardsBurst(targetHealth, hitPoint);
+            if (state == FlightState.Outbound && spec.ricochets > 0 && TryRicochet(hitPoint))
+            {
+                return true;
             }
 
             if (damaged >= spec.pierceBudget && state == FlightState.Outbound)
@@ -358,6 +354,83 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
         return false;
     }
 
+    /// <summary>
+    ///     On-kill riders shared by direct hits and Spin Top vortex ticks: Bloodsplosion and Ice Shards.
+    /// </summary>
+    private void HandleAxeKill(Health killed, Vector3 point)
+    {
+        float bloodsplosionDamage = (Player.Instance != null && Player.Instance.Stats != null)
+            ? Player.Instance.Stats.GetValue(StatType.AxeBloodsplosionDamage)
+            : 0f;
+
+        if (bloodsplosionDamage > 0f)
+        {
+            TriggerBloodsplosion(killed, point, bloodsplosionDamage);
+        }
+
+        // Ice Shards on Ranged Kill: shatter killed enemies into an 8-way projectile burst
+        TriggerIceShardsBurst(killed, point);
+    }
+
+    /// <summary>Bloodsplosion: the kill bursts, hurting every other enemy within <see cref="bloodsplosionRadius" />.</summary>
+    private void TriggerBloodsplosion(Health killed, Vector3 point, float baseDamage)
+    {
+        PlayerStats stats = Player.Instance != null ? Player.Instance.Stats : null;
+        float allDamage = stats != null ? stats.GetValue(StatType.AllDamageMultiplier) : 1f;
+        float value = baseDamage * (allDamage > 0f ? allDamage : 1f);
+        string element = RunSession.GetActiveElement("SLOT_RANGED");
+        IDamageable source = thrower != null ? thrower.Damageable : (Player.Instance != null ? Player.Instance.Damageable : null);
+
+        Collider[] nearbyColliders = Physics.OverlapSphere(point, bloodsplosionRadius, EnemyMask(), QueryTriggerInteraction.Collide);
+        HashSet<Health> affectedHealths = new HashSet<Health>();
+        for (int n = 0; n < nearbyColliders.Length; n++)
+        {
+            Health nearby = nearbyColliders[n].GetComponentInParent<Health>();
+            if (nearby == null || nearby.IsDead || nearby == killed || !affectedHealths.Add(nearby) || IsPlayerSide(nearby))
+            {
+                continue;
+            }
+
+            nearby.ReceiveDamage(new Damage
+            {
+                value = value,
+                type = DamageType.blunt,
+                source = source,
+                isPlayerDamage = true,
+                sourcePosition = point,
+                elementId = element,
+            });
+        }
+
+        if (thrower != null)
+        {
+            thrower.PlayBloodsplosionFeedback(point);
+        }
+
+        // Spawn blood decal if available
+        EnemyRagdoll ragdoll = killed.GetComponentInParent<EnemyRagdoll>();
+        RagdollConfigSO ragdollConfig = ragdoll != null ? ragdoll.Config : null;
+        if (ragdollConfig != null)
+        {
+            BloodDecalManager.SpawnDecal(point, Vector3.up, 1.5f, ragdollConfig);
+        }
+    }
+
+    /// <summary>The Enemy layer for AoE riders, so they never touch the gate, towers or the horse. Falls back to everything if the layer is missing.</summary>
+    private int EnemyMask()
+    {
+        return enemyLayerMask != 0 ? enemyLayerMask : ~0;
+    }
+
+    private bool IsPlayerSide(Health health)
+    {
+        if (Player.Instance != null && (health == Player.Instance.Health || health.GetComponentInParent<Player>() != null))
+        {
+            return true;
+        }
+        return spec.ignoredTarget != null && (object)health == (object)spec.ignoredTarget;
+    }
+
     /// <summary>The outbound leg is over: lodge and despawn, or — with Boomerang — turn around with a fresh target set and pierce budget.</summary>
     private void EndOutboundLeg(Vector3 at)
     {
@@ -366,13 +439,60 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
         if (!spec.boomerang || spec.returnTarget == null)
         {
             state = FlightState.Lodged;
-            Destroy(gameObject, lingerSeconds);
+            lodgedAt = Time.time;
+            // A Spin Top axe keeps shredding where it lodged before it lingers and despawns.
+            Destroy(gameObject, lingerSeconds + (spec.spinTopDPS > 0f ? lodgedVortexSeconds : 0f));
             return;
         }
 
+        if (thrower != null)
+        {
+            thrower.PlayBoomerangTurnFeedback(at);
+        }
         state = FlightState.Returning;
         hitTargets.Clear();
         damaged = 0;
+    }
+
+    /// <summary>
+    ///     Axe Storm: turns the axe toward the nearest living enemy it hasn't hit yet, as a fresh leg
+    ///     (full range and pierce budget from the bounce point). Returns false when nothing is in range.
+    /// </summary>
+    private bool TryRicochet(Vector3 from)
+    {
+        Collider[] nearby = Physics.OverlapSphere(from, spec.ricochetRange, spec.hitLayers, QueryTriggerInteraction.Collide);
+        Vector3 bestPoint = Vector3.zero;
+        float bestDistance = float.MaxValue;
+        for (int i = 0; i < nearby.Length; i++)
+        {
+            IDamageable candidate = PlayerThrownAxe.ResolveDamageable(nearby[i]);
+            if (candidate == null || IsOwner(candidate) || hitTargets.Contains(candidate)) continue;
+            Health health = nearby[i].GetComponentInParent<Health>();
+            if (health == null || health.IsDead) continue;
+
+            Vector3 point = nearby[i].bounds.center;
+            float distance = (point - from).sqrMagnitude;
+            if (distance < bestDistance)
+            {
+                bestDistance = distance;
+                bestPoint = point;
+            }
+        }
+        if (bestDistance == float.MaxValue) return false;
+
+        Vector3 direction = bestPoint - from;
+        if (direction.sqrMagnitude < 0.0001f) return false;
+        direction.Normalize();
+
+        spec.ricochets--;
+        spec.direction = direction;
+        spec.maxRange = spec.ricochetRange + 1f;
+        travelled = 0f;
+        damaged = 0;
+        transform.position = from;
+        transform.rotation = Quaternion.LookRotation(direction);
+        if (thrower != null) thrower.ReportRicochet(from, direction);
+        return true;
     }
 
     private bool IsOwner(IDamageable damageable)
@@ -407,10 +527,28 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
         return origin;
     }
 
+    private void TickVortex()
+    {
+        if (spec.spinTopDPS <= 0f)
+        {
+            return;
+        }
+        vortexTimer += Time.fixedDeltaTime;
+        if (vortexTimer >= 0.25f)
+        {
+            vortexTimer -= 0.25f;
+            PerformVortexTick();
+        }
+    }
+
     private void PerformVortexTick()
     {
-        Collider[] nearbyColliders = Physics.OverlapSphere(transform.position, 2.5f);
+        Collider[] nearbyColliders = Physics.OverlapSphere(transform.position, vortexRadius, EnemyMask(), QueryTriggerInteraction.Collide);
         HashSet<Health> affectedHealths = new HashSet<Health>();
+        PlayerStats stats = Player.Instance != null ? Player.Instance.Stats : null;
+        float allDamage = stats != null ? stats.GetValue(StatType.AllDamageMultiplier) : 1f;
+        float tickDamage = spec.spinTopDPS * 0.25f * (allDamage > 0f ? allDamage : 1f);
+        string element = RunSession.GetActiveElement("SLOT_RANGED");
 
         for (int i = 0; i < nearbyColliders.Length; i++)
         {
@@ -421,7 +559,7 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
                 continue;
             }
 
-            if (Player.Instance != null && (health == Player.Instance.Health || health.GetComponentInParent<Player>() != null))
+            if (IsPlayerSide(health))
             {
                 continue;
             }
@@ -439,15 +577,20 @@ public class AxeProjectile : MonoBehaviour, IPlayerProjectile
 
             Damage vortexDamage = new Damage
             {
-                value = spec.spinTopDPS * 0.25f,
+                value = tickDamage,
                 type = DamageType.slash,
                 source = thrower != null ? thrower.Damageable : (spec.owner ?? (Player.Instance != null ? Player.Instance.Damageable : null)),
                 isPlayerDamage = true,
-                sourcePosition = transform.position
+                sourcePosition = transform.position,
+                elementId = element,
             };
 
             damageable.ReceiveDamage(vortexDamage);
             health.LastPlayerRangedHitTime = Time.time;
+            if (health.IsDead)
+            {
+                HandleAxeKill(health, health.transform.position);
+            }
         }
     }
 

@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b6d4684837889a47b53a32bee83b93a, type: 3}
+  m_Name: BloodMoonEvent
+  m_EditorClassIdentifier: Assembly-CSharp::BloodMoonEventSO
+  id: blood_moon
+  titleKey: world_event.blood_moon.title
+  title: Blood Moon
+  taglineKey: world_event.blood_moon.tagline
+  tagline: The dead will not stay down.
+  icon: {fileID: 21300000, guid: 26bf0f00329632e47be3628846a05780, type: 3}
+  accentColor: {r: 0.85, g: 0.12, b: 0.15, a: 1}
+  effects:
+  - positive: 1
+    icon: {fileID: 21300000, guid: 559307b3ccd4a044fbf86adcb4e46ac1, type: 3}
+    textKey: world_event.blood_moon.boon1
+    text: +{0}% life steal
+  - positive: 0
+    icon: {fileID: 21300000, guid: 9592265f5f269e9499cfaa3a25ae53c9, type: 3}
+    textKey: world_event.blood_moon.peril1
+    text: Slain foes may rise again
+  duration: 45
+  hazardGraceSeconds: 3
+  fadeSeconds: 2.5
+  weight: 1
+  minWave: 2
+  hasBuff: 1
+  buffStat: 11
+  buffKind: 0
+  buffAmount: 0.05
+  riseChance: 0.35
+  riseDelaySeconds: 1.8
+  maxRisenAlive: 10
+  riseRadiusFromPlayer: 35
+  maxRisableHealth: 150
+  risenEnemyIds:
+  - skeleton_soldier
+  - skeleton_soldier_shield
+  risenHealthMultiplier: 0.6
+  markerRadius: 1.2

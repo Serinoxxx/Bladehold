@@ -74,6 +74,9 @@ public class DamageTrigger : MonoBehaviour
     /// <summary>Fired when this activation would damage one more unique target than its cap allows; the activation ends immediately without damaging that target.</summary>
     public event Action OnBlocked;
 
+    /// <summary>Fired at the start of every swing (each <see cref="Activate" />, not whirlwind holds), whether or not it lands. Weapon ultimates hook it to add an effect to every swing.</summary>
+    public event Action OnActivated;
+
     const int MaxBladePoints = 32;
 
     readonly HashSet<IDamageable> hitTargets = new HashSet<IDamageable>();
@@ -162,6 +165,7 @@ public class DamageTrigger : MonoBehaviour
             stats.SetBase(StatType.KnockbackForce, knockbackForce);
             stats.SetBase(StatType.ChargeKnockbackBonus, 0f);
             stats.SetBase(StatType.MaxHitsPerSwing, damageTriggerSO.maxHits);
+            stats.SetBase(StatType.CleaveFalloffReduction, 0f);
             stats.SetBase(StatType.IceBreakerDamageBonus, 0f);
             stats.SetBase(StatType.LightningStaticEdgeDamage, 0f);
 
@@ -287,6 +291,8 @@ public class DamageTrigger : MonoBehaviour
                 previousPointPositions[i] = BladePointPosition(i);
             }
         }
+
+        OnActivated?.Invoke();
     }
 
     public void StartWhirlwind(float hitInterval = 0.3f)
@@ -481,34 +487,28 @@ public class DamageTrigger : MonoBehaviour
                 }
             }
 
-            // ShieldBreaker (+200% damage to shielded targets)
+            // ShieldBreaker (+200% damage to shielded targets: a Bubbler's bubble or a Bulwark's shield itself)
             float shieldBreakerBonus = stats.GetValue(StatType.SwordShieldBreakerBonus);
-            if (shieldBreakerBonus > 0f)
+            if (shieldBreakerBonus > 0f && IsShieldedTarget(targetComponent))
             {
-                BubbleShield bubbleShield = targetComponent.GetComponentInParent<BubbleShield>();
-                if (bubbleShield != null)
-                {
-                    damage.value *= 1f + shieldBreakerBonus;
-                }
+                damage.value *= 1f + shieldBreakerBonus;
             }
 
-            // Mace Armor Shatter (+bonus damage to shielded and heavy/armored targets)
-            float maceShatter = stats.GetValue(StatType.MaceArmorShatterBonus);
-            if (maceShatter > 0f)
+            if (MaceCombatController.IsMaceEquipped)
             {
-                BubbleShield bubbleShield = targetComponent.GetComponentInParent<BubbleShield>();
-                Health enemyHealth = targetComponent.GetComponentInParent<Health>();
-                if (bubbleShield != null || (enemyHealth != null && enemyHealth.MaxHealth >= 80f))
+                // Mace Armor Shatter (+bonus damage to shielded and heavy/armored targets)
+                float maceShatter = stats.GetValue(StatType.MaceArmorShatterBonus);
+                if (maceShatter > 0f && MaceCombatController.IsArmorShatterTarget(targetComponent))
                 {
                     damage.value *= 1f + maceShatter;
                 }
-            }
 
-            // Vampire Blade (heals 2 HP per hit)
-            float vampHeal = stats.GetValue(StatType.SwordVampireBladeHeal);
-            if (vampHeal > 0f && Player.Instance != null && Player.Instance.Health != null)
-            {
-                Player.Instance.Health.Heal(vampHeal);
+                // Mace Colossal Force: bigger knockback, so KnockbackReceiver flings/knocks down more enemies.
+                float maceKnockback = stats.GetValue(StatType.MaceKnockbackMultiplier);
+                if (maceKnockback > 0f)
+                {
+                    damage.knockbackForce *= 1f + maceKnockback;
+                }
             }
 
             float iceBreakerBonus = stats.GetValue(StatType.IceBreakerDamageBonus);
@@ -542,7 +542,12 @@ public class DamageTrigger : MonoBehaviour
         // Apply diminishing returns for cleave hits. hitTargets.Count is at least 1 since we just added the target.
         if (hitTargets.Count > 1)
         {
-            damage.value *= Mathf.Pow(1f - damageTriggerSO.cleaveDamageReduction, hitTargets.Count - 1);
+            float falloff = damageTriggerSO.cleaveDamageReduction;
+            if (readsPlayerStats && stats != null)
+            {
+                falloff = Mathf.Max(0f, falloff - stats.GetValue(StatType.CleaveFalloffReduction));
+            }
+            damage.value *= Mathf.Pow(1f - falloff, hitTargets.Count - 1);
         }
 
         damageable.ReceiveDamage(damage);
@@ -556,6 +561,19 @@ public class DamageTrigger : MonoBehaviour
         }
 
         return true;
+    }
+
+    /// <summary>
+    ///     "Shielded" for ShieldBreaker / Armor Shatter: inside a Bubbler's bubble, or the hit landed on a
+    ///     Bulwark's shield (the shield is its own IDamageable, so extra damage breaks it sooner).
+    /// </summary>
+    public static bool IsShieldedTarget(Component target)
+    {
+        if (target == null)
+        {
+            return false;
+        }
+        return target.GetComponentInParent<BubbleShield>() != null || target.GetComponentInParent<BulwarkShield>() != null;
     }
 
     int EffectiveMaxHits()
@@ -634,6 +652,12 @@ public class DamageTrigger : MonoBehaviour
             else
             {
                 value *= playerAttack.AttackDamageMultiplier;
+                // Overhead chops are narrow and harder to aim, so they hit harder.
+                if (playerAttack.IsOverheadSwing)
+                {
+                    float overhead = stats.GetValue(StatType.OverheadSwingDamageMultiplier);
+                    if (overhead > 0f) value *= overhead;
+                }
                 knockback *= 1f + playerAttack.ChargeLevel * stats.GetValue(StatType.ChargeKnockbackBonus);
             }
         }

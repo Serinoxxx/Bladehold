@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce8bd812e0f3ac7488979adbcd39647e, type: 3}
+  m_Name: GoblinCaravanEvent
+  m_EditorClassIdentifier: Assembly-CSharp::GoblinCaravanEventSO
+  id: caravan
+  titleKey: world_event.caravan.title
+  title: Goblin Caravan
+  taglineKey: world_event.caravan.tagline
+  tagline: A gold wagon is making a run for it!
+  icon: {fileID: 21300000, guid: c0031481d3f0509498dadc036ff9b392, type: 3}
+  accentColor: {r: 1, g: 0.8, b: 0.2, a: 1}
+  effects:
+  - positive: 1
+    icon: {fileID: 21300000, guid: c0031481d3f0509498dadc036ff9b392, type: 3}
+    textKey: world_event.caravan.boon1
+    text: Hit it to spill gold
+  - positive: 1
+    icon: {fileID: 21300000, guid: 3be1134ae92c1bc4f990ce23929e77f4, type: 3}
+    textKey: world_event.caravan.boon2
+    text: Wreck it for a big haul
+  - positive: 0
+    icon: {fileID: 21300000, guid: bea808b1e3855094da1d27ec72cb18ab, type: 3}
+    textKey: world_event.caravan.peril1
+    text: Escapes in {1}s
+  - positive: 0
+    icon: {fileID: 21300000, guid: 81493905a0a451b469e3844bb85ebf22, type: 3}
+    textKey: world_event.caravan.peril2
+    text: Guarded by goblins
+  duration: 45
+  hazardGraceSeconds: 3
+  fadeSeconds: 2.5
+  weight: 0.6
+  minWave: 2
+  hasBuff: 0
+  buffStat: 203
+  buffKind: 0
+  buffAmount: 0.5
+  routeRadius: {x: 28, y: 40}
+  speedRange: {x: 2.5, y: 5.5}
+  wagonHealth: 400
+  goldPerChunk: 8
+  wreckGold: 150
+  burstBags: 10
+  bagScatter: 2.5
+  escortIds:
+  - goblin_brute
+  - goblin_brute
+  - goblin
+  - goblin

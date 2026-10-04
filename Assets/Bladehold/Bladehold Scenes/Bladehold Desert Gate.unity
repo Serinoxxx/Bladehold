@@ -2221,7 +2221,7 @@ MonoBehaviour:
   m_OverrideTileSize: 0
   m_TileSize: 256
   m_OverrideVoxelSize: 0
-  m_VoxelSize: 0.16666667
+  m_VoxelSize: 0.33333334
   m_MinRegionArea: 2
   m_NavMeshData: {fileID: 23800000, guid: 2b25e72d732e46d4486b503c95f30376, type: 2}
   m_BuildHeightMesh: 0
@@ -38077,6 +38077,98 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2700281438752989923, guid: 8e29f0b1a1a75d24780fabe983385b41, type: 3}
   m_PrefabInstance: {fileID: 622345663}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &623879676
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 540361483280109340, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3266799806725487869, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4325343878794403951, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6493874847250006861, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6493874847250006861, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6493874847250006861, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6493874847250006861, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6493874847250006861, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6493874847250006861, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6493874847250006861, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6493874847250006861, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6493874847250006861, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6493874847250006861, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7300254089460948151, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_Name
+      value: WorldEvents
+      objectReference: {fileID: 0}
+    - target: {fileID: 7370798318931599966, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: events.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7370798318931599966, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: 'events.Array.data[1]'
+      value: 
+      objectReference: {fileID: 623879677}
+    - target: {fileID: 8070778386719742643, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+--- !u!114 &623879677 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5096382712462570091, guid: 62608edc824d9f84d897ff725f71d7cb, type: 3}
+  m_PrefabInstance: {fileID: 623879676}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02780606c716ed340b247d0c34317581, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GoblinCaravanEvent
 --- !u!1001 &624881867
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -134864,3 +134956,4 @@ SceneRoots:
   - {fileID: 951493357}
   - {fileID: 47642489}
   - {fileID: 872772735}
+  - {fileID: 623879676}

@@ -41,6 +41,9 @@ public class ArmourPedestal : MonoBehaviour
     [SerializeField] private float focusDistance = 4.5f;
     [SerializeField] private float fadeSpeed = 8f;
 
+    /// <summary>The Pedestals menu theme (scope on the pedestal root) for state colours.</summary>
+    private UIThemeSO Theme => UITheme.For(this);
+
     private Interactable interactable;
     private Vector3 baseMountPosition;
     private GameObject spawnedModel;
@@ -195,7 +198,7 @@ public class ArmourPedestal : MonoBehaviour
             if (costLabel != null)
             {
                 costLabel.text = DemoConfigSO.LockedLabel;
-                costLabel.color = Color.white;
+                costLabel.color = Theme.Get(UIColorRole.TextDim);
             }
             interactable.PromptText = DemoConfigSO.LockedPrompt;
             interactable.CanInteract = false;
@@ -207,7 +210,7 @@ public class ArmourPedestal : MonoBehaviour
             if (statusLabel != null)
             {
                 statusLabel.text = "EQUIPPED";
-                statusLabel.color = new Color(0.3f, 1f, 0.4f);
+                statusLabel.color = Theme.Get(UIColorRole.Success);
             }
             if (costLabel != null) costLabel.text = "";
             interactable.PromptText = "Equipped";
@@ -218,7 +221,7 @@ public class ArmourPedestal : MonoBehaviour
             if (statusLabel != null)
             {
                 statusLabel.text = "UNLOCKED";
-                statusLabel.color = Color.white;
+                statusLabel.color = Theme.Get(UIColorRole.Text);
             }
             if (costLabel != null) costLabel.text = "";
             interactable.PromptText = $"Equip {armourData.displayName}";
@@ -232,12 +235,12 @@ public class ArmourPedestal : MonoBehaviour
             if (statusLabel != null)
             {
                 statusLabel.text = "LOCKED";
-                statusLabel.color = new Color(1f, 0.65f, 0.2f);
+                statusLabel.color = Theme.Get(UIColorRole.TextDim);
             }
             if (costLabel != null)
             {
                 costLabel.text = $"{armourData.orcishMetalUnlockCost} Metal";
-                costLabel.color = canAfford ? new Color(1f, 0.9f, 0.3f) : new Color(1f, 0.35f, 0.35f);
+                costLabel.color = Theme.Get(canAfford ? UIColorRole.Cost : UIColorRole.Danger);
             }
 
             interactable.PromptText = $"Unlock {armourData.displayName} ({armourData.orcishMetalUnlockCost} Metal)";

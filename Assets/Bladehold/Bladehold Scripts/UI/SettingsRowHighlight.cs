@@ -8,7 +8,9 @@ using UnityEngine.UI;
 ///     on any control inside it: fades in a row background and a left accent bar and recolours the
 ///     label, on unscaled time so it animates on the paused menu. Clicking the row's empty space
 ///     focuses its main control, so the whole row is a target, not just the slider/toggle itself.
-///     Pure presentation — the row's controls are wired by <see cref="SettingsPanelView" />.
+///     Pure presentation — the row's controls are wired by <see cref="SettingsPanelView" />. Label
+///     colours are roles of the menu's <see cref="UIThemeSO" />; the background and accent take their
+///     colour from their own <see cref="UIThemedGraphic" /> (this only fades their alpha).
 /// </summary>
 public class SettingsRowHighlight : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
@@ -17,8 +19,8 @@ public class SettingsRowHighlight : MonoBehaviour, IPointerEnterHandler, IPointe
     [Tooltip("Optional accent bar at the row's left edge, faded with the background.")]
     [SerializeField] private Graphic accent;
     [SerializeField] private TMP_Text label;
-    [SerializeField] private Color labelColor = new Color(0.851f, 0.820f, 0.749f, 1f);
-    [SerializeField] private Color labelLitColor = new Color(1f, 0.820f, 0.439f, 1f);
+    [SerializeField] private UIColorRole labelColor = UIColorRole.Text;
+    [SerializeField] private UIColorRole labelLitColor = UIColorRole.Accent;
     [Tooltip("Control focused when the row's empty space is clicked; also its toggle flips on that click.")]
     [SerializeField] private Selectable mainControl;
     [SerializeField] private float easeSpeed = 16f;
@@ -27,6 +29,7 @@ public class SettingsRowHighlight : MonoBehaviour, IPointerEnterHandler, IPointe
     private float lit;
     private float backgroundMaxAlpha = 1f;
     private float accentMaxAlpha = 1f;
+    private UIThemeSO theme;
 
     /// <summary>Set by the editor builder; exposed so code-built rows can be configured too.</summary>
     public void Configure(Graphic rowBackground, Graphic rowAccent, TMP_Text rowLabel, Selectable control)
@@ -51,8 +54,22 @@ public class SettingsRowHighlight : MonoBehaviour, IPointerEnterHandler, IPointe
         Apply(0f);
     }
 
+    private void OnEnable()
+    {
+        UITheme.Changed -= HandleThemeChanged;
+        UITheme.Changed += HandleThemeChanged;
+        HandleThemeChanged();
+    }
+
+    private void HandleThemeChanged()
+    {
+        theme = UITheme.For(this);
+        Apply(lit);
+    }
+
     private void OnDisable()
     {
+        UITheme.Changed -= HandleThemeChanged;
         hovered = false;
         lit = 0f;
         Apply(0f);
@@ -88,7 +105,11 @@ public class SettingsRowHighlight : MonoBehaviour, IPointerEnterHandler, IPointe
         }
         if (label != null)
         {
-            label.color = Color.Lerp(labelColor, labelLitColor, amount);
+            if (theme == null)
+            {
+                theme = UITheme.For(this);
+            }
+            label.color = Color.Lerp(theme.Get(labelColor), theme.Get(labelLitColor), amount);
         }
     }
 

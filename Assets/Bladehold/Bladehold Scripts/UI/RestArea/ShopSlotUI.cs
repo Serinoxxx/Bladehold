@@ -35,6 +35,8 @@ public class ShopSlotUI : MonoBehaviour
 
     private Vector3 originalScale = Vector3.one;
 
+    public Button BuyButton => buyButton;
+
     private void Awake()
     {
         originalScale = transform.localScale;
@@ -91,7 +93,7 @@ public class ShopSlotUI : MonoBehaviour
         {
             bool canAfford = RunSession.InRunGold >= item.goldCost;
             costText.text = $"{item.goldCost} Gold";
-            costText.color = canAfford ? Color.white : new Color(1f, 0.4f, 0.4f, 1f);
+            costText.color = UITheme.For(this).Get(canAfford ? UIColorRole.Cost : UIColorRole.Danger);
         }
     }
 

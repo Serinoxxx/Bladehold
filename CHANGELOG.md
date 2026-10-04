@@ -22,7 +22,20 @@
 - Added horse items to the shop: Horse Poultice, Barding Plates, Sack of Carrots and Riding Spurs
 - Added horse perks to the Spirit: War-Bred Steed, Stable Hand, Cavalry Drills and Loyal Steed
 - Added horse upgrade cards: Blazing Hooves, Frost Wake, Battering Ram, Bloodlust, Iron Barding and Eager Steed
+- Added carrots: a rare enemy drop that refills your warhorse's charge meter when you or your horse run over them
+- Added tutorial steps for the warhorse charge: hold Sprint until your horse is winded, refill it with sword and bow kills and carrots, then charge through a warband of 10 goblins
 - Added the Spearman: a big ork that marches with its spear held high and levels it when you close in; charge your horse into its front and the horse is stopped dead and wounded, so ride round it or hit it from behind
+- Added world events: mid-wave biome twists that hit you and the enemy alike, each announced with a banner listing its boons and perils
+- Added the Eruption (desert and volcanic fields): meteors rain on marked circles and leave magma pools, while your Fire damage is boosted
+- Added the Blizzard (snow): gales shove everyone and chill enemies, while you deal bonus damage to chilled foes
+- Added the Thunderstorm (graveyard and enchanted forest): lightning strikes marked circles and chains between enemies, while your Lightning damage is boosted
+- Added the Stampede: a wild herd charges down marked lanes, trampling anything in the way, while you move faster
+- Added the Blood Moon (graveyard): slain enemies may rise again as skeletons, while you gain life steal
+- Added the Goblin Caravan: a gold wagon crosses the battlefield; hit it to spill gold and wreck it for a big haul before it escapes
+- Reworked the sword ultimate into Moonlight Edge: every swing also fires a crescent of moonlight that cuts through everything in a line, and charged swings fire bigger crescents
+- Reworked the mace ultimate, Seismic Quake: leap forward and slam the ground, sending out a shockwave that stuns and launches enemies, then every swing sends an aftershock for the rest of the ultimate
+- Reworked the throwing axe ultimate into Axe Storm: rapid three-axe throws whose axes ricochet between enemies, replacing the circling axes
+- Added sounds and effects to the sword, mace and throwing axe ultimates
 
 ### Fixes
 

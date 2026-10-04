@@ -31,6 +31,8 @@ public class ShopUI : MonoBehaviour
     [SerializeField] private GameObject slotPrefab;
     [Tooltip("Optional row for ultimate offers. Empty = they follow the item slots in Slots Container.")]
     [SerializeField] private Transform ultimateSlotsContainer;
+    [Tooltip("Optional: the panel's focus controller; its default moves to the first offer's buy button on each refresh.")]
+    [SerializeField] private MenuFocusController focusController;
 
     // Ultimate offers use slot indices from here up, so HandleBuyAttempt can tell them from item slots.
     private const int UltimateSlotIndexBase = 1000;
@@ -177,6 +179,28 @@ public class ShopUI : MonoBehaviour
             HideSlotsFrom(ultimateSlotsContainer, usedUltimate);
             FitRow(ultimateSlotsContainer);
         }
+
+        FocusFirstOffer();
+    }
+
+    /// <summary>Points pad focus at the first offer still for sale (the close button when sold out).</summary>
+    private void FocusFirstOffer()
+    {
+        if (focusController == null) return;
+        foreach (Transform container in new[] { slotsContainer, ultimateSlotsContainer })
+        {
+            if (container == null) continue;
+            foreach (Transform child in container)
+            {
+                ShopSlotUI slot = child.GetComponent<ShopSlotUI>();
+                if (child.gameObject.activeSelf && slot != null && slot.BuyButton != null)
+                {
+                    focusController.SetDefaultSelectable(slot.BuyButton);
+                    return;
+                }
+            }
+        }
+        focusController.SetDefaultSelectable(closeButton);
     }
 
     /// <summary>
@@ -284,7 +308,7 @@ public class ShopUI : MonoBehaviour
             if (costText != null)
             {
                 costText.text = $"{item.goldCost} Gold";
-                costText.color = canAfford ? Color.white : new Color(1f, 0.4f, 0.4f, 1f);
+                costText.color = UITheme.For(this).Get(canAfford ? UIColorRole.Cost : UIColorRole.Danger);
             }
             buyButton.onClick.AddListener(() => HandleBuyAttempt(slotIndex, null));
         }

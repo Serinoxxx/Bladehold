@@ -23,13 +23,13 @@ public class MetaPerkCardUI : MonoBehaviour, IPointerEnterHandler, ISelectHandle
     [Tooltip("Shown while this card is the one in the details panel.")]
     [SerializeField] private GameObject selectedHighlight;
 
-    [Header("Colours")]
-    [SerializeField] private Color pipFilledColor = new Color(1f, 0.82f, 0.44f, 1f);
-    [SerializeField] private Color pipEmptyColor = new Color(0.16f, 0.2f, 0.24f, 1f);
-    [SerializeField] private Color costBuyableColor = new Color(1f, 0.82f, 0.44f, 1f);
-    [SerializeField] private Color costTooExpensiveColor = new Color(0.82f, 0.36f, 0.32f, 1f);
-    [SerializeField] private Color costMaxedColor = new Color(0.55f, 0.85f, 0.55f, 1f);
-    [SerializeField] private Color costLockedColor = new Color(0.55f, 0.6f, 0.65f, 1f);
+    [Header("Colours (roles of the MetaPerks theme)")]
+    [SerializeField] private UIColorRole pipFilledColor = UIColorRole.Accent;
+    [SerializeField] private UIColorRole pipEmptyColor = UIColorRole.Ghost;
+    [SerializeField] private UIColorRole costBuyableColor = UIColorRole.Cost;
+    [SerializeField] private UIColorRole costTooExpensiveColor = UIColorRole.Danger;
+    [SerializeField] private UIColorRole costMaxedColor = UIColorRole.Success;
+    [SerializeField] private UIColorRole costLockedColor = UIColorRole.TextDim;
 
     private readonly List<Image> pips = new List<Image>();
     private Action onSelected;
@@ -71,13 +71,13 @@ public class MetaPerkCardUI : MonoBehaviour, IPointerEnterHandler, ISelectHandle
         if (costText != null)
         {
             costText.text = costLabel;
-            costText.color = state switch
+            costText.color = UITheme.For(this).Get(state switch
             {
                 CardState.Buyable => costBuyableColor,
                 CardState.TooExpensive => costTooExpensiveColor,
                 CardState.Maxed => costMaxedColor,
                 _ => costLockedColor
-            };
+            });
         }
 
         BuildPips(perk.MaxRank, rank);
@@ -95,6 +95,7 @@ public class MetaPerkCardUI : MonoBehaviour, IPointerEnterHandler, ISelectHandle
     {
         if (pipTemplate == null) return;
         Transform container = pipTemplate.transform.parent;
+        UIThemeSO theme = UITheme.For(this);
         while (pips.Count < maxRank)
         {
             Image pip = Instantiate(pipTemplate, container);
@@ -105,7 +106,7 @@ public class MetaPerkCardUI : MonoBehaviour, IPointerEnterHandler, ISelectHandle
             bool used = i < maxRank;
             // A one-rank perk shows no pips: its cost label already says OWNED.
             pips[i].gameObject.SetActive(used && maxRank > 1);
-            pips[i].color = i < rank ? pipFilledColor : pipEmptyColor;
+            pips[i].color = theme.Get(i < rank ? pipFilledColor : pipEmptyColor);
         }
     }
 
