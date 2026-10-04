@@ -347,6 +347,79 @@ internal static class EnemyManifest
             },
         },
 
+        // Spearman: anti-cavalry Big Ork. Marches with the spear held high and levels it forward
+        // when the player closes in (static arm poses on the SpearPose layer, built by Bladehold >
+        // Spearman > Build Pose Animations — run that first). Riding into its front stops the horse
+        // dead like the Bulwark's shield wall, and the braced spear hurts it. Melee is the stock
+        // AIAttack swing; balance in Enemies.csv.
+        new EnemySpec
+        {
+            id = "spearman",
+            soFolder = "Spearman",
+            prefabName = "Spearman Enemy Variant",
+            basePrefabPath = "Assets/Bladehold/Bladehold Prefabs/Big Ork Enemy Variant.prefab",
+            animatorOverridePath = "Assets/Bladehold/Bladehold Animations/Spearman/Spearman Override.overrideController",
+            props = new[]
+            {
+                new PropSpec
+                {
+                    name = "Weapon_Spear",
+                    sourcePrefabPath = "Assets/Synty/PolygonDungeon/Prefabs/Weapons/SM_Wep_Spear_01.prefab",
+                    boneName = "Hand_R",
+                    localPosition = SpearmanPoseBuilder.SpearGripPosition,
+                    localEuler = SpearmanPoseBuilder.SpearGripEuler,
+                },
+            },
+            assets = new[]
+            {
+                new SoSpec { soType = typeof(SpearmanStanceSO), assetName = "SpearmanStanceSO" },
+                new SoSpec
+                {
+                    soType = typeof(MountStopperSO),
+                    assetName = "MountStopperSO Spearman",
+                    initDefaults = so =>
+                    {
+                        var stopper = (MountStopperSO)so;
+                        stopper.haltHalfAngle = 70f;
+                        stopper.requireShieldBlock = false;
+                        stopper.rearLockSeconds = 1.1f;
+                        stopper.horseImpactDamage = 4f;
+                        stopper.minImpactDamageFraction = 0.5f;
+                    },
+                },
+            },
+            components = new[]
+            {
+                new ComponentSpec
+                {
+                    type = typeof(SpearmanStance),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "data", ctx.LoadedAsset("SpearmanStanceSO"));
+                        EnemyPrefabGenerator.SetReference(so, "animator", ctx.ChildAnimator);
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                        EnemyPrefabGenerator.SetReference(so, "knockbackReceiver", ctx.Root.GetComponent<KnockbackReceiver>());
+
+                        // The Big Ork's hammer stays on the inherited rig; the spear replaces it.
+                        foreach (MeshRenderer held in ctx.ChildAnimator.GetComponentsInChildren<MeshRenderer>(true))
+                        {
+                            if (held.name == "SM_Wep_BigOrk_01") held.gameObject.SetActive(false);
+                        }
+                    },
+                },
+                new ComponentSpec
+                {
+                    type = typeof(MountStopper),
+                    wire = (so, ctx) =>
+                    {
+                        EnemyPrefabGenerator.SetReference(so, "data", ctx.LoadedAsset("MountStopperSO Spearman"));
+                        EnemyPrefabGenerator.SetReference(so, "health", ctx.Health);
+                        EnemyPrefabGenerator.SetReference(so, "knockbackReceiver", ctx.Root.GetComponent<KnockbackReceiver>());
+                    },
+                },
+            },
+        },
+
         // Forest Guardian: fast straight projectiles — zero new code, the Storm Witch's
         // LightningBallAttack with its own SO (high projectile speed, short cooldown). Re-tinted
         // projectile prefab is a manual art pass; until then it fires the shared LightningBall.

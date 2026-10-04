@@ -1098,6 +1098,99 @@ public static class WeaponReachBenchmark
             failedCount++;
         }
 
+        // 9S. SPEARMAN: braced spears stop a charging horse from the front and hurt it.
+        sb.AppendLine("\n### 9S. SPEARMAN ANTI-CAVALRY");
+        try
+        {
+            // 9S-A: MountStopper impact damage scales with speed; frontal-only halt without a shield.
+            MountStopperSO stopData = ScriptableObject.CreateInstance<MountStopperSO>();
+            stopData.haltHalfAngle = 70f;
+            stopData.requireShieldBlock = false;
+            stopData.horseImpactDamage = 4f;
+            stopData.minImpactDamageFraction = 0.5f;
+            GameObject spearObj = new GameObject("Benchmark_Spearman");
+            Health spearHealth = spearObj.AddComponent<Health>();
+            MountStopper stopper = spearObj.AddComponent<MountStopper>();
+            var stopSo = new SerializedObject(stopper);
+            stopSo.FindProperty("data").objectReferenceValue = stopData;
+            stopSo.FindProperty("health").objectReferenceValue = spearHealth;
+            stopSo.ApplyModifiedPropertiesWithoutUndo();
+            GameObject horseObj = new GameObject("Benchmark_Horse");
+
+            bool impactMath = Mathf.Approximately(stopper.HorseImpactDamage(0f), 2f)
+                && Mathf.Approximately(stopper.HorseImpactDamage(0.5f), 3f)
+                && Mathf.Approximately(stopper.HorseImpactDamage(1f), 4f);
+            horseObj.transform.position = spearObj.transform.forward * 2f;
+            bool haltsFront = stopper.Halts(horseObj.transform, null);
+            horseObj.transform.position = -spearObj.transform.forward * 2f;
+            bool passesBehind = !stopper.Halts(horseObj.transform, null);
+            stopData.horseImpactDamage = 0f;
+            bool harmlessWhenZero = stopper.HorseImpactDamage(1f) == 0f;
+
+            UnityEngine.Object.DestroyImmediate(horseObj);
+            UnityEngine.Object.DestroyImmediate(spearObj);
+            UnityEngine.Object.DestroyImmediate(stopData);
+
+            if (impactMath && haltsFront && passesBehind && harmlessWhenZero)
+            {
+                sb.AppendLine("  - Spearman MountStopper: halts from the front only, impact 2→4 dmg with speed, 0 = harmless (Bulwark). [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Spearman MountStopper error (impactMath={impactMath}, haltsFront={haltsFront}, passesBehind={passesBehind}, harmlessWhenZero={harmlessWhenZero})!");
+                failedCount++;
+            }
+
+            // 9S-B: Prefab wiring, spear prop, hammer hidden, pose layer, map registration.
+            GameObject spearPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/Spearman Enemy Variant.prefab");
+            bool spLoaded = spearPrefab != null;
+            MountStopper prefabStopper = spLoaded ? spearPrefab.GetComponent<MountStopper>() : null;
+            var stopperData = prefabStopper != null ? new SerializedObject(prefabStopper).FindProperty("data").objectReferenceValue as MountStopperSO : null;
+            bool stopperValid = stopperData != null && !stopperData.requireShieldBlock && stopperData.horseImpactDamage > 0f;
+            bool hasStance = spLoaded && spearPrefab.GetComponent<SpearmanStance>() != null;
+            bool hasSpear = false, hammerHidden = true;
+            if (spLoaded)
+            {
+                foreach (MeshRenderer held in spearPrefab.GetComponentsInChildren<MeshRenderer>(true))
+                {
+                    if (held.name == "Weapon_Spear") hasSpear = held.gameObject.activeSelf;
+                    if (held.name == "SM_Wep_BigOrk_01") hammerHidden &= !held.gameObject.activeSelf;
+                }
+            }
+            Animator spAnimator = spLoaded ? spearPrefab.GetComponentInChildren<Animator>() : null;
+            var spOverride = spAnimator != null ? spAnimator.runtimeAnimatorController as AnimatorOverrideController : null;
+            var spController = spOverride != null ? spOverride.runtimeAnimatorController as UnityEditor.Animations.AnimatorController : null;
+            bool poseLayerValid = false;
+            if (spController != null)
+            {
+                int attackIndex = Array.FindIndex(spController.layers, l => l.name == "Attack");
+                int poseIndex = Array.FindIndex(spController.layers, l => l.name == SpearmanPoseBuilder.PoseLayerName);
+                poseLayerValid = poseIndex >= 0 && poseIndex < attackIndex
+                    && spController.layers[poseIndex].avatarMask != null
+                    && spController.layers[poseIndex].stateMachine.states.Length == 2
+                    && Array.Exists(spController.parameters, p => p.name == SpearmanPoseBuilder.SpearsForwardParam);
+            }
+            EnemyPrefabMapSO spMap = AssetDatabase.LoadAssetAtPath<EnemyPrefabMapSO>("Assets/Bladehold/Bladehold Scripts/Enemies/EnemyPrefabMap.asset");
+            bool spRegistered = spMap != null && spMap.FindPrefab("spearman") != null;
+
+            if (spLoaded && stopperValid && hasStance && hasSpear && hammerHidden && poseLayerValid && spRegistered)
+            {
+                sb.AppendLine("  - Spearman Prefab: MountStopper (no shield, impact dmg), stance, spear prop, hammer hidden, SpearPose layer under Attack, map registration. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Spearman prefab error (loaded={spLoaded}, stopper={stopperValid}, stance={hasStance}, spear={hasSpear}, hammerHidden={hammerHidden}, poseLayer={poseLayerValid}, map={spRegistered})!");
+                failedCount++;
+            }
+        }
+        catch (Exception ex)
+        {
+            sb.AppendLine($"  - Spearman benchmark exception: {ex.Message} [FAILED]");
+            failedCount++;
+        }
+
         // -------------------------------------------------------------
         // 10: Battlefield Defenses Revamp Benchmark
         // -------------------------------------------------------------

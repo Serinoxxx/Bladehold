@@ -22,6 +22,7 @@
 - Added horse items to the shop: Horse Poultice, Barding Plates, Sack of Carrots and Riding Spurs
 - Added horse perks to the Spirit: War-Bred Steed, Stable Hand, Cavalry Drills and Loyal Steed
 - Added horse upgrade cards: Blazing Hooves, Frost Wake, Battering Ram, Bloodlust, Iron Barding and Eager Steed
+- Added the Spearman: a big ork that marches with its spear held high and levels it when you close in; charge your horse into its front and the horse is stopped dead and wounded, so ride round it or hit it from behind
 
 ### Fixes
 

@@ -380,6 +380,7 @@ public class HorseMotor : MonoBehaviour
         {
             if (!IsRearing && CurrentSpeed >= horseData.mountStopMinRearSpeed)
             {
+                TakeStopperImpact(stopperAhead);
                 Rear(stopperAhead.RearLockSeconds);
             }
             CurrentSpeed = 0f;
@@ -657,6 +658,27 @@ public class HorseMotor : MonoBehaviour
     {
         if (!IsCharging || stats == null) return 1f;
         return 1f - Mathf.Clamp(stats.GetValue(StatType.HorseChargeDamageReduction), 0f, 0.9f);
+    }
+
+    /// <summary>
+    ///     A braced <see cref="MountStopper" /> (the Spearman's spears) hurts the horse that runs into
+    ///     it, harder the faster it was going. Called before <see cref="Rear" /> stops the charge, so
+    ///     Iron Barding's charging damage reduction still softens the blow.
+    /// </summary>
+    private void TakeStopperImpact(MountStopper stopper)
+    {
+        float damage = stopper.HorseImpactDamage(NormalizedSpeed);
+        if (damage <= 0f) return;
+
+        health.ReceiveDamage(new Damage
+        {
+            value = damage,
+            type = DamageType.sharp,
+            source = stopper.Health,
+            sourcePosition = stopper.transform.position,
+            direction = -transform.forward,
+            unparryable = true,
+        });
     }
 
     /// <summary>

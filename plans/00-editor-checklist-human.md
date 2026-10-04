@@ -22,6 +22,7 @@ Things that need your hands, eyes or judgement in the Unity Editor. Items marked
 - [17: Walls, upgrade wheel, crystals](editor/17-walls-and-upgrade-wheel.md) (built and play-checked; the wall is now one hand-placed gatehouse model that needs fitting per scene; MMF content and UI are placeholders for your pass)
 - [Battlefield minimap](editor/battlefield-minimap.md) (built and play-checked in Outer Gate; needs your UI review, other gate scenes and two decisions)
 - [Settings menu restyle](editor/settings-menu-restyle.md) (built and play-checked; needs your UI review and two small decisions)
+- [Spearman (anti-cavalry Big Ork)](editor/spearman.md) (generated, poses play-checked; benchmark, attack clip and a mounted playtest left)
 - [Mount charge, horse loss, horse HUD](editor/mount-charge-and-hud.md) (built and play-checked; **decide horse max HP** (12 is fragile now that loss is permanent), plus feedback slots and UI review)
 
 ## A. Triage first (biggest win)

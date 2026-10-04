@@ -19,6 +19,20 @@ public class MountStopper : MonoBehaviour
     /// <summary>Seconds the horse stays reared after hitting this enemy.</summary>
     public float RearLockSeconds => data != null ? data.rearLockSeconds : 0f;
 
+    /// <summary>This enemy's Health, the source stamped on the horse's impact damage.</summary>
+    public Health Health => health;
+
+    /// <summary>
+    ///     Damage a horse should take for running into this enemy at <paramref name="normalizedSpeed" />
+    ///     (0..1 of its charge speed): <see cref="MountStopperSO.horseImpactDamage" /> scaled from
+    ///     <see cref="MountStopperSO.minImpactDamageFraction" /> up to full. The horse applies it.
+    /// </summary>
+    public float HorseImpactDamage(float normalizedSpeed)
+    {
+        if (anyError || data.horseImpactDamage <= 0f) return 0f;
+        return data.horseImpactDamage * Mathf.Lerp(data.minImpactDamageFraction, 1f, Mathf.Clamp01(normalizedSpeed));
+    }
+
     private void OnValidate()
     {
         if (health == null)
