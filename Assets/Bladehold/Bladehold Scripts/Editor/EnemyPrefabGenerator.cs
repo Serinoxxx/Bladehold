@@ -433,6 +433,7 @@ public static class EnemyPrefabGenerator
         var context = new GenContext { Root = root };
         GameObject child = context.FindOrCreateBoneChild(prop.name, prop.boneName, prop.localPosition, Quaternion.Euler(prop.localEuler));
         child.SetActive(true);
+        child.transform.localScale = prop.localScale;
         // Unity's fake-null from GetComponent defeats ??, so these check explicitly.
         MeshFilter filter = child.GetComponent<MeshFilter>();
         if (filter == null) filter = child.AddComponent<MeshFilter>();

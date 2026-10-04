@@ -34,6 +34,8 @@ internal static class EnemyManifest
         public string boneName;
         public Vector3 localPosition;
         public Vector3 localEuler;
+        /// <summary>Uniform-or-not scale on the prop (e.g. the Spearman's oversized spear). Defaults to 1.</summary>
+        public Vector3 localScale = Vector3.one;
     }
 
     /// <summary>A per-enemy ScriptableObject asset, created at
@@ -368,6 +370,7 @@ internal static class EnemyManifest
                     boneName = "Hand_R",
                     localPosition = SpearmanPoseBuilder.SpearGripPosition,
                     localEuler = SpearmanPoseBuilder.SpearGripEuler,
+                    localScale = Vector3.one * SpearmanPoseBuilder.SpearScale,
                 },
             },
             assets = new[]

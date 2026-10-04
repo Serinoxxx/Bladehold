@@ -34,8 +34,14 @@ internal static class SpearmanPoseBuilder
     internal const string PoseLayerName = "SpearPose";
     internal const string SpearsForwardParam = "SpearsForward";
 
-    /// <summary>The spear prop's pose under Hand_R that the muscle tables were solved for.</summary>
-    internal static readonly Vector3 SpearGripPosition = new Vector3(0.052f, 0.015f, 0.178f);
+    /// <summary>
+    ///     The spear prop's pose under Hand_R that the muscle tables were solved for. The spear is
+    ///     drawn at <see cref="SpearScale" />× size, gripped 0.15 mesh units up from the butt so the
+    ///     butt clears the ground in the spears-high pose (the offset runs along the shaft, so the
+    ///     poses' spear direction is unaffected).
+    /// </summary>
+    internal const float SpearScale = 1.5f;
+    internal static readonly Vector3 SpearGripPosition = new Vector3(0.033f, 0.021f, 0.194f);
     internal static readonly Vector3 SpearGripEuler = new Vector3(285.6f, 90f, 218f);
 
     /// <summary>Spear upright at the right side, butt low, hand at chest height out from the body.</summary>
