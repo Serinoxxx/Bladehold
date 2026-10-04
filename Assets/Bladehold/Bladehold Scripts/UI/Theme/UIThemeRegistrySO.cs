@@ -12,7 +12,14 @@ public enum UIMenuId
     MainMenu,
     Shop,
     MetaPerks,
-    Pedestals
+    Pedestals,
+    DeathScreen,
+    CampaignMap,
+    /// <summary>Level-up skill draft and wave choice cards.</summary>
+    Draft,
+    SaveSlots,
+    /// <summary>In-combat banners (boss intro).</summary>
+    Hud
 }
 
 /// <summary>

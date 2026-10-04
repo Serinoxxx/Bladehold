@@ -57,6 +57,8 @@
 - Moved the minimap to the top-right corner; it now fades out while the shop and other menus are open
 - Widened the Rest Area shop so every offer fits on screen
 - Removed the full ride-timer bar that stayed on screen while riding the basic warhorse
+- Updated the death screen, level-up and wave choice cards, save slots and campaign map to match the new menu look: dark framed panels, gold titles and clearer text
+- Updated the boss and captain arrival banner: a dark band with the name in gold, the captain's difficulty skulls and rewards underneath, and letterbox bars for boss entrances
 
 ## [0.1.31] - 2026-10-01
 

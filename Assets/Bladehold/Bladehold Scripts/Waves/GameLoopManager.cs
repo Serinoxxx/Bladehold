@@ -872,8 +872,10 @@ public class GameLoopManager : MonoBehaviour
         // Play the enemy intro announcement with difficulty skulls
         if (EnemyIntroUI.Instance != null)
         {
-            string subtitle = $"{BannerDifficultyHelper.GetTierName(tier).ToUpper()} - {BannerDifficultyHelper.GetRewardMultiplier(tier)}X REWARDS";
-            EnemyIntroUI.Instance.ShowIntro($"{captainName} has arrived!", (int)tier, subtitle, 3.5f);
+            string subtitle = Loc.Get("intro.captain_subtitle", "{0}  ·  {1}x rewards")
+                .Replace("{0}", BannerDifficultyHelper.GetTierName(tier))
+                .Replace("{1}", BannerDifficultyHelper.GetRewardMultiplier(tier).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture));
+            EnemyIntroUI.Instance.ShowIntro(Loc.Get("intro.captain_eyebrow", "A clan captain has arrived"), captainName, (int)tier, subtitle, 3.5f, false);
         }
 
         Debug.Log($"[GameLoopManager] Spawned {captainName} at Tier {tier} ({BannerDifficultyHelper.GetRewardMultiplier(tier)}x rewards)!");

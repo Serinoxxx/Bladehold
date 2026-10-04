@@ -58,10 +58,11 @@ public class CampaignTooltipUI : MonoBehaviour
 
     [Header("Footer Prompt")]
     [SerializeField] private TMP_Text actionPromptText;
-    [SerializeField] private Color availablePromptColor = new Color(1f, 0.82f, 0.44f, 1f);   // #FFD170
-    [SerializeField] private Color completedPromptColor = new Color(0.56f, 0.75f, 0.48f, 1f); // #8FBF7A
-    [SerializeField] private Color lockedPromptColor = new Color(0.78f, 0.42f, 0.35f, 1f);    // muted red
-    [SerializeField] private Color demoLockedPromptColor = new Color(0.55f, 0.51f, 0.47f, 1f); // muted grey
+    [Tooltip("Theme colours for the footer prompt by node status.")]
+    [SerializeField] private UIColorRole availablePromptRole = UIColorRole.Accent;
+    [SerializeField] private UIColorRole completedPromptRole = UIColorRole.Success;
+    [SerializeField] private UIColorRole lockedPromptRole = UIColorRole.Danger;
+    [SerializeField] private UIColorRole demoLockedPromptRole = UIColorRole.TextDim;
 
     [Header("Placement")]
     [Tooltip("Gap in canvas units between the hovered node's edge and the tooltip.")]
@@ -262,24 +263,24 @@ public class CampaignTooltipUI : MonoBehaviour
             {
                 case CampaignNodeButtonUI.NodeVisualStatus.Available:
                     actionPromptText.text = Loc.Get("campaign.tooltip.deploy", "Click to Deploy");
-                    actionPromptText.color = availablePromptColor;
+                    actionPromptText.color = UITheme.For(this).Get(availablePromptRole);
                     break;
                 case CampaignNodeButtonUI.NodeVisualStatus.Completed:
                     actionPromptText.text = Loc.Get("campaign.tooltip.liberated", "Sector Liberated");
-                    actionPromptText.color = completedPromptColor;
+                    actionPromptText.color = UITheme.For(this).Get(completedPromptRole);
                     break;
                 case CampaignNodeButtonUI.NodeVisualStatus.DemoLocked:
                     actionPromptText.text = DemoConfigSO.LockedPrompt;
-                    actionPromptText.color = demoLockedPromptColor;
+                    actionPromptText.color = UITheme.For(this).Get(demoLockedPromptRole);
                     break;
                 case CampaignNodeButtonUI.NodeVisualStatus.Bypassed:
                     actionPromptText.text = Loc.Get("campaign.tooltip.bypassed", "Out of reach: your route has moved past it");
-                    actionPromptText.color = lockedPromptColor;
+                    actionPromptText.color = UITheme.For(this).Get(lockedPromptRole);
                     break;
                 case CampaignNodeButtonUI.NodeVisualStatus.Locked:
                 default:
                     actionPromptText.text = Loc.Get("campaign.tooltip.locked", "Locked: clear a connected sector first");
-                    actionPromptText.color = lockedPromptColor;
+                    actionPromptText.color = UITheme.For(this).Get(lockedPromptRole);
                     break;
             }
         }

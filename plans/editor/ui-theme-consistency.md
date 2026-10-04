@@ -15,8 +15,24 @@ Not from a numbered plan. 2026-10-05, Unity MCP connected. The theme system was 
 
 ## Decisions
 - [ ] **How distinct should menus be?** To put every menu on one scheme, untick `useMenuOverrides` on `Assets/Bladehold/Resources/UIThemeRegistry.asset`. To change only one menu, point its override at another theme.
-- [ ] **Other screens to bring over** (not done here): death screen, campaign map, draft cards, wave card, save slots. Each needs a builder on `BladeholdUIKit`, or at least a `UIThemeScope` + `UIThemeTools.TagByPalette` pass. *(MCP-able)*
+- [x] **Other screens to bring over**: done 2026-10-05, see the second pass below.
 
 ## Playtest
 - [ ] Buy something in the shop. Fail to afford something. Learn a perk. Unlock/equip a weapon at a pedestal. No colour should be hardcoded white/green/red any more; everything follows the theme.
 - [ ] The rebuild must **never** break shop purchases, perk buying or pedestal prompts. All references were rewired by name, but play each once.
+
+## Second pass: death screen, campaign map, draft + wave cards, save slots, boss banner
+
+2026-10-05. `ScreenRestyleBuilder` (Bladehold > UI > Restyle > …) reskins these in place: same objects, references and MMF players, new sprites, colours and fonts on theme roles. Parchment cards became dark framed wells; titles are gold Texturina with flourishes. The boss intro banner (`EnemyIntroUI` in `Bladehold HUD.prefab`) was rebuilt: dark band, gold rules, eyebrow line, name, tier skulls and subtitle. Letterbox bars appear only on cinematic boss intros, not when a captain arrives. Checked with offscreen captures, **not yet played**.
+
+### UI review (Synty art, Texturina headers / Grenze body, gamepad focus, 16:9 and 16:10/ultrawide)
+- [ ] **Boss banner**: spawn a captain from the DevConsole and trigger a special-enemy intro. The band should wipe open, the name settle in, the flourishes spread out, and everything fold away after about 3.5 s. Check that long names auto-size and that the banner never blocks clicks.
+- [ ] **Draft cards**: level up. Check the hover glow (MMF), the banish button, the reroll button, and that element icons (fire/ice/lightning tints) read on the dark card. Weapon cards now tint their icon with the theme accent instead of dark brown.
+- [ ] **Wave cards**: the red/blue stance bands are unchanged. 1-skull cards now use a light skull and empty skulls are faint. Check the hover glow.
+- [ ] **Death / victory screen**: lose once and win once. The panels end above the button row, and the buttons are parchment plates with hover glow (their Synty Animator was removed). Check pad focus moves between Proceed and Return. The currency counters top-left were not touched.
+- [ ] **Save slots** (main menu): card hover glow, the delete button (now a ghost square with a red skull), and the delete dialog's hold-to-delete fill (red over a dark plate).
+- [ ] **Campaign map**: node borders are now a thin frame coloured by status (gold available, green completed, dim locked); the tooltip uses theme colours. The node fills keep their category colours.
+
+### Decisions
+- [ ] **Per-screen themes?** All six screens use the global Ember Gold theme. Their new `UIMenuId`s (DeathScreen, CampaignMap, Draft, SaveSlots, Hud) can each get their own override in `UIThemeRegistry.asset`.
+- [ ] **"Seige Breaker"**: that enemy's display name is misspelt (should be "Siege"). Not changed here.

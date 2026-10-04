@@ -28,8 +28,8 @@ public class SurvivorsCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     [Tooltip("Level badge text component.")]
     [SerializeField] private TextMeshProUGUI levelText;
 
-    [Tooltip("Icon colour for cards with no element (weapon cards, duos). Elemental cards take their element's tint from SkillTreeIconsSO.")]
-    [SerializeField] private Color defaultIconColor = new Color(0.24f, 0.17f, 0.11f, 1f);
+    [Tooltip("Theme colour for icons of cards with no element (weapon cards, duos). Elemental cards take their element's tint from SkillTreeIconsSO.")]
+    [SerializeField] private UIColorRole defaultIconRole = UIColorRole.Accent;
 
     [Header("Banish UI Reference (optional)")]
     [Tooltip("Banish button above or on the card.")]
@@ -143,7 +143,7 @@ public class SurvivorsCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             if (icon != null)
             {
                 iconImage.sprite = icon;
-                iconImage.color = iconTint ?? defaultIconColor;
+                iconImage.color = iconTint ?? UITheme.For(this).Get(defaultIconRole);
                 iconImage.gameObject.SetActive(true);
             }
             else

@@ -38,9 +38,11 @@ public class CampaignNodeButtonUI : MonoBehaviour, IPointerEnterHandler, IPointe
     [SerializeField] private GameObject activePulseGlow;
 
     [Header("Color Palettes")]
-    [SerializeField] private Color availableBorderColor = new Color(1f, 0.8f, 0.2f, 1f);
-    [SerializeField] private Color completedBorderColor = new Color(0.3f, 0.7f, 0.4f, 1f);
-    [SerializeField] private Color lockedBorderColor = new Color(0.35f, 0.35f, 0.4f, 0.8f);
+    [Tooltip("Theme colours for the node border by status (the UI theme lives in Resources/UIThemeRegistry).")]
+    [SerializeField] private UIColorRole availableBorderRole = UIColorRole.Accent;
+    [SerializeField] private UIColorRole completedBorderRole = UIColorRole.Success;
+    [SerializeField] private UIColorRole lockedBorderRole = UIColorRole.TextDim;
+    [Range(0f, 1f)] [SerializeField] private float lockedBorderAlpha = 0.6f;
     [Tooltip("Bypassed nodes: background blended this far towards grey.")]
     [Range(0f, 1f)] [SerializeField] private float bypassedDesaturate = 0.7f;
     [Tooltip("Bypassed nodes: alpha of the background, border and labels.")]
@@ -169,16 +171,16 @@ public class CampaignNodeButtonUI : MonoBehaviour, IPointerEnterHandler, IPointe
             switch (status)
             {
                 case NodeVisualStatus.Available:
-                    borderImage.color = availableBorderColor;
+                    borderImage.color = UITheme.For(this).Get(availableBorderRole);
                     break;
                 case NodeVisualStatus.Completed:
-                    borderImage.color = completedBorderColor;
+                    borderImage.color = UITheme.For(this).Get(completedBorderRole);
                     break;
                 case NodeVisualStatus.Locked:
                 case NodeVisualStatus.DemoLocked:
                 case NodeVisualStatus.Bypassed:
                 default:
-                    Color border = lockedBorderColor;
+                    Color border = UITheme.For(this).Get(lockedBorderRole, lockedBorderAlpha);
                     border.a *= StatusAlpha(status);
                     borderImage.color = border;
                     break;
