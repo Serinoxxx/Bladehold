@@ -22,6 +22,11 @@ public class CampaignTooltipUI : MonoBehaviour
     [SerializeField] private RectTransform tooltipRect;
     [SerializeField] private CanvasGroup canvasGroup;
 
+    [Header("Level Preview")]
+    [Tooltip("Framed screenshot of the node's level at the top of the tooltip; hidden when the node has no CampaignNodeSO.previewImage.")]
+    [SerializeField] private GameObject previewContainer;
+    [SerializeField] private Image previewImage;
+
     [Header("Node Header")]
     [SerializeField] private TMP_Text titleText;
     [SerializeField] private TMP_Text subtitleText;
@@ -134,6 +139,14 @@ public class CampaignTooltipUI : MonoBehaviour
 
         if (rootContainer != null) rootContainer.SetActive(true);
         if (canvasGroup != null) canvasGroup.alpha = 1f;
+
+        // 0. Level preview screenshot
+        if (previewContainer != null)
+        {
+            bool hasPreview = node.previewImage != null && previewImage != null;
+            previewContainer.SetActive(hasPreview);
+            if (hasPreview) previewImage.sprite = node.previewImage;
+        }
 
         // 1. Header Information
         if (titleText != null) titleText.text = node.nodeTitle;

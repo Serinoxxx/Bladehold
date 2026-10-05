@@ -23,6 +23,8 @@ MonoBehaviour:
   nodeType: 0
   tierIndex: 2
   mapPosition: {x: 400, y: 150}
+  mapBiome: 0
+  previewImage: {fileID: 21300000, guid: 84a4e95532db2bd4ea484ec05611b3c2, type: 3}
   captainName: Captain Mogra Hexfang
   difficultyTier: 2
   clanBuff: {fileID: 0}

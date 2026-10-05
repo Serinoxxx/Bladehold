@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04f9a72c036d6084e80011f13a0e63ae, type: 3}
+  m_Name: CampaignPreviewShots
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::CampaignPreviewShotsSO
+  shots:
+  - sceneName: Bladehold Fishing Pond
+    position: {x: 13.56, y: 9.599, z: -13.84}
+    euler: {x: 26.565054, y: 0, z: 0}
+    fieldOfView: 50
+    brightness: 1
+  - sceneName: Bladehold Ancient Garden
+    position: {x: 35.75, y: 9.852066, z: -66.89}
+    euler: {x: 26.565054, y: 0, z: 0}
+    fieldOfView: 50
+    brightness: 1
+  - sceneName: Bladehold Graveyard
+    position: {x: 0, y: 7.112308, z: 6}
+    euler: {x: 25.0169, y: 0, z: 0}
+    fieldOfView: 55
+    brightness: 1.9
+  - sceneName: Bladehold Frozen Pass Scene
+    position: {x: -108.702286, y: 54.345913, z: 11.785669}
+    euler: {x: 24.904776, y: 89.92088, z: 0.0000018826134}
+    fieldOfView: 55
+    brightness: 1.45

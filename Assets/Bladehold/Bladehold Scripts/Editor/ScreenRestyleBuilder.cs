@@ -590,15 +590,16 @@ public static class ScreenRestyleBuilder
         Edit(NodeButtonPath, root =>
         {
             K.Scope(root, UIMenuId.CampaignMap);
-            foreach (string frameName in new[] { "BorderFrame", "ActiveGlow" })
+            // The label plaque under each diorama castle (CampaignDioramaUIRig moved these under Plaque).
+            foreach (string frameName in new[] { "Plaque/BorderFrame", "Plaque/ActiveGlow" })
             {
                 Image frame = R.Need<Image>(root.transform, frameName);
                 frame.sprite = K.FrameSmall;
                 frame.type = Image.Type.Sliced;
                 frame.pixelsPerUnitMultiplier = 5f;
-                if (frameName == "ActiveGlow") K.Paint(frame, UIColorRole.Accent, 0.35f);
+                if (frameName.EndsWith("ActiveGlow")) K.Paint(frame, UIColorRole.Accent, 0.35f);
             }
-            R.Ink(R.Need<TMP_Text>(root.transform, "TitleText"), UIColorRole.Text);
+            R.Ink(R.Need<TMP_Text>(root.transform, "Plaque/TitleText"), UIColorRole.Text);
         });
         Edit(TierHeaderPath, root =>
         {

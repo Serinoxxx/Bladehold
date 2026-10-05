@@ -21,6 +21,8 @@ MonoBehaviour:
   nodeType: 1
   tierIndex: 3
   mapPosition: {x: 660, y: 75}
+  mapBiome: 0
+  previewImage: {fileID: 21300000, guid: 8eb01ab6c6eeb1641b905a1b215f7192, type: 3}
   captainName: 
   difficultyTier: 1
   clanBuff: {fileID: 0}
@@ -33,3 +35,4 @@ MonoBehaviour:
   rewardIcon: {fileID: 0}
   nextNodes:
   - {fileID: 11400000, guid: ffe54e8f6fcc9184d9e64f93828013f6, type: 2}
+  endsCampaign: 0

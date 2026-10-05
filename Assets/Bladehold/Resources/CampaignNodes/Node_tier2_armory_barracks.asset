@@ -15,11 +15,15 @@ MonoBehaviour:
   nodeId: tier2_armory_barracks
   nodeTitle: Desert Gate
   subtitle: Sunscorched Canyon
-  description: "Captain Kombusta's incendiary sappers march on the desert gate. Two spiked ravines cut the canyon floor; hold the bridges and knock the warband into the pits before it reaches the walls."
+  description: Captain Kombusta's incendiary sappers march on the desert gate. Two
+    spiked ravines cut the canyon floor; hold the bridges and knock the warband into
+    the pits before it reaches the walls.
   sceneName: Bladehold Desert Gate
   nodeType: 0
   tierIndex: 2
   mapPosition: {x: 400, y: -150}
+  mapBiome: 0
+  previewImage: {fileID: 21300000, guid: 490cbbd71d161244f9fcd6dad432250d, type: 3}
   captainName: Captain Kombusta
   difficultyTier: 2
   clanBuff: {fileID: 0}
@@ -33,3 +37,4 @@ MonoBehaviour:
   nextNodes:
   - {fileID: 11400000, guid: a0ba8e7d12155594a96389e2d840379d, type: 2}
   - {fileID: 11400000, guid: 3290fcc9c5305d54cbb0b36c9bf5c30c, type: 2}
+  endsCampaign: 0

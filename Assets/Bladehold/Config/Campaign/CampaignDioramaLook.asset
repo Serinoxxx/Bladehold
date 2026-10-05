@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a89b739ae65e7bd47aa95e12690f616f, type: 3}
+  m_Name: CampaignDioramaLook
+  m_EditorClassIdentifier: Assembly-CSharp::CampaignDioramaLookSO
+  hordeBannerColor: {r: 0.62, g: 0.12, b: 0.1, a: 1}
+  liberatedBannerColor: {r: 0.16, g: 0.36, b: 0.78, a: 1}
+  demoLockedBannerColor: {r: 0.25, g: 0.25, b: 0.28, a: 1}
+  bypassedSaturation: 0.15
+  bypassedBrightness: 0.55
+  demoLockedSaturation: 0.3
+  demoLockedBrightness: 0.6
+  completedSaturation: 0.9
+  availableRingColor: {r: 1.5, g: 1.1, b: 0.35, a: 0.75}
+  roadAvailableColor: {r: 2.4, g: 1.75, b: 0.45, a: 0.95}
+  roadCompletedColor: {r: 0.5, g: 1.2, b: 0.6, a: 0.7}
+  roadLockedColor: {r: 0.85, g: 0.8, b: 0.7, a: 0.12}
+  roadBypassedColor: {r: 0.5, g: 0.5, b: 0.55, a: 0.08}
+  roadAvailableDashSpeed: 0.9
+  cameraSmoothTime: 0.35
+  wheelPanStep: 3
+  dragThreshold: 8
+  stickPanSpeed: 18
+  mouseParallaxDegrees: 1.2

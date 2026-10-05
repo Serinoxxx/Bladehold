@@ -15,11 +15,14 @@ MonoBehaviour:
   nodeId: tier6_ancient_garden
   nodeTitle: Ancient Garden
   subtitle: Overgrown Cloister
-  description: Beat back Captain Kombusta's warband in the overgrown royal gardens below the keep.
+  description: Beat back Captain Kombusta's warband in the overgrown royal gardens
+    below the keep.
   sceneName: Bladehold Ancient Garden
   nodeType: 0
   tierIndex: 6
   mapPosition: {x: 1440, y: 150}
+  mapBiome: 0
+  previewImage: {fileID: 21300000, guid: e6a01c523fe66c94fbcf5850faa49828, type: 3}
   captainName: Captain Kombusta
   difficultyTier: 3
   clanBuff: {fileID: 0}
@@ -32,3 +35,4 @@ MonoBehaviour:
   rewardIcon: {fileID: 0}
   nextNodes:
   - {fileID: 11400000, guid: b98f6555a1e960f4f903b85c31bb5105, type: 2}
+  endsCampaign: 0

@@ -21,6 +21,8 @@ MonoBehaviour:
   nodeType: 0
   tierIndex: 5
   mapPosition: {x: 1180, y: 0}
+  mapBiome: 0
+  previewImage: {fileID: 21300000, guid: 0795e48ca8ab5054dbdcfe6d0874a293, type: 3}
   captainName: Captain Kombusta
   difficultyTier: 3
   clanBuff: {fileID: 0}
@@ -34,3 +36,4 @@ MonoBehaviour:
   nextNodes:
   - {fileID: 11400000, guid: aaf2400b96b7e8144965178150ef93da, type: 2}
   - {fileID: 11400000, guid: f53b62f5969def447be9ffc469c1d889, type: 2}
+  endsCampaign: 0

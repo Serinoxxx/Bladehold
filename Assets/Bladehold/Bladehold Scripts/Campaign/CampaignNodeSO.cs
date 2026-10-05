@@ -32,8 +32,15 @@ public class CampaignNodeSO : ScriptableObject
     [Tooltip("Tier index in the campaign graph (1-8).")]
     public int tierIndex = 1;
 
-    [Tooltip("Relative visual position on the overview map canvas.")]
+    [Tooltip("Position on the campaign map, in map units (x = along the route, y = lane). The diorama maps it onto the terrain.")]
     public Vector2 mapPosition = Vector2.zero;
+
+    [Header("Map Diorama")]
+    [Tooltip("Landscape around this node on the campaign map diorama. Auto picks one from the scene and node type. Re-run Bladehold > Campaign > Build Map Diorama after changing it.")]
+    public CampaignBiome mapBiome = CampaignBiome.Auto;
+
+    [Tooltip("Screenshot of the node's level, shown at the top of the map tooltip. Captured by Bladehold > Campaign > Capture Level Previews.")]
+    public Sprite previewImage;
 
     [Header("Clan Captain (Optional)")]
     [Tooltip("Name of the Clan Captain commanding this sector (e.g. 'Captain Fraglob', 'Captain Kombusta'). Leave blank for standard waves.")]

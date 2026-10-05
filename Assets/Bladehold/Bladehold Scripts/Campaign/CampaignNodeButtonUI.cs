@@ -32,6 +32,10 @@ public class CampaignNodeButtonUI : MonoBehaviour, IPointerEnterHandler, IPointe
     [SerializeField] private TMP_Text tierText;
     [SerializeField] private TMP_Text captainBadgeText;
 
+    [Tooltip("Vertical anchor band (min, max) of the title when the captain line shows under it, and when it's alone.")]
+    [SerializeField] private Vector2 titleBandWithCaptain = new Vector2(0.4f, 0.96f);
+    [SerializeField] private Vector2 titleBandAlone = new Vector2(0.08f, 0.92f);
+
     [Header("Status Overlays")]
     [SerializeField] private GameObject lockOverlay;
     [SerializeField] private GameObject completedCheckmark;
@@ -115,7 +119,15 @@ public class CampaignNodeButtonUI : MonoBehaviour, IPointerEnterHandler, IPointe
         if (node == null) return;
 
         // Text labels
-        if (titleText != null) titleText.text = node.nodeTitle;
+        if (titleText != null)
+        {
+            titleText.text = node.nodeTitle;
+            // The title fills the plaque unless the captain line shares it.
+            RectTransform titleRect = titleText.rectTransform;
+            Vector2 band = node.HasCaptain && captainBadgeText != null ? titleBandWithCaptain : titleBandAlone;
+            titleRect.anchorMin = new Vector2(titleRect.anchorMin.x, band.x);
+            titleRect.anchorMax = new Vector2(titleRect.anchorMax.x, band.y);
+        }
         if (tierText != null) tierText.text = $"Tier {node.tierIndex}";
 
         // Captain badge

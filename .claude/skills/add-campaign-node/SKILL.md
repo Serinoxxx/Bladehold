@@ -20,7 +20,8 @@ Decide which case you're in:
 Create via **Create > Scriptable Objects > Campaign > Campaign Node** (or MCP `manage_scriptable_object`) at `Resources/CampaignNodes/Node_<nodeId>.asset`. Fields that matter:
 - `nodeId` (unique, `tierN_snake_name`; lookups are case-insensitive), `nodeTitle`/`subtitle`/`description` (also the loading-screen text), `sceneName` (exact scene name, loaded by name).
 - `nodeType`, `tierIndex` (1-8). **`tierIndex` is also the sector's threat level** (`Waves/SectorSpawnRules.cs` → `SectorThreat.Current`): it gates roster rows by `minThreat` and grows kill quotas. It also drives the demo cutoff (step 4).
-- `mapPosition`: tiers sit roughly 200 px apart on x (tier 1 at x=100, tier 3 at x=500), branches offset on y. Copy a sibling's value and nudge.
+- `mapPosition`: tier columns sit at x = 140 + 260 × (tier − 1), lanes offset on y (±75/150/225). Copy a sibling's value and nudge. Set `mapBiome` if `Auto` (guessed from the scene name by `CampaignBiomes.Resolve`) picks the wrong landscape.
+- **Then rebuild the map diorama:** **Bladehold > Campaign > Build Map Diorama** (the castle, roads and terrain are generated from the graph, so a new node has no castle until you do), and **Bladehold > Campaign > Capture Level Previews** for its tooltip screenshot. A new `CampaignNodeType` also needs a castle style in `MiniCastleBuilder.KindFor`.
 - Combat only: `captainName` (`GameLoopManager.SpawnCaptainForWave` picks Kombusta if the name contains "Kombusta", otherwise Fraglob; see `/add-captain`), `difficultyTier`, `bountyType`, `clanBuff`. `GameLoopManager.Start` reads `bountyType` + `difficultyTier` from `CampaignManager.CurrentNode`.
 - `goldReward` (into the run) / `bloodReward` / `metalReward` (straight to `SaveData`), all paid by `CampaignManager.CompleteCurrentNode`. `rewardsDescription` is tooltip text only.
 - `nextNodes`: children. **Empty = ends the campaign** (`EndsCampaign`), so every non-final node needs at least one child.

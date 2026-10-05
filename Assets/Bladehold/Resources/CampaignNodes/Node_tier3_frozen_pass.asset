@@ -15,11 +15,14 @@ MonoBehaviour:
   nodeId: tier3_frozen_pass
   nodeTitle: Frozen Pass
   subtitle: Icebound Approach
-  description: Hold the frozen mountain pass against Captain Kombusta's raiders before they reach the keep.
+  description: Hold the frozen mountain pass against Captain Kombusta's raiders before
+    they reach the keep.
   sceneName: Bladehold Frozen Pass Scene
   nodeType: 0
   tierIndex: 3
   mapPosition: {x: 660, y: 225}
+  mapBiome: 0
+  previewImage: {fileID: 21300000, guid: 6934094d31b76474ebd702e3cf4326a7, type: 3}
   captainName: Captain Kombusta
   difficultyTier: 2
   clanBuff: {fileID: 0}
@@ -32,3 +35,4 @@ MonoBehaviour:
   rewardIcon: {fileID: 0}
   nextNodes:
   - {fileID: 11400000, guid: ffe54e8f6fcc9184d9e64f93828013f6, type: 2}
+  endsCampaign: 0

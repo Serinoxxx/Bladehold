@@ -23,6 +23,7 @@ Things that need your hands, eyes or judgement in the Unity Editor. Items marked
 - [Battlefield minimap](editor/battlefield-minimap.md) (built and play-checked in Outer Gate; needs your UI review, other gate scenes and two decisions)
 - [Settings menu restyle](editor/settings-menu-restyle.md) (built and play-checked; needs your UI review and two small decisions)
 - [Spearman (anti-cavalry Big Ork)](editor/spearman.md) (generated, poses play-checked; benchmark, attack clip and a mounted playtest left)
+- [Campaign map diorama](editor/campaign-diorama.md) (generated and screenshot-checked; needs a real Game-view look, UI review and a playtest)
 - [UI theme + menu consistency](editor/ui-theme-consistency.md) (shop, Spirit window and pedestals rebuilt in the settings style with swappable themes; needs your UI review and a playtest; recovered scene backups in `Assets/_Recovery/` to triage)
 - [Directional swings + armed arm pose](editor/directional-swings.md) (built and Animator-checked; needs your feel playtest, threshold tuning and a look at the carry pose)
 - [Mount charge, horse loss, horse HUD](editor/mount-charge-and-hud.md) (built and play-checked; **decide horse max HP** (12 is fragile now that loss is permanent), plus feedback slots and UI review)

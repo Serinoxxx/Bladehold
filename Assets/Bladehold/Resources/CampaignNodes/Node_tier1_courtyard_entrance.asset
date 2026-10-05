@@ -21,6 +21,8 @@ MonoBehaviour:
   nodeType: 0
   tierIndex: 1
   mapPosition: {x: 140, y: 0}
+  mapBiome: 0
+  previewImage: {fileID: 21300000, guid: f919e91a68d072b4aa751012dbe5cbbc, type: 3}
   captainName: 
   difficultyTier: 1
   clanBuff: {fileID: 0}

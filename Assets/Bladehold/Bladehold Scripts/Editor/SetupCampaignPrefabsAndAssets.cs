@@ -12,7 +12,6 @@ using UnityEngine.UI;
 public static class SetupCampaignPrefabsAndAssets
 {
     public const string NodePrefabPath = "Assets/Bladehold/Bladehold Prefabs/UI/CampaignNodeButton.prefab";
-    public const string PathLinePrefabPath = "Assets/Bladehold/Bladehold Prefabs/UI/CampaignPathLine.prefab";
     public const string GraphAssetPath = "Assets/Bladehold/Resources/CampaignGraph.asset";
     public const string NodesFolder = "Assets/Bladehold/Resources/CampaignNodes";
     public const string ScenePath = "Assets/Bladehold/Bladehold Scenes/Bladehold Campaign Map Scene.unity";
@@ -22,7 +21,7 @@ public static class SetupCampaignPrefabsAndAssets
     {
         EditorApplication.delayCall += () =>
         {
-            if (!File.Exists(NodePrefabPath) || !File.Exists(PathLinePrefabPath) || !File.Exists(GraphAssetPath))
+            if (!File.Exists(NodePrefabPath) || !File.Exists(GraphAssetPath))
             {
                 Debug.Log("[SetupCampaignPrefabsAndAssets] Missing campaign prefabs or graph asset. Generating now...");
                 ExecuteAll();
@@ -43,8 +42,7 @@ public static class SetupCampaignPrefabsAndAssets
             "Regenerate", "Keep current graph");
         var graph = regenerateGraph ? CreateOrUpdateCampaignGraph() : existingGraph;
         var nodePrefab = CreateOrUpdateNodeButtonPrefab();
-        var pathPrefab = CreateOrUpdatePathLinePrefab();
-        UpdateCampaignMapScene(graph, nodePrefab, pathPrefab);
+        UpdateCampaignMapScene(graph, nodePrefab);
         Debug.Log("[SetupCampaignPrefabsAndAssets] === Campaign Setup Complete! ===");
     }
 
@@ -323,26 +321,7 @@ public static class SetupCampaignPrefabsAndAssets
         return savedPrefab.GetComponent<CampaignNodeButtonUI>();
     }
 
-    public static GameObject CreateOrUpdatePathLinePrefab()
-    {
-        string dir = Path.GetDirectoryName(PathLinePrefabPath);
-        if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-
-        GameObject root = new GameObject("CampaignPathLine", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-        RectTransform rt = root.GetComponent<RectTransform>();
-        rt.pivot = new Vector2(0f, 0.5f);
-        rt.sizeDelta = new Vector2(100f, 4f);
-
-        Image img = root.GetComponent<Image>();
-        img.color = Color.white;
-
-        GameObject savedPrefab = PrefabUtility.SaveAsPrefabAsset(root, PathLinePrefabPath);
-        UnityEngine.Object.DestroyImmediate(root);
-        Debug.Log($"[SetupCampaignPrefabsAndAssets] Saved CampaignPathLine prefab to {PathLinePrefabPath}");
-        return savedPrefab;
-    }
-
-    public static void UpdateCampaignMapScene(CampaignGraphSO graph, CampaignNodeButtonUI nodePrefab, GameObject pathPrefab)
+    public static void UpdateCampaignMapScene(CampaignGraphSO graph, CampaignNodeButtonUI nodePrefab)
     {
         Scene scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
 
@@ -353,59 +332,20 @@ public static class SetupCampaignPrefabsAndAssets
             return;
         }
 
-        // Configure Containers pivots
-        Transform contentTr = mapUI.transform.Find("MapScrollRect/Viewport/NodesContent");
-        if (contentTr != null)
-        {
-            RectTransform contentRt = contentTr as RectTransform;
-            contentRt.anchoredPosition = Vector2.zero;
-
-            Transform nodesTr = contentTr.Find("NodesContainer");
-            if (nodesTr != null)
-            {
-                RectTransform nodesRt = nodesTr as RectTransform;
-                nodesRt.pivot = new Vector2(0f, 0.5f);
-                nodesRt.anchorMin = new Vector2(0f, 0f);
-                nodesRt.anchorMax = new Vector2(1f, 1f);
-                nodesRt.offsetMin = Vector2.zero;
-                nodesRt.offsetMax = Vector2.zero;
-
-                // Clear all stale child nodes
-                for (int i = nodesRt.childCount - 1; i >= 0; i--)
-                {
-                    UnityEngine.Object.DestroyImmediate(nodesRt.GetChild(i).gameObject);
-                }
-            }
-
-            Transform pathsTr = contentTr.Find("PathsContainer");
-            if (pathsTr != null)
-            {
-                RectTransform pathsRt = pathsTr as RectTransform;
-                pathsRt.pivot = new Vector2(0f, 0.5f);
-                pathsRt.anchorMin = new Vector2(0f, 0f);
-                pathsRt.anchorMax = new Vector2(1f, 1f);
-                pathsRt.offsetMin = Vector2.zero;
-                pathsRt.offsetMax = Vector2.zero;
-
-                // Clear all stale paths
-                for (int i = pathsRt.childCount - 1; i >= 0; i--)
-                {
-                    UnityEngine.Object.DestroyImmediate(pathsRt.GetChild(i).gameObject);
-                }
-            }
-        }
-
         // Assign serialized prefabs & graph via SerializedObject to ensure scene serialization
         SerializedObject so = new SerializedObject(mapUI);
         so.FindProperty("campaignGraph").objectReferenceValue = graph;
         so.FindProperty("nodeButtonPrefab").objectReferenceValue = nodePrefab;
-        so.FindProperty("pathLinePrefab").objectReferenceValue = pathPrefab;
         so.ApplyModifiedProperties();
 
         EditorUtility.SetDirty(mapUI);
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene, ScenePath);
-        Debug.Log($"[SetupCampaignPrefabsAndAssets] Configured and saved {ScenePath} with prefabs and persistent graph.");
+
+        // The map is a 3D diorama generated from the graph: rebuild it (this also reshapes the node
+        // button prefab into the plaque that hangs under each castle and rewires the overlay UI).
+        CampaignDioramaBuilder.Build();
+        Debug.Log($"[SetupCampaignPrefabsAndAssets] Configured {ScenePath} and rebuilt the map diorama.");
     }
 }
 #endif

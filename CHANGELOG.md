@@ -36,6 +36,8 @@
 - Reworked the mace ultimate, Seismic Quake: leap forward and slam the ground, sending out a shockwave that stuns and launches enemies, then every swing sends an aftershock for the rest of the ultimate
 - Reworked the throwing axe ultimate into Axe Storm: rapid three-axe throws whose axes ricochet between enemies, replacing the circling axes
 - Added sounds and effects to the sword, mace and throwing axe ultimates
+- Added a new campaign map: a hand-crafted miniature landscape with a little castle for every sector, scenery that matches each level (snowfields, desert dunes, snowy peaks, haunted graveyards, enchanted forests and ponds, castle towns, the crypt), and glowing routes showing where you can go next
+- Added a screenshot of each level to the campaign map's sector tooltip
 
 ### Fixes
 
@@ -59,6 +61,7 @@
 - Removed the full ride-timer bar that stayed on screen while riding the basic warhorse
 - Updated the death screen, level-up and wave choice cards, save slots and campaign map to match the new menu look: dark framed panels, gold titles and clearer text
 - Updated the boss and captain arrival banner: a dark band with the name in gold, the captain's difficulty skulls and rewards underneath, and letterbox bars for boss entrances
+- Updated the campaign map so castles fly your banner once a sector is liberated, open sectors glow, and the map pans by dragging, scrolling or with the right stick
 
 ## [0.1.31] - 2026-10-01
 

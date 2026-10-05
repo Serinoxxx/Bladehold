@@ -21,6 +21,8 @@ MonoBehaviour:
   nodeType: 0
   tierIndex: 5
   mapPosition: {x: 1180, y: 150}
+  mapBiome: 0
+  previewImage: {fileID: 21300000, guid: 0ac65c55aa4c43c4fa77b08c267b4efe, type: 3}
   captainName: Captain Fraglob
   difficultyTier: 3
   clanBuff: {fileID: 0}
@@ -34,3 +36,4 @@ MonoBehaviour:
   nextNodes:
   - {fileID: 11400000, guid: 8dda2da0a6d745aa8c4c45656705457e, type: 2}
   - {fileID: 11400000, guid: aaf2400b96b7e8144965178150ef93da, type: 2}
+  endsCampaign: 0

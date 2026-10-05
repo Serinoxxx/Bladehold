@@ -21,6 +21,8 @@ MonoBehaviour:
   nodeType: 6
   tierIndex: 8
   mapPosition: {x: 2220, y: 150}
+  mapBiome: 0
+  previewImage: {fileID: 21300000, guid: bfffa1f7ef1f6234dabb0e1e1eb9d79f, type: 3}
   captainName: Princess Katherine
   difficultyTier: 4
   clanBuff: {fileID: 0}
@@ -32,3 +34,4 @@ MonoBehaviour:
   metalReward: 10
   rewardIcon: {fileID: 0}
   nextNodes: []
+  endsCampaign: 0

@@ -3,24 +3,25 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 /// <summary>
 ///     Master controller for the Castle Campaign Overview Map screen.
-///     Builds the multi-tier visual node graph, renders tactical route connections,
-///     updates currency status, and directs deployment to selected sectors.
+///     The map itself is a 3D miniature landscape (<see cref="CampaignDiorama" />): one castle per node and a
+///     glowing route per edge. This screen owns the campaign logic and the overlay UI: it spawns one label
+///     button per node and keeps it hanging under its castle every frame, pushes node/route status into the
+///     diorama, updates currency status, and directs deployment to selected sectors.
 /// </summary>
 public class CampaignMapUI : MonoBehaviour
 {
     [Header("Graph & Containers")]
     [SerializeField] private CampaignGraphSO campaignGraph;
+    [Tooltip("The 3D map (castles, routes, camera) the node labels hang over.")]
+    [SerializeField] private CampaignDiorama diorama;
+    [Tooltip("Full-screen overlay rect the node labels are spawned into (cleared on every rebuild).")]
     [SerializeField] private RectTransform nodesContainer;
-    [SerializeField] private RectTransform pathsContainer;
-    [SerializeField] private ScrollRect scrollRect;
 
     [Header("Prefabs")]
     [SerializeField] private CampaignNodeButtonUI nodeButtonPrefab;
-    [SerializeField] private GameObject pathLinePrefab;
 
     [Header("Tooltip")]
     [SerializeField] private CampaignTooltipUI tooltipUI;
@@ -35,27 +36,18 @@ public class CampaignMapUI : MonoBehaviour
     [SerializeField] private TMP_Text goblinBloodText;
     [SerializeField] private TMP_Text orcishMetalText;
 
-    [Header("Path Visual Styling")]
-    [SerializeField] private Color pathLockedColor = new Color(0.3f, 0.3f, 0.35f, 0.4f);
-    [SerializeField] private Color pathAvailableColor = new Color(1f, 0.85f, 0.25f, 0.95f);
-    [SerializeField] private Color pathCompletedColor = new Color(0.35f, 0.75f, 0.45f, 0.75f);
-    [Tooltip("Paths touching a bypassed node (a branch the route has left behind).")]
-    [SerializeField] private Color pathBypassedColor = new Color(0.3f, 0.3f, 0.35f, 0.12f);
-    [SerializeField] private float pathThickness = 4f;
-    [Tooltip("Thickness of the route already travelled and the paths open from the current location.")]
-    [SerializeField] private float activePathThickness = 7f;
-
     [Header("Tier Column Headers")]
-    [Tooltip("Scrolling container (under NodesContent, stretched over it) for one header per tier column.")]
+    [Tooltip("Strip along the top of the screen holding one header per tier column; each header slides with its column as the camera pans.")]
     [SerializeField] private RectTransform tierHeadersContainer;
-    [Tooltip("Header label prefab (UI/CampaignTierHeader.prefab), anchored top-left of the content, pivot top-centre.")]
+    [Tooltip("Header label prefab (UI/CampaignTierHeader.prefab), anchored top-left of the strip, pivot top-centre.")]
     [SerializeField] private TMP_Text tierHeaderPrefab;
     [SerializeField] private float tierHeaderTopMargin = 8f;
 
     [Header("Current Location Marker")]
-    [Tooltip("'You are here' marker (a child of the scrolling content, drawn above the nodes). Sits over the last cleared node, or the first node before anything is cleared.")]
+    [Tooltip("'You are here' marker (overlay, drawn above the node labels). Hangs over the castle of the last cleared node, or the first node before anything is cleared.")]
     [SerializeField] private RectTransform locationMarker;
-    [SerializeField] private Vector2 locationMarkerOffset = new Vector2(0f, 88f);
+    [Tooltip("Screen offset (canvas units) from the castle's marker anchor.")]
+    [SerializeField] private Vector2 locationMarkerOffset = new Vector2(0f, 12f);
     [SerializeField] private float locationMarkerBobHeight = 6f;
     [SerializeField] private float locationMarkerBobSpeed = 2.5f;
 
@@ -70,10 +62,11 @@ public class CampaignMapUI : MonoBehaviour
     private const string CursorOwner = "CampaignMap";
 
     private readonly Dictionary<string, CampaignNodeButtonUI> spawnedButtons = new Dictionary<string, CampaignNodeButtonUI>();
-    private readonly List<GameObject> spawnedPaths = new List<GameObject>();
+    private readonly List<KeyValuePair<RectTransform, float>> tierHeaders = new List<KeyValuePair<RectTransform, float>>();
 
     private readonly HashSet<string> reachableNodeIds = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
-    private Vector2 locationMarkerBase;
+    private CampaignDioramaSite locationSite;
+    private Canvas canvas;
 
     private CampaignNodeButtonUI focusedButton;
     private Vector2 heldDirection;
@@ -93,20 +86,21 @@ public class CampaignMapUI : MonoBehaviour
             Debug.LogError("[CampaignMapUI] Node button prefab is not assigned (CampaignNodeButton.prefab).");
             anyError = true;
         }
-        if (pathLinePrefab == null)
+        if (diorama == null || !diorama.IsValid)
         {
-            Debug.LogError("[CampaignMapUI] Path line prefab is not assigned (CampaignPathLine.prefab).");
+            Debug.LogError("[CampaignMapUI] No valid CampaignDiorama assigned. Run Bladehold > Campaign > Build Map Diorama.");
             anyError = true;
         }
-        if (nodesContainer == null || pathsContainer == null)
+        if (nodesContainer == null)
         {
-            Debug.LogError("[CampaignMapUI] Nodes and/or paths container is not assigned.");
+            Debug.LogError("[CampaignMapUI] Nodes container is not assigned.");
             anyError = true;
         }
         if (locationMarker == null)
         {
-            Debug.LogError("[CampaignMapUI] locationMarker is not assigned (the 'you are here' marker under NodesContent).");
+            Debug.LogError("[CampaignMapUI] locationMarker is not assigned (the 'you are here' marker).");
         }
+        canvas = GetComponentInParent<Canvas>();
 
         if (campaignGraph == null)
         {
@@ -155,12 +149,6 @@ public class CampaignMapUI : MonoBehaviour
 
     private void Update()
     {
-        if (!anyError && locationMarker != null && locationMarker.gameObject.activeSelf)
-        {
-            float bob = Mathf.Sin(Time.unscaledTime * locationMarkerBobSpeed) * locationMarkerBobHeight;
-            locationMarker.anchoredPosition = locationMarkerBase + new Vector2(0f, bob);
-        }
-
         if (anyError || demoEndShown || deploying || DevConsole.IsVisible)
         {
             return;
@@ -185,6 +173,54 @@ public class CampaignMapUI : MonoBehaviour
             {
                 HandleNodeSelected(focusedButton.NodeData);
             }
+        }
+    }
+
+    /// <summary>
+    ///     Keeps every overlay element glued to the diorama as the camera pans: node labels under their
+    ///     castles, the location marker over its castle, tier headers over their columns.
+    /// </summary>
+    private void LateUpdate()
+    {
+        if (anyError) return;
+
+        foreach (CampaignNodeButtonUI button in spawnedButtons.Values)
+        {
+            if (button == null || button.NodeData == null) continue;
+            if (diorama.TryGetSite(button.NodeData.nodeId, out CampaignDioramaSite site))
+            {
+                PlaceOverWorld(button.Rect, nodesContainer, site.LabelAnchor.position, Vector2.zero);
+            }
+        }
+
+        if (locationMarker != null && locationSite != null && locationMarker.gameObject.activeSelf)
+        {
+            float bob = Mathf.Sin(Time.unscaledTime * locationMarkerBobSpeed) * locationMarkerBobHeight;
+            PlaceOverWorld(locationMarker, locationMarker.parent as RectTransform, locationSite.MarkerAnchor.position, locationMarkerOffset + new Vector2(0f, bob));
+        }
+
+        foreach (KeyValuePair<RectTransform, float> header in tierHeaders)
+        {
+            if (header.Key == null) continue;
+            if (!diorama.WorldToScreen(new Vector3(header.Value, 0f, diorama.transform.position.z), out Vector2 screen)) continue;
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(tierHeadersContainer, screen, UICamera, out Vector2 local))
+            {
+                Vector3 p = header.Key.localPosition;
+                header.Key.localPosition = new Vector3(local.x, p.y, p.z);
+            }
+        }
+    }
+
+    private Camera UICamera => canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
+
+    private void PlaceOverWorld(RectTransform rect, RectTransform space, Vector3 world, Vector2 offset)
+    {
+        if (rect == null || space == null) return;
+        if (!diorama.WorldToScreen(world, out Vector2 screen)) return;
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(space, screen, UICamera, out Vector2 local))
+        {
+            Vector3 p = rect.localPosition;
+            rect.localPosition = new Vector3(local.x + offset.x, local.y + offset.y, p.z);
         }
     }
 
@@ -264,7 +300,7 @@ public class CampaignMapUI : MonoBehaviour
         foreach (CampaignNodeButtonUI btn in spawnedButtons.Values)
         {
             if (btn == null || btn.CurrentStatus != CampaignNodeButtonUI.NodeVisualStatus.Available) continue;
-            if (best == null || btn.Rect.anchoredPosition.x < best.Rect.anchoredPosition.x)
+            if (best == null || btn.NodeData.mapPosition.x < best.NodeData.mapPosition.x)
             {
                 best = btn;
             }
@@ -289,7 +325,7 @@ public class CampaignMapUI : MonoBehaviour
     /// </summary>
     private void MoveFocus(Vector2 direction)
     {
-        Vector2 from = focusedButton.Rect.anchoredPosition;
+        Vector2 from = focusedButton.Rect.localPosition;
         CampaignNodeButtonUI best = null;
         float bestScore = float.MaxValue;
 
@@ -297,7 +333,7 @@ public class CampaignMapUI : MonoBehaviour
         {
             if (btn == null || btn == focusedButton) continue;
 
-            Vector2 delta = btn.Rect.anchoredPosition - from;
+            Vector2 delta = (Vector2)btn.Rect.localPosition - from;
             float along = Vector2.Dot(delta, direction);
             if (along <= 1f) continue;
 
@@ -333,7 +369,7 @@ public class CampaignMapUI : MonoBehaviour
         if (focusedButton != null)
         {
             focusedButton.SetFocused(true);
-            FocusOnNode(focusedButton.Rect);
+            diorama.FocusOnNode(focusedButton.NodeData.nodeId);
         }
     }
 
@@ -398,7 +434,7 @@ public class CampaignMapUI : MonoBehaviour
 
         List<CampaignNodeSO> allNodes = campaignGraph.allNodes;
 
-        RectTransform firstAvailableNodeRect = null;
+        CampaignNodeSO firstAvailableNode = null;
 
         // 1. Spawn Node Buttons
         for (int i = 0; i < allNodes.Count; i++)
@@ -412,23 +448,30 @@ public class CampaignMapUI : MonoBehaviour
             {
                 spawnedButtons[node.nodeId] = buttonInstance;
 
-                if (status == CampaignNodeButtonUI.NodeVisualStatus.Available && firstAvailableNodeRect == null)
+                if (status == CampaignNodeButtonUI.NodeVisualStatus.Available && firstAvailableNode == null)
                 {
-                    firstAvailableNodeRect = buttonInstance.GetComponent<RectTransform>();
+                    firstAvailableNode = node;
                 }
             }
         }
 
-        // 2. Draw Forward Path Connections
-        DrawAllPaths();
+        // Labels further back on the table draw first, so nearer castles' labels overlap them.
+        List<CampaignNodeButtonUI> byDepth = new List<CampaignNodeButtonUI>(spawnedButtons.Values);
+        byDepth.Sort((a, b) => b.NodeData.mapPosition.y.CompareTo(a.NodeData.mapPosition.y));
+        foreach (CampaignNodeButtonUI button in byDepth) button.transform.SetAsLastSibling();
+
+        // 2. Castles and routes on the diorama
+        ApplyDioramaStatus();
         PlaceLocationMarker();
         BuildTierHeaders();
 
-        // 3. Scroll to focus on active tier
-        if (firstAvailableNodeRect != null && scrollRect != null && nodesContainer != null)
+        // 3. Open on the next choice (or where the player stands when nothing is open)
+        CampaignNodeSO focus = firstAvailableNode != null ? firstAvailableNode : CampaignManager.Instance.CurrentLocationNode;
+        if (focus != null)
         {
-            FocusOnNode(firstAvailableNodeRect);
+            diorama.FocusOnNode(focus.nodeId, instant: true);
         }
+        LateUpdate();
     }
 
     /// <summary>
@@ -451,13 +494,11 @@ public class CampaignMapUI : MonoBehaviour
             if (button != null && button.NodeData != null)
             {
                 CampaignNodeButtonUI.NodeVisualStatus status = EvaluateNodeStatus(button.NodeData);
-                button.Setup(button.NodeData, status, HandleNodeSelected, HandleNodeHovered, HandleNodeHoverExited);
+                button.Setup(button.NodeData, status, HandleNodeClicked, HandleNodeHovered, HandleNodeHoverExited);
             }
         }
 
-        // Re-draw path connections with updated status colors
-        ClearPaths();
-        DrawAllPaths();
+        ApplyDioramaStatus();
         PlaceLocationMarker();
     }
 
@@ -492,6 +533,7 @@ public class CampaignMapUI : MonoBehaviour
         {
             Destroy(tierHeadersContainer.GetChild(i).gameObject);
         }
+        tierHeaders.Clear();
 
         foreach (CampaignTier tier in campaignGraph.tiers)
         {
@@ -506,7 +548,8 @@ public class CampaignMapUI : MonoBehaviour
             TMP_Text header = Instantiate(tierHeaderPrefab, tierHeadersContainer);
             string numeral = tier.tierNumber >= 1 && tier.tierNumber <= RomanNumerals.Length ? RomanNumerals[tier.tierNumber - 1] : tier.tierNumber.ToString();
             header.text = $"<size=140%>{numeral}</size>\n{tier.tierName}";
-            header.rectTransform.anchoredPosition = new Vector2(columnX, -tierHeaderTopMargin);
+            header.rectTransform.anchoredPosition = new Vector2(0f, -tierHeaderTopMargin);
+            tierHeaders.Add(new KeyValuePair<RectTransform, float>(header.rectTransform, diorama.MapToWorldX(columnX)));
         }
     }
 
@@ -514,14 +557,13 @@ public class CampaignMapUI : MonoBehaviour
     {
         if (locationMarker == null) return;
         CampaignNodeSO here = CampaignManager.Instance.CurrentLocationNode;
-        if (here == null || !spawnedButtons.TryGetValue(here.nodeId, out CampaignNodeButtonUI button) || button == null)
+        if (here == null || !diorama.TryGetSite(here.nodeId, out locationSite))
         {
+            locationSite = null;
             locationMarker.gameObject.SetActive(false);
             return;
         }
         locationMarker.gameObject.SetActive(true);
-        locationMarkerBase = button.Rect.anchoredPosition + locationMarkerOffset;
-        locationMarker.anchoredPosition = locationMarkerBase;
         locationMarker.SetAsLastSibling();
     }
 
@@ -552,125 +594,58 @@ public class CampaignMapUI : MonoBehaviour
     {
         CampaignNodeButtonUI btn = Instantiate(nodeButtonPrefab, nodesContainer);
 
-        RectTransform rt = btn.GetComponent<RectTransform>();
-        if (rt != null)
-        {
-            rt.anchoredPosition = node.mapPosition;
-        }
-
-        btn.Setup(node, status, HandleNodeSelected, HandleNodeHovered, HandleNodeHoverExited);
+        btn.Setup(node, status, HandleNodeClicked, HandleNodeHovered, HandleNodeHoverExited);
         return btn;
     }
 
-    private void DrawAllPaths()
+    /// <summary>Pushes every node's status onto its castle and every edge's status onto its route overlay.</summary>
+    private void ApplyDioramaStatus()
     {
-        if (campaignGraph == null || campaignGraph.allNodes == null) return;
-
-        Transform pathParent = pathsContainer;
-
-        for (int i = 0; i < campaignGraph.allNodes.Count; i++)
+        foreach (CampaignNodeButtonUI button in spawnedButtons.Values)
         {
-            CampaignNodeSO fromNode = campaignGraph.allNodes[i];
-            if (fromNode == null || fromNode.nextNodes == null) continue;
-
-            if (!spawnedButtons.TryGetValue(fromNode.nodeId, out CampaignNodeButtonUI fromBtn) || fromBtn == null)
-                continue;
-
-            RectTransform fromRect = fromBtn.GetComponent<RectTransform>();
-            Vector2 fromPos = fromRect.anchoredPosition;
-
-            bool fromCompleted = (fromBtn.CurrentStatus == CampaignNodeButtonUI.NodeVisualStatus.Completed);
-
-            for (int n = 0; n < fromNode.nextNodes.Count; n++)
+            if (button != null && button.NodeData != null)
             {
-                CampaignNodeSO toNode = fromNode.nextNodes[n];
+                diorama.ApplyNodeStatus(button.NodeData.nodeId, button.CurrentStatus);
+            }
+        }
+
+        foreach (CampaignNodeSO fromNode in campaignGraph.allNodes)
+        {
+            if (fromNode == null || fromNode.nextNodes == null) continue;
+            if (!spawnedButtons.TryGetValue(fromNode.nodeId, out CampaignNodeButtonUI fromBtn) || fromBtn == null) continue;
+            bool fromCompleted = fromBtn.CurrentStatus == CampaignNodeButtonUI.NodeVisualStatus.Completed;
+
+            foreach (CampaignNodeSO toNode in fromNode.nextNodes)
+            {
                 if (toNode == null) continue;
+                if (!spawnedButtons.TryGetValue(toNode.nodeId, out CampaignNodeButtonUI toBtn) || toBtn == null) continue;
 
-                if (!spawnedButtons.TryGetValue(toNode.nodeId, out CampaignNodeButtonUI toBtn) || toBtn == null)
-                    continue;
-
-                RectTransform toRect = toBtn.GetComponent<RectTransform>();
-                Vector2 toPos = toRect.anchoredPosition;
-
-                Color pathColor = pathLockedColor;
-                float thickness = pathThickness;
                 CampaignNodeButtonUI.NodeVisualStatus toStatus = toBtn.CurrentStatus;
+                CampaignDioramaRoad.RoadStatus road = CampaignDioramaRoad.RoadStatus.Locked;
                 if (fromCompleted && toStatus == CampaignNodeButtonUI.NodeVisualStatus.Available)
                 {
-                    pathColor = pathAvailableColor;
-                    thickness = activePathThickness;
+                    road = CampaignDioramaRoad.RoadStatus.Available;
                 }
                 else if (fromCompleted && toStatus == CampaignNodeButtonUI.NodeVisualStatus.Completed)
                 {
-                    pathColor = pathCompletedColor;
-                    thickness = activePathThickness;
+                    road = CampaignDioramaRoad.RoadStatus.Completed;
                 }
                 else if (fromBtn.CurrentStatus == CampaignNodeButtonUI.NodeVisualStatus.Bypassed ||
                          toStatus == CampaignNodeButtonUI.NodeVisualStatus.Bypassed ||
                          fromCompleted)
                 {
-                    pathColor = pathBypassedColor;
+                    road = CampaignDioramaRoad.RoadStatus.Bypassed;
                 }
-
-                GameObject lineGo = CreatePathLine(pathParent, fromPos, toPos, pathColor, thickness);
-                if (lineGo != null)
-                {
-                    spawnedPaths.Add(lineGo);
-                }
+                diorama.ApplyRoadStatus(fromNode.nodeId, toNode.nodeId, road);
             }
         }
     }
 
-    // Half the node button's size, so path lines stop at the node edges instead of running under the boxes.
-    private Vector2 NodeHalfExtents
+    /// <summary>A mouse click on a node label; ignored when it ends a camera drag.</summary>
+    private void HandleNodeClicked(CampaignNodeSO node)
     {
-        get
-        {
-            RectTransform prefabRect = nodeButtonPrefab != null ? nodeButtonPrefab.transform as RectTransform : null;
-            return prefabRect != null ? prefabRect.sizeDelta * 0.5f : Vector2.zero;
-        }
-    }
-
-    private static float EdgeDistance(Vector2 direction, Vector2 halfExtents)
-    {
-        float tx = Mathf.Abs(direction.x) > 0.0001f ? halfExtents.x / Mathf.Abs(direction.x) : float.MaxValue;
-        float ty = Mathf.Abs(direction.y) > 0.0001f ? halfExtents.y / Mathf.Abs(direction.y) : float.MaxValue;
-        return Mathf.Min(tx, ty);
-    }
-
-    private GameObject CreatePathLine(Transform parent, Vector2 from, Vector2 to, Color color, float thickness)
-    {
-        // Trim both ends to the node boxes' edges (plus a small gap).
-        Vector2 dir = (to - from).normalized;
-        float trim = EdgeDistance(dir, NodeHalfExtents) + 6f;
-        if (Vector2.Distance(from, to) > trim * 2f + 4f)
-        {
-            from += dir * trim;
-            to -= dir * trim;
-        }
-
-        GameObject lineGo = Instantiate(pathLinePrefab, parent);
-
-        RectTransform rt = lineGo.GetComponent<RectTransform>();
-        Image img = lineGo.GetComponent<Image>();
-
-        if (img != null)
-        {
-            img.color = color;
-        }
-
-        Vector2 direction = (to - from).normalized;
-        float distance = Vector2.Distance(from, to);
-
-        rt.sizeDelta = new Vector2(distance, thickness);
-        rt.pivot = new Vector2(0f, 0.5f);
-        rt.anchoredPosition = from;
-
-        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-        rt.localRotation = Quaternion.Euler(0f, 0f, angle);
-
-        lineGo.transform.SetAsFirstSibling();
-        return lineGo;
+        if (diorama.DioramaCamera != null && diorama.DioramaCamera.SuppressClick) return;
+        HandleNodeSelected(node);
     }
 
     private void HandleNodeSelected(CampaignNodeSO node)
@@ -726,19 +701,6 @@ public class CampaignMapUI : MonoBehaviour
         }
     }
 
-    private void FocusOnNode(RectTransform nodeRect)
-    {
-        if (scrollRect == null || scrollRect.content == null || scrollRect.viewport == null || nodeRect == null) return;
-
-        // Node x is measured from the content's left edge (node prefab anchored at (0, 0.5)).
-        // Centre it in the viewport: normalized 0 = content's left edge at the viewport's left.
-        float scrollable = scrollRect.content.rect.width - scrollRect.viewport.rect.width;
-        if (scrollable <= 0f) return;
-
-        float targetLeft = nodeRect.anchoredPosition.x - scrollRect.viewport.rect.width * 0.5f;
-        scrollRect.horizontalNormalizedPosition = Mathf.Clamp01(targetLeft / scrollable);
-    }
-
     private void ClearSpawnedElements()
     {
         if (nodesContainer != null)
@@ -754,24 +716,5 @@ public class CampaignMapUI : MonoBehaviour
             }
         }
         spawnedButtons.Clear();
-
-        ClearPaths();
-    }
-
-    private void ClearPaths()
-    {
-        if (pathsContainer != null)
-        {
-            for (int i = pathsContainer.childCount - 1; i >= 0; i--)
-            {
-                Transform child = pathsContainer.GetChild(i);
-                if (child != null)
-                {
-                    if (Application.isPlaying) Destroy(child.gameObject);
-                    else DestroyImmediate(child.gameObject);
-                }
-            }
-        }
-        spawnedPaths.Clear();
     }
 }
