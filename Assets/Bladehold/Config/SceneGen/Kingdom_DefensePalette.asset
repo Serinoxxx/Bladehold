@@ -452,6 +452,8 @@ MonoBehaviour:
   sunIntensity: 1.45
   crystalBias: {x: 1, y: 1, z: 1}
   worldEventIds: []
+  sceneMusic: {fileID: 11400000, guid: 7c99920a37e76bc4eae85d897a17fc5a, type: 2}
+  prepMusicOverride: {fileID: 0}
   sunEuler: {x: 40, y: -30, z: 0}
   fogColor: {r: 0.66, g: 0.78, b: 0.86, a: 1}
   fogDensity: 0.0028

@@ -38,12 +38,17 @@
 - Added sounds and effects to the sword, mace and throwing axe ultimates
 - Added a new campaign map: a hand-crafted miniature landscape with a little castle for every sector, scenery that matches each level (snowfields, desert dunes, snowy peaks, haunted graveyards, enchanted forests and ponds, castle towns, the crypt), and glowing routes showing where you can go next
 - Added a screenshot of each level to the campaign map's sector tooltip
+- Added original music across all scenes, hubs and battlefields: calm preparation themes between waves, tense battle tracks, and unique music for captains, bosses, rest areas, the fishing pond, the campaign map and menus
+- Added fanfare and defeat stingers for wave objectives, sector victories, campaign completion and defeats
+- Added music ducking when the pause menu is opened
+- Added smooth crossfades and loading-screen fades for all music transitions
 
 ### Fixes
 
 - Fixed the horse sometimes refusing to move from a standstill until forward was held for a few seconds
 - Fixed the camera sometimes getting stuck with the mouse cursor showing after changing areas
 - Fixed gamepad selection getting stuck on an invisible button in the settings menu
+- Fixed the Music volume slider in the Audio settings menu so it adjusts music volume across every scene
 
 ### Balance Changes
 

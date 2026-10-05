@@ -429,6 +429,8 @@ MonoBehaviour:
   - blood_moon
   - thunderstorm
   - caravan
+  sceneMusic: {fileID: 11400000, guid: 381e4517446fc23409d3d03572e0b116, type: 2}
+  prepMusicOverride: {fileID: 11400000, guid: 381e4517446fc23409d3d03572e0b116, type: 2}
   sunEuler: {x: 28, y: -50, z: 0}
   fogColor: {r: 0.17, g: 0.32, b: 0.21, a: 1}
   fogDensity: 0.0065

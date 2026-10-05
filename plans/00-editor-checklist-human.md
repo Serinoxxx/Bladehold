@@ -28,6 +28,7 @@ Things that need your hands, eyes or judgement in the Unity Editor. Items marked
 - [Directional swings + armed arm pose](editor/directional-swings.md) (built and Animator-checked; needs your feel playtest, threshold tuning and a look at the carry pose)
 - [Mount charge, horse loss, horse HUD](editor/mount-charge-and-hud.md) (built and play-checked; **decide horse max HP** (12 is fragile now that loss is permanent), plus feedback slots and UI review)
 - [18: Biome world events](editor/18-world-events.md) (all six built and play-checked; needs your UI review, sound/art picks and a balance playtest)
+- [19: Music](editor/19-music.md) (built and play-checked; needs listening pass and balance check)
 
 ## A. Triage first (biggest win)
 

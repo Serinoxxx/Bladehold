@@ -183,6 +183,7 @@ public class PrincessBossController : MonoBehaviour
         }
 
         currentState = PrincessState.Fleeing;
+        MusicDirector.SetBossFight(true);
         Debug.Log($"[PrincessBossController] Princess Katherine initialized with {knights.Count} Armored Knights.");
     }
 
@@ -665,6 +666,7 @@ public class PrincessBossController : MonoBehaviour
 
         // Campaign end: the end screen's button completes the boss node, wipes the run and returns to Meta.
         ShowCampaignEndScreen();
+        MusicDirector.SetBossFight(false);
 
         OnPrincessDefeated?.Invoke();
     }

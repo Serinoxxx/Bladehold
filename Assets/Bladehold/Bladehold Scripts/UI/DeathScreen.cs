@@ -105,6 +105,9 @@ public class DeathScreen : MonoBehaviour
     public static DeathScreen Instance { get; private set; }
 
     private Health playerHealth;
+    /// <summary>Raised once when the run ends by any route (sector or boss win, player death, gate fall). The argument is true for a win.</summary>
+    public static event System.Action<bool> OnRunOver;
+
     private bool shown = false;   // latch: the run only ends once, whichever signal fires first
     private bool anyError = false;
     private bool isCampaignComplete = false;
@@ -287,6 +290,7 @@ public class DeathScreen : MonoBehaviour
             return;
         }
         shown = true;
+        OnRunOver?.Invoke(isVictory);
 
         GameObject hudGO = GameObject.Find("Bladehold HUD") ?? GameObject.Find("HUD Canvas") ?? GameObject.Find("HUD");
         if (hudGO != null)

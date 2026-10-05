@@ -1,0 +1,33 @@
+fileFormatVersion: 2
+guid: 1bda40d086e264b4689cd8e0d9c4d386
+labels:
+- Audio
+- One
+AssetOrigin:
+  serializedVersion: 1
+  productId: 37351
+  packageName: Ultimate Game Music Collection
+  packageVersion: 1.9.2
+  assetPath: Assets/Bladehold/Audio/Music/Stings/Fanfare Win.wav
+  uploadId: 432473
+AudioImporter:
+  externalObjects: {}
+  serializedVersion: 8
+  defaultSettings:
+    serializedVersion: 2
+    loadType: 1
+    sampleRateSetting: 0
+    sampleRateOverride: 44100
+    compressionFormat: 1
+    quality: 0.6
+    conversionMode: 0
+    preloadAudioData: 0
+  platformSettingOverrides: {}
+  forceToMono: 0
+  normalize: 1
+  loadInBackground: 1
+  ambisonic: 0
+  3D: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

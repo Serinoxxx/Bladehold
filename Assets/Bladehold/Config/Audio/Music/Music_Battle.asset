@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: afc0edef499b9e5439cabfa9134d298a, type: 3}
+  m_Name: Music_Battle
+  m_EditorClassIdentifier: Assembly-CSharp::MusicCueSO
+  clips:
+  - {fileID: 8300000, guid: e9b1b43ad22a242ee8fa8d72bc9aa7bd, type: 3}
+  - {fileID: 8300000, guid: 98b37014e75414b2bab3404a08937561, type: 3}
+  - {fileID: 8300000, guid: da1a78764cc3d4eb48f1f4356bcc40da, type: 3}
+  - {fileID: 8300000, guid: e8df899ba9465421b8f8bc7076d56586, type: 3}
+  - {fileID: 8300000, guid: 9daec4493653a40f1ad95705104b5986, type: 3}
+  volume: 1
+  loopClip: 1
+  rotateCrossfade: 4

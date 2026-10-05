@@ -79,8 +79,19 @@ namespace Bladehold.UI
 
         public static void ReleaseFadeOut() => fadeOutHolds = Mathf.Max(0, fadeOutHolds - 1);
 
+        /// <summary>Raised when a transition begins, before the loading screen fades in (the music fades out here).</summary>
+        public static event System.Action OnTransitionStarted;
+
+        /// <summary>Raised just before the loading screen fades out to reveal the new scene.</summary>
+        public static event System.Action OnSceneRevealed;
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetStatics() => fadeOutHolds = 0;
+        private static void ResetStatics()
+        {
+            fadeOutHolds = 0;
+            OnTransitionStarted = null;
+            OnSceneRevealed = null;
+        }
 
         private void Awake()
         {
@@ -148,6 +159,7 @@ namespace Bladehold.UI
         {
             isLoading = true;
             Time.timeScale = 1f;
+            OnTransitionStarted?.Invoke();
 
             if (activeLoadingUI != null)
             {
@@ -187,6 +199,7 @@ namespace Bladehold.UI
             if (op == null)
             {
                 Debug.LogError($"[LoadingScreenManager] Failed to load scene '{sceneName}'! Check Build Settings.");
+                OnSceneRevealed?.Invoke();
                 if (activeLoadingUI != null)
                 {
                     yield return activeLoadingUI.FadeOut(fadeDuration);
@@ -242,6 +255,7 @@ namespace Bladehold.UI
             }
 
             // 5. Fade out and clean up
+            OnSceneRevealed?.Invoke();
             if (activeLoadingUI != null)
             {
                 yield return activeLoadingUI.FadeOut(fadeDuration);

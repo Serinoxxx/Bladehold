@@ -121,6 +121,8 @@ public class GameLoopManager : MonoBehaviour
     public SectorSummary Summary { get; } = new SectorSummary();
 
     public event Action<int> OnWaveStarted;
+    /// <summary>Fired when a clan captain spawns, with its Health (the music switches to captain music).</summary>
+    public event Action<Health> OnCaptainSpawned;
     public event Action<int, string> OnWaveCleared;
     public event Action OnVictory;
     public event Action<Health> OnEnemyKilledEvent;
@@ -867,6 +869,11 @@ public class GameLoopManager : MonoBehaviour
                 Summary.captainsDefeated.Add($"{fallenName} ({BannerDifficultyHelper.GetTierName(fallenTier)})");
             };
             captainHealth.OnDied += onCaptainDied;
+        }
+
+        if (captainHealth != null)
+        {
+            OnCaptainSpawned?.Invoke(captainHealth);
         }
 
         // Play the enemy intro announcement with difficulty skulls

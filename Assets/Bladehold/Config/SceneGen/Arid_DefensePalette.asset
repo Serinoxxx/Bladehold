@@ -1731,6 +1731,8 @@ MonoBehaviour:
   worldEventIds:
   - eruption
   - caravan
+  sceneMusic: {fileID: 11400000, guid: 6774fa642141e3f4c81ac1771642a5c7, type: 2}
+  prepMusicOverride: {fileID: 11400000, guid: 6774fa642141e3f4c81ac1771642a5c7, type: 2}
   sunEuler: {x: 42, y: -40, z: 0}
   fogColor: {r: 0.82, g: 0.62, b: 0.46, a: 1}
   fogDensity: 0.003

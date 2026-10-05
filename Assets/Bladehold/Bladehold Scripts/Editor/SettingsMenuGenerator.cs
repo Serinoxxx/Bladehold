@@ -39,7 +39,7 @@ public static class SettingsMenuGenerator
     private const string IconButtonPrefabPath = PrefabFolder + "/MenuIconButton.prefab";
     private const string ValueInputPrefabPath = PrefabFolder + "/MenuValueInput.prefab";
     private const string ResetIconPath = PrefabFolder + "/ResetIcon.png";
-    private const string MixerAssetPath = "Assets/Feel/MMTools/Core/MMAudio/MMSoundManager/Settings/MMSoundManagerAudioMixer.mixer";
+    private const string MixerAssetPath = "Assets/Third Party/Feel/MMTools/Core/MMAudio/MMSoundManager/Settings/MMSoundManagerAudioMixer.mixer";
 
     // Shared by RebindRow and the header row above the rebind list so their columns line up; narrower
     // than the slider rows' 220 label so the two binding buttons keep usable width.

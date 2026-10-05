@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4e3979b85279974aab7c2f5bc55e7a1, type: 3}
+  m_Name: MusicSettings
+  m_EditorClassIdentifier: Assembly-CSharp::MusicSettingsSO
+  prep: {fileID: 11400000, guid: 7c99920a37e76bc4eae85d897a17fc5a, type: 2}
+  battle: {fileID: 11400000, guid: 6a93dc7c03c5b1d40bb441e4b0269e34, type: 2}
+  captain: {fileID: 11400000, guid: e39b5a825eabc634988612a2f275f3b9, type: 2}
+  boss: {fileID: 11400000, guid: b525e102eee2f20428a1eda102517995, type: 2}
+  victoryBed: {fileID: 11400000, guid: 40dd607a95ea8b540aa798aa87135865, type: 2}
+  objectiveSting: {fileID: 11400000, guid: a3841a711c7527741b0d610574ba128c, type: 2}
+  victorySting: {fileID: 11400000, guid: 75bdb370aa5f4b648aa70abb0fa6f27d, type: 2}
+  campaignCompleteSting: {fileID: 11400000, guid: c0e1d64b729718e42bd4d5c32efce2d5, type: 2}
+  defeatSting: {fileID: 11400000, guid: bd3fe2559a0524744a74cfd9f8a89fb1, type: 2}
+  sceneFadeOut: 1.2
+  sceneFadeIn: 2
+  toBattle: 1.5
+  toPrep: 3
+  toCaptain: 1
+  toBoss: 1.5
+  defeatFadeOut: 1.5
+  stingDuckTo: 0.25
+  stingDuckIn: 0.3
+  stingDuckOut: 1.5
+  pauseDuckTo: 0.4
+  pauseDuckFade: 0.25

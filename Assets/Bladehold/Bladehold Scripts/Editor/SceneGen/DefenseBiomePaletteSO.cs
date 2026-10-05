@@ -105,6 +105,10 @@ public class DefenseBiomePaletteSO : ScriptableObject
     public Vector3 crystalBias = Vector3.one;
     [Tooltip("World events this biome rolls, by WorldEventSO.id (eruption, blizzard, thunderstorm, stampede, blood_moon, caravan). Empty = no WorldEvents prefab.")]
     public string[] worldEventIds = System.Array.Empty<string>();
+    [Tooltip("Music for this biome: plays before the game loop has a phase, and between waves unless Prep Music Override is set. Placed as a SceneMusic by DefenseSceneGenerator.")]
+    public MusicCueSO sceneMusic;
+    [Tooltip("Optional: replaces the default prep (between-waves) music in scenes generated from this palette.")]
+    public MusicCueSO prepMusicOverride;
 
     public Vector3 sunEuler = new Vector3(38f, -35f, 0f);
     public Color fogColor = new Color(0.62f, 0.7f, 0.78f);

@@ -120,6 +120,8 @@ MonoBehaviour:
   worldEventIds:
   - blizzard
   - caravan
+  sceneMusic: {fileID: 11400000, guid: 7c99920a37e76bc4eae85d897a17fc5a, type: 2}
+  prepMusicOverride: {fileID: 0}
   sunEuler: {x: 38, y: -35, z: 0}
   fogColor: {r: 0.62, g: 0.7, b: 0.78, a: 1}
   fogDensity: 0.0035

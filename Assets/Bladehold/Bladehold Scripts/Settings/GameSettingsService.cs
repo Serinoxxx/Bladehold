@@ -1,4 +1,5 @@
 using System;
+using MoreMountains.Tools;
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -302,13 +303,24 @@ public class GameSettingsService : MonoBehaviour
 
     private void SetMixerVolume(string exposedParam, float linear01)
     {
-        if (mixer == null)
+        AudioMixer target = mixer != null ? mixer : FeelMixer();
+        if (target == null)
         {
             return;
         }
 
         float dB = linear01 > 0.0001f ? Mathf.Log10(linear01) * 20f : -80f;
-        mixer.SetFloat(exposedParam, dB);
+        target.SetFloat(exposedParam, dB);
+    }
+
+    /// <summary>The mixer behind Feel's sound manager, for scenes where this service has no mixer assigned.</summary>
+    private static AudioMixer FeelMixer()
+    {
+        if (!MMSoundManager.HasInstance || MMSoundManager.Instance.settingsSo == null)
+        {
+            return null;
+        }
+        return MMSoundManager.Instance.settingsSo.TargetAudioMixer;
     }
 
     private void Persist()

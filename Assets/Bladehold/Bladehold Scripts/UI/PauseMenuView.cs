@@ -179,6 +179,13 @@ public class PauseMenuView : MonoBehaviour
         MMTimeScaleEvent.Reset();
 
         string sceneName = string.IsNullOrEmpty(mainMenuSceneName) ? "MainMenu" : mainMenuSceneName;
-        SceneManager.LoadScene(sceneName);
+        if (Bladehold.UI.LoadingScreenManager.Instance != null)
+        {
+            Bladehold.UI.LoadingScreenManager.Instance.LoadScene(sceneName);
+        }
+        else
+        {
+            SceneManager.LoadScene(sceneName);
+        }
     }
 }

@@ -170,6 +170,7 @@ public class NecromancerBossController : MonoBehaviour
     {
         if (isFightActive) return;
         isFightActive = true;
+        MusicDirector.SetBossFight(true);
 
         EnsureComponents();
 
@@ -542,6 +543,7 @@ public class NecromancerBossController : MonoBehaviour
 
         // Campaign end: the end screen's button completes the boss node, wipes the run and returns to Meta.
         ShowCampaignEndScreen();
+        MusicDirector.SetBossFight(false);
 
         OnBossDefeated?.Invoke();
     }

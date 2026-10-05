@@ -83,6 +83,7 @@ public static class DefenseSceneGenerator
         LayoutGameplay(ctx, gate);
         PlaceFortRules(ctx);
         WorldEventsSceneSetup.Place(ctx.Spec.palette.worldEventIds);
+        SceneMusicSetup.Place(ctx.Spec.palette.sceneMusic, ctx.Spec.palette.prepMusicOverride, null);
 
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene);
