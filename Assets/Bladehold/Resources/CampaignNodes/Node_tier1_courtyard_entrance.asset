@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Node_tier1_courtyard_entrance
   m_EditorClassIdentifier: Assembly-CSharp::CampaignNodeSO
   nodeId: tier1_courtyard_entrance
-  nodeTitle: Outer Gate
+  nodeTitle: Alpine Keep
   subtitle: Snowbound Approach
   description: Hold the outer gate against the first goblin warband. Build towers
     on the approach and knock raiders off the bridges into the spike ravine.
@@ -34,7 +34,7 @@ MonoBehaviour:
   metalReward: 0
   rewardIcon: {fileID: 0}
   nextNodes:
-  - {fileID: 11400000, guid: 32dd7451bc9e8374d817999b58d80f1c, type: 2}
-  - {fileID: 11400000, guid: 6959791242a150b40a9a22d79666299d, type: 2}
   - {fileID: 11400000, guid: 14e852b703476ae42bcfa3d9476ee4c0, type: 2}
+  - {fileID: 11400000, guid: 6c6e6c1c6f25d6448a1cf992d3253227, type: 2}
+  - {fileID: 11400000, guid: 6959791242a150b40a9a22d79666299d, type: 2}
   endsCampaign: 0

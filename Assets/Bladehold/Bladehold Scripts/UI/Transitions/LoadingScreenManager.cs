@@ -152,7 +152,7 @@ namespace Bladehold.UI
             if (activeLoadingUI != null)
             {
                 activeLoadingUI.SetAreaInfo(metadata);
-                activeLoadingUI.SetProgress(0f, "Preparing realm...");
+                activeLoadingUI.SetProgress(0f, Loc.Get("loading.preparing", "Preparing the realm"));
                 yield return activeLoadingUI.FadeIn(fadeDuration);
             }
 
@@ -162,9 +162,10 @@ namespace Bladehold.UI
             if (prewarmVariants != null && !prewarmVariants.isWarmedUp && prewarmVariants.variantCount > 0)
             {
                 int totalVariants = prewarmVariants.variantCount;
+                string shaderStatus = Loc.Get("loading.shaders", "Preparing shaders");
                 if (activeLoadingUI != null)
                 {
-                    activeLoadingUI.SetProgress(0f, "Prewarming Shaders...");
+                    activeLoadingUI.SetProgress(0f, shaderStatus);
                 }
 
                 while (!prewarmVariants.isWarmedUp && prewarmVariants.warmedUpVariantCount < totalVariants)
@@ -175,7 +176,7 @@ namespace Bladehold.UI
 
                     if (activeLoadingUI != null)
                     {
-                        activeLoadingUI.SetProgress(shaderFill, $"Prewarming Shaders... {(shaderProgress * 100f):F0}%");
+                        activeLoadingUI.SetProgress(shaderFill, shaderStatus);
                     }
                     yield return null;
                 }
@@ -212,7 +213,8 @@ namespace Bladehold.UI
 
             if (activeLoadingUI != null)
             {
-                activeLoadingUI.SetProgress(1f, "Entering " + (!string.IsNullOrEmpty(metadata?.displayName) ? metadata.displayName : "Realm"));
+                activeLoadingUI.SetProgress(1f, Loc.Get("loading.ready", "Ready"));
+                yield return activeLoadingUI.WaitForProgressDisplay(1f);
             }
 
             // 3. Minimum display duration to ensure player can read lore and prevent visual flashing

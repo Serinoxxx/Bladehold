@@ -20,7 +20,9 @@ public class CampaignDiorama : MonoBehaviour
 
     private readonly Dictionary<string, CampaignDioramaSite> siteById = new Dictionary<string, CampaignDioramaSite>(System.StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, CampaignDioramaRoad> roadByEdge = new Dictionary<string, CampaignDioramaRoad>(System.StringComparer.OrdinalIgnoreCase);
-    private bool indexed;
+    // NonSerialized: a domain reload would otherwise keep the flag but drop the dictionaries,
+    // leaving every lookup empty (labels stop following their castles).
+    [System.NonSerialized] private bool indexed;
 
     public CampaignDioramaCamera DioramaCamera => dioramaCamera;
     public Camera Camera => dioramaCamera != null ? dioramaCamera.Camera : null;

@@ -15,8 +15,9 @@ using K = BladeholdUIKit;
 ///     player and runtime binding survives: the restyle only swaps sprites, colours and fonts and adds
 ///     <c>Theme…</c> decoration children (cleared and re-added on every run, so it's re-runnable).
 ///
-///     The boss intro banner is the exception: its old children are replaced by a new layout
-///     (<see cref="BuildBossIntro" />) and rewired to <see cref="EnemyIntroUI" />.
+///     The boss intro banner and the loading screen are the exceptions: their old children are replaced by
+///     a new layout (<see cref="BuildBossIntro" />, <see cref="BuildLoadingScreen" />) and rewired to their
+///     view component.
 ///
 ///     Menu: Bladehold > UI > Restyle. Tune here and re-run rather than hand-editing the prefabs.
 /// </summary>
@@ -33,6 +34,13 @@ public static class ScreenRestyleBuilder
     private const string NodeButtonPath = Ui + "CampaignNodeButton.prefab";
     private const string TierHeaderPath = Ui + "CampaignTierHeader.prefab";
     private const string CampaignScenePath = "Assets/Bladehold/Bladehold Scenes/Bladehold Campaign Map Scene.unity";
+    private const string FishingScenePath = "Assets/Bladehold/Bladehold Scenes/Bladehold Fishing Pond.unity";
+    private const string FishingDraftCardPath = Ui + "FishingDraftCard.prefab";
+    private const string BuffFishButtonPath = Ui + "FishingBuffFishButton.prefab";
+    private const string MainMenuScenePath = "Assets/Bladehold/Bladehold Scenes/MainMenu.unity";
+    private const string LoadingScreenPath = "Assets/Bladehold/Resources/LoadingScreenManager.prefab";
+    private const string KeyArtPath = "Assets/Bladehold/Art/Backgrounds/MainCapsule.png";
+    private const string LogoPath = "Assets/Bladehold/Art/Backgrounds/bladeholdLogo.png";
     private const string UnderlayHeaderFont = "Assets/Synty/InterfaceFantasyWarriorHUD/Fonts/Texturina/Texturina_18pt-SemiBold SDF Black Underlay.asset";
     private const string SkullSprite = "ICON_FantasyWarrior_Map_Skull_01_Underlay";
 
@@ -44,6 +52,9 @@ public static class ScreenRestyleBuilder
         RestyleSaveSlots();
         BuildBossIntro();
         RestyleCampaignMap();
+        RestyleFishing();
+        RestyleMainMenu();
+        BuildLoadingScreen();
     }
 
     // ───────────────────────────────────────────────── shared pieces
@@ -664,5 +675,466 @@ public static class ScreenRestyleBuilder
         EditorSceneManager.SaveScene(scene);
         Debug.Log("[ScreenRestyleBuilder] Campaign map scene restyled and saved.");
         if (opened) EditorSceneManager.CloseScene(scene, true);
+    }
+
+    // ───────────────────────────────────────────────── main menu title screen
+
+    /// <summary>
+    ///     The title screen in MainMenu.unity: themed parchment / ghost buttons (Synty button animators replaced
+    ///     by juice), the patch notes as a dark framed window, Grenze version label, gamepad focus on Play.
+    ///     Also deletes the scene's old built-in loading screen: the main menu now loads through the shared
+    ///     <see cref="Bladehold.UI.LoadingScreenManager" /> (see <see cref="BuildLoadingScreen" />).
+    /// </summary>
+    [MenuItem("Bladehold/UI/Restyle/Main Menu")]
+    public static void RestyleMainMenu()
+    {
+        K.Begin(UIMenuId.MainMenu);
+        Scene scene = SceneManager.GetSceneByPath(MainMenuScenePath);
+        bool opened = false;
+        if (!scene.isLoaded)
+        {
+            scene = EditorSceneManager.OpenScene(MainMenuScenePath, OpenSceneMode.Additive);
+            opened = true;
+        }
+        Bladehold.UI.MainMenuManager menu = null;
+        foreach (GameObject go in scene.GetRootGameObjects())
+        {
+            menu = go.GetComponentInChildren<Bladehold.UI.MainMenuManager>(true);
+            if (menu != null) break;
+        }
+        if (menu == null)
+        {
+            Debug.LogError("[ScreenRestyleBuilder] MainMenu scene has no MainMenuManager.");
+            return;
+        }
+
+        Transform canvas = menu.transform;
+        K.Scope(canvas.gameObject, UIMenuId.MainMenu);
+        Transform oldLoading = canvas.Find("LoadingScreen");
+        if (oldLoading != null) Object.DestroyImmediate(oldLoading.gameObject);
+
+        Transform title = R.Need(canvas, "Screen_Title");
+
+        // Buttons: Play is the one parchment call to action, the rest are framed ghosts; Quit is a smaller ghost.
+        RectTransform buttons = (RectTransform)R.Need(title, "Buttons");
+        buttons.sizeDelta = new Vector2(buttons.sizeDelta.x, 700f);
+        VerticalLayoutGroup column = buttons.GetComponent<VerticalLayoutGroup>();
+        column.spacing = 28f;
+        Button play = TitleButton(buttons, "Button_Start", K.ButtonStyle.Primary);
+        TitleButton(buttons, "Button_ReplayTutorial", K.ButtonStyle.Ghost);
+        TitleButton(buttons, "Button_Settings", K.ButtonStyle.Ghost);
+
+        Button quit = R.Need<Button>(buttons, "Button_Quit");
+        RectTransform quitRect = (RectTransform)quit.transform;
+        quitRect.pivot = new Vector2(0.5f, 0.5f);
+        quitRect.sizeDelta = new Vector2(420f, 110f);
+        TMP_Text quitLabel = R.Need<TMP_Text>(quit.transform, "Label_Button");
+        R.Button(quit, K.ButtonStyle.Ghost, quitLabel, quit.GetComponent<Image>(), 0.45f);
+        quitLabel.fontSize = 44f;
+        quitLabel.characterSpacing = 6f;
+        K.Paint(quitLabel, UIColorRole.TextDim, 1f, UIFontRole.Header);
+
+        MenuFocusController focus = title.GetComponent<MenuFocusController>();
+        if (focus == null) focus = title.gameObject.AddComponent<MenuFocusController>();
+        var focusSo = new SerializedObject(focus);
+        focusSo.FindProperty("defaultSelectable").objectReferenceValue = play;
+        focusSo.FindProperty("disableCancel").boolValue = true;
+        focusSo.ApplyModifiedPropertiesWithoutUndo();
+
+        // Patch notes: a dark framed window left of the buttons, with readable (4K-reference) type. Placed from
+        // the centre column so narrower screens (16:10) keep the gap to the buttons.
+        RectTransform notes = (RectTransform)R.Need(title, "ChangelogPanel");
+        K.Place(notes, new Vector2(0.5f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-440f, -330f), new Vector2(1100f, 1020f));
+        R.WindowChrome(notes);
+        Transform header = R.Need(notes, "HeaderPanel");
+        ((RectTransform)header).sizeDelta = new Vector2(-80f, 96f);
+        ((RectTransform)header).anchoredPosition = new Vector2(0f, -30f);
+        TMP_Text notesTitle = R.TitleInk(R.Need<TMP_Text>(header, "TitleText"), 6f);
+        notesTitle.fontSize = 56f;
+        TMP_Text badge = R.Ink(R.Need<TMP_Text>(header, "VersionBadge"), UIColorRole.AccentMuted, UIFontRole.Body);
+        badge.fontSize = 40f;
+        Image rule = R.Rule(R.Need<Image>(header, "DividerLine"), 0.55f);
+        ((RectTransform)rule.transform).sizeDelta = new Vector2(0f, 8f);
+
+        RectTransform scroll = (RectTransform)R.Need(notes, "ScrollView");
+        scroll.offsetMin = new Vector2(44f, 40f);
+        scroll.offsetMax = new Vector2(-36f, -150f);
+        TMP_Text body = R.Ink(R.Need<TMP_Text>(scroll, "Viewport/Content/Text_Changelog"), UIColorRole.Text, UIFontRole.Body);
+        body.fontSize = 34f;
+        body.lineSpacing = 0f;
+        body.paragraphSpacing = 6f;
+        Image track = R.Flat(R.Need<Image>(scroll, "Scrollbar"), UIColorRole.Well, 0.8f);
+        ((RectTransform)track.transform).sizeDelta = new Vector2(10f, 0f);
+        R.Flat(R.Need<Image>(scroll, "Scrollbar/Sliding Area/Handle"), UIColorRole.AccentMuted, 0.8f);
+
+        TMP_Text version = R.Ink(R.Need<TMP_Text>(canvas, "VersionLabel"), UIColorRole.TextDim, UIFontRole.Body, 0.8f);
+        version.fontSize = 36f;
+        ((RectTransform)version.transform).anchoredPosition = new Vector2(-48f, 36f);
+
+        EditorSceneManager.MarkSceneDirty(scene);
+        EditorSceneManager.SaveScene(scene);
+        Debug.Log("[ScreenRestyleBuilder] Main menu restyled and saved.");
+        if (opened) EditorSceneManager.CloseScene(scene, true);
+    }
+
+    /// <summary>A Synty title button reskinned in place: its root Image becomes the plate, the old parchment art is hidden.</summary>
+    private static Button TitleButton(Transform buttons, string name, K.ButtonStyle style)
+    {
+        Button button = R.Need<Button>(buttons, name);
+        Transform content = R.Need(button.transform, "Content");
+        R.Need(content, "Background").gameObject.SetActive(false);
+        TMP_Text label = R.Need<TMP_Text>(content, "Label_ButtonName");
+        R.Button(button, style, label, button.GetComponent<Image>(), 0.6f);
+        label.fontSize = 56f;
+        label.characterSpacing = 6f;
+        // The arrow follows the label's colour.
+        K.Paint(R.Need<Image>(content, "ICON"), style == K.ButtonStyle.Primary ? UIColorRole.TextOnParchment : UIColorRole.AccentMuted);
+        return button;
+    }
+
+    // ───────────────────────────────────────────────── loading screen
+
+    /// <summary>
+    ///     Rebuilds the transition loading screen (Resources/LoadingScreenManager.prefab), used for every scene
+    ///     load including the one out of the main menu: the key art (or the area's preview art) slowly drifting
+    ///     behind a dark lower band, an "Entering" eyebrow, the area name with a flourished rule, subtitle and lore,
+    ///     and a framed progress bar with status and percentage. Rewires <see cref="Bladehold.UI.LoadingScreenUI" />.
+    /// </summary>
+    [MenuItem("Bladehold/UI/Restyle/Loading Screen")]
+    public static void BuildLoadingScreen()
+    {
+        K.Begin(UIMenuId.Global);
+        Edit(LoadingScreenPath, prefab =>
+        {
+            Bladehold.UI.LoadingScreenUI view = prefab.GetComponentInChildren<Bladehold.UI.LoadingScreenUI>(true);
+            if (view == null)
+            {
+                Debug.LogError("[ScreenRestyleBuilder] LoadingScreenManager prefab has no LoadingScreenUI.");
+                return;
+            }
+            Transform root = view.transform;
+            for (int i = root.childCount - 1; i >= 0; i--) Object.DestroyImmediate(root.GetChild(i).gameObject);
+            K.Scope(root.gameObject, UIMenuId.Global);
+            CanvasScaler scaler = root.GetComponent<CanvasScaler>();
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
+            scaler.matchWidthOrHeight = 1f; // fixed type size; the band stretches sideways on wide screens
+
+            // Art: the key art by default, the area's own art over it when it has one; both drift slowly.
+            RectTransform drift = K.NewUI("BackdropDrift", root);
+            K.Stretch(drift);
+            Image backdrop = ArtLayer("Backdrop", drift, AssetDatabase.LoadAssetAtPath<Sprite>(KeyArtPath));
+            Image preview = ArtLayer("Preview", drift, null);
+            preview.gameObject.SetActive(false);
+
+            // Shade the art so the text reads, darker towards the bottom band.
+            RectTransform shade = K.NewUI("Shade", root);
+            K.Stretch(shade);
+            K.Img(shade, K.White, UIColorRole.Window, 0.45f);
+            RectTransform fade = K.NewUI("BottomFade", root);
+            fade.anchorMin = Vector2.zero;
+            fade.anchorMax = new Vector2(1f, 0.72f);
+            fade.offsetMin = fade.offsetMax = Vector2.zero;
+            fade.localScale = new Vector3(1f, -1f, 1f); // the sprite is opaque at the top: flipped, it darkens towards the bottom
+            K.Img(fade, K.GradientV, UIColorRole.Window);
+            RectTransform vignette = K.NewUI("Vignette", root);
+            K.Stretch(vignette);
+            K.Img(vignette, K.LoadSprite("Vignette_Background_01"), UIColorRole.Window, 0.7f);
+
+            // Logo, top left.
+            RectTransform logo = K.NewUI("Logo", root);
+            K.Place(logo, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(56f, -44f), new Vector2(380f, 76f));
+            Image logoImage = logo.gameObject.AddComponent<Image>();
+            logoImage.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(LogoPath);
+            logoImage.preserveAspect = true;
+            logoImage.raycastTarget = false;
+            logoImage.color = new Color(1f, 1f, 1f, 0.85f);
+
+            // Area info: a bottom-up column so a missing subtitle or blurb just closes the gap.
+            RectTransform info = K.NewUI("Info", root);
+            info.anchorMin = new Vector2(0.5f, 0f);
+            info.anchorMax = new Vector2(0.5f, 0f);
+            info.pivot = new Vector2(0.5f, 0f);
+            info.sizeDelta = new Vector2(1500f, 0f);
+            info.anchoredPosition = new Vector2(0f, 168f);
+            VerticalLayoutGroup column = info.gameObject.AddComponent<VerticalLayoutGroup>();
+            column.childAlignment = TextAnchor.LowerCenter;
+            column.childControlWidth = column.childControlHeight = true;
+            column.childForceExpandWidth = true;
+            column.childForceExpandHeight = false;
+            column.spacing = 6f;
+            info.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            TextMeshProUGUI eyebrow = K.Txt(K.NewUI("Eyebrow", info), "Entering", UIFontRole.Body, 28f, UIColorRole.AccentMuted, TextAlignmentOptions.Center);
+            eyebrow.characterSpacing = 14f;
+            eyebrow.fontStyle = FontStyles.UpperCase;
+            eyebrow.textWrappingMode = TextWrappingModes.NoWrap;
+
+            TextMeshProUGUI areaName = K.Txt(K.NewUI("AreaName", info), "Frozen Pass", UIFontRole.Keep, 88f, UIColorRole.Accent, TextAlignmentOptions.Center);
+            areaName.font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(UnderlayHeaderFont);
+            areaName.characterSpacing = 8f;
+            areaName.fontStyle = FontStyles.UpperCase;
+            areaName.textWrappingMode = TextWrappingModes.NoWrap;
+            areaName.enableAutoSizing = true;
+            areaName.fontSizeMin = 52f;
+            areaName.fontSizeMax = 88f;
+            K.Size(areaName.gameObject, -1f, 104f);
+
+            // Flourished rule: line, diamond, line.
+            RectTransform ornament = K.NewUI("Ornament", info);
+            K.Size(ornament.gameObject, -1f, 34f);
+            RectTransform left = K.NewUI("FlourishLeft", ornament);
+            K.Place(left, new Vector2(0.5f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-22f, 0f), new Vector2(300f, 34f));
+            K.Img(left, K.LineLeft, UIColorRole.AccentMuted).preserveAspect = true;
+            RectTransform diamond = K.NewUI("Diamond", ornament);
+            K.Place(diamond, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(16f, 16f));
+            K.Img(diamond, K.Diamond, UIColorRole.Accent);
+            RectTransform right = K.NewUI("FlourishRight", ornament);
+            K.Place(right, new Vector2(0.5f, 0.5f), new Vector2(0f, 0.5f), new Vector2(22f, 0f), new Vector2(300f, 34f));
+            K.Img(right, K.LineRight, UIColorRole.AccentMuted).preserveAspect = true;
+
+            TextMeshProUGUI subtitle = K.Txt(K.NewUI("Subtitle", info), "The Inner Gate", UIFontRole.Body, 36f, UIColorRole.Text, TextAlignmentOptions.Center);
+            subtitle.characterSpacing = 2f;
+            subtitle.textWrappingMode = TextWrappingModes.NoWrap;
+
+            RectTransform blurbRow = K.NewUI("DescriptionRow", info);
+            HorizontalLayoutGroup blurbPad = blurbRow.gameObject.AddComponent<HorizontalLayoutGroup>();
+            blurbPad.padding = new RectOffset(230, 230, 10, 0);
+            blurbPad.childControlWidth = blurbPad.childControlHeight = true;
+            blurbPad.childForceExpandWidth = true;
+            TextMeshProUGUI description = K.Txt(K.NewUI("Description", blurbRow), "Hold the frozen mountain pass against the horde before the snow buries the road home.", UIFontRole.Body, 28f, UIColorRole.TextDim, TextAlignmentOptions.Top);
+            description.lineSpacing = 6f;
+
+            // Progress: a framed recessed track with a gold fill, status left and percentage right underneath.
+            RectTransform progress = K.NewUI("Progress", root);
+            progress.anchorMin = new Vector2(0.5f, 0f);
+            progress.anchorMax = new Vector2(0.5f, 0f);
+            progress.pivot = new Vector2(0.5f, 0f);
+            progress.sizeDelta = new Vector2(960f, 70f);
+            progress.anchoredPosition = new Vector2(0f, 64f);
+
+            RectTransform barRect = K.NewUI("LoadingBar", progress);
+            barRect.anchorMin = new Vector2(0f, 1f);
+            barRect.anchorMax = new Vector2(1f, 1f);
+            barRect.pivot = new Vector2(0.5f, 1f);
+            barRect.sizeDelta = new Vector2(0f, 14f);
+            barRect.anchoredPosition = Vector2.zero;
+            K.Img(barRect, K.White, UIColorRole.Well, 0.9f);
+            RectTransform barFrame = K.NewUI("Frame", barRect);
+            K.Stretch(barFrame, -4f, -4f, -4f, -4f);
+            K.Img(barFrame, K.FrameSmall, UIColorRole.AccentMuted, 0.8f, sliced: true, ppu: 5f);
+            RectTransform fillArea = K.NewUI("Fill Area", barRect);
+            K.Stretch(fillArea, 3f, 3f, 3f, 3f);
+            RectTransform fill = K.NewUI("Fill", fillArea);
+            K.Stretch(fill);
+            K.Img(fill, K.White, UIColorRole.Accent);
+            RectTransform sheen = K.NewUI("Sheen", fill);
+            K.Stretch(sheen);
+            K.Img(sheen, K.GradientV, UIColorRole.Parchment, 0.35f);
+            Slider bar = barRect.gameObject.AddComponent<Slider>();
+            bar.fillRect = fill;
+            bar.direction = Slider.Direction.LeftToRight;
+            bar.transition = Selectable.Transition.None;
+            bar.interactable = false;
+            var nav = new Navigation();
+            nav.mode = Navigation.Mode.None;
+            bar.navigation = nav;
+            bar.minValue = 0f;
+            bar.maxValue = 1f;
+            bar.value = 0.4f;
+
+            TextMeshProUGUI status = K.Txt(K.NewUI("LoadingText", progress), "Loading", UIFontRole.Body, 26f, UIColorRole.TextDim, TextAlignmentOptions.BottomLeft);
+            K.Place(status.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 0f), Vector2.zero, new Vector2(700f, 40f));
+            status.characterSpacing = 3f;
+            status.textWrappingMode = TextWrappingModes.NoWrap;
+            TextMeshProUGUI percent = K.Txt(K.NewUI("PercentText", progress), "40%", UIFontRole.Header, 28f, UIColorRole.AccentMuted, TextAlignmentOptions.BottomRight);
+            K.Place(percent.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 0f), Vector2.zero, new Vector2(200f, 40f));
+            percent.characterSpacing = 2f;
+            percent.textWrappingMode = TextWrappingModes.NoWrap;
+
+            var so = new SerializedObject(view);
+            so.FindProperty("logoLoadingFill").objectReferenceValue = null;
+            so.FindProperty("loadingBar").objectReferenceValue = bar;
+            so.FindProperty("loadingText").objectReferenceValue = status;
+            so.FindProperty("percentText").objectReferenceValue = percent;
+            so.FindProperty("eyebrowText").objectReferenceValue = eyebrow;
+            so.FindProperty("enteringTitleText").objectReferenceValue = areaName;
+            so.FindProperty("subtitleText").objectReferenceValue = subtitle;
+            so.FindProperty("descriptionText").objectReferenceValue = description;
+            so.FindProperty("previewImage").objectReferenceValue = preview;
+            so.FindProperty("backdropDrift").objectReferenceValue = drift;
+            so.FindProperty("canvasGroup").objectReferenceValue = root.GetComponent<CanvasGroup>();
+            so.ApplyModifiedPropertiesWithoutUndo();
+            backdrop.transform.SetAsFirstSibling();
+        });
+    }
+
+    /// <summary>A full-bleed art layer that covers the screen at any aspect (cropping, never letterboxing).</summary>
+    private static Image ArtLayer(string name, Transform parent, Sprite sprite)
+    {
+        RectTransform rt = K.NewUI(name, parent);
+        K.Stretch(rt);
+        Image image = rt.gameObject.AddComponent<Image>();
+        image.sprite = sprite;
+        image.raycastTarget = false;
+        AspectRatioFitter fitter = rt.gameObject.AddComponent<AspectRatioFitter>();
+        fitter.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
+        fitter.aspectRatio = sprite != null ? sprite.rect.width / sprite.rect.height : 16f / 9f;
+        return image;
+    }
+
+    // ───────────────────────────────────────────────── fishing pond
+
+    [MenuItem("Bladehold/UI/Restyle/Fishing Pond")]
+    public static void RestyleFishing()
+    {
+        K.Begin(UIMenuId.Fishing);
+        Edit(FishingDraftCardPath, root => FishingCard((RectTransform)root.transform));
+        Edit(BuffFishButtonPath, root =>
+        {
+            K.Scope(root, UIMenuId.Fishing);
+            Shadow shadow = root.GetComponent<Shadow>();
+            if (shadow != null) Object.DestroyImmediate(shadow);
+            TMP_Text label = R.Need<TMP_Text>(root.transform, "Label");
+            R.Button(root.GetComponent<Button>(), K.ButtonStyle.Ghost, label, null, 0.9f);
+            R.Ink(label, UIColorRole.Text, UIFontRole.Body);
+        });
+
+        Scene scene = SceneManager.GetSceneByPath(FishingScenePath);
+        bool opened = false;
+        if (!scene.isLoaded)
+        {
+            scene = EditorSceneManager.OpenScene(FishingScenePath, OpenSceneMode.Additive);
+            opened = true;
+        }
+        FishingHUDUI hud = null;
+        foreach (GameObject go in scene.GetRootGameObjects())
+        {
+            hud = go.GetComponentInChildren<FishingHUDUI>(true);
+            if (hud != null) break;
+        }
+        if (hud == null)
+        {
+            Debug.LogError("[ScreenRestyleBuilder] Fishing Pond scene has no FishingHUDUI.");
+            return;
+        }
+
+        Transform t = hud.transform;
+        K.Scope(hud.gameObject, UIMenuId.Fishing);
+
+        // Start prompt: a framed well around the StartWave glyph + label (HintEntry), sized by its layout.
+        RectTransform prompt = (RectTransform)R.Need(t, "PromptPanel");
+        R.CardChrome(prompt, 0.7f, -2f, UIColorRole.Window).raycastTarget = false;
+        TMP_Text promptLabel = R.Ink(R.Need<TMP_Text>(prompt, "StartHint/Label"), UIColorRole.Text, UIFontRole.Body);
+        promptLabel.fontSize = 36f;
+        promptLabel.textWrappingMode = TextWrappingModes.NoWrap;
+        // HintEntry doesn't size its children: fit the label to its (localised) text so the panel grows with it.
+        ContentSizeFitter labelFit = promptLabel.GetComponent<ContentSizeFitter>();
+        if (labelFit == null) labelFit = promptLabel.gameObject.AddComponent<ContentSizeFitter>();
+        labelFit.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+        promptLabel.rectTransform.sizeDelta = new Vector2(promptLabel.rectTransform.sizeDelta.x, 56f);
+        RectTransform glyph = (RectTransform)R.Need(prompt, "StartHint/InputGlyph");
+        glyph.sizeDelta = new Vector2(56f, 56f);
+        K.Size(glyph.gameObject, 56f, 56f);
+
+        // Frenzy HUD: countdown (its colour is set per tick in FishingHUDUI), timer, stats panel.
+        TMP_Text countdown = R.Need<TMP_Text>(t, "CountdownPanel");
+        R.Ink(countdown, UIColorRole.Accent, UIFontRole.Header);
+        K.Unthemed(countdown);
+        Transform frenzy = R.Need(t, "FrenzyHUD");
+        // The timer floats over the scene: the underlay header font keeps it legible on bright foliage.
+        TMP_Text timer = R.Need<TMP_Text>(frenzy, "TimerText");
+        timer.font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(UnderlayHeaderFont);
+        timer.fontSharedMaterial = timer.font.material;
+        R.Ink(timer, UIColorRole.Accent);
+        R.Ink(R.Need<TMP_Text>(frenzy, "FishCountText"), UIColorRole.Text, UIFontRole.Body);
+        RectTransform stats = (RectTransform)R.Need(frenzy, "StatsPanel");
+        R.CardChrome(stats, 0.7f, -2f, UIColorRole.Window);
+        R.SectionInk(R.Need<TMP_Text>(stats, "LevelText"), 2f);
+        R.Flat(R.Need<Image>(stats, "XpBar/Background"), UIColorRole.Dimmer, 0.85f);
+        R.Flat(R.Need<Image>(stats, "XpBar/Fill Area/Fill"), UIColorRole.Accent);
+        // Currency colours identify the currency (as on the main HUD); only gold follows the theme.
+        R.Ink(R.Need<TMP_Text>(stats, "Resources/GoldCounter"), UIColorRole.Cost, UIFontRole.Body);
+
+        // Level-up draft.
+        Transform draft = R.Need(t, "FishingDraftUI/DraftModal");
+        R.Flat(draft.GetComponent<Image>(), UIColorRole.Dimmer, 1.25f);
+        R.ClearThemeDecor(draft);
+        TMP_Text header = R.TitleInk(R.Need<TMP_Text>(draft, "Header"), 6f);
+        float half = header.GetPreferredValues(header.text.ToUpperInvariant()).x * 0.5f + 50f;
+        RectTransform headerRect = header.rectTransform;
+        Vector2 headerAnchor = new Vector2(0.5f, 1f);
+        R.Flourish("ThemeFlourishLeft", draft, true, headerAnchor, new Vector2(-half, headerRect.anchoredPosition.y), new Vector2(360f, 76f));
+        R.Flourish("ThemeFlourishRight", draft, false, headerAnchor, new Vector2(half, headerRect.anchoredPosition.y), new Vector2(360f, 76f));
+        R.Ink(R.Need<TMP_Text>(draft, "Subtitle"), UIColorRole.TextDim, UIFontRole.Body);
+        // The three cards are FishingDraftCard.prefab instances: they follow the prefab restyle above.
+
+        // Tally window.
+        Transform tally = R.Need(t, "FishingTallyUI/TallyModal");
+        R.Flat(tally.GetComponent<Image>(), UIColorRole.Dimmer, 1.25f);
+        Transform panel = R.Need(tally, "Panel");
+        R.WindowChrome((RectTransform)panel);
+        R.TitleInk(R.Need<TMP_Text>(panel, "Header"), 6f);
+        R.Ink(R.Need<TMP_Text>(panel, "TotalFish"), UIColorRole.Text, UIFontRole.Body);
+        R.Ink(R.Need<TMP_Text>(panel, "GoldReward"), UIColorRole.Cost, UIFontRole.Body);
+        // The other rewards keep their currency colours, brightened from the parchment versions to the HUD's.
+        string[] rewards = { "BloodReward", "MetalReward", "DiamondBonesReward" };
+        string[] rewardHex = { "F2594C", "8CCCFF", "D9FFFF" };
+        for (int i = 0; i < rewards.Length; i++)
+        {
+            TMP_Text reward = R.Need<TMP_Text>(panel, rewards[i]);
+            K.Unthemed(reward);
+            reward.color = K.Hex(rewardHex[i]);
+        }
+        R.Rule(R.Need<Image>(panel, "Divider"), 0.55f);
+        R.Ink(R.Need<TMP_Text>(panel, "BuffFishSection/BuffFishStatus"), UIColorRole.TextDim, UIFontRole.Body);
+        Button cont = R.Need<Button>(panel, "ContinueButton");
+        if (cont.GetComponent<Shadow>() != null) Object.DestroyImmediate(cont.GetComponent<Shadow>());
+        TMP_Text contLabel = R.Need<TMP_Text>(cont.transform, "Label");
+        R.Button(cont, K.ButtonStyle.Primary, contLabel);
+        contLabel.characterSpacing = 2f;
+
+        EditorSceneManager.MarkSceneDirty(scene);
+        EditorSceneManager.SaveScene(scene);
+        Debug.Log("[ScreenRestyleBuilder] Fishing Pond scene restyled and saved.");
+        if (opened) EditorSceneManager.CloseScene(scene, true);
+    }
+
+    /// <summary>The fishing upgrade card (FishingDraftCard.prefab): a dark framed well with hover glow.</summary>
+    private static void FishingCard(RectTransform card)
+    {
+        K.Scope(card.gameObject, UIMenuId.Fishing);
+        Shadow shadow = card.GetComponent<Shadow>();
+        if (shadow != null) Object.DestroyImmediate(shadow);
+        Image face = R.CardChrome(card, 0.85f);
+
+        RectTransform glow = K.Decoration("ThemeGlow", card);
+        K.Stretch(glow, -4f, -4f, -4f, -4f);
+        Image glowImage = K.Img(glow, K.FrameSmall, UIColorRole.Accent, sliced: true, ppu: 3f);
+
+        RectTransform icon = (RectTransform)R.Need(card, "Icon");
+        RectTransform medallion = K.Decoration("ThemeMedallion", card);
+        K.Place(medallion, icon.anchorMin, new Vector2(0.5f, 0.5f), icon.anchoredPosition, icon.sizeDelta * 1.25f);
+        K.Img(medallion, K.Diamond, UIColorRole.Accent, 0.12f);
+        medallion.SetSiblingIndex(icon.GetSiblingIndex());
+        K.Paint(icon.GetComponent<Image>(), UIColorRole.Accent);
+
+        R.Ink(R.Need<TMP_Text>(card, "Title"), UIColorRole.Accent, UIFontRole.Header);
+        R.Ink(R.Need<TMP_Text>(card, "Level"), UIColorRole.TextDim, UIFontRole.Body);
+        R.Rule(R.Need<Image>(card, "Divider"), 0.55f);
+        R.Ink(R.Need<TMP_Text>(card, "Description"), UIColorRole.Text, UIFontRole.Body);
+
+        Button button = card.GetComponent<Button>();
+        button.transition = Selectable.Transition.ColorTint;
+        button.targetGraphic = face;
+        button.colors = K.Tint(Color.white, K.Hex("FFF8E8"), K.Hex("D8CCB0"));
+        UISelectableJuice juice = button.GetComponent<UISelectableJuice>();
+        if (juice == null) juice = button.gameObject.AddComponent<UISelectableJuice>();
+        var so = new SerializedObject(juice);
+        so.FindProperty("selectable").objectReferenceValue = button;
+        so.FindProperty("scaleTarget").objectReferenceValue = card;
+        so.FindProperty("highlight").objectReferenceValue = glowImage;
+        so.FindProperty("hoverScale").floatValue = 1.04f;
+        so.FindProperty("pressScale").floatValue = 0.96f;
+        so.ApplyModifiedPropertiesWithoutUndo();
     }
 }

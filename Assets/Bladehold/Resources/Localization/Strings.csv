@@ -543,6 +543,7 @@ hint.wave_cards,First-time hint,"Defence keeps you at the gate. Offence pays mor
 hint.meta_spirit,First-time hint,Spend Goblin Blood with the Spirit for permanent upgrades.,,,,,,,,
 hint.meta_gift,First-time hint (Meta Area after the first run; points at an affordable weapon pedestal),"The Spirit has gifted you Goblin Blood and Orcish Metal. Forge a new weapon here, then see the Spirit for permanent upgrades.",,,,,,,,
 hint.fishing_pond,First-time hint,"Arrows are unlimited here, so shoot freely! It's just you and your bow: no sword, mount or ultimate.",,,,,,,,
+fishing.prompt.start,Fishing Pond start prompt shown after the Start Wave button glyph,Begin Fishing Frenzy,,,,,,,,
 ammo_chest.prompt_free,Free ammo crate prompt ({0} = arrows),Take {0} arrows,,,,,,,,
 saveslots.title,Save slot screen heading,Choose Your Save,,,,,,,,
 saveslots.slot,Save slot card title; {0}=slot number,Slot {0},,,,,,,,
@@ -675,3 +676,9 @@ world_event.caravan.outcome.escaped,Timer chip line when the gold wagon escaped,
 intro.eyebrow_special,Boss intro banner line above a special enemy's name,A mighty foe approaches,Un puissant ennemi approche,Un nemico potente si avvicina,Ein mächtiger Feind naht,Se acerca un enemigo poderoso,Приближается могучий враг,强敌来袭,強敵が迫る,강력한 적이 다가옵니다
 intro.captain_eyebrow,Boss intro banner line above a clan captain's name,A clan captain has arrived,Un capitaine de clan est arrivé,È arrivato un capitano del clan,Ein Clan-Hauptmann ist eingetroffen,Ha llegado un capitán del clan,Прибыл капитан клана,氏族队长已到来,氏族の隊長が現れた,씨족 대장이 도착했습니다
 intro.captain_subtitle,Captain intro line under the name; {0}=difficulty tier {1}=reward multiplier,{0}  ·  {1}x rewards,{0}  ·  récompenses x{1},{0}  ·  ricompense x{1},{0}  ·  Belohnung x{1},{0}  ·  recompensas x{1},{0}  ·  награда x{1},{0}  ·  {1}倍奖励,{0}  ·  報酬{1}倍,{0}  ·  보상 {1}배
+loading.entering,Loading screen eyebrow above the destination name,Entering,En route vers,Verso,Auf dem Weg nach,Rumbo a,Путь в,正在进入,進入中,진입 중
+loading.loading,Loading screen status under the progress bar,Loading,Chargement,Caricamento,Lädt,Cargando,Загрузка,加载中,読み込み中,로딩 중
+loading.preparing,Loading screen status before the scene load starts,Preparing the realm,Préparation du royaume,Preparazione del regno,Das Reich wird vorbereitet,Preparando el reino,Подготовка королевства,正在准备领域,領域を準備中,왕국 준비 중
+loading.shaders,Loading screen status while shaders compile,Preparing shaders,Préparation des shaders,Preparazione degli shader,Shader werden vorbereitet,Preparando shaders,Подготовка шейдеров,正在准备着色器,シェーダーを準備中,셰이더 준비 중
+loading.ready,Loading screen status once the scene is loaded,Ready,Prêt,Pronto,Bereit,Listo,Готово,就绪,準備完了,준비 완료
+loading.unknown_area,Loading screen title when the destination has no name,Unknown Realm,Royaume inconnu,Regno sconosciuto,Unbekanntes Reich,Reino desconocido,Неизведанный край,未知之地,未知の地,미지의 땅

@@ -19,7 +19,9 @@ public enum UIMenuId
     Draft,
     SaveSlots,
     /// <summary>In-combat banners (boss intro).</summary>
-    Hud
+    Hud,
+    /// <summary>Fishing Pond frenzy HUD, upgrade draft and tally.</summary>
+    Fishing
 }
 
 /// <summary>

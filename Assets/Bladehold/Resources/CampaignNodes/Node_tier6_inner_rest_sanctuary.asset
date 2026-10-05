@@ -19,8 +19,8 @@ MonoBehaviour:
     gear, and prepare for the final ascent.
   sceneName: Bladehold Rest Area Scene
   nodeType: 1
-  tierIndex: 6
-  mapPosition: {x: 1440, y: 0}
+  tierIndex: 8
+  mapPosition: {x: 1960, y: 0}
   mapBiome: 0
   previewImage: {fileID: 21300000, guid: 8eb01ab6c6eeb1641b905a1b215f7192, type: 3}
   captainName: 
@@ -35,5 +35,4 @@ MonoBehaviour:
   rewardIcon: {fileID: 0}
   nextNodes:
   - {fileID: 11400000, guid: b98f6555a1e960f4f903b85c31bb5105, type: 2}
-  - {fileID: 11400000, guid: af4e46d1bb7a9924b8e46e8a036efd82, type: 2}
   endsCampaign: 0

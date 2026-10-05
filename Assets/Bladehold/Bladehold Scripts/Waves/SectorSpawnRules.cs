@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 /// <summary>
-///     The current sector's threat level: the campaign node's map tier (1-8). Outside a campaign run
+///     The current sector's threat level: the campaign node's map tier (1-10). Outside a campaign run
 ///     (a battle scene opened directly) it's 1. The DevConsole can override it for testing.
 /// </summary>
 public static class SectorThreat

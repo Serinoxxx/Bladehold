@@ -19,8 +19,8 @@ MonoBehaviour:
     below the keep.
   sceneName: Bladehold Ancient Garden
   nodeType: 0
-  tierIndex: 6
-  mapPosition: {x: 1440, y: 150}
+  tierIndex: 8
+  mapPosition: {x: 1960, y: -150}
   mapBiome: 0
   previewImage: {fileID: 21300000, guid: e6a01c523fe66c94fbcf5850faa49828, type: 3}
   captainName: Captain Kombusta
@@ -35,4 +35,5 @@ MonoBehaviour:
   rewardIcon: {fileID: 0}
   nextNodes:
   - {fileID: 11400000, guid: b98f6555a1e960f4f903b85c31bb5105, type: 2}
+  - {fileID: 11400000, guid: af4e46d1bb7a9924b8e46e8a036efd82, type: 2}
   endsCampaign: 0

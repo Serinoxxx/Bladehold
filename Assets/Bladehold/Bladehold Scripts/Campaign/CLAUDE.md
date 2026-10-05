@@ -1,6 +1,6 @@
 # Campaign
 
-The macro run structure: an 8-tier branching node map between the Meta Area and the battles.
+The macro run structure: a 10-tier branching node map between the Meta Area and the battles.
 
 ## Pieces
 
@@ -35,7 +35,7 @@ The macro run structure: an 8-tier branching node map between the Meta Area and 
 
 ## Map UI status
 
-- **Layout:** three forward lanes; column x = 140 + 260 × (tier − 1). A node links only to the nearest lanes of the next tier, so paths never cross, and the lanes rejoin at tier 4, tier 7 and the Crypt. Keep new nodes to that rule (edit the asset and `BuildDefaultGraph()` together).
+- **Layout:** 10 tiers; column x = 140 + 260 × (tier − 1). `tierIndex` is the column, the sector threat (`SectorThreat`) and the demo gate all at once. Tiers 1-4 are the demo: every route out of the Alpine Keep ends on the Graveyard (tier 4 = `DemoConfig.campaignCutoffTier`); the tier-2 stops skip column 3 and run straight to it. Elsewhere a node links only to the nearest lanes of the next tier, so paths never cross, and the lanes rejoin at the Graveyard, the Great Hall (tier 6), the Throne Antechamber (tier 9) and the Crypt. Keep new nodes to that rule (edit the asset and `BuildDefaultGraph()` together). Stop rules: a battle (Combat, PreBoss, Crypt, bosses) may lead to anything, but a shop (RestArea) or a FishingPond must always lead to a battle, so you never get two stops in a row.
 - **Statuses:** Completed, Available (children of the current location), Locked (still reachable later, no padlock), Bypassed (unreachable from here: faded), DemoLocked (padlock). The "you are here" flag (`CampaignMapUI.locationMarker`) and the tier column headers (`CampaignTierHeader.prefab`, which slide with their column as the camera pans) live under `MapOverlay`, outside `NodesContainer`, which is cleared on every rebuild.
 - `mapPosition` becomes world X/Z at `CampaignDioramaThemeSO.worldPerMapUnit` (1/32: tiers about 8 units apart). The node prefab's pivot sits where its plaque meets the castle's front edge.
 - The map unlocks the cursor itself (`CursorLockManager`, owner `CampaignMap`). Keyboard/gamepad focus is custom in `CampaignMapUI.Update` (WASD/arrows/d-pad/stick pick the nearest node in that direction, Enter/Space/E/pad A deploys), not EventSystem selection, because locked nodes are non-interactable Buttons and could never be selected. Hovering with the mouse moves the focus.

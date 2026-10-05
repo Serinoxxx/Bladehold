@@ -18,8 +18,8 @@ MonoBehaviour:
   description: Defy Malakor the Defiler and shatter his dark legion of skeletons.
   sceneName: Bladehold Necromancer Crypt
   nodeType: 7
-  tierIndex: 8
-  mapPosition: {x: 2220, y: -150}
+  tierIndex: 10
+  mapPosition: {x: 2740, y: -150}
   mapBiome: 0
   previewImage: {fileID: 21300000, guid: 597981f113c114e40bbbf922ae9d2eca, type: 3}
   captainName: Malakor the Defiler

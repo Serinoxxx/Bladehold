@@ -36,3 +36,26 @@ Not from a numbered plan. 2026-10-05, Unity MCP connected. The theme system was 
 ### Decisions
 - [ ] **Per-screen themes?** All six screens use the global Ember Gold theme. Their new `UIMenuId`s (DeathScreen, CampaignMap, Draft, SaveSlots, Hud) can each get their own override in `UIThemeRegistry.asset`.
 - [ ] **"Seige Breaker"**: that enemy's display name is misspelt (should be "Siege"). Not changed here.
+
+## Third pass: Fishing Pond
+
+2026-10-05. **Bladehold > UI > Restyle > Fishing Pond** (also part of *All Screens*) reskins `FishingCanvas` in `Bladehold Fishing Pond.unity`, `FishingBuffFishButton.prefab` and `FishingDraftCard.prefab`. The scene's three draft cards are instances of that prefab and carry no overrides, so they follow it. The canvas has its own `UIMenuId.Fishing`, which uses the global Ember Gold theme. The countdown colours in `FishingHUDUI` now come from the theme (Accent ticks, Success for "FISHING FRENZY!"). Checked with offscreen captures, **not yet played**.
+
+### UI review (Synty art, Texturina headers / Grenze body, gamepad focus, 16:9 and 16:10/ultrawide)
+- [ ] **Frenzy HUD**: the stats panel is a dark framed well with a gold XP fill. The timer uses the black-underlay Texturina, so it reads over bright foliage. Gold is themed; blood, metal and diamond keep their currency colours. Check the countdown punch: gold digits, then a green "FISHING FRENZY!".
+- [ ] **Level-up draft**: dark cards with a gold frame, hover glow and scale (the old Shadow is gone), a diamond medallion behind the icon, and a flourished "LEVEL UP!" title. Check that the real upgrade icons read in the accent tint, that pad focus moves between the cards, and that the click MMF still plays. The frenzy timer sits behind the title through the dimmer, as it did before.
+- [ ] **Tally**: a window frame with gold reward lines, other currencies brightened to the HUD colours, ghost buff-fish buttons with hover glow, and a parchment Continue button. Check the disabled state of the buff buttons after eating one, and that there is a gap above Continue (the buff section has a fixed height).
+- [ ] **Start prompt**: now a framed panel with a `HintEntry` glyph bound to StartWave (`FishingHUDUI.startHint`), labelled "Begin Fishing Frenzy" (`fishing.prompt.start`; English only so far). Check that it shows T on keyboard and the D-pad Down glyph on a pad, that it flips live when you switch device, that it follows a rebind, and that D-pad Down starts the countdown.
+
+## Fourth pass: main menu and loading screen
+
+2026-10-05. **Bladehold > UI > Restyle > Main Menu** reskins the title screen in `MainMenu.unity`. Play is a parchment button; Replay Tutorial, Settings and Quit are framed ghost buttons (their Synty Animators were removed and replaced by juice). The patch notes are a dark framed window with Grenze body text, and their category colours come from the theme. `Screen_Title` gained a `MenuFocusController` (default Play, no B action). **Bladehold > UI > Restyle > Loading Screen** rebuilds `Resources/LoadingScreenManager.prefab`: key art (or the area's `previewSprite`) slowly drifting behind a dark lower band, an "Entering" eyebrow, the area name with a flourished rule, subtitle and lore, and a framed gold progress bar with a status line and percentage. The bar now glides rather than jumping. Both are part of *All Screens*. **The main menu now loads through `LoadingScreenManager`** (its own in-scene loading screen was deleted), and the manager prefab got `BladeholdPrewarmVariants` so it still finishes the shader prewarm. Checked with offscreen captures at 16:9, 16:10 and 21:9, plus one Play-mode transition with no console errors.
+
+### UI review (Synty art, Texturina headers / Grenze body, gamepad focus, 16:9 and 16:10/ultrawide)
+- [ ] **Title screen in Play mode**: a `manage_camera` Play-mode screenshot came out washed-out and pale, while the offscreen edit-mode renders looked right. Check it by eye in the Game view. If it really is pale, the Synty title intro animator (`AC_Screen_FantasyWarrior_AssetDemo_Title_01`) is the first suspect.
+- [ ] **Title buttons**: hover glow and scale on all four. Pad: focus lands on Play when a pad is active. Click sounds: the Synty buttons had no `UIClickFeedback`, so check whether they are silent and whether they should get one.
+- [ ] **Patch notes**: there is one blank line between blocks, and wrapped bullet lines indent under their text. The window must not touch the buttons at 16:10.
+- [ ] **Loading screen**: pick a slot from the main menu, then go Meta Area → a battle. You should see the "Entering" eyebrow, the gold name, the bar gliding to 100% with "Ready", and then a fade-out. Very long area names auto-size down to 52. None of the `AreaDefinitionSO`s have a `previewSprite` yet, so every area shows the key art. Add per-area art to make each load feel distinct.
+
+### Playtest
+- [ ] **New Game and Continue** from the main menu must still reach the tutorial (on a fresh slot) or the Meta Area (on a finished slot). That load path changed in this pass. The loading screen must **never** stay stuck on screen. It waits at most 8 s on `HoldFadeOut`.

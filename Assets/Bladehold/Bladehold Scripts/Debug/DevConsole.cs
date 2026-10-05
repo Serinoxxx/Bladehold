@@ -585,7 +585,7 @@ public class DevConsole : MonoBehaviour
         GUILayout.BeginHorizontal();
         if (GUILayout.Button("▲", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
         {
-            SectorThreat.DebugOverride = Mathf.Min(8, SectorThreat.Current + 1);
+            SectorThreat.DebugOverride = Mathf.Min(10, SectorThreat.Current + 1);
         }
         if (GUILayout.Button("▼", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
         {

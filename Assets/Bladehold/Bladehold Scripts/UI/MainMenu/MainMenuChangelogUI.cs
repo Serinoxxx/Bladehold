@@ -18,12 +18,15 @@ namespace Bladehold.UI
         [SerializeField] private TextAsset fallbackChangelog;
 
         [Header("Styling")]
-        [SerializeField] private string newFeaturesColor = "#2D5438";
-        [SerializeField] private string fixesColor = "#8E3626";
-        [SerializeField] private string balanceColor = "#8C651E";
-        [SerializeField] private string generalColor = "#4E463E";
-        [SerializeField] private string versionHeaderColor = "#3E3024";
-        [SerializeField] private string bodyTextColor = "#433A33";
+        [Tooltip("Theme roles for the inline colours (the text itself is painted by its UIThemedGraphic).")]
+        [SerializeField] private UIColorRole newFeaturesColor = UIColorRole.Success;
+        [SerializeField] private UIColorRole fixesColor = UIColorRole.Danger;
+        [SerializeField] private UIColorRole balanceColor = UIColorRole.Cost;
+        [SerializeField] private UIColorRole generalColor = UIColorRole.AccentMuted;
+        [SerializeField] private UIColorRole versionHeaderColor = UIColorRole.Accent;
+        [SerializeField] private UIColorRole bodyTextColor = UIColorRole.Text;
+        [Tooltip("Release dates and divider rules.")]
+        [SerializeField] private UIColorRole dimTextColor = UIColorRole.TextDim;
 
         private bool anyError = false;
 
@@ -155,10 +158,16 @@ namespace Bladehold.UI
         private string FormatMarkdownForTMP(string rawMarkdown, out string latestVersion)
         {
             latestVersion = null;
+            UIThemeSO theme = UITheme.For(this);
+            string versionHeaderHex = Hex(theme, versionHeaderColor);
+            string bodyHex = Hex(theme, bodyTextColor);
+            string dimHex = Hex(theme, dimTextColor);
             string[] lines = rawMarkdown.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
             StringBuilder sb = new StringBuilder();
 
             bool skipTopTitle = true;
+            // Headers carry their own spacing: the markdown's blank line after one is dropped.
+            bool afterHeader = false;
 
             for (int i = 0; i < lines.Length; i++)
             {
@@ -175,6 +184,12 @@ namespace Bladehold.UI
                     continue;
                 }
                 skipTopTitle = false;
+                bool blank = string.IsNullOrWhiteSpace(trimmed);
+                if (blank && afterHeader)
+                {
+                    continue;
+                }
+                afterHeader = false;
 
                 // Version header: ## [0.1.12] - 2026-08-29
                 Match vMatch = Regex.Match(trimmed, @"^##\s+\[(.*?)\](?:\s*-\s*(.*))?");
@@ -188,8 +203,9 @@ namespace Bladehold.UI
                         latestVersion = ver;
                     }
 
-                    sb.AppendLine();
-                    sb.AppendLine($"<size=115%><b><color={versionHeaderColor}>Version {ver}</color></b> <color=#7D6E61><size=80%>({date})</size></color></size>");
+                    AppendBlank(sb);
+                    afterHeader = true;
+                    sb.AppendLine($"<size=115%><b><color={versionHeaderHex}>Version {ver}</color></b> <color={dimHex}><size=80%>({date})</size></color></size>");
                     continue;
                 }
 
@@ -197,7 +213,7 @@ namespace Bladehold.UI
                 if (trimmed.StartsWith("### "))
                 {
                     string cat = trimmed.Substring(4).Trim();
-                    string color = bodyTextColor;
+                    UIColorRole color = bodyTextColor;
 
                     if (cat.IndexOf("New Feature", StringComparison.OrdinalIgnoreCase) >= 0)
                         color = newFeaturesColor;
@@ -208,8 +224,9 @@ namespace Bladehold.UI
                     else if (cat.IndexOf("General", StringComparison.OrdinalIgnoreCase) >= 0)
                         color = generalColor;
 
-                    sb.AppendLine();
-                    sb.AppendLine($"<size=90%><color={color}><b>{cat.ToUpperInvariant()}</b></color></size>");
+                    AppendBlank(sb);
+                    afterHeader = true;
+                    sb.AppendLine($"<size=90%><color={Hex(theme, color)}><b>{cat.ToUpperInvariant()}</b></color></size>");
                     continue;
                 }
 
@@ -217,30 +234,50 @@ namespace Bladehold.UI
                 if (trimmed.StartsWith("- "))
                 {
                     string bulletText = trimmed.Substring(2).Trim();
-                    sb.AppendLine($"  <color={bodyTextColor}>•  {bulletText}</color>");
+                    sb.AppendLine($"<color={bodyHex}>  •<indent=1.1em>{bulletText}</indent></color>");
                     continue;
                 }
 
                 // Divider: ---
                 if (trimmed == "---")
                 {
-                    sb.AppendLine();
-                    sb.AppendLine("<color=#C1B6A5>────────────────────────────────────────</color>");
+                    AppendBlank(sb);
+                    sb.AppendLine($"<color={dimHex}>────────────────────────────────────────</color>");
                     continue;
                 }
 
                 // Normal text / empty line
                 if (string.IsNullOrWhiteSpace(trimmed))
                 {
-                    sb.AppendLine();
+                    AppendBlank(sb);
                 }
                 else
                 {
-                    sb.AppendLine($"<color={bodyTextColor}>{line}</color>");
+                    sb.AppendLine($"<color={bodyHex}>{line}</color>");
                 }
             }
 
             return sb.ToString().Trim();
+        }
+
+        private static string Hex(UIThemeSO theme, UIColorRole role)
+        {
+            Color color = theme != null ? theme.Get(role) : Color.white;
+            return "#" + ColorUtility.ToHtmlStringRGB(color);
+        }
+
+        /// <summary>One blank line between blocks: markdown spacing plus the headers' own gaps never stack up.</summary>
+        private static void AppendBlank(StringBuilder sb)
+        {
+            // Count the line breaks the text already ends with (AppendLine may write \r\n).
+            int breaks = 0;
+            for (int i = sb.Length - 1; i >= 0 && breaks < 2; i--)
+            {
+                if (sb[i] == '\n') breaks++;
+                else if (sb[i] != '\r') break;
+            }
+            bool alreadyBlank = sb.Length == 0 || breaks >= 2;
+            if (!alreadyBlank) sb.AppendLine();
         }
     }
 }

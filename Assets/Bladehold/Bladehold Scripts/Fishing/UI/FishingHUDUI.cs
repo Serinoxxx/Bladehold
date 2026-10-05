@@ -1,6 +1,7 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 /// <summary>
@@ -15,7 +16,8 @@ public class FishingHUDUI : MonoBehaviour
     [SerializeField] private GameObject frenzyHudPanel;
 
     [Header("Labels")]
-    [SerializeField] private TMP_Text promptText;
+    [Tooltip("Glyph + label row bound to the StartWave action, so it follows rebinds and the active device.")]
+    [SerializeField] private HintEntryView startHint;
     [SerializeField] private TMP_Text countdownText;
     [SerializeField] private TMP_Text timerText;
     [SerializeField] private TMP_Text fishCountText;
@@ -28,11 +30,14 @@ public class FishingHUDUI : MonoBehaviour
     [SerializeField] private TMP_Text metalCounterText;
     [SerializeField] private TMP_Text diamondBonesText;
 
+    private const string StartWaveActionName = "StartWave";
+
     private Coroutine punchRoutine;
+    private bool hintBound;
 
     private void Start()
     {
-        if (promptText != null) promptText.text = "Press [T] to begin Fishing Frenzy";
+        if (startHint == null) Debug.LogError("[FishingHUDUI] startHint is not assigned: the start prompt shows no button.", this);
 
         if (FishingManager.Instance != null)
         {
@@ -100,8 +105,28 @@ public class FishingHUDUI : MonoBehaviour
 
         FishingState state = FishingManager.Instance.CurrentState;
         if (promptPanel != null) promptPanel.SetActive(state == FishingState.WaitingToStart);
+        if (state == FishingState.WaitingToStart && !hintBound) BindHint();
         if (countdownPanel != null) countdownPanel.SetActive(state == FishingState.Countdown);
         if (frenzyHudPanel != null) frenzyHudPanel.SetActive(state == FishingState.FrenzyActive);
+    }
+
+    /// <summary>Points the start prompt at Start Wave (T / D-pad Down). Deferred until the prompt shows, since Player.Instance may not exist at Start.</summary>
+    private void BindHint()
+    {
+        if (startHint == null) return;
+        InputActionMap map = Player.Instance != null && Player.Instance.InputSettings != null
+            ? Player.Instance.InputSettings.GetRebindableActionMap()
+            : null;
+        InputAction action = map != null ? map.FindAction(StartWaveActionName) : null;
+        if (action != null)
+        {
+            startHint.Bind(action, "fishing.prompt.start", "Begin Fishing Frenzy");
+        }
+        else
+        {
+            startHint.Bind("<Keyboard>/t", "<Gamepad>/dpad/down", "fishing.prompt.start", "Begin Fishing Frenzy");
+        }
+        hintBound = true;
     }
 
     private void HandleCountdownTick(int tick)
@@ -111,12 +136,12 @@ public class FishingHUDUI : MonoBehaviour
         if (tick > 0)
         {
             countdownText.text = tick.ToString();
-            countdownText.color = new Color(1f, 0.85f, 0.2f, 1f);
+            countdownText.color = UITheme.For(this).Get(UIColorRole.Accent);
         }
         else
         {
             countdownText.text = "FISHING FRENZY!";
-            countdownText.color = new Color(0.2f, 1f, 0.8f, 1f);
+            countdownText.color = UITheme.For(this).Get(UIColorRole.Success);
         }
 
         if (punchRoutine != null) StopCoroutine(punchRoutine);

@@ -7,7 +7,7 @@ using UnityEngine.UI;
 ///     <see cref="SaveSystem.SlotCount" /> slot, built from disk each time the screen opens. A used slot
 ///     continues, an empty one starts a New Game there, and a used slot's delete button opens the
 ///     <see cref="SaveSlotDeleteDialog" /> warning. Picking a slot makes it <see cref="SaveSystem.ActiveSlot" />
-///     and hands off to <see cref="onSlotReady" /> (the menu's loading screen).
+///     and hands off to <see cref="onSlotReady" /> (the main menu's scene load).
 /// </summary>
 public class SaveSlotsScreen : MonoBehaviour
 {

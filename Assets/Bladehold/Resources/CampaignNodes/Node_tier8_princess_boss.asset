@@ -19,8 +19,8 @@ MonoBehaviour:
     the throne.
   sceneName: Bladehold Princess Sanctuary
   nodeType: 6
-  tierIndex: 8
-  mapPosition: {x: 2220, y: 150}
+  tierIndex: 10
+  mapPosition: {x: 2740, y: 150}
   mapBiome: 0
   previewImage: {fileID: 21300000, guid: bfffa1f7ef1f6234dabb0e1e1eb9d79f, type: 3}
   captainName: Princess Katherine

@@ -29,7 +29,7 @@ public class CampaignNodeSO : ScriptableObject
     [Tooltip("Encounter classification of this node.")]
     public CampaignNodeType nodeType = CampaignNodeType.Combat;
 
-    [Tooltip("Tier index in the campaign graph (1-8).")]
+    [Tooltip("Tier index in the campaign graph (1-10): its map column, threat level and demo gating.")]
     public int tierIndex = 1;
 
     [Tooltip("Position on the campaign map, in map units (x = along the route, y = lane). The diorama maps it onto the terrain.")]

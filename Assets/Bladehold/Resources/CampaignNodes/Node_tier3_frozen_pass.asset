@@ -19,8 +19,8 @@ MonoBehaviour:
     they reach the keep.
   sceneName: Bladehold Frozen Pass Scene
   nodeType: 0
-  tierIndex: 3
-  mapPosition: {x: 660, y: 225}
+  tierIndex: 5
+  mapPosition: {x: 1180, y: 150}
   mapBiome: 0
   previewImage: {fileID: 21300000, guid: 6934094d31b76474ebd702e3cf4326a7, type: 3}
   captainName: Captain Kombusta
