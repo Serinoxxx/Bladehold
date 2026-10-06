@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-///     Marks a gate-defense scene (Outer Gate, Desert Gate, Graveyard, Tutorial Gate) as using the
+///     Marks a gate-defense scene (Outer Gate, Desert Gate, Graveyard, Valley Stronghold) as using the
 ///     plan-17 fort rules: towers open the pick-your-upgrade wheel instead of E-to-refill/auto-level, and
 ///     wall plots are live. Scenes without one keep the old tower behaviour, the same "no component means
 ///     the default" convention as <see cref="SceneAbilityRules" />. The generator adds it; it also hands

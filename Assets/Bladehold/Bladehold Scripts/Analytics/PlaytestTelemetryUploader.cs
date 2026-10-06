@@ -9,6 +9,8 @@ using GameAnalyticsSDK;
 public class RunTelemetryData
 {
     public string classId;
+    /// <summary>tutorial / campaign / standalone.</summary>
+    public string runMode;
     public string playtestVersion;
     public int startingWave;
     public int maxWaveReached;
@@ -157,6 +159,7 @@ public class PlaytestTelemetryUploader : MonoBehaviour
     {
         Debug.Log($"[PlaytestTelemetryUploader] Sending GameAnalytics events for Wave {data.maxWaveReached} (Fatal enemy: '{data.fatalEnemy}')...");
         GameAnalytics.NewProgressionEvent(GAProgressionStatus.Complete, "Run", $"Wave_{data.maxWaveReached}");
+        if (!string.IsNullOrEmpty(data.runMode)) GameAnalytics.NewDesignEvent($"RunMode:{data.runMode}", data.maxWaveReached);
         GameAnalytics.NewDesignEvent("RunStats:TotalTime", data.totalRunTimeSeconds);
         GameAnalytics.NewDesignEvent("RunStats:TimesDodged", data.timesDodged);
         GameAnalytics.NewDesignEvent("RunStats:MountTime", data.mountTimeSeconds);

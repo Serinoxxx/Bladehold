@@ -556,16 +556,20 @@ public class DeathScreen : MonoBehaviour
 
         if (!CampaignManager.Instance.IsCampaignActive)
         {
-            // Only happens when a battle scene is played straight from the Editor: there's no node
-            // to complete, so hand over to a fresh campaign run instead.
-            Debug.Log("[DeathScreen] Victory with no campaign run active (tutorial, or scene played standalone). Starting a fresh campaign run.");
+            // The tutorial's last scene, or a battle scene played straight from the Editor: there's no
+            // node to complete, so hand over to a new campaign run instead.
+            Debug.Log("[DeathScreen] Victory with no campaign run active (tutorial, or scene played standalone). Starting a campaign run.");
             if (TutorialRun.Active)
             {
-                // The tutorial's gold and supply were a sandbox: the first real run starts clean.
+                // The tutorial's last scene is campaign node 1 (Valley Stronghold): the run carries on with
+                // it cleared. Plan 21 phase 6: strip any trial Arcane Cores here before the hand-off.
                 TutorialRun.End();
-                RunSession.StartNewRun();
+                CampaignManager.Instance.StartCampaignRunFromTutorial();
             }
-            CampaignManager.Instance.StartCampaignRun();
+            else
+            {
+                CampaignManager.Instance.StartCampaignRun();
+            }
             CampaignManager.Instance.OpenOverviewMap();
             return;
         }

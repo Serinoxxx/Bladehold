@@ -22,7 +22,7 @@ followed by a rule check. Code: `Assets/Bladehold/Bladehold Scripts/Editor/Scene
 | `PrefabMeasure` | Mesh-measured bounds, footprints and grounding for any prefab. |
 | `DefenseSceneDefaults` | Builds the stock assets in `Assets/Bladehold/Config/SceneGen/`: `SpikePitConfig`, Outer Gate spec + Alpine palette (tier 1), Desert Gate spec + Arid palette (tier 2, two ravines), Tutorial Gate spec + Kingdom palette (plan 16, no ravines). One menu item per scene, so new stock scenes get a `Create<Scene>` builder here too. |
 
-**Exception: the Tutorial Gate is generated once, then hand-edited.** `TutorialGate_DefenseSpec_GENERATED_ONCE.asset` produced `Bladehold Tutorial Gate.unity`, and the tutorial director, steps, waypoints, ammo chest and tutorial pacing were then placed on top. Regenerating it wipes all of that. Edit the scene directly instead. The Kingdom palette (grass terrain layers built from the Fantasy Kingdom ground textures) is free to reuse for other scenes.
+**Exception: the Tutorial Gate is generated once, then hand-edited.** `TutorialGate_DefenseSpec_GENERATED_ONCE.asset` produced `Bladehold Valley Stronghold.unity` (the tutorial gate, renamed by plan 21), and the tutorial director, steps, waypoints, ammo chest and tutorial pacing were then placed on top. Regenerating it wipes all of that. Edit the scene directly instead. The Kingdom palette (grass terrain layers built from the Fantasy Kingdom ground textures) is free to reuse for other scenes.
 
 Runtime piece: `Hazards/SpikePit.cs` + `SpikePitConfigSO` (one heavy hit on landing, 12 by default, so
 normal 10-HP goblins die. A shared registry means walking along the floor between boxes isn't a second
@@ -39,7 +39,7 @@ fall.)
 - **Ammo chest.** `Bladehold Prefabs/Economy/AmmoChest.prefab` goes at `ammoChestPosition` (8, 5), outside the gate, facing it.
   - Spec switch: `placeAmmoChest`.
 - **Check after a regeneration:** each plot's `NavMesh.SamplePosition` area mask equals `1 << GetAreaFromName("WallPlot{i}")`.
-- **Tutorial Gate** has no bridges. Its 3 wall plots sit in gaps in a hand-placed rock line (`Wall Chokepoints`). Never regenerate it.
+- **Valley Stronghold** (the tutorial gate) has no bridges. Its 3 wall plots sit in gaps in a hand-placed rock line (`Wall Chokepoints`). Never regenerate it.
 
 ## Frame and rules the generator enforces
 

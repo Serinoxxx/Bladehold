@@ -293,9 +293,15 @@ public class RunTelemetry : MonoBehaviour
         yield return null;
 
         string classId = SaveSystem.Load().equippedArmourSet;
-        string detail = Invariant($"startWave={RunSession.CurrentWave};class={classId};gold={RunSession.InRunGold}");
+        string detail = Invariant($"startWave={RunSession.CurrentWave};class={classId};gold={RunSession.InRunGold};scene={SceneManager.GetActiveScene().name};mode={RunMode}");
         AppendRow("run_start", wave: Invariant($"{RunSession.CurrentWave}"), runSeconds: "0", detail: detail);
     }
+
+    /// <summary>
+    ///     tutorial / campaign / standalone (scene played from the Editor). Tells the Valley Stronghold's
+    ///     tutorial runs (T3) from its campaign-node runs (plan 21).
+    /// </summary>
+    private static string RunMode => TutorialRun.Active ? "tutorial" : RunSession.IsCampaignRun ? "campaign" : "standalone";
 
     private void Unbind()
     {
@@ -430,6 +436,7 @@ public class RunTelemetry : MonoBehaviour
         {
             playtestVersion = Application.version,
             classId = classId,
+            runMode = RunMode,
             startingWave = RunSession.CurrentWave,
             maxWaveReached = wave,
             totalRunTimeSeconds = RunSeconds(),

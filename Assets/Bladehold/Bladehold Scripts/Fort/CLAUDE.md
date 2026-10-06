@@ -15,7 +15,7 @@
   - **Dome Warden** (`Enemies/DomeWarden/ProjectileDome`): catches tower projectiles aimed at enemies inside its dome and takes the damage itself until it breaks. `NetThrowerDefense` won't root anything inside one. See `DamageSystem/CLAUDE.md`.
   - **Hexer** (`Enemies/Hexer/TowerHexer`): channels on a tower; while `IsHexed` it can't fire (spike rings too). Every turret checks `IsHexed` and the static `HoldingFire` (the tutorial's charge lessons hold every tower's fire, plan 21) in its fire path, so a new defence must too.
 - **Two interaction modes**:
-  - **Defense scenes** (a `DefenseSceneRules` with a `FortUpgradeConfigSO` in the scene: Outer Gate, Desert Gate, Graveyard, Tutorial Gate). `[E]` on a tower opens the **upgrade wheel** (`BuildWheelUI.OpenUpgrades(IUpgradeable)`) with these slices: Refill (supply), Fire Rate I–III, Spikes (`TowerSpikeRing`), Fire / Ice / Storm (crystals, one element per tower, locked once bought) and Deconstruct.
+  - **Defense scenes** (a `DefenseSceneRules` with a `FortUpgradeConfigSO` in the scene: Outer Gate, Desert Gate, Graveyard, Valley Stronghold). `[E]` on a tower opens the **upgrade wheel** (`BuildWheelUI.OpenUpgrades(IUpgradeable)`) with these slices: Refill (supply), Fire Rate I–III, Spikes (`TowerSpikeRing`), Fire / Ice / Storm (crystals, one element per tower, locked once bought) and Deconstruct.
     - The tower stays level 1; purchases live in `StructureUpgradeState`.
     - Subclasses read `FireRateMultiplier` and `Element`/`ApplyElementTo`. Arrow: ignite / frost / shock. Catapult: rolling fireball / slippery ground / storm cloud. Ballista bolts and net roots apply the status.
   - **Older scenes** (no rules component): `[E]` refills, then auto-levels to Lv3, as before.
@@ -28,7 +28,7 @@
 
 ## Walls (plan 17, `Fort/Walls/`)
 
-- **`WallPlot`** sits across a bridge deck (local +Z faces the enemy). The generator puts one on every bridge (up to 8). In the Tutorial Gate they're hand-placed between big rocks.
+- **`WallPlot`** sits across a bridge deck (local +Z faces the enemy). The generator puts one on every bridge (up to 8). In the Valley Stronghold (the tutorial gate) they're hand-placed between big rocks.
   - Its footprint is baked onto its own NavMesh area `WallPlot{index}` (areas 3–10, via a `NavMeshModifierVolume` child).
   - Build, rebuild and upgrade happen at its **`WallCraftingStation`** (castle side): build/rebuild in prep, upgrade any time. During prep, `ObjectiveWaypointTrackerUI` marks each workbench like a tower plot: a gold "BUILD" marker until a wall stands, then a plain one.
 - **`WallStructure`**: `Health` (immune to the player), tier HP from `FortUpgradeConfigSO`.

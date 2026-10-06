@@ -138,6 +138,15 @@ public class GameLoopManager : MonoBehaviour
     /// <summary>Fired when the player picks from a wave draft: offered cards, the pick, seconds taken to decide.</summary>
     public event Action<IReadOnlyList<WaveCard>, WaveCard, float> OnWaveCardPicked;
 
+    /// <summary>
+    ///     Swaps the pacing config before any wave reads it. Called from an earlier Awake by a scene that runs
+    ///     in two modes (<see cref="TutorialSceneMode" />: tutorial pacing vs normal campaign pacing).
+    /// </summary>
+    public void UsePacingConfig(RoundPacingConfigSO config)
+    {
+        if (config != null) pacingConfig = config;
+    }
+
     private void Awake()
     {
         if (Instance == null)

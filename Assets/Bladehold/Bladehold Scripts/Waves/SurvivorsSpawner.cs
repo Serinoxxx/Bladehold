@@ -146,6 +146,12 @@ public class SurvivorsSpawner : MonoBehaviour
         results.AddRange(aliveEnemies);
     }
 
+    /// <summary>Swaps the pacing config before any wave reads it (<see cref="TutorialSceneMode" />).</summary>
+    public void UsePacingConfig(RoundPacingConfigSO config)
+    {
+        if (config != null) pacingConfig = config;
+    }
+
     private void Awake()
     {
         if (Instance == null)

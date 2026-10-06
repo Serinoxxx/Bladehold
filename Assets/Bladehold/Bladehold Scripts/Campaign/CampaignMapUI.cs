@@ -546,7 +546,8 @@ public class CampaignMapUI : MonoBehaviour
             if (columnX == float.MaxValue) continue;
 
             TMP_Text header = Instantiate(tierHeaderPrefab, tierHeadersContainer);
-            string numeral = tier.tierNumber >= 1 && tier.tierNumber <= RomanNumerals.Length ? RomanNumerals[tier.tierNumber - 1] : tier.tierNumber.ToString();
+            // Tier 0 (the Valley Stronghold's column, plan 21) has a name but no numeral.
+            string numeral = tier.tierNumber < 1 ? "" : tier.tierNumber <= RomanNumerals.Length ? RomanNumerals[tier.tierNumber - 1] : tier.tierNumber.ToString();
             header.text = $"<size=140%>{numeral}</size>\n{tier.tierName}";
             header.rectTransform.anchoredPosition = new Vector2(0f, -tierHeaderTopMargin);
             tierHeaders.Add(new KeyValuePair<RectTransform, float>(header.rectTransform, diorama.MapToWorldX(columnX)));

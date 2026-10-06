@@ -12,8 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36dea8a895a130041a5c3de284f0eda1, type: 3}
   m_Name: CampaignGraph
   m_EditorClassIdentifier: Assembly-CSharp::CampaignGraphSO
-  rootNode: {fileID: 11400000, guid: 778cd3f0e7e9da24abf71098d5f51b75, type: 2}
+  rootNode: {fileID: 11400000, guid: 4530559d719d66343b3e06ef53ad7bd4, type: 2}
   tiers:
+  - tierNumber: 0
+    tierName: The Valley
+    nodes:
+    - {fileID: 11400000, guid: 4530559d719d66343b3e06ef53ad7bd4, type: 2}
   - tierNumber: 1
     tierName: The Alpine Keep
     nodes:
@@ -66,6 +70,7 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 94c204f178350c74aa08bfe0a6cdc9bd, type: 2}
     - {fileID: 11400000, guid: f9d47a5371861414b9ebef3dd6d9fc71, type: 2}
   allNodes:
+  - {fileID: 11400000, guid: 4530559d719d66343b3e06ef53ad7bd4, type: 2}
   - {fileID: 11400000, guid: 778cd3f0e7e9da24abf71098d5f51b75, type: 2}
   - {fileID: 11400000, guid: 32dd7451bc9e8374d817999b58d80f1c, type: 2}
   - {fileID: 11400000, guid: 14e852b703476ae42bcfa3d9476ee4c0, type: 2}

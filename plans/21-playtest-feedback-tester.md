@@ -204,7 +204,7 @@ Checked in Play mode in T3 via MCP (steps driven with `DebugPressReady` / `Debug
 
 Use the `add-campaign-node` skill.
 
-- [ ] **Rename and add the node.**
+- [x] **Rename and add the node.**
   - Rename the scene to `Bladehold Valley Stronghold.unity`, keeping its GUID. Then update:
     - build settings;
     - `TutorialSceneExit.nextSceneName` in T2 (Arena.unity:322);
@@ -212,7 +212,7 @@ Use the `add-campaign-node` skill.
     - any string references (grep "Tutorial Gate").
   - Add a new `CampaignNode` asset, **"Valley Stronghold"**, using that scene. It becomes the graph's `rootNode` (`Resources/CampaignGraph.asset:15`), with Alpine Keep as its child.
   - T3 was generated once from `TutorialGate_DefenseSpec_GENERATED_ONCE.asset`. Don't regenerate it, or the tutorial wiring is lost.
-- [ ] **One scene, two modes.**
+- [x] **One scene, two modes.**
   - When `TutorialRun.Active` is false, the scene runs as a normal campaign combat sector:
     - the `TutorialDirector`, tutorial encounters, carrots and hint UI are off;
     - normal round pacing (not `TutorialRoundPacingConfig`), wave drafts on, clans rolled;
@@ -220,23 +220,48 @@ Use the `add-campaign-node` skill.
     - no `startsFreshRun`; it uses the campaign's `RunSession`.
   - Put the switch in one place, e.g. a `TutorialOnly` component on a single root that holds every tutorial-only object.
   - Choose the pacing config and ability rules at Awake, before `GameLoopManager` reads them.
-- [ ] **Tutorial victory carries into the campaign.**
+- [x] **Tutorial victory carries into the campaign.**
   - DeathScreen's tutorial branch (:557-570) keeps `RunSession` (gold, supply, drafts, HP ratio) instead of calling `StartNewRun()`.
   - The campaign run starts with Valley Stronghold **already completed**, so the map opens on it with its children available.
   - Check what `CampaignManager.StartCampaignRun()` resets (`Campaign/CampaignManager.cs:196-216`).
   - At this hand-off, make sure no trial Arcane Cores from Phase 6 are left over.
-- [ ] **Completed only the first time.**
+- [x] **Completed only the first time.**
   - After losing a later sector, or on any new run that isn't the tutorial, the map starts at Valley Stronghold as the first *playable* node, in campaign mode.
   - Check `ReturnToMetaScene` (:577-598) and the Meta Area → map entry.
   - The tutorial-death path (`FirstRunGift`) stays as it is.
-- [ ] **Balance and data.**
+- [x] **Balance and data.**
   - Tier 1, with a lower threat budget than Alpine Keep (see plan 06).
   - Map icon, title localization and diorama placement. `CampaignMapUI.cs` has uncommitted changes, so check them first.
   - Telemetry tags `tutorial` vs `campaign` runs of this scene.
-- [ ] **Checks.**
+- [x] **Checks.**
   - New save → full tutorial → victory: the map shows Valley Stronghold completed, gold and drafts are kept, and Alpine Keep is next.
   - Die in Alpine Keep → Meta → map: the root is Valley Stronghold, playable, with no tutorial hints.
   - Replay Tutorial from the pause menu still works (`TutorialRun.Replay`).
+
+### Phase 4 notes (2026-10-07)
+
+Checked in Play mode via MCP: deployed from the map, simulated the tutorial victory, and entered the scene as the tutorial does from T2. The Editor compile is clean.
+
+- **Rename:** done with `AssetDatabase.MoveAsset`, so the GUID (`103970cb…`) is kept. Build settings, T2's `TutorialSceneExit.nextSceneName`, the scene-gen spec's `scenePath` (still `..._GENERATED_ONCE`, never regenerate) and the docs/skill all use the new name. There's no separate demo scene list: the build settings are the list. Added an `AreaDatabase` entry, so the loading screen names it.
+- **Node and graph:**
+  - New root `Node_tier1_valley_stronghold` → Alpine Keep. It's first in `allNodes` and mirrored in `BuildDefaultGraph()`.
+  - **Deviation:** it keeps `tierIndex` 1 (threat 1, the minimum) but gets its own map column, a new `CampaignTier` 0 "The Valley" at map x −120. The tier header shows no numeral for tier 0 (`CampaignMapUI.BuildTierHeaders`). Renumbering every tier would have shifted every sector's threat and the demo cutoff.
+  - "Lower threat budget" is a lighter pacing config, because threat can't go below 1: `ValleyStrongholdRoundPacingConfig` has 30/34/38/42/46 kills (the Alpine Keep has 40–60), 70% fodder and a cap of 30.
+  - Reward: +50 gold (`GoldCache`). Node titles aren't localized anywhere yet, so no new strings. The diorama is rebuilt; the level preview is still to capture.
+- **One scene, two modes:**
+  - `Tutorial/TutorialSceneMode` (`DefaultExecutionOrder(-1000)`, on its own root) runs before the director's Awake.
+  - **Campaign mode** means `RunSession.IsCampaignRun` with a current node id. It ends any stale `TutorialRun`, switches off `Tutorial`, `TutorialDirector` and the tutorial `SceneAbilityRules` (so no `startsFreshRun`, no hints, ultimates allowed), and pushes the campaign pacing into `GameLoopManager`/`SurvivorsSpawner` through a new `UsePacingConfig`.
+  - **Tutorial mode** is everything else, and leaves the scene as saved.
+  - `AmmoChest` was under the `Tutorial` root, so it moved to the scene root.
+  - Verified in campaign mode: no director, `UltimateAllowed`, Ready open, wave 1 quota 30, ammo chest present. In tutorial mode: director on `Step8_Build`, Ready blocked, ultimates off, tutorial pacing.
+- **Carry-over:**
+  - DeathScreen's tutorial branch now calls `CampaignManager.StartCampaignRunFromTutorial()`, which runs `StartCampaignRun()` and then completes the root (reward paid). It no longer calls `RunSession.StartNewRun()`.
+  - `StartCampaignRun()` resets only the campaign ids, so gold, supply, drafts, HP and gate HP carry.
+  - Verified: gold 123 → 173, a draft level kept, the map shows Valley completed with the you-are-here flag and Alpine Keep available (screenshot: `Captures/valley_map.png`).
+  - The phase 6 trial-core strip has a marker comment at that hand-off.
+- **Later runs:** the Meta portal and the map's first open already call `StartCampaignRun()`, which opens the root, now the Valley Stronghold, in campaign mode. `ReturnToMetaScene` and the `FirstRunGift` tutorial-death path are unchanged. Replay Tutorial clears the run, so the scene comes up in tutorial mode.
+- **Telemetry:** `run_start` gets `scene=` and `mode=tutorial|campaign|standalone`; `RunTelemetryData.runMode` goes into the webhook JSON and a `RunMode:<mode>` GameAnalytics design event.
+- **Not committed:** `Bladehold Campaign Map Scene.unity`. The diorama rebuild was saved into it on top of Lance's uncommitted settings-button work, so it's left for him to commit (see the editor checklist). The same applies to his uncommitted `CampaignMapUI.cs` changes: only the tier-header line was committed.
 
 ## Phase 5: Ultimate redesign (Arcane Cores and the ultimate wheel)
 

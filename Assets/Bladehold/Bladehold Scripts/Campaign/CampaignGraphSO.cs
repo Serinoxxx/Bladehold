@@ -95,6 +95,31 @@ public class CampaignGraphSO : ScriptableObject
         allNodes.Clear();
 
         // -------------------------------------------------------------
+        // Root: Valley Stronghold, the tutorial's last scene (plan 21). A new save plays it as the
+        // tutorial and the campaign starts with it cleared; every later run plays it as a normal
+        // sector. Its own column ("The Valley", no numeral) left of the Alpine Keep, threat 1 with a
+        // lighter pacing config than the Alpine Keep.
+        // -------------------------------------------------------------
+        CampaignNodeSO nodeValley = CreateNode(
+            "tier1_valley_stronghold",
+            "Valley Stronghold",
+            "The First Stand",
+            "A goblin vanguard is marching up the valley road. Hold the stronghold's gate: build towers by the road, wall off the gaps in the rock line and ride down the raiders.",
+            "Bladehold Valley Stronghold",
+            CampaignNodeType.Combat,
+            1,
+            new Vector2(-120f, 0f),
+            captainName: "",
+            difficultyTier: BannerDifficultyTier.Standard,
+            bountyType: BannerBountyType.GoldCache,
+            rewardsDesc: "+50 Gold",
+            gold: 50,
+            blood: 0,
+            metal: 0
+        );
+        rootNode = nodeValley;
+
+        // -------------------------------------------------------------
         // TIER 1: Outer Gate (Center Start)
         // -------------------------------------------------------------
         CampaignNodeSO nodeTier1 = CreateNode(
@@ -114,7 +139,6 @@ public class CampaignGraphSO : ScriptableObject
             blood: 0,
             metal: 0
         );
-        rootNode = nodeTier1;
 
         // -------------------------------------------------------------
         // TIER 2: Split into 2 options (Graveyard / Desert Gate)
@@ -530,6 +554,7 @@ public class CampaignGraphSO : ScriptableObject
         // -------------------------------------------------------------
         // Demo stretch (tiers 1-4): every route out of the Alpine Keep ends on the Graveyard.
         // The tier-2 stops skip column 3 and run straight to it.
+        nodeValley.nextNodes.Add(nodeTier1);
         nodeTier1.nextNodes.Add(nodeTier2B);
         nodeTier1.nextNodes.Add(nodeTier3A);
         nodeTier1.nextNodes.Add(nodeTier2Fishing);
@@ -563,6 +588,7 @@ public class CampaignGraphSO : ScriptableObject
         // -------------------------------------------------------------
         // Populate Tiers list
         // -------------------------------------------------------------
+        AddTier(0, "The Valley", nodeValley);
         AddTier(1, "The Alpine Keep", nodeTier1);
         AddTier(2, "The Border Keeps", nodeTier2B, nodeTier3A, nodeTier2Fishing);
         AddTier(3, "The Canyon Road", nodeTier3Bazaar, nodeTier3Fishing);
@@ -577,6 +603,8 @@ public class CampaignGraphSO : ScriptableObject
         // -------------------------------------------------------------
         // Populate allNodes list
         // -------------------------------------------------------------
+        // The root first: regeneration sets rootNode = allNodes[0].
+        allNodes.Add(nodeValley);
         allNodes.Add(nodeTier1);
         allNodes.Add(nodeTier2A);
         allNodes.Add(nodeTier2B);

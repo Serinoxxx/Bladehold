@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b02862b8870d46944bd892d7cbd1eb5c, type: 3}
   m_Name: TutorialGate_DefenseSpec_GENERATED_ONCE
   m_EditorClassIdentifier: Assembly-CSharp-Editor::DefenseSceneSpecSO
-  scenePath: Assets/Bladehold/Bladehold Scenes/Bladehold Tutorial Gate.unity
+  scenePath: Assets/Bladehold/Bladehold Scenes/Bladehold Valley Stronghold.unity
   seed: 1601
   palette: {fileID: 11400000, guid: 0e49f6c3a9cffc44dbc174ca62bbbfd1, type: 2}
   terrainMin: {x: -200, y: -120}

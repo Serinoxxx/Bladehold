@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-///     Within-session state for the first-launch tutorial (T1 Dungeon → T2 Arena → T3 Gate). Like
+///     Within-session state for the first-launch tutorial (T1 Dungeon → T2 Arena → T3 Valley Stronghold). Like
 ///     <see cref="RunState" />, it survives scene loads but not a restart of the game. Set when the
 ///     tutorial is entered, cleared when it's skipped or its last scene ends (death or victory).
 /// </summary>

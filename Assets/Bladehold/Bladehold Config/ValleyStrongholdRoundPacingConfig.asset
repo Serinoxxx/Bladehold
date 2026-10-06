@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33a9c0280e53ea943ad592b8acae510f, type: 3}
+  m_Name: ValleyStrongholdRoundPacingConfig
+  m_EditorClassIdentifier: Assembly-CSharp::RoundPacingConfigSO
+  rounds:
+  - roundNumber: 1
+    requiredKillsPerWave: 30
+  - roundNumber: 2
+    requiredKillsPerWave: 34
+  - roundNumber: 3
+    requiredKillsPerWave: 38
+  - roundNumber: 4
+    requiredKillsPerWave: 42
+  - roundNumber: 5
+    requiredKillsPerWave: 46
+  wavesPerRound: 5
+  quotaGrowthPerThreat: 0.1
+  fodderEnemyId: goblin
+  fodderShare: 0.7
+  rollWaveClans: 1
+  draftWaveCards: 1
+  maxConcurrentEnemies: 30
+  spawnTelegraphDuration: 3
+  objectiveTrickleMinAlive: 6
+  objectiveTrickleInterval: 2
+  bossEnemyId: slayer
+  indicatorPrefab: {fileID: 8882073100815552345, guid: d9eaf0d0868984c45b4645b78509446f, type: 3}
+  indicatorRadius: 0.2

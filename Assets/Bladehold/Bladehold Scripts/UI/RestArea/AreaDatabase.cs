@@ -134,6 +134,15 @@ namespace Bladehold.UI
             ));
 
             // Castle Campaign Levels
+            // Root: Valley Stronghold (also the tutorial's last scene, entered from the Arena)
+            Register(new AreaMetadata(
+                "Bladehold Valley Stronghold",
+                1,
+                "Valley Stronghold",
+                "The First Stand",
+                "A goblin vanguard is marching up the valley road. Hold the stronghold's gate: build towers by the road, wall off the gaps in the rock line and ride down the raiders."
+            ));
+
             // Tier 1: Outer Gate
             Register(new AreaMetadata(
                 "Bladehold Outer Gate",

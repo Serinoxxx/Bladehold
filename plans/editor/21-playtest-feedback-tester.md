@@ -76,3 +76,28 @@ Unity MCP was down for this phase. `dotnet build` is clean for runtime and Edito
 - [ ] Build two towers, then do both charge lessons: the goblins survive until you kill them, and only your own kills fill the charge meter.
 - [ ] During Build, only TowerPlot_1 has a BUILD marker. During Wall, only the marked workbench does. The horse lessons show no plot markers on screen or on the minimap.
 - [ ] Spend your supply below a wall's cost before the Wall step (e.g. with the dev console): Ready opens, and starting the wave moves the tutorial on.
+
+## Phase 4: Valley Stronghold
+
+**Done in code and assets** (checked in Play mode via MCP):
+- `Bladehold Tutorial Gate.unity` is renamed to `Bladehold Valley Stronghold.unity`, with the same GUID. Build settings, T2's exit door, the scene-gen spec and the docs all point at the new name.
+- New root node `Resources/CampaignNodes/Node_tier1_valley_stronghold.asset` ("Valley Stronghold", threat 1, +50 gold), leading to the Alpine Keep. It has its own map column, "The Valley" (tier 0, no numeral), and is mirrored in `BuildDefaultGraph()`. The map diorama is rebuilt.
+- `TutorialSceneMode` (root object of the same name) picks the mode before every other Awake:
+  - **Campaign deploy:** switches off `Tutorial`, `TutorialDirector` and the tutorial `SceneAbilityRules` (so ultimates are allowed). The loop and spawner get `ValleyStrongholdRoundPacingConfig`: 5 waves, 30–46 kills (the Alpine Keep has 40–60), 70% fodder, cap 30, drafts and clans on.
+  - **Tutorial (from T2, or opened from the Editor):** the scene runs as before.
+- `AmmoChest` moved out of the `Tutorial` root, so the campaign mode keeps it.
+- Tutorial victory keeps the run (gold, supply, drafts, HP) and starts the campaign with the Valley Stronghold cleared and its reward paid. Later runs start on it as a normal sector.
+- Telemetry: `run_start` has `scene=` and `mode=tutorial|campaign|standalone`, and the end-of-run payload and GameAnalytics carry `runMode`.
+
+**Wiring checklist:**
+- [ ] Commit `Bladehold Campaign Map Scene.unity`. The diorama rebuild for the new node was saved into it **alongside your uncommitted settings-button work**, so it wasn't committed with phase 4. A pre-rebuild copy is in this session's scratchpad (`CampaignMap_before_diorama.unity`).
+- [ ] Run **Bladehold > Campaign > Capture Level Previews** for the Valley Stronghold tooltip screenshot. It wasn't run because it re-renders every node.
+- [ ] Map icon: the node uses the standard combat sword like the Alpine Keep. Decide whether the starting castle wants something different.
+- [ ] UI review of the map: the "The Valley" header (blank numeral line), and the Alpine Keep's "I" header, which wasn't visible over the snow in the MCP screenshot.
+- [ ] `Combined Character` (an Animator + SkinnedMeshRenderer at the scene root) is Synty Sidekick junk committed in the Valley Stronghold scene in `dbead25ae`. Delete it if nothing uses it.
+- [ ] Balance: playtest the campaign-mode Valley Stronghold. Spawn points, objectives (wagon route, cages, catapults) and the 6-plot layout were set up for the tutorial's 3 waves. Check that waves 3–5 and the wave-card objectives work in this layout.
+
+**Manual verification:**
+- [ ] New save → full tutorial → victory → "Proceed to Campaign Map": the map shows Valley Stronghold completed with the you-are-here flag, Alpine Keep available, and gold and drafts kept.
+- [ ] Die in the Alpine Keep → Meta → portal → map: Valley Stronghold is the only available node. Deploying plays it with no tutorial hints, Ready works straight away, wave drafts open between waves and the ultimate works.
+- [ ] Pause → Replay Tutorial from a campaign run still runs T1 → T2 → the Valley Stronghold in tutorial mode.

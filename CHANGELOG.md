@@ -4,6 +4,8 @@
 
 ### New Features
 
+- Added the Valley Stronghold as the first stop on the campaign map. The tutorial's last battle is now the Valley Stronghold, and winning it carries your gold and upgrades into the campaign
+
 ### Fixes
 
 - Fixed the tower build wheel showing each tower's supply cost twice
@@ -24,6 +26,7 @@
 - A cancelled horse summon now says so on the cast bar in red, with the reason (you moved, you were hit, or you pressed it again)
 - The tutorial now tells you to stand still while summoning your horse
 - During tutorial lessons only the marked build spot shows a BUILD marker, so the lesson's own marker is easy to find
+- Updated new campaign runs to start at the Valley Stronghold, played as a normal battle with wave choices and ultimates
 
 ## [0.1.34] - 2026-10-06
 

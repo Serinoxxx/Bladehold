@@ -319,7 +319,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba99e0460842baa448add17eb59d06a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TutorialSceneExit
-  nextSceneName: Bladehold Tutorial Gate
+  nextSceneName: Bladehold Valley Stronghold
   interactionAnchor: {fileID: 0}
   interactionRadius: 3
   exitFeedback: {fileID: 1590339592}

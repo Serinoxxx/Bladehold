@@ -217,6 +217,19 @@ public class CampaignManager : MonoBehaviour
     }
 
     /// <summary>
+    ///     Tutorial victory (plan 21): the tutorial's last scene is the root node (the Valley Stronghold), so
+    ///     the campaign run starts on the tutorial's <see cref="RunSession" /> (gold, supply, drafts, HP) with
+    ///     the root already cleared and its rewards paid. The map opens on the root's children.
+    /// </summary>
+    public void StartCampaignRunFromTutorial()
+    {
+        StartCampaignRun();
+        if (ActiveGraph == null || ActiveGraph.rootNode == null) return;
+        CurrentNodeId = ActiveGraph.rootNode.nodeId;
+        CompleteCurrentNode();
+    }
+
+    /// <summary>
     ///     Selects and launches the destination node.
     /// </summary>
     public void SelectNode(CampaignNodeSO node)

@@ -492,7 +492,7 @@ public static class DefenseSceneDefaults
     private static void CreateTutorialGateSpec(DefenseBiomePaletteSO palette)
     {
         var s = LoadOrCreate<DefenseSceneSpecSO>(TutorialGateSpecPath);
-        s.scenePath = "Assets/Bladehold/Bladehold Scenes/Bladehold Tutorial Gate.unity";
+        s.scenePath = "Assets/Bladehold/Bladehold Scenes/Bladehold Valley Stronghold.unity";
         s.seed = 1601;
         s.palette = palette;
         s.fieldHalfWidth = 55f;

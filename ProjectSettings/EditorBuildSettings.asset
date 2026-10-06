@@ -66,7 +66,7 @@ EditorBuildSettings:
     path: Assets/Bladehold/Bladehold Scenes/Bladehold Tutorial Arena.unity
     guid: 70466dad4c2a54e418d785be4ff55552
   - enabled: 1
-    path: Assets/Bladehold/Bladehold Scenes/Bladehold Tutorial Gate.unity
+    path: Assets/Bladehold/Bladehold Scenes/Bladehold Valley Stronghold.unity
     guid: 103970cb441619c478826aa9447a252b
   - enabled: 1
     path: Assets/Bladehold/Bladehold Scenes/Bladehold Graveyard.unity
