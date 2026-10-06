@@ -148,14 +148,14 @@ Checked in Play mode (Outer Gate) via MCP with a scripted cast; `dotnet build` a
 
 After Wave 1, the game sits in prep with Ready live through steps 4–9 (Mount → Wall). Holding T starts wave 2 and skips the horse lessons. Only `BuildDefenseStep` and `BuildWallStep` auto-complete when a wave starts; `MountStep`, `ChargeStep` and `KillEnemiesStep` don't. The tester started wave 2 with the "charge until your stamina is gone" prompt still up.
 
-- [ ] **Steps can block the wave start.**
+- [x] **Steps can block the wave start.**
   - Add `TutorialStep.blocksWaveStart`. It defaults to true for every step except a `WaveEventStep(WaveStarted)`.
   - `GameLoopManager.TickReadyHold` (`Waves/GameLoopManager.cs:331-372`) and `DebugPressReady` (:375) check a small static gate (`WaveStartGate.Block(owner)`, `Release(owner)`, `IsBlocked`) instead of referencing the tutorial. Dependencies point inward.
   - While the gate is blocked:
     - hide the Ready hold prompt or show it as locked;
     - pressing T plays the denied MMF from plan 20 Phase 4 and briefly shows "Finish the lesson first".
   - Remove the "complete on wave start" escape hatches from `BuildDefenseStep` (:23, :34) and `BuildWallStep` (:19, :29). Keep a soft-lock guard instead: if the step can't complete (e.g. not enough supply), it releases the gate.
-- [ ] **Hide the normal BUILD icons during targeted steps.**
+- [x] **Hide the normal BUILD icons during targeted steps.**
   - While `IsAwaitingReady`, `UI/ObjectiveWaypointTrackerUI.cs:161-166` gives every tower plot (`AddTowerPlotTargets` :325-343) and every wall workbench (`AddWallPlotTargets` :347-362) a gold BUILD marker. The minimap does the same (`UI/Minimap/MinimapUI.cs:385-403`).
   - Add a static focus filter, `BuildMarkerFocus.Set(owner, allowedPlots)`. Both builders skip plots that aren't allowed. During a non-build step nothing is allowed.
   - Per step:
@@ -163,15 +163,36 @@ After Wave 1, the game sits in prep with Ready live through steps 4–9 (Mount �
     - `BuildWallStep` focuses its workbench.
     - Every other prep step hides all plot markers, so only the lesson's waypoint shows.
   - Clear the focus on `TutorialDirector.Finish` and `OnDestroy`.
-- [ ] **The towers kill the charge-lesson goblins.**
+- [x] **The towers kill the charge-lesson goblins.**
   - The StaminaKills (-20, 30) and ChargeThrough (2, 30) encounters spawn about 17–20 m from the plots at (±11, 15). The arrow tower's range is 36 m (`Fort/ArrowTowerDefense.cs:10`).
   - Moving them more than 36 m away probably doesn't fit T3.
   - **Recommended:** steps with `suspendDefenses = true` make the towers hold fire. Use a static `DefenseStructure.HoldFire` owner set, checked in each tower's target search (`ArrowTowerDefense.cs:176`, plus the other tower subclasses).
   - Only player kills should credit stamina (`Tutorial/TutorialEncounter.cs:142, 152-158`).
-- [ ] **Checks.**
+- [x] **Checks.**
   - Play T3 end to end and try holding T in every prep step. It must be refused until `Ready` / `Ready2`.
   - Build two towers, then confirm the goblins in both charge lessons survive until the player kills them.
   - During `Build`, only the marked plot shows a marker.
+
+### Phase 3 notes (2026-10-07)
+
+Checked in Play mode in T3 via MCP (steps driven with `DebugPressReady` / `DebugCompleteObjective` and by completing steps directly). `dotnet build` and the Editor compile are clean.
+
+- **Wave-start gate:**
+  - The new static `Waves/WaveStartGate` (`Block`/`Release`/`IsBlocked`, destroyed owners pruned) is read by `GameLoopManager.TickReadyHold` and `DebugPressReady`. A press while blocked resets the hold and raises `OnReadyDenied`; `IsReadyBlocked` exposes the state.
+  - `TutorialDirector` polls the current step every frame (and right after a step completes). Between steps (the advance delay) it holds the gate for the *next* step, so Ready can't slip through the gap.
+  - **Deviation:** `WaveEventStep` never blocks, whatever its trigger, not just `WaveStarted`. T3's last step, `Wave` (Victory), spans every wave after Ready2, so blocking it would lock the later preps.
+  - `TutorialStep.blocksWaveStart` (default true) is virtual through `BlocksWaveStart`. The build steps drop it while the player can't afford the build (`BuildWheelUI.SupplyCostOf` / `WallPlot.BuildCost`), so the old "complete on wave start" handlers only fire in that soft-locked case.
+  - `WavePrepPromptUI` swaps the hold row and bar for a new `LockedText` line while blocked and plays a new unscaled `DeniedFeedback` MMF on `OnReadyDenied`. It's a copy of the interact prompt's denied feedback: a shake of the prompt panel, the Feel denied sound at 0.45 and a red flash of the locked line. New string `wave.prep.locked` (all languages).
+  - Verified: Build/Mount/Wall steps report blocked and `DebugPressReady` is refused; Ready is open; the prompt shows "Finish the lesson first" with the hold row hidden.
+- **BUILD marker focus:**
+  - The new static `Fort/BuildMarkerFocus` (`Set`/`Clear`/`Allows`) filters `ObjectiveWaypointTrackerUI.AddTowerPlotTargets`/`AddWallPlotTargets`. The minimap hides an empty plot's ring and an unbuilt wall's outline outside the focus; built towers and walls always show.
+  - The director sets the focus from `TutorialStep.GetBuildMarkerFocus` as each step begins. The default is an empty focus (hide all). The build steps allow their `targetPlot`, and `WaveEventStep` returns no filter. It's cleared on `Finish` and `OnDestroy`.
+  - Verified: Build allows only TowerPlot_1, the horse lessons nothing, Wall only WallPlot_2, and Ready everything.
+- **Towers hold fire:**
+  - `DefenseStructure.HoldFire(owner)`/`ResumeFire`/`HoldingFire` is a static owner set, checked beside `IsHexed` in all four towers' fire paths and in `TowerSpikeRing`.
+  - `TutorialStep.suspendDefenses` is on for `StaminaKills` and `ChargeThrough` in T3. The director holds fire only while such a step is active.
+  - **Tower kills credited stamina:** tower and spike damage carries the player as its `source`, so `PlayerMount.CreditPlayerKill`'s check passed them. The new `Health.LastDamageWasDefense` (from `Damage.isDefenseDamage`) lets `TutorialEncounter` skip those kills.
+  - Verified: with two arrow towers built, the StaminaKills goblins stood 15 m from a tower for 6 s+ with tower supply unchanged. A defence-flagged kill left the banked charge at 20% while a player kill raised it to 28%.
 
 ## Phase 4: Valley Stronghold (the tutorial gate becomes campaign node 1)
 

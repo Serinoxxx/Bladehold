@@ -158,7 +158,8 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
             }
         }
 
-        // Prep phase: mark every tower plot so the player can find where to build
+        // Prep phase: mark every tower plot so the player can find where to build (only the focused ones
+        // while a tutorial lesson narrows them, see BuildMarkerFocus)
         if (loop != null && loop.IsAwaitingReady && TowerPlotManager.Instance != null)
         {
             AddTowerPlotTargets(TowerPlotManager.Instance.Plots);
@@ -327,7 +328,7 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
         Sprite icon = towerPlotIcon != null ? towerPlotIcon : defaultObjectiveIcon;
         foreach (TowerPlot plot in plots)
         {
-            if (plot == null || !plot.isActiveAndEnabled) continue;
+            if (plot == null || !plot.isActiveAndEnabled || !BuildMarkerFocus.Allows(plot)) continue;
             DefenseStructure def = plot.CurrentDefense;
             if (def != null && (def.IsDepleted || def.IsHexed)) continue;
 
@@ -349,7 +350,7 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
         Sprite icon = towerPlotIcon != null ? towerPlotIcon : defaultObjectiveIcon;
         foreach (WallPlot plot in plots)
         {
-            if (plot == null || !plot.isActiveAndEnabled || plot.Station == null) continue;
+            if (plot == null || !plot.isActiveAndEnabled || plot.Station == null || !BuildMarkerFocus.Allows(plot)) continue;
             bool empty = !plot.HasStandingWall;
             targetBuffer.Add(new ObjectiveWaypointTarget(
                 plot.Station.transform,

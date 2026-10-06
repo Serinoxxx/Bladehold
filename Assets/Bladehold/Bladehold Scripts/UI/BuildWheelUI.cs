@@ -127,6 +127,16 @@ public class BuildWheelUI : MonoBehaviour
 
     private static bool IsOffered(FortDefenseType type) => OnlyAllowed == null || OnlyAllowed.Value == type;
 
+    /// <summary>The wheel's supply price for <paramref name="type" />, or -1 if it isn't on the wheel.</summary>
+    public int SupplyCostOf(FortDefenseType type)
+    {
+        foreach (DefenseOption opt in defenseOptions)
+        {
+            if (opt != null && opt.defenseType == type) return opt.supplyCost;
+        }
+        return -1;
+    }
+
     private void Awake()
     {
         if (instance == null)

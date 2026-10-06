@@ -59,3 +59,20 @@ Unity MCP was down for this phase. `dotnet build` is clean for runtime and Edito
 - [ ] The wave looks right with each weapon in hand. The sword stays in the waving hand. On the 0.5 s Basic Warhorse cast you only see the start of the wave.
 - [ ] Tutorial gate horse step shows the "Stand still while summoning" second line.
 
+
+## Phase 3: Tutorial gating and clarity (T3)
+
+**Done in code and assets** (checked in Play mode via MCP in the Tutorial Gate):
+- Every tutorial step except a wave-event step (Ready, Ready2, Wave1, Wave) holds the Ready hold shut. While it's shut, the prep prompt hides the hold row and bar and shows "Finish the lesson first". Pressing T shakes the prompt, flashes that line red and plays the denied sound (`WavePrepPrompt/DeniedFeedback` in `Bladehold HUD.prefab`).
+- The build and wall lessons open Ready again only if you can't afford the build, and then finish when the wave starts.
+- During each lesson only its plot keeps a BUILD marker: TowerPlot_1 for Build, WallPlot_2 for Wall, none for the horse lessons. The minimap hides the empty-plot rings to match. Ready and the waves show every plot again.
+- `StaminaKills` and `ChargeThrough` have `suspendDefenses` on, so towers and spike rings hold fire. Tower and wall kills no longer refill the horse's charge meter in tutorial encounters.
+
+**Wiring checklist:**
+- [ ] UI review: the "Finish the lesson first" line uses the objective line's small style. Make it bigger or brighter if it's too easy to miss at 1080p.
+
+**Manual verification:**
+- [ ] Play T3 end to end with a real keyboard and pad. Hold T in every prep step from Mount to Wall: the wave must not start, and each press plays the denied shake, red flash and sound. Ready and Ready2 start the wave as before.
+- [ ] Build two towers, then do both charge lessons: the goblins survive until you kill them, and only your own kills fill the charge meter.
+- [ ] During Build, only TowerPlot_1 has a BUILD marker. During Wall, only the marked workbench does. The horse lessons show no plot markers on screen or on the minimap.
+- [ ] Spend your supply below a wall's cost before the Wall step (e.g. with the dev console): Ready opens, and starting the wave moves the tutorial on.

@@ -9,6 +9,9 @@
 - Fixed the tower build wheel showing each tower's supply cost twice
 - Fixed wall health bars clipping into the wall model; they now float clear above the wall
 - Fixed the horse summon bar never showing its text
+- Fixed being able to start the tutorial gate's next wave in the middle of a lesson; the wave prompt now says to finish the lesson first
+- Fixed the towers killing the goblins in the tutorial's horse charge lessons; they now hold fire so the kills are yours
+- Fixed tower and wall kills refilling your horse's charge meter in the tutorial
 
 ### Balance Changes
 
@@ -20,6 +23,7 @@
 - Summoning your horse now plants you in place for a moment, so pressing it while running no longer cancels it straight away
 - A cancelled horse summon now says so on the cast bar in red, with the reason (you moved, you were hit, or you pressed it again)
 - The tutorial now tells you to stand still while summoning your horse
+- During tutorial lessons only the marked build spot shows a BUILD marker, so the lesson's own marker is easy to find
 
 ## [0.1.34] - 2026-10-06
 

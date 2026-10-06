@@ -1,12 +1,13 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
 ///     Tutorial T3 (plan 17): build a wall in one of the field's rock gaps. Completes when a wall is built
 ///     (<see cref="WallStructure.OnAnyWallBuilt" />) on <see cref="targetPlot" /> if set, else on any plot.
 ///     The second hint line explains the rerouting: goblins go round a walled gap, and only break through
-///     when every gap is walled. Like <see cref="BuildDefenseStep" />, it also completes if the player
-///     starts the wave without building (walls are prep-only, so it could never finish otherwise).
-///     Point the waypoint at the target plot's crafting station.
+///     when every gap is walled. Like <see cref="BuildDefenseStep" />, it holds Ready shut and keeps only
+///     the target workbench's BUILD marker; if the player can't afford a wall it opens Ready and completes
+///     when the wave starts (walls are prep-only). Point the waypoint at the target plot's crafting station.
 /// </summary>
 public class BuildWallStep : TutorialStep
 {
@@ -26,6 +27,16 @@ public class BuildWallStep : TutorialStep
         if (GameLoopManager.Instance != null) GameLoopManager.Instance.OnWaveStarted -= HandleWaveStarted;
     }
 
+    public override bool BlocksWaveStart => base.BlocksWaveStart && !(IsActive && RunSession.InRunSupply < WallPlot.BuildCost);
+
+    public override bool GetBuildMarkerFocus(List<Object> allowedPlots)
+    {
+        if (targetPlot == null) return false;
+        allowedPlots.Add(targetPlot);
+        return true;
+    }
+
+    // Only reachable once the soft lock has opened Ready (see BlocksWaveStart).
     private void HandleWaveStarted(int wave) => Complete();
 
     private void HandleBuilt(WallStructure wall)

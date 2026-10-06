@@ -60,6 +60,9 @@ public class Health : MonoBehaviour, IDamageable
     /// </summary>
     public IDamageable LastDamageSource { get; private set; }
 
+    /// <summary>Whether the most recent damage came from a tower or wall (<see cref="Damage.isDefenseDamage" />).</summary>
+    public bool LastDamageWasDefense { get; private set; }
+
     /// <summary>
     ///     The timestamp of the most recent ranged hit from the player. Used by Fort Focus Fire bonus.
     /// </summary>
@@ -187,6 +190,7 @@ public class Health : MonoBehaviour, IDamageable
         }
 
         LastDamageSource = damage.source;
+        LastDamageWasDefense = damage.isDefenseDamage;
 
         damage.value *= DamageTakenMultiplier(damage);
 

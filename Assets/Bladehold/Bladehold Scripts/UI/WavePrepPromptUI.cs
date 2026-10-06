@@ -9,6 +9,9 @@ using UnityEngine.UI;
 ///     "PREPARE YOUR DEFENCES" with the upcoming objective, a [T] / D-pad Down glyph with "Hold to start
 ///     next wave", and a fill bar tracking <see cref="GameLoopManager.ReadyHoldProgress" />. During the
 ///     3-2-1 it shows the big countdown number instead. Pure view: polls <see cref="GameLoopManager" />.
+///     While <see cref="GameLoopManager.IsReadyBlocked" /> (a tutorial lesson owns the prep phase, plan 21)
+///     the hold row and bar give way to "Finish the lesson first", and pressing Ready plays
+///     <see cref="deniedFeedback" />.
 /// </summary>
 public class WavePrepPromptUI : MonoBehaviour
 {
@@ -25,6 +28,14 @@ public class WavePrepPromptUI : MonoBehaviour
     [Tooltip("Filled Image (Horizontal) tracking the 1 s hold.")]
     [SerializeField] private Image holdFill;
 
+    [Header("Locked (tutorial lesson running)")]
+    [Tooltip("Hold bar root, hidden while Ready is blocked. Empty = the fill image itself.")]
+    [SerializeField] private GameObject holdBar;
+    [Tooltip("\"Finish the lesson first\", shown instead of the hold row while Ready is blocked.")]
+    [SerializeField] private TMP_Text lockedText;
+    [Tooltip("Played when Ready is pressed while blocked: the denied sound and a red pulse of the locked line. Unscaled time.")]
+    [SerializeField] private MMF_Player deniedFeedback;
+
     [Header("Countdown")]
     [SerializeField] private GameObject countdownPanel;
     [SerializeField] private TMP_Text countdownText;
@@ -33,6 +44,8 @@ public class WavePrepPromptUI : MonoBehaviour
 
     private bool anyError;
     private bool hintBound;
+    private bool showingLocked;
+    private GameLoopManager subscribedLoop;
     private int lastCountdown;
 
     private void Start()
@@ -44,8 +57,27 @@ public class WavePrepPromptUI : MonoBehaviour
         if (countdownPanel == null) { Debug.LogError("[WavePrepPromptUI] countdownPanel is not assigned.", this); anyError = true; }
         if (countdownText == null) { Debug.LogError("[WavePrepPromptUI] countdownText is not assigned.", this); anyError = true; }
 
+        if (lockedText == null) { Debug.LogError("[WavePrepPromptUI] lockedText is not assigned.", this); anyError = true; }
+        if (deniedFeedback == null) Debug.LogError("[WavePrepPromptUI] deniedFeedback is not assigned.", this);
+        if (holdBar == null && holdFill != null) holdBar = holdFill.gameObject;
+
         if (headerText != null) headerText.text = Loc.Get("wave.prep.header", "Prepare your defences");
+        if (lockedText != null)
+        {
+            lockedText.text = Loc.Get("wave.prep.locked", "Finish the lesson first");
+            lockedText.gameObject.SetActive(false);
+        }
         Hide();
+    }
+
+    private void OnDestroy()
+    {
+        if (subscribedLoop != null) subscribedLoop.OnReadyDenied -= HandleReadyDenied;
+    }
+
+    private void HandleReadyDenied()
+    {
+        if (deniedFeedback != null) deniedFeedback.PlayFeedbacks();
     }
 
     private void Update()
@@ -57,6 +89,12 @@ public class WavePrepPromptUI : MonoBehaviour
         {
             Hide();
             return;
+        }
+        if (loop != subscribedLoop)
+        {
+            if (subscribedLoop != null) subscribedLoop.OnReadyDenied -= HandleReadyDenied;
+            subscribedLoop = loop;
+            loop.OnReadyDenied += HandleReadyDenied;
         }
 
         int countdown = loop.CountdownSeconds;
@@ -80,6 +118,7 @@ public class WavePrepPromptUI : MonoBehaviour
         if (!show) return;
 
         if (!hintBound) BindHint();
+        SetLocked(loop.IsReadyBlocked);
         holdFill.fillAmount = loop.ReadyHoldProgress;
 
         if (objectiveText != null)
@@ -105,6 +144,17 @@ public class WavePrepPromptUI : MonoBehaviour
             holdHint.Bind("<Keyboard>/t", "<Gamepad>/dpad/down", "wave.prep.hold", "Hold to start next wave");
         }
         hintBound = true;
+    }
+
+    private void SetLocked(bool locked)
+    {
+        if (locked == showingLocked) return;
+        showingLocked = locked;
+        lockedText.gameObject.SetActive(locked);
+        holdBar.SetActive(!locked);
+        // The hint row hides itself when the device has no binding, so let it decide when it comes back.
+        if (locked) holdHint.gameObject.SetActive(false);
+        else holdHint.UpdateVisibility();
     }
 
     private void Hide()

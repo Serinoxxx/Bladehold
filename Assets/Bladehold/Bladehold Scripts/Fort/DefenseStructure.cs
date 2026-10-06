@@ -83,6 +83,30 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable, IAffordab
         if (hexer == null || !hexers.Remove(hexer)) return;
         UpdatePrompt();
     }
+
+    private static readonly System.Collections.Generic.HashSet<UnityEngine.Object> holdFireOwners = new System.Collections.Generic.HashSet<UnityEngine.Object>();
+
+    /// <summary>
+    ///     True while anything holds every defence's fire (the tutorial's charge lessons, so the towers don't
+    ///     steal the player's kills). Checked beside <see cref="IsHexed" /> in each fire path, spike rings too.
+    ///     Destroyed owners are pruned, so a hold never leaks into the next scene.
+    /// </summary>
+    public static bool HoldingFire
+    {
+        get
+        {
+            if (holdFireOwners.Count == 0) return false;
+            holdFireOwners.RemoveWhere(o => o == null);
+            return holdFireOwners.Count > 0;
+        }
+    }
+
+    public static void HoldFire(UnityEngine.Object owner)
+    {
+        if (owner != null) holdFireOwners.Add(owner);
+    }
+
+    public static void ResumeFire(UnityEngine.Object owner) => holdFireOwners.Remove(owner);
     /// <summary>Furthest this tower can target. 0 for traps, which only hit what walks over them.</summary>
     public virtual float MaxRange => 0f;
     /// <summary>Supply the player has paid to upgrade this tower (free level-ups via SetLevel/InitState don't count).</summary>

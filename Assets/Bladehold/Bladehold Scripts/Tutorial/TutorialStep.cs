@@ -26,6 +26,12 @@ public abstract class TutorialStep : MonoBehaviour
     [Tooltip("Optional second line (e.g. \"[Space] Dodge\" during the arena fight).")]
     [SerializeField] private TutorialHint secondaryHint = new TutorialHint();
 
+    [Header("Battle scenes")]
+    [Tooltip("While this step is current (or next up), holding Ready can't start the wave (WaveStartGate). WaveEventStep ignores this: its condition is the wave itself.")]
+    [SerializeField] private bool blocksWaveStart = true;
+    [Tooltip("While this step is current, every tower and spike ring holds fire, so the player's lesson kills are their own (the charge lessons).")]
+    [SerializeField] private bool suspendDefenses;
+
     [Header("Feedback (optional)")]
     [Tooltip("Optional: played at the waypoint when the step starts. Leave empty for none.")]
     [SerializeField] private MMF_Player startFeedback;
@@ -44,6 +50,13 @@ public abstract class TutorialStep : MonoBehaviour
     public Transform WaypointTarget => waypointTarget;
     public TutorialHint Hint => hint;
     public TutorialHint SecondaryHint => secondaryHint;
+    public bool SuspendDefenses => suspendDefenses;
+
+    /// <summary>
+    ///     Whether the Ready hold is shut while this step runs. Polled every frame by the director, so a step
+    ///     can open it when it can no longer finish (the build steps when the player can't afford the build).
+    /// </summary>
+    public virtual bool BlocksWaveStart => blocksWaveStart;
 
     public void Begin(TutorialDirector director)
     {
@@ -60,6 +73,13 @@ public abstract class TutorialStep : MonoBehaviour
 
     /// <summary>Subclass hook: unsubscribe. Runs on completion and on destroy.</summary>
     protected virtual void OnEnd() { }
+
+    /// <summary>
+    ///     The tower/wall plots whose prep BUILD markers stay visible while this step runs
+    ///     (<see cref="BuildMarkerFocus" />). Add nothing to hide them all, so only the step's own waypoint shows.
+    ///     Return false to leave every marker up.
+    /// </summary>
+    public virtual bool GetBuildMarkerFocus(List<Object> allowedPlots) => true;
 
     /// <summary>Extra HUD waypoints beyond <see cref="WaypointTarget" /> (e.g. the ammo crate when low).</summary>
     public virtual void GetExtraWaypoints(List<ObjectiveWaypointTarget> results) { }

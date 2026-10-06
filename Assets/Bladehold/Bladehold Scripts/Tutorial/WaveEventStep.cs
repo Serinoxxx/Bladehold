@@ -18,6 +18,12 @@ public class WaveEventStep : TutorialStep
 
     private GameLoopManager loop;
 
+    // The wave itself completes this step (and a Victory step spans the waves after Ready2), so it never holds Ready shut.
+    public override bool BlocksWaveStart => false;
+
+    // Not a lesson of its own (Ready, or the waves themselves): every BUILD marker stays up.
+    public override bool GetBuildMarkerFocus(System.Collections.Generic.List<Object> allowedPlots) => false;
+
     protected override void OnBegin()
     {
         loop = GameLoopManager.Instance;

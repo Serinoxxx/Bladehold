@@ -88,7 +88,7 @@ public class CatapultDefense : DefenseStructure
 
     private void Update()
     {
-        if (IsDepleted || currentSupply <= 0 || IsHexed) return;
+        if (IsDepleted || currentSupply <= 0 || IsHexed || HoldingFire) return;
 
         Vector3 targetPoint = FindTargetPoint();
         if (targetPoint != Vector3.zero)

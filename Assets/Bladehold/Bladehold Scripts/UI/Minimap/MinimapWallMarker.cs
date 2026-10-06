@@ -77,7 +77,8 @@ public class MinimapWallMarker : MinimapMarker
             c = rubble ? config.wallRubble : config.wallUnbuilt;
         }
 
-        bar.enabled = !doorOpen;
+        // An unbuilt plot outside a tutorial lesson's focus (BuildMarkerFocus) hides its outline.
+        bar.enabled = !doorOpen && (standing || rubble || BuildMarkerFocus.Allows(plot));
         bar.color = c;
         if (doorGap != null) doorGap.SetActive(doorOpen);
         if (doorGapHalves != null)

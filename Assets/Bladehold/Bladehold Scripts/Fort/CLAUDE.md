@@ -13,7 +13,7 @@
   - **Blind spot**: `minRange` (flat distance, serialized per prefab) is a radius the turret can't target, so enemies hugging a tower are the hero's job (or the Spikes upgrade's). Arrow 3m, Net Thrower 4m, Ballista 6m, Catapult 8m.
   - **Sapper** (`Enemies/Sapper/TowerSapper`): an enemy that runs to the nearest supplied tower via `AITargetSelector.SetTowerTarget` and drains it with `ConsumeSupply` from inside the blind spot. If a wall claims it first, it hacks the wall's HP instead.
   - **Dome Warden** (`Enemies/DomeWarden/ProjectileDome`): catches tower projectiles aimed at enemies inside its dome and takes the damage itself until it breaks. `NetThrowerDefense` won't root anything inside one. See `DamageSystem/CLAUDE.md`.
-  - **Hexer** (`Enemies/Hexer/TowerHexer`): channels on a tower; while `IsHexed` it can't fire (spike rings too). Every turret checks `IsHexed` in its fire path, so a new defence must too.
+  - **Hexer** (`Enemies/Hexer/TowerHexer`): channels on a tower; while `IsHexed` it can't fire (spike rings too). Every turret checks `IsHexed` and the static `HoldingFire` (the tutorial's charge lessons hold every tower's fire, plan 21) in its fire path, so a new defence must too.
 - **Two interaction modes**:
   - **Defense scenes** (a `DefenseSceneRules` with a `FortUpgradeConfigSO` in the scene: Outer Gate, Desert Gate, Graveyard, Tutorial Gate). `[E]` on a tower opens the **upgrade wheel** (`BuildWheelUI.OpenUpgrades(IUpgradeable)`) with these slices: Refill (supply), Fire Rate I–III, Spikes (`TowerSpikeRing`), Fire / Ice / Storm (crystals, one element per tower, locked once bought) and Deconstruct.
     - The tower stays level 1; purchases live in `StructureUpgradeState`.

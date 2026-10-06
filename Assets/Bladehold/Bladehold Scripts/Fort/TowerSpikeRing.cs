@@ -42,7 +42,7 @@ public class TowerSpikeRing : MonoBehaviour
     {
         if (owner == null || Time.time < nextPulse) return;
         nextPulse = Time.time + interval;
-        if (owner.IsHexed) return;
+        if (owner.IsHexed || DefenseStructure.HoldingFire) return;
 
         struck.Clear();
         Vector3 centre = owner.transform.position;

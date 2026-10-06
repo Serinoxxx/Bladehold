@@ -520,6 +520,7 @@ tutorial.wave,Tutorial step: survive the wave,Defend the gate! Defeat every gobl
 tutorial.wave_first,Tutorial step: first of three waves,Defend the gate! Defeat the first wave,,,,,,,,
 tutorial.mount,Tutorial step: summon the horse between waves,Summon your warhorse,,,,,,,,
 tutorial.mount_stand_still,"Tutorial step: summon the horse, second line",Stand still while summoning,,,,,,,,
+wave.prep.locked,"Prep prompt while a tutorial lesson holds Ready shut",Finish the lesson first,Termine d'abord la leçon,Prima completa la lezione,Schließe zuerst die Lektion ab,Primero termina la lección,Сначала завершите урок,请先完成本课,先にレッスンを終えよう,먼저 수업을 마치세요
 tutorial.mount_trample,"Tutorial step: summon the horse, second line",Ride through goblins to trample them,,,,,,,,
 tutorial.mount_charge,Tutorial step: charge on horseback (Sprint glyph),Hold to charge,,,,,,,,
 tutorial.mount_charge_drain,"Tutorial step: charge on horseback, second line",Charging burns stamina. Charge until your horse is winded,,,,,,,,

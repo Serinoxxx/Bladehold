@@ -148,10 +148,14 @@ public class TutorialEncounter : MonoBehaviour
         if (alive.Count == 0 && pending == 0) OnAllDead?.Invoke();
     }
 
-    /// <summary>The wave path (GameLoopManager.OnEnemyKilledEvent) never sees these enemies, so pass the kill on here.</summary>
+    /// <summary>
+    ///     The wave path (GameLoopManager.OnEnemyKilledEvent) never sees these enemies, so pass the kill on here.
+    ///     Only the player's own kills count: tower and wall damage carries the player as its source, so a
+    ///     defence's killing blow is filtered out here.
+    /// </summary>
     private static void CreditMountStamina(Health enemy)
     {
-        if (!SceneAbilityRules.MountAllowed || Player.Instance == null) return;
+        if (!SceneAbilityRules.MountAllowed || Player.Instance == null || enemy.LastDamageWasDefense) return;
         // PlayerMount sits on the player root; Player.Instance is on the Synty character child.
         PlayerMount mount = Player.Instance.transform.root.GetComponentInChildren<PlayerMount>(true);
         if (mount != null) mount.CreditPlayerKill(enemy);

@@ -47,6 +47,8 @@ public class MinimapTowerMarker : MinimapMarker
         Color ring = !built ? config.emptyPlotColor : dry ? config.noSupplyColor : config.builtPlotColor;
         if (dry) ring.a *= 0.55f + 0.45f * Mathf.PingPong(Time.unscaledTime * 3f, 1f);
         plotRing.color = ring;
+        // An empty plot outside a tutorial lesson's focus (BuildMarkerFocus) drops its ring.
+        plotRing.enabled = built || BuildMarkerFocus.Allows(plot);
 
         if (ammoFill != null)
         {

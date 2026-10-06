@@ -12,6 +12,9 @@ using UnityEngine.SceneManagement;
 ///     Per-scene rules: <see cref="reloadOnDeath" /> (the arena restarts instead of the run-over screen,
 ///     read by <see cref="DeathScreen" />), <see cref="startsFreshRun" /> (T1 and T3 reset
 ///     <see cref="RunSession" /> so ammo/supply start clean) and <see cref="marksTutorialCompleted" /> (T3).
+///     In a battle scene (T3) it also owns the prep phase (plan 21): the current step shuts the Ready hold
+///     (<see cref="WaveStartGate" />), narrows the BUILD markers (<see cref="BuildMarkerFocus" />) and can
+///     make the towers hold fire (<see cref="DefenseStructure.HoldFire" />). All three let go on finish.
 /// </summary>
 [DefaultExecutionOrder(-200)]
 public class TutorialDirector : MonoBehaviour, IWaypointSource
@@ -47,6 +50,7 @@ public class TutorialDirector : MonoBehaviour, IWaypointSource
     [Tooltip("Optional: played when the player dies in a reloadOnDeath scene, before the reload. Leave empty for none.")]
     [SerializeField] private MMF_Player deathReloadFeedback;
 
+    private readonly List<Object> focusBuffer = new List<Object>();
     private TutorialConfigSO config;
     private int currentIndex = -1;
     private bool reloading;
@@ -113,6 +117,44 @@ public class TutorialDirector : MonoBehaviour, IWaypointSource
     private void OnDestroy()
     {
         if (Instance == this) Instance = null;
+        ReleaseBattleHolds();
+    }
+
+    private void Update() => RefreshBattleHolds();
+
+    // Also run straight from NotifyStepCompleted, so a Ready press in the same frame can't slip past.
+    private void RefreshBattleHolds()
+    {
+        if (ShouldBlockWaveStart()) WaveStartGate.Block(this);
+        else WaveStartGate.Release(this);
+
+        TutorialStep step = CurrentStep;
+        if (!anyError && !IsFinished && step != null && step.IsActive && step.SuspendDefenses) DefenseStructure.HoldFire(this);
+        else DefenseStructure.ResumeFire(this);
+    }
+
+    private bool ShouldBlockWaveStart()
+    {
+        if (anyError || IsFinished) return false;
+        TutorialStep step = CurrentStep;
+        if (step != null && step.IsActive) return step.BlocksWaveStart;
+        // Between steps (the advance delay): hold the gate for the next one, so Ready can't slip through the gap.
+        int next = currentIndex + 1;
+        return next < steps.Count && steps[next] != null && steps[next].BlocksWaveStart;
+    }
+
+    private void ReleaseBattleHolds()
+    {
+        WaveStartGate.Release(this);
+        DefenseStructure.ResumeFire(this);
+        BuildMarkerFocus.Clear(this);
+    }
+
+    private void ApplyBuildMarkerFocus(TutorialStep step)
+    {
+        focusBuffer.Clear();
+        if (step.GetBuildMarkerFocus(focusBuffer)) BuildMarkerFocus.Set(this, focusBuffer);
+        else BuildMarkerFocus.Clear(this);
     }
 
     private static void HideBattleHud()
@@ -128,6 +170,7 @@ public class TutorialDirector : MonoBehaviour, IWaypointSource
         if (anyError || step != CurrentStep) return;
         TutorialTelemetry.StepCompleted(telemetrySceneId, step.StepId);
         if (TutorialHintUI.Instance != null) TutorialHintUI.Instance.PlayComplete();
+        RefreshBattleHolds();
         StartCoroutine(BeginNextStep(config.stepAdvanceDelay));
     }
 
@@ -146,12 +189,14 @@ public class TutorialDirector : MonoBehaviour, IWaypointSource
         if (step.WaypointTarget != null) RespawnPoint = step.WaypointTarget;
         TutorialTelemetry.StepStarted(telemetrySceneId, step.StepId);
         ShowHint(step.Hint, step.SecondaryHint);
+        ApplyBuildMarkerFocus(step);
         step.Begin(this);
     }
 
     private void Finish()
     {
         IsFinished = true;
+        ReleaseBattleHolds();
         if (exit != null)
         {
             exit.Unlock();

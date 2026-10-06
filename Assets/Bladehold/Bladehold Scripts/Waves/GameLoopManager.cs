@@ -66,6 +66,7 @@ public class GameLoopManager : MonoBehaviour
     private bool isRouting = false;
     private readonly List<Health> routStragglers = new List<Health>();
     private float readyHoldTimer = 0f;
+    private bool readyHeldLastFrame;
     private float resolveWatchdog = 0f;
     private int upcomingWave = 1;
     private string lastObjectiveId = "";
@@ -105,6 +106,8 @@ public class GameLoopManager : MonoBehaviour
     /// <summary>True while the wave choice cards are open.</summary>
     public bool IsChoosingCard => isChoosingCard;
     public float ReadyHoldProgress => readyHoldSeconds > 0f ? Mathf.Clamp01(readyHoldTimer / readyHoldSeconds) : 0f;
+    /// <summary>True while something outside the loop (the tutorial) holds the Ready hold shut.</summary>
+    public bool IsReadyBlocked => WaveStartGate.IsBlocked;
     public bool IsRouting => isRouting;
     /// <summary>The enemies still fleeing during the rout (dead ones included until it ends). Empty otherwise.</summary>
     public IReadOnlyList<Health> RoutStragglers => routStragglers;
@@ -121,6 +124,8 @@ public class GameLoopManager : MonoBehaviour
     public SectorSummary Summary { get; } = new SectorSummary();
 
     public event Action<int> OnWaveStarted;
+    /// <summary>Fired when the player presses Ready while <see cref="WaveStartGate" /> holds it shut (the prompt plays its denied feedback).</summary>
+    public event Action OnReadyDenied;
     /// <summary>Fired when a clan captain spawns, with its Health (the music switches to captain music).</summary>
     public event Action<Health> OnCaptainSpawned;
     public event Action<int, string> OnWaveCleared;
@@ -351,6 +356,14 @@ public class GameLoopManager : MonoBehaviour
     private void TickReadyHold()
     {
         bool held = inputReader != null && inputReader.StartWaveHeld;
+        bool pressed = held && !readyHeldLastFrame;
+        readyHeldLastFrame = held;
+        if (WaveStartGate.IsBlocked)
+        {
+            readyHoldTimer = 0f;
+            if (pressed && Time.timeScale > 0f) OnReadyDenied?.Invoke();
+            return;
+        }
         if (!held || Time.timeScale <= 0f)
         {
             if (readyHoldTimer > 0f)
@@ -375,6 +388,11 @@ public class GameLoopManager : MonoBehaviour
     public void DebugPressReady()
     {
         if (!IsAwaitingReady) return;
+        if (WaveStartGate.IsBlocked)
+        {
+            Debug.Log("[GameLoopManager] Ready is blocked (WaveStartGate), e.g. by the current tutorial step.");
+            return;
+        }
         readyHoldTimer = readyHoldSeconds;
         isPrep = false;
         isAwaitingReady = false;
