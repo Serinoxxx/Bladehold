@@ -54,6 +54,7 @@
 - Fixed dash attacks (Nimble Strike and dash damage cards) and Frost Step hitting around your starting spot instead of where you dashed
 - Fixed the horse "Hold to charge" tip showing a blank key instead of Shift
 - Fixed Goblin Blood and Orcish Metal counters not updating after buying perks, weapons, armour, mounts or tiers in the Meta Area
+- Fixed the horse's hoofbeats carrying on behind the pause menu, card drafts, shop and other menus
 
 ### Balance Changes
 

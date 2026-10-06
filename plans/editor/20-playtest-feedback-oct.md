@@ -68,3 +68,15 @@ Editor leftovers from `plans/20-playtest-feedback-oct.md`. Unity MCP was connect
 - [ ] Trigger a world event (DevConsole): the banner is smaller, sits at the top, and leaves the middle of the screen clear. The timer chip sits under the currency panel.
 - [ ] Campaign map: the third chip shows an ingot and your metal count. If Lance meant something else by "doesn't show metal", follow up.
 - [ ] Meta Area / Rest Area (no minimap): the currency panel sits in the top-right corner, not floating below an empty gap.
+
+## Phase 5: Audio state
+
+**Done in code:**
+- **Horse gallop behind menus:** `Horse/HorseHoofbeatAudio.cs` pauses the gait loop while time is frozen (every menu sets `Time.timeScale = 0`) and resumes it afterwards. Freezes shorter than `freezeGraceTime` (0.15 s, for hitstop) are ignored.
+
+**Wiring checklist:** nothing left.
+
+**Manual verification:**
+- [ ] Ride the horse at a gallop and press Esc: the hoofbeats stop within a moment. Unpause while still riding: they come back at the same pace.
+- [ ] Gallop into a level-up/draft card pick, the Rest Area shop and an enemy intro: silent while each is open, back on close.
+- [ ] Trample goblins at full charge (hitstop feedbacks): the gait doesn't stutter. If it does, raise `freezeGraceTime` on the horse prefab's `HorseHoofbeatAudio`.

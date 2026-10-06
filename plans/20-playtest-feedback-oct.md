@@ -92,7 +92,14 @@ Rules from `/CLAUDE.md` and `plans/README.md` apply: MMF for every sound/VFX/sha
 
 ## Phase 5: Audio state
 
-- [ ] **Horse gallop keeps playing behind menus.** Pause it while a menu or pause screen is open and resume it when the menu closes (`Horse/HorseHoofbeatAudio.cs`). Prefer one hook on the shared pause/menu-open signal over per-menu calls.
+- [x] **Horse gallop keeps playing behind menus.** Pause it while a menu or pause screen is open and resume it when the menu closes (`Horse/HorseHoofbeatAudio.cs`). Prefer one hook on the shared pause/menu-open signal over per-menu calls.
+
+### Phase 5 notes (2026-10-06)
+
+- **Gallop behind menus:** the gait loop is one `AudioSource` that never stops. `Update` fades its volume with `Time.deltaTime`, so at timeScale 0 the fade froze wherever it was and the loop kept playing at that volume.
+- **Shared signal:** there's no common menu-open event. `PauseMenuController.OnPauseChanged` only covers the pause menu, while the draft, shop, meta upgrades, death screen, enemy intro and fishing draft each set `Time.timeScale = 0` themselves. Every one of them freezes time, so `HorseHoofbeatAudio` treats `Time.timeScale == 0` as "a menu is open": it `Pause()`s the source and `UnPause()`s it when time resumes, so the gait picks up where it left off.
+- **Hitstop:** the Player has `MMF_TimescaleModifier` feedbacks. The new `freezeGraceTime` (0.15 s unscaled) means time must stay frozen that long before the loop pauses, so a freeze frame doesn't chop the gait.
+- Not checked in Play mode (a horse must be summoned and ridden). It's in the editor checklist.
 
 ## Phase 6: Flow and screen polish
 

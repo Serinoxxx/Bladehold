@@ -8,6 +8,8 @@ using UnityEngine;
 ///     pitch rises with speed so the same loop reads as a brisker gait at a gallop, instead of
 ///     retriggering discrete one-shot clops on a timer (which reads as spaced-out taps rather than a
 ///     rolling gait, especially at low speed where the interval is longest).
+///     The loop pauses while time is frozen (<c>Time.timeScale == 0</c>), the one signal every menu
+///     shares (pause, draft, shop, meta upgrades, death screen, enemy intro), and resumes where it left off.
 /// </summary>
 public class HorseHoofbeatAudio : MonoBehaviour
 {
@@ -36,7 +38,13 @@ public class HorseHoofbeatAudio : MonoBehaviour
     [Range(0f, 1f)]
     [SerializeField] private float minSpeedFraction = 0.05f;
 
+    [Header("Menus")]
+    [Tooltip("Unscaled seconds time must stay frozen before the loop pauses, so hitstop/freeze-frame feedbacks don't chop the gait.")]
+    [SerializeField] private float freezeGraceTime = 0.15f;
+
     private bool anyError = false;
+    private bool pausedForMenu;
+    private float frozenFor;
 
     private void OnValidate()
     {
@@ -79,6 +87,24 @@ public class HorseHoofbeatAudio : MonoBehaviour
     private void Update()
     {
         if (anyError) return;
+
+        if (Time.timeScale <= 0f)
+        {
+            frozenFor += Time.unscaledDeltaTime;
+            if (!pausedForMenu && frozenFor >= freezeGraceTime)
+            {
+                audioSource.Pause();
+                pausedForMenu = true;
+            }
+            return;
+        }
+
+        frozenFor = 0f;
+        if (pausedForMenu)
+        {
+            audioSource.UnPause();
+            pausedForMenu = false;
+        }
 
         float normalizedSpeed = horseMotor.NormalizedSpeed;
         bool moving = normalizedSpeed >= minSpeedFraction;
