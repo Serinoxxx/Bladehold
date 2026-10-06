@@ -35,7 +35,7 @@ public class CatapultDefense : DefenseStructure
     protected override void Awake()
     {
         defenseType = FortDefenseType.Catapult;
-        supplyPerAction = 3;
+        supplyPerAction = 2f;
         rotateToTarget = true;
         rotationSpeed = 120f;
         base.Awake();

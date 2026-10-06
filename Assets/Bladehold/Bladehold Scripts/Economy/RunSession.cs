@@ -172,6 +172,24 @@ public static class RunSession
     public const string SupplyCachePerkId = "supply_cache";
     public const int BaseStartingSupply = 60;
 
+    /// <summary>Meta perk: towers spend {value}% less supply per shot.</summary>
+    public const string ThriftyGunnersPerkId = "thrifty_gunners";
+    /// <summary>Meta perk: gate and wall repairs cost {value}% less supply.</summary>
+    public const string FieldRepairsPerkId = "field_repairs";
+
+    /// <summary>Multiplier on the supply a tower spends per shot (1 = full price), from Thrifty Gunners.</summary>
+    public static float TowerShotSupplyMultiplier => 1f - Mathf.Clamp(GetMetaPerkValue(ThriftyGunnersPerkId, 10f) / 100f, 0f, 0.9f);
+
+    /// <summary>Multiplier on the supply gate and wall repairs cost (1 = full price), from Field Repairs.</summary>
+    public static float RepairSupplyMultiplier => 1f - Mathf.Clamp(GetMetaPerkValue(FieldRepairsPerkId, 15f) / 100f, 0f, 0.9f);
+
+    /// <summary>A whole-supply repair price after Field Repairs, rounded down so every rank saves something, never below 1.</summary>
+    public static int DiscountedRepairCost(int baseCost)
+    {
+        if (baseCost <= 0) return 0;
+        return Mathf.Max(1, Mathf.FloorToInt(baseCost * RepairSupplyMultiplier + 0.001f));
+    }
+
     /// <summary>Max ammo before draft upgrades: the base 20 plus Deep Quiver.</summary>
     public static int MetaMaxAmmo => 20 + Mathf.RoundToInt(GetMetaPerkValue("deep_quiver", 5f));
 

@@ -45,6 +45,8 @@
 - Added a slow-motion cinematic of the gate exploding before the defeat screen when the gate falls
 - Added a horse stall beside the gate: if your warhorse has fallen, buy a new one there for 500 gold between waves
 - Added a fanfare when you unlock a weapon in the Meta Area: a victory sting, a burst of light at the pedestal and a "New weapon unlocked" banner naming the weapon and its ultimate
+- Added the Thrifty Gunners meta perk (tier 1): towers use up to 40% less supply per shot
+- Added the Field Repairs meta perk (tier 1): repairing the gate and walls costs up to 60% less supply
 
 ### Fixes
 
@@ -64,6 +66,7 @@
 
 - Reduced trample damage while riding without charging: the horse now shoves enemies aside and gets bogged down in crowds until you charge
 - Reduced passive horse stamina regeneration: stamina now comes mainly from kills
+- Reduced tower supply use per shot: Arrow Tower 1 to 0.75, Catapult 3 to 2, Ballista 4 to 3, Net Thrower 3 to 2
 
 ### General Changes
 

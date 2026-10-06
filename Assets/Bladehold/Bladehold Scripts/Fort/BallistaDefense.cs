@@ -43,7 +43,7 @@ public class BallistaDefense : DefenseStructure
     protected override void Awake()
     {
         defenseType = FortDefenseType.Ballista;
-        supplyPerAction = 4;
+        supplyPerAction = 3f;
         rotateToTarget = true;
         rotationSpeed = 160f;
         base.Awake();

@@ -15,7 +15,7 @@ Perks are `MetaPerkDefinitionSO` assets (`UI/Meta/MetaPerkDefinitionSO.cs`) in `
 
 ## How perks work
 
-- **Buying** (`UI/Meta/MetaUpgradesUI.cs`): tiers 2 and 3 unlock for 5 / 10 Orcish Metal (`SaveData.unlockedMetaTier`). Buying a perk spends Goblin Blood and adds its `id` to `SaveData.purchasedMetaPerks`. The UI shows `allPerks` grouped by `tier`, one `perkCardPrefab` per perk.
+- **Buying** (`UI/Meta/MetaUpgradesUI.cs`): tiers 2 and 3 unlock for 5 / 10 Orcish Metal (`SaveData.unlockedMetaTier`). Buying a perk spends Goblin Blood and adds its `id` to `SaveData.purchasedMetaPerks`. The UI shows every perk in `Resources/MetaPerkCatalog` (`MetaPerkCatalogSO`) grouped by `tier`, one `perkCardPrefab` per perk.
 - **`prerequisites` is not enforced**: `PurchasePerk` ignores it. Don't rely on it without changing that code.
 - **Applying**: there is no generic effect system. Game code checks `RunSession.HasMetaPerk("<id>")` at the point it matters, so the `id` string is the contract. Pick the hook that matches your effect:
 
@@ -34,7 +34,7 @@ For a stat effect, prefer an existing `StatType` modifier via `PlayerStats.AddMo
 
 1. Write the effect code at the right hook (the table above). `SaveData` needs no new field: the perk is just an id in `purchasedMetaPerks`.
 2. Create the asset (Editor): `Create > Scriptable Objects > MetaPerkDefinitionSO` in `Bladehold Config/MetaPerks/`, filename = `id`, with the tier cost matching its row above unless Lance says otherwise, and an icon.
-3. Add it to `MetaUpgradesUI.allPerks` in `Bladehold Meta Area Scene` (**Bladehold/Setup Game Loop Assets & Scenes** refills the list from every perk asset, but that tool rebuilds the whole window, so prefer adding the one entry by hand or via MCP).
+3. Add it to the `perks` list of `Assets/Bladehold/Resources/MetaPerkCatalog.asset`. The Meta Area window and `RunSession.GetMetaPerkValue` both read that catalog; there is no per-scene perk list. Ranked perks set `rankCosts` (tier 1: 10/15/20/25) and `rankValues`; read the value with `GetMetaPerkValue`, not `HasMetaPerk`.
 4. **Demo:** the demo shows tier-1 perks only (`DemoConfigSO.IsMetaTierLocked`, already enforced by the UI). A new tier-2/3 perk is hidden in the demo automatically; never add a per-asset demo flag.
 5. Test: add a `WeaponReachBenchmark` check for the effect (the `backstab`/`executioner`/`second_wind` sections are the model; `/test-mechanic`). In Play mode, the DevConsole grants currencies.
 

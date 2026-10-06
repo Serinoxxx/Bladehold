@@ -22,7 +22,8 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable, IAffordab
     [Header("Supply Settings")]
     [SerializeField] protected int currentSupply = 50;
     [SerializeField] protected int maxSupply = 50;
-    [SerializeField] protected int supplyPerAction = 2;
+    [Tooltip("Supply per shot before Thrifty Gunners. Fractions build up and are paid a whole unit at a time. Each subclass sets its own in Awake.")]
+    [SerializeField] protected float supplyPerAction = 2f;
 
     [Header("Targeting & Rotation")]
     [Tooltip("When true, the tower rotates horizontally to face its current target.")]
@@ -48,7 +49,8 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable, IAffordab
     public int MaxLevel => maxLevel;
     public int CurrentSupply => currentSupply;
     public int MaxSupply => maxSupply;
-    public int SupplyPerAction => supplyPerAction;
+    /// <summary>Supply one shot costs on average, after Thrifty Gunners.</summary>
+    public float SupplyPerAction => supplyPerAction * RunSession.TowerShotSupplyMultiplier;
     public bool IsDepleted => currentSupply <= 0;
     public float MinRange => minRange;
 
@@ -89,6 +91,7 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable, IAffordab
     public int DismantleRefund => Mathf.Max(0, currentSupply) + upgradeSupplySpent + upgrades.supplySpent;
 
     private int upgradeSupplySpent;
+    private float shotSupplyCarry; // Part-paid supply from fractional shot costs, spent once it reaches a whole unit.
 
     private readonly StructureUpgradeState upgrades = new StructureUpgradeState();
     private TowerSpikeRing spikeRing;
@@ -246,7 +249,15 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable, IAffordab
             return false;
         }
 
-        int cost = amount > 0 ? amount : supplyPerAction;
+        int cost = amount;
+        if (amount <= 0)
+        {
+            // A shot: fractional costs carry over, so a 0.75 shot is free three times in four.
+            shotSupplyCarry += SupplyPerAction;
+            cost = Mathf.FloorToInt(shotSupplyCarry + 0.0001f);
+            shotSupplyCarry = Mathf.Max(0f, shotSupplyCarry - cost);
+            if (cost <= 0) return true;
+        }
         currentSupply = Mathf.Max(0, currentSupply - cost);
         OnSupplyChanged?.Invoke(currentSupply, maxSupply);
         UpdatePrompt();

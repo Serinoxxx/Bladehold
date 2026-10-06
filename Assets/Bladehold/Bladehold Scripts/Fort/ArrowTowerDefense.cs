@@ -34,7 +34,7 @@ public class ArrowTowerDefense : DefenseStructure
     protected override void Awake()
     {
         defenseType = FortDefenseType.ArrowSlits;
-        supplyPerAction = 1;
+        supplyPerAction = 0.75f;
         base.Awake();
 
         if (enemyLayers == ~0 || enemyLayers == 0)

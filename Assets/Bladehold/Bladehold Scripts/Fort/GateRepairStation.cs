@@ -59,6 +59,9 @@ public class GateRepairStation : MonoBehaviour, IInteractable, IAffordableIntera
     private bool CapReached => config.maxGateRepairPerPrep > 0f && repairedThisPrep >= config.maxGateRepairPerPrep - 0.01f;
     private bool CanAffordMore => prepaidHp > 0.001f || RunSession.InRunSupply > 0;
 
+    /// <summary>Supply per gate HP after the Field Repairs meta perk.</summary>
+    private float SupplyPerHp => Mathf.Max(0.01f, config.supplyPerGateHp * RunSession.RepairSupplyMultiplier);
+
     public bool CanInteract => GateUsable && IsPrepPhase && !GateFull;
 
     public bool CanAfford => CanAffordMore;
@@ -80,7 +83,7 @@ public class GateRepairStation : MonoBehaviour, IInteractable, IAffordableIntera
             }
             string key = isRepairing ? "gate_repair.prompt_active" : "gate_repair.prompt";
             string english = isRepairing ? "Repairing gate: {0} supply / HP · {1}/{2} HP" : "Hold to repair gate: {0} supply / HP · {1}/{2} HP";
-            return string.Format(Loc.Get(key, english), config.supplyPerGateHp.ToString("0.##"), current, max);
+            return string.Format(Loc.Get(key, english), SupplyPerHp.ToString("0.##"), current, max);
         }
     }
 
@@ -173,7 +176,7 @@ public class GateRepairStation : MonoBehaviour, IInteractable, IAffordableIntera
 
         // Buy whole units of supply until the prepaid budget covers this frame's heal (or supply runs out).
         int supplySpent = 0;
-        float hpPerSupply = 1f / Mathf.Max(0.01f, config.supplyPerGateHp);
+        float hpPerSupply = 1f / SupplyPerHp;
         while (prepaidHp < hpWanted && RunSession.TrySpendInRunSupply(1))
         {
             prepaidHp += hpPerSupply;

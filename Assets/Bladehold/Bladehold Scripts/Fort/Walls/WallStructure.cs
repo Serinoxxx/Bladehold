@@ -628,17 +628,18 @@ public class WallStructure : MonoBehaviour, IUpgradeable
         });
 
         float missing = health.MaxHealth - health.CurrentHealth;
+        int repairCost = RunSession.DiscountedRepairCost(config.wallRepairCost);
         options.Add(new UpgradeOption
         {
             label = $"Repair +{config.wallRepairAmount}",
             description = $"Patch up the wall: +{config.wallRepairAmount} HP.",
             icon = config.repairIcon,
-            supplyCost = config.wallRepairCost,
+            supplyCost = repairCost,
             blockedReason = missing <= 0.01f ? "Full HP" : null,
             onPurchase = () =>
             {
                 health.Heal(config.wallRepairAmount);
-                upgrades.RecordSupply(config.wallRepairCost);
+                upgrades.RecordSupply(repairCost);
                 OnUpgraded();
                 return true;
             }

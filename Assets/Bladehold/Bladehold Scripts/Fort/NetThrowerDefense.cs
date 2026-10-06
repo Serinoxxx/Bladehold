@@ -39,7 +39,7 @@ public class NetThrowerDefense : DefenseStructure
     protected override void Awake()
     {
         defenseType = FortDefenseType.NetThrower;
-        supplyPerAction = 3;
+        supplyPerAction = 2f;
         rotateToTarget = true;
         rotationSpeed = 140f;
         base.Awake();

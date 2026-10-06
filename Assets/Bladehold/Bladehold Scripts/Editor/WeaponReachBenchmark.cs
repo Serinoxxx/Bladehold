@@ -718,6 +718,63 @@ public static class WeaponReachBenchmark
             failedCount++;
         }
 
+        // 7E3: Thrifty Gunners (fractional shot costs carry over) and Field Repairs (cheaper gate/wall repairs)
+        GameObject thriftyTowerGo = null;
+        try
+        {
+            SaveData save = SaveSystem.Load() ?? new SaveData();
+            save.purchasedMetaPerks.Clear();
+            SaveSystem.Save(save);
+
+            // No perk: an arrow tower at 0.75 supply per shot spends 6 over 8 shots.
+            thriftyTowerGo = new GameObject("Benchmark_ThriftyArrowTower");
+            ArrowTowerDefense tower = thriftyTowerGo.AddComponent<ArrowTowerDefense>();
+            var so = new SerializedObject(tower);
+            so.FindProperty("supplyPerAction").floatValue = 0.75f;
+            so.FindProperty("currentSupply").intValue = 50;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            for (int i = 0; i < 8; i++) tower.ConsumeSupply();
+            int spentBase = 50 - tower.CurrentSupply;
+            int wallRepairBase = RunSession.DiscountedRepairCost(5);
+
+            // Rank 2 of each: shots 20% cheaper (0.6 x 8 = 4.8 -> 4 paid, 0.8 carried), repairs 30% cheaper (5 -> 3).
+            save.purchasedMetaPerks.Add(RunSession.ThriftyGunnersPerkId);
+            save.purchasedMetaPerks.Add(RunSession.ThriftyGunnersPerkId);
+            save.purchasedMetaPerks.Add(RunSession.FieldRepairsPerkId);
+            save.purchasedMetaPerks.Add(RunSession.FieldRepairsPerkId);
+            SaveSystem.Save(save);
+            so.Update();
+            so.FindProperty("currentSupply").intValue = 50;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            for (int i = 0; i < 8; i++) tower.ConsumeSupply();
+            int spentPerk = 50 - tower.CurrentSupply;
+            int wallRepairPerk = RunSession.DiscountedRepairCost(5);
+            float repairMult = RunSession.RepairSupplyMultiplier;
+
+            if (spentBase == 6 && spentPerk == 4 && wallRepairBase == 5 && wallRepairPerk == 3 && Mathf.Abs(repairMult - 0.7f) < 0.001f)
+            {
+                sb.AppendLine($"  - Thrifty Gunners & Field Repairs: 8 arrow shots cost {spentBase} -> {spentPerk} supply, wall repair 5 -> {wallRepairPerk}, gate repair x{repairMult:0.##}. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Thrifty/Field Repairs: shots {spentBase} (expected 6) -> {spentPerk} (expected 4), wall repair {wallRepairBase} -> {wallRepairPerk} (expected 5 -> 3), gate x{repairMult} (expected 0.7)!");
+                failedCount++;
+            }
+
+            save.purchasedMetaPerks.Clear();
+            SaveSystem.Save(save);
+        }
+        catch (Exception ex)
+        {
+            sb.AppendLine($"  - Thrifty Gunners / Field Repairs test exception: {ex.Message} [FAILED]");
+            failedCount++;
+        }
+        finally
+        {
+            if (thriftyTowerGo != null) UnityEngine.Object.DestroyImmediate(thriftyTowerGo);
+        }
+
         // 7F: ShieldBreaker Weapon Upgrade (+200% damage to shielded targets)
         try
         {

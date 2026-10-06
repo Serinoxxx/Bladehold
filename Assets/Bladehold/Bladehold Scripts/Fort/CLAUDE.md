@@ -9,7 +9,7 @@
   - The Oil Vat and Spike Trap towers were removed in plan 17; their jobs moved onto wall upgrades.
   - **`FortDefenseType` values are explicit ints.** 1 and 2 were the removed towers; never reuse or renumber them.
 - **`DefenseStructure`** base + subclasses (`ArrowTowerDefense`, `CatapultDefense`, `BallistaDefense`, `NetThrowerDefense`).
-  - Each tower holds its own supply and spends some per shot. At 0 it stays standing but stops firing (a "NO SUPPLY" marker points at it).
+  - Each tower holds its own supply and spends some per shot. Per-shot cost is a float (Arrow 0.75, Catapult 2, Ballista 3, Net Thrower 2) times `RunSession.TowerShotSupplyMultiplier` (Thrifty Gunners meta perk); fractions carry over and are paid a whole unit at a time. Gate and wall repairs go through `RunSession.RepairSupplyMultiplier` / `DiscountedRepairCost` (Field Repairs). At 0 it stays standing but stops firing (a "NO SUPPLY" marker points at it).
   - **Blind spot**: `minRange` (flat distance, serialized per prefab) is a radius the turret can't target, so enemies hugging a tower are the hero's job (or the Spikes upgrade's). Arrow 3m, Net Thrower 4m, Ballista 6m, Catapult 8m.
   - **Sapper** (`Enemies/Sapper/TowerSapper`): an enemy that runs to the nearest supplied tower via `AITargetSelector.SetTowerTarget` and drains it with `ConsumeSupply` from inside the blind spot. If a wall claims it first, it hacks the wall's HP instead.
   - **Dome Warden** (`Enemies/DomeWarden/ProjectileDome`): catches tower projectiles aimed at enemies inside its dome and takes the damage itself until it breaks. `NetThrowerDefense` won't root anything inside one. See `DamageSystem/CLAUDE.md`.
