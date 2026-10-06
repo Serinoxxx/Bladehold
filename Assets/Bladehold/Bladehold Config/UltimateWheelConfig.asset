@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d9ba8be83da8f05468b3aa734fbbb81e, type: 3}
-  m_Name: UltimateShopConfig
-  m_EditorClassIdentifier: Assembly-CSharp::UltimateShopConfigSO
-  firstUltimateCost: 100
-  secondUltimateCost: 400
+  m_Script: {fileID: 11500000, guid: 5eb164146ab60c540b14e6f1bce2aa77, type: 3}
+  m_Name: UltimateWheelConfig
+  m_EditorClassIdentifier: Assembly-CSharp::UltimateWheelConfigSO
+  slowTimeScale: 0.1
+  stickDeadZone: 0.5

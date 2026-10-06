@@ -176,6 +176,8 @@ public class CaptainMograSO : ScriptableObject
     [Header("Rewards (× tier reward multiplier)")]
     public int bonusGold = 60;
     public int bonusGoblinBlood = 4;
+    [Tooltip("Arcane Cores dropped on death (spent to fire ultimates). Not multiplied by the tier reward.")]
+    public CaptainArcaneCoreReward arcaneCores = new CaptainArcaneCoreReward();
 
     [Header("Spawned Prefabs")]
     [Tooltip("HexBolt projectile prefab.")]

@@ -77,4 +77,8 @@ public class CaptainKombustaSO : ScriptableObject
 
     [Tooltip("Dynamite stick projectile prefab. Its fuse and explosion feedbacks live on the prefab.")]
     public GameObject dynamitePrefab;
+
+    [Header("Rewards")]
+    [Tooltip("Arcane Cores dropped on death (spent to fire ultimates).")]
+    public CaptainArcaneCoreReward arcaneCores = new CaptainArcaneCoreReward();
 }

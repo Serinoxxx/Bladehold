@@ -22,14 +22,14 @@ Header (the code wins if this drifts; read `ParseRow`):
 | `category` | `Weapon` or `Elemental` (`Upgrades/DraftCategory.cs`). Anything else skips the row. |
 | `weapon` | A `WeaponDefinitionSO` id (`sword`, `axe`, `mace`, `bow`, `throwing_axe`), or empty. A Weapon card only enters the pool when that weapon is equipped and not demo-locked (`DemoConfigSO.IsWeaponIdLocked`). |
 | `element` | `fire`, `lightning`, `ice`. Required on non-duo Elemental cards. |
-| `isUltimate` | `1` = a weapon ultimate. These rows are **never drafted**: the Rest Area shop sells them. See `/add-ultimate-handler`. |
+| `isUltimate` | `1` = a weapon ultimate. These rows are **never drafted or sold**: each names its weapon's always-unlocked ultimate. See `/add-ultimate-handler`. |
 | `maxLevel` | Picks until the card leaves the pool (min 1). |
 | `description` / `upgradeText` | Level 1 text / text shown when you already own it. Player-facing, plain language. Quote fields that contain commas. |
 | `stat` / `kind` / `amount` | `;`-separated parallel lists, one entry per effect. `kind` is `Flat` or `Percent`. `amount` can hold `\|`-separated per-level values (`0.1\|0.2\|0.3`). **Per-level amounts are absolute, not cumulative**: level 2 swaps level 1's value for level 2's (`ApplyUpgrade` and `RunSession.RestoreInRunUpgrades` both work this way). An unknown `StatType` name skips that effect with an error. |
 | `icon` | Sprite name in `Resources/SkillTreeIcons.asset` (`SkillTreeIconsSO.icons`). Blank = no icon. |
 | `targetSlot` | Elemental only: `SLOT_MELEE`, `SLOT_RANGED`, `SLOT_MOBILITY`, `SLOT_ULTIMATE`, `SLOT_FORTRESS` (`RunSession.KnownElementalSlots`). Picking it imbues that slot; a different element already there is overwritten, and its cards are stripped for `ElementOverwriteGold` each. |
 | `isDuo` / `prerequisiteElements` | Duo = `isDuo=1`, **no** `targetSlot`, and 2+ `\|`-separated elements (`fire\|ice`). It only enters the pool once all of those elements are active. |
-| `requires` | Optional `;`-separated tokens, all of which must hold before the card enters the pool (`DraftUpgradeService.MeetsRequirements`): `ultimate` (an ultimate is owned), `slot:Fire` (that element is imbued on a slot, so hits apply its status) or `card:<id>` (that card is owned). Use it when the card does nothing without something else, e.g. Shatter `card:elem_ice_deep_freeze`, Kindling `slot:Fire`. Don't gate on per-sector state such as built towers. |
+| `requires` | Optional `;`-separated tokens, all of which must hold before the card enters the pool (`DraftUpgradeService.MeetsRequirements`): `ultimate` (a held weapon has an ultimate), `slot:Fire` (that element is imbued on a slot, so hits apply its status) or `card:<id>` (that card is owned). Use it when the card does nothing without something else, e.g. Shatter `card:elem_ice_deep_freeze`, Kindling `slot:Fire`. Don't gate on per-sector state such as built towers. |
 
 **Levels:** give a card `maxLevel` 4 whenever a number in it can meaningfully grow. For an on/off stat (`XUnlocked`, the duo flags), have the consumer treat the value as a strength multiplier (`1|1.5|2|2.5`) rather than `> 0` only, as `TriggerInfernoBurst`, Permafrost and the duos do. Leave pure mechanic switches (Nimble Strike, Auto-Shot, Boomerang, Deep Freeze, ultimates) at 1.
 

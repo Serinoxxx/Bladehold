@@ -839,6 +839,11 @@ public class GameLoopManager : MonoBehaviour
         if (card.bonusType == WaveBonusType.GoblinBlood && bloodPopupPrefab != null) bloodPopupPrefab.Spawn(pos + Vector3.up * 0.5f, card.bonusAmount);
     }
 
+    /// <summary>"+1 Arcane Core" / "+2 Arcane Cores", for the captain intro and the end-screen captain list.</summary>
+    private static string ArcaneCoreRewardText(int cores) =>
+        (cores == 1 ? Loc.Get("captain.arcane_core_one", "+1 Arcane Core") : Loc.Get("captain.arcane_core_many", "+{0} Arcane Cores"))
+            .Replace("{0}", cores.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
     /// <summary>
     ///     Spawns a Clan Captain, plays the cinematic EnemyIntroUI with difficulty skulls, and initializes its
     ///     <see cref="ICaptain" /> controller. <paramref name="preferredCaptainName" /> is matched through
@@ -889,11 +894,14 @@ public class GameLoopManager : MonoBehaviour
         {
             string fallenName = captainName;
             BannerDifficultyTier fallenTier = tier;
+            int fallenCores = captain.ArcaneCoresOnDeath;
             Action onCaptainDied = null;
             onCaptainDied = () =>
             {
                 captainHealth.OnDied -= onCaptainDied;
-                Summary.captainsDefeated.Add($"{fallenName} ({BannerDifficultyHelper.GetTierName(fallenTier)})");
+                string line = $"{fallenName} ({BannerDifficultyHelper.GetTierName(fallenTier)})";
+                if (fallenCores > 0) line += "  " + ArcaneCoreRewardText(fallenCores);
+                Summary.captainsDefeated.Add(line);
             };
             captainHealth.OnDied += onCaptainDied;
         }
@@ -909,6 +917,8 @@ public class GameLoopManager : MonoBehaviour
             string subtitle = Loc.Get("intro.captain_subtitle", "{0}  ·  {1}x rewards")
                 .Replace("{0}", BannerDifficultyHelper.GetTierName(tier))
                 .Replace("{1}", BannerDifficultyHelper.GetRewardMultiplier(tier).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture));
+            int cores = captain.ArcaneCoresOnDeath;
+            if (cores > 0) subtitle += "  ·  " + ArcaneCoreRewardText(cores);
             EnemyIntroUI.Instance.ShowIntro(Loc.Get("intro.captain_eyebrow", "A clan captain has arrived"), captainName, (int)tier, subtitle, 3.5f, false);
         }
 

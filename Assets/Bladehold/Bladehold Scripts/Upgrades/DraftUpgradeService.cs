@@ -311,7 +311,7 @@ public class DraftUpgradeService : MonoBehaviour
 
     /// <summary>
     ///     Generates 3 filtered draft candidates adhering to category, equipped weapons, duo prerequisites
-    ///     and card requirements. Ultimates never appear: they are sold at the Rest Area shop.
+    ///     and card requirements. Ultimates never appear: every held weapon's ultimate is always unlocked.
     /// </summary>
     public List<DraftUpgradeDefinition> GetCandidateUpgrades(DraftCategory category, int count = 3, HashSet<string> banishedIds = null)
     {
@@ -327,7 +327,7 @@ public class DraftUpgradeService : MonoBehaviour
             if (def == null) continue;
             if (def.category != category) continue;
 
-            // Ultimates are bought at the Rest Area shop (GetShopUltimates), never drafted.
+            // Ultimate rows only name each weapon's ultimate (always unlocked); they're never drafted.
             if (def.isUltimate) continue;
 
             if (banishedIds != null && banishedIds.Contains(def.id)) continue;
@@ -379,11 +379,16 @@ public class DraftUpgradeService : MonoBehaviour
 
     /// <summary>
     ///     Applies the selected draft card, records it in RunSession, updates PlayerStats,
-    ///     and activates any ultimate or elemental slots.
+    ///     and activates any elemental slots. Ultimate rows are refused: they're never owned as cards.
     /// </summary>
     public bool ApplyUpgrade(DraftUpgradeDefinition def)
     {
         if (def == null) return false;
+        if (def.isUltimate)
+        {
+            Debug.LogError($"[DraftUpgradeService] '{def.id}' is an ultimate row. Ultimates are always unlocked for the held weapons, so it can't be applied as a card.");
+            return false;
+        }
 
         // Imbue first: overwriting a slot strips the previous element's cards before we level this one.
         if (HasSlot(def))
@@ -404,18 +409,6 @@ public class DraftUpgradeService : MonoBehaviour
                 if (previousLevel > 0) player.Stats.AddModifier(effect.stat, effect.kind, -effect.AmountForLevel(previousLevel));
                 player.Stats.AddModifier(effect.stat, effect.kind, effect.AmountForLevel(nextLevel));
             }
-        }
-
-        if (def.isUltimate)
-        {
-            UltimateSlot slot = SlotForUltimate(def);
-            RunSession.SetUltimateId(slot, def.id);
-            if (player != null && player.Stats != null)
-            {
-                player.Stats.SetBase(StatType.UltimateUnlocked, 1f);
-                ConfigureUltimateHandlers(player);
-            }
-            Debug.Log($"[DraftUpgradeService] Unlocked {slot} ultimate: '{def.displayName}' (ID: {def.id})!");
         }
 
         Debug.Log($"[DraftUpgradeService] Applied Upgrade: '{def.displayName}' (Level {nextLevel}/{def.maxLevel}).");
@@ -534,7 +527,7 @@ public class DraftUpgradeService : MonoBehaviour
 
     /// <summary>
     ///     True when every token in <see cref="DraftUpgradeDefinition.requires" /> holds for the current run:
-    ///     <c>ultimate</c> (an ultimate is owned), <c>slot:Fire</c> (Fire is imbued on at least one slot, so hits
+    ///     <c>ultimate</c> (a held weapon has an ultimate), <c>slot:Fire</c> (Fire is imbued on at least one slot, so hits
     ///     apply its status), <c>card:&lt;id&gt;</c> (that card is owned) and <c>mount</c> (the run's warhorse is
     ///     still alive, see <see cref="RunSession.MountLost" />). <paramref name="missing" /> names the
     ///     first one that fails, for debug tools.
@@ -549,7 +542,7 @@ public class DraftUpgradeService : MonoBehaviour
         {
             if (token.Equals("ultimate", StringComparison.OrdinalIgnoreCase))
             {
-                if (!RunSession.HasAnyUltimate) { missing = "Needs an ultimate"; return false; }
+                if (!HasAnyUltimate) { missing = "Needs an ultimate"; return false; }
             }
             else if (token.StartsWith("slot:", StringComparison.OrdinalIgnoreCase))
             {
@@ -595,11 +588,11 @@ public class DraftUpgradeService : MonoBehaviour
 
     /// <summary>
     ///     Debug/Cheat method: directly sets a draft upgrade's level, accurately applying
-    ///     or reverting stat modifiers and updating RunSession / Ultimate state.
+    ///     or reverting stat modifiers and updating RunSession state. Ultimate rows are skipped.
     /// </summary>
     public void DebugSetDraftLevel(DraftUpgradeDefinition def, int targetLevel)
     {
-        if (def == null) return;
+        if (def == null || def.isUltimate) return;
         EnsureInitialized();
 
         int currentLevel = RunSession.GetUpgradeLevel(def.id);
@@ -638,35 +631,12 @@ public class DraftUpgradeService : MonoBehaviour
         {
             RunSession.ClearElementalSlot(def.targetSlot);
         }
-
-        if (def.isUltimate)
-        {
-            UltimateSlot slot = SlotForUltimate(def);
-            if (targetLevel > 0)
-            {
-                string previous = RunSession.GetUltimateId(slot);
-                DraftUpgradeDefinition previousDef = !string.IsNullOrEmpty(previous) && !previous.Equals(def.id, StringComparison.OrdinalIgnoreCase) ? GetById(previous) : null;
-                if (previousDef != null) DebugSetDraftLevel(previousDef, 0);
-                RunSession.SetUltimateId(slot, def.id);
-            }
-            else if (string.Equals(RunSession.GetUltimateId(slot), def.id, StringComparison.OrdinalIgnoreCase))
-            {
-                RunSession.SetUltimateId(slot, null);
-            }
-
-            if (player != null && player.Stats != null)
-            {
-                player.Stats.SetBase(StatType.UltimateUnlocked, RunSession.HasAnyUltimate ? 1f : 0f);
-                ConfigureUltimateHandlers(player);
-            }
-        }
     }
 
     /// <summary>
-    ///     Debug/Cheat method: sets all regular draft upgrades to their maximum level,
-    ///     optionally unlocking and configuring the equipped weapon's ultimate.
+    ///     Debug/Cheat method: sets all regular draft upgrades to their maximum level.
     /// </summary>
-    public void DebugMaxAllDrafts(bool includeCurrentWeaponUltimate = true)
+    public void DebugMaxAllDrafts()
     {
         EnsureInitialized();
         foreach (var def in allDefinitions)
@@ -675,30 +645,10 @@ public class DraftUpgradeService : MonoBehaviour
             if (def.isUltimate) continue;
             DebugSetDraftLevel(def, def.maxLevel);
         }
-
-        if (includeCurrentWeaponUltimate)
-        {
-            UnlockDefaultWeaponUltimate();
-        }
     }
 
     /// <summary>
-    ///     Debug/Cheat method: unlocks the default ultimate for the currently equipped weapons.
-    /// </summary>
-    public void UnlockDefaultWeaponUltimate()
-    {
-        if (RunSession.HasAnyUltimate) return;
-
-        GetEquippedWeaponIds(out string melee, out _);
-        DraftUpgradeDefinition ultDef = GetUltimateForWeapon(melee);
-        if (ultDef != null)
-        {
-            DebugSetDraftLevel(ultDef, 1);
-        }
-    }
-
-    /// <summary>
-    ///     Debug/Cheat method: resets all draft upgrades to 0 and clears ultimate state.
+    ///     Debug/Cheat method: resets all draft upgrades to 0 and clears the elemental slots.
     /// </summary>
     public void DebugResetAllDrafts()
     {
@@ -713,12 +663,6 @@ public class DraftUpgradeService : MonoBehaviour
         foreach (string slot in new List<string>(RunSession.ElementalSlots.Keys))
         {
             RunSession.ClearElementalSlot(slot);
-        }
-        RunSession.SetUltimateId(UltimateSlot.Melee, null);
-        RunSession.SetUltimateId(UltimateSlot.Ranged, null);
-        if (Player.Instance != null && Player.Instance.Stats != null)
-        {
-            Player.Instance.Stats.SetBase(StatType.UltimateUnlocked, 0f);
         }
     }
 
@@ -742,13 +686,6 @@ public class DraftUpgradeService : MonoBehaviour
         }
     }
 
-    /// <summary>Ranged when the ultimate belongs to the equipped ranged weapon, melee otherwise.</summary>
-    public static UltimateSlot SlotForUltimate(DraftUpgradeDefinition def)
-    {
-        GetEquippedWeaponIds(out _, out string ranged);
-        return def != null && string.Equals(def.weapon, ranged, StringComparison.OrdinalIgnoreCase) ? UltimateSlot.Ranged : UltimateSlot.Melee;
-    }
-
     /// <summary>The ultimate row in the catalog for a weapon id, or null.</summary>
     public DraftUpgradeDefinition GetUltimateForWeapon(string weaponId)
     {
@@ -762,29 +699,22 @@ public class DraftUpgradeService : MonoBehaviour
     }
 
     /// <summary>
-    ///     Ultimates the Rest Area shop can sell right now: one per equipped weapon whose slot is still empty,
-    ///     while the run has a free ultimate slot (one, or two with the second_ultimate meta perk).
+    ///     The ultimate of the weapon held in <paramref name="slot" />, or null when that weapon has none. Every
+    ///     held weapon's ultimate is always unlocked (plan 21 phase 5), so this follows weapon swaps by itself.
     /// </summary>
-    public List<DraftUpgradeDefinition> GetShopUltimates()
+    public static DraftUpgradeDefinition GetUltimate(UltimateSlot slot)
     {
-        List<DraftUpgradeDefinition> result = new List<DraftUpgradeDefinition>();
-        if (RunSession.OwnedUltimateCount >= RunSession.MaxUltimateSlots) return result;
-
         GetEquippedWeaponIds(out string melee, out string ranged);
-        if (string.IsNullOrEmpty(RunSession.MeleeUltimateId) && !DemoConfigSO.IsWeaponIdLocked(melee))
-        {
-            DraftUpgradeDefinition def = GetUltimateForWeapon(melee);
-            if (def != null) result.Add(def);
-        }
-        if (string.IsNullOrEmpty(RunSession.RangedUltimateId) && !DemoConfigSO.IsWeaponIdLocked(ranged))
-        {
-            DraftUpgradeDefinition def = GetUltimateForWeapon(ranged);
-            if (def != null) result.Add(def);
-        }
-        return result;
+        return GetOrCreateInstance().GetUltimateForWeapon(slot == UltimateSlot.Melee ? melee : ranged);
     }
 
-    /// <summary>Enables the handlers for the owned melee and ranged ultimates and disables every other one.</summary>
+    /// <summary>The id of the held weapon's ultimate in <paramref name="slot" />, or null.</summary>
+    public static string GetUltimateId(UltimateSlot slot) => GetUltimate(slot)?.id;
+
+    /// <summary>True when either held weapon has an ultimate.</summary>
+    public static bool HasAnyUltimate => GetUltimateId(UltimateSlot.Melee) != null || GetUltimateId(UltimateSlot.Ranged) != null;
+
+    /// <summary>Enables the handlers for the held weapons' ultimates and disables every other one.</summary>
     public static void ConfigureUltimateHandlers(Player player)
     {
         if (player == null) return;
@@ -796,7 +726,7 @@ public class DraftUpgradeService : MonoBehaviour
             if (h is MonoBehaviour mb) mb.enabled = false;
         }
 
-        foreach (string ultimateId in new[] { RunSession.MeleeUltimateId, RunSession.RangedUltimateId })
+        foreach (string ultimateId in new[] { GetUltimateId(UltimateSlot.Melee), GetUltimateId(UltimateSlot.Ranged) })
         {
             if (string.IsNullOrEmpty(ultimateId)) continue;
             if (GetUltimateHandler(player, ultimateId) is MonoBehaviour handler) handler.enabled = true;

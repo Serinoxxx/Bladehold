@@ -9,6 +9,9 @@ public interface ICaptain
     string CaptainName { get; }
     BannerDifficultyTier DifficultyTier { get; }
 
+    /// <summary>Arcane Cores this captain drops on death at its current tier (see <see cref="CaptainRewards" />).</summary>
+    int ArcaneCoresOnDeath { get; }
+
     /// <summary>Sets the tier (HP/damage scaling, outline colour) and optionally a display name.</summary>
     void Initialize(BannerDifficultyTier tier, string customName = null);
 }

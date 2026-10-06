@@ -2406,7 +2406,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 0d106c316b7f0464182a396cd5f01305, type: 2}
   - {fileID: 11400000, guid: 81efd18f7a0909a40a2722e6b287d14a, type: 2}
   - {fileID: 11400000, guid: 91a214eabddd4557b9a605bfd0e0b6a8, type: 2}
-  ultimateConfig: {fileID: 11400000, guid: aa9b2451ba6a7454392485c02d3fc79e, type: 2}
+  arcaneCoreItem: {fileID: 11400000, guid: 2c060cfafe5b467d88eda8a3ae97c954, type: 2}
   replacementMountItem: {fileID: 0}
   shopPanel: {fileID: 8279337479346956809}
   goldLabel: {fileID: 1868161751662628706}

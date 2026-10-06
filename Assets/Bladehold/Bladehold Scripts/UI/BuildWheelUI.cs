@@ -12,9 +12,8 @@ using UnityEngine.UI;
 ///
 ///     It doubles as the plan-17 upgrade wheel (<see cref="OpenUpgrades" />): a tower or a wall's
 ///     crafting station hands it an <see cref="IUpgradeable" />, whose <see cref="UpgradeOption" />
-///     list becomes the slices (supply and/or crystal prices, blocked reasons). Slices are cloned from
-///     the first authored <see cref="BuildWheelButton" /> as needed and laid out round the authored
-///     ring, so the option count is free. The wheel stays open after a purchase (so you can refill and
+///     list becomes the slices (supply and/or crystal prices, blocked reasons). The ring layout and the
+///     cursor/pause plumbing are the shared <see cref="RadialWheel" />, so the option count is free. The wheel stays open after a purchase (so you can refill and
 ///     upgrade in one visit) and refreshes; Deconstruct closes it.
 /// </summary>
 public class BuildWheelUI : MonoBehaviour
@@ -110,11 +109,8 @@ public class BuildWheelUI : MonoBehaviour
     // Slice under the pointer / pad focus, so a refresh (after buying an upgrade) keeps its details up.
     private int hoveredIndex = -1;
 
-    // The authored ring the slices sit on (captured once from the authored buttons).
-    private bool ringCaptured;
-    private Vector2 ringCentre;
-    private float ringRadius;
-    private float ringStartAngle;
+    private RadialWheel wheel;
+    private RadialWheel Wheel => wheel ??= new RadialWheel(wheelButtons, "BuildWheel");
 
     public bool IsOpen => isOpen;
 
@@ -182,8 +178,7 @@ public class BuildWheelUI : MonoBehaviour
             instance = null;
             OnlyAllowed = null;
         }
-        CursorLockManager.SetUnlock("BuildWheel", false);
-        PauseMenuController.Instance?.SetToggleEnabled(true);
+        Wheel.SetModal(false);
     }
 
     private void Update()
@@ -226,8 +221,8 @@ public class BuildWheelUI : MonoBehaviour
         gameObject.SetActive(true);
         if (wheelPanel != null && wheelPanel != gameObject) wheelPanel.SetActive(true);
 
-        CursorLockManager.SetUnlock("BuildWheel", true);
-        PauseMenuController.Instance?.SetToggleEnabled(false);
+        UltimateWheelUI.CloseIfOpen();
+        Wheel.SetModal(true);
 
         SetupButtons();
         RefreshUI();
@@ -245,8 +240,8 @@ public class BuildWheelUI : MonoBehaviour
         gameObject.SetActive(true);
         if (wheelPanel != null && wheelPanel != gameObject) wheelPanel.SetActive(true);
 
-        CursorLockManager.SetUnlock("BuildWheel", true);
-        PauseMenuController.Instance?.SetToggleEnabled(false);
+        UltimateWheelUI.CloseIfOpen();
+        Wheel.SetModal(true);
 
         RefreshUI();
     }
@@ -261,8 +256,7 @@ public class BuildWheelUI : MonoBehaviour
         if (wheelPanel != null && wheelPanel != gameObject) wheelPanel.SetActive(false);
         gameObject.SetActive(false);
 
-        CursorLockManager.SetUnlock("BuildWheel", false);
-        PauseMenuController.Instance?.SetToggleEnabled(true);
+        Wheel.SetModal(false);
     }
 
     public void RefreshUI()
@@ -295,7 +289,7 @@ public class BuildWheelUI : MonoBehaviour
             {
                 if (IsOffered(o.defenseType)) offered++;
             }
-            EnsureButtonCount(defenseOptions.Count);
+            Wheel.EnsureButtonCount(defenseOptions.Count);
             for (int i = defenseOptions.Count; i < wheelButtons.Count; i++)
             {
                 if (wheelButtons[i] != null) wheelButtons[i].gameObject.SetActive(false);
@@ -305,7 +299,7 @@ public class BuildWheelUI : MonoBehaviour
             {
                 if (wheelButtons[i] != null && IsOffered(defenseOptions[i].defenseType))
                 {
-                    PlaceOnRing(wheelButtons[i], slot++, offered);
+                    Wheel.PlaceOnRing(wheelButtons[i], slot++, offered);
                 }
             }
 
@@ -538,7 +532,7 @@ public class BuildWheelUI : MonoBehaviour
         if (headerText != null) headerText.text = upgradeTarget.UpgradeTitle.ToUpperInvariant();
         ShowIdleDetails();
 
-        EnsureButtonCount(upgradeOptions.Count);
+        Wheel.EnsureButtonCount(upgradeOptions.Count);
         for (int i = 0; i < wheelButtons.Count; i++)
         {
             BuildWheelButton btn = wheelButtons[i];
@@ -549,7 +543,7 @@ public class BuildWheelUI : MonoBehaviour
 
             UpgradeOption opt = upgradeOptions[i];
             int index = i;
-            PlaceOnRing(btn, i, upgradeOptions.Count);
+            Wheel.PlaceOnRing(btn, i, upgradeOptions.Count);
             btn.RebindClick();
             btn.Setup(opt.label, opt.CostLabel, opt.icon, opt.IsAvailable,
                 () => OnSelectUpgrade(index),
@@ -598,55 +592,6 @@ public class BuildWheelUI : MonoBehaviour
             sb.Append($"   <color={e.Hex()}>{name} {RunSession.GetCrystals(e)}</color>");
         }
         return sb.ToString();
-    }
-
-    /// <summary>Clones the first authored slice until there are <paramref name="count" /> buttons.</summary>
-    private void EnsureButtonCount(int count)
-    {
-        if (wheelButtons == null || wheelButtons.Count == 0 || wheelButtons[0] == null) return;
-        CaptureRing();
-        BuildWheelButton template = wheelButtons[0];
-        while (wheelButtons.Count < count)
-        {
-            BuildWheelButton clone = Instantiate(template, template.transform.parent);
-            clone.name = $"Slice_{wheelButtons.Count}_Runtime";
-            wheelButtons.Add(clone);
-        }
-    }
-
-    /// <summary>Remembers the ring the authored slices sit on: their centroid, mean radius and first angle.</summary>
-    private void CaptureRing()
-    {
-        if (ringCaptured) return;
-        Vector2 sum = Vector2.zero;
-        int n = 0;
-        foreach (BuildWheelButton b in wheelButtons)
-        {
-            if (b == null || !(b.transform is RectTransform rt)) continue;
-            sum += rt.anchoredPosition;
-            n++;
-        }
-        if (n == 0) return;
-        ringCentre = sum / n;
-        float r = 0f;
-        foreach (BuildWheelButton b in wheelButtons)
-        {
-            if (b == null || !(b.transform is RectTransform rt)) continue;
-            r += (rt.anchoredPosition - ringCentre).magnitude;
-        }
-        ringRadius = r / n;
-        Vector2 first = ((RectTransform)wheelButtons[0].transform).anchoredPosition - ringCentre;
-        ringStartAngle = Mathf.Atan2(first.y, first.x);
-        ringCaptured = ringRadius > 1f;
-    }
-
-    /// <summary>Slot <paramref name="slot" /> of <paramref name="count" /> evenly round the ring, clockwise from the first authored slice.</summary>
-    private void PlaceOnRing(BuildWheelButton button, int slot, int count)
-    {
-        CaptureRing();
-        if (!ringCaptured || count <= 0 || !(button.transform is RectTransform rt)) return;
-        float angle = ringStartAngle - slot * (Mathf.PI * 2f / count);
-        rt.anchoredPosition = ringCentre + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * ringRadius;
     }
 
     /// <summary>

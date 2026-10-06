@@ -31,6 +31,7 @@ Captains are listed in `Enemies/Captain/ICaptain.cs`: `CaptainRegistry` maps a d
 - **Spawn path**: `captainKombustaPrefab` is empty on the prefab and in the scene, so Kombusta spawns through `SurvivorsSpawner.DebugSpawnEnemyType("captain_kombusta")`. That applies the CSV row, puts it in the spawner's alive set (so the `KillRemainingEnemiesObjective` cleanup and wave clear wait for it), and **doesn't** count it toward the kill quota. It spawns at a random spawn point; `captainSpawnPoint` is only used on the direct-`Instantiate` path.
 - **Scaling**: `Initialize(tier, name)` → `ApplyDifficultyScaling`. HP = `SO.baseMaxHealth × GetStatMultiplier(tier)` (1 / 1.25 / 1.5 / 2). Speed is scaled from `SO.baseMoveSpeed`. Melee damage = (`SetDamage` override ?? `SO.baseMeleeDamage`) × multiplier. The `HighlightEffect` outline takes the tier colour. **This overwrites the CSV `health`/`speed` columns**; only `damage` survives (via `damageOverride`).
 - **Death** (`Health.OnDied` → `HandleDeath`): Morale Break (pauses every `AIMovement` within 15 m for 2 s), then `RunSession.AddInRunGold(50 × reward)` and `RunSession.AddGoblinBlood(3 × reward)`. `reward` is `GetRewardMultiplier` = 1/2/4/8, and Blood goes straight to `SaveData`, so it's permanent. `OnCaptainDied` has no subscribers yet.
+  - It also calls `CaptainRewards.GrantArcaneCores(reward, tier, name)` (`Enemies/Captain/CaptainRewards.cs`) for the run's **Arcane Cores** (spent to fire ultimates). The amount is a `CaptainArcaneCoreReward` on the captain SO (`arcaneCores`: `baseCores` 1, plus `bonusCores` 1 from `bonusFromTier` Nightmare), not the tier reward multiplier. `ICaptain.ArcaneCoresOnDeath` reports it; `GameLoopManager` appends "+N Arcane Core(s)" to the captain intro subtitle and the end-screen captain list.
 - **UI that names it**:
   - Map node badge: `CampaignNodeButtonUI` shows node difficulty skulls + `captainName` in the tier colour.
   - Map tooltip: `CampaignTooltipUI` shows name, tier, skulls, `captainIcon` and clan buff.
@@ -54,7 +55,7 @@ Captains are listed in `Enemies/Captain/ICaptain.cs`: `CaptainRegistry` maps a d
    - Attacks stamp `Damage.source`/`sourcePosition`, and wide AoEs are `unparryable`.
    - Add a `Start` null-check with `anyError` (Kombusta doesn't have one yet).
    - **Feedback via serialized `MMF_Player`s only** (`/feel-integration`), e.g. Kombusta's `igniteFeedback`. Don't copy `IgniteSelf`'s `Instantiate(fireAuraVfxPrefab)`.
-   - Death rewards: reuse the `RunSession.AddInRunGold`/`AddGoblinBlood` × `GetRewardMultiplier` pattern. Put the base amounts on the SO rather than the literals 50/3.
+   - Death rewards: reuse the `RunSession.AddInRunGold`/`AddGoblinBlood` × `GetRewardMultiplier` pattern. Put the base amounts on the SO rather than the literals 50/3. Also add a `public CaptainArcaneCoreReward arcaneCores = new CaptainArcaneCoreReward();` to the SO, call `CaptainRewards.GrantArcaneCores(data.arcaneCores, difficultyTier, captainName)` in `HandleDeath`, and implement `ICaptain.ArcaneCoresOnDeath` from it.
 3. **Override routing**: add `enemy.GetComponent<Captain<Name>Controller>()?.SetDamage(...)` to `Enemies/EnemyDefinitionApplier.cs`.
 4. **Roster row** in `Config/Enemies.csv`: `captain_<name>`, `enabled` `TRUE`, **`minThreat` 0** so it never joins normal waves. `health`/`speed` are overwritten by the SO scaling (leave them matching the SO). `damage`, `minGold`/`maxGold`, `scale` and `knockbackResistance` do apply. Kombusta's row: `350,20,50,100,3.8,1.35,...,6,TRUE,0`.
 5. **Prefab**: a manifest entry modelled on `captain_kombusta` (`soFolder = "Captain"`, `removeComponents` golden/impulse, fire-point child, controller wiring incl. `highlightEffect`), then run the generator (`/generate-enemy-prefabs`). Keep `rootScale` equal to the CSV `scale`.
@@ -71,6 +72,6 @@ Open a battle scene (no campaign run means threat 1 and a coin-flip captain), or
 
 1. `/compile-check` (both csprojs if you touched the manifest/benchmark).
 2. Editor work via `/unity-editor-mcp` when connected: run the generator, set node `captainName`/`captainIcon`, and do a Play-mode wave-5 check.
-   - Everything else goes in the plan's `plans/editor/NN-<topic>.md` via `/editor-wiring-todo`: MMF players on the prefab, animator triggers, telegraph/projectile prefabs, the captain icon sprite, a balance pass, and a playtest (name on map badge + tooltip + intro, tier outline, cleanup waits for the captain, Blood/gold paid once).
+   - Everything else goes in the plan's `plans/editor/NN-<topic>.md` via `/editor-wiring-todo`: MMF players on the prefab, animator triggers, telegraph/projectile prefabs, the captain icon sprite, a balance pass, and a playtest (name on map badge + tooltip + intro, tier outline, cleanup waits for the captain, Blood/gold/Arcane Cores paid once).
    - Agents never write to `TODO.md`.
 3. Commit directly to `main` and push.

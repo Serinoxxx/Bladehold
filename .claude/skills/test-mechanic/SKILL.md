@@ -23,6 +23,8 @@ The benchmark logs one report ending `BENCHMARK COMPLETE: N PASSED | M FAILED`; 
 
 For feel in Play mode: DevConsole (backquote) **1-Click Combat Scenarios**, and the `Enemy Zoo` scene.
 
+**Ultimates** (section 11): 11E checks the handlers' wiring on `Player.prefab`, 11F the Arcane Core spend (none at 0, exactly one per spend) and the `arcane_core` shop item, 11G one ultimate row per weapon. In Play mode: DevConsole **+5 Arcane Cores**, then hold Q. Via MCP you can hold keys with `InputSystem.QueueStateEvent(Keyboard.current, new KeyboardState(Key.Q))`, and test the gamepad wheel with `InputSystem.AddDevice<Gamepad>()` plus a `GamepadState` (LB bit + `leftStick`). Queue the press and the release in separate `execute_code` calls (one frame each), and remove the device afterwards.
+
 ## When to add a check
 
 Plan 11's proposed policy, until it's settled: add a check for logic with rules or formulas (stat math, draft pools, `RunSession` state, campaign/sector rules, supply) and a regression check for each bug fixed. Nothing mandatory for pure feel or visual changes. If you change behaviour an existing section asserts, update that section in the same change.

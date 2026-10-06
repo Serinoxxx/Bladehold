@@ -53,6 +53,7 @@ public class CaptainKombustaController : MonoBehaviour, ICaptain
 
     public string CaptainName => captainName;
     public BannerDifficultyTier DifficultyTier => difficultyTier;
+    public int ArcaneCoresOnDeath => attackData != null && attackData.arcaneCores != null ? attackData.arcaneCores.CoresFor(difficultyTier) : 0;
     public bool IsOnFire => isOnFire;
     public bool IsPerformingSpecial => isPerformingSpecial;
     public float MeleeTimer => meleeTimer;
@@ -479,6 +480,7 @@ public class CaptainKombustaController : MonoBehaviour, ICaptain
         int bonusBlood = 3 * BannerDifficultyHelper.GetRewardMultiplier(difficultyTier);
         RunSession.AddInRunGold(bonusGold);
         RunSession.AddGoblinBlood(bonusBlood);
+        CaptainRewards.GrantArcaneCores(attackData != null ? attackData.arcaneCores : null, difficultyTier, captainName);
 
         OnCaptainDied?.Invoke(this);
     }

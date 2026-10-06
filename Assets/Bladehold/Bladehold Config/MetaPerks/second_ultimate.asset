@@ -13,10 +13,12 @@ MonoBehaviour:
   m_Name: second_ultimate
   m_EditorClassIdentifier: Assembly-CSharp::MetaPerkDefinitionSO
   id: second_ultimate
-  displayName: Twin Fury
-  description: The Rest Area Merchant can sell a second ultimate, one for each weapon.
-    It costs 400 gold.
+  displayName: Arcane Reserve
+  description: Begin every run with {0} Arcane Core to spend on an ultimate.
   tier: 3
   goblinBloodCost: 50
+  rankCosts: 
+  rankValues:
+  - 1
   icon: {fileID: 21300000, guid: a8d5b4b428cf43d4f82741ca62b193c5, type: 3}
   prerequisites: []

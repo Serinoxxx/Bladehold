@@ -148,7 +148,8 @@ public class EnemyIntroController : MonoBehaviour
         isIntroActive = true;
         OnIntroStarted?.Invoke(enemy);
 
-        // 1. Pause gameplay
+        // 1. Pause gameplay (the Ultimate Wheel stands down first, restoring its slow-mo)
+        UltimateWheelUI.CloseIfOpen();
         Time.timeScale = 0f;
 
         if (introUI == null)

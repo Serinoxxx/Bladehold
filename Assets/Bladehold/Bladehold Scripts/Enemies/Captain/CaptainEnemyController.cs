@@ -31,6 +31,10 @@ public class CaptainEnemyController : MonoBehaviour, ICaptain
     [SerializeField] private float baseDamage = 20f;
     [SerializeField] private float baseMoveSpeed = 4.2f;
 
+    [Header("Rewards")]
+    [Tooltip("Arcane Cores dropped on death (spent to fire ultimates).")]
+    [SerializeField] private CaptainArcaneCoreReward arcaneCores = new CaptainArcaneCoreReward();
+
     [Header("Ability 1: Rallying War Cry")]
     [SerializeField] private float warCryCooldown = 12f;
     [SerializeField] private float warCryRadius = 12f;
@@ -61,6 +65,7 @@ public class CaptainEnemyController : MonoBehaviour, ICaptain
 
     public string CaptainName => captainName;
     public BannerDifficultyTier DifficultyTier => difficultyTier;
+    public int ArcaneCoresOnDeath => arcaneCores != null ? arcaneCores.CoresFor(difficultyTier) : 0;
     public float CurrentBulwarkShield => currentBulwarkShield;
     public bool IsBulwarkActive => currentBulwarkShield > 0f;
 
@@ -346,6 +351,7 @@ public class CaptainEnemyController : MonoBehaviour, ICaptain
         int bonusBlood = 3 * BannerDifficultyHelper.GetRewardMultiplier(difficultyTier);
         RunSession.AddInRunGold(bonusGold);
         RunSession.AddGoblinBlood(bonusBlood);
+        CaptainRewards.GrantArcaneCores(arcaneCores, difficultyTier, captainName);
 
         OnCaptainDied?.Invoke(this);
     }

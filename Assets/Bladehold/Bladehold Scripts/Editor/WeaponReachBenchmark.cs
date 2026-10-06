@@ -1513,6 +1513,55 @@ public static class WeaponReachBenchmark
                     failedCount++;
                 }
             }
+
+            // 11F: Arcane Cores (plan 21 phase 5): a spend needs a core and takes exactly one; the shop sells them.
+            int savedCores = RunSession.ArcaneCores;
+            RunSession.SetArcaneCores(0);
+            bool spentFromEmpty = RunSession.TrySpendArcaneCore();
+            RunSession.SetArcaneCores(2);
+            bool spentOne = RunSession.TrySpendArcaneCore();
+            int afterSpend = RunSession.ArcaneCores;
+            RunSession.SetArcaneCores(savedCores);
+            if (!spentFromEmpty && spentOne && afterSpend == 1)
+            {
+                sb.AppendLine("  - Arcane Cores: no spend at 0, one spend takes exactly one core. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Arcane Core spend: fromEmpty={spentFromEmpty}, spentOne={spentOne}, after={afterSpend} (expected False/True/1)!");
+                failedCount++;
+            }
+
+            ShopItemSO coreItem = AssetDatabase.LoadAssetAtPath<ShopItemSO>("Assets/Bladehold/Bladehold Config/ShopItems/arcane_core.asset");
+            if (coreItem != null && coreItem.effectType == ShopItemEffectType.ArcaneCore && coreItem.goldCost > 0)
+            {
+                sb.AppendLine($"  - Arcane Core shop item: {coreItem.goldCost} gold. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine("  - [FAIL] arcane_core.asset is missing, not an ArcaneCore effect, or free!");
+                failedCount++;
+            }
+
+            // 11G: every ultimate row routes to a handler on Player.prefab (ultimates are always unlocked per weapon).
+            DraftUpgradeService ultDrafts = DraftUpgradeService.GetOrCreateInstance();
+            foreach (DraftUpgradeDefinition def in ultDrafts.AllDefinitions)
+            {
+                if (def == null || !def.isUltimate) continue;
+                bool routed = ultPlayerPrefab != null && ultDrafts.GetUltimateForWeapon(def.weapon) == def;
+                if (routed)
+                {
+                    sb.AppendLine($"  - Ultimate '{def.id}' is the {def.weapon}'s ultimate. [PASSED]");
+                    passedCount++;
+                }
+                else
+                {
+                    sb.AppendLine($"  - [FAIL] Ultimate '{def.id}' isn't the first ultimate row for weapon '{def.weapon}' (two rows for one weapon?)!");
+                    failedCount++;
+                }
+            }
         }
         catch (Exception ex)
         {

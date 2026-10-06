@@ -33,23 +33,7 @@ public class DevConsole : MonoBehaviour
     private Vector2 draftScrollPos;
     private DraftCategory draftFilter = DraftCategory.Weapon;
     private bool filterAllDrafts = true;
-    private int selectedUltimateIndex = 0;
     private Health subscribedHealth;
-
-    private struct UltimateOption
-    {
-        public string id;
-        public string displayName;
-    }
-
-    private static readonly UltimateOption[] AvailableUltimates = new[]
-    {
-        new UltimateOption { id = "sword_blade_tempest", displayName = "Moonlight Edge" },
-        new UltimateOption { id = "axe_bladestorm_ult", displayName = "Bladestorm" },
-        new UltimateOption { id = "bow_stream_ult", displayName = "Arrow Stream" },
-        new UltimateOption { id = "taxe_vortex_ult", displayName = "Axe Storm" },
-        new UltimateOption { id = "mace_earthshaker_ult", displayName = "Seismic Quake" },
-    };
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Bootstrap()
@@ -179,7 +163,7 @@ public class DevConsole : MonoBehaviour
         GUILayout.BeginHorizontal();
         if (GUILayout.Button("Max All", GUILayout.Height(ButtonHeight)))
         {
-            service.DebugMaxAllDrafts(true);
+            service.DebugMaxAllDrafts();
         }
         if (GUILayout.Button("Reset All", GUILayout.Height(ButtonHeight)))
         {
@@ -339,16 +323,6 @@ public class DevConsole : MonoBehaviour
         return PlayerWeaponManager.GetInstance();
     }
 
-    private PlayerUltimateController GetUltimateController()
-    {
-        if (Player.Instance != null)
-        {
-            var ctrl = Player.Instance.transform.root.GetComponentInChildren<PlayerUltimateController>(true);
-            if (ctrl != null) return ctrl;
-        }
-        return FindFirstObjectByType<PlayerUltimateController>();
-    }
-
     private void DrawWeaponControls()
     {
         PlayerWeaponManager pwm = GetWeaponManager();
@@ -449,33 +423,14 @@ public class DevConsole : MonoBehaviour
     public bool enableHealthbars = true;
     private void DrawUltimateControls()
     {
-        selectedUltimateIndex = Mathf.Clamp(selectedUltimateIndex, 0, AvailableUltimates.Length - 1);
-        UltimateOption opt = AvailableUltimates[selectedUltimateIndex];
-
-        GUILayout.Label($"Ultimate: {opt.displayName}");
+        string melee = DraftUpgradeService.GetUltimate(UltimateSlot.Melee)?.displayName ?? "none";
+        string ranged = DraftUpgradeService.GetUltimate(UltimateSlot.Ranged)?.displayName ?? "none";
+        GUILayout.Label($"Ultimates: {melee} / {ranged}   Arcane Cores: {RunSession.ArcaneCores}");
         GUILayout.BeginHorizontal();
-        if (GUILayout.Button("<", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
+        if (GUILayout.Button("+5 Arcane Cores", GUILayout.Height(ButtonHeight)))
         {
-            selectedUltimateIndex = (selectedUltimateIndex - 1 + AvailableUltimates.Length) % AvailableUltimates.Length;
-        }
-        if (GUILayout.Button("Cycle Ult", GUILayout.Height(ButtonHeight)))
-        {
-            selectedUltimateIndex = (selectedUltimateIndex + 1) % AvailableUltimates.Length;
-        }
-        if (GUILayout.Button(">", GUILayout.Width(36f), GUILayout.Height(ButtonHeight)))
-        {
-            selectedUltimateIndex = (selectedUltimateIndex + 1) % AvailableUltimates.Length;
-        }
-        GUILayout.EndHorizontal();
-
-        GUILayout.BeginHorizontal();
-        if (GUILayout.Button("Unlock Ult", GUILayout.Height(ButtonHeight)))
-        {
-            UnlockSelectedUltimate(opt.id);
-        }
-        if (GUILayout.Button("Fill Charge 100%", GUILayout.Height(ButtonHeight)))
-        {
-            FillUltimateCharge();
+            RunSession.AddArcaneCores(5);
+            Debug.Log($"[DevConsole] +5 Arcane Cores ({RunSession.ArcaneCores}). Hold Q (LB) for the Ultimate Wheel.");
         }
         if (GUILayout.Button("Toggle HUD", GUILayout.Height(ButtonHeight)))
         {
@@ -493,44 +448,6 @@ public class DevConsole : MonoBehaviour
             GUILayout.EndHorizontal();
     }
 
-    private void UnlockSelectedUltimate(string ultId)
-    {
-        DraftUpgradeService draftService = DraftUpgradeService.GetOrCreateInstance();
-        DraftUpgradeDefinition def = draftService != null ? draftService.GetById(ultId) : null;
-        if (def == null)
-        {
-            Debug.LogError($"[DevConsole] No ultimate '{ultId}' in the draft catalog.");
-            return;
-        }
-
-        // Fills the melee or ranged slot (ranged when it's the equipped ranged weapon's ultimate).
-        draftService.DebugSetDraftLevel(def, 1);
-        Debug.Log($"[DevConsole] Unlocked {DraftUpgradeService.SlotForUltimate(def)} ultimate: {ultId}");
-    }
-
-    private void FillUltimateCharge()
-    {
-        Player player = Player.Instance != null ? Player.Instance : FindFirstObjectByType<Player>();
-        PlayerUltimateController ultCtrl = GetUltimateController();
-
-        if (player != null && player.Stats != null && !RunSession.HasAnyUltimate)
-        {
-            selectedUltimateIndex = Mathf.Clamp(selectedUltimateIndex, 0, AvailableUltimates.Length - 1);
-            UnlockSelectedUltimate(AvailableUltimates[selectedUltimateIndex].id);
-        }
-
-        if (ultCtrl != null)
-        {
-            ultCtrl.SetCharge(UltimateSlot.Melee, PlayerUltimateController.MaxCharge);
-            ultCtrl.SetCharge(UltimateSlot.Ranged, PlayerUltimateController.MaxCharge);
-            Debug.Log($"[DevConsole] Ultimate bars filled. Melee: '{RunSession.MeleeUltimateId}', ranged: '{RunSession.RangedUltimateId}'. Press Q (aim first for the ranged one)!");
-        }
-        else
-        {
-            Debug.LogError("[DevConsole] Failed to find PlayerUltimateController in scene!");
-        }
-    }
-
     private void DrawDraftControls()
     {
         DraftUpgradeService draftService = DraftUpgradeService.GetOrCreateInstance();
@@ -540,7 +457,7 @@ public class DevConsole : MonoBehaviour
         GUILayout.BeginHorizontal();
         if (GUILayout.Button("Max All Drafts", GUILayout.Height(ButtonHeight)))
         {
-            draftService.DebugMaxAllDrafts(true);
+            draftService.DebugMaxAllDrafts();
         }
         if (GUILayout.Button("Reset Drafts", GUILayout.Height(ButtonHeight)))
         {
@@ -1026,10 +943,6 @@ public class DevConsole : MonoBehaviour
         {
             SetupScenarioBowLongshot();
         }
-        if (GUILayout.Button("100% Ult Unleash", GUILayout.Height(ButtonHeight)))
-        {
-            SetupScenarioUltUnleash();
-        }
         GUILayout.EndHorizontal();
 
         GUILayout.BeginHorizontal();
@@ -1241,20 +1154,5 @@ public class DevConsole : MonoBehaviour
         Debug.Log("<color=#00FF88>[DevConsole]</color> Scenario: Bow Longshot initialized.");
     }
 
-    private void SetupScenarioUltUnleash()
-    {
-        ClearAllScenarioSpawns();
-        isGodMode = true;
-
-        FillUltimateCharge();
-
-        for (int i = 0; i < 6; i++)
-        {
-            float angle = (i - 2.5f) * 20f * Mathf.Deg2Rad;
-            Vector3 offset = new Vector3(Mathf.Sin(angle) * 3.5f, 0f, Mathf.Cos(angle) * 3.5f);
-            SpawnScenarioEnemy("goblin", offset, asDummy: aiPassiveMode);
-        }
-        Debug.Log("<color=#00FF88>[DevConsole]</color> Scenario: 100% Ultimate Unleash initialized. Press Q!");
-    }
     #endregion
 }

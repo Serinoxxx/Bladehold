@@ -210,7 +210,8 @@ public class FishController : MonoBehaviour, IDamageable
     public void UpdateScale()
     {
         float fatBonus = FishingUpgradeManager.Instance != null ? FishingUpgradeManager.Instance.FatFishBonusPercent : 0f;
-        float diamondMult = (!isBuffFish && resourceType == ResourceFishType.Diamond) ? 2.5f : 1f;
+        // The once-per-visit big fish read as big: Diamond 2.5x, Arcane 2x (placeholder look, plan 21 phase 5).
+        float diamondMult = isBuffFish ? 1f : resourceType == ResourceFishType.Diamond ? 2.5f : resourceType == ResourceFishType.ArcaneFish ? 2f : 1f;
         transform.localScale = baseScale * (1f + fatBonus) * diamondMult;
     }
 

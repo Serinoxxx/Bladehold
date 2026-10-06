@@ -7,10 +7,11 @@ public enum ShopItemEffectType
     MoveSpeedTemporary,
     WaveEndHealTemporary,
     AmmoRefill,
-    UnlockUltimate, // itemId is the ultimate's draft id; ShopUI builds these at runtime, no asset needed
+    RetiredUnlockUltimate, // unused since plan 21 phase 5 (ultimates are always unlocked); kept so later values keep their serialized ints
     ReplaceMount,   // a new warhorse after the run's horse died (ShopUI pins it while RunSession.MountLost)
     HealMount,      // heals the run's warhorse by effectValue (0..1 fraction of its max health)
-    RunStatModifier // adds effectValue to `stat` (as `statKind`) for the rest of the run
+    RunStatModifier, // adds effectValue to `stat` (as `statKind`) for the rest of the run
+    ArcaneCore      // adds effectValue (at least 1) Arcane Cores; ShopUI pins it in the featured row
 }
 
 /// <summary>

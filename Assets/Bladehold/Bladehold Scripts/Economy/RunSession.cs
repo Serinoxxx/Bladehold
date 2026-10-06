@@ -205,33 +205,40 @@ public static class RunSession
     public static readonly Dictionary<string, int> InRunUpgradeLevels = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
     public static bool SecondWindUsed { get; set; } = false;
 
-    // Ultimates are bought at the Rest Area shop, one per weapon slot. Each slot has its own charge bar.
-    public static string MeleeUltimateId { get; set; } = null;
-    public static string RangedUltimateId { get; set; } = null;
-    public static float MeleeUltimateCharge { get; set; } = 0f;
-    public static float RangedUltimateCharge { get; set; } = 0f;
+    // ---- Arcane Cores (plan 21 phase 5) ----
+    // Every held weapon's ultimate is always unlocked (DraftUpgradeService.GetUltimateId); each activation
+    // spends one Arcane Core. Cores drop from captains and the Arcane Fish, and the Rest Area shop sells them.
 
-    /// <summary>Meta perk id that lets the shop sell a second ultimate (one per weapon).</summary>
-    public const string SecondUltimatePerkId = "second_ultimate";
+    /// <summary>
+    ///     Meta perk "Arcane Reserve": start each run with {value} Arcane Cores. It keeps the id of the retired
+    ///     Twin Fury (second ultimate) perk, so players who bought that own this instead.
+    /// </summary>
+    public const string StartingArcaneCorePerkId = "second_ultimate";
 
-    public static bool HasAnyUltimate => !string.IsNullOrEmpty(MeleeUltimateId) || !string.IsNullOrEmpty(RangedUltimateId);
-    public static int OwnedUltimateCount => (string.IsNullOrEmpty(MeleeUltimateId) ? 0 : 1) + (string.IsNullOrEmpty(RangedUltimateId) ? 0 : 1);
-    public static int MaxUltimateSlots => HasMetaPerk(SecondUltimatePerkId) ? 2 : 1;
+    public static int ArcaneCores { get; private set; }
+    public static event Action<int> OnArcaneCoresChanged;
 
-    public static string GetUltimateId(UltimateSlot slot) => slot == UltimateSlot.Melee ? MeleeUltimateId : RangedUltimateId;
-
-    public static void SetUltimateId(UltimateSlot slot, string ultimateId)
+    public static void AddArcaneCores(int amount)
     {
-        if (slot == UltimateSlot.Melee) MeleeUltimateId = ultimateId;
-        else RangedUltimateId = ultimateId;
+        if (amount <= 0) return;
+        ArcaneCores += amount;
+        OnArcaneCoresChanged?.Invoke(ArcaneCores);
     }
 
-    public static float GetUltimateCharge(UltimateSlot slot) => slot == UltimateSlot.Melee ? MeleeUltimateCharge : RangedUltimateCharge;
-
-    public static void SetUltimateCharge(UltimateSlot slot, float charge)
+    /// <summary>Spends one core if the run has one.</summary>
+    public static bool TrySpendArcaneCore()
     {
-        if (slot == UltimateSlot.Melee) MeleeUltimateCharge = charge;
-        else RangedUltimateCharge = charge;
+        if (ArcaneCores <= 0) return false;
+        ArcaneCores--;
+        OnArcaneCoresChanged?.Invoke(ArcaneCores);
+        return true;
+    }
+
+    /// <summary>Sets the count outright (new runs, the tutorial's trial-core strip, cheats).</summary>
+    public static void SetArcaneCores(int count)
+    {
+        ArcaneCores = Mathf.Max(0, count);
+        OnArcaneCoresChanged?.Invoke(ArcaneCores);
     }
     // ---- The player's mount (the summoned warhorse) ----
     // The horse is one animal for the whole run: its health and banked charge stamina carry across
@@ -326,15 +333,12 @@ public static class RunSession
         SpecialHerbsWavesRemaining = 0;
         PlayerBonusMaxHealth = 0f;
         PlayerHealthRatio = 1f;
-        MeleeUltimateCharge = 0f;
-        RangedUltimateCharge = 0f;
+        SetArcaneCores(Mathf.RoundToInt(GetMetaPerkValue(StartingArcaneCorePerkId, 1f)));
         FortressGateCurrentHealth = -1f;
         FortressGateMaxHealth = -1f;
         DraftRerollsRemaining = Mathf.RoundToInt(GetMetaPerkValue("master_tactician", 1f));
         SecondWindUsed = false;
         InRunUpgradeLevels.Clear();
-        MeleeUltimateId = null;
-        RangedUltimateId = null;
         ConsumedBuffFish.Clear();
         MountHealthFraction = 1f;
         MountStaminaFraction = 1f;
@@ -473,21 +477,8 @@ public static class RunSession
             }
         }
 
-        // 5. Reapply owned ultimates (melee and/or ranged)
-        if (HasAnyUltimate && player.Stats != null)
-        {
-            player.Stats.SetBase(StatType.UltimateUnlocked, 1f);
-            DraftUpgradeService.ConfigureUltimateHandlers(player);
-            Debug.Log($"[RunSession] Restored ultimates: melee '{MeleeUltimateId}', ranged '{RangedUltimateId}'");
-        }
-
-        // 6. Reapply preserved charge on each bar
-        PlayerUltimateController ult = player.transform.root.GetComponentInChildren<PlayerUltimateController>(true);
-        if (ult != null)
-        {
-            if (MeleeUltimateCharge > 0f) ult.SetCharge(UltimateSlot.Melee, MeleeUltimateCharge);
-            if (RangedUltimateCharge > 0f) ult.SetCharge(UltimateSlot.Ranged, RangedUltimateCharge);
-        }
+        // 5. Enable the handlers for the held weapons' ultimates (always unlocked, plan 21 phase 5)
+        DraftUpgradeService.ConfigureUltimateHandlers(player);
 
         Debug.Log($"[RunSession] Restored {InRunUpgradeLevels.Count} in-run upgrades on player in {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}.");
     }

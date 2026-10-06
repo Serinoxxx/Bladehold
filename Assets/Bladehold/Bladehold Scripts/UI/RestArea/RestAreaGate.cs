@@ -64,17 +64,6 @@ public class RestAreaGate : MonoBehaviour
             RunSession.PlayerHealthRatio = Mathf.Clamp01(player.Health.CurrentHealth / player.Health.MaxHealth);
         }
 
-        // Preserve player ultimate charge
-        if (player != null)
-        {
-            var ult = player.transform.root.GetComponentInChildren<PlayerUltimateController>(true);
-            if (ult != null)
-            {
-                RunSession.MeleeUltimateCharge = ult.GetCharge(UltimateSlot.Melee);
-                RunSession.RangedUltimateCharge = ult.GetCharge(UltimateSlot.Ranged);
-            }
-        }
-
         // If Castle Campaign is active, completing the Rest Area returns to Campaign Map
         if (CampaignManager.Instance != null && CampaignManager.Instance.IsCampaignActive)
         {

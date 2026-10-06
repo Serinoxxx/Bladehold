@@ -116,6 +116,7 @@ public class CaptainMograController : MonoBehaviour, ICaptain
 
     public string CaptainName => captainName;
     public BannerDifficultyTier DifficultyTier => difficultyTier;
+    public int ArcaneCoresOnDeath => data != null && data.arcaneCores != null ? data.arcaneCores.CoresFor(difficultyTier) : 0;
     public int Phase => phase;
     public MograAction CurrentAction => currentAction;
     public bool IsStaggered => Time.time < staggerUntil;
@@ -882,6 +883,7 @@ public class CaptainMograController : MonoBehaviour, ICaptain
         int reward = BannerDifficultyHelper.GetRewardMultiplier(difficultyTier);
         RunSession.AddInRunGold(data.bonusGold * reward);
         RunSession.AddGoblinBlood(data.bonusGoblinBlood * reward);
+        CaptainRewards.GrantArcaneCores(data.arcaneCores, difficultyTier, captainName);
 
         OnCaptainDied?.Invoke(this);
     }

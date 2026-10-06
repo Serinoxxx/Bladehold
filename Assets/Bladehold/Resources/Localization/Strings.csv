@@ -687,6 +687,8 @@ world_event.caravan.outcome.escaped,Timer chip line when the gold wagon escaped,
 intro.eyebrow_special,Boss intro banner line above a special enemy's name,A mighty foe approaches,Un puissant ennemi approche,Un nemico potente si avvicina,Ein mächtiger Feind naht,Se acerca un enemigo poderoso,Приближается могучий враг,强敌来袭,強敵が迫る,강력한 적이 다가옵니다
 intro.captain_eyebrow,Boss intro banner line above a clan captain's name,A clan captain has arrived,Un capitaine de clan est arrivé,È arrivato un capitano del clan,Ein Clan-Hauptmann ist eingetroffen,Ha llegado un capitán del clan,Прибыл капитан клана,氏族队长已到来,氏族の隊長が現れた,씨족 대장이 도착했습니다
 intro.captain_subtitle,Captain intro line under the name; {0}=difficulty tier {1}=reward multiplier,{0}  ·  {1}x rewards,{0}  ·  récompenses x{1},{0}  ·  ricompense x{1},{0}  ·  Belohnung x{1},{0}  ·  recompensas x{1},{0}  ·  награда x{1},{0}  ·  {1}倍奖励,{0}  ·  報酬{1}倍,{0}  ·  보상 {1}배
+captain.arcane_core_one,Captain reward: one Arcane Core (intro banner and end-screen captain list),+1 Arcane Core,,,,,,,,
+captain.arcane_core_many,Captain reward: several Arcane Cores; {0}=count,+{0} Arcane Cores,,,,,,,,
 loading.entering,Loading screen eyebrow above the destination name,Entering,En route vers,Verso,Auf dem Weg nach,Rumbo a,Путь в,正在进入,進入中,진입 중
 loading.loading,Loading screen status under the progress bar,Loading,Chargement,Caricamento,Lädt,Cargando,Загрузка,加载中,読み込み中,로딩 중
 loading.preparing,Loading screen status before the scene load starts,Preparing the realm,Préparation du royaume,Preparazione del regno,Das Reich wird vorbereitet,Preparando el reino,Подготовка королевства,正在准备领域,領域を準備中,왕국 준비 중
@@ -695,3 +697,16 @@ loading.ready,Loading screen status once the scene is loaded,Ready,Prêt,Pronto,
 loading.unknown_area,Loading screen title when the destination has no name,Unknown Realm,Royaume inconnu,Regno sconosciuto,Unbekanntes Reich,Reino desconocido,Неизведанный край,未知之地,未知の地,미지의 땅
 weapon_unlock.eyebrow,Banner eyebrow when a weapon is unlocked at a Meta Area pedestal,New weapon unlocked,Nouvelle arme débloquée,Nuova arma sbloccata,Neue Waffe freigeschaltet,Nueva arma desbloqueada,Открыто новое оружие,新武器已解锁,新しい武器を解放,새 무기 잠금 해제
 weapon_unlock.ultimate,Weapon unlock banner subtitle; {0}=ultimate name,Ultimate: {0},Ultime : {0},Suprema: {0},Ultimative: {0},Definitiva: {0},Ультимативная способность: {0},终极技能：{0},アルティメット：{0},궁극기: {0}
+ultwheel.header,Ultimate Wheel title,UNLEASH AN ULTIMATE,,,,,,,,
+ultwheel.cores,Ultimate Wheel core count ({0} = cores held),Arcane Cores: {0},,,,,,,,
+ultwheel.cost,Ultimate Wheel slice price,1 Arcane Core,,,,,,,,
+ultwheel.none,Ultimate Wheel slice when the held weapon has no ultimate,No ultimate,,,,,,,,
+ultwheel.idle_title,Ultimate Wheel details box title with nothing hovered,Ultimates,,,,,,,,
+ultwheel.idle_body,Ultimate Wheel details box prompt with nothing hovered,Pick an ultimate. Each one costs an Arcane Core.,,,,,,,,
+ultwheel.blocked_scene,Ultimate Wheel: ultimates are off in this scene,Ultimates can't be used here.,,,,,,,,
+ultwheel.blocked_weapon,Ultimate Wheel: the held weapon has no ultimate,This weapon has no ultimate.,,,,,,,,
+ultwheel.blocked_core,Ultimate Wheel: no Arcane Core to spend,"No Arcane Core. Captains and Arcane Fish drop them, and the shop sells them.",,,,,,,,
+ultwheel.blocked_active,Ultimate Wheel: an ultimate is already running,An ultimate is already running.,,,,,,,,
+hud.ultimate.ready,HUD ultimate indicator when an Arcane Core is banked,Ready,,,,,,,,
+hud.ultimate.no_core,HUD ultimate indicator with no Arcane Core,No core,,,,,,,,
+hud.ultimate.hold_key,HUD ultimate indicator key hint ({0} = key),Hold {0},,,,,,,,

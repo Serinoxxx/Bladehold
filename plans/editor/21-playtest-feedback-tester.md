@@ -101,3 +101,41 @@ Unity MCP was down for this phase. `dotnet build` is clean for runtime and Edito
 - [ ] New save → full tutorial → victory → "Proceed to Campaign Map": the map shows Valley Stronghold completed with the you-are-here flag, Alpine Keep available, and gold and drafts kept.
 - [ ] Die in the Alpine Keep → Meta → portal → map: Valley Stronghold is the only available node. Deploying plays it with no tutorial hints, Ready works straight away, wave drafts open between waves and the ultimate works.
 - [ ] Pause → Replay Tutorial from a campaign run still runs T1 → T2 → the Valley Stronghold in tutorial mode.
+
+## Phase 5: Arcane Cores and the Ultimate Wheel
+
+**Done in code and assets** (checked in Play mode via MCP with simulated Q and gamepad input):
+- Ultimates are always unlocked for both held weapons, and each use costs one Arcane Core (`RunSession.ArcaneCores`). The charge bars, shop ultimates and `UltimateShopConfig` are gone.
+- `Bladehold HUD.prefab`:
+  - new `UltimateWheel` (`UltimateWheelUI`), which clones the build wheel's look with 2 slices, the details panel, `UltimateDeniedMMF` and `UltimateOpenMMF`;
+  - a new `ArcaneCoreUI` row after Supply in the currency panel;
+  - the two `UltimateBarUI`s now show Ready / No core / the running timer.
+- `Bladehold Config/UltimateWheelConfig.asset`: time scale 0.1, stick dead zone 0.5.
+- `ShopUI.prefab` pins `ShopItems/arcane_core.asset` (250 gold) in the featured row.
+- Twin Fury (`second_ultimate`) is now Arcane Reserve: start every run with 1 core.
+- Captains drop cores (1, or 2 from Nightmare). The pond spawns one Arcane Fish per visit (1 core).
+- Gamepad: Ultimate is on Left Bumper. LB no longer dashes.
+
+**Wiring checklist:**
+- [ ] Arcane Core icon: make the real one with `/generate-sprite-variants`, then swap it in for the placeholder (Synty `ICON_SM_Item_Crystal_05`) on the HUD `ArcaneCoreUI/ICON`, `arcane_core.asset` and `FishingTallyUI.arcaneCoreIcon`.
+- [ ] **UI review (Lance sign-off):**
+  - the Ultimate Wheel layout: slices at ±380 px, the header, the "Arcane Cores: N" line and the details box;
+  - the greyed slices;
+  - the HUD core row;
+  - the reworked ult meters ("Ready" / "No core" / "Hold Q"). Decide whether two meters are still wanted or one compact indicator.
+
+  The MCP screenshot couldn't capture the overlay HUD, so it hasn't been seen yet.
+- [ ] Feedback: `UltimateDeniedMMF` reuses the prep prompt's denied sound, and `UltimateOpenMMF` is just a scale pop. Pick an open/whoosh sound, and maybe a select sound.
+- [ ] Arcane Fish look: approve it, or set `FishingManager.arcaneFishMat` in the Fishing Pond scene. It currently falls back to the Spark material, with a violet glow at 2× size. Optionally wire `FishingTallyUI.arcaneCoresRewardText` by copying the Diamond Fish Bones row.
+- [ ] Captain core drop popup: there's no captain-death reward popup. The count shows only in the intro subtitle and the end-screen list. Add a DamageNumbersPro "+1 Arcane Core" popup at the corpse if wanted.
+- [ ] Prices and balance: the core costs 250 gold, captains drop 1/2 cores, and the fish spawns at 15 s and takes 40 hits.
+- [ ] Run the benchmark (sections 11F/11G are new).
+
+**Manual verification:**
+- [ ] Keyboard: hold Q and time slows to 10%. The wheel shows your melee and ranged weapon's ultimates. Click one: a core is spent, the wheel closes and the ultimate fires. Releasing Q without clicking closes it.
+- [ ] With 0 cores the slices are greyed with a red cost, the details box says why, and clicking plays the denied shake and sound.
+- [ ] Gamepad: hold LB, push the left stick toward a slice and release: it fires. Release with the stick centred: it cancels. The hero doesn't walk or swing while the wheel is open, and B closes it.
+- [ ] Pause with Esc while holding Q (the toggle is suppressed, so open the pause menu another way, e.g. alt-tab or the map's settings), then unpause: the game runs at normal speed.
+- [ ] Kill a captain: the core count goes up (1 at Standard/Enraged). Buy a core in the Rest Area shop: it stays on sale. Catch the Arcane Fish at the pond: +1 after Continue.
+- [ ] Swap weapons in the Meta Area, then deploy: the wheel offers the new weapons' ultimates.
+- [ ] The owner of the old Twin Fury perk sees Arcane Reserve as owned and starts runs with 1 core.

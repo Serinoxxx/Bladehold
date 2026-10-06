@@ -230,8 +230,8 @@ public enum StatType
     UltimateUnlocked,
     /// <summary>Base duration of the ultimate in seconds.</summary>
     UltimateDurationSeconds,
-    /// <summary>Multiplier on how fast ultimate charges from damage (base 1.0).</summary>
-    UltimateChargeMultiplier,
+    /// <summary>Unused since plan 21 phase 5 (ultimates cost Arcane Cores, no charge). Kept so later stats keep their serialized ints.</summary>
+    RetiredUltimateChargeMultiplier,
     /// <summary>Ranger Ultimate arrow cooldown in seconds.</summary>
     UltimateRangerFireRate,
     /// <summary>Mage Ultimate meteor damage multiplier relative to base wand damage.</summary>
@@ -242,8 +242,8 @@ public enum StatType
     UltimateBerserkerSizeMultiplier,
     /// <summary>Whirlwind ultimate (BerserkerUltimate) damage reduction fraction (0-1).</summary>
     UltimateBerserkerDamageReduction,
-    /// <summary>Amount of ultimate charge gained passively per second.</summary>
-    UltimatePassiveChargeRate,
+    /// <summary>Unused since plan 21 phase 5 (ultimates cost Arcane Cores, no charge). Kept so later stats keep their serialized ints.</summary>
+    RetiredUltimatePassiveChargeRate,
 
     /// <summary>1 = Fort Arrow Slits unlocked, 0 = locked.</summary>
     FortArrowSlitsUnlocked,

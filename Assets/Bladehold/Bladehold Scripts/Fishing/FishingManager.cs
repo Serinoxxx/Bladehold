@@ -61,6 +61,10 @@ public class FishingManager : MonoBehaviour
     [SerializeField] private float armoredFishHits = 12f;
     [Tooltip("Hits to kill the Diamond fish.")]
     [SerializeField] private float diamondFishHits = 50f;
+    [Tooltip("Hits to kill the Arcane Fish (one per visit, pays an Arcane Core).")]
+    [SerializeField] private float arcaneFishHits = 40f;
+    [Tooltip("Seconds into the frenzy before the visit's one Arcane Fish surfaces.")]
+    [SerializeField] private float arcaneFishSpawnAfterSeconds = 15f;
 
     [Header("Fishing Leveling")]
     [Tooltip("XP needed to go from fishing level 1 to 2. A Gold fish gives 10 XP, Metal/Blood 15, buff fish 25, Diamond 100.")]
@@ -78,6 +82,7 @@ public class FishingManager : MonoBehaviour
     [SerializeField] private Color orcMetalFishColor = new Color(0.55f, 0.75f, 1f);
     [SerializeField] private Color goblinBloodFishColor = new Color(0.95f, 0.2f, 0.2f);
     [SerializeField] private Color diamondFishColor = new Color(0.8f, 1f, 1f);
+    [SerializeField] private Color arcaneFishColor = new Color(0.55f, 0.35f, 1f);
     [SerializeField] private Color speedyFishColor = new Color(0.4f, 1f, 0.45f);
     [SerializeField] private Color armoredFishColor = new Color(0.75f, 0.75f, 0.8f);
     [SerializeField] private Color fireFishColor = new Color(1f, 0.5f, 0.1f);
@@ -91,6 +96,8 @@ public class FishingManager : MonoBehaviour
     [SerializeField] private Material orcMetalFishMat;
     [SerializeField] private Material goblinBloodFishMat;
     [SerializeField] private Material diamondFishMat;
+    [Tooltip("Arcane Fish look (placeholder until Lance approves one). Empty = the Spark fish material, with the arcane highlight colour.")]
+    [SerializeField] private Material arcaneFishMat;
     [SerializeField] private Material speedyFishMat;
     [SerializeField] private Material armoredFishMat;
     [SerializeField] private Material fireFishMat;
@@ -127,6 +134,7 @@ public class FishingManager : MonoBehaviour
     private readonly List<FishController> activeFish = new List<FishController>();
     private readonly HashSet<BuffFishType> killedBuffFishThisSession = new HashSet<BuffFishType>();
     private bool diamondFishSpawned = false;
+    private bool arcaneFishSpawned = false;
     private bool rewardsCommitted = false;
     private bool anyError = false;
     private PlayerBow playerBow;
@@ -141,6 +149,7 @@ public class FishingManager : MonoBehaviour
     private int sessionBlood = 0;
     private int sessionMetal = 0;
     private int sessionDiamondBones = 0;
+    private int sessionArcaneCores = 0;
 
     // Fishing Leveling
     private int currentFishingXp = 0;
@@ -161,6 +170,7 @@ public class FishingManager : MonoBehaviour
     public int SessionBlood => sessionBlood;
     public int SessionMetal => sessionMetal;
     public int SessionDiamondBones => sessionDiamondBones;
+    public int SessionArcaneCores => sessionArcaneCores;
     public IReadOnlyCollection<BuffFishType> KilledBuffFish => killedBuffFishThisSession;
 
     public event Action OnStateChanged;
@@ -295,6 +305,13 @@ public class FishingManager : MonoBehaviour
                 SpawnDiamondFish();
             }
 
+            // One Arcane Fish per visit (plan 21 phase 5).
+            if (!arcaneFishSpawned && (totalFrenzyDuration - frenzyTimeRemaining >= arcaneFishSpawnAfterSeconds))
+            {
+                arcaneFishSpawned = true;
+                SpawnArcaneFish();
+            }
+
             if (frenzyTimeRemaining <= 0f)
             {
                 frenzyTimeRemaining = 0f;
@@ -348,7 +365,7 @@ public class FishingManager : MonoBehaviour
 
         if (tallyUI != null)
         {
-            tallyUI.OpenTally(sessionGold, sessionBlood, sessionMetal, sessionDiamondBones, totalFishCaught, killedBuffFishThisSession);
+            tallyUI.OpenTally(sessionGold, sessionBlood, sessionMetal, sessionDiamondBones, sessionArcaneCores, totalFishCaught, killedBuffFishThisSession);
         }
     }
 
@@ -405,6 +422,12 @@ public class FishingManager : MonoBehaviour
                     sessionGold += diamondGold;
                     AddXp(100);
                     popupText = $"DIAMOND FISH! +1 Bone, +{diamondGold} Gold";
+                    break;
+                case ResourceFishType.ArcaneFish:
+                    // Banked with the other rewards on Continue; the pond blocks ultimates, so it's spent later.
+                    sessionArcaneCores += 1;
+                    AddXp(100);
+                    popupText = "ARCANE FISH! +1 Arcane Core";
                     break;
                 default:
                     popupText = null;
@@ -475,6 +498,7 @@ public class FishingManager : MonoBehaviour
             ResourceFishType.OrcMetal => orcMetalFishColor,
             ResourceFishType.GoblinBlood => goblinBloodFishColor,
             ResourceFishType.Diamond => diamondFishColor,
+            ResourceFishType.ArcaneFish => arcaneFishColor,
             _ => goldFishColor
         };
     }
@@ -535,6 +559,12 @@ public class FishingManager : MonoBehaviour
         Debug.Log("[FishingManager] The legendary Diamond Fish has emerged!");
     }
 
+    private void SpawnArcaneFish()
+    {
+        SpawnFish(false, ResourceFishType.ArcaneFish, BuffFishType.Speedy, arcaneFishMat != null ? arcaneFishMat : sparkFishMat, arcaneFishHits);
+        Debug.Log("[FishingManager] An Arcane Fish has surfaced!");
+    }
+
     private void SpawnFish(bool isBuff, ResourceFishType resType, BuffFishType bType, Material mat, float hits)
     {
         if (fishBasePrefab == null)
@@ -571,7 +601,7 @@ public class FishingManager : MonoBehaviour
             : pondCenter;
         controller.Setup(center, radius, speed, angle, depth, cw, isBuff, resType, bType, hits, arrowDamagePerHit,
             fishEntryRadius, fishEntryDepth, fishEntrySpeed);
-        bool special = isBuff || resType == ResourceFishType.Diamond;
+        bool special = isBuff || resType == ResourceFishType.Diamond || resType == ResourceFishType.ArcaneFish;
         controller.ApplyTypeHighlight(fishHighlightProfile, GetFishTypeColor(isBuff, resType, bType), special);
         activeFish.Add(controller);
     }
@@ -592,6 +622,8 @@ public class FishingManager : MonoBehaviour
         if (sessionBlood > 0) RunSession.AddGoblinBlood(sessionBlood);
         if (sessionMetal > 0) RunSession.AddOrcishMetal(sessionMetal);
         if (sessionDiamondBones > 0) RunSession.AddDiamondFishBones(sessionDiamondBones);
+        // In-run currency: RunSession statics outlive the pond scene, so the cores carry to the next sector.
+        if (sessionArcaneCores > 0) RunSession.AddArcaneCores(sessionArcaneCores);
 
         // 3. Complete the campaign node and head back to the map (through the loading screen)
         if (CampaignManager.Instance.IsCampaignActive)

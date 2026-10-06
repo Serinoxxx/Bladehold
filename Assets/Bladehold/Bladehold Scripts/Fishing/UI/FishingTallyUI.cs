@@ -21,6 +21,10 @@ public class FishingTallyUI : MonoBehaviour
     [SerializeField] private TMP_Text bloodRewardText;
     [SerializeField] private TMP_Text metalRewardText;
     [SerializeField] private TMP_Text diamondBonesRewardText;
+    [Tooltip("Arcane Core row (plan 21 phase 5). Unset = the cores line is appended under the Diamond Fish Bones label.")]
+    [SerializeField] private TMP_Text arcaneCoresRewardText;
+    [Tooltip("Optional icon beside the Arcane Core row; shown only when the visit caught the Arcane Fish.")]
+    [SerializeField] private Image arcaneCoreIcon;
 
     [Header("Buff Fish Feast")]
     [SerializeField] private TMP_Text buffFishStatusText;
@@ -61,6 +65,7 @@ public class FishingTallyUI : MonoBehaviour
         int blood,
         int metal,
         int diamondBones,
+        int arcaneCores,
         int totalFish,
         IReadOnlyCollection<BuffFishType> killedBuffs)
     {
@@ -72,6 +77,10 @@ public class FishingTallyUI : MonoBehaviour
         if (bloodRewardText != null) bloodRewardText.text = $"+{blood} Goblin Blood";
         if (metalRewardText != null) metalRewardText.text = $"+{metal} Orcish Metal";
         if (diamondBonesRewardText != null) diamondBonesRewardText.text = $"+{diamondBones} Diamond Fish Bones";
+        string coresLine = $"+{arcaneCores} Arcane Core{(arcaneCores == 1 ? "" : "s")}";
+        if (arcaneCoresRewardText != null) arcaneCoresRewardText.text = coresLine;
+        else if (arcaneCores > 0 && diamondBonesRewardText != null) diamondBonesRewardText.text += "<br>" + coresLine;
+        if (arcaneCoreIcon != null) arcaneCoreIcon.gameObject.SetActive(arcaneCores > 0);
 
         SetupBuffFishFeast(killedBuffs);
 

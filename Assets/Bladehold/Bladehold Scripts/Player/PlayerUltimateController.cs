@@ -1,31 +1,32 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
-/// <summary>Which weapon an ultimate belongs to. Each slot has its own charge bar.</summary>
+/// <summary>Which weapon an ultimate belongs to: the held melee weapon's or the held ranged weapon's.</summary>
 public enum UltimateSlot
 {
     Melee,
     Ranged
 }
 
+/// <summary>Why an ultimate can't be fired right now (<see cref="None" /> when it can).</summary>
+public enum UltimateBlockReason
+{
+    None,
+    NotAllowedHere,
+    NoUltimate,
+    NoArcaneCore,
+    AlreadyActive
+}
+
 /// <summary>
-///     Runs the player's ultimates: one per weapon slot (bought at the Rest Area shop), each with its own
-///     charge bar. Melee hits fill the melee bar and ranged hits the ranged bar; any other damage enemies take
-///     (towers, burns, duo explosions) fills both at <see cref="SharedChargeRate" />. The Ultimate input fires
-///     the ranged ultimate while aiming the ranged weapon and the melee one otherwise (or whichever one you own).
-///     Only one ultimate runs at a time, and no bar charges while one is running.
+///     Runs the player's ultimates. Every held weapon's ultimate is always unlocked (the melee weapon's and the
+///     ranged weapon's, see <see cref="DraftUpgradeService.GetUltimate" />), and each activation spends one
+///     Arcane Core (<see cref="RunSession.ArcaneCores" />). The Ultimate Wheel (<see cref="UltimateWheelUI" />)
+///     picks which one to fire through <see cref="TryActivate" />. Only one ultimate runs at a time.
 /// </summary>
 public class PlayerUltimateController : MonoBehaviour
 {
-    public const float MaxCharge = 100f;
-
-    // Charge per point of damage dealt, and the share of that which non-weapon damage gives each bar.
-    private const float ChargePerDamage = 0.1f;
-    private const float SharedChargeRate = 0.5f;
-
-    public event Action<UltimateSlot, float> OnChargeChanged;
     public event Action OnUltimateActivated;
     public event Action OnUltimateDeactivated;
 
@@ -34,32 +35,9 @@ public class PlayerUltimateController : MonoBehaviour
     public float ActiveUltimateDuration { get; private set; }
     public float ActiveUltimateRemainingTime { get; private set; }
 
-    private readonly float[] charges = new float[2];
-
     private Player player;
-    private InputAction ultimateAction;
 
-    // Weapon hits and raw damage events are collected during the frame and settled in LateUpdate, so a
-    // weapon hit claims the damage event it caused regardless of which callback fires first.
-    private struct PendingHit
-    {
-        public IDamageable target;
-        public UltimateSlot slot;
-        public float amount;
-    }
-
-    private struct PendingDamage
-    {
-        public Health target;
-        public float amount;
-    }
-
-    private readonly List<PendingHit> pendingHits = new List<PendingHit>();
-    private readonly List<PendingDamage> pendingDamage = new List<PendingDamage>();
-
-    public float GetCharge(UltimateSlot slot) => charges[(int)slot];
-
-    public bool HasUltimate(UltimateSlot slot) => !string.IsNullOrEmpty(RunSession.GetUltimateId(slot));
+    public bool HasUltimate(UltimateSlot slot) => DraftUpgradeService.GetUltimateId(slot) != null;
 
     private void Awake()
     {
@@ -67,310 +45,72 @@ public class PlayerUltimateController : MonoBehaviour
         RegisterDefaultStats();
     }
 
-    private void OnEnable()
-    {
-        Health.OnAnyHealthDamaged += HandleAnyHealthDamaged;
-        BindHitTriggers();
-        BindInput();
-    }
-
-    private void OnDisable()
-    {
-        Health.OnAnyHealthDamaged -= HandleAnyHealthDamaged;
-        UnbindHitTriggers();
-        if (ultimateAction != null)
-        {
-            ultimateAction.performed -= HandleUltimateInput;
-            ultimateAction = null;
-        }
-    }
-
     private void Start()
     {
         RegisterDefaultStats();
-        BindHitTriggers();
-        if (ultimateAction == null)
-        {
-            BindInput();
-        }
-
-        if (RunSession.MeleeUltimateCharge > 0f) SetCharge(UltimateSlot.Melee, RunSession.MeleeUltimateCharge);
-        if (RunSession.RangedUltimateCharge > 0f) SetCharge(UltimateSlot.Ranged, RunSession.RangedUltimateCharge);
-
         SyncUltimateHandlers();
     }
 
-    private float nextTrickleTime;
     private float nextEyeOfStormStrikeTime = 0f;
 
     private void Update()
     {
-        if (player == null || player.Stats == null) return;
+        if (player == null || player.Stats == null || !IsUltimateActive) return;
 
-        if (IsUltimateActive)
+        ActiveUltimateRemainingTime = Mathf.Max(0f, ActiveUltimateRemainingTime - Time.deltaTime);
+
+        float eyeDmg = player.Stats.GetValue(StatType.LightningEyeOfTheStormDamage);
+        if (eyeDmg > 0f && Time.time >= nextEyeOfStormStrikeTime)
         {
-            ActiveUltimateRemainingTime = Mathf.Max(0f, ActiveUltimateRemainingTime - Time.deltaTime);
-
-            float eyeDmg = player.Stats.GetValue(StatType.LightningEyeOfTheStormDamage);
-            if (eyeDmg > 0f && Time.time >= nextEyeOfStormStrikeTime)
-            {
-                nextEyeOfStormStrikeTime = Time.time + 1.0f;
-                TriggerEyeOfTheStorm(eyeDmg);
-            }
-            return;
+            nextEyeOfStormStrikeTime = Time.time + 1.0f;
+            TriggerEyeOfTheStorm(eyeDmg);
         }
-
-        if (!RunSession.HasAnyUltimate) return;
-
-        if (Time.time >= nextTrickleTime)
-        {
-            nextTrickleTime = Time.time + 1f;
-            float trickleRate = player.Stats.GetValue(StatType.UltimatePassiveChargeRate);
-            if (trickleRate > 0f)
-            {
-                AddCharge(UltimateSlot.Melee, trickleRate);
-                AddCharge(UltimateSlot.Ranged, trickleRate);
-            }
-        }
-    }
-
-    private void LateUpdate()
-    {
-        if (pendingHits.Count == 0 && pendingDamage.Count == 0) return;
-
-        float melee = 0f;
-        float ranged = 0f;
-
-        foreach (PendingHit hit in pendingHits)
-        {
-            float amount = hit.amount;
-            for (int i = 0; i < pendingDamage.Count; i++)
-            {
-                if (pendingDamage[i].target != null && ReferenceEquals(pendingDamage[i].target, hit.target))
-                {
-                    amount += pendingDamage[i].amount;
-                    pendingDamage[i] = default;
-                }
-            }
-
-            if (hit.slot == UltimateSlot.Melee) melee += amount;
-            else ranged += amount;
-        }
-
-        float shared = 0f;
-        foreach (PendingDamage d in pendingDamage)
-        {
-            if (d.target != null) shared += d.amount;
-        }
-
-        pendingHits.Clear();
-        pendingDamage.Clear();
-
-        melee += shared * SharedChargeRate;
-        ranged += shared * SharedChargeRate;
-        if (melee > 0f) AddCharge(UltimateSlot.Melee, melee);
-        if (ranged > 0f) AddCharge(UltimateSlot.Ranged, ranged);
     }
 
     private void RegisterDefaultStats()
     {
         if (player != null && player.Stats != null)
         {
-            player.Stats.SetBase(StatType.UltimateChargeMultiplier, 1f);
             player.Stats.SetBase(StatType.UltimateDurationSeconds, 6f);
-            player.Stats.SetBase(StatType.UltimateUnlocked, RunSession.HasAnyUltimate ? 1f : 0f);
-            player.Stats.SetBase(StatType.UltimatePassiveChargeRate, 0.5f); // 0.5 charge per second = 200s to full without damage
             player.Stats.SetBase(StatType.FireInfernoBurstUnlocked, 0f);
             player.Stats.SetBase(StatType.LightningEyeOfTheStormDamage, 0f);
         }
     }
 
-    private void BindInput()
+    /// <summary>Why <paramref name="slot" />'s ultimate can't fire now, or <see cref="UltimateBlockReason.None" />.</summary>
+    public UltimateBlockReason GetBlockReason(UltimateSlot slot)
     {
-        if (player != null && player.InputSettings != null)
-        {
-            var map = player.InputSettings.GetRebindableActionMap();
-            if (map != null)
-            {
-                ultimateAction = map.FindAction("Ultimate");
-                if (ultimateAction != null)
-                {
-                    ultimateAction.performed -= HandleUltimateInput;
-                    ultimateAction.performed += HandleUltimateInput;
-                    if (!ultimateAction.enabled) ultimateAction.Enable();
-                }
-            }
-        }
-    }
-
-    private void BindHitTriggers()
-    {
-        if (player == null) return;
-
-        foreach (var trigger in player.GetComponentsInChildren<DamageTrigger>(true))
-        {
-            trigger.OnHit -= HandleMeleeHit;
-            trigger.OnHit += HandleMeleeHit;
-        }
-
-        var bow = player.GetComponentInChildren<PlayerBow>(true);
-        if (bow != null)
-        {
-            bow.OnHit -= HandleRangedHit;
-            bow.OnHit += HandleRangedHit;
-        }
-
-        var wand = player.GetComponentInChildren<PlayerWand>(true);
-        if (wand != null)
-        {
-            wand.OnHit -= HandleRangedHit;
-            wand.OnHit += HandleRangedHit;
-        }
-
-        var thrownAxe = player.GetComponentInChildren<PlayerThrownAxe>(true);
-        if (thrownAxe != null)
-        {
-            thrownAxe.OnHit -= HandleRangedHit;
-            thrownAxe.OnHit += HandleRangedHit;
-        }
-    }
-
-    private void UnbindHitTriggers()
-    {
-        if (player == null) return;
-
-        foreach (var trigger in player.GetComponentsInChildren<DamageTrigger>(true))
-        {
-            trigger.OnHit -= HandleMeleeHit;
-        }
-
-        var bow = player.GetComponentInChildren<PlayerBow>(true);
-        if (bow != null) bow.OnHit -= HandleRangedHit;
-
-        var wand = player.GetComponentInChildren<PlayerWand>(true);
-        if (wand != null) wand.OnHit -= HandleRangedHit;
-
-        var thrownAxe = player.GetComponentInChildren<PlayerThrownAxe>(true);
-        if (thrownAxe != null) thrownAxe.OnHit -= HandleRangedHit;
-    }
-
-    private void HandleMeleeHit(IDamageable target, Damage damage, Vector3 hitPoint) => QueueWeaponHit(UltimateSlot.Melee, target, damage);
-
-    private void HandleRangedHit(IDamageable target, Damage damage, Vector3 hitPoint) => QueueWeaponHit(UltimateSlot.Ranged, target, damage);
-
-    private void QueueWeaponHit(UltimateSlot slot, IDamageable target, Damage damage)
-    {
-        if (IsUltimateActive || target == null || damage == null) return;
-
-        // A Health target already raised OnAnyHealthDamaged for this hit; LateUpdate moves that amount onto
-        // this weapon's bar. Anything else (banners, barrels) only reports through the hit, so charge it here.
-        float amount = target is Health ? 0f : ChargeFor(target, damage);
-        pendingHits.Add(new PendingHit { target = target, slot = slot, amount = amount });
-    }
-
-    private void HandleAnyHealthDamaged(Health target, Damage damage)
-    {
-        if (IsUltimateActive || target == null || damage == null) return;
-        // The loading-screen rehearsal kills (EnemyPrewarmer) aren't the player's work.
-        if (EnemyPrewarmer.IsRehearsing) return;
-
-        float amount = ChargeFor(target, damage);
-        if (amount > 0f) pendingDamage.Add(new PendingDamage { target = target, amount = amount });
-    }
-
-    /// <summary>Charge earned by one damage event before it is assigned to a bar (0 for the player's own health).</summary>
-    private float ChargeFor(IDamageable target, Damage damage)
-    {
-        if (player == null || player.Stats == null) return 0f;
-        if (player.Health != null && target == (IDamageable)player.Health) return 0f;
-        if (player.Damageable != null && target == player.Damageable) return 0f;
-
-        float actualDamage = damage.value;
-        if (target is Health h)
-        {
-            if (h.IsDead) return 0f; // Corpse hit
-
-            if (h.CurrentHealth > 0)
-            {
-                actualDamage = Mathf.Min(damage.value, h.CurrentHealth);
-            }
-            else
-            {
-                actualDamage = damage.value + h.CurrentHealth; // subtract overkill
-            }
-        }
-
-        actualDamage = Mathf.Max(0f, actualDamage);
-        if (actualDamage <= 0f) return 0f;
-
-        float mult = player.Stats.GetValue(StatType.UltimateChargeMultiplier);
-        if (mult <= 0f) mult = 1f;
-
-        return actualDamage * ChargePerDamage * mult;
-    }
-
-    public void SetCharge(UltimateSlot slot, float amount)
-    {
-        float oldCharge = charges[(int)slot];
-        charges[(int)slot] = Mathf.Clamp(amount, 0f, MaxCharge);
-        RunSession.SetUltimateCharge(slot, charges[(int)slot]);
-
-        Debug.Log($"[PlayerUltimateController] {slot} charge set: {oldCharge:F1} -> {charges[(int)slot]:F1} / {MaxCharge}");
-        OnChargeChanged?.Invoke(slot, charges[(int)slot]);
-    }
-
-    public void AddCharge(UltimateSlot slot, float amount)
-    {
-        if (IsUltimateActive || !HasUltimate(slot)) return;
-
-        float oldCharge = charges[(int)slot];
-        charges[(int)slot] = Mathf.Clamp(oldCharge + amount, 0f, MaxCharge);
-
-        if (!Mathf.Approximately(oldCharge, charges[(int)slot]))
-        {
-            RunSession.SetUltimateCharge(slot, charges[(int)slot]);
-            OnChargeChanged?.Invoke(slot, charges[(int)slot]);
-        }
+        if (!SceneAbilityRules.UltimateAllowed) return UltimateBlockReason.NotAllowedHere;
+        if (!HasUltimate(slot)) return UltimateBlockReason.NoUltimate;
+        if (IsUltimateActive) return UltimateBlockReason.AlreadyActive;
+        if (RunSession.ArcaneCores <= 0) return UltimateBlockReason.NoArcaneCore;
+        return UltimateBlockReason.None;
     }
 
     /// <summary>
-    ///     The ultimate the Ultimate input fires now: ranged while aiming the ranged weapon, melee otherwise,
-    ///     and whichever one you own if you only have one. Null when no ultimate is owned.
+    ///     Spends one Arcane Core and fires <paramref name="slot" />'s ultimate. Returns false (and spends
+    ///     nothing) when <see cref="GetBlockReason" /> says it can't fire; the caller plays the denied feedback.
     /// </summary>
-    public UltimateSlot? SlotForInput()
+    public bool TryActivate(UltimateSlot slot)
     {
-        bool hasMelee = HasUltimate(UltimateSlot.Melee);
-        bool hasRanged = HasUltimate(UltimateSlot.Ranged);
-        if (!hasMelee && !hasRanged) return null;
-        if (!hasMelee) return UltimateSlot.Ranged;
-        if (!hasRanged) return UltimateSlot.Melee;
+        if (player == null || player.Stats == null) return false;
+        if (GetBlockReason(slot) != UltimateBlockReason.None) return false;
 
-        IChargedAimWeapon aimWeapon = PlayerWeaponManager.Instance != null ? PlayerWeaponManager.Instance.ActiveAimWeapon : null;
-        return aimWeapon != null && aimWeapon.IsAiming ? UltimateSlot.Ranged : UltimateSlot.Melee;
-    }
-
-    private void HandleUltimateInput(InputAction.CallbackContext context)
-    {
-        if (IsUltimateActive || player == null || player.Stats == null) return;
-        if (!SceneAbilityRules.UltimateAllowed) return;
-
-        UltimateSlot? slot = SlotForInput();
-        if (slot == null || charges[(int)slot.Value] < MaxCharge) return;
-
-        ActivateUltimate(slot.Value);
-    }
-
-    private void ActivateUltimate(UltimateSlot slot)
-    {
         SyncUltimateHandlers();
-
-        IUltimateHandler activeHandler = DraftUpgradeService.GetUltimateHandler(player, RunSession.GetUltimateId(slot));
-        if (activeHandler == null)
+        IUltimateHandler handler = DraftUpgradeService.GetUltimateHandler(player, DraftUpgradeService.GetUltimateId(slot));
+        if (handler == null)
         {
-            Debug.LogError($"[PlayerUltimateController] No handler for {slot} ultimate '{RunSession.GetUltimateId(slot)}'.");
-            return;
+            Debug.LogError($"[PlayerUltimateController] No handler for {slot} ultimate '{DraftUpgradeService.GetUltimateId(slot)}'.");
+            return false;
         }
 
+        if (!RunSession.TrySpendArcaneCore()) return false;
+        ActivateUltimate(slot, handler);
+        return true;
+    }
+
+    private void ActivateUltimate(UltimateSlot slot, IUltimateHandler activeHandler)
+    {
         float baseDur = activeHandler.BaseDuration;
         if (baseDur > 0f)
         {
@@ -384,10 +124,6 @@ public class PlayerUltimateController : MonoBehaviour
 
         IsUltimateActive = true;
         ActiveSlot = slot;
-        pendingHits.Clear();
-        pendingDamage.Clear();
-        charges[(int)slot] = 0f;
-        RunSession.SetUltimateCharge(slot, 0f);
         nextEyeOfStormStrikeTime = 0f;
 
         OnUltimateActivated?.Invoke();
@@ -400,11 +136,11 @@ public class PlayerUltimateController : MonoBehaviour
         activeHandler.Activate(this);
     }
 
-    /// <summary>Enables the handlers for the owned melee and ranged ultimates (and disables the rest).</summary>
+    /// <summary>Enables the handlers for the held weapons' ultimates (and disables the rest).</summary>
     public void SyncUltimateHandlers()
     {
         if (player == null) player = GetComponentInChildren<Player>();
-        if (player == null || player.Stats == null || !RunSession.HasAnyUltimate) return;
+        if (player == null || player.Stats == null) return;
 
         DraftUpgradeService.ConfigureUltimateHandlers(player);
     }
@@ -511,8 +247,6 @@ public class PlayerUltimateController : MonoBehaviour
         IsUltimateActive = false;
         ActiveUltimateRemainingTime = 0f;
         OnUltimateDeactivated?.Invoke();
-        OnChargeChanged?.Invoke(UltimateSlot.Melee, charges[(int)UltimateSlot.Melee]);
-        OnChargeChanged?.Invoke(UltimateSlot.Ranged, charges[(int)UltimateSlot.Ranged]);
     }
 }
 

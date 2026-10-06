@@ -7,11 +7,10 @@ using UnityEngine.UI;
 /// <summary>
 ///     Controller for the Rest Area Shop UI modal.
 ///     Displays player's in-run gold, generates 3 (or 4 with Deep Pockets) items,
-///     and processes item purchases. On top of those it always offers the ultimates of the equipped
-///     weapons while the run has a free ultimate slot (<see cref="DraftUpgradeService.GetShopUltimates" />),
-///     priced by <see cref="UltimateShopConfigSO" />. Ultimate offers never take one of the item slots.
-///     The same featured row pins a Replacement Warhorse while the run's horse is dead
-///     (<see cref="RunSession.MountLost" />), so losing the mount is always fixable here, for a price.
+///     and processes item purchases. On top of those a featured row always offers an Arcane Core (the
+///     ultimate currency, plan 21 phase 5; it can be bought again and again) and pins a Replacement Warhorse
+///     while the run's horse is dead (<see cref="RunSession.MountLost" />), so losing the mount is always
+///     fixable here, for a price. Featured offers never take one of the item slots.
 /// </summary>
 public class ShopUI : MonoBehaviour
 {
@@ -19,7 +18,8 @@ public class ShopUI : MonoBehaviour
 
     [Header("Shop Stock Config")]
     [SerializeField] private List<ShopItemSO> itemPool = new List<ShopItemSO>();
-    [SerializeField] private UltimateShopConfigSO ultimateConfig;
+    [Tooltip("Always in the featured row and never sells out (effect type ArcaneCore).")]
+    [SerializeField] private ShopItemSO arcaneCoreItem;
     [Tooltip("Pinned in the featured row while the run's warhorse is dead (effect type ReplaceMount).")]
     [SerializeField] private ShopItemSO replacementMountItem;
 
@@ -29,17 +29,16 @@ public class ShopUI : MonoBehaviour
     [SerializeField] private Button closeButton;
     [SerializeField] private Transform slotsContainer;
     [SerializeField] private GameObject slotPrefab;
-    [Tooltip("Optional row for ultimate offers. Empty = they follow the item slots in Slots Container.")]
+    [Tooltip("Optional row for the featured offers (Arcane Core, replacement horse). Empty = they follow the item slots in Slots Container.")]
     [SerializeField] private Transform ultimateSlotsContainer;
     [Tooltip("Optional: the panel's focus controller; its default moves to the first offer's buy button on each refresh.")]
     [SerializeField] private MenuFocusController focusController;
 
-    // Ultimate offers use slot indices from here up, so HandleBuyAttempt can tell them from item slots.
-    private const int UltimateSlotIndexBase = 1000;
+    // Featured offers use slot indices from here up, so HandleBuyAttempt can tell them from item slots.
+    private const int FeaturedSlotIndexBase = 1000;
 
     private readonly List<ShopItemSO> currentStock = new List<ShopItemSO>();
-    private readonly List<ShopItemSO> ultimateStock = new List<ShopItemSO>();
-    private bool anyError;
+    private readonly List<ShopItemSO> featuredStock = new List<ShopItemSO>();
     private readonly HashSet<int> purchasedSlotIndices = new HashSet<int>();
     private bool isStockGenerated = false;
 
@@ -52,10 +51,9 @@ public class ShopUI : MonoBehaviour
 
     private void Start()
     {
-        if (ultimateConfig == null)
+        if (arcaneCoreItem == null)
         {
-            Debug.LogError("[ShopUI] No UltimateShopConfigSO assigned, so the shop can't sell ultimates.");
-            anyError = true;
+            Debug.LogError("[ShopUI] No Arcane Core item assigned, so the shop can't sell cores.");
         }
         if (replacementMountItem == null)
         {
@@ -67,17 +65,18 @@ public class ShopUI : MonoBehaviour
     {
         if (Instance == this) Instance = null;
         if (closeButton != null) closeButton.onClick.RemoveListener(CloseShop);
-        ClearUltimateStock();
+        ClearFeaturedStock();
     }
 
     public void OpenShop()
     {
+        UltimateWheelUI.CloseIfOpen();
         if (!isStockGenerated || currentStock == null || currentStock.Count == 0)
         {
             GenerateStock();
             isStockGenerated = true;
         }
-        GenerateUltimateStock();
+        GenerateFeaturedStock();
 
         if (shopPanel != null) shopPanel.SetActive(true);
         CursorLockManager.SetUnlock("RestShop", true);
@@ -113,30 +112,17 @@ public class ShopUI : MonoBehaviour
         }
     }
 
-    /// <summary>
-    ///     Rebuilds the ultimate offers from the current run state. They're runtime ShopItemSO instances built
-    ///     from the draft catalog's ultimate rows, so no per-ultimate asset exists.
-    /// </summary>
-    private void GenerateUltimateStock()
+    /// <summary>Rebuilds the featured offers from the current run state (runtime copies, never saved).</summary>
+    private void GenerateFeaturedStock()
     {
-        ClearUltimateStock();
-        if (anyError || ultimateConfig == null) return;
+        ClearFeaturedStock();
 
-        DraftUpgradeService drafts = DraftUpgradeService.GetOrCreateInstance();
-        int cost = ultimateConfig.CostForNextUltimate(RunSession.OwnedUltimateCount);
-        foreach (DraftUpgradeDefinition def in drafts.GetShopUltimates())
+        if (arcaneCoreItem != null)
         {
-            string slotLabel = DraftUpgradeService.SlotForUltimate(def) == UltimateSlot.Ranged ? "Ranged" : "Melee";
-            ShopItemSO offer = ScriptableObject.CreateInstance<ShopItemSO>();
+            ShopItemSO offer = Instantiate(arcaneCoreItem);
             offer.hideFlags = HideFlags.DontSave;
-            offer.name = def.id;
-            offer.itemId = def.id;
-            offer.displayName = def.displayName;
-            offer.description = $"{slotLabel} ultimate. {def.description}";
-            offer.icon = drafts.GetIcon(def.iconName);
-            offer.goldCost = cost;
-            offer.effectType = ShopItemEffectType.UnlockUltimate;
-            ultimateStock.Add(offer);
+            offer.name = arcaneCoreItem.name;
+            featuredStock.Add(offer);
         }
 
         if (RunSession.MountLost && replacementMountItem != null)
@@ -144,17 +130,17 @@ public class ShopUI : MonoBehaviour
             ShopItemSO offer = Instantiate(replacementMountItem);
             offer.hideFlags = HideFlags.DontSave;
             offer.name = replacementMountItem.name;
-            ultimateStock.Add(offer);
+            featuredStock.Add(offer);
         }
     }
 
-    private void ClearUltimateStock()
+    private void ClearFeaturedStock()
     {
-        foreach (ShopItemSO offer in ultimateStock)
+        foreach (ShopItemSO offer in featuredStock)
         {
             if (offer != null) Destroy(offer);
         }
-        ultimateStock.Clear();
+        featuredStock.Clear();
     }
 
     public void RefreshUI()
@@ -168,15 +154,15 @@ public class ShopUI : MonoBehaviour
 
         bool sharedRow = ultimateSlotsContainer == null || ultimateSlotsContainer == slotsContainer;
         int used = PopulateSlots(slotsContainer, 0, currentStock, 0);
-        if (sharedRow) used = PopulateSlots(slotsContainer, used, ultimateStock, UltimateSlotIndexBase);
+        if (sharedRow) used = PopulateSlots(slotsContainer, used, featuredStock, FeaturedSlotIndexBase);
         HideSlotsFrom(slotsContainer, used);
 
         FitRow(slotsContainer);
 
         if (!sharedRow)
         {
-            int usedUltimate = PopulateSlots(ultimateSlotsContainer, 0, ultimateStock, UltimateSlotIndexBase);
-            HideSlotsFrom(ultimateSlotsContainer, usedUltimate);
+            int usedFeatured = PopulateSlots(ultimateSlotsContainer, 0, featuredStock, FeaturedSlotIndexBase);
+            HideSlotsFrom(ultimateSlotsContainer, usedFeatured);
             FitRow(ultimateSlotsContainer);
         }
 
@@ -205,7 +191,7 @@ public class ShopUI : MonoBehaviour
 
     /// <summary>
     ///     Scales a slot row down uniformly when its active slots are wider than the row (Deep Pockets plus
-    ///     two ultimates plus a pinned replacement horse is seven cards), so no offer is ever pushed off the panel.
+    ///     an Arcane Core plus a pinned replacement horse is six cards), so no offer is ever pushed off the panel.
     /// </summary>
     private static void FitRow(Transform container)
     {
@@ -316,11 +302,11 @@ public class ShopUI : MonoBehaviour
 
     private void HandleBuyAttempt(int slotIndex, ShopSlotUI slotUI)
     {
-        bool isUltimate = slotIndex >= UltimateSlotIndexBase;
-        List<ShopItemSO> stock = isUltimate ? ultimateStock : currentStock;
-        int stockIndex = isUltimate ? slotIndex - UltimateSlotIndexBase : slotIndex;
+        bool isFeatured = slotIndex >= FeaturedSlotIndexBase;
+        List<ShopItemSO> stock = isFeatured ? featuredStock : currentStock;
+        int stockIndex = isFeatured ? slotIndex - FeaturedSlotIndexBase : slotIndex;
         if (stockIndex < 0 || stockIndex >= stock.Count) return;
-        if (!isUltimate && purchasedSlotIndices.Contains(slotIndex)) return;
+        if (!isFeatured && purchasedSlotIndices.Contains(slotIndex)) return;
 
         ShopItemSO item = stock[stockIndex];
         if (item == null) return;
@@ -329,11 +315,10 @@ public class ShopUI : MonoBehaviour
         {
             if (RunSession.TrySpendInRunGold(item.goldCost))
             {
-                if (!isUltimate) purchasedSlotIndices.Add(slotIndex);
+                if (!isFeatured) purchasedSlotIndices.Add(slotIndex);
                 ApplyItemEffect(item);
-                // Owning an ultimate removes the other weapon's offer or re-prices it (second_ultimate perk);
-                // buying the replacement horse removes its pinned offer.
-                if (isUltimate) GenerateUltimateStock();
+                // Buying the replacement horse removes its pinned offer; the Arcane Core stays on sale.
+                if (isFeatured) GenerateFeaturedStock();
                 if (goldLabel != null)
                 {
                     goldLabel.text = $"Gold: {RunSession.InRunGold}";
@@ -393,17 +378,8 @@ public class ShopUI : MonoBehaviour
                 RunSession.SpecialHerbsWavesRemaining = item.durationWaves;
                 break;
 
-            case ShopItemEffectType.UnlockUltimate:
-                DraftUpgradeService drafts = DraftUpgradeService.GetOrCreateInstance();
-                DraftUpgradeDefinition ultimate = drafts.GetById(item.itemId);
-                if (ultimate != null && ultimate.isUltimate)
-                {
-                    drafts.ApplyUpgrade(ultimate);
-                }
-                else
-                {
-                    Debug.LogError($"[ShopUI] '{item.itemId}' is not an ultimate in the draft catalog.");
-                }
+            case ShopItemEffectType.ArcaneCore:
+                RunSession.AddArcaneCores(Mathf.Max(1, Mathf.RoundToInt(item.effectValue)));
                 break;
 
             case ShopItemEffectType.ReplaceMount:

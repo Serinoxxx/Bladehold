@@ -278,17 +278,17 @@ Checked in Play mode via MCP: deployed from the map, simulated the tutorial vict
   - The wheel has room for more ultimates later.
 
 **Work:**
-- [ ] **Arcane Core currency.**
+- [x] **Arcane Core currency.**
   - In `Economy/RunSession.cs`, add `ArcaneCores` with `OnArcaneCoresChanged`, `AddArcaneCores` and `TrySpendArcaneCore`. Reset it in `StartNewRun`.
   - Add a HUD row in `Bladehold HUD.prefab` → `Currency Panel` (use `UI/SupplyUI.cs` as the template), with a new Arcane Core icon (`generate-sprite-variants`).
   - DevConsole: a "+5 Arcane Cores" button.
-- [ ] **Ultimates always unlocked.**
+- [x] **Ultimates always unlocked.**
   - `DraftUpgradeService` (`Upgrades/DraftUpgradeService.cs:753-762`, `GetUltimateForWeapon`) works out each slot's ultimate from the equipped weapon. Re-run it on weapon swap and on scene load, and drop `RunSession.MeleeUltimateId` / `RangedUltimateId` as stored state if they become redundant.
   - Remove the shop's ultimate stock: `ShopUI.GenerateUltimateStock` (:120-139), `UltimateSlotIndexBase`, `UnlockUltimate` in `ApplyItemEffect` (:396-407), and `UltimateShopConfigSO` and its asset.
   - Retire `RunSession.SecondUltimatePerkId` / `MaxUltimateSlots`, and the `second_ultimate` meta perk. **Ask Lance** what replaces that perk, e.g. "start each run with 1 Arcane Core". Refund any Goblin Blood already spent on it.
   - Keep the `isUltimate` rows in `Resources/DraftUpgrades.csv` as the data source for each weapon's ultimate, but make sure none are ever draftable or shop-sold.
   - `SwordMountUltimate` has no CSV row. Leave it unreachable unless Lance wants it.
-- [ ] **Sources.**
+- [x] **Sources.**
   - **Captains:** add a shared `CaptainRewards` helper that grants cores (count on the captain SO, scaled by tier). Call it from:
     - `Enemies/Captain/CaptainEnemyController.cs:345-348`;
     - `Enemies/Captain/CaptainKombustaController.cs:480`;
@@ -302,12 +302,12 @@ Checked in Play mode via MCP: deployed from the map, simulated the tutorial vict
     - an icon in `Fishing/UI/FishingTallyUI.cs`.
     The fishing pond turns ultimates off, so the core is only banked there, not usable.
   - **Shop:** add `ShopItemEffectType.ArcaneCore` with an SO asset and a case in `ShopUI.ApplyItemEffect`. The price is for Lance to set (`add-shop-item` skill).
-- [ ] **Shared radial wheel UI.**
+- [x] **Shared radial wheel UI.**
   - Pull the ring layout (`EnsureButtonCount` / `PlaceOnRing`, :592-638), hover details, cursor unlock and pause-toggle suppression out of `UI/BuildWheelUI.cs` into a reusable `RadialWheel` view.
   - The build wheel and the new `UltimateWheelUI` both use it.
   - Each ultimate slice shows the icon, name, cost (1 Arcane Core) and a greyed-out state (no core, no weapon in that slot, or `SceneAbilityRules.UltimateAllowed` false).
   - Use the `ui-mockup` skill and flag it for Lance's UI review.
-- [ ] **Input and time.**
+- [x] **Input and time.**
   - The `Ultimate` action in `Assets/InputSystem_Actions.inputactions` (:90, :486-506) becomes a hold: `<Keyboard>/q`, with the gamepad binding moved from `buttonNorth` to `<Gamepad>/leftShoulder`.
     - Check that Left Bumper isn't already bound to something else first, and rebind that if it is.
     - Update the rebind grid and the HUD glyphs.
@@ -317,14 +317,14 @@ Checked in Play mode via MCP: deployed from the map, simulated the tutorial vict
     - Closing restores `GameSettingsService.TargetTimeScale`.
     - The wheel's UI and MMF run on unscaled time.
   - It must not stack with the pause menu, draft, shop or build wheel. Opening any of those closes it first.
-- [ ] **Rewrite the controller.**
+- [x] **Rewrite the controller.**
   - In `Player/PlayerUltimateController.cs`, remove:
     - charge gathering (:125-173, :206-310);
     - `SetCharge` / `AddCharge`;
     - `SlotForInput` (aim → ranged), since the wheel picks now.
   - Add `TryActivate(UltimateSlot)`: check the weapon has an ultimate, spend 1 core, then `ActivateUltimate`. If you can't, play the denied feedback.
   - Keep `IUltimateHandler`, every handler, and the Inferno Burst / Eye of the Storm add-ons.
-- [ ] **Clean up the charge leftovers.**
+- [x] **Clean up the charge leftovers.**
   - Remove `StatType.UltimateChargeMultiplier`, `UltimatePassiveChargeRate` and any draft or meta cards that boost charge. List them from `DraftUpgrades.csv` and the meta perks, and propose replacements to Lance, e.g. "+1 Arcane Core" or "captains drop an extra core".
   - Remove:
     - the `RunSession` charge fields;
@@ -332,13 +332,48 @@ Checked in Play mode via MCP: deployed from the map, simulated the tutorial vict
     - DevConsole `FillUltimateCharge` (:511-530) and the "100% Ultimate Unleash" scenario.
   - `UI/UltimateBarUI.cs`: replace the charge orbs with a compact "ultimates ready" indicator, showing the core count plus the wheel's key glyph. Lance signs off the layout.
   - Update the `add-ultimate-handler` skill and the benchmark ultimate checks (`test-mechanic`).
-- [ ] **Checks.**
+- [x] **Checks.**
   - Hold Q: time slows to 10% and the wheel shows both held weapons' ultimates. Clicking one spends a core and fires it.
   - With 0 cores the slices are greyed out and you get the denied feedback.
   - A captain kill, the Arcane Fish and a shop purchase each add cores.
   - Gamepad: hold LB, pick with the left stick, release. The player doesn't move while the wheel is open.
   - Pausing with the wheel open restores time correctly after unpausing.
   - Swapping weapons changes which ultimates the wheel offers.
+
+### Phase 5 notes (2026-10-07)
+
+Checked in Play mode via MCP in the Outer Gate with simulated input (a queued Q key and a virtual gamepad). `dotnet build` and the Editor compile are clean. Lance's answers: Twin Fury becomes "start with 1 core"; captains drop 1 core (2 from Nightmare tier); a core costs 250 gold; one Arcane Fish per pond visit.
+
+- **Currency:** `RunSession.ArcaneCores` with `OnArcaneCoresChanged`, `AddArcaneCores`, `TrySpendArcaneCore` and `SetArcaneCores` (for the phase 6 trial-core strip). `StartNewRun` sets it from the perk below. The HUD has an `ArcaneCoreUI` row after Supply in `Currency Panel/Row_Run`, with a **placeholder icon** (Synty `ICON_SM_Item_Crystal_05`). The DevConsole button is "+5 Arcane Cores".
+- **Always unlocked:** `RunSession.MeleeUltimateId`/`RangedUltimateId`, the charges, `HasAnyUltimate`, `MaxUltimateSlots` and `SecondUltimatePerkId` are gone. `DraftUpgradeService.GetUltimate(slot)`/`GetUltimateId`/`HasAnyUltimate` resolve the held weapon's `isUltimate` row every time, so weapon swaps need no stored state. `ConfigureUltimateHandlers` runs on scene load, on equip and before each activation. `ApplyUpgrade` and `DebugSetDraftLevel` refuse ultimate rows. The rows' "press Q at 100% charge" text is gone.
+- **Shop:** the ultimate stock, `GetShopUltimates`, `SlotForUltimate`, `UltimateShopConfigSO` and its asset are deleted. The featured row now always pins `ShopItems/arcane_core.asset` (250 gold, effect `ArcaneCore`, buyable again and again) beside the replacement horse. `ShopItemEffectType.UnlockUltimate` became `RetiredUnlockUltimate` rather than being removed, so later values keep their serialized ints.
+- **Twin Fury:** the `second_ultimate` asset is now **Arcane Reserve** ("Begin every run with 1 Arcane Core", `rankValues` [1], same tier and price). It keeps the id, so owners keep it and no refund or save migration is needed.
+- **Charge cards:** none existed. No draft or meta card used `UltimateChargeMultiplier` or `UltimatePassiveChargeRate`, so there's nothing to replace. Those two `StatType`s are renamed `Retired…` (not removed) for the same serialized-int reason.
+- **Captains** (sub-agent): `Enemies/Captain/CaptainRewards.cs` adds `CaptainArcaneCoreReward` (base 1, +1 from the Nightmare tier) on Kombusta's and Mogra's SOs and on Fraglob's inspector, and `GrantArcaneCores` runs in each `HandleDeath`. **There was no captain death popup**, so the core count shows in the captain intro subtitle ("… · +1 Arcane Core") and in the end-screen defeated-captains list instead. The `add-captain` skill is updated.
+- **Arcane Fish** (sub-agent): `ResourceFishType.ArcaneFish` (appended). One spawns per visit after 15 s of the frenzy, takes 40 hits, is 2× size with a violet glow, and uses the Spark material until `arcaneFishMat` is set. Its core is banked on Continue with the other pond rewards. The tally adds an optional core row and falls back to a line under the Diamond Fish Bones.
+- **Shared wheel:** `UI/RadialWheel.cs` holds the ring capture and layout, clone-to-count, cursor unlock and pause-toggle suppression, plus `SlotForDirection` for stick picking. `BuildWheelUI` now uses it.
+- **Ultimate Wheel:**
+  - `UI/UltimateWheelUI.cs` lives on a new `UltimateWheel` root in `Bladehold HUD.prefab`. It clones the build wheel's visuals as `UltimateWheelModal`, with 2 slices at ±380 px and the details panel.
+  - Feedback: `UltimateDeniedMMF` is a clone of the prep prompt's denied shake, sound and red flash, retargeted to the wheel and core label. `UltimateOpenMMF` is a scale pop cloned from the cast-bar cancel. Both are unscaled.
+  - Tunables are in `Bladehold Config/UltimateWheelConfig.asset` (time scale 0.1, stick dead zone 0.5).
+  - The wheel re-asserts the time scale every frame. It stands down without touching time if anything else freezes time or pauses. The draft, shop, build wheel and enemy intro call `UltimateWheelUI.CloseIfOpen()` before they freeze time.
+  - While it's open, the Move, Look, Attack, Aim, Jump, Crouch, Interact, SummonMount, Dismount, StartWave and LockOn actions are disabled (only the ones it disabled are re-enabled), and `PlayerDodge` ignores dash input.
+  - Greyed slices still take clicks and answer with the denied feedback. The block reason (`PlayerUltimateController.GetBlockReason`: scene rules, no ultimate, already running, no core) shows in the details box.
+- **Input:**
+  - The `Ultimate` gamepad binding moved from Y (North, which **Interact also used**) to Left Bumper. It's changed in the vendored `Controls.inputactions`/`Controls.cs`, which is the map the game actually reads (`InputSettingsBinder`), and in `InputSystem_Actions.inputactions`.
+  - `PlayerDodge` had LB hardcoded as a second dash button; that's removed (B still dashes).
+  - The rebind grid reads the action map, so it shows LB with no extra work.
+- **Controller:** `PlayerUltimateController` lost the hit and damage charge plumbing, `SetCharge`/`AddCharge`, `SlotForInput` and the input binding. `TryActivate(slot)` checks `GetBlockReason`, spends one core and activates. The handlers, Inferno Burst and Eye of the Storm are unchanged.
+- **HUD indicator:** `UltimateBarUI` keeps both bars. Each one shows "Ready" (full and glowing, with "Hold Q") while a core is banked, "No core" when empty, and the countdown while its ultimate runs. It hides when the held weapon in that slot has no ultimate. The core count itself is in the currency row. This is a stop-gap layout for Lance to sign off.
+- **Checks:**
+  - Q opens the wheel at time scale 0.1 with Moonlight Edge and Arrow Stream. With 0 cores the costs are red and a click keeps the wheel open (denied).
+  - With cores, a click fires the ultimate, spends 1 and restores time scale 1.
+  - Pausing with the wheel open closes it, and unpausing returns to 1.
+  - Gamepad: LB plus stick-right selects the ranged slice, Move is disabled, and releasing LB (even together with the stick) fires Arrow Stream.
+  - The HUD row and both indicators read correctly.
+  - Benchmark section 11 gains 11F (core spend and the shop item) and 11G (one ultimate row per weapon). Lance runs the benchmark.
+  - **Screenshots of the wheel couldn't be taken.** The MCP capture renders through the camera, which leaves out the overlay HUD, so the wheel's look is on the UI-review checklist.
+  - The captain, fish and shop sources weren't played end to end; they're on the checklist.
 
 ## Phase 6: Teach ultimates in the tutorial (an extra step in T2)
 

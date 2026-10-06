@@ -543,17 +543,6 @@ public class DeathScreen : MonoBehaviour
             RunSession.PlayerHealthRatio = Mathf.Clamp01(Player.Instance.Health.CurrentHealth / Player.Instance.Health.MaxHealth);
         }
 
-        // Preserve player ultimate charge
-        if (Player.Instance != null)
-        {
-            var ult = Player.Instance.transform.root.GetComponentInChildren<PlayerUltimateController>(true);
-            if (ult != null)
-            {
-                RunSession.MeleeUltimateCharge = ult.GetCharge(UltimateSlot.Melee);
-                RunSession.RangedUltimateCharge = ult.GetCharge(UltimateSlot.Ranged);
-            }
-        }
-
         if (!CampaignManager.Instance.IsCampaignActive)
         {
             // The tutorial's last scene, or a battle scene played straight from the Editor: there's no

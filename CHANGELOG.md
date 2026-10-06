@@ -5,6 +5,10 @@
 ### New Features
 
 - Added the Valley Stronghold as the first stop on the campaign map. The tutorial's last battle is now the Valley Stronghold, and winning it carries your gold and upgrades into the campaign
+- Reworked ultimates: both of your weapons' ultimates are always available, and each use costs an Arcane Core instead of filling a charge bar
+- Added the Ultimate Wheel: hold Q (Left Bumper on a controller) to slow time and pick which ultimate to unleash, with the mouse or the left stick
+- Added Arcane Cores, a new currency shown beside your gold and supply. Captains drop them (two from Nightmare captains and up), and the shop always sells them
+- Added the Arcane Fish at the fishing pond: one tough, glowing fish per visit that is worth an Arcane Core
 
 ### Fixes
 
@@ -27,6 +31,9 @@
 - The tutorial now tells you to stand still while summoning your horse
 - During tutorial lessons only the marked build spot shows a BUILD marker, so the lesson's own marker is easy to find
 - Updated new campaign runs to start at the Valley Stronghold, played as a normal battle with wave choices and ultimates
+- The shop no longer sells ultimates
+- Replaced the Twin Fury meta perk with Arcane Reserve: start every run with an Arcane Core. If you owned Twin Fury, you now own Arcane Reserve
+- Left Bumper no longer dashes on a controller (B still does), since it now opens the Ultimate Wheel. The ultimate is no longer on Y, so it doesn't clash with Interact
 
 ## [0.1.34] - 2026-10-06
 

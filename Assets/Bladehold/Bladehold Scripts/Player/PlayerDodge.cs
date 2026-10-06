@@ -272,9 +272,11 @@ public class PlayerDodge : MonoBehaviour
         }
         if (Gamepad.current != null)
         {
-            dashPressed = dashPressed || Gamepad.current.buttonEast.wasPressedThisFrame ||
-                          Gamepad.current.leftShoulder.wasPressedThisFrame;
+            // Left Bumper opens the Ultimate Wheel (plan 21 phase 5), so it no longer dashes.
+            dashPressed = dashPressed || Gamepad.current.buttonEast.wasPressedThisFrame;
         }
+        // Space/B also cancel the Ultimate Wheel; a dash mustn't fire underneath it.
+        if (UltimateWheelUI.IsOpen) dashPressed = false;
 
         float bufferDuration = config != null ? config.inputBufferDuration : 0.15f;
         if (dashPressed)

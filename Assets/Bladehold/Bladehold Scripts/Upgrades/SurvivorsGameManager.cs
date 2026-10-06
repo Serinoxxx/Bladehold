@@ -71,6 +71,7 @@ public class SurvivorsGameManager : MonoBehaviour
 
     public void PauseForCardSelection()
     {
+        UltimateWheelUI.CloseIfOpen();
         isPausedForLevelUp = true;
         Time.timeScale = 0f;
         MMTimeScaleEvent.Trigger(MMTimeScaleMethods.For, 0f, 0f, false, 0f, true);

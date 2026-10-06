@@ -6,7 +6,9 @@ public enum ResourceFishType
     Gold,
     OrcMetal,
     GoblinBlood,
-    Diamond
+    Diamond,
+    /// <summary>Plan 21 phase 5: one per pond visit, high HP, pays an Arcane Core (banked on leaving).</summary>
+    ArcaneFish
 }
 
 /// <summary>
