@@ -5,6 +5,6 @@ defeat_slayer,Defence,siegebreaker,,0,None,0,1,2,1,false,true,Defeat the Siegebr
 goblin_rush,Defence,goblin_rush,,120,None,0,1,2,1,true,true,Goblin Rush,Survive the endless rush until time runs out.,,A nonstop swarm heads for the gate.
 free_prisoners,Offence,free_prisoners,,120,Timer,0,1,2,1,true,true,Free the Prisoners,Break open every cage before time runs out.,Any cage still locked at 0:00.,
 destroy_siege_engines,Offence,siege_engines,,120,Timer,0,1,2,1,true,true,Destroy the Siege Engines,Smash the enemy catapults before time runs out.,Any engine still standing at 0:00.,
-golden_goblin_event,Offence,golden_goblin,,30,Escapes,0,1,2,1,true,true,Golden Goblin,Catch the Golden Goblin before it escapes.,The Golden Goblin escapes.,
+golden_goblin_event,Offence,golden_goblin,,30,Escapes,0,1,2,1,false,false,Golden Goblin,Catch the Golden Goblin before it escapes.,The Golden Goblin escapes.,
 protect_supply_wagon,Offence,supply_wagon,,180,Timer,0,1,2,1,true,true,Protect the Supply Wagon,Escort the wagon to the gate before time runs out.,Wagon not delivered at 0:00.,
 defeat_captain,None,captain_assault,,0,None,0,0,5,1,false,true,Captain Assault,Kill the clan captain to win the sector.,,

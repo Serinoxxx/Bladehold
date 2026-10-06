@@ -107,6 +107,8 @@ public class FishingManager : MonoBehaviour
     [SerializeField] private MMF_Player timeUpFeedback;
     [Tooltip("Optional: played on every fish caught, when it lands on the player. Nothing is authored yet.")]
     [SerializeField] private MMF_Player catchFeedback;
+    [Tooltip("Played on a fishing level-up (victory sting). Once per catch, even when it crosses several levels.")]
+    [SerializeField] private MMF_Player levelUpFeedback;
 
     [Header("Catch Flight")]
     [Tooltip("Seconds a caught fish takes to arc from the water to the player. Its rewards count the moment it dies; the popup shows when it lands.")]
@@ -181,6 +183,7 @@ public class FishingManager : MonoBehaviour
         if (draftUI == null) Debug.LogError("[FishingManager] draftUI is not assigned: level-ups give no cards.", this);
         if (countdownFeedback == null) Debug.LogError("[FishingManager] countdownFeedback is not assigned.", this);
         if (frenzyStartFeedback == null) Debug.LogError("[FishingManager] frenzyStartFeedback is not assigned.", this);
+        if (levelUpFeedback == null) Debug.LogError("[FishingManager] levelUpFeedback is not assigned: level-ups are silent.", this);
         if (fishHighlightProfile == null) Debug.LogError("[FishingManager] fishHighlightProfile is not assigned: fish types have no outline.", this);
         if (catchPopupPrefab == null) Debug.LogError("[FishingManager] catchPopupPrefab is not assigned: catches show no \"+N\" popup.", this);
         if (crystalConfig == null) Debug.LogError("[FishingManager] crystalConfig is not assigned: elemental fish pay no crystals.", this);
@@ -479,6 +482,7 @@ public class FishingManager : MonoBehaviour
     private void AddXp(int amount)
     {
         currentFishingXp += amount;
+        int levelBefore = currentFishingLevel;
         while (currentFishingXp >= xpToNextLevel)
         {
             currentFishingXp -= xpToNextLevel;
@@ -487,6 +491,7 @@ public class FishingManager : MonoBehaviour
             // Several level-ups in one frame (a Fishsploshion chain) each earn their own pick.
             if (draftUI != null) draftUI.QueueDraft();
         }
+        if (currentFishingLevel > levelBefore) Play(levelUpFeedback);
     }
 
     private void SpawnRandomFish()

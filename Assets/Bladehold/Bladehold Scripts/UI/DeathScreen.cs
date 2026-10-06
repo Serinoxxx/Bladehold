@@ -263,15 +263,7 @@ public class DeathScreen : MonoBehaviour
             return;
         }
 
-        bool isSurvivorsMode = SurvivorsGameManager.Instance != null;
-        if (isSurvivorsMode)
-        {
-            ShowRunOver("YOU DIDN'T HOLD THE DOOR", "You didn't hold the door...");
-        }
-        else
-        {
-            ShowRunOver(Loc.Get(playerDiedTitleKey), Loc.Get(playerDiedReasonKey));
-        }
+        ShowRunOver(Loc.Get(playerDiedTitleKey), Loc.Get(playerDiedReasonKey));
     }
 
     private void HandleGateDestroyed(Gate gate)

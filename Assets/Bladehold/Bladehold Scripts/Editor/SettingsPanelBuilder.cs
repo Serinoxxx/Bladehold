@@ -968,8 +968,11 @@ public static class SettingsPanelBuilder
         }
         hover.gameObject.name = "HoverMMF";
         hover.CooldownDuration = 0.06f;
+        // Unscaled: menus run at timeScale 0, where a scaled cooldown never expires and the tick plays only once.
+        hover.PlayerTimescaleMode = TimescaleModes.Unscaled;
         foreach (MMF_Feedback feedback in hover.FeedbacksList)
         {
+            feedback.Timing.TimescaleMode = TimescaleModes.Unscaled;
             if (feedback is MMF_Sound sound)
             {
                 sound.MinVolume = 0.3f;

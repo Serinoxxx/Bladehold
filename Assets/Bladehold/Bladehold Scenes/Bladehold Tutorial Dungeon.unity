@@ -11050,7 +11050,7 @@ MonoBehaviour:
       data:
         Active: 1
         UniqueID: -1687797548
-        Label: Hammer
+        Label: Rope Tear
         OriginalLabel: 
         ChannelMode: 0
         Channel: 0
@@ -11120,7 +11120,7 @@ MonoBehaviour:
         Owner: {fileID: 772178829}
         DebugActive: 0
         Source: 0
-        Sfx: {fileID: 8300000, guid: f26a2ed8fce2489d83dcdb0a2a8e926a, type: 3}
+        Sfx: {fileID: 8300000, guid: 117e03325301d81408320a764b3d52fe, type: 3}
         AudioResourceToPlay: {fileID: 0}
         RandomSfx: []
         SequentialOrder: 0
@@ -11130,8 +11130,8 @@ MonoBehaviour:
         SoundDataSO: {fileID: 0}
         MinVolume: 0.9
         MaxVolume: 0.9
-        MinPitch: 1.2349999
-        MaxPitch: 1.3649999
+        MinPitch: 0.95
+        MaxPitch: 1.05
         MmSoundManagerTrack: 0
         ID: 0
         AudioGroup: {fileID: 0}
@@ -17719,7 +17719,7 @@ MonoBehaviour:
       data:
         Active: 1
         UniqueID: 708254
-        Label: Hammer
+        Label: Rope Tear
         OriginalLabel: 
         ChannelMode: 0
         Channel: 0
@@ -17789,7 +17789,7 @@ MonoBehaviour:
         Owner: {fileID: 1180483700}
         DebugActive: 0
         Source: 0
-        Sfx: {fileID: 8300000, guid: f26a2ed8fce2489d83dcdb0a2a8e926a, type: 3}
+        Sfx: {fileID: 8300000, guid: 117e03325301d81408320a764b3d52fe, type: 3}
         AudioResourceToPlay: {fileID: 0}
         RandomSfx: []
         SequentialOrder: 0
@@ -17799,8 +17799,8 @@ MonoBehaviour:
         SoundDataSO: {fileID: 0}
         MinVolume: 0.9
         MaxVolume: 0.9
-        MinPitch: 1.2349999
-        MaxPitch: 1.3649999
+        MinPitch: 0.95
+        MaxPitch: 1.05
         MmSoundManagerTrack: 0
         ID: 0
         AudioGroup: {fileID: 0}
@@ -26568,7 +26568,7 @@ MonoBehaviour:
       data:
         Active: 1
         UniqueID: 1264215433
-        Label: Hammer
+        Label: Rope Tear
         OriginalLabel: 
         ChannelMode: 0
         Channel: 0
@@ -26638,7 +26638,7 @@ MonoBehaviour:
         Owner: {fileID: 1945251493}
         DebugActive: 0
         Source: 0
-        Sfx: {fileID: 8300000, guid: f26a2ed8fce2489d83dcdb0a2a8e926a, type: 3}
+        Sfx: {fileID: 8300000, guid: 117e03325301d81408320a764b3d52fe, type: 3}
         AudioResourceToPlay: {fileID: 0}
         RandomSfx: []
         SequentialOrder: 0
@@ -26648,8 +26648,8 @@ MonoBehaviour:
         SoundDataSO: {fileID: 0}
         MinVolume: 0.9
         MaxVolume: 0.9
-        MinPitch: 1.2349999
-        MaxPitch: 1.3649999
+        MinPitch: 0.95
+        MaxPitch: 1.05
         MmSoundManagerTrack: 0
         ID: 0
         AudioGroup: {fileID: 0}

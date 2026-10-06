@@ -30,13 +30,23 @@ Rules from `/CLAUDE.md` and `plans/README.md` apply: MMF for every sound/VFX/sha
 
 ## Phase 2: Quick text, data and audio fixes
 
-- [ ] **Death text.** `UI/DeathScreen.cs:269` says "YOU DIDN'T HOLD THE DOOR". On player death it should say **"The hero has fallen"**. Keep the gate-destroyed wording if that's a separate failure path. Update localization if the string is keyed.
-- [ ] **Remove the Golden Goblin objective** from the `SurvivorsObjectiveManager` pool (`Objectives/GoldenGoblinObjective.cs`; see the `add-objective` skill for the pool and cleanup). Remove or park the code, and check nothing else references it (DevConsole, benchmark).
-- [ ] **Tutorial hint sound is too loud or harsh.** Tone down its MMF (`Tutorial/TutorialHintUI.cs` / the hint prefab's feedback).
-- [ ] **Tutorial hint pulse is too strong.** Lower the scale/amplitude of the pulse tween.
-- [ ] **Rope snap sound.** Shooting the ropes in the tutorial needs a satisfying rope-snap or fabric-tear sound (`Tutorial/TutorialBreakable.cs` / `DestroyTargetsStep.cs`). Source it with `find-and-import-assets`.
-- [ ] **Fishing level-up sound.** Play a victory sting on fishing level-up.
-- [ ] **Sanctuary of Spirits hover sound only plays once.** Hovering a button makes a sound the first time and never again. Probably a one-shot MMF that isn't reset, or the feedback being disabled after the first play.
+- [x] **Death text.** `UI/DeathScreen.cs:269` says "YOU DIDN'T HOLD THE DOOR". On player death it should say **"The hero has fallen"**. Keep the gate-destroyed wording if that's a separate failure path. Update localization if the string is keyed.
+- [x] **Remove the Golden Goblin objective** from the `SurvivorsObjectiveManager` pool (`Objectives/GoldenGoblinObjective.cs`; see the `add-objective` skill for the pool and cleanup). Remove or park the code, and check nothing else references it (DevConsole, benchmark).
+- [x] **Tutorial hint sound is too loud or harsh.** Tone down its MMF (`Tutorial/TutorialHintUI.cs` / the hint prefab's feedback).
+- [x] **Tutorial hint pulse is too strong.** Lower the scale/amplitude of the pulse tween.
+- [x] **Rope snap sound.** Shooting the ropes in the tutorial needs a satisfying rope-snap or fabric-tear sound (`Tutorial/TutorialBreakable.cs` / `DestroyTargetsStep.cs`). Source it with `find-and-import-assets`.
+- [x] **Fishing level-up sound.** Play a victory sting on fishing level-up.
+- [x] **Sanctuary of Spirits hover sound only plays once.** Hovering a button makes a sound the first time and never again. Probably a one-shot MMF that isn't reset, or the feedback being disabled after the first play.
+
+### Phase 2 notes (2026-10-06)
+
+- **Death text:** gate battles had a hardcoded "YOU DIDN'T HOLD THE DOOR" branch. It's gone, so every player death uses `death.player_title`, now "The Hero Has Fallen" in all languages. The gate-destroyed path is unchanged.
+- **Golden Goblin:** parked, not deleted (Lance's call after auto mode blocked the prefab delete). The CSV row is `draftable=false`, so cards never offer it. Removing it from the prefab's fallback pool is optional, in the editor checklist.
+- **Hint sound and pulse:** the HUD's hint Show/Complete scale peaked at 2.5x. It's now about 1.15x. The chime is at 0.35 volume and 0.9 pitch, and the counter bump is 15–20 (was 40–60).
+- **Rope snap:** Lance picked `FABRIC_Tear_05_Quick` (imported). It's on all three ropes' SnapMMF.
+- **Fishing level-up:** new `FishingManager.levelUpFeedback` → `LevelUpMMF` (`SuccessBig.wav`, unscaled), once per catch.
+- **Hover once:** HoverMMF's 0.06 s cooldown ran on scaled time and never expired at timeScale 0. Every HoverMMF (5 prefabs, 5 scenes) and both UI builders are now unscaled.
+- Playtest checklist: `plans/editor/20-playtest-feedback-oct.md`.
 
 ## Phase 3: Combat ability fixes
 

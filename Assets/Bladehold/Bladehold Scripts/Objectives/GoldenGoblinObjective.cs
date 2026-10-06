@@ -8,6 +8,7 @@ using UnityEngine.AI;
 ///     No regular enemies spawn during this objective (<see cref="ISuppressRegularSpawns" />). It drops
 ///     gold every 10% HP lost and a bonus on death. Killing it completes the objective; if the timer
 ///     (<c>timerSeconds</c> of its <c>WaveObjectives.csv</c> row) runs out it escapes and the objective fails.
+///     Parked (plan 20): its CSV row is <c>draftable=false</c>, so wave cards never offer it.
 /// </summary>
 public class GoldenGoblinObjective : MonoBehaviour, ISurvivorsObjective, ISuppressRegularSpawns, IObjectivePreview
 {

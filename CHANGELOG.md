@@ -49,6 +49,7 @@
 - Fixed the camera sometimes getting stuck with the mouse cursor showing after changing areas
 - Fixed gamepad selection getting stuck on an invisible button in the settings menu
 - Fixed the Music volume slider in the Audio settings menu so it adjusts music volume across every scene
+- Fixed menu hover sounds playing only once in the Sanctuary of Spirits, shop and settings menus
 
 ### Balance Changes
 
@@ -67,6 +68,11 @@
 - Updated the death screen, level-up and wave choice cards, save slots and campaign map to match the new menu look: dark framed panels, gold titles and clearer text
 - Updated the boss and captain arrival banner: a dark band with the name in gold, the captain's difficulty skulls and rewards underneath, and letterbox bars for boss entrances
 - Updated the campaign map so castles fly your banner once a sector is liberated, open sectors glow, and the map pans by dragging, scrolling or with the right stick
+- Removed the Golden Goblin wave objective from the wave choices
+- Updated the player death screen title to "The Hero Has Fallen"
+- Toned down the tutorial hint chime and the hint panel's pop animation
+- Added a tearing sound when you shoot through the tutorial ropes
+- Added a victory sting when your fishing level goes up
 
 ## [0.1.31] - 2026-10-01
 
