@@ -519,6 +519,7 @@ tutorial.ready,Tutorial step: start the wave,Hold to start the wave,,,,,,,,
 tutorial.wave,Tutorial step: survive the wave,Defend the gate! Defeat every goblin,,,,,,,,
 tutorial.wave_first,Tutorial step: first of three waves,Defend the gate! Defeat the first wave,,,,,,,,
 tutorial.mount,Tutorial step: summon the horse between waves,Summon your warhorse,,,,,,,,
+tutorial.mount_stand_still,"Tutorial step: summon the horse, second line",Stand still while summoning,,,,,,,,
 tutorial.mount_trample,"Tutorial step: summon the horse, second line",Ride through goblins to trample them,,,,,,,,
 tutorial.mount_charge,Tutorial step: charge on horseback (Sprint glyph),Hold to charge,,,,,,,,
 tutorial.mount_charge_drain,"Tutorial step: charge on horseback, second line",Charging burns stamina. Charge until your horse is winded,,,,,,,,
@@ -634,6 +635,12 @@ hint.select,Control hint label (menus),Select,Choisir,Seleziona,Auswählen,Selec
 hint.navigate,Control hint label (menus),Navigate,Naviguer,Naviga,Navigieren,Navegar,Навигация,导航,移動,이동
 hud.mount.fallen,HUD status under the horse bars once the warhorse has died,Fallen: buy a new warhorse at the stall or shop,Tombé : achetez un nouveau destrier à l'écurie ou à la boutique,Caduto: compra un nuovo destriero alla stalla o al negozio,Gefallen: Kaufe im Stall oder Laden ein neues Schlachtross,Caído: compra un nuevo corcel en el establo o la tienda,Пал: купите нового боевого коня в конюшне или лавке,已阵亡：在马厩或商店购买新战马,倒れた：馬屋かショップで新しい軍馬を購入,쓰러짐: 마구간이나 상점에서 새 군마를 구입하세요
 hud.mount.charge_ready,HUD tag on the horse stamina bar when a Shift-charge can start,Charge ready,Charge prête,Carica pronta,Sturmangriff bereit,Carga lista,Атака готова,冲锋就绪,突撃準備完了,돌격 준비 완료
+hud.mount.summoning,Cast bar label while summoning the warhorse,Summoning Mount,,,,,,,,
+hud.mount.mounted,Cast bar label while riding a timed mount,Mounted,,,,,,,,
+hud.mount.summon_cancelled,Cast bar headline when a horse summon is interrupted,SUMMONING CANCELLED,,,,,,,,
+hud.mount.cancel_moved,Cast bar reason under SUMMONING CANCELLED,You moved. Stand still to summon,,,,,,,,
+hud.mount.cancel_damaged,Cast bar reason under SUMMONING CANCELLED,You were hit,,,,,,,,
+hud.mount.cancel_pressed,Cast bar reason under SUMMONING CANCELLED (summon key pressed again),You cancelled it,,,,,,,,
 horse_stall.prompt,Gate horse stall interact prompt; {0}=gold price,Buy a new warhorse ({0}g),Acheter un nouveau destrier ({0} or),Compra un nuovo destriero ({0} oro),Neues Schlachtross kaufen ({0} Gold),Comprar un nuevo corcel ({0} de oro),Купить нового боевого коня ({0} золота),购买新战马（{0}金币）,新しい軍馬を購入（{0}ゴールド）,새 군마 구입 ({0}골드)
 horse_stall.prompt_no_gold,Gate horse stall prompt when gold is short; {0}=gold price,Buy a new warhorse ({0}g) · not enough gold,Acheter un nouveau destrier ({0} or) · pas assez d'or,Compra un nuovo destriero ({0} oro) · oro insufficiente,Neues Schlachtross kaufen ({0} Gold) · nicht genug Gold,Comprar un nuevo corcel ({0} de oro) · oro insuficiente,Купить нового боевого коня ({0} золота) · не хватает золота,购买新战马（{0}金币）· 金币不足,新しい軍馬を購入（{0}ゴールド）· ゴールド不足,새 군마 구입 ({0}골드) · 골드 부족
 horse_stall.prompt_alive,Gate horse stall prompt while the warhorse is still alive,Warhorse · yours still lives,Destrier · le vôtre est encore en vie,Destriero · il tuo è ancora vivo,Schlachtross · deines lebt noch,Corcel · el tuyo sigue vivo,Боевой конь · ваш ещё жив,战马 · 你的战马仍然活着,軍馬 · あなたの軍馬はまだ生きている,군마 · 당신의 군마는 아직 살아 있습니다

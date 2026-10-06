@@ -4,6 +4,12 @@ using MoreMountains.Tools;
 using MoreMountains.Feedbacks;
 using System.Collections;
 
+/// <summary>
+///     The mount summon cast bar: fills while channeling, then shows the ride timer for a timed mount.
+///     A cancelled summon keeps the bar up with "SUMMONING CANCELLED" and the reason (moved, hit, pressed
+///     again), so players learn that moving breaks the cast; <see cref="castCancelledFeedback" /> flashes the
+///     bar red, holds it, then fades the canvas group out on unscaled time.
+/// </summary>
 public class SummonCastBarUI : MonoBehaviour
 {
     [Header("UI Elements")]
@@ -15,8 +21,6 @@ public class SummonCastBarUI : MonoBehaviour
     public MMF_Player castStartedFeedback;
     public MMF_Player castCancelledFeedback;
     public MMF_Player castFinishedFeedback;
-
-
 
     [SerializeField]  private PlayerSummonMount playerSummonMount;
 
@@ -38,7 +42,7 @@ public class SummonCastBarUI : MonoBehaviour
         
         if (castLabel != null)
         {
-            castLabel.text = "Summoning Mount";
+            castLabel.text = Loc.Get("hud.mount.summoning", "Summoning Mount");
         }
 
         if (playerSummonMount == null)
@@ -104,8 +108,9 @@ public class SummonCastBarUI : MonoBehaviour
 
     private void HandleCastStarted(float maxTime)
     {
+        StopCancelledFeedback();
         canvasGroup.alpha = 1f;
-        if (castLabel != null) castLabel.text = "Summoning Mount";
+        if (castLabel != null) castLabel.text = Loc.Get("hud.mount.summoning", "Summoning Mount");
         progressBar.SetBar(0f, 0f, maxTime);
         
         if (castStartedFeedback != null) castStartedFeedback.PlayFeedbacks();
@@ -119,14 +124,48 @@ public class SummonCastBarUI : MonoBehaviour
     private void HandleCastFinished()
     {
         // We stay visible and transition to the duration bar
-        if (castLabel != null) castLabel.text = "Mounted";
+        if (castLabel != null) castLabel.text = Loc.Get("hud.mount.mounted", "Mounted");
         if (castFinishedFeedback != null) castFinishedFeedback.PlayFeedbacks();
     }
 
-    private void HandleCastCancelled()
+    private void HandleCastCancelled(MountCastCancelReason reason)
     {
-        canvasGroup.alpha = 0f;
-        if (castCancelledFeedback != null) castCancelledFeedback.PlayFeedbacks();
+        // Dying says enough on its own; the bar just goes.
+        if (reason == MountCastCancelReason.Died || castCancelledFeedback == null)
+        {
+            canvasGroup.alpha = 0f;
+            return;
+        }
+
+        canvasGroup.alpha = 1f;
+        if (castLabel != null)
+        {
+            castLabel.text = $"{Loc.Get("hud.mount.summon_cancelled", "SUMMONING CANCELLED")}\n<size=70%>{CancelReasonText(reason)}</size>";
+        }
+
+        // Red flash, hold, then fade the canvas group out (authored on the MMF, unscaled time).
+        castCancelledFeedback.PlayFeedbacks();
+    }
+
+    private static string CancelReasonText(MountCastCancelReason reason)
+    {
+        switch (reason)
+        {
+            case MountCastCancelReason.Moved: return Loc.Get("hud.mount.cancel_moved", "You moved. Stand still to summon");
+            case MountCastCancelReason.Damaged: return Loc.Get("hud.mount.cancel_damaged", "You were hit");
+            case MountCastCancelReason.PressedAgain: return Loc.Get("hud.mount.cancel_pressed", "You cancelled it");
+            default: return string.Empty;
+        }
+    }
+
+    // A new cast or a ride timer takes the bar back from a still-fading cancelled message.
+    private void StopCancelledFeedback()
+    {
+        if (castCancelledFeedback != null && castCancelledFeedback.IsPlaying)
+        {
+            castCancelledFeedback.StopFeedbacks();
+            castCancelledFeedback.RestoreInitialValues();
+        }
     }
     
     private void HandleDurationUpdated(float current, float max)
@@ -138,8 +177,9 @@ public class SummonCastBarUI : MonoBehaviour
             return;
         }
 
+        StopCancelledFeedback();
         canvasGroup.alpha = 1f;
-        if (castLabel != null) castLabel.text = "Mounted";
+        if (castLabel != null) castLabel.text = Loc.Get("hud.mount.mounted", "Mounted");
         progressBar.SetBar(current, 0f, max);
     }
     

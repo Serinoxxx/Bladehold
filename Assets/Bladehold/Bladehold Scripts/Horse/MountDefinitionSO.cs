@@ -39,6 +39,9 @@ public class MountDefinitionSO : ScriptableObject
     [Header("Summon & Lifecycle")]
     [Tooltip("Channeling time in seconds required to summon the mount.")]
     public float castTime = 1.5f;
+    [Tooltip("Seconds at the start of the summon cast during which the player can't walk, so a press while running doesn't cancel itself. Movement after this window cancels the summon.")]
+    [Min(0f)]
+    public float castMovementLockSeconds = 0.5f;
     [Tooltip("Maximum active riding duration in seconds before auto-dismount.")]
     public float mountDuration = 30f;
     [Tooltip("Cooldown in seconds after dismounting before the mount can be summoned again.")]

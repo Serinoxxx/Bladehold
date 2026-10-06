@@ -39,3 +39,23 @@ Unity MCP was down for this phase. `dotnet build` is clean for runtime and Edito
   - Quit to the main menu from the pause menu in a battle, in the tutorial gate, during the gate-fall slow-mo, and from the death and victory screens.
   - The title screen should show its background and buttons.
   - Check `Player.log` for `[MainMenuManager]` warnings or errors. Either one names the cause; report it so the real fix can replace the safety net.
+
+## Phase 2: Horse summon feedback
+
+**Done in code and assets** (checked in Play mode via MCP):
+- The first 0.5 s of a summon roots the player. Moving after that cancels it.
+- A cancelled summon keeps the cast bar up in red with "SUMMONING CANCELLED" and the reason, then fades it.
+- The cast bar's label now actually shows. It had been hidden in the prefab.
+- The tutorial gate's horse step says "Stand still while summoning".
+- Summoning plays the large wave (`A_MOD_EMOT_Greet_Wave_Masc`) on a new upper-body `Summon` layer in `Player AC`.
+
+**Wiring checklist:**
+- [ ] Decide whether the **Basic Warhorse** (0.5 s cast) should still be cancellable by moving. With the 0.5 s lock it can't be. Either lengthen its `castTime` or lower `castMovementLockSeconds` on `Mount_BasicWarhorse.asset`.
+
+**Manual verification:**
+- [ ] Sprint, press X: the player stops and the summon completes. Keep holding a direction on a longer-cast mount: "SUMMONING CANCELLED / You moved. Stand still to summon" shows in red for about 1 s, then fades.
+- [ ] Get hit mid-cast ("You were hit") and press X twice ("You cancelled it"). Both show the message.
+- [ ] UI review: the cast bar label sits above the bar, and the small reason line is readable at 1080p.
+- [ ] The wave looks right with each weapon in hand. The sword stays in the waving hand. On the 0.5 s Basic Warhorse cast you only see the start of the wave.
+- [ ] Tutorial gate horse step shows the "Stand still while summoning" second line.
+

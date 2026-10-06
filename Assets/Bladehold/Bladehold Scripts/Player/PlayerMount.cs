@@ -92,7 +92,8 @@ public class PlayerMount : MonoBehaviour
     /// <summary>Raised with true on mount, false on dismount — for cosmetic listeners (camera, UI).</summary>
     public event Action<bool> OnMountedChanged;
     public event Action<float> OnMountCastStarted;
-    public event Action OnMountCastCancelled;
+    /// <summary>Raised when a summon cast is abandoned, with why (the cast bar names the reason).</summary>
+    public event Action<MountCastCancelReason> OnMountCastCancelled;
     public event Action OnMountCastCompleted;
     public event Action<float, float> OnMountDurationChanged;
     public event Action<float, float> OnMountCooldownChanged;
@@ -109,6 +110,9 @@ public class PlayerMount : MonoBehaviour
 
     /// <summary>0..1 cast progress fraction.</summary>
     public float CastProgress => castDuration > 0f ? Mathf.Clamp01(castProgress / castDuration) : 0f;
+
+    /// <summary>True during the opening of a summon cast while walking is locked (<see cref="MountDefinitionSO.castMovementLockSeconds" />); PlayerMoveSpeedBinder zeroes move speed.</summary>
+    public bool IsSummonMovementLocked => isCasting && castProgress < castMovementLock;
 
     public float MountRemainingDuration => mountRemainingDuration;
     public float MaxMountDuration => maxMountDuration;
@@ -183,6 +187,7 @@ public class PlayerMount : MonoBehaviour
     private Vector3 castStartPosition;
     private float castProgress;
     private float castDuration = 1.5f;
+    private float castMovementLock;
     private float mountRemainingDuration;
     private float maxMountDuration = 30f;
     private float mountRemainingCooldown;
@@ -502,19 +507,27 @@ public class PlayerMount : MonoBehaviour
 
         if (isCasting)
         {
-            // Moving during cast cancels the summon
-            if ((characterController != null && characterController.velocity.sqrMagnitude > 0.5f) ||
+            if (castProgress < castMovementLock)
+            {
+                // Walking is locked while the player skids to a halt, so this window never counts as
+                // moving; the drift check measures from where they end up standing.
+                castProgress += Time.deltaTime;
+                if (castProgress >= castMovementLock) castStartPosition = transform.position;
+            }
+            // Moving during the rest of the cast cancels the summon
+            else if ((characterController != null && characterController.velocity.sqrMagnitude > 0.5f) ||
                 (transform.position - castStartPosition).sqrMagnitude > 0.25f)
             {
-                CancelMountCast();
+                CancelMountCast(MountCastCancelReason.Moved);
             }
             else
             {
                 castProgress += Time.deltaTime;
-                if (castProgress >= castDuration)
-                {
-                    CompleteMountCast();
-                }
+            }
+
+            if (isCasting && castProgress >= castDuration)
+            {
+                CompleteMountCast();
             }
         }
 
@@ -569,7 +582,7 @@ public class PlayerMount : MonoBehaviour
     {
         if (isCasting)
         {
-            CancelMountCast();
+            CancelMountCast(MountCastCancelReason.Damaged);
         }
     }
 
@@ -923,7 +936,7 @@ public class PlayerMount : MonoBehaviour
 
     private void HandlePlayerDied()
     {
-        CancelMountCast();
+        CancelMountCast(MountCastCancelReason.Died);
         if (IsMounted)
         {
             Dismount();
@@ -948,6 +961,7 @@ public class PlayerMount : MonoBehaviour
 
         MountDefinitionSO def = GetEquippedMountDefinition();
         castDuration = def != null && def.castTime > 0f ? def.castTime : 1.5f;
+        castMovementLock = Mathf.Min(def != null ? def.castMovementLockSeconds : 0.5f, castDuration);
         castProgress = 0f;
         castStartPosition = transform.position;
         isCasting = true;
@@ -957,13 +971,13 @@ public class PlayerMount : MonoBehaviour
         return true;
     }
 
-    public void CancelMountCast()
+    public void CancelMountCast(MountCastCancelReason reason)
     {
         if (!isCasting) return;
         isCasting = false;
         castProgress = 0f;
-        OnMountCastCancelled?.Invoke();
-        Debug.Log("[PlayerMount] Mount cast cancelled.");
+        OnMountCastCancelled?.Invoke(reason);
+        Debug.Log($"[PlayerMount] Mount cast cancelled ({reason}).");
     }
 
     public void CompleteMountCast()
@@ -1052,4 +1066,13 @@ public class PlayerMount : MonoBehaviour
 
         return null;
     }
+}
+
+/// <summary>Why a mount summon cast stopped early; the cast bar shows it so players learn the rule.</summary>
+public enum MountCastCancelReason
+{
+    Moved,
+    Damaged,
+    PressedAgain,
+    Died
 }

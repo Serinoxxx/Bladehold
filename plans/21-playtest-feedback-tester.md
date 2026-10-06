@@ -105,11 +105,11 @@ Unity MCP was down for this phase, so nothing was checked in Play mode. `dotnet 
 
 The tester didn't know moving cancels the summon. Nothing tells them.
 
-- [ ] **Summon animation and a short movement lock.**
+- [x] **Summon animation and a short movement lock.**
   - On X, play a real summoning animation. Today it's a placeholder `"Cheer"` trigger at `Player/PlayerSummonMount.cs:122`; pick a clip with Lance, e.g. a whistle or raised-arm Synty clip.
   - Lock movement for the first **0.5 s** of the cast. Make it tunable on `MountDefinitionSO` or a summon config SO.
   - `PlayerMount.Update` (:503-519) cancels the cast on velocity > 0.5 or 0.5 m of drift. Don't count the locked window toward that check; take `castStartPosition` at the end of the lock.
-- [ ] **"SUMMONING CANCELLED" on the cast bar.**
+- [x] **"SUMMONING CANCELLED" on the cast bar.**
   - Add a cancel reason (`Moved`, `Damaged`, `PressedAgain`, `Died`) to `PlayerMount.CancelMountCast` (:960-967). Pass it through `OnMountCastCancelled` → `PlayerSummonMount.OnCastCancelled` (:30-37, :126-130).
   - `UI/SummonCastBarUI.cs` `HandleCastCancelled` (:126-130) currently hides the bar instantly. Instead:
     - keep the bar up for about 1 s;
@@ -117,8 +117,32 @@ The tester didn't know moving cancels the summon. Nothing tells them.
     - flash it red, then fade it out.
   - Copy the red flash from the "INTERRUPT!" flash in `Bosses/PrincessBossController.cs:477-491`, built as an unscaled-time MMF.
   - Also localize "Summoning Mount" and "Mounted", which are hardcoded at :41, :108, :122 and :142.
-- [ ] **Old cast bar.** `UI/MountStatusUI.cs` is a second, older mount cast bar. If any HUD still uses it, remove it or route it through the same cancel reason.
-- [ ] **Tutorial text.** Add "Stand still while summoning" to T3's `MountStep` hint (GateScene:52818).
+- [x] **Old cast bar.** `UI/MountStatusUI.cs` is a second, older mount cast bar. If any HUD still uses it, remove it or route it through the same cancel reason.
+- [x] **Tutorial text.** Add "Stand still while summoning" to T3's `MountStep` hint (GateScene:52818).
+
+### Phase 2 notes (2026-10-07)
+
+Checked in Play mode (Outer Gate) via MCP with a scripted cast; `dotnet build` and the Editor compile are clean.
+
+- **Movement lock:**
+  - `MountDefinitionSO.castMovementLockSeconds` (default 0.5, capped at the cast time). `PlayerMount.IsSummonMovementLocked` is true for that window, and `PlayerMoveSpeedBinder` zeroes walk/run/sprint speed while it is.
+  - The drift check skips the window, and `castStartPosition` is re-taken when it ends.
+  - Verified: run speed 0 for the first 0.5 s, back to 2.5 after; a 1.2 m nudge after the lock cancels with `Moved`.
+  - **The Basic Warhorse's `castTime` is 0.5 s**, so the lock covers its whole cast. Moving can't cancel it any more; only a hit or a second press can. The longer casts (other mounts, 1–1.8 s) still cancel on movement after the lock.
+- **Cancel reason:** `MountCastCancelReason` (`Moved`, `Damaged`, `PressedAgain`, `Died`) is passed through `PlayerMount.OnMountCastCancelled` → `PlayerSummonMount.OnCastCancelled` → `SummonCastBarUI`.
+- **Cast bar:**
+  - On a cancel the bar stays up with "SUMMONING CANCELLED" and a smaller reason line. On `Died` it just hides.
+  - `FeedbackCancel` (HUD prefab) is now unscaled. The existing scale pop is kept. The fill and label go red, hold, and ease back to their own colours, and an `MMF_CanvasGroup` fades the bar out after 0.9 s over 0.35 s.
+  - A new cast or a ride timer stops a still-playing cancel feedback and restores its values.
+  - **The bar's label had been inactive in the prefab since it was built,** so no cast text had ever shown. It's now active and bottom-aligned just above the bar.
+  - "Summoning Mount" and "Mounted" go through `Loc` (`hud.mount.*`). The 7 new `Strings.csv` rows are English only.
+- **Animation:**
+  - The old `"Cheer"` trigger didn't exist on `Player AC` (the console warned "Parameter 'Cheer' does not exist"), so the summon had never animated.
+  - Lance picked the large wave. `Player AC` has a new `IsSummoning` bool and a `Summon` layer (layer 11, `Upper Body Mask`, weight 1): `New State` → `Summon Wave` (`A_MOD_EMOT_Greet_Wave_Masc`) on `IsSummoning`, and back on `!IsSummoning` or at 90% of the clip.
+  - `PlayerSummonMount` holds the bool for the whole cast. It clears it on complete or cancel, and in `Update` when a cast ends without an event (horse lost, mount failed).
+  - Verified in Play mode: the wave plays during the cast and stops once mounted.
+- **Old cast bar:** `MountStatusUI` wasn't referenced by any prefab or scene, so it was deleted.
+- **Tutorial:** T3's `MountStep` secondary hint is "Stand still while summoning" (`tutorial.mount_stand_still`).
 
 ## Phase 3: Tutorial gating and clarity (T3)
 

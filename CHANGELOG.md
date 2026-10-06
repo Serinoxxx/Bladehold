@@ -8,6 +8,7 @@
 
 - Fixed the tower build wheel showing each tower's supply cost twice
 - Fixed wall health bars clipping into the wall model; they now float clear above the wall
+- Fixed the horse summon bar never showing its text
 
 ### Balance Changes
 
@@ -15,6 +16,25 @@
 
 - Lowered the default mouse sensitivity and gave the slider a finer 0.01 to 1 range (it can no longer be set to 0); saves on the old default move to the new one
 - Swapped the tutorial gate's preparation music for a calmer track
+- Your hero now waves to call the horse while summoning it
+- Summoning your horse now plants you in place for a moment, so pressing it while running no longer cancels it straight away
+- A cancelled horse summon now says so on the cast bar in red, with the reason (you moved, you were hit, or you pressed it again)
+- The tutorial now tells you to stand still while summoning your horse
+
+## [0.1.34] - 2026-10-06
+
+### New Features
+
+### Fixes
+
+- Fixed the currency panel floating in the middle of the screen with a dark strip above it; it now sits neatly in the top-right corner or under the minimap
+
+### Balance Changes
+
+### General Changes
+
+- Added a Settings button to the campaign map, and Esc there now opens the pause menu
+- Removed the patch notes panel from the title screen
 
 ## [0.1.32] - 2026-10-01
 

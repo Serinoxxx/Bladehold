@@ -34,6 +34,7 @@ public class PlayerMoveSpeedBinder : MonoBehaviour
     private bool anyError = false;
     private bool wasAiming;
     private bool wasMounted;
+    private bool wasSummonLocked;
 
     private void OnValidate()
     {
@@ -118,15 +119,17 @@ public class PlayerMoveSpeedBinder : MonoBehaviour
 
     private void Update()
     {
-        if (anyError || bow == null) return;
+        if (anyError) return;
 
-        bool currentlyAiming = bow.IsAiming;
+        bool currentlyAiming = bow != null && bow.IsAiming;
         bool currentlyMounted = mount != null && mount.IsMounted;
+        bool currentlySummonLocked = mount != null && mount.IsSummonMovementLocked;
 
-        if (currentlyAiming != wasAiming || currentlyMounted != wasMounted)
+        if (currentlyAiming != wasAiming || currentlyMounted != wasMounted || currentlySummonLocked != wasSummonLocked)
         {
             wasAiming = currentlyAiming;
             wasMounted = currentlyMounted;
+            wasSummonLocked = currentlySummonLocked;
             Apply();
         }
     }
@@ -157,6 +160,12 @@ public class PlayerMoveSpeedBinder : MonoBehaviour
         if (wasAiming && !wasMounted)
         {
             move *= 0.5f;
+        }
+
+        // The opening of a mount summon roots the player in place (PlayerMount.IsSummonMovementLocked).
+        if (wasSummonLocked)
+        {
+            move = 0f;
         }
 
         walkField.SetValue(controller, baseWalk * move);

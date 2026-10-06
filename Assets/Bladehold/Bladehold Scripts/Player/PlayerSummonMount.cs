@@ -26,6 +26,10 @@ public class PlayerSummonMount : MonoBehaviour
     [Tooltip("Played when a summon press is refused (on cooldown, blocked by the scene).")]
     [SerializeField] private MMF_Player errorFeedback;
 
+    [Header("Animation")]
+    [Tooltip("Animator bool held true for the whole summon cast (Player AC's Summon layer plays the wave while it's set).")]
+    [SerializeField] private string summoningBool = "IsSummoning";
+
     // UI Events
     public event Action<float, float> OnDurationUpdated; // current, max
     public event Action<float, float> OnCooldownUpdated; // current, max
@@ -34,9 +38,12 @@ public class PlayerSummonMount : MonoBehaviour
     public event Action<float> OnCastStarted; // max cast time
     public event Action<float, float> OnCastUpdated; // current, max
     public event Action OnCastFinished;
-    public event Action OnCastCancelled;
+    public event Action<MountCastCancelReason> OnCastCancelled;
 
     private float castDuration;
+    private Animator animator;
+    private bool hasSummoningBool;
+    private bool summoningAnimationOn;
     private int lastDismountFrame = -1;
     private bool anyError;
 
@@ -60,6 +67,17 @@ public class PlayerSummonMount : MonoBehaviour
         }
 
         if (anyError) return;
+
+        // Synty rigs keep the Animator on a child. A controller without the bool just plays no summon animation.
+        animator = player.GetComponentInChildren<Animator>();
+        if (animator != null)
+        {
+            foreach (AnimatorControllerParameter p in animator.parameters)
+            {
+                if (p.type == AnimatorControllerParameterType.Bool && p.name == summoningBool) hasSummoningBool = true;
+            }
+        }
+        if (!hasSummoningBool) Debug.LogWarning($"PlayerSummonMount: the player's Animator has no '{summoningBool}' bool, so summoning plays no animation.", this);
 
         // Unlocked from the start of every run (1); kept as a stat so something could still lock it.
         player.Stats.SetBase(StatType.SummonMountUnlocked, 1f);
@@ -91,7 +109,13 @@ public class PlayerSummonMount : MonoBehaviour
 
     private void Update()
     {
-        if (anyError || !playerMount.IsCastingMount) return;
+        if (anyError) return;
+        if (!playerMount.IsCastingMount)
+        {
+            // A cast can end without an event (the horse died mid-cast, or mounting failed).
+            if (summoningAnimationOn) SetSummoningAnimation(false);
+            return;
+        }
         OnCastUpdated?.Invoke(playerMount.CastProgress * castDuration, castDuration);
     }
 
@@ -105,7 +129,7 @@ public class PlayerSummonMount : MonoBehaviour
 
         if (playerMount.IsCastingMount)
         {
-            playerMount.CancelMountCast();
+            playerMount.CancelMountCast(MountCastCancelReason.PressedAgain);
             return;
         }
 
@@ -118,19 +142,27 @@ public class PlayerSummonMount : MonoBehaviour
     private void HandleCastStarted(float duration)
     {
         castDuration = duration;
-        Animator anim = player.GetComponentInChildren<Animator>();
-        if (anim != null) anim.SetTrigger("Cheer"); // Placeholder for casting
+        SetSummoningAnimation(true);
         OnCastStarted?.Invoke(duration);
     }
 
-    private void HandleCastCancelled()
+    private void HandleCastCancelled(MountCastCancelReason reason)
     {
-        if (errorFeedback != null) errorFeedback.PlayFeedbacks();
-        OnCastCancelled?.Invoke();
+        if (errorFeedback != null && reason != MountCastCancelReason.Died) errorFeedback.PlayFeedbacks();
+        SetSummoningAnimation(false);
+        OnCastCancelled?.Invoke(reason);
+    }
+
+    private void SetSummoningAnimation(bool summoning)
+    {
+        summoningAnimationOn = summoning;
+        if (animator == null) return;
+        if (hasSummoningBool) animator.SetBool(summoningBool, summoning);
     }
 
     private void HandleCastCompleted()
     {
+        SetSummoningAnimation(false);
         OnCastFinished?.Invoke();
         if (spawnFeedback != null)
         {
