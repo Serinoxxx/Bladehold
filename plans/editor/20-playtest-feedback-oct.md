@@ -43,3 +43,28 @@ Editor leftovers from `plans/20-playtest-feedback-oct.md`. Unity MCP was connect
 - [ ] Dash with movement input: the character faces the dash direction and doesn't jump sideways.
 - [ ] Mace + Earthshaker, fully charge a swing into a goblin: the ground crack opens at its feet (try on a slope and on a bridge), not floating mid-air. Too small or too big? Scale or swap it on `Player.prefab` → `MaceShockwaveMMF`.
 - [ ] Bladehold/Benchmarks/Run Weapon Reach & Damage Benchmark (from MainMenu, don't save the scene after): section 6 passes.
+
+## Phase 4: HUD and prompt readability
+
+**Done in code and assets:**
+- **Ultimate meters** (`Bladehold HUD.prefab` → Bottom/Ult Meter, Ult Meter Ranged): 75% scale, flanking the ability cluster at x ±680 instead of on top of it.
+- **Interact prompt** (`InteractionPrompt.prefab`, new `UI/InteractionPromptView`): a dark plate with the Interact glyph and the text. `DeniedFeedback` (shake, red flash, Denied sound) plays when `IAffordableInteractable.CanAfford` is false: wall workbench, ammo chest, tower resupply/Lv-up, gate repair, Meta pedestals.
+- **Shift glyph:** the tutorial hint glyphs use the stretch keycap, so "Shift" fits. `InputGlyph` drops "Left"/"Right" from modifier keys on prompts.
+- **World event banner** (`WorldEventBanner.prefab`): Banner 0.62 scale at y -92. The chip moved to y -478.
+- **Meta currencies:** spends go through `RunSession.SpendGoblinBlood` / `SpendOrcishMetal`, which raise the HUD's change events.
+- **Campaign map:** the metal chip's icon is now the iron ingot (`Bladehold Campaign Map Scene.unity` → CurrenciesBar/Chip_Metal/Icon).
+- **Currency panel** (`Bladehold HUD.prefab` → ScreenSpace/Currency Panel, new `UI/HudCurrencyPanel`): under the minimap, or in the top-right corner when there's no minimap.
+
+**Wiring checklist:** nothing left.
+
+**Manual verification:**
+- [ ] UI review at 16:9 and 16:10/ultrawide: ultimate orbs beside the ability icons, nothing overlapping. Currency panel under the minimap, event chip under the panel. Prompt plate readable on bright snow and dark dungeon floors.
+- [ ] Get an ultimate (both slots if you can): the orbs sit left and right of the ability cluster, charge % readable, and the full glow doesn't spill onto the icons.
+- [ ] Walk up to a wall workbench, ammo chest, tower and the gate repair spot: the prompt shows the E keycap (gamepad: X/West icon after touching the pad) and no "[E]" text.
+- [ ] With too little supply or gold, press E there: soft denied sound, short shake, red pulse, nothing bought. With enough: buys as before. Volume wrong? `InteractionPrompt.prefab` → DeniedFeedback → sound.
+- [ ] Meta Area: walk up to a weapon/armour/mount you can't afford: the prompt now shows; E gives the denied pulse.
+- [ ] Meta Area: buy a perk (blood) and unlock a pedestal or tier (metal): the HUD counters drop immediately.
+- [ ] Tutorial Gate horse steps: "Hold to charge" shows a "Shift" keycap, and the gamepad shows the stick-press icon.
+- [ ] Trigger a world event (DevConsole): the banner is smaller, sits at the top, and leaves the middle of the screen clear. The timer chip sits under the currency panel.
+- [ ] Campaign map: the third chip shows an ingot and your metal count. If Lance meant something else by "doesn't show metal", follow up.
+- [ ] Meta Area / Rest Area (no minimap): the currency panel sits in the top-right corner, not floating below an empty gap.

@@ -44,7 +44,7 @@ public class TowerPlot : MonoBehaviour, IInteractable
             {
                 return "Locked (Wave Active)";
             }
-            return "[E] Build Defence";
+            return "Build Defence";
         }
     }
 

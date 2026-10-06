@@ -16,6 +16,16 @@ public interface IInteractable
 }
 
 /// <summary>
+///     An interactable whose action costs something (supply, gold, metal). While <see cref="CanAfford" /> is
+///     false the prompt still shows, but pressing interact doesn't call <see cref="IInteractable.Interact" />:
+///     <see cref="PlayerInteraction" /> plays the prompt's denied feedback (sound + red pulse) instead.
+/// </summary>
+public interface IAffordableInteractable
+{
+    bool CanAfford { get; }
+}
+
+/// <summary>
 ///     Central registry of all currently active in-world IInteractable objects.
 ///     Eliminates expensive per-frame scene-wide searches and allocations in PlayerInteraction.
 /// </summary>
@@ -50,7 +60,7 @@ public static class InteractableRegistry
 ///     Generic component for interactable world objects (Gates, Wells, Merchants, Pedestals, etc.).
 ///     Can be configured in Inspector with a prompt string, range, and UnityEvents.
 /// </summary>
-public class Interactable : MonoBehaviour, IInteractable
+public class Interactable : MonoBehaviour, IInteractable, IAffordableInteractable
 {
     [Tooltip("Prompt text displayed to the player, e.g. 'Rest', 'Drink from Well', 'Open Shop'.")]
     [SerializeField] private string promptText = "Interact";
@@ -80,6 +90,9 @@ public class Interactable : MonoBehaviour, IInteractable
         get => isInteractable && gameObject.activeInHierarchy;
         set => isInteractable = value;
     }
+
+    /// <summary>Set by the owner (e.g. a meta pedestal) when the player can't pay for this right now.</summary>
+    public bool CanAfford { get; set; } = true;
 
     public Vector3 InteractionPosition => interactionAnchor != null ? interactionAnchor.position : transform.position;
     public float InteractionRadius => interactionRadius;

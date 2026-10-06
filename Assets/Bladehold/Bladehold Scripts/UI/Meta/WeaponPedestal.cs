@@ -233,6 +233,7 @@ public class WeaponPedestal : MonoBehaviour
             }
             interactable.PromptText = DemoConfigSO.LockedPrompt;
             interactable.CanInteract = false;
+            interactable.CanAfford = true;
             return;
         }
 
@@ -246,6 +247,7 @@ public class WeaponPedestal : MonoBehaviour
             if (costLabel != null) costLabel.text = "";
             interactable.PromptText = "Equipped";
             interactable.CanInteract = false;
+            interactable.CanAfford = true;
         }
         else if (isUnlocked)
         {
@@ -257,6 +259,7 @@ public class WeaponPedestal : MonoBehaviour
             if (costLabel != null) costLabel.text = "";
             interactable.PromptText = $"Equip {weaponData.displayName}";
             interactable.CanInteract = true;
+            interactable.CanAfford = true;
         }
         else
         {
@@ -276,7 +279,8 @@ public class WeaponPedestal : MonoBehaviour
             }
 
             interactable.PromptText = $"Unlock {weaponData.displayName} ({weaponData.orcishMetalUnlockCost} Metal)";
-            interactable.CanInteract = canAfford;
+            interactable.CanInteract = true;
+            interactable.CanAfford = canAfford;
         }
     }
 
@@ -332,7 +336,7 @@ public class WeaponPedestal : MonoBehaviour
             // Unlock weapon with Orcish Metal
             if (data != null && data.orcishMetal >= weaponData.orcishMetalUnlockCost)
             {
-                data.orcishMetal -= weaponData.orcishMetalUnlockCost;
+                RunSession.SpendOrcishMetal(data, weaponData.orcishMetalUnlockCost);
                 data.unlockedWeapons.Add(weaponData.id);
                 // Also auto-equip newly unlocked weapon so player can test it immediately
                 if (weaponData.category == WeaponCategory.Melee)

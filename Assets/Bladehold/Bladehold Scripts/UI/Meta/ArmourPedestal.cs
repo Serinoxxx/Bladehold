@@ -202,6 +202,7 @@ public class ArmourPedestal : MonoBehaviour
             }
             interactable.PromptText = DemoConfigSO.LockedPrompt;
             interactable.CanInteract = false;
+            interactable.CanAfford = true;
             return;
         }
 
@@ -215,6 +216,7 @@ public class ArmourPedestal : MonoBehaviour
             if (costLabel != null) costLabel.text = "";
             interactable.PromptText = "Equipped";
             interactable.CanInteract = false;
+            interactable.CanAfford = true;
         }
         else if (isUnlocked)
         {
@@ -226,6 +228,7 @@ public class ArmourPedestal : MonoBehaviour
             if (costLabel != null) costLabel.text = "";
             interactable.PromptText = $"Equip {armourData.displayName}";
             interactable.CanInteract = true;
+            interactable.CanAfford = true;
         }
         else
         {
@@ -244,7 +247,8 @@ public class ArmourPedestal : MonoBehaviour
             }
 
             interactable.PromptText = $"Unlock {armourData.displayName} ({armourData.orcishMetalUnlockCost} Metal)";
-            interactable.CanInteract = canAfford;
+            interactable.CanInteract = true;
+            interactable.CanAfford = canAfford;
         }
     }
 
@@ -274,7 +278,7 @@ public class ArmourPedestal : MonoBehaviour
         {
             if (data != null && data.orcishMetal >= armourData.orcishMetalUnlockCost)
             {
-                data.orcishMetal -= armourData.orcishMetalUnlockCost;
+                RunSession.SpendOrcishMetal(data, armourData.orcishMetalUnlockCost);
                 if (!data.unlockedArmourSets.Contains(armourData.id))
                 {
                     data.unlockedArmourSets.Add(armourData.id);

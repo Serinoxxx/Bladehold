@@ -291,7 +291,7 @@ public class MetaUpgradesUI : MonoBehaviour
         SaveData data = SaveSystem.Load();
         if (data.unlockedMetaTier >= tier - 1 && data.orcishMetal >= cost)
         {
-            data.orcishMetal -= cost;
+            RunSession.SpendOrcishMetal(data, cost);
             data.unlockedMetaTier = Mathf.Max(data.unlockedMetaTier, tier);
             SaveSystem.Save(data);
             RefreshUI();
@@ -309,7 +309,7 @@ public class MetaUpgradesUI : MonoBehaviour
         int cost = perk.CostForRank(rank + 1);
         if (data.goblinBlood < cost) return;
 
-        data.goblinBlood -= cost;
+        RunSession.SpendGoblinBlood(data, cost);
         data.purchasedMetaPerks.Add(perk.id);
         SaveSystem.Save(data);
         RefreshUI();

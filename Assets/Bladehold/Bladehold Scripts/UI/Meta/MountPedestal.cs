@@ -230,6 +230,7 @@ public class MountPedestal : MonoBehaviour
             {
                 interactable.PromptText = DemoConfigSO.LockedPrompt;
                 interactable.CanInteract = false;
+                interactable.CanAfford = true;
             }
             return;
         }
@@ -246,6 +247,7 @@ public class MountPedestal : MonoBehaviour
             {
                 interactable.PromptText = "Equipped";
                 interactable.CanInteract = false;
+                interactable.CanAfford = true;
             }
         }
         else if (isUnlocked)
@@ -260,6 +262,7 @@ public class MountPedestal : MonoBehaviour
             {
                 interactable.PromptText = $"Equip {mountData.displayName}";
                 interactable.CanInteract = true;
+                interactable.CanAfford = true;
             }
         }
         else
@@ -280,7 +283,8 @@ public class MountPedestal : MonoBehaviour
             if (interactable != null)
             {
                 interactable.PromptText = $"Unlock {mountData.displayName} ({mountData.orcishMetalUnlockCost} Metal)";
-                interactable.CanInteract = canAfford;
+                interactable.CanInteract = true;
+                interactable.CanAfford = canAfford;
             }
         }
     }
@@ -314,7 +318,7 @@ public class MountPedestal : MonoBehaviour
         {
             if (data.orcishMetal >= mountData.orcishMetalUnlockCost)
             {
-                data.orcishMetal -= mountData.orcishMetalUnlockCost;
+                RunSession.SpendOrcishMetal(data, mountData.orcishMetalUnlockCost);
                 if (data.unlockedMounts == null) data.unlockedMounts = new System.Collections.Generic.List<string>();
                 if (!data.unlockedMounts.Contains(mountData.id))
                 {

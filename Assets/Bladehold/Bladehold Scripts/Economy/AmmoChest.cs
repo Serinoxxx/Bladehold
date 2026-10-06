@@ -9,7 +9,7 @@ using UnityEngine;
 ///     stays visible when the quiver is full or gold is short so the price is always readable; the press
 ///     is then refused with <see cref="deniedFeedback" />.
 /// </summary>
-public class AmmoChest : MonoBehaviour, IInteractable
+public class AmmoChest : MonoBehaviour, IInteractable, IAffordableInteractable
 {
     [Header("Price")]
     [Min(0)] [SerializeField] private int goldCost = 50;
@@ -37,6 +37,8 @@ public class AmmoChest : MonoBehaviour, IInteractable
     private static PlayerAmmo Ammo => Player.Instance != null && Player.Instance.Ammo != null ? Player.Instance.Ammo : PlayerAmmo.Instance;
 
     public bool CanInteract => !anyError && Ammo != null && !Ammo.InfiniteAmmo;
+
+    public bool CanAfford => goldCost <= 0 || RunSession.InRunGold >= goldCost;
 
     public string PromptText
     {

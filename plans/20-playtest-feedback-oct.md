@@ -67,12 +67,28 @@ Rules from `/CLAUDE.md` and `plans/README.md` apply: MMF for every sound/VFX/sha
 
 ## Phase 4: HUD and prompt readability
 
-- [ ] **Ultimate HUD placement** (`UI/UltimateBarUI.cs` + HUD prefab). It currently looks odd and covers the other controls (Image #7). Re-lay it out so it looks deliberate and doesn't overlap.
-- [ ] **Interact prompt.** Make it easier to read (backing plate, outline, size) and use input glyphs instead of plain text. When the player can't afford the action (build a wall, resupply ammo, and so on), play a subtle **denied** sound and **pulse the prompt red**.
-- [ ] **Horse "hold to charge" tip** shows a generic keyboard icon instead of the **Shift** glyph. Fix the binding/glyph lookup (`Tutorial/ChargeStep.cs` / `FirstTimeHints.cs`).
-- [ ] **World events UI is too big.** Make it smaller and move it higher so it doesn't block the view (`UI/WorldEventBannerUI.cs`, `WorldEventEffectRowView.cs`).
-- [ ] **Meta area currencies don't update on the HUD after a purchase.** Refresh on purchase (subscribe to the currency-changed event instead of reading once).
-- [ ] **Campaign map doesn't show metal.** Add metal to the map's currency display.
+- [x] **Ultimate HUD placement** (`UI/UltimateBarUI.cs` + HUD prefab). It currently looks odd and covers the other controls (Image #7). Re-lay it out so it looks deliberate and doesn't overlap.
+- [x] **Interact prompt.** Make it easier to read (backing plate, outline, size) and use input glyphs instead of plain text. When the player can't afford the action (build a wall, resupply ammo, and so on), play a subtle **denied** sound and **pulse the prompt red**.
+- [x] **Horse "hold to charge" tip** shows a generic keyboard icon instead of the **Shift** glyph. Fix the binding/glyph lookup (`Tutorial/ChargeStep.cs` / `FirstTimeHints.cs`).
+- [x] **World events UI is too big.** Make it smaller and move it higher so it doesn't block the view (`UI/WorldEventBannerUI.cs`, `WorldEventEffectRowView.cs`).
+- [x] **Meta area currencies don't update on the HUD after a purchase.** Refresh on purchase (subscribe to the currency-changed event instead of reading once).
+- [x] **Campaign map doesn't show metal.** Add metal to the map's currency display.
+- [x] **(Added by Lance mid-phase) HUD currency panel:** give the currencies their own panel under the minimap on the right.
+
+### Phase 4 notes (2026-10-06)
+
+- **Ultimate HUD:** the two 443-unit orbs sat at x ±260 on top of the melee/ranged/dodge/mount slots. They're now at 75% scale and flank the ability cluster at x ±680 (`Bladehold HUD.prefab` → Bottom/Ult Meter, Ult Meter Ranged), vertically centred on it, clear of the health and gate bars. No scene overrides them.
+- **Interact prompt:**
+  - `InteractionPrompt.prefab` is rebuilt: a dark sliced plate (same as the tutorial hint panel) that hugs an Interact `InputGlyph` (stretch keycap, follows device and rebinds) and the prompt text (Grenze Underlay, 48).
+  - The new `UI/InteractionPromptView` owns it. `PlayerInteraction` finds it in the scene (the HUD nests one) and no longer prefixes "[E] ". TowerPlot's "[E] Build Defence" and gate repair's "[Hold E]" strings lost their key text.
+  - **Denied:** the new `IAffordableInteractable.CanAfford` is on WallCraftingStation (build cost), AmmoChest (gold), DefenseStructure (resupply needs any supply, the old Lv-up path needs its cost; the upgrade wheel prices itself), GateRepairStation and `Interactable` (meta pedestals set it). Pressing interact on one you can't afford skips `Interact` and plays the prompt's `DeniedFeedback`: the shop slot's invalid pattern (shake, a red flash on a separate `DeniedFlash` layer, Feel's Denied sound at 0.45), on unscaled time.
+  - Meta pedestals used to set `CanInteract = false` when you couldn't afford an unlock, which hid the prompt. They now keep it and set `CanAfford`; their handlers still re-check the metal.
+- **Shift glyph:** no Shift sprite exists, so "Left Shift" was wrapped onto a 60 px square keycap and read as a blank key. Both tutorial hint glyphs now use the stretch keycap (`UI_Keycap_Sliced`, like the rebind grid) with no-wrap text. `InputGlyph` also shortens "Left/Right Shift/Ctrl/Alt" to the bare key on prompts (the pinned rebind grid keeps the side).
+- **World events:** `WorldEventBanner.prefab` Banner scale 0.9 → 0.62, y -215 → -92. It now ends about 31% down the screen instead of 52%. The timer chip moved from y -400 to -478 so it sits under the new currency panel.
+- **Meta currencies:** the pedestals and `MetaUpgradesUI` subtracted metal and blood straight from `SaveData`, so `OrcishMetalUI`/`GoblinBloodUI` never heard about it. New `RunSession.SpendGoblinBlood` / `SpendOrcishMetal` raise the change events. All 5 spend sites use them.
+- **Campaign map metal:** it was wired and showing (checked in Play mode: 9 metal), but the icon was a thin blue hammer silhouette that read as an arrow. It's now the iron ingot the battle HUD uses for metal. If Lance meant something else (e.g. a label), ask.
+- **HUD currency panel:** `Top Left/Currencies` is gone. Its five entries live in `ScreenSpace/Currency Panel`: a dark plate under the minimap (600 wide, rows Gold | Supply, Blood | Metal, then Crystals, which hides itself at 0). The new `UI/HudCurrencyPanel` docks it under the minimap frame and moves it into the top-right corner when the scene has no minimap. `BuildCastleLevels.EnsureDefensesHUD` still looks for the old path but is null-guarded (legacy builder).
+- Edit-mode screenshots of the HUD need the canvas switched to Screen Space - Camera with the plane just past the camera's near clip, or world geometry draws over the UI. Dynamic TMP atlases render with missing glyphs until Play.
 
 ## Phase 5: Audio state
 

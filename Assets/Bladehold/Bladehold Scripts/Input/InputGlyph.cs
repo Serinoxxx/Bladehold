@@ -133,8 +133,10 @@ public class InputGlyph : MonoBehaviour
         }
 
         // No dedicated art: blank keycap + the control's short human-readable name ("F", "Left Shift").
+        // Prompts drop the modifier's side; the rebind grid (pinned) keeps it, since that's the actual binding.
         string label = InputControlPath.ToHumanReadableString(
             path, InputControlPath.HumanReadableStringOptions.OmitDevice);
+        if (!pinned) label = ShortLabel(label);
         if (stretchKeycap != null)
         {
             SetVisual(stretchKeycap, label, stretch: true);
@@ -181,6 +183,18 @@ public class InputGlyph : MonoBehaviour
             }
         }
         return -1;
+    }
+
+    /// <summary>"Left Shift" → "Shift", "Right Ctrl" → "Ctrl": the side of a modifier is noise on a prompt keycap.</summary>
+    private static string ShortLabel(string label)
+    {
+        foreach (string side in new[] { "Left ", "Right " })
+        {
+            if (!label.StartsWith(side)) continue;
+            string key = label.Substring(side.Length);
+            if (key == "Shift" || key == "Ctrl" || key == "Control" || key == "Alt") return key;
+        }
+        return label;
     }
 
     private static string LastPathComponent(string path)

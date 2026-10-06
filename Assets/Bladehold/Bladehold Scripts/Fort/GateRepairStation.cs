@@ -21,7 +21,7 @@ using UnityEngine.InputSystem;
 ///     Healing goes through <see cref="Health.Heal" />, whose <c>OnHealthChanged</c> makes <see cref="Gate" />
 ///     mirror the new value into <see cref="RunSession.FortressGateCurrentHealth" />.
 /// </summary>
-public class GateRepairStation : MonoBehaviour, IInteractable
+public class GateRepairStation : MonoBehaviour, IInteractable, IAffordableInteractable
 {
     [Header("Gate")]
     [Tooltip("The gate this station repairs. Auto-wired from a parent Gate; falls back to the nearest gate at Start.")]
@@ -61,6 +61,8 @@ public class GateRepairStation : MonoBehaviour, IInteractable
 
     public bool CanInteract => GateUsable && IsPrepPhase && !GateFull;
 
+    public bool CanAfford => CanAffordMore;
+
     public string PromptText
     {
         get
@@ -77,7 +79,7 @@ public class GateRepairStation : MonoBehaviour, IInteractable
                 return string.Format(Loc.Get("gate_repair.prompt_no_supply", "Not enough supply to repair · {0}/{1} HP"), current, max);
             }
             string key = isRepairing ? "gate_repair.prompt_active" : "gate_repair.prompt";
-            string english = isRepairing ? "[Hold E] Repairing gate: {0} supply / HP · {1}/{2} HP" : "[Hold E] Repair gate: {0} supply / HP · {1}/{2} HP";
+            string english = isRepairing ? "Repairing gate: {0} supply / HP · {1}/{2} HP" : "Hold to repair gate: {0} supply / HP · {1}/{2} HP";
             return string.Format(Loc.Get(key, english), config.supplyPerGateHp.ToString("0.##"), current, max);
         }
     }

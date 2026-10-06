@@ -5,7 +5,7 @@ using UnityEngine;
 ///     prep (or rebuilds it from rubble) and, once it stands, opens the upgrade wheel on it: material,
 ///     Repair, Spikes, one element, Deconstruct. The door is a separate interactable on the wall.
 /// </summary>
-public class WallCraftingStation : MonoBehaviour, IInteractable
+public class WallCraftingStation : MonoBehaviour, IInteractable, IAffordableInteractable
 {
     [SerializeField] private float interactionRadius = 3f;
 
@@ -40,6 +40,9 @@ public class WallCraftingStation : MonoBehaviour, IInteractable
     }
 
     public bool CanInteract => plot != null && (plot.HasStandingWall || IsPrep);
+
+    /// <summary>Building costs <see cref="WallPlot.BuildCost" /> supply; upgrading opens the wheel, which prices its own options.</summary>
+    public bool CanAfford => plot == null || plot.HasStandingWall || RunSession.InRunSupply >= WallPlot.BuildCost;
     public Vector3 InteractionPosition => transform.position + Vector3.up;
     public float InteractionRadius => interactionRadius;
 

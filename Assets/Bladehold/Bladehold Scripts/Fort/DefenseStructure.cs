@@ -12,7 +12,7 @@ using UnityEngine;
 ///     at level 1 there; what was bought lives in <see cref="Upgrades" />.
 ///     Ignored by enemy AI.
 /// </summary>
-public abstract class DefenseStructure : MonoBehaviour, IInteractable, IUpgradeable
+public abstract class DefenseStructure : MonoBehaviour, IInteractable, IAffordableInteractable, IUpgradeable
 {
     [Header("Defense Identity")]
     [SerializeField] protected FortDefenseType defenseType;
@@ -267,6 +267,18 @@ public abstract class DefenseStructure : MonoBehaviour, IInteractable, IUpgradea
         if (breakFeedback != null)
         {
             breakFeedback.PlayFeedbacks(transform.position);
+        }
+    }
+
+    /// <summary>Whether [Interact] can pay for what it would do now: a resupply needs any supply, an upgrade its full cost. The upgrade wheel handles its own costs.</summary>
+    public virtual bool CanAfford
+    {
+        get
+        {
+            if (UsesUpgradeWheel) return true;
+            if (currentSupply < maxSupply) return RunSession.InRunSupply > 0;
+            if (currentLevel < maxLevel) return RunSession.InRunSupply >= GetUpgradeCost();
+            return true;
         }
     }
 

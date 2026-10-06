@@ -589,6 +589,25 @@ public static class RunSession
         OnOrcishMetalChanged?.Invoke(data.orcishMetal);
     }
 
+    /// <summary>
+    ///     Takes Goblin Blood out of a save the caller is editing (the caller saves it), raising
+    ///     <see cref="OnGoblinBloodChanged" /> so HUD counters update. The caller checks affordability.
+    /// </summary>
+    public static void SpendGoblinBlood(SaveData data, int amount)
+    {
+        if (data == null || amount <= 0) return;
+        data.goblinBlood -= amount;
+        OnGoblinBloodChanged?.Invoke(data.goblinBlood);
+    }
+
+    /// <summary>Orcish Metal twin of <see cref="SpendGoblinBlood" />.</summary>
+    public static void SpendOrcishMetal(SaveData data, int amount)
+    {
+        if (data == null || amount <= 0) return;
+        data.orcishMetal -= amount;
+        OnOrcishMetalChanged?.Invoke(data.orcishMetal);
+    }
+
     public static event Action<int> OnDiamondFishBonesChanged;
 
     public static void AddDiamondFishBones(int amount)

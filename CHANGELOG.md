@@ -52,6 +52,8 @@
 - Fixed menu hover sounds playing only once in the Sanctuary of Spirits, shop and settings menus
 - Fixed the Blazing Trail card: dashing now leaves a burning fire trail along your path instead of a single patch back where you entered the area
 - Fixed dash attacks (Nimble Strike and dash damage cards) and Frost Step hitting around your starting spot instead of where you dashed
+- Fixed the horse "Hold to charge" tip showing a blank key instead of Shift
+- Fixed Goblin Blood and Orcish Metal counters not updating after buying perks, weapons, armour, mounts or tiers in the Meta Area
 
 ### Balance Changes
 
@@ -76,6 +78,11 @@
 - Toned down the tutorial hint chime and the hint panel's pop animation
 - Added a tearing sound when you shoot through the tutorial ropes
 - Added a victory sting when your fishing level goes up
+- Moved the ultimate meters beside the ability icons so they no longer cover them
+- Updated the interact prompt: a dark panel with the button icon for your current controller, and a soft denied sound with a red pulse when you can't afford it (walls, ammo, tower refills and upgrades, gate repairs, Meta Area unlocks)
+- Made the world event banner smaller and moved it to the top of the screen
+- Moved your currencies into their own panel under the minimap
+- Updated the campaign map's metal counter to use the same ingot icon as the battle HUD
 
 ## [0.1.31] - 2026-10-01
 

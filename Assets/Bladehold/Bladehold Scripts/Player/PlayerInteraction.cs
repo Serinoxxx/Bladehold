@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using Synty.AnimationBaseLocomotion.Samples.InputSystem;
-using TMPro;
 using UnityEngine;
 
 /// <summary>
 ///     Attached to the Player to handle player-driven interactions via 'E' (InputReader.onInteractPerformed).
-///     Detects nearby IInteractable objects within range, displays an interaction prompt, and executes the interaction.
+///     Detects nearby IInteractable objects within range, shows the HUD's <see cref="InteractionPromptView" />
+///     (Interact glyph + prompt text), and executes the interaction, or plays the prompt's denied feedback when
+///     an <see cref="IAffordableInteractable" /> can't be paid for.
 /// </summary>
 public class PlayerInteraction : MonoBehaviour
 {
@@ -14,12 +15,10 @@ public class PlayerInteraction : MonoBehaviour
     [SerializeField] private Player player;
     [SerializeField] private float maxInteractionDistance = 4.0f;
 
-    [Header("Prompt UI (Optional)")]
-    [Tooltip("Optional TextMeshPro label for displaying the interaction prompt.")]
-    [SerializeField] private TMP_Text promptLabel;
-    [Tooltip("Optional GameObject containing the prompt UI to show/hide.")]
-    [SerializeField] private GameObject promptContainer;
-    [Tooltip("Optional prefab to instantiate if prompt UI is not assigned.")]
+    [Header("Prompt UI")]
+    [Tooltip("The HUD's interact prompt. Empty = the scene's InteractionPromptView (the HUD carries one), else one spawned from promptPrefab.")]
+    [SerializeField] private InteractionPromptView promptView;
+    [Tooltip("Spawned when the scene has no InteractionPromptView.")]
     [SerializeField] private GameObject promptPrefab;
 
     private IInteractable currentTarget;
@@ -51,35 +50,28 @@ public class PlayerInteraction : MonoBehaviour
     private void Start()
     {
         ResolveDependencies();
-        if (promptContainer == null || promptLabel == null)
+        if (promptView == null)
         {
             SetupPromptUI();
+        }
+        if (promptView == null)
+        {
+            Debug.LogError("[PlayerInteraction] No InteractionPromptView in the scene and no promptPrefab to spawn one.", this);
         }
         HidePrompt();
     }
 
     private void SetupPromptUI()
     {
-        // 1. Try finding an existing prompt container in the active scene/HUD
-        var existingContainer = GameObject.Find("InteractionPrompt");
-        if (existingContainer != null)
-        {
-            promptContainer = existingContainer;
-            promptLabel = existingContainer.GetComponentInChildren<TMP_Text>(true);
-            return;
-        }
+        // 1. The HUD's prompt (inactive if something already hid it).
+        promptView = FindAnyObjectByType<InteractionPromptView>(FindObjectsInactive.Include);
+        if (promptView != null || promptPrefab == null) return;
 
-        // 2. Instantiate from the assigned prefab
-        GameObject prefabToSpawn = promptPrefab;
-        if (prefabToSpawn != null)
-        {
-            Canvas targetCanvas = FindAnyObjectByType<Canvas>();
-            Transform parent = targetCanvas != null ? targetCanvas.transform : null;
-            GameObject instance = Instantiate(prefabToSpawn, parent);
-            instance.name = "InteractionPrompt";
-            promptContainer = instance;
-            promptLabel = instance.GetComponentInChildren<TMP_Text>(true);
-        }
+        // 2. Spawn one from the prefab.
+        Canvas targetCanvas = FindAnyObjectByType<Canvas>();
+        GameObject instance = Instantiate(promptPrefab, targetCanvas != null ? targetCanvas.transform : null);
+        instance.name = "InteractionPrompt";
+        promptView = instance.GetComponent<InteractionPromptView>();
     }
 
     private void OnEnable()
@@ -132,8 +124,7 @@ public class PlayerInteraction : MonoBehaviour
             currentTarget = bestTarget;
             if (currentTarget != null)
             {
-                string prompt = currentTarget.PromptText;
-                ShowPrompt(prompt.StartsWith("[") ? prompt : $"[E] {prompt}");
+                ShowPrompt(currentTarget.PromptText);
             }
             else
             {
@@ -149,12 +140,7 @@ public class PlayerInteraction : MonoBehaviour
             }
             else
             {
-                string prompt = currentTarget.PromptText;
-                string formatted = prompt.StartsWith("[") ? prompt : $"[E] {prompt}";
-                if (promptLabel != null && promptLabel.text != formatted)
-                {
-                    ShowPrompt(formatted);
-                }
+                ShowPrompt(currentTarget.PromptText);
             }
         }
     }
@@ -162,21 +148,23 @@ public class PlayerInteraction : MonoBehaviour
     private void HandleInteract()
     {
         if (player == null) ResolveDependencies();
-        if (currentTarget != null && currentTarget.CanInteract)
+        if (currentTarget == null || !currentTarget.CanInteract) return;
+
+        if (currentTarget is IAffordableInteractable paid && !paid.CanAfford)
         {
-            currentTarget.Interact(player);
+            if (promptView != null) promptView.PlayDenied();
+            return;
         }
+        currentTarget.Interact(player);
     }
 
     public void ShowPrompt(string text)
     {
-        if (promptContainer != null) promptContainer.SetActive(true);
-        if (promptLabel != null) promptLabel.text = text;
+        if (promptView != null) promptView.Show(text);
     }
 
     public void HidePrompt()
     {
-        if (promptContainer != null) promptContainer.SetActive(false);
-        if (promptLabel != null) promptLabel.text = string.Empty;
+        if (promptView != null) promptView.Hide();
     }
 }
