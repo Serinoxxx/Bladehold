@@ -25,6 +25,6 @@ MonoBehaviour:
   maxMetaPerkTier: 1
   campaignCutoffTier: 4
   maxWavesPerSector: 3
-  steamStoreUrl: 
+  steamStoreUrl: https://store.steampowered.com/app/5279820/Bladehold/
   lockedLabel: LOCKED FOR DEMO
   lockedPrompt: Not available in the demo

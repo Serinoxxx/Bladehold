@@ -55,6 +55,7 @@
 - Fixed the horse "Hold to charge" tip showing a blank key instead of Shift
 - Fixed Goblin Blood and Orcish Metal counters not updating after buying perks, weapons, armour, mounts or tiers in the Meta Area
 - Fixed the horse's hoofbeats carrying on behind the pause menu, card drafts, shop and other menus
+- Fixed the Wishlist on Steam button never showing on the end-of-demo screen
 
 ### Balance Changes
 
@@ -63,6 +64,7 @@
 
 ### General Changes
 
+- Restyled the end-of-demo "Thanks for playing" screen to match the other menus, with Wishlist on Steam as the main button
 - Removed the Oil Vat and Spike Trap towers; boiling oil and spikes are now wall and tower upgrades
 - Removed the fortress elemental battle cards; towers now get their element from the upgrade wheel
 - Updated the settings menu with a new look, hover and click sounds, highlights on the row under the cursor or gamepad focus, and a layout that fits any screen shape

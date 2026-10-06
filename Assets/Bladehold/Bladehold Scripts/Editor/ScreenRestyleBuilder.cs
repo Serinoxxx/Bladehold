@@ -33,6 +33,7 @@ public static class ScreenRestyleBuilder
     private const string SaveSlotPath = Ui + "SaveSlot.prefab";
     private const string NodeButtonPath = Ui + "CampaignNodeButton.prefab";
     private const string TierHeaderPath = Ui + "CampaignTierHeader.prefab";
+    private const string DemoEndPath = Ui + "DemoEndScreen.prefab";
     private const string CampaignScenePath = "Assets/Bladehold/Bladehold Scenes/Bladehold Campaign Map Scene.unity";
     private const string FishingScenePath = "Assets/Bladehold/Bladehold Scenes/Bladehold Fishing Pond.unity";
     private const string FishingDraftCardPath = Ui + "FishingDraftCard.prefab";
@@ -52,6 +53,7 @@ public static class ScreenRestyleBuilder
         RestyleSaveSlots();
         BuildBossIntro();
         RestyleCampaignMap();
+        RestyleDemoEnd();
         RestyleFishing();
         RestyleMainMenu();
         BuildLoadingScreen();
@@ -685,6 +687,72 @@ public static class ScreenRestyleBuilder
     ///     Also deletes the scene's old built-in loading screen: the main menu now loads through the shared
     ///     <see cref="Bladehold.UI.LoadingScreenManager" /> (see <see cref="BuildLoadingScreen" />).
     /// </summary>
+    // ───────────────────────────────────────────────── demo end ("Thanks for playing")
+
+    [MenuItem("Bladehold/UI/Restyle/Demo End Screen")]
+    public static void RestyleDemoEnd()
+    {
+        K.Begin(UIMenuId.CampaignMap);
+        Edit(DemoEndPath, root =>
+        {
+            K.Scope(root, UIMenuId.CampaignMap);
+
+            // Dimmer + vignette over the campaign map, which stays visible behind the window.
+            Transform panel = R.Need(root.transform, "Panel");
+            R.ClearThemeDecor(panel);
+            R.Flat(panel.GetComponent<Image>(), UIColorRole.Dimmer, 1.2f);
+            RectTransform vignette = K.Decoration("ThemeVignette", panel);
+            K.Stretch(vignette);
+            K.Img(vignette, K.LoadSprite("Vignette_Background_01"), UIColorRole.Dimmer, 0.9f);
+            vignette.SetSiblingIndex(0);
+
+            // The torn parchment becomes the menu window: dark fill, sheen, large gold frame.
+            RectTransform box = (RectTransform)R.Need(panel, "Box");
+            R.WindowChrome(box);
+            box.sizeDelta = new Vector2(1100f, 540f);
+            VerticalLayoutGroup layout = box.GetComponent<VerticalLayoutGroup>();
+            layout.padding = new RectOffset(110, 110, 56, 56);
+            layout.spacing = 28f;
+            layout.childAlignment = TextAnchor.MiddleCenter;
+
+            // Title: spaced accent caps with flourishes hugging it and a gold rule under it.
+            TMP_Text header = R.TitleInk(R.Need<TMP_Text>(box, "Header"), 6f);
+            header.fontSize = 58f;
+            R.ClearThemeDecor(header.transform);
+            float half = header.GetPreferredValues(header.text.ToUpperInvariant()).x * 0.5f + 28f;
+            R.Flourish("ThemeFlourishLeft", header.transform, true, new Vector2(0.5f, 0.5f), new Vector2(-half, -4f), new Vector2(130f, 52f));
+            R.Flourish("ThemeFlourishRight", header.transform, false, new Vector2(0.5f, 0.5f), new Vector2(half, -4f), new Vector2(130f, 52f));
+            RectTransform rule = K.Decoration("ThemeRule", header.transform);
+            K.Place(rule, new Vector2(0.5f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0f, -6f), new Vector2(560f, 10f));
+            R.Rule(K.Img(rule, K.Line, UIColorRole.AccentMuted), 0.55f);
+
+            TMP_Text body = R.Ink(R.Need<TMP_Text>(box, "Body"), UIColorRole.Text, UIFontRole.Body);
+            body.fontSize = 32f;
+            body.lineSpacing = 2f;
+
+            // Wishlist is the call to action (primary parchment); Play Again is the quiet ghost.
+            Transform buttons = R.Need(box, "Buttons");
+            HorizontalLayoutGroup row = buttons.GetComponent<HorizontalLayoutGroup>();
+            row.spacing = 36f;
+            buttons.GetComponent<LayoutElement>().preferredHeight = 84f;
+            foreach (string name in new[] { "WishlistButton", "PlayAgainButton" })
+            {
+                Button button = R.Need<Button>(buttons, name);
+                Shadow shadow = button.GetComponent<Shadow>();
+                if (shadow != null) Object.DestroyImmediate(shadow);
+                LayoutElement size = button.GetComponent<LayoutElement>();
+                size.preferredWidth = 380f;
+                size.preferredHeight = 76f;
+                ((RectTransform)button.transform).sizeDelta = new Vector2(380f, 76f);
+                bool primary = name == "WishlistButton";
+                TMP_Text label = R.Need<TMP_Text>(button.transform, "Label");
+                R.Button(button, primary ? K.ButtonStyle.Primary : K.ButtonStyle.Ghost, label, null, 0.9f);
+                label.fontSize = 28f;
+                label.characterSpacing = 2f;
+            }
+        });
+    }
+
     [MenuItem("Bladehold/UI/Restyle/Main Menu")]
     public static void RestyleMainMenu()
     {

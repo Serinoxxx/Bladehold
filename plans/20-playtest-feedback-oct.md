@@ -103,8 +103,17 @@ Rules from `/CLAUDE.md` and `plans/README.md` apply: MMF for every sound/VFX/sha
 
 ## Phase 6: Flow and screen polish
 
-- [ ] **Rest Area: one exit door** that leads back to the campaign map. Remove the other doors (`UI/RestArea/RestAreaGate.cs`, `RestAreaDoor`).
-- [ ] **End-of-demo "Thanks for playing" screen.** Restyle it to the house UI theme (Image #8) and add a **Wishlist on Steam** button that opens `https://store.steampowered.com/app/5279820/Bladehold/` (`Application.OpenURL`, gamepad-focusable).
+- [x] **Rest Area: one exit door** that leads back to the campaign map. Remove the other doors (`UI/RestArea/RestAreaGate.cs`, `RestAreaDoor`).
+- [x] **End-of-demo "Thanks for playing" screen.** Restyle it to the house UI theme (Image #8) and add a **Wishlist on Steam** button that opens `https://store.steampowered.com/app/5279820/Bladehold/` (`Application.OpenURL`, gamepad-focusable).
+
+### Phase 6 notes (2026-10-06)
+
+- **Rest Area exit door:** Lance already did this before the session.
+- **Thanks for playing screen** (`DemoEndScreen.prefab`, shown by `CampaignMapUI` once the demo tier is cleared):
+  - Restyled with the new `ScreenRestyleBuilder.RestyleDemoEnd` (**Bladehold > UI > Restyle > Demo End Screen**, also in All Screens), the same in-place reskin as the death screen and save slots. It uses the CampaignMap theme. The torn parchment is now the menu window (dark fill, gold frame), with a spaced accent title, flourishes, a gold rule, Grenze body text, and a dimmer plus vignette over the map. Wishlist on Steam is the primary parchment button and Play Again is a ghost button, both with hover glow and juice. The hierarchy and references are unchanged, so re-run the builder rather than hand-editing.
+  - **The Wishlist button already existed but never showed:** `DemoEndScreenUI` hides it when `DemoConfig.steamStoreUrl` is empty, and it was empty. It's now set to `https://store.steampowered.com/app/5279820/Bladehold/` (`Application.OpenURL`).
+  - Gamepad: `Show()` now selects Wishlist first (Play Again if there's no URL). Left/right moves between the two. The panel's `MenuFocusController` still traps focus.
+  - Checked with an off-screen render of the prefab at 1920x1080. Not checked in Play mode: reaching the demo end needs the cutoff tier cleared.
 
 ## Phase 7: New juice/features (requested during the freeze)
 

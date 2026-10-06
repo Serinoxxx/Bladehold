@@ -80,3 +80,17 @@ Editor leftovers from `plans/20-playtest-feedback-oct.md`. Unity MCP was connect
 - [ ] Ride the horse at a gallop and press Esc: the hoofbeats stop within a moment. Unpause while still riding: they come back at the same pace.
 - [ ] Gallop into a level-up/draft card pick, the Rest Area shop and an enemy intro: silent while each is open, back on close.
 - [ ] Trample goblins at full charge (hitstop feedbacks): the gait doesn't stutter. If it does, raise `freezeGraceTime` on the horse prefab's `HorseHoofbeatAudio`.
+
+## Phase 6: Flow and screen polish
+
+**Done in code and assets:**
+- **Thanks for playing screen:** `DemoEndScreen.prefab` restyled by **Bladehold > UI > Restyle > Demo End Screen** (`Editor/ScreenRestyleBuilder.cs`). The Steam URL is set in `Resources/DemoConfig.asset`, so the Wishlist button shows. A pad starts on Wishlist.
+- Rest Area exit door: done by Lance.
+
+**Wiring checklist:** nothing left.
+
+**Manual verification:**
+- [ ] UI review at 16:9 and 16:10/ultrawide: the window sits centred over the dimmed campaign map, the flourishes stay inside the frame, and the body text doesn't clip. Also check it in a longer language (DE/FR, if the screen ever gets localised; its text is authored on the prefab today).
+- [ ] Clear the demo cutoff tier (or DevConsole): the screen appears and Wishlist on Steam opens the Bladehold store page (Steam overlay in a Steam build, otherwise the browser).
+- [ ] Gamepad: Wishlist is highlighted on open, left/right moves to Play Again, A on Play Again returns to the Meta Area. Hover glow shows only on the focused/hovered button.
+

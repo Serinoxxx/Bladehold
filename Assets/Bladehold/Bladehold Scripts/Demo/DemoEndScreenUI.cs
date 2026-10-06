@@ -56,14 +56,16 @@ public class DemoEndScreenUI : MonoBehaviour
         if (anyError) return;
 
         DemoConfigSO cfg = DemoConfigSO.Active;
+        bool canWishlist = wishlistButton != null && cfg != null && !string.IsNullOrWhiteSpace(cfg.steamStoreUrl);
         if (wishlistButton != null)
         {
-            wishlistButton.gameObject.SetActive(cfg != null && !string.IsNullOrWhiteSpace(cfg.steamStoreUrl));
+            wishlistButton.gameObject.SetActive(canWishlist);
         }
 
         panelRoot.SetActive(true);
         CursorLockManager.SetUnlock("DemoEnd", true);
-        continueButton.Select();
+        // Wishlist is the screen's call to action, so a pad lands on it first.
+        (canWishlist ? wishlistButton : continueButton).Select();
         if (showFeedback != null) showFeedback.PlayFeedbacks();
     }
 
