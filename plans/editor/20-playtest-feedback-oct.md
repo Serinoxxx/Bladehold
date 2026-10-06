@@ -110,3 +110,18 @@ Editor leftovers from `plans/20-playtest-feedback-oct.md`. Unity MCP was connect
 - [ ] Graveyard: the green fog washes the fireball out at the default 22 m to 17 m push-in. Judge it, and shorten `startDistance`/`endDistance` on the config if it reads poorly. (The config is shared, so check Outer and Desert Gate after.)
 - [ ] Letterbox bars are the boss intro's thin translucent ones. Decide if the gate cinematic wants heavier bars.
 - [ ] Die to an enemy during the slow-mo: still the gate failure screen, never "The Hero Has Fallen".
+
+## Phase 7: Horse stall at the gate
+
+**Done in code and assets:**
+- `Horse/HorseStall.cs` on `Economy/HorseStall.prefab` (market stall, hitching post, hay; `PurchaseMMF` plays coins and a neigh). Placed outside the gate in Outer Gate, Desert Gate, Graveyard and Tutorial Gate (positions hand-tuned in the Editor by Lance). The generator places it via the `placeHorseStall`/`horseStallPosition` spec fields at (-9, 6); the Tutorial Gate spec still has it off, so a regenerate would drop or move the hand-placed stalls.
+- During prep, [E] rebuys a dead warhorse for 500 in-run gold (`RunSession.ReplaceMount`). While the horse lives or gold is short, the press is refused with the denied pulse. Hidden mid-wave and where `SceneAbilityRules` forbid the mount.
+- Prompt strings `horse_stall.*` are localised; the fallen-horse HUD hint now says "at the stall or shop".
+- Checked in Play mode (Outer Gate) through `execute_code`: the alive, short-of-gold, buy and second-press cases; the prompt on screen; hidden mid-wave. Stall anchor is on the NavMesh in all three scenes.
+
+**Wiring checklist:** nothing left.
+
+**Manual verification:**
+- [ ] Let the horse die in a gate battle, collect 500 gold, walk to the stall during prep and press E: coin and neigh sounds, gold drops by 500, the horse bars come back full and you can summon it.
+- [ ] Press E with too little gold, and again with the horse alive: red denied pulse, no gold spent.
+- [ ] The stall canopy sits close to the player camera when you stand at the counter. Judge whether it blocks the view; if so, nudge `horseStallPosition` or the prefab's anchor.

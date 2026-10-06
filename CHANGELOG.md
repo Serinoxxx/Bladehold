@@ -43,6 +43,7 @@
 - Added music ducking when the pause menu is opened
 - Added smooth crossfades and loading-screen fades for all music transitions
 - Added a slow-motion cinematic of the gate exploding before the defeat screen when the gate falls
+- Added a horse stall beside the gate: if your warhorse has fallen, buy a new one there for 500 gold between waves
 
 ### Fixes
 

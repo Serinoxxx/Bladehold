@@ -87,5 +87,14 @@ MonoBehaviour:
   - {x: 32, y: 104}
   objectiveRangeMargin: 8
   objectiveZRange: {x: 62, y: 100}
+  enemyRosterIds: []
+  fodderEnemyId: 
+  wallPlotsOnBridges: 1
+  wallPlotInset: 1.5
+  placeFortRules: 1
+  placeAmmoChest: 1
+  ammoChestPosition: {x: 8, y: 5}
+  placeHorseStall: 0
+  horseStallPosition: {x: -9, y: 6}
   scatterDensity: 1
   gameplayClearRadius: 7

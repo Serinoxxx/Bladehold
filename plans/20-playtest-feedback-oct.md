@@ -120,7 +120,7 @@ Rules from `/CLAUDE.md` and `plans/README.md` apply: MMF for every sound/VFX/sha
 These are new features, so confirm the scope with Lance before starting each one.
 
 - [x] **Gate-destroyed cinematic.** When the gate explodes, cut to a cinematic Cinemachine camera on the gate with a slow-mo explosion for 3–4 seconds (unscaled-time MMF), then show the failed screen.
-- [ ] **Horse stall at the gate.** During the prep phase, a stall next to the gate sells a horse for **500g**. Uses the interact prompt from Phase 4, including the denied state. Decide what happens if the player already has a mount.
+- [x] **Horse stall at the gate.** During the prep phase, a stall next to the gate sells a horse for **500g**. Uses the interact prompt from Phase 4, including the denied state. Decide what happens if the player already has a mount.
 - [ ] **Weapon unlock fanfare.** Unlocking a new weapon gets a big moment: sound, banner and sparks (MMF + a banner prefab).
 
 ### Phase 7 notes (2026-10-06)
@@ -131,7 +131,7 @@ These are new features, so confirm the scope with Lance before starting each one
   - It re-asserts the timescale every frame so a hitstop can't snap time back to normal. A player death during the cinematic is ignored.
   - `GateDestructionMMF`'s particles moved from `FireExplosionUnscaled` (which plays at full speed) to the scaled `FX_Fire_Explosion_Large_01`, so the blast actually slows down. A scene without the cinematic logs an error and falls back to the old freeze.
   - Checked in Play mode in Outer Gate and Graveyard. The Graveyard's green fog swallows the fireball (see the editor checklist).
-- **Horse stall and weapon fanfare:** started in this session but **not committed**. They're still in the working tree for the next session: `Horse/HorseStall.cs`, `Economy/HorseStall.prefab` (placed in Outer, Desert and Graveyard; generator spec fields `placeHorseStall`/`horseStallPosition`; off in the Tutorial Gate spec), and the `WeaponPedestal` unlock fanfare (`UnlockMMF` on `Pedestal_Weapon.prefab`, banner via `EnemyIntroUI`). Lance's horse decision: the stall lets you rebuy your horse after it dies. Neither has been checked in Play mode.
+- **Horse stall and weapon fanfare:** started in this session but **not committed**. **Horse stall finished and committed in a follow-up session (2026-10-06):** checked in Play mode, prompt strings localised, the fallen-horse hint now names the stall. They're still in the working tree for the next session: `Horse/HorseStall.cs`, `Economy/HorseStall.prefab` (placed in Outer, Desert and Graveyard; generator spec fields `placeHorseStall`/`horseStallPosition`; off in the Tutorial Gate spec), and the `WeaponPedestal` unlock fanfare (`UnlockMMF` on `Pedestal_Weapon.prefab`, banner via `EnemyIntroUI`). Lance's horse decision: the stall lets you rebuy your horse after it dies. Neither has been checked in Play mode.
 
 ---
 

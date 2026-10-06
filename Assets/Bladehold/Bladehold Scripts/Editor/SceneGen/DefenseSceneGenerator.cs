@@ -619,6 +619,7 @@ public static class DefenseSceneGenerator
     public const string WallPlotPrefabPath = "Assets/Bladehold/Bladehold Prefabs/Defenses/Walls/WallPlot.prefab";
     public const string FortRulesPrefabPath = "Assets/Bladehold/Bladehold Prefabs/Defenses/FortRules.prefab";
     public const string AmmoChestPrefabPath = "Assets/Bladehold/Bladehold Prefabs/Economy/AmmoChest.prefab";
+    public const string HorseStallPrefabPath = "Assets/Bladehold/Bladehold Prefabs/Economy/HorseStall.prefab";
     private const int MaxWallPlots = 8;
 
     /// <summary>
@@ -697,7 +698,7 @@ public static class DefenseSceneGenerator
         return float.IsNaN(best) ? fallback : best;
     }
 
-    /// <summary>The fort-rules prefab (upgrade wheel, crystal rewards, biome crystal bias) and the gate ammo chest.</summary>
+    /// <summary>The fort-rules prefab (upgrade wheel, crystal rewards, biome crystal bias), the gate ammo chest and the horse stall.</summary>
     private static void PlaceFortRules(DefenseBuildContext ctx)
     {
         DefenseSceneSpecSO spec = ctx.Spec;
@@ -735,6 +736,27 @@ public static class DefenseSceneGenerator
                 chest.transform.SetPositionAndRotation(pos, toGate.sqrMagnitude > 0.01f ? Quaternion.LookRotation(toGate) : Quaternion.identity);
             }
         }
+
+        if (spec.placeHorseStall)
+        {
+            PlaceHorseStall(ctx.OnNavMesh(spec.horseStallPosition));
+        }
+    }
+
+    /// <summary>Instantiates the horse stall at <paramref name="pos" />, its counter facing the gate (the origin).</summary>
+    public static GameObject PlaceHorseStall(Vector3 pos)
+    {
+        var stallPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(HorseStallPrefabPath);
+        if (stallPrefab == null)
+        {
+            Debug.LogError($"{Tag} No HorseStall prefab at {HorseStallPrefabPath}.");
+            return null;
+        }
+        var stall = (GameObject)PrefabUtility.InstantiatePrefab(stallPrefab);
+        stall.name = "HorseStall_Gate";
+        Vector3 toGate = new Vector3(-pos.x, 0f, -pos.z);
+        stall.transform.SetPositionAndRotation(pos, toGate.sqrMagnitude > 0.01f ? Quaternion.LookRotation(toGate) : Quaternion.identity);
+        return stall;
     }
 
     private static void PlaceTowerPlots(DefenseBuildContext ctx)

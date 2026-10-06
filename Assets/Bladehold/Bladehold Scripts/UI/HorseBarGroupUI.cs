@@ -104,7 +104,7 @@ public class HorseBarGroupUI : MonoBehaviour
         }
         if (lost)
         {
-            statusLabel.text = Loc.Get("hud.mount.fallen", "Fallen: buy a new warhorse at the shop");
+            statusLabel.text = Loc.Get("hud.mount.fallen", "Fallen: buy a new warhorse at the stall or shop");
         }
     }
 

@@ -89,6 +89,10 @@ public class DefenseSceneSpecSO : ScriptableObject
     public bool placeAmmoChest = true;
     [Tooltip("Ammo chest position (outside the gate, beside the apron).")]
     public Vector2 ammoChestPosition = new Vector2(8f, 5f);
+    [Tooltip("Place a horse stall by the main gate (buys back a dead warhorse during prep, plan 20).")]
+    public bool placeHorseStall = true;
+    [Tooltip("Horse stall position (outside the gate, the other side of the apron from the ammo chest).")]
+    public Vector2 horseStallPosition = new Vector2(-9f, 6f);
 
     [Header("Scatter")]
     [Tooltip("Scales every scatter density. 0 = structures only.")]
