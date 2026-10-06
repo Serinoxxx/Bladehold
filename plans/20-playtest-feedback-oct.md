@@ -121,7 +121,7 @@ These are new features, so confirm the scope with Lance before starting each one
 
 - [x] **Gate-destroyed cinematic.** When the gate explodes, cut to a cinematic Cinemachine camera on the gate with a slow-mo explosion for 3–4 seconds (unscaled-time MMF), then show the failed screen.
 - [x] **Horse stall at the gate.** During the prep phase, a stall next to the gate sells a horse for **500g**. Uses the interact prompt from Phase 4, including the denied state. Decide what happens if the player already has a mount.
-- [ ] **Weapon unlock fanfare.** Unlocking a new weapon gets a big moment: sound, banner and sparks (MMF + a banner prefab).
+- [x] **Weapon unlock fanfare.** Unlocking a new weapon gets a big moment: sound, banner and sparks (MMF + a banner prefab).
 
 ### Phase 7 notes (2026-10-06)
 
@@ -132,6 +132,7 @@ These are new features, so confirm the scope with Lance before starting each one
   - `GateDestructionMMF`'s particles moved from `FireExplosionUnscaled` (which plays at full speed) to the scaled `FX_Fire_Explosion_Large_01`, so the blast actually slows down. A scene without the cinematic logs an error and falls back to the old freeze.
   - Checked in Play mode in Outer Gate and Graveyard. The Graveyard's green fog swallows the fireball (see the editor checklist).
 - **Horse stall and weapon fanfare:** started in this session but **not committed**. **Horse stall finished and committed in a follow-up session (2026-10-06):** checked in Play mode, prompt strings localised, the fallen-horse hint now names the stall. They're still in the working tree for the next session: `Horse/HorseStall.cs`, `Economy/HorseStall.prefab` (placed in Outer, Desert and Graveyard; generator spec fields `placeHorseStall`/`horseStallPosition`; off in the Tutorial Gate spec), and the `WeaponPedestal` unlock fanfare (`UnlockMMF` on `Pedestal_Weapon.prefab`, banner via `EnemyIntroUI`). Lance's horse decision: the stall lets you rebuy your horse after it dies. Neither has been checked in Play mode.
+- **Weapon unlock fanfare** (finished 2026-10-06): `WeaponPedestal.PlayUnlockFanfare` runs after a successful Orcish Metal unlock. It plays `UnlockMMF` on `Pedestal_Weapon.prefab` (the `Fanfare Win` sting and a level-up particle burst at the floating model) and shows the HUD banner through `EnemyIntroUI.ShowIntro` with no skulls and no letterbox: eyebrow "New weapon unlocked", the weapon name, and "Ultimate: X" when the weapon has one. New strings `weapon_unlock.eyebrow` and `weapon_unlock.ultimate` are localised. Checked in Play mode in the Meta Area by invoking the fanfare through `execute_code`, which leaves the save untouched: all 5 pedestals have the feedback wired, and the banner reads "New weapon unlocked / DWARVEN AXE / Ultimate: WHIRLWIND". Audio and the burst at the pedestal itself still need checking by ear and eye (see the editor checklist).
 
 ---
 

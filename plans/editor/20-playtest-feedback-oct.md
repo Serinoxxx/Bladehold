@@ -125,3 +125,18 @@ Editor leftovers from `plans/20-playtest-feedback-oct.md`. Unity MCP was connect
 - [ ] Let the horse die in a gate battle, collect 500 gold, walk to the stall during prep and press E: coin and neigh sounds, gold drops by 500, the horse bars come back full and you can summon it.
 - [ ] Press E with too little gold, and again with the horse alive: red denied pulse, no gold spent.
 - [ ] The stall canopy sits close to the player camera when you stand at the counter. Judge whether it blocks the view; if so, nudge `horseStallPosition` or the prefab's anchor.
+
+## Phase 7: Weapon unlock fanfare
+
+**Done in code and assets:**
+- `UI/Meta/WeaponPedestal.cs`: `PlayUnlockFanfare()` runs after a successful Orcish Metal unlock. It plays `unlockFeedback` at the model mount point and shows a "New weapon unlocked" banner through `EnemyIntroUI` (no skulls, no letterbox, 3.5 s).
+- `Pedestal_Weapon.prefab` has a child `UnlockMMF` (MMSoundManager `Fanfare Win` sting and a level-up particle burst), wired on the prefab, so all 5 Meta Area pedestals pick it up.
+- Strings `weapon_unlock.eyebrow` and `weapon_unlock.ultimate` are localised.
+- Checked in Play mode via `execute_code` (the fanfare invoked directly, save untouched): the banner renders correctly, with no errors.
+
+**Wiring checklist:** nothing left.
+
+**Manual verification:**
+- [ ] With enough Orcish Metal, unlock a weapon at a pedestal: the fanfare sting plays, the burst goes off at the floating model, and the banner names the weapon and its ultimate. Judge whether the sting is loud enough over the Meta Area music.
+- [ ] The plan asked for "sparks". If the level-up burst alone feels thin, add a sparks particle feedback to `UnlockMMF`.
+- [ ] Pressing E again on the now-unlocked pedestal equips it without replaying the fanfare.

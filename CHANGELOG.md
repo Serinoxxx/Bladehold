@@ -44,6 +44,7 @@
 - Added smooth crossfades and loading-screen fades for all music transitions
 - Added a slow-motion cinematic of the gate exploding before the defeat screen when the gate falls
 - Added a horse stall beside the gate: if your warhorse has fallen, buy a new one there for 500 gold between waves
+- Added a fanfare when you unlock a weapon in the Meta Area: a victory sting, a burst of light at the pedestal and a "New weapon unlocked" banner naming the weapon and its ultimate
 
 ### Fixes
 

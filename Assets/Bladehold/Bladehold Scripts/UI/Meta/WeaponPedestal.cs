@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MoreMountains.Feedbacks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,6 +9,8 @@ using UnityEngine.UI;
 ///     Diegetic weapon pedestal in the Meta Area.
 ///     Displays a floating, gently spinning 3D model of a weapon and a floating world-space UI.
 ///     Allows the player to unlock the weapon with Orcish Metal or equip it for future runs.
+///     An unlock gets a fanfare: <see cref="unlockFeedback" /> (sting, level-up burst and sparks at the
+///     floating model) and a "New weapon unlocked" banner on the HUD (<see cref="EnemyIntroUI" />).
 /// </summary>
 [RequireComponent(typeof(Interactable))]
 public class WeaponPedestal : MonoBehaviour
@@ -36,6 +39,12 @@ public class WeaponPedestal : MonoBehaviour
     [SerializeField] private TMP_Text upgradesLabel;
     [SerializeField] private TMP_Text ultimateLabel;
     [SerializeField] private Image currencyIcon;
+
+    [Header("Unlock Fanfare")]
+    [Tooltip("Played at the floating model when this weapon is unlocked: fanfare sting, level-up burst, sparks.")]
+    [SerializeField] private MMF_Player unlockFeedback;
+    [Tooltip("Real seconds the \"New weapon unlocked\" banner stays up.")]
+    [SerializeField] private float unlockBannerDuration = 3.5f;
 
     [Header("Proximity / Focus Settings")]
     [SerializeField] private float focusDistance = 4.5f;
@@ -107,6 +116,9 @@ public class WeaponPedestal : MonoBehaviour
 
     private void Start()
     {
+        // Feedback is required but never gameplay-breaking: log only.
+        if (unlockFeedback == null) Debug.LogError($"[WeaponPedestal] {name}: unlockFeedback is not assigned.", this);
+
         ResolvePlayerReferences();
         SpawnModel();
         RefreshPedestal();
@@ -353,6 +365,7 @@ public class WeaponPedestal : MonoBehaviour
 
                 Debug.Log($"[WeaponPedestal] Unlocked and equipped weapon: {weaponData.displayName}!");
                 RefreshAllPedestals();
+                PlayUnlockFanfare();
             }
         }
         else
@@ -372,6 +385,21 @@ public class WeaponPedestal : MonoBehaviour
 
             Debug.Log($"[WeaponPedestal] Equipped weapon: {weaponData.displayName}!");
             RefreshAllPedestals();
+        }
+    }
+
+    private void PlayUnlockFanfare()
+    {
+        if (unlockFeedback != null)
+        {
+            unlockFeedback.PlayFeedbacks(modelMountPoint != null ? modelMountPoint.position : transform.position);
+        }
+        if (EnemyIntroUI.Instance != null)
+        {
+            string subtitle = string.IsNullOrWhiteSpace(weaponData.pedestalUltimateName)
+                ? ""
+                : string.Format(Loc.Get("weapon_unlock.ultimate", "Ultimate: {0}"), weaponData.pedestalUltimateName);
+            EnemyIntroUI.Instance.ShowIntro(Loc.Get("weapon_unlock.eyebrow", "New weapon unlocked"), weaponData.displayName, 0, subtitle, unlockBannerDuration, false);
         }
     }
 
