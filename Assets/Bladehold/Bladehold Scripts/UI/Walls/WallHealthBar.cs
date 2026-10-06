@@ -21,8 +21,10 @@ public class WallHealthBar : MonoBehaviour
     [SerializeField] private float showWithinDistance = 14f;
     [SerializeField] private float showAfterHitSeconds = 4f;
     [SerializeField] private float fadeSpeed = 4f;
-    [Tooltip("Height above the wall's base.")]
-    [SerializeField] private float height = 4.6f;
+    [Tooltip("Minimum height above the wall's base. The bar also rises to clear the top of the wall's visible model (see Clearance Above Model), so a taller tier or a hand-fitted gatehouse never pokes through it.")]
+    [SerializeField] private float height = 7.5f;
+    [Tooltip("Gap kept between the top of the wall's tallest visible mesh and the bar.")]
+    [SerializeField] private float clearanceAboveModel = 1.5f;
 
     private float lastHitTime = -999f;
     private float lastHealth = -1f;
@@ -45,7 +47,7 @@ public class WallHealthBar : MonoBehaviour
 
         wall.OnStateChanged += HandleStateChanged;
         canvasGroup.alpha = 0f;
-        transform.localPosition = new Vector3(0f, height, 0f);
+        PlaceAboveModel();
         HandleStateChanged(wall);
     }
 
@@ -71,6 +73,24 @@ public class WallHealthBar : MonoBehaviour
         if (elementAccent != null) elementAccent.color = w.Upgrades.HasElement ? w.Upgrades.element.Tint() : Color.white;
     }
 
+    /// <summary>
+    ///     Puts the bar at <see cref="height" /> over the wall's base, then raises it until it clears the top
+    ///     of the tallest visible mesh under the wall by <see cref="clearanceAboveModel" />.
+    /// </summary>
+    private void PlaceAboveModel()
+    {
+        transform.localPosition = new Vector3(0f, height, 0f);
+        float top = float.NegativeInfinity;
+        foreach (Renderer r in wall.GetComponentsInChildren<Renderer>())
+        {
+            if (!r.enabled || !(r is MeshRenderer || r is SkinnedMeshRenderer)) continue;
+            top = Mathf.Max(top, r.bounds.max.y);
+        }
+        if (float.IsNegativeInfinity(top)) return;
+        float wanted = top + clearanceAboveModel;
+        if (transform.position.y < wanted) transform.position += Vector3.up * (wanted - transform.position.y);
+    }
+
     private void LateUpdate()
     {
         if (anyError) return;
@@ -80,6 +100,9 @@ public class WallHealthBar : MonoBehaviour
                     (Player.Instance.transform.position - wall.transform.position).sqrMagnitude < showWithinDistance * showWithinDistance;
         bool recentlyHit = Time.time - lastHitTime < showAfterHitSeconds;
         bool show = wall.IsStanding && (near || recentlyHit || wall.HealthFraction < 0.999f && near);
+        // Re-fit each time the bar fades in: the model assembles from the ground when built and swaps
+        // on tier upgrades, so its height at Start isn't final.
+        if (show && canvasGroup.alpha <= 0f) PlaceAboveModel();
         canvasGroup.alpha = Mathf.MoveTowards(canvasGroup.alpha, show ? 1f : 0f, fadeSpeed * Time.deltaTime);
 
         if (cam != null && canvasGroup.alpha > 0f)

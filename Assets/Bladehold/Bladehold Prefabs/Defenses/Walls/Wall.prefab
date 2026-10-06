@@ -3042,7 +3042,7 @@ MonoBehaviour:
   showWithinDistance: 14
   showAfterHitSeconds: 4
   fadeSpeed: 4
-  height: 5.8
+  height: 7.5
 --- !u!1 &3582214411906484192
 GameObject:
   m_ObjectHideFlags: 0

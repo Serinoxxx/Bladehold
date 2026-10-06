@@ -558,7 +558,7 @@ public static class FortWallAssetsBuilder
         so.FindProperty("canvasGroup").objectReferenceValue = group;
         so.FindProperty("label").objectReferenceValue = label;
         so.FindProperty("elementAccent").objectReferenceValue = accent;
-        so.FindProperty("height").floatValue = WallHeight + 0.8f;
+        so.FindProperty("height").floatValue = WallHeight + 2.5f;
         so.ApplyModifiedPropertiesWithoutUndo();
     }
 

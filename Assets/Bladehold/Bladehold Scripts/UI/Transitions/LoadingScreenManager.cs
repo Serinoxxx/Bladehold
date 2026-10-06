@@ -79,6 +79,18 @@ namespace Bladehold.UI
 
         public static void ReleaseFadeOut() => fadeOutHolds = Mathf.Max(0, fadeOutHolds - 1);
 
+        /// <summary>
+        ///     Hides the loading screen if it's still up while no load is running (a transition that died
+        ///     part-way). Returns true if it had to. Never spawns the manager.
+        /// </summary>
+        public static bool HideIfStuck()
+        {
+            if (_instance == null || _instance.isLoading || _instance.activeLoadingUI == null) return false;
+            if (!_instance.activeLoadingUI.gameObject.activeSelf) return false;
+            _instance.activeLoadingUI.gameObject.SetActive(false);
+            return true;
+        }
+
         /// <summary>Raised when a transition begins, before the loading screen fades in (the music fades out here).</summary>
         public static event System.Action OnTransitionStarted;
 

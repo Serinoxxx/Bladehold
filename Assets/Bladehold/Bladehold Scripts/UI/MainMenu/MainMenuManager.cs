@@ -48,12 +48,39 @@ namespace Bladehold.UI
                 Debug.LogError("[MainMenuManager] Save Slots Screen is not assigned.", this);
             }
             CursorLockManager.SetUnlock("MainMenu_" + GetInstanceID(), true);
+            ResetLeftoverGameState();
             if (prewarmInBackgroundOnStart && prewarmVariants != null && !prewarmVariants.isWarmedUp)
             {
                 StartCoroutine(BackgroundPrewarmRoutine());
             }
 
             ShowScreen(titleScreen);
+        }
+
+        /// <summary>
+        ///     Safety net for coming back from a game (a tester saw a black title screen with only the logo
+        ///     after quitting to the menu; cause not reproduced yet). Anything a battle left behind that would
+        ///     freeze or cover the title screen is reset here, and logged so a repro names the culprit.
+        /// </summary>
+        private void ResetLeftoverGameState()
+        {
+            if (!Mathf.Approximately(Time.timeScale, 1f))
+            {
+                Debug.LogWarning($"[MainMenuManager] Time.timeScale was {Time.timeScale} on the title screen; resetting to 1.", this);
+                Time.timeScale = 1f;
+            }
+            MoreMountains.Feedbacks.MMTimeScaleEvent.Reset();
+            StartCoroutine(EnsureLoadingScreenGoneRoutine());
+        }
+
+        private IEnumerator EnsureLoadingScreenGoneRoutine()
+        {
+            // Give a normal transition time to finish its own fade-out first.
+            yield return new WaitForSecondsRealtime(3f);
+            if (LoadingScreenManager.HideIfStuck())
+            {
+                Debug.LogError("[MainMenuManager] The loading screen was still showing on the title screen with no load running; force-hid it.", this);
+            }
         }
 
         private IEnumerator BackgroundPrewarmRoutine()

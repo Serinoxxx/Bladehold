@@ -49,6 +49,17 @@ public class SliderValueField : MonoBehaviour
         inputField.onEndEdit.AddListener(HandleTextSubmitted);
     }
 
+    /// <summary>Decimal places shown/accepted; setting it re-renders the current value.</summary>
+    public int DecimalPlaces
+    {
+        get => decimalPlaces;
+        set
+        {
+            decimalPlaces = Mathf.Max(0, value);
+            if (slider != null && inputField != null) RefreshText(slider.value);
+        }
+    }
+
     private void OnDestroy()
     {
         if (slider != null) slider.onValueChanged.RemoveListener(RefreshText);

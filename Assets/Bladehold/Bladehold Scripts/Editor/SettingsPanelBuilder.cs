@@ -208,7 +208,7 @@ public static class SettingsPanelBuilder
         // Controls
         RectTransform controls = ScrollTab("ControlsTabContent", body, out RectTransform controlsList);
         Section(controlsList, "settings.section_camera", "Camera");
-        Slider sensitivity = SliderRow(controlsList, "Sensitivity", "settings.sensitivity", 0f, 10f, false, 1, click);
+        Slider sensitivity = SliderRow(controlsList, "Sensitivity", "settings.sensitivity", SaveData.MinMouseSensitivity, SaveData.MaxMouseSensitivity, false, 3, click);
         Slider padSensitivity = SliderRow(controlsList, "Gamepad Look Sensitivity", "settings.gamepad_sensitivity", 30f, 360f, true, 0, click);
         Toggle invertX = ToggleRow(controlsList, "Invert X", "settings.invert_x", click);
         Toggle invertY = ToggleRow(controlsList, "Invert Y", "settings.invert_y", click);

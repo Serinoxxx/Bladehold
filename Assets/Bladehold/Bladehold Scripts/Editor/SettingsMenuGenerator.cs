@@ -291,7 +291,7 @@ public static class SettingsMenuGenerator
         CreateSliderRow(generalContent, "Master Volume", out Slider masterSlider, 0f, 1f, 0.5f, 2);
         CreateSliderRow(generalContent, "Music Volume", out Slider musicSlider, 0f, 1f, 0.5f, 2);
         CreateSliderRow(generalContent, "SFX Volume", out Slider sfxSlider, 0f, 1f, 0.5f, 2);
-        CreateSliderRow(generalContent, "Sensitivity", out Slider sensitivitySlider, 0f, 10f, 0.5f, 1);
+        CreateSliderRow(generalContent, "Sensitivity", out Slider sensitivitySlider, SaveData.MinMouseSensitivity, SaveData.MaxMouseSensitivity, 0.1f, 3);
         CreateSliderRow(generalContent, "Max Ragdolls", out Slider maxRagdollsSlider, 0f, 50f, 12f, 0);
         maxRagdollsSlider.wholeNumbers = true;
         CreateToggleRow(generalContent, "Invert X", out Toggle invertXToggle);

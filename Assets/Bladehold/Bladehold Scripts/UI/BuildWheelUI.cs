@@ -323,13 +323,15 @@ public class BuildWheelUI : MonoBehaviour
 
         if (hoveredIndex >= 0) OnHoverSlice(hoveredIndex);
 
-        // 2. Also refresh legacy sliceButtons if wired
+        // 2. Also refresh legacy sliceButtons if wired. They're often the same objects as the wheel
+        // buttons above; those already show their own title and cost, and writing "Name / N Supply" into
+        // their first label as well listed the cost twice, so skip them.
         if (sliceButtons != null && sliceButtons.Count > 0)
         {
             for (int i = 0; i < defenseOptions.Count && i < sliceButtons.Count; i++)
             {
                 Button btn = sliceButtons[i];
-                if (btn == null) continue;
+                if (btn == null || btn.GetComponent<BuildWheelButton>() != null) continue;
 
                 DefenseOption opt = defenseOptions[i];
                 btn.gameObject.SetActive(IsOffered(opt.defenseType));
@@ -389,7 +391,7 @@ public class BuildWheelUI : MonoBehaviour
             {
                 int index = i;
                 Button btn = sliceButtons[i];
-                if (btn != null)
+                if (btn != null && btn.GetComponent<BuildWheelButton>() == null)
                 {
                     btn.onClick.RemoveAllListeners();
                     btn.onClick.AddListener(() => OnSelectSlice(index));

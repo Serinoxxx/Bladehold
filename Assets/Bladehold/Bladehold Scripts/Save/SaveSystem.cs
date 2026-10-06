@@ -240,6 +240,14 @@ public static class SaveSystem
             {
                 data.tutorialCompleted = true;
             }
+
+            // Files written before settings were versioned load with the field initialiser's current
+            // version, so a missing key is the real signal for "version 0".
+            if (!json.Contains("\"settingsVersion\""))
+            {
+                data.settingsVersion = 0;
+            }
+            data.MigrateSettings();
             return data;
         }
         catch (Exception e)

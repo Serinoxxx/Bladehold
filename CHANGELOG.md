@@ -1,5 +1,21 @@
 # Bladehold - Changelog
 
+## [0.1.35] - 2026-10-07
+
+### New Features
+
+### Fixes
+
+- Fixed the tower build wheel showing each tower's supply cost twice
+- Fixed wall health bars clipping into the wall model; they now float clear above the wall
+
+### Balance Changes
+
+### General Changes
+
+- Lowered the default mouse sensitivity and gave the slider a finer 0.01 to 1 range (it can no longer be set to 0); saves on the old default move to the new one
+- Swapped the tutorial gate's preparation music for a calmer track
+
 ## [0.1.32] - 2026-10-01
 
 ### New Features

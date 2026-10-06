@@ -143,6 +143,12 @@ public class SettingsPanelView : MonoBehaviour
         masterVolumeSlider.onValueChanged.AddListener(HandleMasterVolumeChanged);
         musicVolumeSlider.onValueChanged.AddListener(HandleMusicVolumeChanged);
         sfxVolumeSlider.onValueChanged.AddListener(HandleSfxVolumeChanged);
+        // The range lives in code (SaveData), not on the many prefab/scene copies of this row, so an old
+        // 0-10 slider left in some scene can never offer 0 (mouse look off) or the old too-fast range.
+        sensitivitySlider.minValue = SaveData.MinMouseSensitivity;
+        sensitivitySlider.maxValue = SaveData.MaxMouseSensitivity;
+        SliderValueField sensitivityField = sensitivitySlider.GetComponentInParent<SliderValueField>();
+        if (sensitivityField != null) sensitivityField.DecimalPlaces = 3;
         sensitivitySlider.onValueChanged.AddListener(HandleSensitivityChanged);
         if (gamepadSensitivitySlider != null) gamepadSensitivitySlider.onValueChanged.AddListener(HandleGamepadSensitivityChanged);
         if (languageDropdown != null)

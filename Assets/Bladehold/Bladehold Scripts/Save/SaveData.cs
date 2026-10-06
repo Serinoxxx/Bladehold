@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 /// <summary>
 ///     Serializable snapshot of persisted player progress, written to disk by <see cref="SaveSystem" />.
@@ -89,10 +90,22 @@ public class SaveData
     public int maxRagdolls = 12;
 
     /// <summary>
-    ///     Mouse look sensitivity. 0.5 is the authored default, near the low end of the settings
-    ///     slider's 0-10 range.
+    ///     Mouse look sensitivity: a straight multiplier on the raw mouse delta. 0.1 is the authored
+    ///     default; the settings slider spans <see cref="MinMouseSensitivity" />-<see cref="MaxMouseSensitivity" />
+    ///     (never 0, which would disable mouse look). Saves from before <see cref="settingsVersion" /> 1 used
+    ///     a 0.5 default that testers found far too fast; <see cref="MigrateSettings" /> moves them over.
     /// </summary>
-    public float mouseSensitivity = 0.5f;
+    public float mouseSensitivity = 0.1f;
+    public const float MinMouseSensitivity = 0.01f;
+    public const float MaxMouseSensitivity = 1f;
+
+    /// <summary>
+    ///     Version of the settings half of the save, bumped when a settings default or range changes in a
+    ///     way old saves need moving over (see <see cref="MigrateSettings" />). A file with no such key is
+    ///     treated as version 0 by <see cref="SaveSystem" />.
+    /// </summary>
+    public int settingsVersion = CurrentSettingsVersion;
+    public const int CurrentSettingsVersion = 1;
     public bool invertLookX;
     public bool invertLookY;
 
@@ -167,6 +180,21 @@ public class SaveData
     }
 
     /// <summary>
+    ///     Brings settings saved under an older <see cref="settingsVersion" /> up to date. v1: the mouse
+    ///     sensitivity range shrank from 0-10 to 0.01-1, so a save still on the old 0.5 default moves to the
+    ///     new 0.1 default and any custom value is clamped into the new range.
+    /// </summary>
+    public void MigrateSettings()
+    {
+        if (settingsVersion < 1)
+        {
+            mouseSensitivity = Mathf.Approximately(mouseSensitivity, 0.5f) ? 0.1f : mouseSensitivity;
+        }
+        mouseSensitivity = Mathf.Clamp(mouseSensitivity, MinMouseSensitivity, MaxMouseSensitivity);
+        settingsVersion = CurrentSettingsVersion;
+    }
+
+    /// <summary>
     ///     Copies every settings field (the <see cref="ResetSettings" /> half) from another save, leaving
     ///     progress untouched. Settings are global across save slots, so <see cref="SaveSystem" /> overlays
     ///     the shared settings file onto whichever slot it loads.
@@ -178,6 +206,7 @@ public class SaveData
         sfxVolume = other.sfxVolume;
         maxRagdolls = other.maxRagdolls;
         mouseSensitivity = other.mouseSensitivity;
+        settingsVersion = other.settingsVersion;
         invertLookX = other.invertLookX;
         invertLookY = other.invertLookY;
         fieldOfView = other.fieldOfView;

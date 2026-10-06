@@ -32,7 +32,7 @@ public class PlayerCameraPivot : MonoBehaviour
     [Tooltip("Transform the pivot sticks to, normally the character's SyntyPlayer_LookAt child.")]
     [SerializeField] private Transform followTarget;
     [Tooltip("Look sensitivity multiplying the raw mouse delta (the vendored _mouseSensitivity scale). Overwritten on Start by the saved setting via InputSettingsBinder.")]
-    [SerializeField] private float sensitivity = 0.5f;
+    [SerializeField] private float sensitivity = 0.1f;
     [Tooltip("Gamepad look speed in degrees per second at full stick deflection. Overwritten on Start by the saved setting via InputSettingsBinder.")]
     [SerializeField] private float gamepadSensitivity = 180f;
     [Tooltip("Exponent shaping stick response: 1 = linear, 2 = quadratic (finer aim near center, same max speed).")]

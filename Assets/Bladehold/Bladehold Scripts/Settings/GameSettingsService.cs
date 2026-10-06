@@ -158,7 +158,7 @@ public class GameSettingsService : MonoBehaviour
 
     public void SetSensitivity(float value)
     {
-        saveData.mouseSensitivity = Mathf.Clamp(value, 0f, 10f);
+        saveData.mouseSensitivity = Mathf.Clamp(value, SaveData.MinMouseSensitivity, SaveData.MaxMouseSensitivity);
         if (Player.Instance != null && Player.Instance.InputSettings != null)
         {
             Player.Instance.InputSettings.ApplySensitivity(saveData.mouseSensitivity);
