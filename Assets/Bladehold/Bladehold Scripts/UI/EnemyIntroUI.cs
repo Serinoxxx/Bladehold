@@ -145,6 +145,7 @@ public class EnemyIntroUI : MonoBehaviour
             StopCoroutine(activeIntroRoutine);
         }
 
+        SetBannerActive(true);
         enemyNameText.text = enemyName;
         PlaceFlourishes();
         SetLine(eyebrowText, eyebrow);
@@ -174,6 +175,29 @@ public class EnemyIntroUI : MonoBehaviour
     }
 
     /// <summary>
+    ///     Just the cinematic letterbox bars sliding in and out, no name band (<see cref="GateFallCinematic" />).
+    /// </summary>
+    public void ShowLetterbox(float totalDuration, System.Action onComplete = null)
+    {
+        if (anyError)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+        if (activeIntroRoutine != null)
+        {
+            StopCoroutine(activeIntroRoutine);
+        }
+
+        // The band, name and flourishes stay hidden; ShowIntro turns them back on.
+        SetBannerActive(false);
+        if (topBar != null) topBar.gameObject.SetActive(true);
+        if (bottomBar != null) bottomBar.gameObject.SetActive(true);
+
+        activeIntroRoutine = StartCoroutine(IntroSequenceRoutine(totalDuration, onComplete));
+    }
+
+    /// <summary>
     ///     Immediately hides the intro UI and aborts any active sequence.
     /// </summary>
     public void HideImmediate()
@@ -184,6 +208,15 @@ public class EnemyIntroUI : MonoBehaviour
             activeIntroRoutine = null;
         }
         SetVisible(false);
+    }
+
+    /// <summary>Shows or hides the name banner (band, name block, flourishes); the letterbox bars are separate.</summary>
+    private void SetBannerActive(bool active)
+    {
+        band.gameObject.SetActive(active);
+        nameContainer.gameObject.SetActive(active);
+        if (flourishLeft != null) flourishLeft.gameObject.SetActive(active);
+        if (flourishRight != null) flourishRight.gameObject.SetActive(active);
     }
 
     /// <summary>Rests the flourishes just outside the name's rendered width.</summary>

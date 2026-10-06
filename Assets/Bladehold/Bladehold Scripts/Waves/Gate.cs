@@ -32,7 +32,7 @@ public class Gate : MonoBehaviour
     [SerializeField] private Transform attackPoint;
 
     [Header("Destruction Effects & Feedbacks")]
-    [Tooltip("Played at the attack point when the gate falls: explosion sound and fire burst, on unscaled time.")]
+    [Tooltip("Played at the attack point when the gate falls: explosion sound and fire burst. The burst runs on scaled time so it plays in slow motion under GateFallCinematic.")]
     [SerializeField] private MMF_Player deathFeedback;
 
     [Tooltip("Optional specific visual GameObjects to deactivate on destruction. If empty, all Renderers and Colliders in children are disabled.")]
@@ -45,6 +45,25 @@ public class Gate : MonoBehaviour
 
     /// <summary>The point enemies path to / attack.</summary>
     public Vector3 TargetPosition => (attackPoint != null ? attackPoint : transform).position;
+
+    /// <summary>
+    ///     Flat unit vector from the gate out towards the attackers' side (the attack point sits in front of
+    ///     the doors), falling back to the gate's forward. Used to frame <see cref="GateFallCinematic" />.
+    /// </summary>
+    public Vector3 OutwardDirection
+    {
+        get
+        {
+            Vector3 dir = attackPoint != null ? attackPoint.position - transform.position : Vector3.zero;
+            dir.y = 0f;
+            if (dir.sqrMagnitude < 0.01f)
+            {
+                dir = transform.forward;
+                dir.y = 0f;
+            }
+            return dir.sqrMagnitude > 0.0001f ? dir.normalized : Vector3.forward;
+        }
+    }
 
     /// <summary>The gate's damage sink, so <see cref="AIAttack" /> can hurt it.</summary>
     public IDamageable Damageable => health;

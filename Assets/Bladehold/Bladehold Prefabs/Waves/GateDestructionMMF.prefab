@@ -446,7 +446,7 @@ MonoBehaviour:
         MutualizePools: 0
         ParentTransform: {fileID: 0}
         CachedRecycle: 0
-        ParticlesPrefab: {fileID: 6872418576747312332, guid: 9ce440360d0d28c4a806ae37906df913, type: 3}
+        ParticlesPrefab: {fileID: 198195352207415246, guid: d6d1b04bd70cc624396a0fa315f6078f, type: 3}
         RandomParticlePrefabs: []
         MainParticlesPrefabWeight: 1
         RandomParticleWeights: 
@@ -458,7 +458,7 @@ MonoBehaviour:
         PositionMode: 3
         InstantiateParticlesPosition: {fileID: 0}
         TargetWorldPosition: {x: 0, y: 0, z: 0}
-        Offset: {x: 0, y: 0, z: 0}
+        Offset: {x: 0, y: 2.5, z: 0}
         NestParticles: 0
         ApplyRotation: 0
         ApplyScale: 0

@@ -8,8 +8,9 @@ using MoreMountains.Feedbacks;
 /// <summary>
 ///     Fades in a death screen when the run ends — the player dying (the player's
 ///     <see cref="Health.OnDied" /> via the <see cref="Player" /> singleton) or, in gate defense, any
-///     <see cref="Gate" /> falling (<see cref="Gate.OnAnyGateDestroyed" />; time is frozen for that
-///     one since the player is still alive behind the screen) — or, via <see cref="ShowVictory" />, when
+///     <see cref="Gate" /> falling (<see cref="Gate.OnAnyGateDestroyed" />; the scene's
+///     <see cref="GateFallCinematic" /> plays first, then time is frozen since the player is still alive
+///     behind the screen) — or, via <see cref="ShowVictory" />, when
 ///     the sector is won. Shows goblins killed and gold earned this run (from <see cref="GameStats" />)
 ///     plus the run's gold (<see cref="RunSession.InRunGold" />). Defeat has one way out: back to the
 ///     Meta Area with the run wiped. Victory has one: on to the Campaign Map (no retry, the sector is
@@ -109,6 +110,7 @@ public class DeathScreen : MonoBehaviour
     public static event System.Action<bool> OnRunOver;
 
     private bool shown = false;   // latch: the run only ends once, whichever signal fires first
+    private bool gateFallPending; // the gate cinematic is playing; the gate's failure screen follows it
     private bool anyError = false;
     private bool isCampaignComplete = false;
 
@@ -256,6 +258,12 @@ public class DeathScreen : MonoBehaviour
 
     private void HandlePlayerDied()
     {
+        // The gate already fell: its cinematic is playing and the gate failure screen comes next.
+        if (gateFallPending)
+        {
+            return;
+        }
+
         // Tutorial arena: a death just restarts the room, no run-over screen.
         if (TutorialDirector.Instance != null && TutorialDirector.Instance.ReloadOnDeath)
         {
@@ -267,6 +275,23 @@ public class DeathScreen : MonoBehaviour
     }
 
     private void HandleGateDestroyed(Gate gate)
+    {
+        if (shown || gateFallPending || anyError)
+        {
+            return;
+        }
+
+        if (GateFallCinematic.Instance != null)
+        {
+            gateFallPending = true;
+            GateFallCinematic.Instance.Play(gate, ShowGateFallen);
+            return;
+        }
+        Debug.LogError("[DeathScreen] No GateFallCinematic in the scene (it lives on the CameraRig prefab): skipping the gate cinematic.", this);
+        ShowGateFallen();
+    }
+
+    private void ShowGateFallen()
     {
         // Unlike a player death, the player is still alive and controllable — freeze time so the
         // run visibly ends behind the screen. ReturnToMetaScene() restores the timescale.

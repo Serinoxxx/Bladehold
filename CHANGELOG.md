@@ -42,6 +42,7 @@
 - Added fanfare and defeat stingers for wave objectives, sector victories, campaign completion and defeats
 - Added music ducking when the pause menu is opened
 - Added smooth crossfades and loading-screen fades for all music transitions
+- Added a slow-motion cinematic of the gate exploding before the defeat screen when the gate falls
 
 ### Fixes
 

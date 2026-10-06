@@ -94,3 +94,19 @@ Editor leftovers from `plans/20-playtest-feedback-oct.md`. Unity MCP was connect
 - [ ] Clear the demo cutoff tier (or DevConsole): the screen appears and Wishlist on Steam opens the Bladehold store page (Steam overlay in a Steam build, otherwise the browser).
 - [ ] Gamepad: Wishlist is highlighted on open, left/right moves to Play Again, A on Play Again returns to the Meta Area. Hover glow shows only on the focused/hovered button.
 
+
+## Phase 7: Gate-destroyed cinematic
+
+**Done in code and assets:**
+- `Waves/GateFallCinematic.cs` sits on `CameraRig.prefab` → `Gate Fall Cinematic`, with its own `Gate Fall Camera` and `SlowMotionMMF` (deep boom and slow whoosh). Tunables are in `Waves/GateFallCinematicConfig.asset`.
+- `DeathScreen` plays it before the gate failure screen, and ignores a player death while it runs.
+- `EnemyIntroUI.ShowLetterbox` gives the bars without the name band.
+- `GateDestructionMMF` now spawns the scaled `FX_Fire_Explosion_Large_01`, so it plays in slow motion.
+
+**Wiring checklist:** nothing left.
+
+**Manual verification:**
+- [ ] Let the gate fall in Outer Gate: a hard cut to the gate, the HUD gone, letterbox bars, the explosion in slow motion for about 3.5 s, then the "gate was destroyed" banner and defeat screen. Return to Sanctuary restores normal speed.
+- [ ] Graveyard: the green fog washes the fireball out at the default 22 m to 17 m push-in. Judge it, and shorten `startDistance`/`endDistance` on the config if it reads poorly. (The config is shared, so check Outer and Desert Gate after.)
+- [ ] Letterbox bars are the boss intro's thin translucent ones. Decide if the gate cinematic wants heavier bars.
+- [ ] Die to an enemy during the slow-mo: still the gate failure screen, never "The Hero Has Fallen".
