@@ -22,6 +22,10 @@ public class HealthBarUI : MonoBehaviour
     private bool anyError = false;
     private float sleepAfter;
 
+    // MMHealthBar draws its bar as a separate root object (billboard container) and never destroys it.
+    private static readonly System.Reflection.FieldInfo ProgressBarField =
+        typeof(MMHealthBar).GetField("_progressBar", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
     // Grace past MMHealthBar.DisplayDurationOnHit so its own Update gets to hide the bar first.
     private const float SleepGraceSeconds = 0.25f;
 
@@ -84,11 +88,24 @@ public class HealthBarUI : MonoBehaviour
 
     private void OnDestroy()
     {
+        DestroyDetachedBar();
         if (health != null)
         {
             health.OnHealthChanged -= Refresh;
             health.OnDied -= HandleDied;
         }
+    }
+
+    /// <summary>
+    ///     A destroyed enemy (corpse despawn, prewarm rehearsal) would otherwise leave its bar floating at the
+    ///     last spot it followed. Only a bar outside this hierarchy is ours to remove; a nested one goes with us.
+    /// </summary>
+    private void DestroyDetachedBar()
+    {
+        if (ReferenceEquals(healthBar, null) || ProgressBarField == null || healthBar.HealthBarType == MMHealthBar.HealthBarTypes.Existing) return;
+        MMProgressBar bar = ProgressBarField.GetValue(healthBar) as MMProgressBar;
+        if (bar == null || bar.transform.IsChildOf(transform.root)) return;
+        Destroy(bar.transform.root.gameObject);
     }
 
     private void LateUpdate()

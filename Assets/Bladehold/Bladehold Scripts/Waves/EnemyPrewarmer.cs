@@ -200,6 +200,8 @@ public class EnemyPrewarmer : MonoBehaviour
         yield return new WaitForSecondsRealtime(config.deathSeconds);
 
         DestroyAll(stagedCorpses);
+        // The rehearsal hits bled onto the ground (and the decal holder outlives scene loads).
+        BloodDecalManager.ClearAll();
         Finish();
     }
 

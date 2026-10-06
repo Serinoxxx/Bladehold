@@ -946,6 +946,10 @@ public class GameLoopManager : MonoBehaviour
             victoryScreen.SetActive(true);
             CursorLockManager.SetUnlock("VictoryScreen", true);
         }
+        else
+        {
+            Debug.LogError("[GameLoopManager] Victory, but this scene has no DeathScreen (add DeathScreen.prefab) and no victoryScreen. The player is left with no way out.", this);
+        }
 
         OnVictory?.Invoke();
     }

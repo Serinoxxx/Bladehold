@@ -89,6 +89,16 @@ public static class BloodDecalManager
         activeDecals.Add(bloodDecal);
     }
 
+    /// <summary>Despawns every live decal at once (no fade), e.g. the ones the scene-start prewarm left behind.</summary>
+    public static void ClearAll()
+    {
+        foreach (BloodDecal decal in activeDecals.ToArray())
+        {
+            Unregister(decal);
+        }
+        activeDecals.Clear();
+    }
+
     public static void Unregister(BloodDecal decal)
     {
         if (decal != null)

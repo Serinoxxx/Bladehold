@@ -114,6 +114,42 @@ public class WallStructure : MonoBehaviour, IUpgradeable
     private static FortUpgradeConfigSO Config => DefenseSceneRules.Config;
     private float Thickness => art != null ? art.wallThickness : 0.8f;
 
+    /// <summary>
+    ///     Local Z of the outside face enemies stop at: the shut door's blocker when the art puts the gate
+    ///     further out than the wall line (a deep gatehouse), else half the wall's thickness. The door's
+    ///     NavMesh obstacle doesn't carve, so an attack point behind the gate would have them walk through it.
+    /// </summary>
+    private float FaceDepth
+    {
+        get
+        {
+            float face = Thickness * 0.5f;
+            BoxCollider blocker = door != null ? door.Blocker : null;
+            if (blocker == null) return face;
+            Vector3 halfDepth = new Vector3(0f, 0f, blocker.size.z * 0.5f);
+            float front = transform.InverseTransformPoint(blocker.transform.TransformPoint(blocker.center + halfDepth)).z;
+            float back = transform.InverseTransformPoint(blocker.transform.TransformPoint(blocker.center - halfDepth)).z;
+            return Mathf.Max(face, front, back);
+        }
+    }
+
+    /// <summary>
+    ///     The stretch of the face attackers spread along (wall-local X): the shut door's blocker, so they
+    ///     crowd the gate rather than the gatehouse's side walls, else the whole wall.
+    /// </summary>
+    private void GetDoorSpan(out float centre, out float half)
+    {
+        centre = 0f;
+        half = width * 0.5f - 0.5f;
+        BoxCollider blocker = door != null ? door.Blocker : null;
+        if (blocker == null) return;
+        Vector3 halfWidth = new Vector3(blocker.size.x * 0.5f, 0f, 0f);
+        float a = transform.InverseTransformPoint(blocker.transform.TransformPoint(blocker.center + halfWidth)).x;
+        float b = transform.InverseTransformPoint(blocker.transform.TransformPoint(blocker.center - halfWidth)).x;
+        centre = (a + b) * 0.5f;
+        half = Mathf.Max(0.25f, Mathf.Abs(a - b) * 0.5f - 0.4f);
+    }
+
     private void OnValidate()
     {
         if (health == null) health = GetComponent<Health>();
@@ -202,20 +238,23 @@ public class WallStructure : MonoBehaviour, IUpgradeable
 
     // ---- Targeting ---------------------------------------------------------------------------
 
-    /// <summary>True when <paramref name="position" /> is on the enemy side of the wall.</summary>
+    /// <summary>
+    ///     True when <paramref name="position" /> is out past the wall's face (<see cref="FaceDepth" />), on
+    ///     the enemy side. A player inside a deep gatehouse, behind its gate, is not outside.
+    /// </summary>
     public bool IsOutside(Vector3 position)
     {
-        return Vector3.Dot(position - transform.position, transform.forward) > 0f;
+        return transform.InverseTransformPoint(position).z > FaceDepth;
     }
 
     /// <summary>The spot on the outside face an attacker at <paramref name="from" /> should stand at.</summary>
     public Vector3 GetAttackPoint(Vector3 from)
     {
         Vector3 local = transform.InverseTransformPoint(from);
-        float half = width * 0.5f - 0.5f;
-        local.x = Mathf.Clamp(local.x, -half, half);
+        GetDoorSpan(out float centre, out float half);
+        local.x = Mathf.Clamp(local.x, centre - half, centre + half);
         local.y = 0f;
-        local.z = Thickness * 0.5f + 0.6f;
+        local.z = FaceDepth + 0.6f;
         return transform.TransformPoint(local);
     }
 
@@ -226,7 +265,7 @@ public class WallStructure : MonoBehaviour, IUpgradeable
         {
             if (wall == null || !wall.IsBlocking) continue;
             Vector3 local = wall.transform.InverseTransformPoint(position);
-            if (local.z > 0f && local.z < range + wall.Thickness && Mathf.Abs(local.x) < wall.width * 0.5f + 1f)
+            if (local.z > 0f && local.z < range + wall.FaceDepth + wall.Thickness * 0.5f && Mathf.Abs(local.x) < wall.width * 0.5f + 1f)
             {
                 return wall;
             }
@@ -237,8 +276,11 @@ public class WallStructure : MonoBehaviour, IUpgradeable
     /// <summary>Gives every enemy at the outside face (and every enemy round a siege unit there) this wall as its target.</summary>
     private void ClaimAttackers()
     {
-        Vector3 centre = transform.position + transform.forward * (Thickness * 0.5f + approachDepth * 0.5f) + Vector3.up * 1.5f;
-        Vector3 halfExtents = new Vector3(width * 0.5f + 1f, 2.5f, approachDepth * 0.5f);
+        // From the wall line out past the face: also catches anyone the crowd shoves into a deep gatehouse.
+        float near = Thickness * 0.5f;
+        float far = FaceDepth + approachDepth;
+        Vector3 centre = transform.position + transform.forward * ((near + far) * 0.5f) + Vector3.up * 1.5f;
+        Vector3 halfExtents = new Vector3(width * 0.5f + 1f, 2.5f, (far - near) * 0.5f);
         int count = Physics.OverlapBoxNonAlloc(centre, halfExtents, scanBuffer, transform.rotation, enemyMask, QueryTriggerInteraction.Collide);
         for (int i = 0; i < count; i++)
         {
