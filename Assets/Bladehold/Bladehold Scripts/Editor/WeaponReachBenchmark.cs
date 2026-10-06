@@ -375,87 +375,100 @@ public static class WeaponReachBenchmark
             failedCount++;
         }
 
-        // 6. LIVE DASH SPAWN SIMULATION (Blazing Trail -> FireTrailSegment)
-        sb.AppendLine("\n### 6. LIVE DASH FIRE TRAIL SPAWN SIMULATION");
-        GameObject testRunnerObj = null;
-        try
+        // 6. BLAZING TRAIL (real PlayerDodge + FireTrailSegment) & EARTHSHAKER GROUND PLACEMENT
+        // Plan 20 regression: PlayerDodge sits on the static Player root while the CharacterController's
+        // body moves, so trail segments used to spawn at the root (spawn point) and never along the dash.
+        sb.AppendLine("\n### 6. BLAZING TRAIL & EARTHSHAKER GROUND PLACEMENT");
         {
-            testRunnerObj = new GameObject("Benchmark_DashTestRunner");
-            PlayerStats stats = testRunnerObj.AddComponent<PlayerStats>();
-            CharacterController cc = testRunnerObj.AddComponent<CharacterController>();
-            Health health = testRunnerObj.AddComponent<Health>();
-            health.SetMaxHealth(100f);
-            health.Revive(100f);
-
-            // Give the test runner the FireBlazingTrailDPS stat (Level 2 = 3 DPS)
-            stats.SetBase(StatType.FireBlazingTrailDPS, 3.0f);
-            float fireDPS = stats.GetValue(StatType.FireBlazingTrailDPS);
-
-            if (fireDPS <= 0f)
+            const System.Reflection.BindingFlags privateInstance = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+            const System.Reflection.BindingFlags privateStatic = System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic;
+            var spawned = new List<GameObject>();
+            try
             {
-                sb.AppendLine("  - [FAIL] FireBlazingTrailDPS was not > 0!");
+                void Check(bool ok, string pass, string fail)
+                {
+                    sb.AppendLine(ok ? $"  - {pass} [PASSED]" : $"  - [FAIL] {fail}");
+                    if (ok) passedCount++; else failedCount++;
+                }
+
+                // Rig shaped like Player.prefab: dodge on the root, CharacterController on a child body.
+                var rigRoot = new GameObject("Benchmark_DashRoot");
+                spawned.Add(rigRoot);
+                var body = new GameObject("Benchmark_DashBody");
+                body.transform.SetParent(rigRoot.transform, false);
+                var cc = body.AddComponent<CharacterController>();
+                var dodge = rigRoot.AddComponent<PlayerDodge>();
+                var trailVfx = new GameObject("Benchmark_TrailVfx");
+                spawned.Add(trailVfx);
+                var dodgeSo = new SerializedObject(dodge);
+                dodgeSo.FindProperty("characterController").objectReferenceValue = cc;
+                dodgeSo.FindProperty("fireTrailSegmentVfxPrefab").objectReferenceValue = trailVfx;
+                dodgeSo.ApplyModifiedPropertiesWithoutUndo();
+                body.transform.position = new Vector3(500f, 0f, 507f); // the player has walked away from spawn
+
+                // The dash's first segment goes at Body.position; read it back the way PerformDodge does.
+                var dodgeBody = (Transform)typeof(PlayerDodge).GetProperty("Body", privateInstance).GetValue(dodge);
+                typeof(PlayerDodge).GetMethod("SpawnFireTrailSegment", privateInstance).Invoke(dodge, new object[] { 4f, dodgeBody.position });
+                FireTrailSegment segment = UnityEngine.Object.FindObjectsByType<FireTrailSegment>(FindObjectsSortMode.None)
+                    .FirstOrDefault(s => Vector3.Distance(s.transform.position, body.transform.position) < 0.01f
+                                      || Vector3.Distance(s.transform.position, rigRoot.transform.position) < 0.01f);
+                if (segment != null) spawned.Add(segment.gameObject);
+                Check(segment != null && Vector3.Distance(segment.transform.position, body.transform.position) < 0.01f,
+                    "Blazing Trail segment spawns at the moving body, not the static Player root",
+                    $"Trail segment at {(segment != null ? segment.transform.position.ToString() : "nothing")}, body at {body.transform.position}.");
+
+                if (segment != null)
+                {
+                    var enemy = new GameObject("Benchmark_TrailEnemy");
+                    spawned.Add(enemy);
+                    enemy.layer = LayerMask.NameToLayer("Enemy");
+                    enemy.transform.position = segment.transform.position + Vector3.right * 0.5f;
+                    var capsule = enemy.AddComponent<CapsuleCollider>();
+                    capsule.center = Vector3.up;
+                    var enemyHealth = enemy.AddComponent<Health>();
+                    enemyHealth.SetMaxHealth(100f);
+                    enemyHealth.Revive(100f);
+                    Physics.SyncTransforms();
+
+                    typeof(FireTrailSegment).GetMethod("TickDamage", privateInstance).Invoke(segment, new object[] { 0.5f });
+                    Check(enemyHealth.CurrentHealth < 100f,
+                        $"A trail segment burns an enemy standing in it (100 -> {enemyHealth.CurrentHealth:0.##} HP per 0.5 s tick at 4 DPS)",
+                        "An enemy standing in a trail segment took no damage.");
+                }
+
+                // Earthshaker: the full-charge smash lands at the struck enemy's feet, on the ground, not at the mid-body hit point.
+                var ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
+                spawned.Add(ground);
+                ground.transform.position = new Vector3(600f, 0.3f, 600f);
+                var target = new GameObject("Benchmark_SmashTarget");
+                spawned.Add(target);
+                target.layer = LayerMask.NameToLayer("Enemy");
+                target.transform.position = new Vector3(600f, 0.3f, 600f);
+                target.AddComponent<Health>();
+                var targetCollider = new GameObject("Body");
+                targetCollider.transform.SetParent(target.transform, false);
+                targetCollider.layer = target.layer;
+                targetCollider.AddComponent<CapsuleCollider>().center = Vector3.up;
+                Physics.SyncTransforms();
+
+                var mace = rigRoot.AddComponent<MaceCombatController>();
+                Vector3 hitPoint = target.transform.position + new Vector3(0.2f, 1.3f, -0.4f);
+                var anchor = (Vector3)typeof(MaceCombatController).GetMethod("ShockwaveAnchor", privateInstance)
+                    .Invoke(mace, new object[] { targetCollider.GetComponent<Collider>(), hitPoint });
+                var smashPoint = (Vector3)typeof(MaceCombatController).GetMethod("GroundUnder", privateStatic)
+                    .Invoke(null, new object[] { anchor });
+                Check(Vector3.Distance(smashPoint, target.transform.position) < 0.05f,
+                    $"Earthshaker ground crack lands at the enemy's feet on the ground ({smashPoint}), not the hit point ({hitPoint})",
+                    $"Earthshaker smash at {smashPoint}, expected the enemy's feet at {target.transform.position}.");
+            }
+            catch (Exception ex)
+            {
+                sb.AppendLine($"  - Section 6 exception: {(ex.InnerException ?? ex).Message} [FAILED]");
                 failedCount++;
             }
-            else
+            finally
             {
-                // Simulate dash trail spawning logic across a 3m dash path (spawning every 0.6m)
-                List<FireTrailSegment> spawnedSegments = new List<FireTrailSegment>();
-                Vector3 lastTrailPos = testRunnerObj.transform.position;
-
-                // Spawn first segment at dash start
-                GameObject firstSegObj = new GameObject("TestFireTrailSegment_0");
-                firstSegObj.transform.position = testRunnerObj.transform.position;
-                FireTrailSegment firstSeg = firstSegObj.AddComponent<FireTrailSegment>();
-                firstSeg.Init(fireDPS, 3.0f, null);
-                spawnedSegments.Add(firstSeg);
-
-                // Step forward 3m in 0.2m increments
-                Vector3 dashDir = Vector3.forward;
-                for (int step = 0; step < 15; step++)
-                {
-                    testRunnerObj.transform.position += dashDir * 0.2f;
-                    if (Vector3.Distance(lastTrailPos, testRunnerObj.transform.position) >= 0.6f)
-                    {
-                        GameObject segObj = new GameObject($"TestFireTrailSegment_{spawnedSegments.Count}");
-                        segObj.transform.position = testRunnerObj.transform.position;
-                        FireTrailSegment seg = segObj.AddComponent<FireTrailSegment>();
-                        seg.Init(fireDPS, 3.0f, null);
-                        spawnedSegments.Add(seg);
-                        lastTrailPos = testRunnerObj.transform.position;
-                    }
-                }
-
-                if (spawnedSegments.Count >= 5)
-                {
-                    sb.AppendLine($"  - Dashing 3m with Blazing Trail spawned {spawnedSegments.Count} FireTrailSegment objects along the path. [PASSED]");
-                    passedCount++;
-                }
-                else
-                {
-                    sb.AppendLine($"  - [FAIL] Expected >= 5 FireTrailSegment objects along 3m dash, got {spawnedSegments.Count}.");
-                    failedCount++;
-                }
-
-                // Clean up spawned test segments
-                foreach (var seg in spawnedSegments)
-                {
-                    if (seg != null && seg.gameObject != null)
-                    {
-                        UnityEngine.Object.DestroyImmediate(seg.gameObject);
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            sb.AppendLine($"  - Live Dash simulation exception: {ex.Message} [FAILED]");
-            failedCount++;
-        }
-        finally
-        {
-            if (testRunnerObj != null)
-            {
-                UnityEngine.Object.DestroyImmediate(testRunnerObj);
+                foreach (var go in spawned) if (go != null) UnityEngine.Object.DestroyImmediate(go);
             }
         }
 

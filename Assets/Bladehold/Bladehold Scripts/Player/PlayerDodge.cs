@@ -56,6 +56,7 @@ public class PlayerDodge : MonoBehaviour
     private float nimbleSwingSuppressUntil = -999f;
     private int attackTriggerHash;
     private bool loggedMissingTrailVfx;
+    private const float FireTrailSpacing = 0.6f;
     private float invulnerableUntilTime = -999f;
     private int dodgeAnimTriggerHash;
     private int isMountedHash;
@@ -78,6 +79,10 @@ public class PlayerDodge : MonoBehaviour
     public bool CanDodge => !isDodging && currentCharges > 0 && (player == null || !player.Health.IsDead) && (player == null || player.Stats.GetValue(StatType.DodgeUnlocked) > 0f);
 
     public bool IsDodging => isDodging;
+
+    // This component sits on the static Player root; the CharacterController's object is the body that moves.
+    // Every dash position (trail, hit sphere, VFX, Frost Step) must come from here, never transform.
+    private Transform Body => characterController != null ? characterController.transform : transform;
     /// <summary>True during a dodge's i-frames (<see cref="StatType.DodgeIFrameDuration" /> from the dash start): all incoming damage is ignored.</summary>
     public bool IsInvulnerable => Time.time < invulnerableUntilTime;
     public float TimeSinceDodge => Time.time - lastDodgeEndTime;
@@ -305,7 +310,7 @@ public class PlayerDodge : MonoBehaviour
 
         if (dodgeFeedback != null)
         {
-            dodgeFeedback.PlayFeedbacks(transform.position);
+            dodgeFeedback.PlayFeedbacks(Body.position);
         }
 
         GameObject activeVfx = null;
@@ -322,7 +327,7 @@ public class PlayerDodge : MonoBehaviour
         float effectiveDashDuration = config != null ? config.dashDuration : dashDuration;
         if (prefabToUse != null)
         {
-            activeVfx = Instantiate(prefabToUse, transform.position, transform.rotation, transform);
+            activeVfx = Instantiate(prefabToUse, Body.position, Body.rotation, Body);
             Destroy(activeVfx, effectiveDashDuration + 1f);
         }
 
@@ -334,8 +339,8 @@ public class PlayerDodge : MonoBehaviour
 
         float distance = player.Stats.GetValue(StatType.DodgeDistance);
         
-        // Find dash direction (use camera-relative movement input if active, otherwise transform.forward)
-        Vector3 dashDir = transform.forward;
+        // Find dash direction (use camera-relative movement input if active, otherwise Body.forward)
+        Vector3 dashDir = Body.forward;
         if (inputReader == null) inputReader = GetComponentInChildren<InputReader>();
         Camera cam = facingCamera != null ? facingCamera : Camera.main;
 
@@ -359,7 +364,7 @@ public class PlayerDodge : MonoBehaviour
 
         if (dashDir.sqrMagnitude > 0.001f)
         {
-            transform.rotation = Quaternion.LookRotation(dashDir);
+            Body.rotation = Quaternion.LookRotation(dashDir);
         }
         
         float damageMultiplier = player.Stats.GetValue(StatType.DodgeDamageMultiplier);
@@ -392,16 +397,16 @@ public class PlayerDodge : MonoBehaviour
 
         float timePassed = 0f;
         float fireDPS = player.Stats.GetValue(StatType.FireBlazingTrailDPS);
-        Vector3 lastTrailPos = transform.position;
+        Vector3 lastTrailPos = Body.position;
         if (fireDPS > 0f)
         {
-            SpawnFireTrailSegment(fireDPS);
+            SpawnFireTrailSegment(fireDPS, Body.position);
         }
 
         float frostSlow = (player != null && player.Stats != null) ? player.Stats.GetValue(StatType.IceFrostStepSlowPercent) : 0f;
         if (frostSlow > 0f)
         {
-            TriggerFrostStepPulse(transform.position, frostSlow);
+            TriggerFrostStepPulse(Body.position, frostSlow);
         }
 
         while (timePassed < effectiveDashDuration)
@@ -411,15 +416,16 @@ public class PlayerDodge : MonoBehaviour
             float moveStep = (distance / effectiveDashDuration) * Time.deltaTime;
             characterController.Move(dashDir * moveStep);
 
-            if (fireDPS > 0f && Vector3.Distance(lastTrailPos, transform.position) >= 0.6f)
+            // Walk the gap in fixed steps so a long frame (hitch, low fps) can't leave holes in the trail.
+            while (fireDPS > 0f && Vector3.Distance(lastTrailPos, Body.position) >= FireTrailSpacing)
             {
-                SpawnFireTrailSegment(fireDPS);
-                lastTrailPos = transform.position;
+                lastTrailPos = Vector3.MoveTowards(lastTrailPos, Body.position, FireTrailSpacing);
+                SpawnFireTrailSegment(fireDPS, lastTrailPos);
             }
             
             if (damageMultiplier > 0f || knockback > 0f || nimbleStrike > 0f)
             {
-                Collider[] hits = Physics.OverlapSphere(transform.position, 1.5f);
+                Collider[] hits = Physics.OverlapSphere(Body.position, 1.5f);
                 foreach (var hit in hits)
                 {
                     Health enemyHealth = hit.GetComponentInParent<Health>();
@@ -439,7 +445,7 @@ public class PlayerDodge : MonoBehaviour
                             type = dmgType,
                             isCritical = false, 
                             knockbackForce = knockback,
-                            sourcePosition = transform.position,
+                            sourcePosition = Body.position,
                             source = player.Damageable,
                             isPlayerDamage = true,
                             elementId = RunSession.GetActiveElement("SLOT_MOBILITY")
@@ -474,7 +480,7 @@ public class PlayerDodge : MonoBehaviour
 
         if (frostSlow > 0f && player != null && player.Health != null && !player.Health.IsDead)
         {
-            TriggerFrostStepPulse(transform.position, frostSlow);
+            TriggerFrostStepPulse(Body.position, frostSlow);
         }
 
         isDodging = false;
@@ -497,7 +503,7 @@ public class PlayerDodge : MonoBehaviour
 
         if (nimbleStrikeFeedback != null)
         {
-            nimbleStrikeFeedback.PlayFeedbacks(transform.position);
+            nimbleStrikeFeedback.PlayFeedbacks(Body.position);
         }
         else if (swordHitFeedback != null)
         {
@@ -505,7 +511,7 @@ public class PlayerDodge : MonoBehaviour
         }
     }
 
-    private void SpawnFireTrailSegment(float fireDPS)
+    private void SpawnFireTrailSegment(float fireDPS, Vector3 position)
     {
         // Not fireDashVfxPrefab: that's a moving trail (emits by distance), so a parked segment copy is invisible.
         GameObject vfxToUse = fireTrailSegmentVfxPrefab;
@@ -520,7 +526,7 @@ public class PlayerDodge : MonoBehaviour
         }
 
         GameObject segmentObj = new GameObject("FireTrailSegment");
-        segmentObj.transform.position = transform.position;
+        segmentObj.transform.position = position;
         segmentObj.transform.rotation = Quaternion.identity;
 
         FireTrailSegment segment = segmentObj.AddComponent<FireTrailSegment>();

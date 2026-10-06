@@ -50,6 +50,8 @@
 - Fixed gamepad selection getting stuck on an invisible button in the settings menu
 - Fixed the Music volume slider in the Audio settings menu so it adjusts music volume across every scene
 - Fixed menu hover sounds playing only once in the Sanctuary of Spirits, shop and settings menus
+- Fixed the Blazing Trail card: dashing now leaves a burning fire trail along your path instead of a single patch back where you entered the area
+- Fixed dash attacks (Nimble Strike and dash damage cards) and Frost Step hitting around your starting spot instead of where you dashed
 
 ### Balance Changes
 
@@ -68,6 +70,7 @@
 - Updated the death screen, level-up and wave choice cards, save slots and campaign map to match the new menu look: dark framed panels, gold titles and clearer text
 - Updated the boss and captain arrival banner: a dark band with the name in gold, the captain's difficulty skulls and rewards underneath, and letterbox bars for boss entrances
 - Updated the campaign map so castles fly your banner once a sector is liberated, open sectors glow, and the map pans by dragging, scrolling or with the right stick
+- Updated the Earthshaker mace shockwave: the ground now cracks open at the struck enemy's feet instead of a rock burst in mid-air
 - Removed the Golden Goblin wave objective from the wave choices
 - Updated the player death screen title to "The Hero Has Fallen"
 - Toned down the tutorial hint chime and the hint panel's pop animation

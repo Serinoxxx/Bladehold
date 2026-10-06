@@ -50,8 +50,20 @@ Rules from `/CLAUDE.md` and `plans/README.md` apply: MMF for every sound/VFX/sha
 
 ## Phase 3: Combat ability fixes
 
-- [ ] **Blazing Trail on dash doesn't work** (`Player/PlayerDodge.cs`, `Player/FireTrailSegment.cs`). Check that the draft card's stat is read, that segments spawn, and that they deal damage. Add a benchmark check (`test-mechanic` skill).
-- [ ] **Colossal Smash (full-charge rock slam draft):** spawn `FX_GroundCrack_Blase_01` instead of the current rock effect, and place it **at the enemy's feet** (raycast or NavMesh-sample down to the ground) instead of mid-air (`Player/MaceCombatController.cs` / the smash handler).
+- [x] **Blazing Trail on dash doesn't work** (`Player/PlayerDodge.cs`, `Player/FireTrailSegment.cs`). Check that the draft card's stat is read, that segments spawn, and that they deal damage. Add a benchmark check (`test-mechanic` skill).
+- [x] **Colossal Smash (full-charge rock slam draft):** spawn `FX_GroundCrack_Blase_01` instead of the current rock effect, and place it **at the enemy's feet** (raycast or NavMesh-sample down to the ground) instead of mid-air (`Player/MaceCombatController.cs` / the smash handler).
+
+### Phase 3 notes (2026-10-06)
+
+- **Blazing Trail:** the card and stat were fine. `PlayerDodge` sits on the static `Player` root, but the CharacterController (the body that moves) is on the child `SidekickSyntyCharacter`. Every `transform.position` in the dash read the root, which never moves. So the trail dropped one segment back at the Player prefab's scene position, and the 0.6 m spacing check never fired again.
+  - Fix: a `Body` property (the CharacterController's transform) for every dash position: trail, hit sphere, dash VFX parent, Frost Step pulse, Nimble Strike feedback and the dash-facing rotation (it used to rotate the root, swinging the body around the spawn point).
+  - Trail spacing now walks the gap in 0.6 m steps, so a low-fps frame can't leave holes.
+  - Side effect: Nimble Strike, the dash damage/knockback cards and Frost Step had the same bug (they hit around the spawn point), so they're fixed too.
+  - Play mode check (Enemy Zoo): segments spawn along the dash with VFX. A Troll standing in the trail lost 13 HP over 3 s at 4 DPS.
+  - Benchmark section 6 used to re-implement the trail loop on a test object, so it passed while the real code was broken. It now drives the real `PlayerDodge` on a root/body rig shaped like the prefab and checks a segment actually burns an Enemy-layer target.
+- **Colossal Smash** is the Earthshaker card (`mace_seismic_shock`, `MaceShockwaveDamage`). `MaceShockwaveMMF` on `Player.prefab` now spawns `FX_GroundCrack_Blast_01` (the plan's "Blase" was a typo) instead of `FX_ShardRock_Explosion_01_NoLoop`. The shockwave centre is the struck enemy's feet (its `Health` root), raycast down onto non-enemy geometry with a NavMesh fallback. Play mode check: hit point at 1.43 m, crack at y 0.00 under the Troll, 15 damage dealt. Also in benchmark section 6.
+- **Same root/body bug elsewhere (not fixed, outside this phase):** other components on the Player root still use `transform.position`: `MageUltimate` (hover/raycast/centre), `PlayerSummonMount` (spawn feedback position), `PlayerArmourManager` (equip feedback), `PlayerInteraction` (fallback origin), and the `PlayerUltimateController` fallbacks. Worth a pass, especially `MageUltimate`.
+- Benchmark: 180 passed, 4 failed. The 4 failures (Bulwark attack, Fishing Pond node count, Bannerman rig, Victory next label) fail the same way without these changes.
 
 ## Phase 4: HUD and prompt readability
 

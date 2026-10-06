@@ -28,3 +28,18 @@ Editor leftovers from `plans/20-playtest-feedback-oct.md`. Unity MCP was connect
 - [ ] Tutorial Dungeon: shooting each rope plays a quick tear, not a wood crack.
 - [ ] Fishing Pond: a level-up plays the sting once, including when a Fishsploshion chain crosses two levels. It isn't drowned out by the draft cards' sound.
 - [ ] Meta Area → Spirit (Sanctuary of Spirits): every hover ticks, not just the first. Same in the pause menu's Settings, the shop and the main menu settings.
+
+## Phase 3: Combat ability fixes
+
+**Done in code and assets:**
+- **Blazing Trail:** `PlayerDodge` read the static Player root's position, so the trail, dash hits and Frost Step all happened back at the spawn point. They now use the moving body (`PlayerDodge.Body`). Benchmark section 6 covers it.
+- **Earthshaker / Colossal Smash:** `MaceShockwaveMMF` on `Player.prefab` spawns `FX_GroundCrack_Blast_01`. `MaceCombatController` places it at the struck enemy's feet, on the ground.
+
+**Wiring checklist:** nothing left.
+
+**Manual verification:**
+- [ ] Draft Blazing Trail, walk away from the spawn point, then dash: a line of fire stays along the dash path for about 3 s and burns goblins that walk through it.
+- [ ] With Nimble Strike or Frost Step, dash into a pack away from spawn: the hits and chill land where you dashed.
+- [ ] Dash with movement input: the character faces the dash direction and doesn't jump sideways.
+- [ ] Mace + Earthshaker, fully charge a swing into a goblin: the ground crack opens at its feet (try on a slope and on a bridge), not floating mid-air. Too small or too big? Scale or swap it on `Player.prefab` → `MaceShockwaveMMF`.
+- [ ] Bladehold/Benchmarks/Run Weapon Reach & Damage Benchmark (from MainMenu, don't save the scene after): section 6 passes.

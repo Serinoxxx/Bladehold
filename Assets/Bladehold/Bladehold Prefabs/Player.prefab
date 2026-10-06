@@ -72394,7 +72394,7 @@ MonoBehaviour:
         MutualizePools: 0
         ParentTransform: {fileID: 0}
         CachedRecycle: 0
-        ParticlesPrefab: {fileID: 198910216832564446, guid: fdb430cc0b3926f4cb38424d890e7b3c, type: 3}
+        ParticlesPrefab: {fileID: 198106895250101352, guid: e7473d9620ab29341b98bf21b400e598, type: 3}
         RandomParticlePrefabs: []
         MainParticlesPrefabWeight: 1
         RandomParticleWeights: 

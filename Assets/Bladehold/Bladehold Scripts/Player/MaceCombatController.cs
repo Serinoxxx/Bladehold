@@ -177,9 +177,37 @@ public class MaceCombatController : MonoBehaviour
             playerAttack.ChargeLevel >= Mathf.Max(1, playerAttack.MaxChargeLevels))
         {
             shockwaveFiredThisSwing = true;
-            Vector3 origin = hitPoint != Vector3.zero ? hitPoint : transform.position + transform.forward * 1.5f;
-            TriggerShockwave(origin, shockwaveDmg);
+            TriggerShockwave(GroundUnder(ShockwaveAnchor(comp, hitPoint)), shockwaveDmg);
         }
+    }
+
+    /// <summary>
+    ///     Where the smash lands: the struck enemy's feet (its Health root is at ground level), else the hit point.
+    ///     The hit point alone is wherever the mace met the body, so the ground crack used to float mid-air.
+    /// </summary>
+    private Vector3 ShockwaveAnchor(Component target, Vector3 hitPoint)
+    {
+        Health health = target != null ? target.GetComponentInParent<Health>() : null;
+        if (health != null) return health.transform.position;
+        if (hitPoint != Vector3.zero) return hitPoint;
+        // This component sits on the static Player root; the stats object is the body that moves.
+        Transform body = playerStats != null ? playerStats.transform : transform;
+        return body.position + body.forward * 1.5f;
+    }
+
+    /// <summary>Drops a point onto the ground below it (world geometry first, NavMesh as a fallback).</summary>
+    private static Vector3 GroundUnder(Vector3 point)
+    {
+        int groundMask = ~LayerMask.GetMask("Enemy", "Player", "Ragdoll", "UI", "Ignore Raycast");
+        if (Physics.Raycast(point + Vector3.up * 2f, Vector3.down, out RaycastHit hit, 8f, groundMask, QueryTriggerInteraction.Ignore))
+        {
+            return hit.point;
+        }
+        if (NavMesh.SamplePosition(point, out NavMeshHit navHit, 3f, NavMesh.AllAreas))
+        {
+            return navHit.position;
+        }
+        return point;
     }
 
     private void TriggerShockwave(Vector3 position, float damage)
