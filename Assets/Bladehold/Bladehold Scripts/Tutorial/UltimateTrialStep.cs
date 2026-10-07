@@ -5,8 +5,10 @@ using UnityEngine;
 ///     Arcane Cores (<see cref="TutorialRun.GrantTrialArcaneCores" />), lifts the scene's ultimate block for
 ///     itself (<see cref="SceneAbilityRules.AllowUltimateFor" />) and sends in a horde. The hint walks the
 ///     player through it: open the wheel, fire the sword ultimate, fire the bow ultimate, then the closing
-///     line on where cores come from while they finish the horde off. It completes once both ultimates have
-///     fired and the horde is dead, and takes back any trial cores left over.
+///     line on where cores come from while they finish the horde off. Whenever the horde is wiped out while an
+///     ultimate is still to be tried (one ultimate can clear it), a fresh horde comes in, so there's always
+///     something to use the next one on. It completes once both ultimates have fired and the last horde is
+///     dead, and takes back any trial cores left over.
 ///     If the player runs short of cores for the ultimates still to fire (e.g. fired the sword twice), it tops
 ///     them up with more trial cores so the step can always finish.
 /// </summary>
@@ -31,7 +33,6 @@ public class UltimateTrialStep : TutorialStep
     private bool wheelOpened;
     private bool meleeUsed;
     private bool rangedUsed;
-    private bool hordeDead;
     private bool anyError;
 
     private void Start()
@@ -102,7 +103,6 @@ public class UltimateTrialStep : TutorialStep
         else rangedUsed = true;
         wheelOpened = true;
         RefreshHint();
-        TryFinish();
     }
 
     private void RefreshHint()
@@ -126,13 +126,13 @@ public class UltimateTrialStep : TutorialStep
 
     private void HandleAllDead()
     {
-        hordeDead = true;
-        TryFinish();
-    }
-
-    private void TryFinish()
-    {
-        if (!IsActive || !meleeUsed || !rangedUsed || !hordeDead) return;
+        if (!IsActive) return;
+        if (!meleeUsed || !rangedUsed)
+        {
+            // Wiped out with an ultimate still to try: send in another horde.
+            horde.SpawnAgain();
+            return;
+        }
         TutorialRun.StripTrialArcaneCores();
         Complete();
     }

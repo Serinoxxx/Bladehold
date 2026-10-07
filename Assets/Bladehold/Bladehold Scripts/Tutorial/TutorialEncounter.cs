@@ -89,6 +89,17 @@ public class TutorialEncounter : MonoBehaviour
         StartCoroutine(SpawnRounds(prefab, def));
     }
 
+    /// <summary>
+    ///     Sends the whole encounter in again, once everything from the last spawn is dead (the Ultimate Trial's
+    ///     horde, refilled while an ultimate is still to be tried). Ignored while any of it is alive or pending.
+    /// </summary>
+    public void SpawnAgain()
+    {
+        if (anyError || alive.Count > 0 || pending > 0) return;
+        spawned = false;
+        Spawn();
+    }
+
     private IEnumerator SpawnRounds(GameObject prefab, EnemyDefinition def)
     {
         for (int round = 0; round < countPerPoint; round++)
