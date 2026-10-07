@@ -711,5 +711,7 @@ ultwheel.blocked_scene,Ultimate Wheel: ultimates are off in this scene,Ultimates
 ultwheel.blocked_weapon,Ultimate Wheel: the held weapon has no ultimate,This weapon has no ultimate.,,,,,,,,
 ultwheel.blocked_core,Ultimate Wheel: no Arcane Core to spend,"No Arcane Core. Captains and Arcane Fish drop them, and the shop sells them.",,,,,,,,
 ultwheel.blocked_active,Ultimate Wheel: an ultimate is already running,An ultimate is already running.,,,,,,,,
+ultwheel.slot_melee,Ultimate Wheel caption over the melee weapon slice,MELEE,,,,,,,,
+ultwheel.slot_ranged,Ultimate Wheel caption over the ranged weapon slice,RANGED,,,,,,,,
 hud.ultimate.ready,HUD ultimate indicator when an Arcane Core is banked,Ready,,,,,,,,
 hud.ultimate.no_core,HUD ultimate indicator with no Arcane Core,No core,,,,,,,,

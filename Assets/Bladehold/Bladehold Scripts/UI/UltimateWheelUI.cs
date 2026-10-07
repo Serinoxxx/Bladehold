@@ -38,6 +38,8 @@ public class UltimateWheelUI : MonoBehaviour
     [SerializeField] private BuildWheelDetailsPanel detailsPanel;
     [Tooltip("Authored slices (at least two, so the ring can be measured). Extra ones are cloned from the first.")]
     [SerializeField] private List<BuildWheelButton> sliceButtons = new List<BuildWheelButton>();
+    [Tooltip("Optional \"MELEE\" / \"RANGED\" caption per slice, same order as the slices.")]
+    [SerializeField] private List<TMP_Text> slotLabels = new List<TMP_Text>();
 
     [Header("Feedback (unscaled time)")]
     [SerializeField] private MMF_Player openFeedback;
@@ -226,6 +228,14 @@ public class UltimateWheelUI : MonoBehaviour
     {
         if (headerText != null) headerText.text = Loc.Get("ultwheel.header", "UNLEASH AN ULTIMATE");
         if (coreLabel != null) coreLabel.text = string.Format(Loc.Get("ultwheel.cores", "Arcane Cores: {0}"), RunSession.ArcaneCores);
+
+        for (int i = 0; i < slotLabels.Count && i < Slots.Length; i++)
+        {
+            if (slotLabels[i] == null) continue;
+            slotLabels[i].text = Slots[i] == UltimateSlot.Melee
+                ? Loc.Get("ultwheel.slot_melee", "MELEE")
+                : Loc.Get("ultwheel.slot_ranged", "RANGED");
+        }
 
         wheel.EnsureButtonCount(Slots.Length);
         for (int i = 0; i < sliceButtons.Count; i++)
