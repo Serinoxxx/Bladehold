@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -7,6 +8,8 @@ using UnityEngine;
 ///     <see cref="PlayerSummonMount" />, <see cref="PlayerUltimateController" />, <see cref="PlayerAttack" />
 ///     and the HUD elements for those abilities. Blocking never touches run state, so the ultimate
 ///     charge and mount cooldown carry on into the next scene.
+///     A tutorial step can lift the ultimate block for itself (<see cref="AllowUltimateFor" />): T2's
+///     Ultimate Trial, in a scene that otherwise keeps ultimates off.
 /// </summary>
 public class SceneAbilityRules : MonoBehaviour
 {
@@ -20,8 +23,25 @@ public class SceneAbilityRules : MonoBehaviour
     public static SceneAbilityRules Instance { get; private set; }
 
     public static bool MountAllowed => Instance == null || Instance.allowMount;
-    public static bool UltimateAllowed => Instance == null || Instance.allowUltimate;
+    public static bool UltimateAllowed => Instance == null || Instance.allowUltimate || UltimateOverrides.Count > 0;
     public static bool MeleeAllowed => Instance == null || Instance.allowMelee;
+
+    private static readonly HashSet<Object> UltimateOverrides = new HashSet<Object>();
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics() => UltimateOverrides.Clear();
+
+    /// <summary>Allows the ultimate here while <paramref name="owner" /> holds it, whatever the scene says.</summary>
+    public static void AllowUltimateFor(Object owner)
+    {
+        if (owner != null) UltimateOverrides.Add(owner);
+    }
+
+    public static void ReleaseUltimateFor(Object owner)
+    {
+        UltimateOverrides.Remove(owner);
+        UltimateOverrides.RemoveWhere(o => o == null);
+    }
 
     private void Awake()
     {

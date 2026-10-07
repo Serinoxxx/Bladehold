@@ -9,6 +9,7 @@
 - Added the Ultimate Wheel: hold Q (Left Bumper on a controller) to slow time and pick which ultimate to unleash, with the mouse or the left stick
 - Added Arcane Cores, a new currency shown beside your gold and supply. Captains drop them (two from Nightmare captains and up), and the shop always sells them
 - Added the Arcane Fish at the fishing pond: one tough, glowing fish per visit that is worth an Arcane Core
+- Added an Ultimate Trial to the end of the tutorial arena: you get two free Arcane Cores to try both ultimates on a goblin horde. Any you don't use are taken back afterwards
 
 ### Fixes
 

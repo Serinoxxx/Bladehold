@@ -139,3 +139,24 @@ Unity MCP was down for this phase. `dotnet build` is clean for runtime and Edito
 - [ ] Kill a captain: the core count goes up (1 at Standard/Enraged). Buy a core in the Rest Area shop: it stays on sale. Catch the Arcane Fish at the pond: +1 after Continue.
 - [ ] Swap weapons in the Meta Area, then deploy: the wheel offers the new weapons' ultimates.
 - [ ] The owner of the old Twin Fury perk sees Arcane Reserve as owned and starts runs with 1 core.
+
+## Phase 6: Ultimate Trial in the tutorial arena (T2)
+
+**Done in code and the scene** (checked in Play mode via MCP):
+- `Tutorial/UltimateTrialStep.cs` is T2's third step, `Tutorial/Step7_UltimateTrial`. It grants 2 trial Arcane Cores, allows ultimates for the step, spawns `Tutorial/Encounter_Horde` (44 goblins) and walks the hint through wheel → sword → bow → the closing core line. It completes when both ultimates have fired and the horde is dead.
+- The arena's `ExitGate` now opens when the trial finishes, not the fight.
+- Unused trial cores are stripped on completion, on a retry, in `TutorialRun.End` and at the T3 → campaign hand-off.
+- New strings `tutorial.ultimate_*` (English only).
+
+**Wiring checklist:**
+- [ ] Horde tuning: 44 goblins, 11 rounds from 4 points, 0.6 s apart (`Encounter_Horde`). Check it feels like a horde without overwhelming a first-time player who hasn't opened the wheel yet. A death restarts the arena from the start.
+- [ ] Optional: a `startFeedback` on the step (a war horn as the horde charges). Leave it empty for none.
+- [ ] Translate the four `tutorial.ultimate_*` strings along with the other tutorial lines.
+
+**Manual verification:**
+- [ ] New save → T1 → T2: after the arena fight, the horde comes in and the hint says hold Q. The ultimate meters appear, and the HUD core row shows 2.
+- [ ] Hold Q: time slows and the wheel offers both ultimates. Fire the sword one: the hint changes to the bow. Fire the bow one: the closing line about cores shows while you finish the horde.
+- [ ] Once the horde is dead, the exit gate opens and the cores counter is back to 0 (1 with Arcane Reserve).
+- [ ] Die during the horde: the arena restarts with 2 trial cores again, not 3 or 4.
+- [ ] T3 (tutorial mode): ultimates are off and the meters are hidden. Win: the campaign map opens with 0 trial cores carried.
+- [ ] In the campaign, the first captain kill gives a core and the wheel fires an ultimate.

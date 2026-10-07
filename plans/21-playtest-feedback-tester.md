@@ -379,7 +379,7 @@ Checked in Play mode via MCP in the Outer Gate with simulated input (a queued Q 
 
 Needs Phases 4 and 5.
 
-- [ ] **Ultimate Trial step at the end of T2 (Arena).**
+- [x] **Ultimate Trial step at the end of T2 (Arena).**
   - On begin:
     - grant **2 Arcane Cores** (tracked as trial grants in `TutorialRun`);
     - turn on ultimates for the step (T2's `SceneAbilityRules.allowUltimate` is off; let the step override it);
@@ -391,11 +391,29 @@ Needs Phases 4 and 5.
     3. "Now your bow ultimate."
     4. Closing hint: "Each ultimate costs an Arcane Core. Earn them from captains and Arcane Fish, or buy them in the shop."
   - The step completes after both ultimates have been used. Block the arena exit until then.
-- [ ] **Strip leftovers.** When the step completes, remove any trial cores the player still has. Check again at the Phase 4 carry-over hand-off. T3 / Valley Stronghold keeps ultimates off in tutorial mode.
-- [ ] **Checks.**
+- [x] **Strip leftovers.** When the step completes, remove any trial cores the player still has. Check again at the Phase 4 carry-over hand-off. T3 / Valley Stronghold keeps ultimates off in tutorial mode.
+- [x] **Checks.**
   - Play the tutorial: the wheel works in T2, both ultimates fire, and you leave T2 with 0 cores.
   - The cores counter in the HUD matches.
   - In the campaign, the first captain kill gives cores, and the wheel works.
+
+### Phase 6 notes (2026-10-07)
+
+Checked in Play mode via MCP in T2: skipped the first two steps, fired both ultimates (one through a queued Q on the wheel), and killed the horde. The Editor compile is clean. Screenshot: `Captures/ult_trial_wheel.png`.
+
+- **Step:** `Tutorial/UltimateTrialStep.cs`, the new third step (`Step7_UltimateTrial`) after the arena fight.
+  - On begin it grants 2 trial cores, lifts the scene's ultimate block for itself and spawns `Encounter_Horde`: 44 goblins (11 rounds from 4 spawn points at the arena's far end, 0.6 s apart). They all spawn on the NavMesh inside the closed arena.
+  - The hint goes "Hold [Q] to open the Ultimate Wheel…" → "Unleash your sword ultimate" (once the wheel has opened) → "Now your bow ultimate" → the closing core line. If the bow fires first, the hint asks for the sword. The secondary line is Dodge, and the counter shows the horde kills.
+  - **Deviation:** it completes when both ultimates have fired **and** the horde is dead, not on the second ultimate alone, so you never walk out with 40 goblins behind you. The closing hint shows while you finish them off.
+  - The `ExitGate.Open` listener moved from the fight step to this one, so the arena stays shut until the trial is done (the exit door only unlocks when the director finishes anyway).
+  - If the cores fall short of the ultimates still to fire, it tops up with more trial cores, so it can't soft-lock. A weapon with no ultimate is skipped with a warning.
+- **Ultimate override:** `SceneAbilityRules.AllowUltimateFor(owner)` / `ReleaseUltimateFor(owner)`, a static owner set that `UltimateAllowed` ORs in. T2's own rules stay off. `UltimateBarUI` now polls `UltimateAllowed` for its visibility instead of turning itself off in `Start`, so the HUD shows mid-scene.
+- **Trial cores:** `TutorialRun.TrialArcaneCores` tracks the unspent free cores: each drop in `RunSession.ArcaneCores` counts as spending them first. `StripTrialArcaneCores` takes back only what's left, so a core the player brought in (Arcane Reserve) survives.
+  - Stripped when the step completes, at the start of a retry after dying in the arena (the scene reloads), in `TutorialRun.End` (skip, the end of the tutorial, a stale run), and at the DeathScreen tutorial-to-campaign hand-off.
+  - T3 starts a fresh run anyway, and it keeps ultimates off in tutorial mode.
+  - Verified: 2 granted → sword (1 left) → set to 0 → topped up to 1 → bow (0). A leftover trial core plus an earned core → on completion, 1 core left (the earned one), trial 0, exit gate open, ultimates blocked again.
+- **Strings:** `tutorial.ultimate_wheel`, `_melee`, `_ranged` and `_cost` added to `Strings.csv` (English only, like the other tutorial lines).
+- **Not played end to end:** the full tutorial run into T3, and the campaign-side check (first captain kill gives cores, the wheel works). These are on the editor checklist.
 
 ---
 

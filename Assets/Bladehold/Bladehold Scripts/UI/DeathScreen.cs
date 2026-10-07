@@ -551,7 +551,8 @@ public class DeathScreen : MonoBehaviour
             if (TutorialRun.Active)
             {
                 // The tutorial's last scene is campaign node 1 (Valley Stronghold): the run carries on with
-                // it cleared. Plan 21 phase 6: strip any trial Arcane Cores here before the hand-off.
+                // it cleared. The T2 Ultimate Trial's free cores are stripped first (End does it too).
+                TutorialRun.StripTrialArcaneCores();
                 TutorialRun.End();
                 CampaignManager.Instance.StartCampaignRunFromTutorial();
             }

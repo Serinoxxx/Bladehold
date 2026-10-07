@@ -55,7 +55,9 @@ public class UltimateBarUI : MonoBehaviour
     private void RefreshVisibility()
     {
         if (canvasGroup == null) return;
-        bool owned = ultimateController != null && ultimateController.HasUltimate(slot);
+        // Scenes whose SceneAbilityRules block the ultimate (the Fishing Pond, the tutorial) hide it too. Polled,
+        // because a tutorial step can lift the block mid-scene (T2's Ultimate Trial).
+        bool owned = SceneAbilityRules.UltimateAllowed && ultimateController != null && ultimateController.HasUltimate(slot);
         if (owned != wasOwned)
         {
             wasOwned = owned;
@@ -73,14 +75,6 @@ public class UltimateBarUI : MonoBehaviour
 
     private void Start()
     {
-        // Scenes whose SceneAbilityRules block the ultimate (the Fishing Pond) hide the indicator; the
-        // run's cores are untouched and show again next scene.
-        if (!SceneAbilityRules.UltimateAllowed)
-        {
-            gameObject.SetActive(false);
-            return;
-        }
-
         if (canvasGroup == null)
         {
             Debug.LogError($"[UltimateBarUI] '{name}' has no CanvasGroup, so it can't hide while the {slot} ultimate isn't owned.");

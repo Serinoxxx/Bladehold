@@ -220,6 +220,13 @@ public class TutorialDirector : MonoBehaviour, IWaypointSource
         if (TutorialHintUI.Instance != null) TutorialHintUI.Instance.SetCounter(text);
     }
 
+    /// <summary>Steps that teach in stages (the Ultimate Trial) swap their main line through here, keeping the secondary.</summary>
+    public void SetHint(TutorialHint hint)
+    {
+        TutorialStep step = CurrentStep;
+        ShowHint(hint, step != null ? step.SecondaryHint : null);
+    }
+
     /// <summary>Steps swap the secondary line (heavy-attack nudge, low-ammo tip) through here. Null restores the step's own.</summary>
     public void SetSecondaryHint(TutorialHint hint)
     {
