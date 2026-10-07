@@ -124,7 +124,7 @@ Unity MCP was down for this phase. `dotnet build` is clean for runtime and Edito
   - the HUD core row;
   - the reworked ult meters ("Ready" / "No core" / "Hold Q"). Decide whether two meters are still wanted or one compact indicator.
 
-  The MCP screenshot couldn't capture the overlay HUD, so it hasn't been seen yet.
+  Screenshots are in `Captures/ult_*.png`. To capture the overlay HUD, switch the canvas to Screen Space Camera in Play mode. After seeing the screenshots, the hub's build hammer became the Synty Magic icon, and the orbs show just the key ("Q") because "Hold Q" overflowed. Still open: the slices are small, and they sit on a ring built for six.
 - [ ] Feedback: `UltimateDeniedMMF` reuses the prep prompt's denied sound, and `UltimateOpenMMF` is just a scale pop. Pick an open/whoosh sound, and maybe a select sound.
 - [ ] Arcane Fish look: approve it, or set `FishingManager.arcaneFishMat` in the Fishing Pond scene. It currently falls back to the Spark material, with a violet glow at 2× size. Optionally wire `FishingTallyUI.arcaneCoresRewardText` by copying the Diamond Fish Bones row.
 - [ ] Captain core drop popup: there's no captain-death reward popup. The count shows only in the intro subtitle and the end-screen list. Add a DamageNumbersPro "+1 Arcane Core" popup at the corpse if wanted.

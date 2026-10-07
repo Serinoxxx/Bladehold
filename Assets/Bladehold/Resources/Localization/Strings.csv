@@ -709,4 +709,3 @@ ultwheel.blocked_core,Ultimate Wheel: no Arcane Core to spend,"No Arcane Core. C
 ultwheel.blocked_active,Ultimate Wheel: an ultimate is already running,An ultimate is already running.,,,,,,,,
 hud.ultimate.ready,HUD ultimate indicator when an Arcane Core is banked,Ready,,,,,,,,
 hud.ultimate.no_core,HUD ultimate indicator with no Arcane Core,No core,,,,,,,,
-hud.ultimate.hold_key,HUD ultimate indicator key hint ({0} = key),Hold {0},,,,,,,,

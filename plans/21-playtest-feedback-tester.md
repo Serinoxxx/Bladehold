@@ -372,7 +372,7 @@ Checked in Play mode via MCP in the Outer Gate with simulated input (a queued Q 
   - Gamepad: LB plus stick-right selects the ranged slice, Move is disabled, and releasing LB (even together with the stick) fires Arrow Stream.
   - The HUD row and both indicators read correctly.
   - Benchmark section 11 gains 11F (core spend and the shop item) and 11G (one ultimate row per weapon). Lance runs the benchmark.
-  - **Screenshots of the wheel couldn't be taken.** The MCP capture renders through the camera, which leaves out the overlay HUD, so the wheel's look is on the UI-review checklist.
+  - **Screenshots** (`Captures/ult_wheel_*.png`, `ult_hud_ready.png`) were taken by switching the HUD canvas to Screen Space Camera in Play mode. They showed two fixes, now made: the hub still had the build wheel's hammer (now the Synty Magic icon), and the orbs' "Hold Q" overflowed the one-key label (now just "Q").
   - The captain, fish and shop sources weren't played end to end; they're on the checklist.
 
 ## Phase 6: Teach ultimates in the tutorial (an extra step in T2)

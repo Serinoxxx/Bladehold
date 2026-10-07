@@ -6,7 +6,7 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 ///     HUD indicator for one ultimate slot (melee or ranged) since the Arcane Core redesign (plan 21 phase 5):
-///     there's no charge any more. The bar sits full and glows with the wheel's key while the run holds an
+///     there's no charge any more. The bar sits full and glows with the wheel's key glyph while the run holds an
 ///     Arcane Core ("ready"), sits empty without one, and counts down the running ultimate's time. It hides
 ///     (CanvasGroup alpha 0) while the held weapon in that slot has no ultimate.
 /// </summary>
@@ -264,6 +264,7 @@ public class UltimateBarUI : MonoBehaviour
             if (bindIndex >= 0) key = action.GetBindingDisplayString(bindIndex);
         }
         if (string.IsNullOrEmpty(key)) key = "Q";
-        inputKeyText.text = string.Format(Loc.Get("hud.ultimate.hold_key", "Hold {0}"), key);
+        // Just the glyph: the label is sized for one key (the wheel and tutorial explain the hold).
+        inputKeyText.text = key;
     }
 }
