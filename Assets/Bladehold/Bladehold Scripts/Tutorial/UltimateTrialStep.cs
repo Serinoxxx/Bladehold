@@ -7,8 +7,8 @@ using UnityEngine;
 ///     player through it: open the wheel, fire the sword ultimate, fire the bow ultimate, then the closing
 ///     line on where cores come from while they finish the horde off. Whenever the horde is wiped out while an
 ///     ultimate is still to be tried (one ultimate can clear it), a fresh horde comes in, so there's always
-///     something to use the next one on. It completes once both ultimates have fired and the last horde is
-///     dead, and takes back any trial cores left over.
+///     something to use the next one on. Once both have fired, no more goblins come: the rounds still queued are
+///     cancelled, and it completes when the ones already out are dead, taking back any trial cores left over.
 ///     If the player runs short of cores for the ultimates still to fire (e.g. fired the sword twice), it tops
 ///     them up with more trial cores so the step can always finish.
 /// </summary>
@@ -103,6 +103,8 @@ public class UltimateTrialStep : TutorialStep
         else rangedUsed = true;
         wheelOpened = true;
         RefreshHint();
+        // Both tried: only the goblins already out are left to finish, no more on the way.
+        if (meleeUsed && rangedUsed) horde.StopSpawning();
     }
 
     private void RefreshHint()

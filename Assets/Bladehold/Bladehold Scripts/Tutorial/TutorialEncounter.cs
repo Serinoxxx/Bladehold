@@ -100,6 +100,20 @@ public class TutorialEncounter : MonoBehaviour
         Spawn();
     }
 
+    /// <summary>
+    ///     Cancels the rounds still to come, leaving only the enemies already out (the Ultimate Trial, once both
+    ///     ultimates have fired). The total shrinks to match, and <see cref="OnAllDead" /> fires if none are left.
+    /// </summary>
+    public void StopSpawning()
+    {
+        if (anyError || pending <= 0) return;
+        StopAllCoroutines();
+        total -= pending;
+        pending = 0;
+        OnAliveCountChanged?.Invoke(alive.Count, total);
+        if (alive.Count == 0) OnAllDead?.Invoke();
+    }
+
     private IEnumerator SpawnRounds(GameObject prefab, EnemyDefinition def)
     {
         for (int round = 0; round < countPerPoint; round++)

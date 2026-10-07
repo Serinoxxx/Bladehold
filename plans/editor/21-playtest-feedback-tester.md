@@ -156,7 +156,7 @@ Unity MCP was down for this phase. `dotnet build` is clean for runtime and Edito
 **Manual verification:**
 - [ ] New save → T1 → T2: after the arena fight, the horde comes in and the hint says hold Q. The ultimate meters appear, and the HUD core row shows 2.
 - [ ] Hold Q: time slows and the wheel offers both ultimates. Fire the sword one: the hint changes to the bow. Fire the bow one: the closing line about cores shows while you finish the horde.
-- [ ] Clear the horde with the sword ultimate alone: a fresh horde comes in for the bow ultimate.
+- [ ] Clear the horde with the sword ultimate alone: a fresh horde comes in for the bow ultimate. Fire the bow ultimate as soon as it starts arriving: no more goblins come after that.
 - [ ] Once the horde is dead, the exit gate opens and the cores counter is back to 0 (1 with Arcane Reserve).
 - [ ] Die during the horde: the arena restarts with 2 trial cores again, not 3 or 4.
 - [ ] T3 (tutorial mode): ultimates are off and the meters are hidden. Win: the campaign map opens with 0 trial cores carried.
