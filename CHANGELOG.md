@@ -13,6 +13,7 @@
 
 ### Fixes
 
+- Fixed four mace draft cards (Concussive Impact, Earthshaker, Colossal Force and Seismic Quake) showing no icon
 - Fixed the tower build wheel showing each tower's supply cost twice
 - Fixed wall health bars clipping into the wall model; they now float clear above the wall
 - Fixed the horse summon bar never showing its text
@@ -24,6 +25,7 @@
 
 ### General Changes
 
+- New icons for most draft cards, meta perks and shop items, all in one flat style so every card reads clearly at a glance
 - Lowered the default mouse sensitivity and gave the slider a finer 0.01 to 1 range (it can no longer be set to 0); saves on the old default move to the new one
 - Swapped the tutorial gate's preparation music for a calmer track
 - Your hero now waves to call the horse while summoning it

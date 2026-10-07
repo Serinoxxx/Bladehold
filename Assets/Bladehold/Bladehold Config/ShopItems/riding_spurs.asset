@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: Riding Spurs
   description: Your warhorse is 10% faster for the rest of this run.
   goldCost: 30
-  icon: {fileID: 21300000, guid: 9914b508864bec1489d0affab3bbe4bf, type: 3}
+  icon: {fileID: 21300000, guid: cf9b6e554dcb79745ade57ed3bd93196, type: 3}
   effectType: 8
   effectValue: 0.1
   durationWaves: 0

@@ -23,5 +23,5 @@ MonoBehaviour:
   - 40
   - 60
   - 80
-  icon: {fileID: 21300000, guid: 2a01d30c31d57684d93a2166bdbd2c8f, type: 3}
+  icon: {fileID: 21300000, guid: a0abcc53f24ba0548933d7832cfcc8cb, type: 3}
   prerequisites: []

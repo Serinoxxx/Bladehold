@@ -16,7 +16,9 @@ MonoBehaviour:
   displayName: Troll Heart
   description: Increases Max HP by +25 for the remainder of this run.
   goldCost: 50
-  icon: {fileID: 21300000, guid: e00343648dfdc2e4db991f3b08dd8384, type: 3}
+  icon: {fileID: 21300000, guid: 50fc7827d30e20b46ab9e81af3e70c2c, type: 3}
   effectType: 1
   effectValue: 25
   durationWaves: 0
+  stat: 0
+  statKind: 0

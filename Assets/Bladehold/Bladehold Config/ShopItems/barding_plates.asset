@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: Barding Plates
   description: Your warhorse has +25% max health for the rest of this run.
   goldCost: 35
-  icon: {fileID: 21300000, guid: 445233aa464930d4793ac104cbb96db0, type: 3}
+  icon: {fileID: 21300000, guid: a72f80199819b604680252a85559cb4d, type: 3}
   effectType: 8
   effectValue: 0.25
   durationWaves: 0

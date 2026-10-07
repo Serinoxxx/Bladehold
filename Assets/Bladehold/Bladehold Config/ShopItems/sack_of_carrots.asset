@@ -17,7 +17,7 @@ MonoBehaviour:
   description: Kills fill your horse's charge stamina 30% faster for the rest of
     this run.
   goldCost: 30
-  icon: {fileID: 21300000, guid: 93251874d247e7cd6c249b57c9ca90a3, type: 3}
+  icon: {fileID: 21300000, guid: 249dd648d4c4a034c8413d2c78b4e565, type: 3}
   effectType: 8
   effectValue: 0.3
   durationWaves: 0

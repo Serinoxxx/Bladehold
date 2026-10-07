@@ -1,47 +1,47 @@
 id,displayName,category,weapon,element,isUltimate,maxLevel,description,upgradeText,stat,kind,amount,icon,targetSlot,isDuo,prerequisiteElements,requires
 sword_lunge_mastery,Lunge Mastery,Weapon,sword,,0,4,Lunge deals +200% damage and gains +40% critical strike chance.,Lunge hits even harder and crits more often,SwordLungeDamageBonus;SwordLungeCritBonus,Flat;Flat,2.0|2.5|3.0|3.5;0.40|0.50|0.60|0.70,sword_lunge,,,,
-sword_nimble_strike,Nimble Strike,Weapon,sword,,0,1,Dashing performs an automatic attack along the movement path.,,SwordNimbleStrike,Flat,1,sword_nimble_strike,,,,
-sword_shieldbreaker,ShieldBreaker,Weapon,sword,,0,4,Sword attacks deal +200% damage to shielded targets.,Deals even more damage to shielded targets,SwordShieldBreakerBonus,Flat,2|3|4|5,sword_shieldbreaker,,,,
-sword_vampire_blade,Vampire Blade,Weapon,sword,,0,4,Heals 2 HP per hit but player takes 50% extra elemental damage.,Heals more HP per hit,SwordVampireBladeHeal;SwordVampireExtraElementalDamage,Flat;Flat,2|3|4|5;0.50|0.50|0.50|0.50,sword_vampire_blade,,,,
-sword_blade_tempest,Moonlight Edge,Weapon,sword,,1,1,Every swing also fires a crescent of moonlight that cuts through everything in a line. Charged swings fire bigger crescents.,,UltimateUnlocked,Flat,1,sword_blade_tempest,,,,
-bow_auto_shot,Auto-Shot,Weapon,bow,,0,1,Dashing automatically fires a fully charged shot at the nearest enemy.,,BowAutoShotOnDash,Flat,1,bow_auto_shot,,,,
-bow_desperate_volley,Desperate Volley,Weapon,bow,,0,4,Taking a hit below 50% HP fires a ring of fully charged arrows (12s cooldown).,Fires more arrows in the ring,BowDesperateVolleyArrows,Flat,8|12|16|20,bow_desperate_volley,,,,
-bow_piercer,Piercer,Weapon,bow,,0,4,Arrows pierce through additional enemies.,Arrows pierce through even more enemies,BowPierceCount,Flat,1|2|3|4,bow_piercer,,,,
+sword_nimble_strike,Nimble Strike,Weapon,sword,,0,1,Dashing performs an automatic attack along the movement path.,,SwordNimbleStrike,Flat,1,gi_blade_drag,,,,
+sword_shieldbreaker,ShieldBreaker,Weapon,sword,,0,4,Sword attacks deal +200% damage to shielded targets.,Deals even more damage to shielded targets,SwordShieldBreakerBonus,Flat,2|3|4|5,gi_broken_shield,,,,
+sword_vampire_blade,Vampire Blade,Weapon,sword,,0,4,Heals 2 HP per hit but player takes 50% extra elemental damage.,Heals more HP per hit,SwordVampireBladeHeal;SwordVampireExtraElementalDamage,Flat;Flat,2|3|4|5;0.50|0.50|0.50|0.50,gi_bloody_sword,,,,
+sword_blade_tempest,Moonlight Edge,Weapon,sword,,1,1,Every swing also fires a crescent of moonlight that cuts through everything in a line. Charged swings fire bigger crescents.,,UltimateUnlocked,Flat,1,gi_moon_claws,,,,
+bow_auto_shot,Auto-Shot,Weapon,bow,,0,1,Dashing automatically fires a fully charged shot at the nearest enemy.,,BowAutoShotOnDash,Flat,1,gi_crosshair_arrow,,,,
+bow_desperate_volley,Desperate Volley,Weapon,bow,,0,4,Taking a hit below 50% HP fires a ring of fully charged arrows (12s cooldown).,Fires more arrows in the ring,BowDesperateVolleyArrows,Flat,8|12|16|20,gi_pentarrows_tornado,,,,
+bow_piercer,Piercer,Weapon,bow,,0,4,Arrows pierce through additional enemies.,Arrows pierce through even more enemies,BowPierceCount,Flat,1|2|3|4,gi_pierced_body,,,,
 bow_bouncer,Bouncer,Weapon,bow,,0,4,Arrows ricochet to nearby targets.,Arrows ricochet to more targets,BowBounceCount;BowBounceChance,Flat;Flat,1|2|3|4;1|1|1|1,bow_bouncer,,,,
-bow_stream_ult,Arrow Stream,Weapon,bow,,1,1,Unleash an insanely fast stream of high-knockback arrows.,,UltimateUnlocked,Flat,1,bow_stream_ult,,,,
-axe_fear_axe,Fear the Axe,Weapon,axe,,0,4,Kills freeze nearby enemies in fear.,Increases fear freeze duration,AxeFearDuration,Flat,0.6|0.9|1.2|1.5,axe_fear_axe,,,,
+bow_stream_ult,Arrow Stream,Weapon,bow,,1,1,Unleash an insanely fast stream of high-knockback arrows.,,UltimateUnlocked,Flat,1,gi_striking_arrows,,,,
+axe_fear_axe,Fear the Axe,Weapon,axe,,0,4,Kills freeze nearby enemies in fear.,Increases fear freeze duration,AxeFearDuration,Flat,0.6|0.9|1.2|1.5,gi_screaming,,,,
 axe_like_butter,Like Butter,Weapon,axe,,0,4,Each extra enemy your swing cleaves through takes much more of its damage.,Cleaved enemies take even more damage,CleaveFalloffReduction,Flat,0.2|0.3|0.4|0.5,axe_cleave,,,,
 axe_celebratory_spin,Celebratory Spin,Weapon,axe,,0,4,Kills trigger an automatic mini-whirlwind.,Increases mini-whirlwind duration,AxeCelebratorySpinDuration,Flat,0.5|1|1.5|2,axe_celebratory_spin,,,,
-axe_power_dash,Power Dash,Weapon,axe,,0,4,Attacks charge faster immediately following a dash.,Attacks charge even faster after dashing,AxePowerDashChargeSpeed,Flat,1.0|2.0|3.0|4.0,charge_unlock,,,,
-axe_heavy_stance,Heavy Stance,Weapon,axe,,0,4,Fully charged attacks grant a temporary shield for 2s.,Increases shield strength on charged attacks,AxeHeavyStanceShield,Flat,2|4|6|8,solid,,,,
-axe_bladestorm_ult,Bladestorm,Weapon,axe,,1,1,Unleash a spinning whirlwind with damage reduction.,,UltimateUnlocked,Flat,1,butter,,,,
+axe_power_dash,Power Dash,Weapon,axe,,0,4,Attacks charge faster immediately following a dash.,Attacks charge even faster after dashing,AxePowerDashChargeSpeed,Flat,1.0|2.0|3.0|4.0,gi_sprint,,,,
+axe_heavy_stance,Heavy Stance,Weapon,axe,,0,4,Fully charged attacks grant a temporary shield for 2s.,Increases shield strength on charged attacks,AxeHeavyStanceShield,Flat,2|4|6|8,gi_temporary_shield,,,,
+axe_bladestorm_ult,Bladestorm,Weapon,axe,,1,1,Unleash a spinning whirlwind with damage reduction.,,UltimateUnlocked,Flat,1,gi_spinning_blades,,,,
 taxe_boomerang,Boomerang,Weapon,throwing_axe,,0,1,"Thrown axes fly back to you, hitting enemies again on the way back.",,AxeBoomerangUnlocked,Flat,1,axe_boomerang,,,,
-taxe_bloodsplosion,Bloodsplosion,Weapon,throwing_axe,,0,4,Kills trigger an explosion dealing AoE damage.,Increases explosion damage,AxeBloodsplosionDamage,Flat,10|20|30|40,explodeheads,,,,
-taxe_first_strike,First Strike,Weapon,throwing_axe,,0,4,Deals bonus damage to full-health targets.,Increases first strike bonus damage,AxeFirstStrikeBonus,Flat,0.5|0.6|0.7|0.8,crit_1,,,,
-taxe_spin_top,Spin Top,Weapon,throwing_axe,,0,4,Axe becomes a slow-moving vortex dealing AoE DPS.,Increases vortex DPS,AxeSpinTopDPS,Flat,4|8|12|16,range_ext,,,,
-taxe_vortex_ult,Axe Storm,Weapon,throwing_axe,,1,1,Rapid-fire three-axe fans whose axes ricochet between enemies.,,UltimateUnlocked;UltimateThrowingAxeVortexUnlocked,Flat;Flat,1;1,axe_charge,,,,
-mace_armor_shatter,Armor Shatter,Weapon,mace,,0,4,Mace attacks deal bonus damage to shielded and heavy enemies.,Increases armor shatter damage bonus,MaceArmorShatterBonus,Flat,0.4|0.8|1.2|1.6,sword_dmg,,,,
-mace_heavy_stun,Concussive Impact,Weapon,mace,,0,4,Mace attacks stun enemies with bone-crushing force.,Increases concussive stun duration,MaceStunDuration,Flat,0.3|0.6|0.9|1.2,heavy_strike,,,,
-mace_seismic_shock,Earthshaker,Weapon,mace,,0,4,Fully charged strikes unleash a radial ground shockwave.,Increases shockwave damage,MaceShockwaveDamage,Flat,15|30|45|60,shockwave,,,,
-mace_colossal_force,Colossal Force,Weapon,mace,,0,4,Attacks launch enemies with massive knockback force.,Increases knockback multiplier,MaceKnockbackMultiplier,Flat,0.5|1.0|1.5|2.0,knockback_plus,,,,
-mace_earthshaker_ult,Seismic Quake,Weapon,mace,,1,1,Leap and slam the earth: a 10m shockwave stuns and launches enemies and every swing after sends an aftershock.,,UltimateUnlocked;UltimateMaceEarthquakeUnlocked,Flat;Flat,1;1,shockwave,,,,
-elem_fire_blazing_trail,Blazing Trail,Elemental,,Fire,0,4,Dashing leaves a fire trail dealing DPS.,Increases fire trail DPS,FireBlazingTrailDPS,Flat,2|3|4|5,flamearrow,SLOT_MOBILITY,,,
+taxe_bloodsplosion,Bloodsplosion,Weapon,throwing_axe,,0,4,Kills trigger an explosion dealing AoE damage.,Increases explosion damage,AxeBloodsplosionDamage,Flat,10|20|30|40,gi_goo_explosion,,,,
+taxe_first_strike,First Strike,Weapon,throwing_axe,,0,4,Deals bonus damage to full-health targets.,Increases first strike bonus damage,AxeFirstStrikeBonus,Flat,0.5|0.6|0.7|0.8,gi_bullseye,,,,
+taxe_spin_top,Spin Top,Weapon,throwing_axe,,0,4,Axe becomes a slow-moving vortex dealing AoE DPS.,Increases vortex DPS,AxeSpinTopDPS,Flat,4|8|12|16,gi_vortex,,,,
+taxe_vortex_ult,Axe Storm,Weapon,throwing_axe,,1,1,Rapid-fire three-axe fans whose axes ricochet between enemies.,,UltimateUnlocked;UltimateThrowingAxeVortexUnlocked,Flat;Flat,1;1,gi_crossed_axes,,,,
+mace_armor_shatter,Armor Shatter,Weapon,mace,,0,4,Mace attacks deal bonus damage to shielded and heavy enemies.,Increases armor shatter damage bonus,MaceArmorShatterBonus,Flat,0.4|0.8|1.2|1.6,gi_cracked_helm,,,,
+mace_heavy_stun,Concussive Impact,Weapon,mace,,0,4,Mace attacks stun enemies with bone-crushing force.,Increases concussive stun duration,MaceStunDuration,Flat,0.3|0.6|0.9|1.2,gi_knockout,,,,
+mace_seismic_shock,Earthshaker,Weapon,mace,,0,4,Fully charged strikes unleash a radial ground shockwave.,Increases shockwave damage,MaceShockwaveDamage,Flat,15|30|45|60,gi_earth_crack,,,,
+mace_colossal_force,Colossal Force,Weapon,mace,,0,4,Attacks launch enemies with massive knockback force.,Increases knockback multiplier,MaceKnockbackMultiplier,Flat,0.5|1.0|1.5|2.0,gi_punch_blast,,,,
+mace_earthshaker_ult,Seismic Quake,Weapon,mace,,1,1,Leap and slam the earth: a 10m shockwave stuns and launches enemies and every swing after sends an aftershock.,,UltimateUnlocked;UltimateMaceEarthquakeUnlocked,Flat;Flat,1;1,gi_groundbreaker,,,,
+elem_fire_blazing_trail,Blazing Trail,Elemental,,Fire,0,4,Dashing leaves a fire trail dealing DPS.,Increases fire trail DPS,FireBlazingTrailDPS,Flat,2|3|4|5,gi_fire_dash,SLOT_MOBILITY,,,
 elem_fire_combustion,Combustion,Elemental,,Fire,0,4,Attacks ignite enemies for continuous burn DPS.,Increases ignition burn DPS,FireCombustionDPS,Flat,2|3|4|5,imbue_fire,SLOT_MELEE,,,
-elem_fire_kindling,Kindling,Elemental,,Fire,0,4,Ignited targets take bonus damage from all sources.,Increases damage bonus against ignited foes,FireKindlingDamageBonus,Flat,0.5|0.7|0.9|1.1,imbue_fire,,,,slot:Fire
-elem_fire_inferno_burst,Inferno Burst,Elemental,,Fire,0,4,Ultimate ability immediately ignites all nearby enemies.,Inferno Burst deals more damage,FireInfernoBurstUnlocked,Flat,1|1.5|2|2.5,imbue_fire,SLOT_ULTIMATE,,,ultimate
+elem_fire_kindling,Kindling,Elemental,,Fire,0,4,Ignited targets take bonus damage from all sources.,Increases damage bonus against ignited foes,FireKindlingDamageBonus,Flat,0.5|0.7|0.9|1.1,gi_small_fire,,,,slot:Fire
+elem_fire_inferno_burst,Inferno Burst,Elemental,,Fire,0,4,Ultimate ability immediately ignites all nearby enemies.,Inferno Burst deals more damage,FireInfernoBurstUnlocked,Flat,1|1.5|2|2.5,gi_fire_ring,SLOT_ULTIMATE,,,ultimate
 elem_light_static_edge,Static Edge,Elemental,,Lightning,0,4,First hit of a melee chain deals bonus lightning damage.,Increases static edge lightning damage,LightningStaticEdgeDamage,Flat,30|50|70|90,imbue_lightning,SLOT_MELEE,,,
 elem_light_chain_dash,Chain Dash,Elemental,,Lightning,0,4,Dashing imbues next melee swing with Chain Lightning.,Increases chain lightning targets,LightningChainDashTargets,Flat,4|6|8|10,chain_dash,SLOT_MOBILITY,,,
 elem_light_eye_storm,Eye of the Storm,Elemental,,Lightning,0,4,Lightning strikes a random target periodically during ultimate.,Increases lightning strike damage,LightningEyeOfTheStormDamage,Flat,50|100|150|200,eye_storm,SLOT_ULTIMATE,,,ultimate
-elem_ice_frost_step,Frost Step,Elemental,,Ice,0,4,Dashing chills nearby enemies for 3s.,Increases slow and attack speed reduction,IceFrostStepSlowPercent,Flat,0.2|0.3|0.4|0.5,imbue_ice,SLOT_MOBILITY,,,
-elem_ice_deep_freeze,Deep Freeze,Elemental,,Ice,0,1,Applying chill to an already chilled enemy freezes them solid.,,IceDeepFreezeUnlocked,Flat,1,freezedraw,,,,slot:Ice
+elem_ice_frost_step,Frost Step,Elemental,,Ice,0,4,Dashing chills nearby enemies for 3s.,Increases slow and attack speed reduction,IceFrostStepSlowPercent,Flat,0.2|0.3|0.4|0.5,gi_frozen_ring,SLOT_MOBILITY,,,
+elem_ice_deep_freeze,Deep Freeze,Elemental,,Ice,0,1,Applying chill to an already chilled enemy freezes them solid.,,IceDeepFreezeUnlocked,Flat,1,gi_frozen_block,,,,slot:Ice
 elem_ice_shatter,Shatter,Elemental,,Ice,0,4,Frozen enemies take massive bonus damage from all hits.,Increases bonus damage to frozen foes,IceShatterBonus,Flat,2.0|3.0|4.0|5.0,icebreaker,,,,card:elem_ice_deep_freeze
-elem_ice_ice_shards,Ice Shards,Elemental,,Ice,0,4,Ranged kills shatter enemies into an 8-way projectile burst.,Increases ice shard burst damage,IceShardsBurstDamage,Flat,50|60|70|80,brainfreeze,SLOT_RANGED,,,
+elem_ice_ice_shards,Ice Shards,Elemental,,Ice,0,4,Ranged kills shatter enemies into an 8-way projectile burst.,Increases ice shard burst damage,IceShardsBurstDamage,Flat,50|60|70|80,gi_ice_spear,SLOT_RANGED,,,
 duo_thermal_shock,Thermal Shock,Elemental,,,0,4,Enemies afflicted by Fire and Ice take massive burst damage.,Thermal Shock bursts hit even harder,DuoThermalShock,Flat,1|1.5|2|2.5,thermal_shock,,TRUE,Fire|Ice,slot:Fire;slot:Ice
 duo_plasma_overload,Plasma Overload,Elemental,,,0,4,Fire and Lightning cause explosions.,Plasma explosions deal more damage,DuoPlasmaOverload,Flat,1|1.5|2|2.5,plasma_overload,,TRUE,Fire|Lightning,slot:Fire;slot:Lightning
 duo_superconductor,Superconductor,Elemental,,,0,4,Ice and Lightning create larger chain lightning.,Superconductor lightning deals more damage,DuoSuperconductor,Flat,1|1.5|2|2.5,superconductor,,TRUE,Ice|Lightning,slot:Lightning;card:elem_ice_deep_freeze
-mount_blazing_hooves,Blazing Hooves,Weapon,,,0,4,"While charging, your horse leaves a trail of fire that burns enemies.",Hotter fire trail,HorseChargeFireTrailDPS,Flat,4|6|8|10,Aura_Burn_nb,,,,mount
-mount_frost_wake,Frost Wake,Weapon,,,0,4,"While charging, enemies near your horse are chilled.",Wider frost aura,HorseChargeFrostRadius,Flat,3|4|5|6,Skill_FrostNova_nb,,,,mount
-mount_battering_ram,Battering Ram,Weapon,,,0,4,Your horse's trample hits harder.,Even harder trample,HorseTrampleDamageMultiplier,Flat,0.3|0.6|0.9|1.2,Push_nobg,,,,mount
-mount_bloodlust,Bloodlust,Weapon,,,0,4,Enemies your horse tramples to death refund charge stamina.,More stamina per trample kill,HorseTrampleKillStamina,Flat,3|5|7|9,Bloodlust,,,,mount
-mount_iron_barding,Iron Barding,Weapon,,,0,4,Your horse takes less damage while charging.,Tougher barding,HorseChargeDamageReduction,Flat,0.2|0.3|0.4|0.5,Skill_ShieldWall_nb,,,,mount
-mount_eager_steed,Eager Steed,Weapon,,,0,4,Your kills fill the horse's charge stamina faster.,Even faster charge build-up,HorseStaminaGainMultiplier,Flat,0.25|0.5|0.75|1,Skill_HorseAcceleration_nb,,,,mount
+mount_blazing_hooves,Blazing Hooves,Weapon,,,0,4,"While charging, your horse leaves a trail of fire that burns enemies.",Hotter fire trail,HorseChargeFireTrailDPS,Flat,4|6|8|10,gi_fire_zone,,,,mount
+mount_frost_wake,Frost Wake,Weapon,,,0,4,"While charging, enemies near your horse are chilled.",Wider frost aura,HorseChargeFrostRadius,Flat,3|4|5|6,gi_snowflake_1,,,,mount
+mount_battering_ram,Battering Ram,Weapon,,,0,4,Your horse's trample hits harder.,Even harder trample,HorseTrampleDamageMultiplier,Flat,0.3|0.6|0.9|1.2,gi_siege_ram,,,,mount
+mount_bloodlust,Bloodlust,Weapon,,,0,4,Enemies your horse tramples to death refund charge stamina.,More stamina per trample kill,HorseTrampleKillStamina,Flat,3|5|7|9,gi_enrage,,,,mount
+mount_iron_barding,Iron Barding,Weapon,,,0,4,Your horse takes less damage while charging.,Tougher barding,HorseChargeDamageReduction,Flat,0.2|0.3|0.4|0.5,gi_layered_armor,,,,mount
+mount_eager_steed,Eager Steed,Weapon,,,0,4,Your kills fill the horse's charge stamina faster.,Even faster charge build-up,HorseStaminaGainMultiplier,Flat,0.25|0.5|0.75|1,gi_cloaked_figure_on_horseback,,,,mount

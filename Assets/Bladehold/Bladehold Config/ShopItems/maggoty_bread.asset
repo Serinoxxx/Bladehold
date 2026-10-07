@@ -16,7 +16,9 @@ MonoBehaviour:
   displayName: Maggoty Bread
   description: Instant snack restoring +5 HP.
   goldCost: 5
-  icon: {fileID: 21300000, guid: b57f035da78a03d4c8ce7e088f72632a, type: 3}
+  icon: {fileID: 21300000, guid: bb13f64b925081449b354bcd5e176077, type: 3}
   effectType: 0
   effectValue: 5
   durationWaves: 0
+  stat: 0
+  statKind: 0

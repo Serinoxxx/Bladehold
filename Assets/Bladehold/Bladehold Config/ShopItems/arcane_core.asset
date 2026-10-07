@@ -17,7 +17,7 @@ MonoBehaviour:
   description: A crystallised spark of raw magic. Spend one to unleash an ultimate
     from the Ultimate Wheel.
   goldCost: 250
-  icon: {fileID: 21300000, guid: 02e03d901fad8fc4b9c92c32dc09c94a, type: 3}
+  icon: {fileID: 21300000, guid: acbfeb2b9dec3054e8ecc646fca7d67e, type: 3}
   effectType: 9
   effectValue: 1
   durationWaves: 0
