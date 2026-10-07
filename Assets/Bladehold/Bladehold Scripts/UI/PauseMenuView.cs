@@ -83,6 +83,7 @@ public class PauseMenuView : MonoBehaviour
         if (skipTutorialButton != null) skipTutorialButton.onClick.AddListener(HandleSkipTutorial);
 
         PauseMenuController.Instance.OnPauseChanged += HandlePauseChanged;
+        PauseMenuController.Instance.OnSettingsRequested += HandleOpenSettings;
         if (screenshotMode != null)
         {
             screenshotMode.OnActiveChanged += HandleScreenshotModeActiveChanged;
@@ -94,6 +95,7 @@ public class PauseMenuView : MonoBehaviour
         if (PauseMenuController.Instance != null)
         {
             PauseMenuController.Instance.OnPauseChanged -= HandlePauseChanged;
+            PauseMenuController.Instance.OnSettingsRequested -= HandleOpenSettings;
         }
         if (screenshotMode != null)
         {

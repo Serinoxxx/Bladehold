@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 /// <summary>
 ///     Master controller for the Castle Campaign Overview Map screen.
@@ -35,6 +36,10 @@ public class CampaignMapUI : MonoBehaviour
     [SerializeField] private TMP_Text inRunGoldText;
     [SerializeField] private TMP_Text goblinBloodText;
     [SerializeField] private TMP_Text orcishMetalText;
+
+    [Header("Settings")]
+    [Tooltip("Top-bar button that pauses and opens the shared Settings panel (the scene's GameMenu). Esc opens the full pause menu.")]
+    [SerializeField] private Button settingsButton;
 
     [Header("Tier Column Headers")]
     [Tooltip("Strip along the top of the screen holding one header per tier column; each header slides with its column as the camera pans.")]
@@ -101,6 +106,10 @@ public class CampaignMapUI : MonoBehaviour
             Debug.LogError("[CampaignMapUI] locationMarker is not assigned (the 'you are here' marker).");
         }
         canvas = GetComponentInParent<Canvas>();
+        if (settingsButton != null)
+        {
+            settingsButton.onClick.AddListener(HandleSettingsClicked);
+        }
 
         if (campaignGraph == null)
         {
@@ -149,7 +158,7 @@ public class CampaignMapUI : MonoBehaviour
 
     private void Update()
     {
-        if (anyError || demoEndShown || deploying || DevConsole.IsVisible)
+        if (anyError || demoEndShown || deploying || DevConsole.IsVisible || IsPaused)
         {
             return;
         }
@@ -394,11 +403,27 @@ public class CampaignMapUI : MonoBehaviour
     private void OnDestroy()
     {
         CursorLockManager.SetUnlock(CursorOwner, false);
+        if (settingsButton != null)
+        {
+            settingsButton.onClick.RemoveListener(HandleSettingsClicked);
+        }
 
         if (CampaignManager.HasInstance)
         {
             CampaignManager.Instance.OnCampaignStateChanged -= RefreshMap;
         }
+    }
+
+    private static bool IsPaused => PauseMenuController.Instance != null && PauseMenuController.Instance.IsPaused;
+
+    private void HandleSettingsClicked()
+    {
+        if (PauseMenuController.Instance == null)
+        {
+            Debug.LogError("[CampaignMapUI] Settings clicked but the scene has no PauseMenuController (GameMenu prefab).");
+            return;
+        }
+        PauseMenuController.Instance.OpenSettings();
     }
 
     /// <summary>

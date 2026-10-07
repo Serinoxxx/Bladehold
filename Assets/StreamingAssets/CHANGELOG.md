@@ -1,5 +1,113 @@
 # Bladehold - Changelog
 
+## [0.1.34] - 2026-10-06
+
+### New Features
+
+### Fixes
+
+- Fixed the currency panel floating in the middle of the screen with a dark strip above it; it now sits neatly in the top-right corner or under the minimap
+
+### Balance Changes
+
+### General Changes
+
+- Added a Settings button to the campaign map, and Esc there now opens the pause menu
+- Removed the patch notes panel from the title screen
+
+## [0.1.32] - 2026-10-01
+
+### New Features
+
+- Added walls: build one at a workbench beside each bridge, open and shut its gate with E, and upgrade it from wood to stone to metal
+- Added wall upgrades: repairs, spikes that hurt melee attackers, and one element per wall (boiling oil, icy water or lightning)
+- Added an upgrade wheel for towers: refill ammo, faster fire rate, a spike ring, one element (fire, ice or storm) and deconstruct for a full refund
+- Added fire, ice and storm crystals for elemental upgrades, dropped by special enemies, siege enemies and captains, earned from waves and objectives, and caught as elemental fish; each battlefield favours one kind
+- Added enemies routing around walled bridges, while trolls, battering rams, sappers and captains smash straight through with their escorts
+- Added wall health bars, smoke and fire as walls take damage, and a wall status row above the gate health bar
+- Added an ammo chest by the main gate in the gate battles
+- Added rocky chokepoints with wall spots to the tutorial's gate battle
+- Added a tutorial step that teaches building a wall and shows goblins going round it to another gap
+- Added a ladder on the castle side of every wall so you can climb up and look over it
+- Added button icons to the Controls tab for every keyboard, mouse and gamepad binding
+- Added a Graphics tab to the settings menu with field of view and post-processing (bloom, vignette, exposure) options
+- Added switching settings tabs with Q/E or LB/RB
+- Added a charge meter for your warhorse: kills fill it (fastest on foot), and holding Sprint while riding spends it on a full-power trample that ploughs through enemies without slowing
+- Added permanent horse loss: your warhorse keeps its wounds between summons and areas, and if it dies you must buy a Replacement Warhorse at the Rest Area shop
+- Added horse items to the shop: Horse Poultice, Barding Plates, Sack of Carrots and Riding Spurs
+- Added horse perks to the Spirit: War-Bred Steed, Stable Hand, Cavalry Drills and Loyal Steed
+- Added horse upgrade cards: Blazing Hooves, Frost Wake, Battering Ram, Bloodlust, Iron Barding and Eager Steed
+- Added carrots: a rare enemy drop that refills your warhorse's charge meter when you or your horse run over them
+- Added tutorial steps for the warhorse charge: hold Sprint until your horse is winded, refill it with sword and bow kills and carrots, then charge through a warband of 10 goblins
+- Added the Spearman: a big ork that marches with its spear held high and levels it when you close in; charge your horse into its front and the horse is stopped dead and wounded, so ride round it or hit it from behind
+- Added world events: mid-wave biome twists that hit you and the enemy alike, each announced with a banner listing its boons and perils
+- Added the Eruption (desert and volcanic fields): meteors rain on marked circles and leave magma pools, while your Fire damage is boosted
+- Added the Blizzard (snow): gales shove everyone and chill enemies, while you deal bonus damage to chilled foes
+- Added the Thunderstorm (graveyard and enchanted forest): lightning strikes marked circles and chains between enemies, while your Lightning damage is boosted
+- Added the Stampede: a wild herd charges down marked lanes, trampling anything in the way, while you move faster
+- Added the Blood Moon (graveyard): slain enemies may rise again as skeletons, while you gain life steal
+- Added the Goblin Caravan: a gold wagon crosses the battlefield; hit it to spill gold and wreck it for a big haul before it escapes
+- Reworked the sword ultimate into Moonlight Edge: every swing also fires a crescent of moonlight that cuts through everything in a line, and charged swings fire bigger crescents
+- Reworked the mace ultimate, Seismic Quake: leap forward and slam the ground, sending out a shockwave that stuns and launches enemies, then every swing sends an aftershock for the rest of the ultimate
+- Reworked the throwing axe ultimate into Axe Storm: rapid three-axe throws whose axes ricochet between enemies, replacing the circling axes
+- Added sounds and effects to the sword, mace and throwing axe ultimates
+- Added a new campaign map: a hand-crafted miniature landscape with a little castle for every sector, scenery that matches each level (snowfields, desert dunes, snowy peaks, haunted graveyards, enchanted forests and ponds, castle towns, the crypt), and glowing routes showing where you can go next
+- Added a screenshot of each level to the campaign map's sector tooltip
+- Added original music across all scenes, hubs and battlefields: calm preparation themes between waves, tense battle tracks, and unique music for captains, bosses, rest areas, the fishing pond, the campaign map and menus
+- Added fanfare and defeat stingers for wave objectives, sector victories, campaign completion and defeats
+- Added music ducking when the pause menu is opened
+- Added smooth crossfades and loading-screen fades for all music transitions
+- Added a slow-motion cinematic of the gate exploding before the defeat screen when the gate falls
+- Added a horse stall beside the gate: if your warhorse has fallen, buy a new one there for 500 gold between waves
+- Added a fanfare when you unlock a weapon in the Meta Area: a victory sting, a burst of light at the pedestal and a "New weapon unlocked" banner naming the weapon and its ultimate
+- Added the Thrifty Gunners meta perk (tier 1): towers use up to 40% less supply per shot
+- Added the Field Repairs meta perk (tier 1): repairing the gate and walls costs up to 60% less supply
+
+### Fixes
+
+- Fixed the horse sometimes refusing to move from a standstill until forward was held for a few seconds
+- Fixed the camera sometimes getting stuck with the mouse cursor showing after changing areas
+- Fixed gamepad selection getting stuck on an invisible button in the settings menu
+- Fixed the Music volume slider in the Audio settings menu so it adjusts music volume across every scene
+- Fixed menu hover sounds playing only once in the Sanctuary of Spirits, shop and settings menus
+- Fixed the Blazing Trail card: dashing now leaves a burning fire trail along your path instead of a single patch back where you entered the area
+- Fixed dash attacks (Nimble Strike and dash damage cards) and Frost Step hitting around your starting spot instead of where you dashed
+- Fixed the horse "Hold to charge" tip showing a blank key instead of Shift
+- Fixed Goblin Blood and Orcish Metal counters not updating after buying perks, weapons, armour, mounts or tiers in the Meta Area
+- Fixed the horse's hoofbeats carrying on behind the pause menu, card drafts, shop and other menus
+- Fixed the Wishlist on Steam button never showing on the end-of-demo screen
+
+### Balance Changes
+
+- Reduced trample damage while riding without charging: the horse now shoves enemies aside and gets bogged down in crowds until you charge
+- Reduced passive horse stamina regeneration: stamina now comes mainly from kills
+- Reduced tower supply use per shot: Arrow Tower 1 to 0.75, Catapult 3 to 2, Ballista 4 to 3, Net Thrower 3 to 2
+
+### General Changes
+
+- Restyled the end-of-demo "Thanks for playing" screen to match the other menus, with Wishlist on Steam as the main button
+- Removed the Oil Vat and Spike Trap towers; boiling oil and spikes are now wall and tower upgrades
+- Removed the fortress elemental battle cards; towers now get their element from the upgrade wheel
+- Updated the settings menu with a new look, hover and click sounds, highlights on the row under the cursor or gamepad focus, and a layout that fits any screen shape
+- Added horse health and charge bars above your health bar, shown whenever you have a horse
+- Moved the minimap to the top-right corner; it now fades out while the shop and other menus are open
+- Widened the Rest Area shop so every offer fits on screen
+- Removed the full ride-timer bar that stayed on screen while riding the basic warhorse
+- Updated the death screen, level-up and wave choice cards, save slots and campaign map to match the new menu look: dark framed panels, gold titles and clearer text
+- Updated the boss and captain arrival banner: a dark band with the name in gold, the captain's difficulty skulls and rewards underneath, and letterbox bars for boss entrances
+- Updated the campaign map so castles fly your banner once a sector is liberated, open sectors glow, and the map pans by dragging, scrolling or with the right stick
+- Updated the Earthshaker mace shockwave: the ground now cracks open at the struck enemy's feet instead of a rock burst in mid-air
+- Removed the Golden Goblin wave objective from the wave choices
+- Updated the player death screen title to "The Hero Has Fallen"
+- Toned down the tutorial hint chime and the hint panel's pop animation
+- Added a tearing sound when you shoot through the tutorial ropes
+- Added a victory sting when your fishing level goes up
+- Moved the ultimate meters beside the ability icons so they no longer cover them
+- Updated the interact prompt: a dark panel with the button icon for your current controller, and a soft denied sound with a red pulse when you can't afford it (walls, ammo, tower refills and upgrades, gate repairs, Meta Area unlocks)
+- Made the world event banner smaller and moved it to the top of the screen
+- Moved your currencies into their own panel under the minimap
+- Updated the campaign map's metal counter to use the same ingot icon as the battle HUD
+
 ## [0.1.31] - 2026-10-01
 
 ### New Features

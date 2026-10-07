@@ -13,8 +13,7 @@ MonoBehaviour:
   m_Name: Music_Prep
   m_EditorClassIdentifier: Assembly-CSharp::MusicCueSO
   clips:
-  - {fileID: 8300000, guid: 4a7112604f2494a868ae59f59f38b828, type: 3}
-  - {fileID: 8300000, guid: dff988d19dac146ef82be43b99568fd4, type: 3}
+  - {fileID: 8300000, guid: 085ea46b087cd4e1d9aa0172257ce892, type: 3}
   volume: 1
   loopClip: 1
   rotateCrossfade: 4

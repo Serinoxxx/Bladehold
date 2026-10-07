@@ -140,3 +140,19 @@ Editor leftovers from `plans/20-playtest-feedback-oct.md`. Unity MCP was connect
 - [ ] With enough Orcish Metal, unlock a weapon at a pedestal: the fanfare sting plays, the burst goes off at the floating model, and the banner names the weapon and its ultimate. Judge whether the sting is loud enough over the Meta Area music.
 - [ ] The plan asked for "sparks". If the level-up burst alone feels thin, add a sparks particle feedback to `UnlockMMF`.
 - [ ] Pressing E again on the now-unlocked pedestal equips it without replaying the fanfare.
+
+## Follow-up: Currency panel layout, campaign settings, changelog hidden
+
+**Done in code and assets:**
+- **HUD currency panel** (`Bladehold HUD.prefab` → ScreenSpace/Currency_Panel): `HudCurrencyPanel` moved from the inner plate to the `Currency_Panel` wrapper, so docking moves the whole panel. Before, it moved the plate inside the wrapper and the wrapper's black gradient showed as a strip above it. The gradient is disabled. The plate hangs from the wrapper's top edge and sizes to its rows. Columns are equal-width so Supply and Metal line up. Icons are 60, values are 56.
+- **Campaign map settings:** `PauseMenuController.OpenSettings()` pauses and raises `OnSettingsRequested`. `PauseMenuView` jumps to its Settings panel on that event. `CampaignMapUI.settingsButton` (a fourth chip on CurrenciesBar) calls it, and map navigation stops while paused. The campaign scene now has `GameMenu` and `PauseMenuCanvas`. The diorama camera is in `componentsToDisable`, Photo Mode is off (`ScreenshotModeController` disabled, its button hidden) and the canvas's `screenshotMode` is wired to the GameMenu.
+- **Main menu:** `Screen_Title/ChangelogPanel` is inactive.
+- Checked in Play mode: the currency panel sits in the Meta Area corner, and the campaign Settings chip opens Settings with time paused, with no errors.
+
+**Wiring checklist:** nothing left.
+
+**Manual verification:**
+- [ ] UI review at 16:9 and 16:10/ultrawide: the currency panel sits under the minimap in a gate battle and in the top-right corner in the Meta Area and Rest Area, with columns aligned. Turn crystals on (DevConsole) and check the third row.
+- [ ] Campaign map: the Settings chip opens Settings. Back shows Resume / Settings / Quit. Esc toggles the pause menu. While it's open, the map doesn't pan or deploy (mouse, keys, pad).
+- [ ] Campaign map, gamepad: decide if Settings needs a pad route besides Start/Esc (the chip isn't in the node navigation).
+- [ ] Title screen: the button column looks balanced without the patch notes panel on its left. If it doesn't, re-centre it in `ScreenRestyleBuilder`.

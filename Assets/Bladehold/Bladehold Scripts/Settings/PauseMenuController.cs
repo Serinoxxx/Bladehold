@@ -36,6 +36,9 @@ public class PauseMenuController : MonoBehaviour
     /// <summary>Raised whenever the pause state changes, carrying the new state.</summary>
     public event Action<bool> OnPauseChanged;
 
+    /// <summary>Raised by <see cref="OpenSettings" /> after pausing, so the pause view can jump straight to its Settings panel.</summary>
+    public event Action OnSettingsRequested;
+
     private void OnValidate()
     {
         if (screenshotMode == null)
@@ -144,6 +147,13 @@ public class PauseMenuController : MonoBehaviour
         }
 
         OnPauseChanged?.Invoke(paused);
+    }
+
+    /// <summary>Pauses and opens the Settings panel directly, for screens with their own settings button (the campaign map).</summary>
+    public void OpenSettings()
+    {
+        SetPaused(true);
+        OnSettingsRequested?.Invoke();
     }
 
     /// <summary>
