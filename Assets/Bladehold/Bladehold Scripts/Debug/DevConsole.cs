@@ -245,6 +245,13 @@ public class DevConsole : MonoBehaviour
             RunSession.AddInRunSupply(100);
         }
 
+        if (GUILayout.Button("+1 Arcane Cores", GUILayout.Height(ButtonHeight)))
+        {
+            RunSession.AddArcaneCores(1);
+        }
+
+
+
         if (GUILayout.Button("Die", GUILayout.Height(ButtonHeight)))
         {
             isGodMode = false;
