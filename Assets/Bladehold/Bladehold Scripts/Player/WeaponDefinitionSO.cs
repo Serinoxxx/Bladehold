@@ -75,7 +75,11 @@ public class WeaponDefinitionSO : ScriptableObject
     [Tooltip("Hold attack charge time per level in seconds.")]
     public float chargeTimePerLevel = 0.33f;
 
-    [Tooltip("Attack cooldown in seconds.")]
+    [Tooltip("Melee: fraction of the fully charged damage an uncharged (tap) swing deals. Holding ramps it linearly to 1 over the full charge.")]
+    [Range(0f, 1f)]
+    public float quickAttackDamageFraction = 0.5f;
+
+    [Tooltip("Melee: seconds after releasing an attack before the next one can start (a press during it is buffered).")]
     public float attackCooldown = 0.5f;
 
     [Tooltip("Animator melee weapon type integer parameter (0 = Sword, 1 = Greataxe).")]

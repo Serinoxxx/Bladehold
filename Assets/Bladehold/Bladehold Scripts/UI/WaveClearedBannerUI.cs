@@ -46,6 +46,7 @@ public class WaveClearedBannerUI : MonoBehaviour
     [SerializeField] private float displayDuration = 3f;
 
     private Coroutine hideRoutine;
+    private Coroutine routBannerRoutine;
     private GameLoopManager gameLoop;
     private bool anyError;
 
@@ -135,6 +136,8 @@ public class WaveClearedBannerUI : MonoBehaviour
         {
             gameLoop = GameLoopManager.Instance;
             gameLoop.OnWaveRewardGranted += HandleWaveRewardGranted;
+            gameLoop.OnRoutStarted += HandleRoutStarted;
+            gameLoop.OnGateAssaultStarted += HandleGateAssaultStarted;
         }
 
         // If an objective was already active before Start (e.g. introductory objective), announce it
@@ -155,6 +158,8 @@ public class WaveClearedBannerUI : MonoBehaviour
         if (gameLoop != null)
         {
             gameLoop.OnWaveRewardGranted -= HandleWaveRewardGranted;
+            gameLoop.OnRoutStarted -= HandleRoutStarted;
+            gameLoop.OnGateAssaultStarted -= HandleGateAssaultStarted;
         }
     }
 
@@ -178,6 +183,56 @@ public class WaveClearedBannerUI : MonoBehaviour
     private void HandleWaveRewardGranted(WaveCard card, string description)
     {
         ShowBanner(Loc.Get("wave.reward.banner", rewardHeader), description, card != null ? card.gold : 0, 0, isNewQuest: false);
+    }
+
+    // The objective banner fires the same moment the stragglers break, so the flee call follows it once it clears
+    // (horn sting, big header) rather than hiding in the objective tracker.
+    private void HandleRoutStarted(int count, float seconds)
+    {
+        if (routBannerRoutine != null) StopCoroutine(routBannerRoutine);
+        routBannerRoutine = StartCoroutine(ShowRoutBannerWhenFree(count, seconds));
+    }
+
+    // A failed objective sends the survivors at the gate: same follow-up slot as the rout banner.
+    private void HandleGateAssaultStarted(int count)
+    {
+        if (routBannerRoutine != null) StopCoroutine(routBannerRoutine);
+        routBannerRoutine = StartCoroutine(ShowGateAssaultBannerWhenFree());
+    }
+
+    private IEnumerator ShowGateAssaultBannerWhenFree()
+    {
+        float waited = 0f;
+        while (hideRoutine != null && waited < 1.5f)
+        {
+            waited += Time.unscaledDeltaTime;
+            yield return null;
+        }
+        routBannerRoutine = null;
+        if (gameLoop == null || !gameLoop.IsGateAssault) yield break;
+        ShowBanner(Loc.Get("wave.assault.banner_header", "THEY STORM THE GATE!"),
+            Loc.Get("wave.assault.banner_sub", "Cut them down before they break through"), 0, 0, isNewQuest: true);
+    }
+
+    private IEnumerator ShowRoutBannerWhenFree(int count, float seconds)
+    {
+        float waited = 0f;
+        while (hideRoutine != null && waited < 1.5f)
+        {
+            waited += Time.unscaledDeltaTime;
+            yield return null;
+        }
+        routBannerRoutine = null;
+        if (gameLoop == null || !gameLoop.IsRouting) yield break;
+        int alive = 0;
+        foreach (Health h in gameLoop.RoutStragglers) if (h != null && !h.IsDead) alive++;
+        if (alive == 0) yield break;
+
+        int secondsLeft = Mathf.CeilToInt(gameLoop.RoutSecondsLeft > 0f ? gameLoop.RoutSecondsLeft : seconds);
+        string sub = Loc.Get("wave.rout.banner_sub", "Hunt down {0} before they escape ({1}s)")
+            .Replace("{0}", alive.ToString())
+            .Replace("{1}", secondsLeft.ToString());
+        ShowBanner(Loc.Get("wave.rout.banner_header", "THE GOBLINS FLEE!"), sub, 0, 0, isNewQuest: true);
     }
 
     private void ShowBanner(string mainHeader, string questSubTitle, int gold, int kills, bool isNewQuest = false)

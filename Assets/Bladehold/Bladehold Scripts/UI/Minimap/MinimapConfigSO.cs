@@ -119,6 +119,16 @@ public class MinimapConfigSO : ScriptableObject
     public Color builtPlotColor = new Color(0.98f, 0.85f, 0.5f, 1f);
     public Color noSupplyColor = new Color(0.95f, 0.3f, 0.25f, 1f);
 
+    [Header("Objectives")]
+    [Tooltip("Objective markers (prisoners, cart, ram, catapults, bosses) diameter in canvas units on the expanded map.")]
+    public float objectiveMarkerSize = 84f;
+    [Tooltip("Objective targets this close (metres) to a gate are left to the gate marker (e.g. the cart's 'Gate' destination).")]
+    public float objectiveGateDedupeMeters = 8f;
+    [Tooltip("Show where the picked wave card's objective will happen (cages, ram start) during prep.")]
+    public bool showObjectivePreviews = true;
+    [Tooltip("Legend row added for objective markers; its icon is the HUD waypoint tracker's default objective icon.")]
+    public Color objectiveLegendColor = new Color(1f, 0.8f, 0.2f, 1f);
+
     [Header("Legend (expanded map)")]
     public LegendEntry[] legend = Array.Empty<LegendEntry>();
 

@@ -114,6 +114,7 @@ public class MinimapWallMarker : MinimapMarker
             : $"<color=#FFD24A>{Loc.Get("minimap.door_open", "Door open: enemies walk straight through!")}</color>");
         StructureUpgradeState up = wall.Upgrades;
         if (up.hasSpikes) sb.AppendLine(Loc.Get("minimap.spikes", "Spikes"));
+        if (up.hasAmmoCrate) sb.AppendLine(Loc.Get("minimap.ammo_crate", "Ammo crate"));
         if (up.HasElement) sb.AppendLine($"<color={up.element.Hex()}>{MinimapTowerMarker.ElementName(up.element)}</color>");
         body = sb.ToString().TrimEnd();
     }

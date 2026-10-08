@@ -19,6 +19,9 @@ public class PlayerAttack : MonoBehaviour
 
     [Tooltip("Seconds of holding the attack button to gain each charge level (level 1 at 1×, level 2 at 2×, ...).")]
     [SerializeField] private float chargeTimePerLevel = 0.33f;
+    [Tooltip("Fraction of the fully charged damage a tap (uncharged) swing deals; the hold ramps it linearly to 1. Overwritten per weapon from WeaponDefinitionSO.quickAttackDamageFraction.")]
+    [Range(0f, 1f)]
+    [SerializeField] private float quickAttackDamageFraction = 0.5f;
     [Tooltip("Optional reference to PlayerDodge, used for dodge-synergy attack upgrades (like Axe Power Dash).")]
     [SerializeField] private PlayerDodge playerDodge;
     [Tooltip("Picks the swing side (left/right/overhead) from the look just before each press.")]
@@ -54,6 +57,8 @@ public class PlayerAttack : MonoBehaviour
     private bool charging;
     private bool powerDashLatched;
     private float chargeStartTime;
+    // A press that landed during the melee cooldown; replayed once the cooldown ends if the button is still held.
+    private bool pressBuffered;
     private bool subscribed;
     private bool anyError = false;
 
@@ -67,7 +72,7 @@ public class PlayerAttack : MonoBehaviour
     public bool IsCharging => charging;
 
     /// <summary>
-    ///     Damage multiplier for the current swing. Scales continuously from 0.1x (uncharged) to 2.0x (base level 1 charge).
+    ///     Damage multiplier for the current swing. Ramps linearly from quickAttackDamageFraction (0.5) of the fully charged value on a tap to the full value (2.0x at base level 1 charge).
     /// </summary>
     public float AttackDamageMultiplier { get; private set; } = 1f;
 
@@ -84,7 +89,7 @@ public class PlayerAttack : MonoBehaviour
         {
             int maxLevels = MaxChargeLevels;
             float damagePerLevel = 1.9f + (stats != null ? stats.GetValue(StatType.ChargeDamageBonus) : 0f);
-            return 0.1f + damagePerLevel * maxLevels;
+            return maxLevels > 0 ? 0.1f + damagePerLevel * maxLevels : 1f;
         }
     }
 
@@ -138,6 +143,12 @@ public class PlayerAttack : MonoBehaviour
     public void SetChargeTimePerLevel(float seconds)
     {
         chargeTimePerLevel = seconds;
+    }
+
+    /// <summary>Per-weapon tap damage floor (see <see cref="WeaponDefinitionSO.quickAttackDamageFraction" />). Called by <see cref="PlayerWeaponManager" />.</summary>
+    public void SetQuickAttackDamageFraction(float fraction)
+    {
+        quickAttackDamageFraction = Mathf.Clamp01(fraction);
     }
 
     private void OnValidate()
@@ -289,6 +300,19 @@ public class PlayerAttack : MonoBehaviour
     {
         if (anyError) return;
 
+        if (pressBuffered)
+        {
+            if (inputReader == null || !inputReader.IsAttackPressed)
+            {
+                pressBuffered = false;
+            }
+            else if (animController == null || !animController.IsAttackOnCooldown)
+            {
+                pressBuffered = false;
+                inputReader.ReplayAttackPress();
+            }
+        }
+
         if (charging)
         {
             // Auto-recover if the attack button was released during pause/UI or if input got consumed
@@ -355,15 +379,21 @@ public class PlayerAttack : MonoBehaviour
         IChargedAimWeapon aimWeapon = PlayerWeaponManager.Instance != null ? PlayerWeaponManager.Instance.ActiveAimWeapon : null;
         if (aimWeapon != null && aimWeapon.IsAiming) return;
 
-        // Ignore presses while melee attack is on cooldown (prevents interrupting a swing in progress).
-        if (animController != null && animController.IsAttackOnCooldown) return;
+        // Presses during the melee cooldown (held, or just released) don't interrupt the swing; they're
+        // buffered and replayed by Update the moment the cooldown ends, if the button is still held.
+        if (animController != null && animController.IsAttackOnCooldown)
+        {
+            pressBuffered = true;
+            return;
+        }
+        pressBuffered = false;
 
         // Runs before the animation controller's own press handler fires StartAttack (this
         // handler sees the cooldown still open), so the windup picks up this direction.
         if (swingDirection != null) swingDirection.Latch();
 
         ChargeLevel = 0;
-        AttackDamageMultiplier = 0.1f;
+        AttackDamageMultiplier = FullyChargedDamageMultiplier * quickAttackDamageFraction;
         HideTelegraph();
 
         if (MaxChargeLevels <= 0) return;
@@ -484,8 +514,9 @@ public class PlayerAttack : MonoBehaviour
         chargeRatio = Mathf.Clamp(chargeRatio, 0f, maxLevels);
         ChargeLevel = Mathf.Clamp(Mathf.FloorToInt(chargeRatio), 0, maxLevels);
 
-        float damagePerLevel = 1.9f + stats.GetValue(StatType.ChargeDamageBonus);
-        AttackDamageMultiplier = 0.1f + damagePerLevel * chargeRatio;
+        // A tap already deals quickAttackDamageFraction of the full-charge hit; holding ramps it to the full value.
+        float progress = maxLevels > 0 ? chargeRatio / maxLevels : 1f;
+        AttackDamageMultiplier = FullyChargedDamageMultiplier * Mathf.Lerp(quickAttackDamageFraction, 1f, progress);
     }
 
     private bool HandleShieldBlock(Damage damage)

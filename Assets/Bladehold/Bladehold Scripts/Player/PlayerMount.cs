@@ -12,7 +12,7 @@ using UnityEngine.InputSystem;
 ///     tree's "Saddle Up" node OR the Reincarnate "Cavalier" node, since Reincarnate wipes the gold
 ///     tree); the character is parented to the saddle, the vendored controller and friends are
 ///     disabled (the <see cref="PlayerDeath" /> inspector-list idiom), and <see cref="HorseMotor" />
-///     takes over movement. Dismount on the Dismount action (X / gamepad East — with a direct
+///     takes over movement. Dismount on the Dismount action (X / gamepad D-pad Up, the mount keys — with a direct
 ///     X-key fallback until the vendored input class is regenerated), when the horse dies, or when
 ///     the player dies.
 ///

@@ -34,5 +34,5 @@ MonoBehaviour:
   pedestalUltimateDescription: Unleash a tempest of spinning blade slashes while shrugging off damage
     with ease
   chargeTimePerLevel: 0.33
-  attackCooldown: 0.5
+  attackCooldown: 0.25
   animatorWeaponType: 0

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using DamageNumbersPro;
 using MoreMountains.Feedbacks;
 using UnityEngine;
@@ -8,9 +9,13 @@ using UnityEngine;
 ///     prep or mid-wave, so a player who has emptied the quiver can run back and restock. The prompt
 ///     stays visible when the quiver is full or gold is short so the price is always readable; the press
 ///     is then refused with <see cref="deniedFeedback" />.
+///     While the quiver is below <see cref="lowAmmoFraction" />, the chest nearest the player shows a HUD
+///     waypoint (as an <see cref="IWaypointSource" />) so a player running dry knows where to restock.
 /// </summary>
-public class AmmoChest : MonoBehaviour, IInteractable, IAffordableInteractable
+public class AmmoChest : MonoBehaviour, IInteractable, IAffordableInteractable, IWaypointSource
 {
+    private static readonly List<AmmoChest> Active = new List<AmmoChest>();
+
     [Header("Price")]
     [Min(0)] [SerializeField] private int goldCost = 50;
     [Min(1)] [SerializeField] private int arrowsPerPurchase = 5;
@@ -28,6 +33,13 @@ public class AmmoChest : MonoBehaviour, IInteractable, IAffordableInteractable
     [SerializeField] private MMF_Player purchaseFeedback;
     [Tooltip("Played when the press is refused: not enough gold or quiver already full.")]
     [SerializeField] private MMF_Player deniedFeedback;
+
+    [Header("Low-ammo waypoint")]
+    [Tooltip("The nearest chest shows a HUD waypoint while ammo is below this fraction of max.")]
+    [Range(0f, 1f)] [SerializeField] private float lowAmmoFraction = 0.25f;
+    [SerializeField] private Sprite lowAmmoIcon;
+    [SerializeField] private Color lowAmmoTint = new Color(1f, 0.75f, 0.3f, 1f);
+    [SerializeField] private Vector3 waypointOffset = new Vector3(0f, 2f, 0f);
 
     private bool anyError;
 
@@ -64,11 +76,45 @@ public class AmmoChest : MonoBehaviour, IInteractable, IAffordableInteractable
     private void OnEnable()
     {
         InteractableRegistry.Register(this);
+        Active.Add(this);
+        ObjectiveWaypointTrackerUI.RegisterSource(this);
     }
 
     private void OnDisable()
     {
         InteractableRegistry.Unregister(this);
+        Active.Remove(this);
+        ObjectiveWaypointTrackerUI.UnregisterSource(this);
+    }
+
+    public void GetWaypointTargets(List<ObjectiveWaypointTarget> results)
+    {
+        PlayerAmmo ammo = Ammo;
+        if (!CanInteract || ammo.MaxAmmo <= 0 || ammo.CurrentAmmo >= ammo.MaxAmmo * lowAmmoFraction) return;
+        if (Player.Instance != null && NearestTo(Player.Instance.transform.position) != this) return;
+
+        ObjectiveWaypointTrackerUI tracker = ObjectiveWaypointTrackerUI.Instance;
+        Sprite icon = lowAmmoIcon != null ? lowAmmoIcon : tracker != null ? tracker.DefaultObjectiveIcon : null;
+        results.Add(new ObjectiveWaypointTarget(transform, waypointOffset, icon, lowAmmoTint,
+            Loc.Get("ammo_chest.waypoint_low", "LOW AMMO")));
+    }
+
+    // Only one chest marks itself, so a scene with several doesn't scatter markers.
+    private static AmmoChest NearestTo(Vector3 position)
+    {
+        AmmoChest nearest = null;
+        float bestSq = float.MaxValue;
+        foreach (AmmoChest chest in Active)
+        {
+            if (chest == null || !chest.CanInteract) continue;
+            float d = (chest.transform.position - position).sqrMagnitude;
+            if (d < bestSq)
+            {
+                bestSq = d;
+                nearest = chest;
+            }
+        }
+        return nearest;
     }
 
     private void Start()

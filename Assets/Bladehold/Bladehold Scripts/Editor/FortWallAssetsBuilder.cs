@@ -196,6 +196,9 @@ public static class FortWallAssetsBuilder
                 Transform right = PlaceArt(logSpike, marker.transform, new Vector3(5f, 0.9f, 0f), new Vector3(0f, 0f, -8f), new Vector3(0.6f, 0.6f, 0.6f)).transform;
                 left.name = "Stake_L";
                 right.name = "Stake_R";
+                // Hidden: playtesters found the marker stakes unhelpful (kept so WallPlot.markerLeft/Right stay wired).
+                left.gameObject.SetActive(false);
+                right.gameObject.SetActive(false);
                 NestWallTemplate(root, plot, wallPrefab);
                 Set(plot, "wallConfig", wallConfig);
                 Set(plot, "station", station);
@@ -524,8 +527,9 @@ public static class FortWallAssetsBuilder
         Image bg = UiImage("Background", go.transform, sprite, new Color(0.08f, 0.07f, 0.06f, 0.85f), new Vector2(0f, 0f), new Vector2(1f, 0.55f), Image.Type.Sliced);
         Image accent = UiImage("ElementAccent", go.transform, sprite, Color.white, new Vector2(0f, 0f), new Vector2(1f, 0.55f), Image.Type.Sliced);
         accent.fillCenter = false;
-        Image delayed = UiImage("DelayedBar", bg.transform, sprite, new Color(1f, 0.55f, 0.15f, 1f), new Vector2(0.02f, 0.12f), new Vector2(0.98f, 0.88f), Image.Type.Filled);
-        Image fill = UiImage("Fill", bg.transform, sprite, new Color(0.55f, 0.85f, 0.4f, 1f), new Vector2(0.02f, 0.12f), new Vector2(0.98f, 0.88f), Image.Type.Filled);
+        // No sprite on the bars: the rounded UISprite's padding stops a Filled fill reaching the edges.
+        Image delayed = UiImage("DelayedBar", bg.transform, null, new Color(1f, 0.55f, 0.15f, 1f), new Vector2(0.02f, 0.12f), new Vector2(0.98f, 0.88f), Image.Type.Filled);
+        Image fill = UiImage("Fill", bg.transform, null, new Color(0.55f, 0.85f, 0.4f, 1f), new Vector2(0.02f, 0.12f), new Vector2(0.98f, 0.88f), Image.Type.Filled);
         foreach (Image img in new[] { delayed, fill })
         {
             img.fillMethod = Image.FillMethod.Horizontal;

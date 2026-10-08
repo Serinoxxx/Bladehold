@@ -57,6 +57,33 @@ public class HintEntryView : MonoBehaviour
         }
     }
 
+    /// <summary>
+    ///     Shrinks the label and the row to the text's actual width (glyph + spacing + label), so a bar of
+    ///     rows packs without the prefab's fixed label slack overlapping the next row. Called by
+    ///     <see cref="ControlHintBar" />; standalone hints keep their authored size.
+    /// </summary>
+    public void FitWidthToContent()
+    {
+        if (label == null)
+        {
+            return;
+        }
+        var labelRect = (RectTransform)label.transform;
+        float labelWidth = Mathf.Ceil(label.GetPreferredValues(label.text, 9999f, labelRect.rect.height).x);
+        labelRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, labelWidth);
+        float width = labelWidth;
+        if (glyph != null)
+        {
+            width += ((RectTransform)glyph.transform).rect.width;
+        }
+        var layout = GetComponent<UnityEngine.UI.HorizontalLayoutGroup>();
+        if (layout != null)
+        {
+            width += layout.spacing + layout.padding.horizontal;
+        }
+        ((RectTransform)transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
+    }
+
     private void SetLabel(string locKey, string englishFallback)
     {
         if (label != null)

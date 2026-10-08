@@ -57,6 +57,8 @@ public class WallStructure : MonoBehaviour, IUpgradeable
     [SerializeField] private GameObject fireFixture;
     [SerializeField] private GameObject iceFixture;
     [SerializeField] private GameObject lightningFixture;
+    [Tooltip("Optional: where the bought ammo crate sits on the wall walk. Unset, it is dropped onto the walkway beside the gate.")]
+    [SerializeField] private Transform ammoCrateAnchor;
 
     [Header("Enemy detection")]
     [Tooltip("Depth of the box in front of the outside face; enemies inside it attack the wall.")]
@@ -91,6 +93,7 @@ public class WallStructure : MonoBehaviour, IUpgradeable
     private int enemyMask;
     private readonly StructureUpgradeState upgrades = new StructureUpgradeState();
     private readonly List<GameObject> smoke = new List<GameObject>();
+    private AmmoChest ammoCrate;
     // Every model material slot that uses a tier material, swapped on material upgrades.
     private readonly List<(Renderer renderer, int slot)> tierSlots = new List<(Renderer, int)>();
     private readonly List<BoxCollider> sideColliders = new List<BoxCollider>();
@@ -524,6 +527,7 @@ public class WallStructure : MonoBehaviour, IUpgradeable
     private void RefreshArt()
     {
         if (spikes != null) spikes.SetActive(upgrades.hasSpikes && !collapsed);
+        if (ammoCrate != null) ammoCrate.gameObject.SetActive(upgrades.hasAmmoCrate && !collapsed);
         if (collapsed) return;
         Material tierMaterial = art != null && art.Tier(upgrades.materialTier) != null ? art.Tier(upgrades.materialTier).material : null;
         if (tierMaterial != null)
@@ -612,7 +616,7 @@ public class WallStructure : MonoBehaviour, IUpgradeable
             label = maxed ? $"{TierName} (Max)" : $"{nextName} Wall",
             description = maxed
                 ? $"Strongest wall: {Mathf.RoundToInt(config.WallHealth(tier))} HP."
-                : $"Rebuild in {nextName.ToLowerInvariant()}: {Mathf.RoundToInt(config.WallHealth(tier))} to {Mathf.RoundToInt(config.WallHealth(tier + 1))} max HP (damage carries over).",
+                : $"Rebuild in {nextName.ToLowerInvariant()}: {Mathf.RoundToInt(config.WallHealth(tier))} to {Mathf.RoundToInt(config.WallHealth(tier + 1))} max HP (the new HP is added to its current HP).",
             icon = config.materialIcon,
             supplyCost = materialCost,
             blockedReason = maxed ? "Max" : null,
@@ -620,7 +624,11 @@ public class WallStructure : MonoBehaviour, IUpgradeable
             {
                 upgrades.materialTier++;
                 upgrades.RecordSupply(materialCost);
+                // The rebuild repairs by the max-HP gain: a 60/150 wall going to 300 max ends on 210, not a scaled 120.
+                float oldMax = health.MaxHealth;
+                float target = health.CurrentHealth + (config.WallHealth(upgrades.materialTier) - oldMax);
                 health.SetMaxHealth(config.WallHealth(upgrades.materialTier), true);
+                if (target > health.CurrentHealth) health.Heal(Mathf.Min(target, health.MaxHealth) - health.CurrentHealth);
                 RefreshArt();
                 OnUpgraded();
                 return true;
@@ -662,6 +670,27 @@ public class WallStructure : MonoBehaviour, IUpgradeable
             }
         });
 
+        if (config.wallAmmoCratePrefab != null)
+        {
+            options.Add(new UpgradeOption
+            {
+                label = "Ammo Crate",
+                description = "An arrow crate up on the wall walk: restock your quiver without leaving the battlements.",
+                icon = config.ammoCrateIcon != null ? config.ammoCrateIcon : config.refillIcon,
+                supplyCost = config.wallAmmoCrateCost,
+                blockedReason = upgrades.hasAmmoCrate ? "Built" : null,
+                onPurchase = () =>
+                {
+                    if (!PlaceAmmoCrate(config.wallAmmoCratePrefab)) return false;
+                    upgrades.hasAmmoCrate = true;
+                    upgrades.RecordSupply(config.wallAmmoCrateCost);
+                    RefreshArt();
+                    OnUpgraded();
+                    return true;
+                }
+            });
+        }
+
         DefenseStructure.AddElementOptions(options, upgrades, config, WallElementBlurb, _ =>
         {
             RefreshFixture();
@@ -682,6 +711,52 @@ public class WallStructure : MonoBehaviour, IUpgradeable
                 return true;
             }
         });
+    }
+
+    /// <summary>
+    ///     Puts the crate on the wall walk: at <see cref="ammoCrateAnchor" /> if authored, else dropped onto the
+    ///     model's first walkable (Environment) floor found beside the gate, so hand-fitted walls need no extra wiring.
+    /// </summary>
+    private bool PlaceAmmoCrate(AmmoChest prefab)
+    {
+        if (ammoCrate != null) return true;
+        Vector3 position;
+        Quaternion rotation = transform.rotation;
+        if (ammoCrateAnchor != null)
+        {
+            position = ammoCrateAnchor.position;
+            rotation = ammoCrateAnchor.rotation;
+        }
+        else if (!FindWalkwaySpot(out position))
+        {
+            Debug.LogWarning($"[WallStructure] {name}: no walkway found for the ammo crate; set ammoCrateAnchor.", this);
+            return false;
+        }
+        ammoCrate = Instantiate(prefab, position, rotation, transform);
+        return true;
+    }
+
+    private bool FindWalkwaySpot(out Vector3 position)
+    {
+        position = default;
+        if (model == null) return false;
+        int mask = LayerMask.GetMask("Environment");
+        float top = (art != null ? art.wallHeight : 3.5f) + 3f;
+        float doorHalf = (art != null ? art.doorWidth : 3f) * 0.5f;
+        float side = doorHalf + Mathf.Max(0.75f, (width * 0.5f - doorHalf) * 0.5f);
+        foreach (float x in new[] { -side, side, 0f })
+        {
+            foreach (float z in new[] { 0f, -0.75f, 0.75f, -1.5f, 1.5f })
+            {
+                Vector3 from = transform.TransformPoint(new Vector3(x, top, z));
+                if (!Physics.Raycast(from, Vector3.down, out RaycastHit hit, top + 1f, mask, QueryTriggerInteraction.Ignore)) continue;
+                if (!hit.collider.transform.IsChildOf(model)) continue;
+                if (hit.point.y - transform.position.y < 1.5f) continue; // a stair foot or the deck, not the walk
+                position = hit.point;
+                return true;
+            }
+        }
+        return false;
     }
 
     private static string WallElementBlurb(StructureElement element)

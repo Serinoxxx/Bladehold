@@ -17,7 +17,7 @@ public class TutorialConfigSO : ScriptableObject
 
     [Header("Heavy attack gate")]
     [Tooltip("Minimum PlayerAttack.AttackDamageMultiplier (latched on release) that counts as a heavy attack. " +
-             "The sword runs 0.1 (tap) to 2.0 (full charge), so 1.6 is 80% charge (~8 damage on the stock sword).")]
+             "The sword runs 1.0 (tap, half the full-charge hit) to 2.0 (full charge), so 1.6 is 60% charge and 1.8 is 80%.")]
     [Min(0f)] public float heavyMinChargeMultiplier = 1.6f;
 
     [Tooltip("Weak hits on a heavy-only target before the hint nudges the player to hold the attack.")]

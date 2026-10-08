@@ -5,7 +5,7 @@ using UnityEngine;
 ///     Survivors objective: Goblin Rush. Only goblins spawn continuously for a set time limit, 
 ///     and the objective is to kill as many as possible within that time.
 /// </summary>
-public class GoblinRushObjective : MonoBehaviour, ISurvivorsObjective, IOverrideEnemySpawns
+public class GoblinRushObjective : MonoBehaviour, ISurvivorsObjective, IOverrideEnemySpawns, ITimedObjective
 {
     [Header("Objective Configuration")]
     [SerializeField] private string objectiveId = "goblin_rush";
@@ -44,6 +44,9 @@ public class GoblinRushObjective : MonoBehaviour, ISurvivorsObjective, IOverride
     public bool IsActive => isActive;
 
     public string[] AllowedEnemyIds => allowedEnemyIds;
+    public float TimeLimit => activeDuration;
+    public float TimeRemaining => Mathf.Max(0f, timeRemaining);
+    public bool FailsOnTimeout => false;
 
     public event Action<ISurvivorsObjective> OnProgressChanged;
     public event Action<ISurvivorsObjective> OnCompleted;

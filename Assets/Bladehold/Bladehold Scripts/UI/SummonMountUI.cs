@@ -19,14 +19,8 @@ public class SummonMountUI : MonoBehaviour
     public Image radialFillImage;
     public TextMeshProUGUI timerText;
     public Image keybindIcon;
-    [Tooltip("Glyph for the SummonMount action (on the keybind image). Falls back to the sprite swap below when unassigned.")]
+    [Tooltip("Glyph for the SummonMount action (on the keybind image). Added to the keybind image at runtime when unassigned.")]
     [SerializeField] private InputGlyph keybindGlyph;
-
-    [Header("Synty Input Icons (Keyboard/Mouse)")]
-    public Sprite keyboardSprite;
-
-    [Header("Synty Input Icons (Gamepad)")]
-    public Sprite gamepadSprite;
 
     [Header("Colors")]
     public Color activeDurationColor = Color.cyan;
@@ -38,11 +32,13 @@ public class SummonMountUI : MonoBehaviour
     [Tooltip("Ride durations at or above this many seconds count as unlimited: no countdown is shown.")]
     [SerializeField] private float unlimitedDurationSeconds = 600f;
 
+    [Tooltip("Optional \"500g\" tag shown while the warhorse is dead (pressing the button then offers a new one). Built above the slot at runtime when unassigned.")]
+    [SerializeField] private MountReplacementCostLabel replacementCostLabel;
+
     [Header("Feedbacks")]
     public MMF_Player cooldownFinishedFeedback;
     public MMF_Player activatedFeedback;
 
-    private PlayerInput playerInput;
     private PlayerSummonMount playerSummonMount;
     private bool anyError;
 
@@ -63,6 +59,13 @@ public class SummonMountUI : MonoBehaviour
     {
         yield return null;
 
+        if (replacementCostLabel == null)
+        {
+            RectTransform slot = rootContainer != null ? rootContainer.transform as RectTransform : null;
+            if (slot == null) slot = skillIcon.rectTransform;
+            replacementCostLabel = MountReplacementCostLabel.Create(slot, timerText);
+        }
+
         if (Player.Instance != null)
         {
             // The ability sits on the player root; Player.Instance is on the Synty character child.
@@ -75,29 +78,16 @@ public class SummonMountUI : MonoBehaviour
                 playerSummonMount.OnAbilityTriggered += HandleAbilityTriggered;
             }
 
-            if (keybindGlyph != null && Player.Instance.InputSettings != null)
-            {
-                InputActionMap map = Player.Instance.InputSettings.GetRebindableActionMap();
-                InputAction action = map != null ? map.FindAction("SummonMount") : null;
-                if (action != null) keybindGlyph.SetAction(action);
-                else Debug.LogError("SummonMountUI: no SummonMount action on the player's Controls map.", this);
-            }
-
-            playerInput = Player.Instance.GetComponentInChildren<PlayerInput>();
-            if (keybindGlyph == null && playerInput != null)
-            {
-                playerInput.onControlsChanged += OnControlsChanged;
-                UpdateKeybindIcons(playerInput.currentControlScheme);
-            }
+            InputActionMap map = Player.Instance.InputSettings != null ? Player.Instance.InputSettings.GetRebindableActionMap() : null;
+            InputAction action = map != null ? map.FindAction("SummonMount") : null;
+            if (action == null) Debug.LogError("SummonMountUI: no SummonMount action on the player's Controls map.", this);
+            else if (keybindGlyph != null) keybindGlyph.SetAction(action);
+            else keybindGlyph = InputGlyph.AttachTo(keybindIcon, action);
         }
     }
 
     private void OnDestroy()
     {
-        if (playerInput != null)
-        {
-            playerInput.onControlsChanged -= OnControlsChanged;
-        }
         if (playerSummonMount != null)
         {
             playerSummonMount.OnDurationUpdated -= HandleDurationUpdated;
@@ -209,20 +199,6 @@ public class SummonMountUI : MonoBehaviour
         if (activatedFeedback != null)
         {
             activatedFeedback.PlayFeedbacks();
-        }
-    }
-
-    private void OnControlsChanged(PlayerInput input)
-    {
-        UpdateKeybindIcons(input.currentControlScheme);
-    }
-
-    private void UpdateKeybindIcons(string controlScheme)
-    {
-        bool isGamepad = controlScheme == "Gamepad";
-        if (keybindIcon != null)
-        {
-            keybindIcon.sprite = isGamepad ? gamepadSprite : keyboardSprite;
         }
     }
 }

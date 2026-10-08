@@ -10,7 +10,7 @@ using UnityEngine.InputSystem;
 ///     time to <see cref="UltimateWheelConfigSO.slowTimeScale" />. It offers one slice per ultimate slot: the
 ///     held melee weapon's and the held ranged weapon's ultimate, each costing one Arcane Core.
 ///     <list type="bullet">
-///         <item>Keyboard and mouse: hold Q and click a slice. Releasing Q closes the wheel.</item>
+///         <item>Keyboard and mouse: hold Q, hover a slice and release Q to fire it (a click also fires). Releasing off every slice cancels.</item>
 ///         <item>Gamepad: hold LB and point the left stick at a slice; releasing LB fires it, releasing with
 ///         the stick centred cancels. Movement is suppressed while the wheel is open.</item>
 ///     </list>
@@ -53,6 +53,9 @@ public class UltimateWheelUI : MonoBehaviour
     private readonly List<InputAction> disabledActions = new List<InputAction>();
 
     private RadialWheel wheel;
+    // Blocks the pointer while a pad drives the wheel: the cursor the wheel unlocks would otherwise hover
+    // (light up) whichever slice it happens to sit over, and releasing LB would fire that slice.
+    private CanvasGroup pointerGate;
     private InputAction ultimateAction;
     private PlayerUltimateController controller;
     private bool isOpen;
@@ -70,7 +73,12 @@ public class UltimateWheelUI : MonoBehaviour
         }
         Instance = this;
         wheel = new RadialWheel(sliceButtons, "UltimateWheel");
-        if (wheelPanel != null) wheelPanel.SetActive(false);
+        if (wheelPanel != null)
+        {
+            pointerGate = wheelPanel.GetComponent<CanvasGroup>();
+            if (pointerGate == null) pointerGate = wheelPanel.AddComponent<CanvasGroup>();
+            wheelPanel.SetActive(false);
+        }
     }
 
     private void Start()
@@ -123,6 +131,7 @@ public class UltimateWheelUI : MonoBehaviour
         }
 
         Time.timeScale = config.slowTimeScale;
+        UpdatePointerGate();
 
         if (CancelPressed())
         {
@@ -132,9 +141,10 @@ public class UltimateWheelUI : MonoBehaviour
 
         if (!held)
         {
-            // Releasing the hold confirms the stick's slice (gamepad); otherwise it just closes. The selection
-            // is last frame's, since the stick often springs back to centre in the same frame as the release.
-            int pick = stickSlot;
+            // Releasing the hold confirms the stick's slice (gamepad) or the hovered one (mouse); otherwise it
+            // just closes. The stick selection is last frame's, since it often springs back to centre in the
+            // same frame as the release.
+            int pick = stickSlot >= 0 ? stickSlot : (InputDeviceWatcher.GamepadActive ? -1 : hoveredSlot);
             if (pick >= 0) Select(pick);
             else Close(restoreTime: true);
             return;
@@ -183,6 +193,13 @@ public class UltimateWheelUI : MonoBehaviour
         Time.timeScale = config.slowTimeScale;
 
         Refresh();
+        // No slice starts lit: clear any glow left over from last time (the pad lights one once the stick moves).
+        if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
+        foreach (BuildWheelButton button in sliceButtons)
+        {
+            if (button != null) button.OnDeselect(null);
+        }
+        UpdatePointerGate();
         if (openFeedback != null) openFeedback.PlayFeedbacks();
     }
 
@@ -192,8 +209,10 @@ public class UltimateWheelUI : MonoBehaviour
         stickSlot = -1;
         hoveredSlot = -1;
 
-        if (wheelPanel != null) wheelPanel.SetActive(false);
+        // Deselect while the slices are still active: a deactivated slice never gets OnDeselect, so its glow
+        // would survive into the next open.
         if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
+        if (wheelPanel != null) wheelPanel.SetActive(false);
         wheel.SetModal(false);
         SuppressGameplayInput(false);
         if (restoreTime) Time.timeScale = GameSettingsService.TargetTimeScale;
@@ -324,7 +343,7 @@ public class UltimateWheelUI : MonoBehaviour
         if (controller.GetBlockReason(slot) != UltimateBlockReason.None)
         {
             if (deniedFeedback != null) deniedFeedback.PlayFeedbacks();
-            // Releasing LB on a greyed slice still closes; a click keeps the wheel up to pick again.
+            // Releasing Q/LB on a greyed slice still closes; a click keeps the wheel up to pick again.
             if (!ultimateAction.IsPressed()) Close(restoreTime: true);
             else Refresh();
             return;
@@ -347,6 +366,11 @@ public class UltimateWheelUI : MonoBehaviour
         // Selecting the slice drives its glow and the details box (BuildWheelButton.OnSelect).
         EventSystem.current.SetSelectedGameObject(slot >= 0 && sliceButtons[slot] != null ? sliceButtons[slot].gameObject : null);
         if (slot < 0) ShowIdleDetails();
+    }
+
+    private void UpdatePointerGate()
+    {
+        if (pointerGate != null) pointerGate.blocksRaycasts = !InputDeviceWatcher.GamepadActive;
     }
 
     private static bool CancelPressed()

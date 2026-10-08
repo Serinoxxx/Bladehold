@@ -14,6 +14,8 @@ public class StructureUpgradeState
     /// <summary>Wall material: 0 wood, 1 stone, 2 metal.</summary>
     public int materialTier;
     public bool hasSpikes;
+    /// <summary>Wall only: an arrow crate on the wall walk.</summary>
+    public bool hasAmmoCrate;
     public StructureElement element = StructureElement.None;
 
     /// <summary>Supply paid for upgrades and repairs (not the build cost, not tower ammo).</summary>

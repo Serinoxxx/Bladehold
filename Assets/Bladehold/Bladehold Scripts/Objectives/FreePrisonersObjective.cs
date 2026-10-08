@@ -6,7 +6,7 @@ using UnityEngine;
 ///     Survivors objective: Free the prisoners.
 ///     Spawns prisoner cages across the battlefield. Player must find and break the cages to free them.
 /// </summary>
-public class FreePrisonersObjective : MonoBehaviour, ISurvivorsObjective, IObjectivePreview
+public class FreePrisonersObjective : MonoBehaviour, ISurvivorsObjective, IObjectivePreview, ITimedObjective
 {
     [Header("Objective Configuration")]
     [SerializeField] private string objectiveId = "free_prisoners";
@@ -38,7 +38,8 @@ public class FreePrisonersObjective : MonoBehaviour, ISurvivorsObjective, IObjec
     public string Title => title;
     public string Description => description;
     public float TimeLimit => activeTimeLimit >= 0f ? activeTimeLimit : ObjectiveCsv.TimerSeconds(objectiveId, timeLimit);
-    public float TimeRemaining => timeRemaining;
+    public float TimeRemaining => Mathf.Max(0f, timeRemaining);
+    public bool FailsOnTimeout => true;
     public bool IsComplete => isComplete;
     public bool IsFailed => isFailed;
     public bool IsActive => isActive;

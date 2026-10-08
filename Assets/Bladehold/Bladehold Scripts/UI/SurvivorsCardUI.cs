@@ -10,7 +10,7 @@ using UnityEngine.UI;
 ///     Encapsulates rendering skill info (icon, title, description, level badge),
 ///     handling card click events, and playing MMF_Player callouts on hover enter/exit.
 /// </summary>
-public class SurvivorsCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class SurvivorsCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, ISelectHandler, IDeselectHandler
 {
     [Header("Card UI References")]
     [Tooltip("Primary button component on the card.")]
@@ -47,6 +47,9 @@ public class SurvivorsCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private Action onClickedCallback;
     private Action onBanishCallback;
+    private bool hovered;
+    private bool padFocused;
+    private bool litWhenDisabled;
 
     private void Awake()
     {
@@ -179,19 +182,57 @@ public class SurvivorsCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         onBanishCallback?.Invoke();
     }
 
-    public void OnPointerEnter(PointerEventData eventData)
+    public void OnPointerEnter(PointerEventData eventData) => SetLit(true, padFocused);
+
+    public void OnPointerExit(PointerEventData eventData) => SetLit(false, padFocused);
+
+    /// <summary>
+    ///     Pad focus lights the card exactly like a hover (glow fade-in, scale spring), so the focused draft is
+    ///     obvious. A mouse click also selects the button; only pad focus counts, hover already covers the mouse.
+    /// </summary>
+    public void OnSelect(BaseEventData eventData)
     {
-        if (hoverEnterFeedback != null)
+        if (InputDeviceWatcher.GamepadActive)
         {
-            hoverEnterFeedback.PlayFeedbacks();
+            SetLit(hovered, true);
         }
     }
 
-    public void OnPointerExit(PointerEventData eventData)
+    public void OnDeselect(BaseEventData eventData) => SetLit(hovered, false);
+
+    private void OnDisable()
     {
-        if (hoverExitFeedback != null)
+        // The modal hides with the card still lit; its glow and scale are left mid-state, so the next
+        // draft fades it out on enable rather than showing a stale highlight.
+        litWhenDisabled = hovered || padFocused;
+        hovered = false;
+        padFocused = false;
+    }
+
+    private void OnEnable()
+    {
+        if (litWhenDisabled && hoverExitFeedback != null)
         {
             hoverExitFeedback.PlayFeedbacks();
+        }
+        litWhenDisabled = false;
+    }
+
+    /// <summary>Plays the hover enter/exit feedback only when the card goes from unlit to lit or back.</summary>
+    private void SetLit(bool nowHovered, bool nowFocused)
+    {
+        bool wasLit = hovered || padFocused;
+        hovered = nowHovered;
+        padFocused = nowFocused;
+        bool lit = hovered || padFocused;
+        if (lit == wasLit)
+        {
+            return;
+        }
+        MMF_Player feedback = lit ? hoverEnterFeedback : hoverExitFeedback;
+        if (feedback != null)
+        {
+            feedback.PlayFeedbacks();
         }
     }
 

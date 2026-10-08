@@ -124,8 +124,14 @@ public class InputGlyph : MonoBehaviour
             return;
         }
 
-        string controlName = LastPathComponent(path);
-        Sprite sprite = glyphMap != null ? glyphMap.Resolve(scheme, controlName) : null;
+        // Nested controls are mapped by their path under the device ("dpad/up"), so try that before the
+        // last component alone ("up" never matches, which drew D-pad prompts as a blank keyboard keycap).
+        Sprite sprite = null;
+        if (glyphMap != null)
+        {
+            sprite = glyphMap.Resolve(scheme, ControlPathUnderDevice(path));
+            if (sprite == null) sprite = glyphMap.Resolve(scheme, LastPathComponent(path));
+        }
         if (sprite != null)
         {
             SetVisual(sprite, null);
@@ -195,6 +201,81 @@ public class InputGlyph : MonoBehaviour
             if (key == "Shift" || key == "Ctrl" || key == "Control" || key == "Alt") return key;
         }
         return label;
+    }
+
+    /// <summary>"&lt;Gamepad&gt;/dpad/up" → "dpad/up"; a path without a device part comes back unchanged.</summary>
+    private static string ControlPathUnderDevice(string path)
+    {
+        if (!path.StartsWith("<")) return path;
+        int slash = path.IndexOf('/');
+        return slash >= 0 && slash + 1 < path.Length ? path.Substring(slash + 1) : path;
+    }
+
+    /// <summary>
+    ///     Turns a plain HUD <see cref="Image" /> into a live glyph for <paramref name="action" />, adding the
+    ///     component (and a key-name overlay for keys without art) at runtime, so HUD slots authored with
+    ///     fixed sprites follow device switches and rebinds without Editor wiring. Returns the glyph.
+    /// </summary>
+    public static InputGlyph AttachTo(Image target, InputAction action)
+    {
+        InputGlyph glyph = Prepare(target);
+        if (glyph != null) glyph.SetAction(action);
+        return glyph;
+    }
+
+    /// <summary><see cref="AttachTo(Image, InputAction)" /> for controls no action covers (see <see cref="SetPaths" />).</summary>
+    public static InputGlyph AttachTo(Image target, string kbmPath, string gamepadPath)
+    {
+        InputGlyph glyph = Prepare(target);
+        if (glyph != null) glyph.SetPaths(kbmPath, gamepadPath);
+        return glyph;
+    }
+
+    private static InputGlyph Prepare(Image target)
+    {
+        if (target == null) return null;
+        InputGlyph glyph = target.GetComponent<InputGlyph>();
+        if (glyph == null) glyph = target.gameObject.AddComponent<InputGlyph>();
+        if (glyph.image == null) glyph.image = target;
+        if (glyph.glyphMap == null) glyph.glyphMap = FindLoadedGlyphMap();
+        if (glyph.overlayText == null) glyph.overlayText = CreateOverlay(target.rectTransform);
+        return glyph;
+    }
+
+    /// <summary>The project's glyph map, found among loaded assets (the HUD prefab references it).</summary>
+    public static GlyphMapSO FindLoadedGlyphMap()
+    {
+        GlyphMapSO[] maps = Resources.FindObjectsOfTypeAll<GlyphMapSO>();
+        return maps.Length > 0 ? maps[0] : null;
+    }
+
+    private static TMP_Text CreateOverlay(RectTransform parent)
+    {
+        var go = new GameObject("GlyphKeyName", typeof(RectTransform));
+        var rt = (RectTransform)go.transform;
+        rt.SetParent(parent, false);
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.offsetMin = new Vector2(3f, 3f);
+        rt.offsetMax = new Vector2(-3f, -3f);
+        var text = go.AddComponent<TextMeshProUGUI>();
+        text.alignment = TextAlignmentOptions.Center;
+        text.enableAutoSizing = true;
+        text.fontSizeMin = 6f;
+        text.fontSizeMax = 22f;
+        text.color = new Color(0.12f, 0.1f, 0.08f, 1f);
+        text.raycastTarget = false;
+        // Match the authored glyphs' key-name font where one is loaded.
+        foreach (InputGlyph other in Resources.FindObjectsOfTypeAll<InputGlyph>())
+        {
+            if (other.overlayText != null && other.overlayText != text && other.overlayText.font != null)
+            {
+                text.font = other.overlayText.font;
+                break;
+            }
+        }
+        go.SetActive(false);
+        return text;
     }
 
     private static string LastPathComponent(string path)

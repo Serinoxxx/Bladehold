@@ -362,7 +362,8 @@ public class ObjectiveWaypointTrackerUI : MonoBehaviour
         }
     }
 
-    private Sprite ResolveIcon(ObjectiveWaypointTarget target)
+    /// <summary>The icon a target shows: its own, else one picked from its label (also used by the minimap).</summary>
+    public Sprite ResolveIcon(ObjectiveWaypointTarget target)
     {
         if (target.CustomIcon != null) return target.CustomIcon;
 

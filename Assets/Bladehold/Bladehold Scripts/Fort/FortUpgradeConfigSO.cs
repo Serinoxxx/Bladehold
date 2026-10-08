@@ -52,6 +52,12 @@ public class FortUpgradeConfigSO : ScriptableObject
     [Tooltip("Damage dealt back to an attacker for every melee hit it lands on a spiked wall.")]
     [Min(0f)] public float wallSpikeDamage = 1f;
 
+    [Header("Wall: ammo crate")]
+    [Tooltip("Supply to put an arrow crate up on the wall walk, so the archer can restock without leaving the battlements.")]
+    [Min(0)] public int wallAmmoCrateCost = 30;
+    [Tooltip("The crate placed on the wall (the gate AmmoChest prefab). Unset hides the option.")]
+    public AmmoChest wallAmmoCratePrefab;
+
     [Header("Wall: elemental defences")]
     [Tooltip("Triggered when the wall is hit; one effect per cooldown.")]
     [Min(0.1f)] public float wallElementCooldown = 4f;
@@ -69,6 +75,7 @@ public class FortUpgradeConfigSO : ScriptableObject
     public Sprite refillIcon;
     public Sprite fireRateIcon;
     public Sprite spikesIcon;
+    public Sprite ammoCrateIcon;
     public Sprite repairIcon;
     public Sprite materialIcon;
     public Sprite deconstructIcon;

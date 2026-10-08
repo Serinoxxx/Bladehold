@@ -213,8 +213,9 @@ public class DefenseAssemblyAnimation : MonoBehaviour
 
             proxy.transform.position = endP;
 
-            // Wood impact, dust puff, and screen shake on landing
-            PlayAt(pieceLandFeedback, endP);
+            // Wood impact, dust puff, and screen shake on landing; the final piece locks in with the heavy slam
+            // so a multi-piece build (arrow tower) finishes as loud as a risen one.
+            PlayAt(i == pieces.Count - 1 ? slamFeedback : pieceLandFeedback, endP);
 
             yield return new WaitForSeconds(staggerInterval);
         }

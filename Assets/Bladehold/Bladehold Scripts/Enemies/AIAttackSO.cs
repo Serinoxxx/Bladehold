@@ -8,6 +8,10 @@ public class AIAttackSO : ScriptableObject
     public float attackRange = 2f;
     [Tooltip("Half-angle of the cone in front of the enemy within which the player must be to start an attack (degrees).")]
     public float attackConeAngle = 45f;
+    [Tooltip("Extra reach (m) when the blow lands. The attack starts at attackRange, so without leeway a target that stepped back a few centimetres during the wind-up is missed while the swing visibly connects.")]
+    public float apexRangeBonus = 0.75f;
+    [Tooltip("Half-angle (degrees) the target must be within when the blow lands. Turning is paused during the wind-up, so this is wider than attackConeAngle. Never narrower than it.")]
+    public float apexConeAngle = 75f;
 
     [Header("Turning")]
     [Tooltip("Turn rate multiplier applied after an attack.")]

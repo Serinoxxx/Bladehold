@@ -22,6 +22,7 @@ public class ObjectiveTrackerUI : MonoBehaviour
     [SerializeField] private string guidanceObjectiveText;
 
     private bool anyError;
+    private ObjectiveCountdownUI countdown;
 
     private void OnValidate()
     {
@@ -59,6 +60,10 @@ public class ObjectiveTrackerUI : MonoBehaviour
         objectiveManager.OnObjectiveCompleted += HandleSurvivorsObjectiveCompleted;
         objectiveManager.OnObjectiveFailed += HandleSurvivorsObjectiveFailed;
 
+        // The big top-centre clock for timed objectives and the rout, built from code (no prefab wiring).
+        countdown = ObjectiveCountdownUI.Create(GetComponentInParent<Canvas>(), objectiveProgressText != null ? objectiveProgressText : objectiveHeaderText);
+        if (countdown == null) Debug.LogWarning("ObjectiveTrackerUI: no parent Canvas, so the top-centre objective countdown was not created.", this);
+
         if (objectiveManager.CurrentObjective != null)
         {
             HandleSurvivorsObjectiveStarted(objectiveManager.CurrentObjective);
@@ -74,6 +79,7 @@ public class ObjectiveTrackerUI : MonoBehaviour
             objectiveManager.OnObjectiveCompleted -= HandleSurvivorsObjectiveCompleted;
             objectiveManager.OnObjectiveFailed -= HandleSurvivorsObjectiveFailed;
         }
+        if (countdown != null) Destroy(countdown.gameObject);
     }
 
     private void HandleSurvivorsObjectiveStarted(ISurvivorsObjective obj)

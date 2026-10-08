@@ -35,6 +35,8 @@ MonoBehaviour:
   wallRepairCost: 5
   wallSpikesCost: 25
   wallSpikeDamage: 1
+  wallAmmoCrateCost: 30
+  wallAmmoCratePrefab: {fileID: 2344818199289625047, guid: 0e7fd627f79ab9349812f13d93e990b0, type: 3}
   wallElementCooldown: 4
   wallElementReach: 4.5
   boilingOilPrefab: {fileID: 2913775355855463399, guid: 25ba4fde3159049458eda7f07801b901, type: 3}
@@ -44,6 +46,7 @@ MonoBehaviour:
   refillIcon: {fileID: 21300000, guid: 0f31748c118a3314285a91085819f414, type: 3}
   fireRateIcon: {fileID: 21300000, guid: 30c20679a9497e5409c81b4d4fa34be3, type: 3}
   spikesIcon: {fileID: 21300000, guid: 950dfac4036b8f246a13b1243cc2207d, type: 3}
+  ammoCrateIcon: {fileID: 0}
   repairIcon: {fileID: 21300000, guid: f711d4a2c2285fb4a98469e346df0113, type: 3}
   materialIcon: {fileID: 21300000, guid: da81494e70459354f858a9748adb2f6d, type: 3}
   deconstructIcon: {fileID: 21300000, guid: 7332a3b40bc49c743982c6703635b5b0, type: 3}

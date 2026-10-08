@@ -152,8 +152,12 @@ public class WaveChoiceConfigSO : ScriptableObject
     [Header("Resolution")]
     [Tooltip("Seconds the player gets to hunt down fleeing stragglers (skull waypoints on each) after the objective resolves, before they escape and despawn. Ends early once they're all dead.")]
     [Min(0f)] public float routDurationSeconds = 20f;
+    [Tooltip("When an objective FAILS, the survivors don't flee: they storm the gate (Assault role) and the wave stays open until they're dead. Backstop seconds after which any still alive (stuck) are despawned.")]
+    [Min(10f)] public float gateAssaultMaxSeconds = 120f;
     [Tooltip("Seconds (real time) between the wave-cleared popup and the next wave's choice cards opening, so the cards don't snap up the moment the wave ends.")]
     [Min(0f)] public float cardsDelaySeconds = 4f;
+    [Tooltip("Seconds after the last enemy of a wave dies (or the stragglers escape) before the wave resolves and the draft cards fade in, so the kill gets a beat to land.")]
+    [Min(0f)] public float draftDelayAfterClearSeconds = 1.25f;
 
     [Header("Gate Repair (prep phase)")]
     [Min(0.01f)] public float supplyPerGateHp = 1f;

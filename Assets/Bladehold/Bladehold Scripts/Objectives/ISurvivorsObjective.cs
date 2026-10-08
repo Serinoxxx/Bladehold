@@ -25,6 +25,26 @@ public interface IKillQuotaObjective
 }
 
 /// <summary>
+///     An objective on a clock (Free Prisoners, Destroy Siege Engines, Protect the Wagon, Goblin Rush,
+///     Golden Goblin). Read by the HUD's big top-centre countdown (<see cref="ObjectiveCountdownUI" />);
+///     a <see cref="TimeLimit" /> of 0 or less means this run of the objective is untimed.
+/// </summary>
+public interface ITimedObjective
+{
+    /// <summary>Total seconds on the clock for the current run (0 or less = no timer).</summary>
+    float TimeLimit { get; }
+
+    /// <summary>Seconds left on the clock, never negative.</summary>
+    float TimeRemaining { get; }
+
+    /// <summary>
+    ///     True when running out of time fails the objective (prisoners lost, target escapes); false when
+    ///     reaching 0 is the win (survive the Goblin Rush). Drives the countdown's urgent red styling.
+    /// </summary>
+    bool FailsOnTimeout { get; }
+}
+
+/// <summary>
 ///     Marks an objective that runs with no regular wave spawns (Golden Goblin): the wave's kill quota
 ///     isn't spawned and counts as met, so the objective's own resolution ends the wave.
 ///     <see cref="GameLoopManager" /> must skip <c>SurvivorsSpawner.StartWave</c> for it.

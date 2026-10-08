@@ -140,6 +140,14 @@ public class SaveData
     /// </summary>
     public float gamepadLookSensitivity = 180f;
 
+    /// <summary>
+    ///     Thumbstick dead zone: the fraction of stick deflection ignored before input registers, applied to
+    ///     every stick (movement, look, wheels, menus) by <see cref="GameSettingsService" />.
+    /// </summary>
+    public float stickDeadzone = 0.05f;
+    public const float MinStickDeadzone = 0f;
+    public const float MaxStickDeadzone = 0.5f;
+
     public bool postProcessingEnabled = true;
     public float postProcessingBloom = 1f;
     public float postProcessingVignette = 0.25f;
@@ -214,6 +222,7 @@ public class SaveData
         inputBindingOverridesJson = other.inputBindingOverridesJson;
         languageCode = other.languageCode;
         gamepadLookSensitivity = other.gamepadLookSensitivity;
+        stickDeadzone = other.stickDeadzone;
         postProcessingEnabled = other.postProcessingEnabled;
         postProcessingBloom = other.postProcessingBloom;
         postProcessingVignette = other.postProcessingVignette;

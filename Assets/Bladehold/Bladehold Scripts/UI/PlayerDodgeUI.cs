@@ -13,12 +13,6 @@ public class PlayerDodgeUI : MonoBehaviour
     public TextMeshProUGUI timerText;
     public Image keybindIcon;
 
-    [Header("Synty Input Icons (Keyboard/Mouse)")]
-    public Sprite keyboardSprite;
-
-    [Header("Synty Input Icons (Gamepad)")]
-    public Sprite gamepadSprite;
-
     [Header("Colors")]
     public Color cooldownColor = Color.red;
     public Color readyColor = Color.white;
@@ -27,12 +21,14 @@ public class PlayerDodgeUI : MonoBehaviour
     public MMF_Player cooldownFinishedFeedback;
     public MMF_Player activatedFeedback;
 
-    private PlayerInput playerInput;
     [SerializeField]private PlayerDodge playerDodge;
     private bool anyError;
 
     private void Start()
     {
+        // Older HUD copies point keybindIcon at the dodge art itself; the key prompt is the slot's "Keybind/ICON".
+        if (keybindIcon == null || keybindIcon == skillIcon) keybindIcon = FindKeybindIcon();
+
         if (skillIcon == null || radialFillImage == null || timerText == null || keybindIcon == null)
         {
             Debug.LogError("PlayerDodgeUI: Missing UI Image references.", this);
@@ -61,21 +57,24 @@ public class PlayerDodgeUI : MonoBehaviour
                 playerDodge.OnChargesChanged += HandleChargesChanged;
             }
 
-            playerInput = Player.Instance.GetComponentInChildren<PlayerInput>();
-            if (playerInput != null)
-            {
-                playerInput.onControlsChanged += OnControlsChanged;
-                UpdateKeybindIcons(playerInput.currentControlScheme);
-            }
+            // Dodge is read straight off Ctrl/Space and pad B (PlayerDodge), not a rebindable action, so the
+            // glyph uses fixed paths; it follows the last-used device through InputDeviceWatcher.
+            InputGlyph.AttachTo(keybindIcon, "<Keyboard>/ctrl", "<Gamepad>/buttonEast");
         }
+    }
+
+    private Image FindKeybindIcon()
+    {
+        for (Transform t = transform.parent; t != null; t = t.parent)
+        {
+            Transform icon = t.Find("Keybind/ICON");
+            if (icon != null) return icon.GetComponent<Image>();
+        }
+        return keybindIcon;
     }
 
     private void OnDestroy()
     {
-        if (playerInput != null)
-        {
-            playerInput.onControlsChanged -= OnControlsChanged;
-        }
         if (playerDodge != null)
         {
             playerDodge.OnCooldownUpdated -= HandleCooldownUpdated;
@@ -203,20 +202,6 @@ public class PlayerDodgeUI : MonoBehaviour
         else if (current > 0)
         {
             timerText.text = "";
-        }
-    }
-
-    private void OnControlsChanged(PlayerInput input)
-    {
-        UpdateKeybindIcons(input.currentControlScheme);
-    }
-
-    private void UpdateKeybindIcons(string controlScheme)
-    {
-        bool isGamepad = controlScheme == "Gamepad";
-        if (keybindIcon != null)
-        {
-            keybindIcon.sprite = isGamepad ? gamepadSprite : keyboardSprite;
         }
     }
 }

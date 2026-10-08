@@ -91767,7 +91767,7 @@ MonoBehaviour:
   _speedChangeDamping: 10
   _rotationSmoothing: 10
   _cameraRotationOffset: 0
-  _attackCooldown: 0.5
+  _attackCooldown: 0.25
   _buttonHoldThreshold: 0.15
   _shuffleDirectionX: 0
   _shuffleDirectionZ: 0

@@ -290,6 +290,9 @@ public class CampaignNodeButtonUI : MonoBehaviour, IPointerEnterHandler, IPointe
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        // Under a pad the parked cursor isn't the player's: labels slide under it as the camera follows the
+        // focus, and its enter/exit would yank focus and the tooltip around. (null = SetFocused.)
+        if (eventData != null && InputDeviceWatcher.GamepadActive) return;
         isHovered = true;
         Vector2 screenPos = rectTransform != null ? (Vector2)rectTransform.position : (Vector2)transform.position;
         onHoveredCallback?.Invoke(nodeData, currentStatus, screenPos);
@@ -297,6 +300,7 @@ public class CampaignNodeButtonUI : MonoBehaviour, IPointerEnterHandler, IPointe
 
     public void OnPointerExit(PointerEventData eventData)
     {
+        if (eventData != null && InputDeviceWatcher.GamepadActive) return;
         isHovered = false;
         onHoverExitedCallback?.Invoke();
     }

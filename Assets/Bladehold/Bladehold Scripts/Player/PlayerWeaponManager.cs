@@ -408,6 +408,7 @@ public class PlayerWeaponManager : MonoBehaviour
                 if (playerAttack != null)
                 {
                     playerAttack.SetChargeTimePerLevel(ActiveMeleeDefinition.chargeTimePerLevel);
+                    playerAttack.SetQuickAttackDamageFraction(ActiveMeleeDefinition.quickAttackDamageFraction);
                 }
 
                 var animController = GetComponentInChildren<Synty.AnimationBaseLocomotion.Samples.SamplePlayerAnimationController>();

@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using System.Collections.Generic;
+using UnityEngine.UI;
 
 namespace Bladehold.UI
 {
@@ -55,6 +57,7 @@ namespace Bladehold.UI
             }
 
             ShowScreen(titleScreen);
+            WireTitleNavigation();
         }
 
         /// <summary>
@@ -97,6 +100,59 @@ namespace Bladehold.UI
         private void OnDestroy()
         {
             CursorLockManager.SetUnlock("MainMenu_" + GetInstanceID(), false);
+        }
+
+        /// <summary>
+        ///     Links the title screen's buttons top to bottom (wrapping) for pad Up/Down. The scene's buttons
+        ///     were authored with navigation None, which left a pad stuck on Play. The column is the container
+        ///     of the first such button; only its active buttons are linked, so a hidden one is skipped and
+        ///     other title-screen buttons (changelog etc.) keep their own navigation.
+        /// </summary>
+        private void WireTitleNavigation()
+        {
+            if (titleScreen == null)
+            {
+                return;
+            }
+            Transform column = null;
+            foreach (Button button in titleScreen.GetComponentsInChildren<Button>())
+            {
+                if (button.navigation.mode == Navigation.Mode.None)
+                {
+                    column = button.transform.parent;
+                    break;
+                }
+            }
+            if (column == null)
+            {
+                return;
+            }
+            var buttons = new List<Button>();
+            foreach (Transform child in column)
+            {
+                Button button = child.GetComponent<Button>();
+                if (button != null && child.gameObject.activeInHierarchy)
+                {
+                    buttons.Add(button);
+                }
+            }
+            if (buttons.Count < 2)
+            {
+                return;
+            }
+            buttons.Sort((a, b) => b.transform.position.y.CompareTo(a.transform.position.y));
+            for (int i = 0; i < buttons.Count; i++)
+            {
+                Navigation nav = buttons[i].navigation;
+                nav.mode = Navigation.Mode.Explicit;
+                nav.selectOnUp = buttons[(i - 1 + buttons.Count) % buttons.Count];
+                nav.selectOnDown = buttons[(i + 1) % buttons.Count];
+                nav.selectOnLeft = null;
+                nav.selectOnRight = null;
+                buttons[i].navigation = nav;
+                // The dark title buttons barely tint when selected; an outline makes pad focus obvious.
+                UIFocusOutline.Attach(buttons[i], new Color(1f, 0.82f, 0.35f, 1f));
+            }
         }
 
         public void ShowScreen(GameObject screen)

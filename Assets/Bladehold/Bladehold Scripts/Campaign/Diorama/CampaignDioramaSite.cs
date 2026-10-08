@@ -27,9 +27,22 @@ public class CampaignDioramaSite : MonoBehaviour
     private static readonly int SaturationId = Shader.PropertyToID("_DioramaSaturation");
     private static readonly int BrightnessId = Shader.PropertyToID("_DioramaBrightness");
 
+    private static readonly int PulseSpeedId = Shader.PropertyToID("_PulseSpeed");
+    private static readonly int ShapeId = Shader.PropertyToID("_Shape");
+    private static readonly int DashLengthId = Shader.PropertyToID("_DashLength");
+    private static readonly int DashFillId = Shader.PropertyToID("_DashFill");
+    private static readonly int DashSpeedId = Shader.PropertyToID("_DashSpeed");
+
     private MaterialPropertyBlock block;
     private Quaternion[] bannerRestRotations;
     private float swayOffset;
+
+    // Last status pushed in, so the inspect highlight can re-tint the castle on top of it.
+    private CampaignNodeButtonUI.NodeVisualStatus status = CampaignNodeButtonUI.NodeVisualStatus.Locked;
+    private CampaignDioramaLookSO lastLook;
+    private bool inspected;
+    // Built on first inspect from the open ring's renderer (same glow material), so no Editor wiring.
+    private GameObject inspectHighlight;
 
     public string NodeId => nodeId;
     public Transform LabelAnchor => labelAnchor != null ? labelAnchor : transform;
@@ -70,9 +83,96 @@ public class CampaignDioramaSite : MonoBehaviour
         }
     }
 
-    public void ApplyStatus(CampaignNodeButtonUI.NodeVisualStatus status, CampaignDioramaLookSO look)
+    public void ApplyStatus(CampaignNodeButtonUI.NodeVisualStatus newStatus, CampaignDioramaLookSO look)
     {
         if (look == null) return;
+        status = newStatus;
+        lastLook = look;
+        ApplyTint(look);
+    }
+
+    /// <summary>
+    ///     Marks this castle as the one the map is inspecting (its tooltip is up): a wide fast-pulsing ring,
+    ///     a rising light column and a brighter castle, so the focus reads on the 3D map, not just the label.
+    /// </summary>
+    public void SetInspected(bool on, CampaignDioramaLookSO look)
+    {
+        if (look == null || inspected == on) return;
+        inspected = on;
+        lastLook = look;
+        if (on) EnsureInspectHighlight(look);
+        if (inspectHighlight != null) inspectHighlight.SetActive(on);
+        ApplyTint(look);
+    }
+
+    private void EnsureInspectHighlight(CampaignDioramaLookSO look)
+    {
+        if (inspectHighlight != null || availableRing == null) return;
+        Material glow = availableRing.sharedMaterial;
+        if (glow == null) return;
+
+        inspectHighlight = new GameObject("InspectHighlight");
+        Transform root = inspectHighlight.transform;
+        root.SetParent(availableRing.transform.parent, false);
+        root.localPosition = availableRing.transform.localPosition;
+        root.localRotation = Quaternion.identity;
+
+        // Ring: a copy of the open ring's disc, scaled up so both show when the node is also open.
+        GameObject ring = Instantiate(availableRing.gameObject, root);
+        ring.name = "InspectRing";
+        ring.SetActive(true);
+        ring.transform.localPosition = Vector3.up * 0.01f;
+        ring.transform.localRotation = availableRing.transform.localRotation;
+        ring.transform.localScale = Vector3.Scale(availableRing.transform.localScale, new Vector3(look.inspectedRingScale, 1f, look.inspectedRingScale));
+        Renderer ringRenderer = ring.GetComponent<Renderer>();
+        ringRenderer.GetPropertyBlock(block);
+        block.SetColor(GlowColorId, look.inspectedRingColor);
+        block.SetFloat(PulseSpeedId, look.inspectedRingPulseSpeed);
+        ringRenderer.SetPropertyBlock(block);
+
+        // Beam: two crossed vertical quads using the shader's road shape as a solid-ish column of dashes rising up.
+        // Ring radius in the castle's local units (from the mesh: the open ring may be inactive, with empty bounds).
+        MeshFilter ringFilter = availableRing.GetComponent<MeshFilter>();
+        float meshRadius = ringFilter != null && ringFilter.sharedMesh != null ? ringFilter.sharedMesh.bounds.extents.x : 1f;
+        float radius = Mathf.Max(0.1f, meshRadius * availableRing.transform.localScale.x);
+        float height = radius * look.inspectedBeamHeight;
+        float width = radius * look.inspectedBeamWidth;
+        Mesh beamMesh = BuildBeamMesh(width, height);
+        for (int i = 0; i < 2; i++)
+        {
+            GameObject quad = new GameObject($"InspectBeam{i}", typeof(MeshFilter), typeof(MeshRenderer));
+            quad.transform.SetParent(root, false);
+            quad.transform.localRotation = Quaternion.Euler(0f, 45f + i * 90f, 0f);
+            quad.GetComponent<MeshFilter>().sharedMesh = beamMesh;
+            MeshRenderer beam = quad.GetComponent<MeshRenderer>();
+            beam.sharedMaterial = glow;
+            beam.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            beam.receiveShadows = false;
+            block.Clear();
+            block.SetFloat(ShapeId, 0f);
+            block.SetColor(GlowColorId, look.inspectedBeamColor);
+            block.SetFloat(DashLengthId, height * 0.18f);
+            block.SetFloat(DashFillId, 0.7f);
+            block.SetFloat(DashSpeedId, 0.8f);
+            beam.SetPropertyBlock(block);
+        }
+        block.Clear();
+    }
+
+    /// <summary>A vertical quad: uv.x runs up the beam in world-ish units (the dash axis), uv.y across it.</summary>
+    private static Mesh BuildBeamMesh(float width, float height)
+    {
+        float h = width * 0.5f;
+        Mesh mesh = new Mesh { name = "DioramaInspectBeam" };
+        mesh.vertices = new[] { new Vector3(-h, 0f, 0f), new Vector3(h, 0f, 0f), new Vector3(-h, height, 0f), new Vector3(h, height, 0f) };
+        mesh.uv = new[] { new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(height, 0f), new Vector2(height, 1f) };
+        mesh.triangles = new[] { 0, 2, 1, 1, 2, 3 };
+        mesh.RecalculateBounds();
+        return mesh;
+    }
+
+    private void ApplyTint(CampaignDioramaLookSO look)
+    {
         if (block == null) block = new MaterialPropertyBlock();
 
         float saturation = 1f;
@@ -94,6 +194,7 @@ public class CampaignDioramaSite : MonoBehaviour
                 banner = look.demoLockedBannerColor;
                 break;
         }
+        if (inspected) brightness *= look.inspectedBrightness;
 
         if (bodyRenderers != null)
         {

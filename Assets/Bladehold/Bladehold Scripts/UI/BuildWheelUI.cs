@@ -109,10 +109,28 @@ public class BuildWheelUI : MonoBehaviour
     // Slice under the pointer / pad focus, so a refresh (after buying an upgrade) keeps its details up.
     private int hoveredIndex = -1;
 
+    [Header("Gamepad")]
+    [Tooltip("Left-stick tilt (0-1) needed before the stick picks a slice.")]
+    [SerializeField] private float stickDeadZone = 0.5f;
+
+    // Gamepad directional pick: the visible slices in ring order, and which one the stick last pointed at.
+    // The pick is sticky, so the stick can spring back to centre before A confirms.
+    private readonly List<BuildWheelButton> padSlots = new List<BuildWheelButton>();
+    private int padSlot = -1;
+    private int openedFrame = -1;
+
     private RadialWheel wheel;
     private RadialWheel Wheel => wheel ??= new RadialWheel(wheelButtons, "BuildWheel");
 
     public bool IsOpen => isOpen;
+
+    private int closedFrame = -1;
+
+    /// <summary>
+    ///     True while a build/upgrade wheel is open, and on the frame it closed (Esc/B close it, and gameplay
+    ///     code that reads those buttons straight off the device, like the dodge, mustn't fire on the same press).
+    /// </summary>
+    public static bool BlocksGameplayInput => instance != null && (instance.isOpen || instance.closedFrame == Time.frameCount);
 
     /// <summary>
     ///     While set, the wheel offers only this defence and hides the rest (the tutorial's first build is
@@ -157,6 +175,7 @@ public class BuildWheelUI : MonoBehaviour
             gameObject.SetActive(false);
         }
 
+        SetupCancelGlyph();
         ValidateFeedbackReferences();
     }
 
@@ -178,6 +197,7 @@ public class BuildWheelUI : MonoBehaviour
             instance = null;
             OnlyAllowed = null;
         }
+        Wheel.SuppressGameplayInput(false);
         Wheel.SetModal(false);
     }
 
@@ -208,7 +228,108 @@ public class BuildWheelUI : MonoBehaviour
         if (cancelPressed)
         {
             Close();
+            return;
         }
+
+        UpdatePadSelection(gamepad);
+    }
+
+    /// <summary>
+    ///     Gamepad: the left stick points at a slice (the arrow follows it and the slice lights up like a
+    ///     hover) and A buys it. A is read before the stick, and never on the frame the wheel opened, so the
+    ///     press that opened it (or a stick already held) can't buy something blind.
+    /// </summary>
+    private void UpdatePadSelection(Gamepad gamepad)
+    {
+        Vector2 stick = gamepad != null ? gamepad.leftStick.ReadValue() : Vector2.zero;
+        // A deliberate stick tilt counts even before the device watcher flips (gameplay actions are off here).
+        bool padActive = gamepad != null && (InputDeviceWatcher.GamepadActive || stick.magnitude >= stickDeadZone);
+        if (!padActive)
+        {
+            Wheel.SetPointer(Vector2.zero, false);
+            SetPadSlot(-1);
+            return;
+        }
+
+        if (Time.frameCount != openedFrame && gamepad.buttonSouth.wasPressedThisFrame
+            && padSlot >= 0 && padSlot < padSlots.Count && padSlots[padSlot] != null)
+        {
+            padSlots[padSlot].Press();
+            if (!isOpen) return;
+        }
+
+        int slot = Wheel.SlotForDirection(stick, padSlots.Count, stickDeadZone);
+        if (slot >= 0)
+        {
+            Wheel.SetPointer(stick, true);
+            SetPadSlot(slot);
+        }
+        else if (padSlot < 0)
+        {
+            Wheel.SetPointer(Vector2.zero, false);
+        }
+    }
+
+    private void SetPadSlot(int slot)
+    {
+        if (slot == padSlot) return;
+        if (padSlot >= 0 && padSlot < padSlots.Count && padSlots[padSlot] != null) padSlots[padSlot].SetPadFocus(false);
+        padSlot = slot;
+        if (padSlot >= 0 && padSlot < padSlots.Count && padSlots[padSlot] != null) padSlots[padSlot].SetPadFocus(true);
+    }
+
+    /// <summary>Common open/close plumbing for both the build and the upgrade wheel.</summary>
+    private void SetOpenState(bool open)
+    {
+        padSlot = -1;
+        openedFrame = open ? Time.frameCount : -1;
+        foreach (BuildWheelButton b in wheelButtons)
+        {
+            if (b != null) b.ClearHighlight();
+        }
+        Wheel.SetPointer(Vector2.zero, false);
+        if (UnityEngine.EventSystems.EventSystem.current != null)
+        {
+            UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
+        }
+        Wheel.SuppressGameplayInput(open);
+    }
+
+    /// <summary>
+    ///     Rebuilds the stick's slot list (visible slices in ring order) after a refresh, keeping the
+    ///     focused slice lit through it (a purchase refreshes the upgrade wheel in place).
+    /// </summary>
+    private void RebuildPadSlots(List<BuildWheelButton> visibleInRingOrder)
+    {
+        padSlots.Clear();
+        padSlots.AddRange(visibleInRingOrder);
+        if (padSlot >= padSlots.Count) padSlot = -1;
+        if (padSlot >= 0 && padSlots[padSlot] != null) padSlots[padSlot].SetPadFocus(true);
+    }
+
+    /// <summary>
+    ///     The Cancel button was authored as "Cancel [Esc]"; it now reads "Cancel" with a live glyph beside
+    ///     it (Esc on keyboard, B on pad), built at runtime.
+    /// </summary>
+    private void SetupCancelGlyph()
+    {
+        if (closeButton == null) return;
+        TMP_Text label = closeButton.GetComponentInChildren<TMP_Text>(true);
+        if (label != null) label.text = Loc.Get("buildwheel.cancel", "Cancel");
+
+        var rt = (RectTransform)closeButton.transform;
+        var go = new GameObject("CancelGlyph", typeof(RectTransform));
+        var glyphRt = (RectTransform)go.transform;
+        glyphRt.SetParent(rt, false);
+        glyphRt.anchorMin = glyphRt.anchorMax = new Vector2(1f, 0.5f);
+        glyphRt.pivot = new Vector2(0f, 0.5f);
+        float size = Mathf.Max(28f, rt.rect.height * 1.25f);
+        glyphRt.sizeDelta = new Vector2(size, size);
+        glyphRt.anchoredPosition = new Vector2(8f, 0f);
+        var image = go.AddComponent<Image>();
+        image.preserveAspect = true;
+        image.raycastTarget = false;
+        InputGlyph.AttachTo(image, "<Keyboard>/escape", "<Gamepad>/buttonEast");
     }
 
     public void Open(TowerPlot plot)
@@ -223,6 +344,7 @@ public class BuildWheelUI : MonoBehaviour
 
         UltimateWheelUI.CloseIfOpen();
         Wheel.SetModal(true);
+        SetOpenState(true);
 
         SetupButtons();
         RefreshUI();
@@ -242,6 +364,7 @@ public class BuildWheelUI : MonoBehaviour
 
         UltimateWheelUI.CloseIfOpen();
         Wheel.SetModal(true);
+        SetOpenState(true);
 
         RefreshUI();
     }
@@ -249,10 +372,12 @@ public class BuildWheelUI : MonoBehaviour
     public void Close()
     {
         isOpen = false;
+        closedFrame = Time.frameCount;
         activePlot = null;
         upgradeTarget = null;
         upgradeOptions.Clear();
 
+        SetOpenState(false);
         if (wheelPanel != null && wheelPanel != gameObject) wheelPanel.SetActive(false);
         gameObject.SetActive(false);
 
@@ -295,11 +420,13 @@ public class BuildWheelUI : MonoBehaviour
                 if (wheelButtons[i] != null) wheelButtons[i].gameObject.SetActive(false);
             }
             int slot = 0;
+            var ringOrder = new List<BuildWheelButton>();
             for (int i = 0; i < defenseOptions.Count && i < wheelButtons.Count; i++)
             {
                 if (wheelButtons[i] != null && IsOffered(defenseOptions[i].defenseType))
                 {
                     Wheel.PlaceOnRing(wheelButtons[i], slot++, offered);
+                    ringOrder.Add(wheelButtons[i]);
                 }
             }
 
@@ -323,6 +450,7 @@ public class BuildWheelUI : MonoBehaviour
                     () => OnUnhoverSlice()
                 );
             }
+            RebuildPadSlots(ringOrder);
         }
 
         if (hoveredIndex >= 0) OnHoverSlice(hoveredIndex);
@@ -533,6 +661,7 @@ public class BuildWheelUI : MonoBehaviour
         ShowIdleDetails();
 
         Wheel.EnsureButtonCount(upgradeOptions.Count);
+        var ringOrder = new List<BuildWheelButton>();
         for (int i = 0; i < wheelButtons.Count; i++)
         {
             BuildWheelButton btn = wheelButtons[i];
@@ -549,7 +678,9 @@ public class BuildWheelUI : MonoBehaviour
                 () => OnSelectUpgrade(index),
                 () => OnHoverSlice(index),
                 () => OnUnhoverSlice());
+            ringOrder.Add(btn);
         }
+        RebuildPadSlots(ringOrder);
         if (hoveredIndex >= 0) OnHoverSlice(hoveredIndex);
 
         // Legacy slice buttons have no upgrade layout. They're often the same objects as the wheel

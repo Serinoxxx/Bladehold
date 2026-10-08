@@ -57,6 +57,7 @@ public class GameSettingsService : MonoBehaviour
     public float GameSpeed => saveData.gameSpeed;
     public string LanguageCode => saveData.languageCode;
     public float GamepadSensitivity => saveData.gamepadLookSensitivity;
+    public float StickDeadzone => saveData.stickDeadzone;
     public bool PostProcessingEnabled => saveData.postProcessingEnabled;
     public float PostProcessingBloom => saveData.postProcessingBloom;
     public float PostProcessingVignette => saveData.postProcessingVignette;
@@ -121,6 +122,8 @@ public class GameSettingsService : MonoBehaviour
             inputSettings.ApplyInvertY(saveData.invertLookY);
             inputSettings.LoadBindingOverridesFromJson(saveData.inputBindingOverridesJson);
         }
+
+        ApplyStickDeadzone(saveData.stickDeadzone);
 
         if (Player.Instance != null && Player.Instance.AimCamera != null)
         {
@@ -229,6 +232,14 @@ public class GameSettingsService : MonoBehaviour
         Persist();
     }
 
+    /// <summary>Thumbstick dead zone (fraction of full deflection ignored), see <see cref="SaveData.stickDeadzone" />.</summary>
+    public void SetStickDeadzone(float value)
+    {
+        saveData.stickDeadzone = Mathf.Clamp(value, SaveData.MinStickDeadzone, SaveData.MaxStickDeadzone);
+        ApplyStickDeadzone(saveData.stickDeadzone);
+        Persist();
+    }
+
     public void SetInvertX(bool value)
     {
         saveData.invertLookX = value;
@@ -280,6 +291,25 @@ public class GameSettingsService : MonoBehaviour
         ApplyAll();
         Persist();
         InputDeviceWatcher.NotifyBindingsChanged();
+    }
+
+    /// <summary>
+    ///     Applied at startup so the main menu (which has no settings service until its settings
+    ///     panel opens) already navigates with the saved dead zone.
+    /// </summary>
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void ApplySavedStickDeadzone()
+    {
+        ApplyStickDeadzone(SaveSystem.Load().stickDeadzone);
+    }
+
+    /// <summary>
+    ///     Every gamepad stick carries the Input System's stickDeadzone processor, which reads this global
+    ///     default, so gameplay movement/look, the radial wheels and UI navigation all honour it.
+    /// </summary>
+    private static void ApplyStickDeadzone(float value)
+    {
+        UnityEngine.InputSystem.InputSystem.settings.defaultDeadzoneMin = Mathf.Clamp(value, SaveData.MinStickDeadzone, SaveData.MaxStickDeadzone);
     }
 
     private void ApplyMaxRagdolls(int value)

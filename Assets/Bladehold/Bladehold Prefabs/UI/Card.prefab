@@ -537,8 +537,8 @@ MonoBehaviour:
         Mode: 2
         MoveToScaleMin: {x: 1, y: 1, z: 1}
         MoveToScaleMax: {x: 2, y: 2, z: 2}
-        BumpScaleMin: {x: 20, y: 20, z: 20}
-        BumpScaleMax: {x: 30, y: 30, z: 30}
+        BumpScaleMin: {x: 8, y: 8, z: 8}
+        BumpScaleMax: {x: 12, y: 12, z: 12}
     - rid: 3583623318233415795
       type: {class: MMF_ImageAlpha, ns: MoreMountains.Feedbacks, asm: MoreMountains.Tools}
       data:
@@ -1190,8 +1190,8 @@ MonoBehaviour:
         Mode: 2
         MoveToScaleMin: {x: 1, y: 1, z: 1}
         MoveToScaleMax: {x: 2, y: 2, z: 2}
-        BumpScaleMin: {x: 20, y: 20, z: 20}
-        BumpScaleMax: {x: 30, y: 30, z: 30}
+        BumpScaleMin: {x: 8, y: 8, z: 8}
+        BumpScaleMax: {x: 12, y: 12, z: 12}
     - rid: 3583623318233415796
       type: {class: MMF_ImageAlpha, ns: MoreMountains.Feedbacks, asm: MoreMountains.Tools}
       data:

@@ -36,5 +36,5 @@ MonoBehaviour:
   pedestalUltimateDescription: Instantly smash the ground causing a mini earthquake
     and devastating nearby enemies
   chargeTimePerLevel: 0.42
-  attackCooldown: 0.55
+  attackCooldown: 0.3
   animatorWeaponType: 1

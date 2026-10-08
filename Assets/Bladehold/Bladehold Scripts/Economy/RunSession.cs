@@ -250,6 +250,8 @@ public static class RunSession
     public const string StableHandPerkId = "stable_hand";
     public const string CavalryDrillsPerkId = "cavalry_drills";
     public const string LoyalSteedPerkId = "loyal_steed";
+    /// <summary>Tier 2: a replacement warhorse can be bought mid-wave too (see <see cref="HorseReplacement.CanBuyNow" />).</summary>
+    public const string FieldStablesPerkId = "field_stables";
 
     /// <summary>The horse's health as a 0..1 fraction of its max, kept between summons and scenes.</summary>
     public static float MountHealthFraction { get; set; } = 1f;

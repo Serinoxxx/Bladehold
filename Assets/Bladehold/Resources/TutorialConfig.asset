@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TutorialConfigSO
   firstSceneName: Bladehold Tutorial Dungeon
   metaAreaSceneName: Bladehold Meta Area Scene
-  heavyMinChargeMultiplier: 1.6
+  heavyMinChargeMultiplier: 1.8
   heavyNudgeAfterBlocks: 2
   reloadAfterDeathDelay: 2
   stepAdvanceDelay: 0.75

@@ -26,6 +26,21 @@ public class CampaignDioramaLookSO : ScriptableObject
     [Header("Open-sector ground ring")]
     [ColorUsage(true, true)] public Color availableRingColor = new Color(1.5f, 1.1f, 0.35f, 0.75f);
 
+    [Header("Inspected node (keyboard/gamepad focus or mouse hover)")]
+    [Tooltip("Wide pulsing ground ring around the castle whose tooltip is showing.")]
+    [ColorUsage(true, true)] public Color inspectedRingColor = new Color(2.6f, 2.3f, 1.6f, 1f);
+    [Tooltip("Inspected ring size relative to the open-sector ring.")]
+    public float inspectedRingScale = 1.45f;
+    [Tooltip("Ring pulse speed (the open-sector ring's material default is 2.2).")]
+    public float inspectedRingPulseSpeed = 5f;
+    [Tooltip("Rising light column over the inspected castle.")]
+    [ColorUsage(true, true)] public Color inspectedBeamColor = new Color(2.2f, 1.8f, 0.9f, 0.55f);
+    [Tooltip("Beam height and width as multiples of the open-sector ring's radius.")]
+    public float inspectedBeamHeight = 3.5f;
+    public float inspectedBeamWidth = 0.22f;
+    [Tooltip("Castle brightness multiplier while inspected.")]
+    [Range(1f, 2f)] public float inspectedBrightness = 1.25f;
+
     [Header("Route overlay")]
     [ColorUsage(true, true)] public Color roadAvailableColor = new Color(2.4f, 1.75f, 0.45f, 0.95f);
     [ColorUsage(true, true)] public Color roadCompletedColor = new Color(0.5f, 1.2f, 0.6f, 0.7f);
@@ -41,8 +56,6 @@ public class CampaignDioramaLookSO : ScriptableObject
     public float wheelPanStep = 3f;
     [Tooltip("Screen pixels the mouse must move with the button held before it counts as a drag (so clicks still deploy).")]
     public float dragThreshold = 8f;
-    [Tooltip("World units per second the gamepad right stick pans at full tilt.")]
-    public float stickPanSpeed = 18f;
     [Tooltip("Degrees the camera leans towards the mouse, for a little parallax on the miniatures.")]
     public float mouseParallaxDegrees = 1.2f;
 }

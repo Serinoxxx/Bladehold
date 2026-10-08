@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -63,6 +64,8 @@ public class CampaignMapUI : MonoBehaviour
     [SerializeField] private float navRepeatDelay = 0.3f;
     [Tooltip("How much sideways offset counts against a candidate node versus distance along the pressed direction.")]
     [SerializeField] private float navPerpendicularWeight = 2f;
+    [Tooltip("Widest angle (degrees) off the pressed direction a node may sit and still be the next stop; nothing inside the cone means focus stays put.")]
+    [SerializeField] private float navMaxAngle = 65f;
 
     private const string CursorOwner = "CampaignMap";
 
@@ -74,6 +77,8 @@ public class CampaignMapUI : MonoBehaviour
     private Canvas canvas;
 
     private CampaignNodeButtonUI focusedButton;
+    // Node whose castle shows the 3D inspect highlight (the one the tooltip describes).
+    private string inspectedNodeId;
     private Vector2 heldDirection;
     private float nextRepeatTime;
     private bool demoEndShown;
@@ -142,6 +147,7 @@ public class CampaignMapUI : MonoBehaviour
         }
 
         CampaignManager.Instance.OnCampaignStateChanged += RefreshMap;
+        InputDeviceWatcher.SchemeChanged += HandleSchemeChanged;
 
         RefreshCurrencies();
         BuildMap();
@@ -161,6 +167,13 @@ public class CampaignMapUI : MonoBehaviour
         if (anyError || demoEndShown || deploying || DevConsole.IsVisible || IsPaused)
         {
             return;
+        }
+
+        // The pad drives focus here, not the EventSystem: a stray selection (e.g. a node or the settings button
+        // left selected by a mouse click) would also navigate on the stick and take the A press.
+        if (InputDeviceWatcher.GamepadActive && EventSystem.current != null && EventSystem.current.currentSelectedGameObject != null)
+        {
+            EventSystem.current.SetSelectedGameObject(null);
         }
 
         Vector2 direction = ReadNavigationDirection();
@@ -328,25 +341,32 @@ public class CampaignMapUI : MonoBehaviour
     }
 
     /// <summary>
-    ///     Picks the nearest node in the pressed direction, weighting sideways offset so "right" follows
-    ///     the row you're on before jumping lanes. Locked nodes are browsable (their tooltip shows) but
-    ///     can't be deployed to.
+    ///     Steps to the nearest node in the pressed direction, weighting sideways offset so "right" follows
+    ///     the row you're on before jumping lanes. Measured on the diorama's ground plane (world X = screen
+    ///     right, world Z = screen up), not the labels' screen positions, which slide while the camera pans.
+    ///     Only nodes inside a <see cref="navMaxAngle" /> cone count, so "up" at the top of a column stays put
+    ///     instead of leaping to another column. Locked nodes are browsable (their tooltip shows) but can't be
+    ///     deployed to.
     /// </summary>
     private void MoveFocus(Vector2 direction)
     {
-        Vector2 from = focusedButton.Rect.localPosition;
+        if (!TryGetGroundPosition(focusedButton, out Vector2 from)) return;
+        float maxAcrossPerAlong = Mathf.Tan(Mathf.Clamp(navMaxAngle, 1f, 89f) * Mathf.Deg2Rad);
         CampaignNodeButtonUI best = null;
         float bestScore = float.MaxValue;
 
         foreach (CampaignNodeButtonUI btn in spawnedButtons.Values)
         {
             if (btn == null || btn == focusedButton) continue;
+            if (!TryGetGroundPosition(btn, out Vector2 to)) continue;
 
-            Vector2 delta = (Vector2)btn.Rect.localPosition - from;
+            Vector2 delta = to - from;
             float along = Vector2.Dot(delta, direction);
-            if (along <= 1f) continue;
+            if (along <= 0.01f) continue;
 
             float across = Mathf.Abs(delta.x * direction.y - delta.y * direction.x);
+            if (across > along * maxAcrossPerAlong) continue;
+
             float score = along + across * navPerpendicularWeight;
             if (score < bestScore)
             {
@@ -361,6 +381,14 @@ public class CampaignMapUI : MonoBehaviour
         }
     }
 
+    private bool TryGetGroundPosition(CampaignNodeButtonUI button, out Vector2 ground)
+    {
+        ground = Vector2.zero;
+        if (button == null || button.NodeData == null || !diorama.TryGetSite(button.NodeData.nodeId, out CampaignDioramaSite site)) return false;
+        Vector3 p = site.transform.position;
+        ground = new Vector2(p.x, p.z);
+        return true;
+    }
     private void SetFocus(CampaignNodeButtonUI button)
     {
         if (button == focusedButton)
@@ -412,6 +440,15 @@ public class CampaignMapUI : MonoBehaviour
         {
             CampaignManager.Instance.OnCampaignStateChanged -= RefreshMap;
         }
+        InputDeviceWatcher.SchemeChanged -= HandleSchemeChanged;
+    }
+
+    /// <summary>Picking up the pad lands focus on a node straight away, so the tooltip and 3D highlight show.</summary>
+    private void HandleSchemeChanged(ControlScheme scheme)
+    {
+        if (anyError || demoEndShown || deploying || scheme != ControlScheme.Gamepad) return;
+        if (focusedButton == null) FocusFirstAvailable();
+        else if (inspectedNodeId == null) focusedButton.SetFocused(true);
     }
 
     private static bool IsPaused => PauseMenuController.Instance != null && PauseMenuController.Instance.IsPaused;
@@ -705,6 +742,8 @@ public class CampaignMapUI : MonoBehaviour
             focusedButton = hovered;
         }
 
+        SetInspected(node != null ? node.nodeId : null);
+
         if (tooltipUI != null)
         {
             // Anchor to the node's rect so the tooltip sits beside the node instead of over it.
@@ -721,10 +760,20 @@ public class CampaignMapUI : MonoBehaviour
 
     private void HandleNodeHoverExited()
     {
+        SetInspected(null);
         if (tooltipUI != null)
         {
             tooltipUI.Hide();
         }
+    }
+
+    /// <summary>Moves the 3D inspect highlight (ring, light column, brighter castle) to this node's castle; null clears it.</summary>
+    private void SetInspected(string nodeId)
+    {
+        if (nodeId == inspectedNodeId) return;
+        if (inspectedNodeId != null) diorama.SetInspected(inspectedNodeId, false);
+        inspectedNodeId = nodeId;
+        if (inspectedNodeId != null) diorama.SetInspected(inspectedNodeId, true);
     }
 
     private void ClearSpawnedElements()

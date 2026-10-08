@@ -82,6 +82,19 @@ public class PauseMenuView : MonoBehaviour
         quitButton.onClick.AddListener(HandleQuit);
         if (skipTutorialButton != null) skipTutorialButton.onClick.AddListener(HandleSkipTutorial);
 
+        foreach (Button button in new[] { resumeButton, settingsButton, photoModeButton, skipTutorialButton, quitButton })
+        {
+            EmphasizeFocus(button);
+        }
+
+        // Pad B on the main buttons resumes. The prefab's B wiring can't reach the scene's PauseMenuController
+        // (its target serializes as null), so it's added here when nothing live is wired.
+        MenuFocusController focus = GetComponent<MenuFocusController>();
+        if (focus != null && !focus.HasCancelHandler)
+        {
+            focus.AddCancelListener(HandleResume);
+        }
+
         PauseMenuController.Instance.OnPauseChanged += HandlePauseChanged;
         PauseMenuController.Instance.OnSettingsRequested += HandleOpenSettings;
         if (screenshotMode != null)
@@ -145,6 +158,29 @@ public class PauseMenuView : MonoBehaviour
         if (mainButtonsPanel != null) mainButtonsPanel.SetActive(true);
         if (backdrop != null) backdrop.SetActive(true);
         if (skipTutorialButton != null) skipTutorialButton.gameObject.SetActive(TutorialRun.Active);
+    }
+
+    /// <summary>
+    ///     Makes the pad-focused (and hovered) button unmistakable on the parchment buttons, whose authored
+    ///     selected tint was nearly identical to normal: an accent tint plus the shared hover/focus scale.
+    /// </summary>
+    private void EmphasizeFocus(Button button)
+    {
+        if (button == null)
+        {
+            return;
+        }
+        ColorBlock colors = button.colors;
+        Color accent = UITheme.For(this).Get(UIColorRole.Accent);
+        Color focusTint = Color.Lerp(Color.white, new Color(accent.r, accent.g, accent.b, 1f), 0.85f);
+        colors.selectedColor = focusTint;
+        colors.highlightedColor = focusTint;
+        colors.colorMultiplier = 1f;
+        button.colors = colors;
+        if (button.GetComponent<UISelectableJuice>() == null)
+        {
+            button.gameObject.AddComponent<UISelectableJuice>();
+        }
     }
 
     private void HandleResume() => PauseMenuController.Instance.SetPaused(false);

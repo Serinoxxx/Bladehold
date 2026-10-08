@@ -100,6 +100,11 @@ public class SurvivorsCardSelectUI : MonoBehaviour
         {
             sidebar = GetComponentInChildren<SurvivorsPlayerInfoSidebarUI>(true);
         }
+        if (sidebar != null)
+        {
+            // Big-icon, inspectable skill rows here; the death screen's sidebar keeps its compact rows.
+            sidebar.EnableDraftLayout();
+        }
 
         if (iconsConfig == null)
         {
@@ -206,6 +211,7 @@ public class SurvivorsCardSelectUI : MonoBehaviour
             }
             modalPanel.SetActive(true);
         }
+        FitSidebar();
 
         modalOpenedUnscaledTime = Time.unscaledTime;
         if (enableButtonsCoroutine != null)
@@ -286,6 +292,7 @@ public class SurvivorsCardSelectUI : MonoBehaviour
             }
             modalPanel.SetActive(true);
         }
+        FitSidebar();
 
         if (focusController != null && spawnedWaveCards.Count > 0)
         {
@@ -300,6 +307,16 @@ public class SurvivorsCardSelectUI : MonoBehaviour
         enableButtonsCoroutine = StartCoroutine(EnableButtonsAfterDelay(clickDelaySeconds));
 
         CursorLockManager.SetUnlock("SurvivorsLevelUp", true);
+    }
+
+    /// <summary>Grows the hero panel as far as the space beside the visible card row allows (call once the modal is active).</summary>
+    private void FitSidebar()
+    {
+        if (sidebar == null) return;
+        RectTransform row = waveChoiceOpen
+            ? waveCardsRow
+            : skillCardsRow != null ? skillCardsRow.transform as RectTransform : null;
+        sidebar.FitBeside(row);
     }
 
     private void OnWaveCardClicked(int index)

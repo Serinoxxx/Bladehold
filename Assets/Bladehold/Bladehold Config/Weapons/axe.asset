@@ -34,5 +34,5 @@ MonoBehaviour:
   pedestalUltimateDescription: Become a vortex of blades, slicing all nearby enemies
     for a short duration
   chargeTimePerLevel: 0.45
-  attackCooldown: 0.5
+  attackCooldown: 0.25
   animatorWeaponType: 1

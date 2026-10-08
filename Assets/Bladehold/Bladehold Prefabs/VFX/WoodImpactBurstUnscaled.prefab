@@ -57,6 +57,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 198714820892312070, guid: 2b28f2fdc5a65964f96ea4d2b9d6ca63, type: 3}
+      propertyPath: looping
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 198714820892312070, guid: 2b28f2fdc5a65964f96ea4d2b9d6ca63, type: 3}
       propertyPath: useUnscaledTime
       value: 1
       objectReference: {fileID: 0}

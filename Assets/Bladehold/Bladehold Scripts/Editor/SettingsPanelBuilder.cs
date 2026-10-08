@@ -673,8 +673,8 @@ public static class SettingsPanelBuilder
         bar.offsetMax = new Vector2(0f, -8f);
         var layout = bar.gameObject.AddComponent<HorizontalLayoutGroup>();
         layout.childAlignment = TextAnchor.MiddleLeft;
-        // HintEntry rows carry a fixed 160px label; overlap that slack so three hints clear Reset/Delete.
-        layout.spacing = -36f;
+        // ControlHintBar fits each row to its label, so plain positive spacing packs three hints clear of Reset/Delete.
+        layout.spacing = 16f;
         layout.childControlWidth = false;
         layout.childControlHeight = false;
         layout.childForceExpandWidth = false;

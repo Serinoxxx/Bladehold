@@ -854,7 +854,7 @@ public static class BuildCastleLevels
             GameObject closeLabelObj = new GameObject("Label", typeof(RectTransform));
             closeLabelObj.transform.SetParent(closeBtnObj.transform, false);
             TMP_Text closeLbl = closeLabelObj.AddComponent<TextMeshProUGUI>();
-            closeLbl.text = "Cancel [Esc]";
+            closeLbl.text = "Cancel"; // BuildWheelUI adds the Esc/B glyph beside it at runtime
             closeLbl.fontSize = 16;
             closeLbl.alignment = TextAlignmentOptions.Center;
             closeLabelObj.GetComponent<RectTransform>().sizeDelta = new Vector2(140f, 36f);

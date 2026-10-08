@@ -42,6 +42,7 @@ public class BuildWheelButton : MonoBehaviour, IPointerEnterHandler, IPointerExi
 
     private void Awake()
     {
+        baseScale = transform.localScale;
         if (button == null) button = GetComponent<Button>();
         if (canvasGroup == null) canvasGroup = GetComponent<CanvasGroup>();
 
@@ -145,6 +146,31 @@ public class BuildWheelButton : MonoBehaviour, IPointerEnterHandler, IPointerExi
         if (iconImage != null) iconImage.canvasRenderer.SetColor(dim);
         if (traceryImage != null) traceryImage.canvasRenderer.SetColor(dim);
     }
+
+    /// <summary>
+    ///     Gamepad stick focus (the build wheel's directional pick): the same glow and details as a mouse
+    ///     hover, without going through the EventSystem selection.
+    /// </summary>
+    public void SetPadFocus(bool focused)
+    {
+        if (highlightGlow != null) highlightGlow.SetActive(focused);
+        transform.localScale = focused ? baseScale * PadFocusScale : baseScale;
+        if (focused) onHoverCallback?.Invoke();
+        else onUnhoverCallback?.Invoke();
+    }
+
+    private const float PadFocusScale = 1.08f;
+    private Vector3 baseScale = Vector3.one;
+
+    /// <summary>Drops any leftover glow/focus scale (e.g. a hover the wheel closed under), without callbacks.</summary>
+    public void ClearHighlight()
+    {
+        if (highlightGlow != null) highlightGlow.SetActive(false);
+        transform.localScale = baseScale;
+    }
+
+    /// <summary>Confirms this slice as a click would (ignored while unaffordable).</summary>
+    public void Press() => HandleClick();
 
     private void HandleClick()
     {

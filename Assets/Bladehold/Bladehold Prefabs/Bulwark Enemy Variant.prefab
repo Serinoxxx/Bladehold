@@ -1461,12 +1461,12 @@ MonoBehaviour:
           ButtonText: 
         Owner: {fileID: 3384415476109581920}
         DebugActive: 0
-        Mode: 2
+        Mode: 1
         ObjectPoolSize: 5
         MutualizePools: 0
         ParentTransform: {fileID: 0}
         CachedRecycle: 1
-        ParticlesPrefab: {fileID: 198517247309888930, guid: 2b28f2fdc5a65964f96ea4d2b9d6ca63, type: 3}
+        ParticlesPrefab: {fileID: 353032617485985894, guid: 1791d6f662772754096622cee1f4d2eb, type: 3}
         RandomParticlePrefabs: []
         MainParticlesPrefabWeight: 1
         RandomParticleWeights: 
@@ -5446,6 +5446,7 @@ GameObject:
   - component: {fileID: 7655775733471174784}
   - component: {fileID: 3803492860994446663}
   - component: {fileID: 4261959534470987908}
+  - component: {fileID: 7291343584571140325}
   m_Layer: 7
   m_Name: Bulwark Enemy Variant
   m_TagString: Untagged
@@ -6009,6 +6010,23 @@ MonoBehaviour:
   data: {fileID: 11400000, guid: a9779a6865249ac40bfe3b8ebe512fc6, type: 2}
   health: {fileID: 5898420762609303171}
   knockbackReceiver: {fileID: 4594059272953804380}
+--- !u!114 &7291343584571140325
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6748165462985918841}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f410e0f33942b0c4792933d926954ada, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BulwarkShieldBar
+  shield: {fileID: 1732114646215747715}
+  sourceBar: {fileID: 338565633877706464}
+  fillColor: {r: 1, g: 1, b: 1, a: 1}
+  delayedColor: {r: 0.65, g: 0.65, b: 0.65, a: 1}
+  heightAboveHead: 0.38
 --- !u!1 &6774616082276638828
 GameObject:
   m_ObjectHideFlags: 0

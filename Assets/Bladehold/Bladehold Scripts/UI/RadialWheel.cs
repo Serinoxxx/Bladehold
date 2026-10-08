@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 /// <summary>
 ///     The ring layout and modal plumbing shared by the radial wheels (<see cref="BuildWheelUI" /> and
@@ -109,5 +111,110 @@ public class RadialWheel
         Vector2 first = ((RectTransform)buttons[0].transform).anchoredPosition - ringCentre;
         ringStartAngle = Mathf.Atan2(first.y, first.x);
         ringCaptured = ringRadius > 1f;
+    }
+
+    // ---- Gamepad: gameplay-input suppression and the stick pointer -----------------------------
+
+    // Gameplay actions switched off while a wheel is open, so the stick picks a slice instead of walking
+    // the player and A/X/triggers don't jump, interact or swing underneath it.
+    private static readonly string[] SuppressedActions = { "Move", "Look", "Attack", "Aim", "Jump", "Crouch", "Interact", "SummonMount", "Dismount", "StartWave", "LockOn", "Sprint" };
+    private readonly List<InputAction> disabledActions = new List<InputAction>();
+    private RectTransform pointer;
+
+    /// <summary>
+    ///     Disables the player's gameplay actions while the wheel is open (only the ones that were enabled,
+    ///     and only those are re-enabled on close).
+    /// </summary>
+    public void SuppressGameplayInput(bool suppress)
+    {
+        if (!suppress)
+        {
+            foreach (InputAction action in disabledActions)
+            {
+                action?.Enable();
+            }
+            disabledActions.Clear();
+            return;
+        }
+
+        if (disabledActions.Count > 0) return;
+        InputActionMap map = Player.Instance != null && Player.Instance.InputSettings != null
+            ? Player.Instance.InputSettings.GetRebindableActionMap()
+            : null;
+        if (map == null) return;
+        foreach (string name in SuppressedActions)
+        {
+            InputAction action = map.FindAction(name);
+            if (action == null || !action.enabled) continue;
+            action.Disable();
+            disabledActions.Add(action);
+        }
+    }
+
+    /// <summary>
+    ///     Points the stick indicator (a small arrow built at runtime between the hub and the slices) along
+    ///     <paramref name="direction" />; hidden when <paramref name="visible" /> is false.
+    /// </summary>
+    public void SetPointer(Vector2 direction, bool visible)
+    {
+        if (visible && pointer == null) CreatePointer();
+        if (pointer == null) return;
+        pointer.gameObject.SetActive(visible);
+        if (!visible || direction.sqrMagnitude < 0.0001f) return;
+        Vector2 dir = direction.normalized;
+        pointer.anchoredPosition = ringCentre + dir * (ringRadius * PointerRadius);
+        pointer.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90f);
+        pointer.SetAsLastSibling();
+    }
+
+    // Arrow distance from the centre as a fraction of the ring radius: in the gap between the hub's gold ornaments and the slices.
+    private const float PointerRadius = 0.64f;
+    private static Sprite pointerSprite;
+
+    private void CreatePointer()
+    {
+        CaptureRing();
+        if (!ringCaptured || buttons[0] == null) return;
+        var go = new GameObject("StickPointer", typeof(RectTransform));
+        pointer = (RectTransform)go.transform;
+        pointer.SetParent(buttons[0].transform.parent, false);
+        pointer.anchorMin = pointer.anchorMax = ((RectTransform)buttons[0].transform).anchorMin;
+        pointer.pivot = new Vector2(0.5f, 0.5f);
+        float size = Mathf.Clamp(ringRadius * 0.2f, 24f, 64f);
+        pointer.sizeDelta = new Vector2(size, size);
+        var image = go.AddComponent<Image>();
+        image.sprite = PointerSprite();
+        // White with a dark rim: a gold arrow vanished against the wheel's gold art.
+        image.color = Color.white;
+        image.raycastTarget = false;
+        var rim = go.AddComponent<Outline>();
+        rim.effectColor = new Color(0.1f, 0.06f, 0.02f, 0.9f);
+        rim.effectDistance = new Vector2(3f, -3f);
+        go.SetActive(false);
+    }
+
+    /// <summary>A soft-edged upward triangle, drawn once (no art asset needed).</summary>
+    private static Sprite PointerSprite()
+    {
+        if (pointerSprite != null) return pointerSprite;
+        const int n = 64;
+        var tex = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+        var px = new Color32[n * n];
+        for (int y = 0; y < n; y++)
+        {
+            float v = (y + 0.5f) / n;            // 0 bottom (base) .. 1 top (tip)
+            float halfWidth = 0.5f * (1f - v);    // triangle narrows to the tip
+            for (int x = 0; x < n; x++)
+            {
+                float u = Mathf.Abs((x + 0.5f) / n - 0.5f);
+                float edge = Mathf.Min(halfWidth - u, v - 0.05f, 0.97f - v) * n;
+                byte a = (byte)(Mathf.Clamp01(edge / 1.5f) * 255f);
+                px[y * n + x] = new Color32(255, 255, 255, a);
+            }
+        }
+        tex.SetPixels32(px);
+        tex.Apply();
+        pointerSprite = Sprite.Create(tex, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), 100f);
+        return pointerSprite;
     }
 }

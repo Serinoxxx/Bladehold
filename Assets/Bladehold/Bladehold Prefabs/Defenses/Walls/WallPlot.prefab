@@ -691,6 +691,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Stake_R
       objectReference: {fileID: 0}
+    - target: {fileID: 106426, guid: 57f11b21e5f98164daa570ecdb433519, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 477332, guid: 57f11b21e5f98164daa570ecdb433519, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.6
@@ -764,6 +768,10 @@ PrefabInstance:
     - target: {fileID: 106426, guid: 57f11b21e5f98164daa570ecdb433519, type: 3}
       propertyPath: m_Name
       value: Stake_L
+      objectReference: {fileID: 0}
+    - target: {fileID: 106426, guid: 57f11b21e5f98164daa570ecdb433519, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 477332, guid: 57f11b21e5f98164daa570ecdb433519, type: 3}
       propertyPath: m_LocalScale.x

@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 /// <summary>
 ///     Pans the campaign map camera along the diorama (world X). The rig keeps its height and pitch; it
 ///     glides to whatever <see cref="FocusOn" /> asks for (keyboard/gamepad focus, the open nodes on load),
-///     and the player can drag with any mouse button, scroll the wheel or tilt the right stick. A drag
+///     and the player can drag with any mouse button or scroll the wheel (a gamepad only steps the focus). A drag
 ///     swallows the click that ends it (<see cref="SuppressClick" />) so letting go over a castle doesn't deploy.
 /// </summary>
 [RequireComponent(typeof(Camera))]
@@ -74,15 +74,10 @@ public class CampaignDioramaCamera : MonoBehaviour
         if (anyError) return;
         float dt = Time.unscaledDeltaTime;
 
+        // No free gamepad pan: a pad steps node to node (CampaignMapUI) and the camera follows the focus.
         if (!DevConsole.IsVisible)
         {
             ReadMouse();
-            Gamepad pad = Gamepad.current;
-            if (pad != null)
-            {
-                float stick = pad.rightStick.ReadValue().x;
-                if (Mathf.Abs(stick) > 0.2f) targetX = Mathf.Clamp(targetX + stick * look.stickPanSpeed * dt, minX, maxX);
-            }
         }
 
         Vector3 pos = transform.position;

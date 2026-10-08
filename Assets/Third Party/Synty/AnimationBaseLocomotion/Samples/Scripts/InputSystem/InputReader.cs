@@ -40,9 +40,10 @@ namespace Synty.AnimationBaseLocomotion.Samples.InputSystem
         public Action onAttackActivated;
         public Action onAttackDeactivated;
 
-        // Bladehold addition: dismount-from-horse action (X / gamepad East). Requires the Dismount
-        // action added to Controls.inputactions and the Controls C# class regenerated; until then
-        // OnDismount is never called (PlayerMount falls back to a direct X-key read).
+        // Bladehold addition: dismount-from-horse action (X / gamepad D-pad Up - the same keys as
+        // SummonMount, so one button mounts and dismounts). Requires the Dismount action added to
+        // Controls.inputactions and the Controls C# class regenerated; until then OnDismount is never
+        // called (PlayerMount falls back to a direct X-key read).
         public Action onDismountPerformed;
 
         // Bladehold addition: start-wave action (T / gamepad D-pad Down), a plain Button with no
@@ -56,8 +57,8 @@ namespace Synty.AnimationBaseLocomotion.Samples.InputSystem
         // Bladehold addition: interact action (E / gamepad West).
         public Action onInteractPerformed;
 
-        // Bladehold addition: summon-mount action (X / gamepad D-pad Up). Shares X with Dismount on
-        // keyboard: on foot it summons, while riding PlayerSummonMount ignores it and Dismount fires.
+        // Bladehold addition: summon-mount action (X / gamepad D-pad Up). Shares its keys with Dismount:
+        // on foot it summons, while riding PlayerSummonMount ignores it and Dismount fires.
         public Action onSummonMountPerformed;
 
         public bool IsAimPressed => _controls != null && _controls.Player.Aim.IsPressed();
@@ -169,7 +170,10 @@ namespace Synty.AnimationBaseLocomotion.Samples.InputSystem
         /// <param name="context">The context of the callback.</param>
         public void OnAim(InputAction.CallbackContext context)
         {
-            if (context.started)
+            // Bladehold: performed, not started. On an analog trigger (LT) a Button action "starts" at the
+            // first hair of travel but only reads IsPressed past the press point, so aiming on `started`
+            // let the aim weapons' IsAimPressed check end the aim again the very next frame.
+            if (context.performed)
             {
                 if (CursorLockManager.IsCursorUnlocked) return;
                 onAimActivated?.Invoke();
@@ -196,9 +200,22 @@ namespace Synty.AnimationBaseLocomotion.Samples.InputSystem
             onSprintDeactivated?.Invoke();
         }
 
+        /// <summary>
+        ///     Bladehold: re-raises an attack press for a button that's still held, so a press buffered
+        ///     during the melee cooldown starts its attack the moment the cooldown ends.
+        /// </summary>
+        public void ReplayAttackPress()
+        {
+            if (!IsAttackPressed || CursorLockManager.IsCursorUnlocked) return;
+            onAttackActivated?.Invoke();
+        }
+
         public void OnAttack(InputAction.CallbackContext context)
         {
-            if (context.started)
+            // Bladehold: performed, not started (see OnAim). On RT `started` fired at the first hair of
+            // travel while IsAttackPressed still read false, so the charge auto-released into a swing
+            // before the trigger was let go.
+            if (context.performed)
             {
                 if (CursorLockManager.IsCursorUnlocked) return;
                 onAttackActivated?.Invoke();

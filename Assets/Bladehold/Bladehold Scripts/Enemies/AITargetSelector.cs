@@ -11,6 +11,11 @@ using UnityEngine;
 ///     existing scene — behave exactly as before; <see cref="AIMovement" />, <see cref="AIAttack" />
 ///     and <see cref="TrollSlamAttack" /> all consult this component only when present.
 ///
+///     Wave spawns also get a <see cref="EnemyRole" /> (<see cref="AssignSpawnRole" />, weights on
+///     <see cref="EnemyRoleConfigSO" />) so a horde splits its pressure: Hunters chase the player, Guards
+///     hold the active objective's object, Assault pushes to the gate and the walls in its way. Roles sit
+///     below every override (wall claim, tower, formation, player in engage range or retaliation).
+///
 ///     Targets are resolved on demand (a couple of distance checks), so there is no per-frame cost
 ///     beyond what callers already do.
 /// </summary>
@@ -113,23 +118,198 @@ public class AITargetSelector : MonoBehaviour
         assignedGate = gate;
     }
 
-    /// <summary>True when the current target is the player rather than a gate.</summary>
+    // ---- Roles (Hunter / Guard / Assault) ---------------------------------------------------
+
+    private EnemyRole role = EnemyRole.None;
+    private float guardAngleDegrees;
+    private float guardRingRadius;
+    private Vector3 guardAnchor;
+    private bool hasGuardAnchor;
+    private float nextGuardAnchorTime = Mathf.NegativeInfinity;
+
+    /// <summary>The spawn role this enemy was given (None = legacy targeting).</summary>
+    public EnemyRole Role => role;
+
+    /// <summary>
+    ///     Sets this enemy's role. <see cref="EnemyRole.None" /> keeps the legacy targeting. Guards get a
+    ///     random post on the ring round the objective object.
+    /// </summary>
+    public void SetRole(EnemyRole newRole)
+    {
+        role = newRole;
+        if (newRole == EnemyRole.Guard)
+        {
+            EnemyRoleConfigSO config = EnemyRoleConfigSO.Current;
+            guardAngleDegrees = UnityEngine.Random.Range(0f, 360f);
+            guardRingRadius = UnityEngine.Random.Range(config.guardRingMin, config.guardRingMax);
+            nextGuardAnchorTime = Mathf.NegativeInfinity;
+        }
+    }
+
+    /// <summary>
+    ///     Rolls and sets a spawn role on a freshly spawned wave enemy (<see cref="SurvivorsSpawner" />), from
+    ///     <see cref="EnemyRoleConfigSO" /> weights. Units with their own targeting job stay
+    ///     <see cref="EnemyRole.None" />: siege units, sappers, hexers, captains, bosses, the golden goblin
+    ///     and anything set to ignore the player.
+    /// </summary>
+    public static EnemyRole AssignSpawnRole(GameObject enemy)
+    {
+        if (enemy == null || !enemy.TryGetComponent(out AITargetSelector selector)) return EnemyRole.None;
+        if (!IsRoleEligible(selector))
+        {
+            selector.SetRole(EnemyRole.None);
+            return EnemyRole.None;
+        }
+
+        EnemyRole rolled = EnemyRoleConfigSO.Current.Roll(TryGetGuardAnchor(enemy.transform.position, out _));
+        selector.SetRole(rolled);
+        return rolled;
+    }
+
+    private static bool IsRoleEligible(AITargetSelector selector)
+    {
+        GameObject go = selector.gameObject;
+        if (selector.ignorePlayer) return false;
+        if (WallNavCost.IsSiege(go)) return false; // SiegeUnit, troll, sapper, ram, captains
+        if (go.GetComponent<TowerHexer>() != null) return false;
+        if (go.GetComponent<SlayerDashAttack>() != null) return false; // dashes at whatever TargetPosition is, post included
+        if (go.GetComponent<GoldenGoblinFlee>() != null) return false;
+        if (go.TryGetComponent(out GoldenGoblin golden) && golden.IsGolden) return false;
+        if (go.GetComponent<NecromancerBossController>() != null || go.GetComponent<PrincessBossController>() != null) return false;
+        return true;
+    }
+
+    /// <summary>
+    ///     The active objective's object for Guards to hold (nearest cage, siege engine, the wagon), or false
+    ///     when the objective has none. The battering ram is excluded (Assault escorts it) and so is the
+    ///     golden goblin (its position is the quarry, not something to defend).
+    /// </summary>
+    public static bool TryGetGuardAnchor(Vector3 from, out Vector3 anchor)
+    {
+        anchor = default;
+        SurvivorsObjectiveManager manager = SurvivorsObjectiveManager.Instance;
+        ISurvivorsObjective objective = manager != null ? manager.CurrentObjective : null;
+        if (objective == null || !objective.IsActive) return false;
+        if (objective is StopBatteringRamObjective || objective is GoldenGoblinObjective) return false;
+
+        Vector3? position = objective.GetObjectiveTargetPosition(from);
+        if (!position.HasValue) return false;
+        anchor = position.Value;
+        return true;
+    }
+
+    /// <summary>Cached guard anchor, re-read every <see cref="EnemyRoleConfigSO.guardAnchorRefreshSeconds" />.</summary>
+    private bool RefreshGuardAnchor()
+    {
+        if (Time.time >= nextGuardAnchorTime)
+        {
+            nextGuardAnchorTime = Time.time + EnemyRoleConfigSO.Current.guardAnchorRefreshSeconds;
+            hasGuardAnchor = TryGetGuardAnchor(transform.position, out guardAnchor);
+        }
+        return hasGuardAnchor;
+    }
+
+    /// <summary>The role actually in force: overrides (ignore-player, an assigned gate) drop to None; a Guard with nothing left to guard assaults.</summary>
+    private EnemyRole EffectiveRole
+    {
+        get
+        {
+            if (role == EnemyRole.None || ignorePlayer) return EnemyRole.None;
+            if (assignedGate != null && !assignedGate.IsDestroyed) return EnemyRole.None;
+            if (role == EnemyRole.Guard && !RefreshGuardAnchor()) return EnemyRole.Assault;
+            return role;
+        }
+    }
+
+    private Vector3 GuardPost()
+    {
+        EnemyRoleConfigSO config = EnemyRoleConfigSO.Current;
+        float angle = (guardAngleDegrees + Time.time * config.guardPatrolDegreesPerSecond) * Mathf.Deg2Rad;
+        return guardAnchor + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * guardRingRadius;
+    }
+
+    private bool PlayerNearGuardAnchor()
+    {
+        Player p = Player.Instance;
+        if (p == null || p.Health == null || p.Health.IsDead) return false;
+        float r = EnemyRoleConfigSO.Current.guardEngageRadius;
+        return (p.transform.position - guardAnchor).sqrMagnitude <= r * r;
+    }
+
+    // ---- Target resolution ---------------------------------------------------------------------
+
+    private enum TargetKind
+    {
+        Wall,
+        Tower,
+        Formation,
+        Player,
+        RamEscort,
+        Gate,
+        GuardPost,
+        /// <summary>No live player and no gate: the player's position/damageable if any, else self.</summary>
+        Fallback
+    }
+
+    /// <summary>
+    ///     The single priority chain behind <see cref="IsTargetingPlayer" />, <see cref="TargetPosition" /> and
+    ///     <see cref="TargetDamageable" />. Overrides first (wall claim, sapper/hexer tower, Warden formation,
+    ///     player in engage range or retaliation), then the role: Hunter: the player; Guard: engage a player
+    ///     near its object, else hold its post; Assault: ram escort, then the gate. Role None keeps the
+    ///     legacy chain (ram escort, the gate during Hold the Gate, else the player).
+    /// </summary>
+    private TargetKind Resolve(out Vector3 point, out Gate gate)
+    {
+        point = default;
+        gate = null;
+
+        if (UseWallTarget()) return TargetKind.Wall;
+        if (HasTowerTarget) return TargetKind.Tower;
+        if (HoldingFormation) return TargetKind.Formation;
+        if (ShouldTargetPlayer()) return TargetKind.Player;
+
+        Player p = Player.Instance;
+        bool playerAlive = p != null && p.Health != null && !p.Health.IsDead && !ignorePlayer;
+
+        switch (EffectiveRole)
+        {
+            case EnemyRole.Hunter:
+                if (playerAlive) return TargetKind.Player;
+                break;
+
+            case EnemyRole.Guard:
+                if (PlayerNearGuardAnchor()) return TargetKind.Player;
+                point = GuardPost();
+                return TargetKind.GuardPost;
+
+            case EnemyRole.Assault:
+                if (TryGetRamEscortTarget(out point)) return TargetKind.RamEscort;
+                gate = ResolveGate();
+                if (gate != null) return TargetKind.Gate;
+                break;
+
+            default:
+                if (TryGetRamEscortTarget(out point)) return TargetKind.RamEscort;
+                if (IsDefendingGate())
+                {
+                    gate = ResolveGate();
+                    if (gate != null) return TargetKind.Gate;
+                }
+                break;
+        }
+
+        if (playerAlive) return TargetKind.Player;
+        gate = ResolveGate();
+        return gate != null ? TargetKind.Gate : TargetKind.Fallback;
+    }
+
+    /// <summary>True when the current target is the player rather than a gate, wall, tower or post.</summary>
     public bool IsTargetingPlayer
     {
         get
         {
-            if (UseWallTarget()) return false;
-            if (HasTowerTarget) return false;
-            if (HoldingFormation) return false;
-            if (ShouldTargetPlayer()) return true;
-            if (TryGetRamEscortTarget(out _)) return false;
-            if (IsDefendingGate())
-            {
-                return ResolveGate() == null;
-            }
-            Player p = Player.Instance;
-            if (p != null && p.Health != null && !p.Health.IsDead && !ignorePlayer) return true;
-            return ResolveGate() == null;
+            TargetKind kind = Resolve(out _, out _);
+            return kind == TargetKind.Player || kind == TargetKind.Fallback;
         }
     }
 
@@ -138,93 +318,42 @@ public class AITargetSelector : MonoBehaviour
     {
         get
         {
-            if (UseWallTarget()) return wallTarget.GetAttackPoint(transform.position);
-            if (HasTowerTarget) return towerTarget.transform.position;
-            if (HoldingFormation) return escortLeader.GetSlotPosition(escortSlot);
-
-            if (ShouldTargetPlayer())
+            switch (Resolve(out Vector3 point, out Gate gate))
             {
-                Player player = Player.Instance;
-                return player != null ? player.transform.position : transform.position;
+                case TargetKind.Wall: return wallTarget.GetAttackPoint(transform.position);
+                case TargetKind.Tower: return towerTarget.transform.position;
+                case TargetKind.Formation: return escortLeader.GetSlotPosition(escortSlot);
+                case TargetKind.RamEscort:
+                case TargetKind.GuardPost: return point;
+                case TargetKind.Gate: return gate.TargetPosition;
+                default:
+                    Player p = Player.Instance;
+                    return p != null ? p.transform.position : transform.position;
             }
-
-            // Path to / ahead of the Battering Ram to escort & push it toward the gate
-            if (TryGetRamEscortTarget(out Vector3 ramEscortPos))
-            {
-                return ramEscortPos;
-            }
-
-            // When the objective is to defend the gate (or assigned a gate), path to the gate
-            if (IsDefendingGate())
-            {
-                Gate gate = ResolveGate();
-                if (gate != null)
-                {
-                    return gate.TargetPosition;
-                }
-            }
-
-            // Otherwise, instead of enemies pathing to the objective, make them path to the player
-            Player p = Player.Instance;
-            if (p != null && p.Health != null && !p.Health.IsDead && !ignorePlayer)
-            {
-                return p.transform.position;
-            }
-
-            Gate fallbackGate = ResolveGate();
-            if (fallbackGate != null)
-            {
-                return fallbackGate.TargetPosition;
-            }
-            return p != null ? p.transform.position : transform.position;
         }
     }
 
-    /// <summary>Enemies no longer flock to objectives; they path to the player or gate.</summary>
+    /// <summary>Enemies no longer flock to objectives; they path to the player or gate (Guards hold posts via their role).</summary>
     public bool IsFlockingToObjective => false;
 
-    /// <summary>The current target's damage sink (the gate's Health, or the player's). Null if none exists.</summary>
+    /// <summary>
+    ///     The current target's damage sink (the gate's Health, a wall's, or the player's). Null when there
+    ///     is nothing to swing at: a sapper/hexer tower, a Warden formation slot, the ram escort, a guard post.
+    /// </summary>
     public IDamageable TargetDamageable
     {
         get
         {
-            if (UseWallTarget()) return wallTarget.Damageable;
-            if (HasTowerTarget) return null;
-            if (HoldingFormation) return null;
-
-            if (ShouldTargetPlayer())
+            switch (Resolve(out _, out Gate gate))
             {
-                Player player = Player.Instance;
-                return player != null ? player.Damageable : null;
+                case TargetKind.Wall: return wallTarget.Damageable;
+                case TargetKind.Gate: return gate.Damageable;
+                case TargetKind.Player:
+                case TargetKind.Fallback:
+                    Player p = Player.Instance;
+                    return p != null ? p.Damageable : null;
+                default: return null;
             }
-
-            // While pushing/escorting the ram, enemies have no damage target until player engages or they reach gate
-            if (TryGetRamEscortTarget(out _))
-            {
-                return null;
-            }
-
-            if (IsDefendingGate())
-            {
-                Gate gate = ResolveGate();
-                if (gate != null)
-                {
-                    return gate.Damageable;
-                }
-            }
-
-            Player p = Player.Instance;
-            if (p != null && p.Health != null && !p.Health.IsDead && !ignorePlayer)
-            {
-                return p.Damageable;
-            }
-
-            Gate fallbackGate = ResolveGate();
-            if (fallbackGate != null)
-            {
-                return fallbackGate.Damageable;
-            }
-            return p != null ? p.Damageable : null;
         }
     }
 

@@ -10,7 +10,7 @@ using UnityEngine.AI;
 ///     (<c>timerSeconds</c> of its <c>WaveObjectives.csv</c> row) runs out it escapes and the objective fails.
 ///     Parked (plan 20): its CSV row is <c>draftable=false</c>, so wave cards never offer it.
 /// </summary>
-public class GoldenGoblinObjective : MonoBehaviour, ISurvivorsObjective, ISuppressRegularSpawns, IObjectivePreview
+public class GoldenGoblinObjective : MonoBehaviour, ISurvivorsObjective, ISuppressRegularSpawns, IObjectivePreview, ITimedObjective
 {
     [Header("Objective Configuration")]
     [SerializeField] private string objectiveId = "golden_goblin_event";
@@ -44,6 +44,9 @@ public class GoldenGoblinObjective : MonoBehaviour, ISurvivorsObjective, ISuppre
     public string Title => title;
     public string Description => description;
     public float Duration => activeDuration > 0f ? activeDuration : ObjectiveCsv.RequiredDuration(objectiveId, duration);
+    public float TimeLimit => Duration;
+    public float TimeRemaining => Mathf.Max(0f, Duration - timer);
+    public bool FailsOnTimeout => true;
 
     public string ProgressText
     {

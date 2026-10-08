@@ -34,6 +34,8 @@ public class AIAttack : MonoBehaviour
     private IDamageable playerDamageable;
     private Health playerHealth;
     private float lastAttackTime = Mathf.NegativeInfinity;
+    // Baked crowd enemies skip the Stagger animation (a hit reaction mid-run looks wrong); the hit still interrupts the attack.
+    private bool isCrowdEnemy;
     private bool isDead = false;
     private bool playerDead = false;
     private bool anyError = false;
@@ -121,6 +123,7 @@ public class AIAttack : MonoBehaviour
 
         attackTriggerHash = Animator.StringToHash(attackTrigger);
         staggerTriggerHash = Animator.StringToHash("Stagger");
+        isCrowdEnemy = GetComponent<BakedCrowdAgent>() != null;
 
         Player playerInstance = Player.Instance;
         if (playerInstance == null)
@@ -214,6 +217,18 @@ public class AIAttack : MonoBehaviour
                 attackRoutine = null;
             }
 
+            // Put attack on cooldown so they don't immediately attack again when the animation finishes
+            lastAttackTime = Time.time + attackData.staggerCooldown - attackData.attackCooldown;
+
+            if (isCrowdEnemy)
+            {
+                if (movement != null)
+                {
+                    movement.SetTurningPaused(false);
+                }
+                return;
+            }
+
             animator.SetTrigger(staggerTriggerHash);
             
             if (movement != null)
@@ -221,9 +236,6 @@ public class AIAttack : MonoBehaviour
                 movement.SetTurningPaused(true);
             }
 
-            // Put attack on cooldown so they don't immediately attack again when the animation finishes
-            lastAttackTime = Time.time + attackData.staggerCooldown - attackData.attackCooldown;
-            
             // We need to unpause turning after stagger cooldown. Since staggerCooldown represents the animation duration effectively here.
             // We can just use Invoke or a Coroutine to unpause turning.
             StartCoroutine(UnpauseTurningAfterDelay(attackData.staggerCooldown));
@@ -278,7 +290,9 @@ public class AIAttack : MonoBehaviour
         return targetSelector != null ? targetSelector.TargetDamageable : playerDamageable;
     }
 
-    private bool IsTargetInRange()
+    private bool IsTargetInRange() => IsTargetInRange(0f, attackData.attackConeAngle);
+
+    private bool IsTargetInRange(float extraRange, float coneAngle)
     {
         Vector3 targetPosition;
         if (targetSelector != null)
@@ -300,7 +314,8 @@ public class AIAttack : MonoBehaviour
         Vector3 toTarget = targetPosition - transform.position;
         toTarget.y = 0f;
         
-        if (toTarget.sqrMagnitude > attackData.attackRange * attackData.attackRange)
+        float range = attackData.attackRange + extraRange;
+        if (toTarget.sqrMagnitude > range * range)
         {
             return false;
         }
@@ -310,7 +325,7 @@ public class AIAttack : MonoBehaviour
             Vector3 forward = transform.forward;
             forward.y = 0f;
             float angle = Vector3.Angle(forward, toTarget);
-            if (angle > attackData.attackConeAngle)
+            if (angle > coneAngle)
             {
                 return false;
             }
@@ -352,8 +367,11 @@ public class AIAttack : MonoBehaviour
         // Only connect if this goblin is still alive, the run is still going, and the target it
         // wound up on (re-resolved — it may have switched between player and gate) is still in range.
         // A stun landing during the wind-up (Concussive Impact, fear, Frozen) interrupts the blow.
+        // The apex check is more forgiving than the start check (see apexRangeBonus/apexConeAngle) so a
+        // swing that visibly connects lands; stepping well clear or round the side still dodges it.
         IDamageable target = CurrentTargetDamageable();
-        if (!isDead && !playerDead && !IsStunned() && target != null && IsTargetInRange())
+        bool inReach = IsTargetInRange(attackData.apexRangeBonus, Mathf.Max(attackData.attackConeAngle, attackData.apexConeAngle));
+        if (!isDead && !playerDead && !IsStunned() && target != null && inReach)
         {
             target.ReceiveDamage(new Damage
             {

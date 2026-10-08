@@ -3,6 +3,11 @@ using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using System.Collections;
 
+/// <summary>
+///     The bottom HUD's melee/ranged weapon slots: the equipped weapons' icons, and the Attack/Aim
+///     button glyphs beside them. The glyphs are live <see cref="InputGlyph" />s (attached at runtime to
+///     the keybind images), so they follow the last-used device and rebinds.
+/// </summary>
 public class WeaponHUDController : MonoBehaviour
 {
     [Header("Weapon Icons")]
@@ -13,19 +18,10 @@ public class WeaponHUDController : MonoBehaviour
     public Image meleeKeybindIcon;
     public Image rangedKeybindIcon;
 
-    [Header("Synty Input Icons (Keyboard/Mouse)")]
-    public Sprite mouseLeftSprite;
-    public Sprite mouseRightSprite;
-
-    [Header("Synty Input Icons (Gamepad)")]
-    public Sprite gamepadMeleeSprite;
-    public Sprite gamepadRangedSprite;
-
     [Header("Slot Containers")]
     [Tooltip("The root container for the ranged weapon HUD slot.")]
     public GameObject rangedRootContainer;
 
-    private PlayerInput playerInput;
     private bool anyError;
 
     private void Awake()
@@ -59,11 +55,6 @@ public class WeaponHUDController : MonoBehaviour
         StartCoroutine(InitIconsRoutine());
     }
 
-    private void Update()
-    {
-        // UI is no longer dynamically hidden because weapons are unlocked by default.
-    }
-
     private void OnEnable()
     {
         PlayerWeaponManager.OnWeaponLoadoutChanged += RefreshWeaponIcons;
@@ -72,10 +63,6 @@ public class WeaponHUDController : MonoBehaviour
     private void OnDisable()
     {
         PlayerWeaponManager.OnWeaponLoadoutChanged -= RefreshWeaponIcons;
-        if (playerInput != null)
-        {
-            playerInput.onControlsChanged -= OnControlsChanged;
-        }
     }
 
     public void RefreshWeaponIcons()
@@ -85,7 +72,7 @@ public class WeaponHUDController : MonoBehaviour
         {
             if (weaponManager.ActiveMeleeDefinition != null && weaponManager.ActiveMeleeDefinition.icon != null && meleeWeaponIcon != null)
                 meleeWeaponIcon.sprite = weaponManager.ActiveMeleeDefinition.icon;
-            
+
             if (weaponManager.ActiveRangedDefinition != null && weaponManager.ActiveRangedDefinition.icon != null && rangedWeaponIcon != null)
                 rangedWeaponIcon.sprite = weaponManager.ActiveRangedDefinition.icon;
         }
@@ -95,40 +82,23 @@ public class WeaponHUDController : MonoBehaviour
     {
         yield return null;
 
-        if (Player.Instance != null)
+        if (Player.Instance == null) yield break;
+
+        RefreshWeaponIcons();
+
+        InputActionMap map = Player.Instance.InputSettings != null ? Player.Instance.InputSettings.GetRebindableActionMap() : null;
+        BindGlyph(meleeKeybindIcon, map, "Attack");
+        BindGlyph(rangedKeybindIcon, map, "Aim");
+    }
+
+    private void BindGlyph(Image target, InputActionMap map, string actionName)
+    {
+        InputAction action = map != null ? map.FindAction(actionName) : null;
+        if (action == null)
         {
-            RefreshWeaponIcons();
-
-            playerInput = Player.Instance.GetComponent<PlayerInput>();
-            if (playerInput != null)
-            {
-                playerInput.onControlsChanged += OnControlsChanged;
-                UpdateKeybindIcons(playerInput.currentControlScheme);
-            }
+            Debug.LogError($"WeaponHUDController: no '{actionName}' action on the player's Controls map.", this);
+            return;
         }
-    }
-
-    private void OnDestroy()
-    {
-        if (playerInput != null)
-        {
-            playerInput.onControlsChanged -= OnControlsChanged;
-        }
-    }
-
-    private void OnControlsChanged(PlayerInput input)
-    {
-        UpdateKeybindIcons(input.currentControlScheme);
-    }
-
-    private void UpdateKeybindIcons(string controlScheme)
-    {
-        bool isGamepad = controlScheme == "Gamepad";
-
-        if (meleeKeybindIcon != null)
-            meleeKeybindIcon.sprite = isGamepad ? gamepadMeleeSprite : mouseLeftSprite;
-
-        if (rangedKeybindIcon != null)
-            rangedKeybindIcon.sprite = isGamepad ? gamepadRangedSprite : mouseRightSprite;
+        InputGlyph.AttachTo(target, action);
     }
 }

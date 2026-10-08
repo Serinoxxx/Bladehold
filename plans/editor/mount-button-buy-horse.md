@@ -1,0 +1,28 @@
+# Editor to-do: buy a new horse from the mount button (playtest feedback, 2026-10-08)
+
+From Lance's playtest note: "If your horse is dead and you press the mount button, it should pop up a screen asking if you want to buy a new horse for 500g. Also add a 500g label next to the mount button." Built headlessly. Unity MCP was not used. Tick items off as you go, and delete the file when it's empty.
+
+**Done in code and assets:**
+- **One price:** `Resources/HorseReplacementConfig.asset` (`HorseReplacementConfigSO.goldCost` = 500) is read by both the gate `HorseStall` and the new prompt through `HorseReplacement.GoldCost` / `TryBuy()` (`Horse/HorseReplacementConfigSO.cs`). `HorseStall`'s serialized `goldCost` field is gone. The old `goldCost: 500` line in `Economy/HorseStall.prefab` is now orphaned data that Unity drops on the next save. The Rest Area shop's `replacement_warhorse` item (75g) is still a separate price.
+- **Prompt:** `UI/HorseReplacementDialog.cs` is built from code on first use, so there's no prefab. `PlayerSummonMount.HandleSummonAction` opens it when the mount is pressed while `RunSession.MountLost` is set, the scene allows the mount, and no other frozen screen is up. While it's open it pauses the game (`timeScale` 0 plus the Feel freeze), unlocks the cursor, disables the player's `InputReader` and suspends the Esc pause toggle. Pad B or Esc cancels.
+- **HUD tag:** `SummonMountUI` builds a `MountReplacementCostLabel` ("500g") above the mount slot at runtime. It only shows while the horse is dead: gold (theme Cost) when you can afford it, red (theme Danger) when you can't.
+- **Strings:** `horse_replace.title/body/buy/no_gold/cost_tag` in `Strings.csv`.
+- **Field Stables meta perk (Lance's decision on the open question below):** buying a new horse in the field is between-waves only unless you own the new tier-2 perk `field_stables` ("Field Stables": "Buy a replacement warhorse mid-battle, not just between waves.", 25 Goblin Blood, icon `gi_cloaked_figure_on_horseback`). The asset is `Bladehold Config/MetaPerks/field_stables.asset`, written by hand and added to `Resources/MetaPerkCatalog.asset`. The demo hides it automatically because it's tier 2. The rule lives in one place, `HorseReplacement.CanBuyNow(out reason)` / `IsBuyWindowOpen` (`Horse/HorseReplacementConfigSO.cs`): open when there's no `GameLoopManager`, during `IsPrepPhase`, or whenever no wave is active; mid-wave only with `RunSession.HasMetaPerk(RunSession.FieldStablesPerkId)`. `TryBuy` enforces it. The stall's `CanInteract` uses it, so with the perk the stall also sells mid-wave. Mid-wave without the perk, the prompt still opens, but Buy is disabled and shows "Only between waves" (new string `horse_replace.between_waves_only`, all 9 languages). The HUD tag turns dimmed red, and it polls the window each frame because GameLoopManager raises no phase event.
+
+**Wiring (all optional; the feature works without them):**
+- [ ] **Purchase feedback:** on `Player.prefab` → `PlayerSummonMount` → `replacementPurchaseFeedback`, assign an `MMF_Player` (coins + whinny, like the `HorseStall` prefab's `purchaseFeedback`). Until you do, buying from the prompt is silent and Start logs a warning. *(MCP-able)*
+- [ ] **Hand-placed tag (only if the runtime placement looks wrong):** add a TMP text with `MountReplacementCostLabel` under the mount slot in `Bladehold HUD.prefab` and assign it to `SummonMountUI.replacementCostLabel`. The runtime tag is then skipped.
+
+**UI review:**
+- [ ] **Prompt:** it uses plain theme-coloured panels (Window fill, Frame outline, Parchment Buy and Ghost Cancel buttons, theme header/body fonts), not Synty sprites. Check the look, the 16:9 and ultrawide sizing, and the gamepad focus cue (the selected button scales up by 8%). If you want the Synty parchment box, port it to a `BladeholdUIKit` builder.
+- [ ] **HUD "500g" tag:** it sits centred just above the mount slot, in the slot's timer font, sized to about 28% of the slot height. Check that it doesn't collide with the keybind glyph or the neighbouring slots.
+
+**Playtest:**
+- [ ] Kill the horse (or DevConsole), then press the mount key: the prompt appears and the game is frozen. Buy with enough gold: gold drops by 500, the slot turns ready, the "500g" tag hides, and the next press summons normally.
+- [ ] With less than 500g: Buy is red and disabled, "Not enough gold" shows, and pad focus starts on Cancel. Cancel, pad B and Esc all close it without spending gold or opening the pause menu.
+- [ ] Horse alive: the mount key behaves as before (no prompt, no tag). In the Fishing Pond (`allowMount` off): no prompt and no tag.
+- [ ] Pad: the D-pad Up press that opens the prompt doesn't move focus, and A on Buy doesn't make the player jump after the prompt closes.
+- [ ] Gate stall: still sells for 500g during prep, with an unchanged prompt.
+- [ ] **Field Stables, without the perk:** kill the horse mid-wave and press mount. The prompt opens with Buy disabled and red, and "Only between waves" shows even with 500g or more. The HUD tag is dimmed red. The stall stays hidden mid-wave. Once the field clears (prep), the tag turns gold and Buy works.
+- [ ] **Field Stables, with the perk:** buy it in the Meta Area (tier 2, 25 Goblin Blood; Tier II must be unlocked with Metal first) and start a run. Mid-wave, the prompt's Buy works, the tag is gold, and the gate stall also sells mid-wave (with its waypoint). The perk is gone after you delete the save.
+- [ ] **Meta Area card:** Field Stables shows in Tier II with the mounted-rider icon (reused `gi_cloaked_figure_on_horseback`, also used in the skill tree). Swap the icon if you want a unique one. It's hidden in the demo build.

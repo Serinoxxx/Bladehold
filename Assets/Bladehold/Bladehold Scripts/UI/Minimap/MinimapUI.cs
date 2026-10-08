@@ -90,6 +90,12 @@ public class MinimapUI : MonoBehaviour
     private readonly Dictionary<AIMovement, DotInfo> dotInfo = new Dictionary<AIMovement, DotInfo>();
     private readonly Dictionary<int, float> agentRadius = new Dictionary<int, float>();
     private readonly List<AIMovement> staleDots = new List<AIMovement>();
+    private readonly Dictionary<Transform, MinimapObjectiveMarker> objectiveMarkers = new Dictionary<Transform, MinimapObjectiveMarker>();
+    private readonly List<ObjectiveWaypointTarget> objectiveTargets = new List<ObjectiveWaypointTarget>();
+    private readonly HashSet<Transform> liveObjectiveTargets = new HashSet<Transform>();
+    private readonly List<Transform> staleObjectiveTargets = new List<Transform>();
+    private RectTransform objectiveLayer;
+    private float nextObjectiveSync;
     private NavMeshPath navPath;
 
     private MinimapProjection projection;
@@ -205,6 +211,8 @@ public class MinimapUI : MonoBehaviour
         RenderSnapshot();
         BuildStaticMarkers();
         SyncPlotMarkers();
+        CreateObjectiveLayer();
+        SyncObjectiveMarkers();
         BuildLegend();
         enemyDots.SetOutline(config.dotOutlineColor, config.dotOutlineFraction);
         playerMarker.Attach(this);
@@ -430,6 +438,7 @@ public class MinimapUI : MonoBehaviour
             MinimapLegendRow row = Instantiate(legendRowPrefab, legendContainer);
             row.Bind(entry);
         }
+        AddObjectiveLegendRow();
     }
 
     // ---- Per frame -----------------------------------------------------------------------------
@@ -460,6 +469,13 @@ public class MinimapUI : MonoBehaviour
             nextPlotSync = now + 1f;
             SyncPlotMarkers();
         }
+
+        if (now >= nextObjectiveSync)
+        {
+            nextObjectiveSync = now + 0.2f;
+            SyncObjectiveMarkers();
+        }
+        PlaceObjectiveMarkers();
 
         if (now >= nextMarkerRefresh)
         {
@@ -695,6 +711,143 @@ public class MinimapUI : MonoBehaviour
             baseSize = Mathf.Clamp(radius * config.dotSizePerAgentRadius, config.minDotSize, config.maxDotSize),
             color = color
         };
+    }
+
+    // ---- Objectives ----------------------------------------------------------------------------
+    // Prisoner cages, the supply cart, battering rams, catapults, bosses: whatever the active objective
+    // reports as HUD waypoints (or, in prep, the picked card's preview locations), followed every frame.
+
+    private void CreateObjectiveLayer()
+    {
+        var go = new GameObject("ObjectiveLayer", typeof(RectTransform));
+        go.layer = markerLayer.gameObject.layer;
+        objectiveLayer = (RectTransform)go.transform;
+        Transform parent = markerLayer.parent;
+        objectiveLayer.SetParent(parent, false);
+        objectiveLayer.anchorMin = markerLayer.anchorMin;
+        objectiveLayer.anchorMax = markerLayer.anchorMax;
+        objectiveLayer.pivot = markerLayer.pivot;
+        objectiveLayer.offsetMin = markerLayer.offsetMin;
+        objectiveLayer.offsetMax = markerLayer.offsetMax;
+        objectiveLayer.localScale = Vector3.one;
+
+        // Above the gate/tower markers and the enemy dots (a ram swarmed by pushers still reads), but below
+        // the player arrow and the tooltip when they share the layer parent.
+        int floor = markerLayer.GetSiblingIndex() + 1;
+        int index = floor;
+        if (enemyDots.transform.parent == parent) index = Mathf.Max(index, enemyDots.transform.GetSiblingIndex() + 1);
+        if (playerMarker.transform.parent == parent && playerMarker.transform.GetSiblingIndex() >= floor)
+            index = Mathf.Min(index, playerMarker.transform.GetSiblingIndex());
+        if (tooltip.transform.parent == parent && tooltip.transform.GetSiblingIndex() >= floor)
+            index = Mathf.Min(index, tooltip.transform.GetSiblingIndex());
+        objectiveLayer.SetSiblingIndex(index);
+    }
+
+    private void SyncObjectiveMarkers()
+    {
+        if (objectiveLayer == null) return;
+        objectiveTargets.Clear();
+        bool previewing = false;
+
+        SurvivorsObjectiveManager manager = SurvivorsObjectiveManager.Instance;
+        ISurvivorsObjective current = manager != null ? manager.CurrentObjective : null;
+        if (current != null && current.IsActive) current.GetActiveWaypointTargets(objectiveTargets);
+
+        GameLoopManager loop = GameLoopManager.Instance;
+        if (config.showObjectivePreviews && objectiveTargets.Count == 0 && manager != null && loop != null
+            && loop.IsAwaitingReady && loop.CurrentWaveCard != null
+            && manager.FindObjective(loop.CurrentWaveCard.ObjectiveId) is IObjectivePreview preview)
+        {
+            preview.GetPreviewWaypointTargets(objectiveTargets);
+            previewing = true;
+        }
+
+        liveObjectiveTargets.Clear();
+        ObjectiveWaypointTrackerUI icons = ObjectiveWaypointTrackerUI.Instance;
+        foreach (ObjectiveWaypointTarget target in objectiveTargets)
+        {
+            Transform t = target.Transform;
+            if (t == null || !t.gameObject.activeInHierarchy || liveObjectiveTargets.Contains(t)) continue;
+
+            if (objectiveMarkers.TryGetValue(t, out MinimapObjectiveMarker existing))
+            {
+                if (existing != null && existing.IsPreview == previewing)
+                {
+                    liveObjectiveTargets.Add(t);
+                    continue;
+                }
+                RemoveObjectiveMarker(t);
+            }
+
+            // A destination at the gate (the cart's or ram's "Gate" waypoint) is already the gate marker. Only
+            // checked when a marker is first made, so a ram that reaches the gate keeps its marker.
+            if (IsNearGate(t.position)) continue;
+
+            MinimapObjectiveMarker marker = MinimapObjectiveMarker.Create(objectiveLayer, config.objectiveMarkerSize);
+            marker.Bind(target, icons != null ? icons.ResolveIcon(target) : target.CustomIcon, previewing);
+            objectiveMarkers.Add(t, marker);
+            liveObjectiveTargets.Add(t);
+            AddMarker(marker);
+        }
+
+        staleObjectiveTargets.Clear();
+        foreach (KeyValuePair<Transform, MinimapObjectiveMarker> pair in objectiveMarkers)
+        {
+            if (pair.Key == null || pair.Value == null || !liveObjectiveTargets.Contains(pair.Key)) staleObjectiveTargets.Add(pair.Key);
+        }
+        foreach (Transform key in staleObjectiveTargets) RemoveObjectiveMarker(key);
+    }
+
+    private void RemoveObjectiveMarker(Transform key)
+    {
+        if (!objectiveMarkers.TryGetValue(key, out MinimapObjectiveMarker marker)) return;
+        objectiveMarkers.Remove(key);
+        if (marker == null) return;
+        if (hovered == marker) ClearHovered(marker);
+        markers.Remove(marker);
+        Destroy(marker.gameObject);
+    }
+
+    private void PlaceObjectiveMarkers()
+    {
+        foreach (MinimapObjectiveMarker marker in objectiveMarkers.Values)
+        {
+            if (marker != null) Place(marker);
+        }
+    }
+
+    private bool IsNearGate(Vector3 position)
+    {
+        float max = config.objectiveGateDedupeMeters;
+        if (max <= 0f) return false;
+        foreach (Gate gate in Gate.All)
+        {
+            if (gate == null) continue;
+            Vector3 d = gate.TargetPosition - position;
+            d.y = 0f;
+            if (d.sqrMagnitude <= max * max) return true;
+        }
+        return false;
+    }
+
+    private void AddObjectiveLegendRow()
+    {
+        const string key = "minimap.legend_objective";
+        foreach (MinimapConfigSO.LegendEntry entry in config.legend)
+        {
+            if (entry != null && entry.locKey == key) return; // authored in the asset instead
+        }
+        ObjectiveWaypointTrackerUI icons = ObjectiveWaypointTrackerUI.Instance;
+        var objectiveEntry = new MinimapConfigSO.LegendEntry
+        {
+            locKey = key,
+            english = "Objective",
+            icon = icons != null ? icons.DefaultObjectiveIcon : null,
+            color = config.objectiveLegendColor,
+            iconSize = 46f
+        };
+        MinimapLegendRow row = Instantiate(legendRowPrefab, legendContainer);
+        row.Bind(objectiveEntry);
     }
 
     // ---- Hover ---------------------------------------------------------------------------------

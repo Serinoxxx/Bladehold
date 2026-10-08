@@ -37,6 +37,8 @@ public class ControlHintBar : MonoBehaviour
     [SerializeField] private float autoHideSeconds = 0f;
     [SerializeField] private float fadeDuration = 0.5f;
 
+    private const float MinRowSpacing = 16f;
+
     private readonly List<HintEntryView> rows = new List<HintEntryView>();
     private CanvasGroup canvasGroup;
     private float shownAt;
@@ -58,6 +60,14 @@ public class ControlHintBar : MonoBehaviour
             {
                 canvasGroup = gameObject.AddComponent<CanvasGroup>();
             }
+        }
+
+        // Rows now fit their own text, so a negative spacing (once used to eat the prefab's fixed label
+        // slack) would overlap them.
+        var layout = GetComponent<UnityEngine.UI.HorizontalLayoutGroup>();
+        if (layout != null && layout.spacing < 0f)
+        {
+            layout.spacing = MinRowSpacing;
         }
 
         Rebuild();
@@ -139,6 +149,7 @@ public class ControlHintBar : MonoBehaviour
             {
                 row.Bind(entry.kbmPath, entry.gamepadPath, entry.locKey, entry.english);
             }
+            row.FitWidthToContent();
             rows.Add(row);
         }
     }

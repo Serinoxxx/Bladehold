@@ -109,6 +109,8 @@ public class GameLoopManager : MonoBehaviour
     /// <summary>True while something outside the loop (the tutorial) holds the Ready hold shut.</summary>
     public bool IsReadyBlocked => WaveStartGate.IsBlocked;
     public bool IsRouting => isRouting;
+    /// <summary>True while a failed objective's survivors are storming the gate (the wave stays open until they're dead).</summary>
+    public bool IsGateAssault { get; private set; }
     /// <summary>The enemies still fleeing during the rout (dead ones included until it ends). Empty otherwise.</summary>
     public IReadOnlyList<Health> RoutStragglers => routStragglers;
     /// <summary>Seconds left to hunt the stragglers down before they escape; 0 when not routing.</summary>
@@ -135,6 +137,10 @@ public class GameLoopManager : MonoBehaviour
     public event Action<int, bool, WaveCard> OnWaveResolved;
     /// <summary>Fired when a card reward is paid: the card and the one-line description shown in the popup.</summary>
     public event Action<WaveCard, string> OnWaveRewardGranted;
+    /// <summary>Fired when the rout begins and the surviving enemies start fleeing: how many, and the seconds the player has to hunt them.</summary>
+    public event Action<int, float> OnRoutStarted;
+    /// <summary>Fired when a failed objective sends the survivors at the gate instead of routing them: how many.</summary>
+    public event Action<int> OnGateAssaultStarted;
     /// <summary>Fired when the player picks from a wave draft: offered cards, the pick, seconds taken to decide.</summary>
     public event Action<IReadOnlyList<WaveCard>, WaveCard, float> OnWaveCardPicked;
 
@@ -637,6 +643,14 @@ public class GameLoopManager : MonoBehaviour
         }
         stragglers.RemoveAll(h => h == null || h.IsDead);
 
+        // A failed objective doesn't send them home: the survivors storm the gate instead, and the wave only
+        // resolves once they're cut down (or the gate falls, which ends the run on its own).
+        if (!success && stragglers.Count > 0 && Gate.NearestAlive(stragglers[0].transform.position) != null)
+        {
+            yield return GateAssaultRoutine(stragglers);
+            stragglers.Clear();
+        }
+
         if (stragglers.Count > 0)
         {
             isRouting = true;
@@ -648,6 +662,7 @@ public class GameLoopManager : MonoBehaviour
                 Vector3 fleeTo = spawner != null ? spawner.NearestSpawnPoint(h.transform.position) : h.transform.position - h.transform.forward * 30f;
                 EnemyRout.Begin(h.gameObject, fleeTo);
             }
+            OnRoutStarted?.Invoke(stragglers.Count, duration);
 
             float t = 0f;
             int shownSeconds = -1;
@@ -674,7 +689,50 @@ public class GameLoopManager : MonoBehaviour
             isRouting = false;
         }
 
+        // A beat between the last kill and the draft cards fading in.
+        float settle = waveChoiceConfig != null ? waveChoiceConfig.draftDelayAfterClearSeconds : 1.25f;
+        if (settle > 0f) yield return new WaitForSeconds(settle);
+
         ClearActiveWave(success);
+    }
+
+    private IEnumerator GateAssaultRoutine(List<Health> stragglers)
+    {
+        IsGateAssault = true;
+        foreach (Health h in stragglers)
+        {
+            if (h != null && h.TryGetComponent(out AITargetSelector selector)) selector.SetRole(EnemyRole.Assault);
+        }
+        OnGateAssaultStarted?.Invoke(stragglers.Count);
+
+        float maxSeconds = waveChoiceConfig != null ? waveChoiceConfig.gateAssaultMaxSeconds : 120f;
+        float t = 0f;
+        int shownAlive = -1;
+        while (t < maxSeconds)
+        {
+            int alive = 0;
+            foreach (Health h in stragglers) if (h != null && !h.IsDead) alive++;
+            if (alive == 0) break;
+            if (alive != shownAlive)
+            {
+                shownAlive = alive;
+                SetStatus(string.Format(Loc.Get("wave.status.gate_assault", "They're storming the gate! Cut them down: {0} left"), alive));
+            }
+            resolveWatchdog = 0f; // a real fight, not a stalled rout: this loop has its own backstop
+            t += Time.deltaTime;
+            yield return null;
+        }
+
+        if (t >= maxSeconds)
+        {
+            Debug.LogWarning("[GameLoopManager] Gate assault backstop expired; despawning the stragglers left.");
+            if (spawner != null) spawner.DespawnAllAliveEnemies();
+            foreach (Health h in stragglers)
+            {
+                if (h != null && !h.IsDead) Destroy(h.gameObject);
+            }
+        }
+        IsGateAssault = false;
     }
 
     private void ClearActiveWave(bool success)

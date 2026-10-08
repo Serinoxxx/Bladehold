@@ -276,7 +276,7 @@ public class PlayerDodge : MonoBehaviour
             dashPressed = dashPressed || Gamepad.current.buttonEast.wasPressedThisFrame;
         }
         // Space/B also cancel the Ultimate Wheel; a dash mustn't fire underneath it.
-        if (UltimateWheelUI.IsOpen) dashPressed = false;
+        if (UltimateWheelUI.IsOpen || BuildWheelUI.BlocksGameplayInput) dashPressed = false;
 
         float bufferDuration = config != null ? config.inputBufferDuration : 0.15f;
         if (dashPressed)

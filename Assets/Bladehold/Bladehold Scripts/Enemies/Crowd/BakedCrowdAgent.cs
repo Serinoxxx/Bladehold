@@ -73,6 +73,9 @@ public class BakedCrowdAgent : MonoBehaviour
         GettingUp,
     }
 
+    // Where an airborne fall loops back to, as a fraction of its half-way-down hold time (past the launch pose).
+    private const float AirborneLoopStart = 0.35f;
+
     private FallPhase fallPhase;
     private BakedFallBody fallBody;
     private float fallElapsed;
@@ -360,16 +363,25 @@ public class BakedCrowdAgent : MonoBehaviour
                 transform.position = fallBody.transform.position - Vector3.up * crowdData.fallBodyRadius;
             }
 
-            // A big launch is airborne longer than the recording was: hold the tumble half-way down
-            // until the body lands, rather than lying flat in mid-air.
-            float limit = current.length;
-            if (fallBody != null && !fallBody.Grounded && current.airborneHoldTime > 0f)
-            {
-                limit = Mathf.Max(clipTime, Mathf.Min(limit, current.airborneHoldTime));
-            }
+            // A big launch is airborne longer than the recording was: loop the tumble up to half-way
+            // down until the body lands (crossfading each wrap), rather than lying flat or freezing in mid-air.
+            float holdTime = current.airborneHoldTime > 0f ? Mathf.Min(current.airborneHoldTime, current.length) : current.length * 0.5f;
+            bool airborne = fallBody != null && !fallBody.Grounded;
             float previous = clipTime;
-            clipTime = Mathf.Min(clipTime + deltaTime, limit);
-            PlayImpactsBetween(previous, clipTime);
+            clipTime += deltaTime;
+            if (airborne && clipTime >= holdTime && previous <= holdTime)
+            {
+                fadeClip = clip;
+                fadeClipTime = holdTime;
+                fadeRemaining = crowdData.crossfadeSeconds;
+                fadeDuration = crowdData.crossfadeSeconds;
+                clipTime = holdTime * AirborneLoopStart;
+            }
+            else
+            {
+                clipTime = Mathf.Min(clipTime, current.length);
+                PlayImpactsBetween(previous, clipTime);
+            }
 
             fallElapsed += deltaTime;
             bool resting = fallBody == null || (fallBody.Grounded && fallBody.Speed < crowdData.fallSettleSpeed);

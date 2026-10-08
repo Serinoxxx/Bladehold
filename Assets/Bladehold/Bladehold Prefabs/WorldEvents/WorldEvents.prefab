@@ -8601,7 +8601,7 @@ MonoBehaviour:
           DissipationMode: 2
           DissipationDistance: 100
           PropagationSpeed: 343
-        Velocity: {x: 5, y: 5, z: 5}
+        Velocity: {x: 2.5, y: 2.5, z: 2.5}
         ClearImpulseOnStop: 0
         DrawGizmos: 0
 --- !u!1 &7300254089460948151

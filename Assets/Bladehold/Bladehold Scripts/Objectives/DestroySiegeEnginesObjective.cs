@@ -6,7 +6,7 @@ using UnityEngine;
 ///     Survivors objective: Spawns 3 catapults / siege engines at designated positions.
 ///     Player must seek out and destroy all 3.
 /// </summary>
-public class DestroySiegeEnginesObjective : MonoBehaviour, ISurvivorsObjective, IObjectivePreview
+public class DestroySiegeEnginesObjective : MonoBehaviour, ISurvivorsObjective, IObjectivePreview, ITimedObjective
 {
     [Header("Objective Configuration")]
     [SerializeField] private string objectiveId = "destroy_siege_engines";
@@ -46,7 +46,8 @@ public class DestroySiegeEnginesObjective : MonoBehaviour, ISurvivorsObjective, 
     public string Title => title;
     public string Description => description;
     public float TimeLimit => activeTimeLimit >= 0f ? activeTimeLimit : ObjectiveCsv.TimerSeconds(objectiveId, timeLimit);
-    public float TimeRemaining => timeRemaining;
+    public float TimeRemaining => Mathf.Max(0f, timeRemaining);
+    public bool FailsOnTimeout => true;
     public bool IsComplete => isComplete;
     public bool IsFailed => isFailed;
     public bool IsActive => isActive;

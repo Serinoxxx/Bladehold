@@ -23,12 +23,16 @@ Things that need your hands, eyes or judgement in the Unity Editor. Items marked
 - [Battlefield minimap](editor/battlefield-minimap.md) (built and play-checked in Outer Gate; needs your UI review, other gate scenes and two decisions)
 - [Settings menu restyle](editor/settings-menu-restyle.md) (built and play-checked; needs your UI review and two small decisions)
 - [Spearman (anti-cavalry Big Ork)](editor/spearman.md) (generated, poses play-checked; benchmark, attack clip and a mounted playtest left)
+- [Buy a new horse from the mount button](editor/mount-button-buy-horse.md) (built headlessly; optional purchase feedback, UI review and a playtest left)
 - [Campaign map diorama](editor/campaign-diorama.md) (generated and screenshot-checked; needs a real Game-view look, UI review and a playtest)
 - [UI theme + menu consistency](editor/ui-theme-consistency.md) (shop, Spirit window and pedestals rebuilt in the settings style with swappable themes; needs your UI review and a playtest; recovered scene backups in `Assets/_Recovery/` to triage)
 - [Directional swings + armed arm pose](editor/directional-swings.md) (built and Animator-checked; needs your feel playtest, threshold tuning and a look at the carry pose)
 - [Mount charge, horse loss, horse HUD](editor/mount-charge-and-hud.md) (built and play-checked; **decide horse max HP** (12 is fragile now that loss is permanent), plus feedback slots and UI review)
 - [18: Biome world events](editor/18-world-events.md) (all six built and play-checked; needs your UI review, sound/art picks and a balance playtest)
 - [19: Music](editor/19-music.md) (built and play-checked; needs listening pass and balance check)
+- [Enemy roles: Hunter / Guard / Assault](editor/enemy-roles.md) (built headlessly, asset hand-written; needs an import check and a playtest; also the failed-objective gate assault)
+- [Playtest feedback: UI and map batch](editor/playtest-feedback-ui-and-map.md) (hero panel, countdown, minimap objectives, swing indicator, horse material; Play-mode checks only)
+- [Playtest feedback: quick tuning](editor/playtest-feedback-quick-tuning.md) (cards, shake, build sound, rout banner, wall repair, ammo crate, brute/bulwark hits)
 
 ## A. Triage first (biggest win)
 

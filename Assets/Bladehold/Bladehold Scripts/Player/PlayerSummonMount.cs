@@ -25,6 +25,8 @@ public class PlayerSummonMount : MonoBehaviour
     [SerializeField] private MMF_Player despawnFeedback;
     [Tooltip("Played when a summon press is refused (on cooldown, blocked by the scene).")]
     [SerializeField] private MMF_Player errorFeedback;
+    [Tooltip("Played when a new warhorse is bought from the mount button's prompt (coins, a whinny). Optional.")]
+    [SerializeField] private MMF_Player replacementPurchaseFeedback;
 
     [Header("Animation")]
     [Tooltip("Animator bool held true for the whole summon cast (Player AC's Summon layer plays the wave while it's set).")]
@@ -77,6 +79,7 @@ public class PlayerSummonMount : MonoBehaviour
                 if (p.type == AnimatorControllerParameterType.Bool && p.name == summoningBool) hasSummoningBool = true;
             }
         }
+        if (replacementPurchaseFeedback == null) Debug.LogWarning("PlayerSummonMount: replacementPurchaseFeedback is not assigned, so buying a horse from the mount prompt is silent.", this);
         if (!hasSummoningBool) Debug.LogWarning($"PlayerSummonMount: the player's Animator has no '{summoningBool}' bool, so summoning plays no animation.", this);
 
         // Unlocked from the start of every run (1); kept as a stat so something could still lock it.
@@ -133,10 +136,23 @@ public class PlayerSummonMount : MonoBehaviour
             return;
         }
 
+        // Dead warhorse: offer a new one (same price and purchase as the gate's HorseStall) instead of
+        // just refusing. Not over another frozen screen (shop, draft cards), which owns the time scale.
+        if (IsAbilityUnlocked && playerMount.IsMountLost && Time.timeScale > 0f)
+        {
+            if (!HorseReplacementDialog.IsOpen) HorseReplacementDialog.Open(inputReader, HandleReplacementBought);
+            return;
+        }
+
         if (!IsAbilityUnlocked || !playerMount.TryStartMountCast())
         {
             if (errorFeedback != null) errorFeedback.PlayFeedbacks();
         }
+    }
+
+    private void HandleReplacementBought()
+    {
+        if (replacementPurchaseFeedback != null) replacementPurchaseFeedback.PlayFeedbacks(transform.position);
     }
 
     private void HandleCastStarted(float duration)

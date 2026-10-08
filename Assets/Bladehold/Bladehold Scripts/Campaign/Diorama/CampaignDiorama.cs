@@ -67,6 +67,12 @@ public class CampaignDiorama : MonoBehaviour
         if (TryGetSite(nodeId, out CampaignDioramaSite site)) site.ApplyStatus(status, look);
     }
 
+    /// <summary>Turns the 3D "inspecting this node" highlight on or off for one castle.</summary>
+    public void SetInspected(string nodeId, bool inspected)
+    {
+        if (TryGetSite(nodeId, out CampaignDioramaSite site)) site.SetInspected(inspected, look);
+    }
+
     public void ApplyRoadStatus(string fromNodeId, string toNodeId, CampaignDioramaRoad.RoadStatus status)
     {
         BuildIndex();

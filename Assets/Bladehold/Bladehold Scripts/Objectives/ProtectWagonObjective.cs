@@ -9,7 +9,7 @@ using UnityEngine;
 ///     <c>WaveObjectives.csv</c> row, 3:00) runs out, or the objective fails and the card reward is lost.
 ///     The wagon has no health of its own, so the timer is the only way to fail.
 /// </summary>
-public class ProtectWagonObjective : MonoBehaviour, ISurvivorsObjective, IRequiresContinuousSpawns, IObjectivePreview
+public class ProtectWagonObjective : MonoBehaviour, ISurvivorsObjective, IRequiresContinuousSpawns, IObjectivePreview, ITimedObjective
 {
     [Header("Objective Configuration")]
     [SerializeField] private string objectiveId = "protect_supply_wagon";
@@ -49,7 +49,8 @@ public class ProtectWagonObjective : MonoBehaviour, ISurvivorsObjective, IRequir
     public string Title => title;
     public string Description => description;
     public float TimeLimit => activeTimeLimit >= 0f ? activeTimeLimit : ObjectiveCsv.TimerSeconds(objectiveId, timeLimit);
-    public float TimeRemaining => timeRemaining;
+    public float TimeRemaining => Mathf.Max(0f, timeRemaining);
+    public bool FailsOnTimeout => true;
 
     public string ProgressText
     {

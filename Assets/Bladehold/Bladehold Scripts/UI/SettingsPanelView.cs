@@ -45,6 +45,8 @@ public class SettingsPanelView : MonoBehaviour
     [Header("Controls")]
     [SerializeField] private Slider sensitivitySlider;
     [SerializeField] private Slider gamepadSensitivitySlider;
+    [Tooltip("Optional: thumbstick dead zone slider. When empty, a row is cloned from the Gamepad Look Sensitivity row at runtime.")]
+    [SerializeField] private Slider stickDeadzoneSlider;
     [SerializeField] private Toggle invertXToggle;
     [SerializeField] private Toggle invertYToggle;
 
@@ -151,6 +153,16 @@ public class SettingsPanelView : MonoBehaviour
         if (sensitivityField != null) sensitivityField.DecimalPlaces = 3;
         sensitivitySlider.onValueChanged.AddListener(HandleSensitivityChanged);
         if (gamepadSensitivitySlider != null) gamepadSensitivitySlider.onValueChanged.AddListener(HandleGamepadSensitivityChanged);
+        if (stickDeadzoneSlider == null && gamepadSensitivitySlider != null) stickDeadzoneSlider = BuildStickDeadzoneRow(gamepadSensitivitySlider);
+        if (stickDeadzoneSlider != null)
+        {
+            stickDeadzoneSlider.wholeNumbers = false;
+            stickDeadzoneSlider.minValue = SaveData.MinStickDeadzone;
+            stickDeadzoneSlider.maxValue = SaveData.MaxStickDeadzone;
+            SliderValueField deadzoneField = stickDeadzoneSlider.GetComponentInParent<SliderValueField>();
+            if (deadzoneField != null) deadzoneField.DecimalPlaces = 2;
+            stickDeadzoneSlider.onValueChanged.AddListener(HandleStickDeadzoneChanged);
+        }
         if (languageDropdown != null)
         {
             BuildLanguageOptions();
@@ -182,6 +194,13 @@ public class SettingsPanelView : MonoBehaviour
         tabNextAction.AddBinding("<Gamepad>/rightShoulder");
         if (tabPrevGlyph != null) tabPrevGlyph.SetAction(tabPrevAction);
         if (tabNextGlyph != null) tabNextGlyph.SetAction(tabNextAction);
+
+        // Pad B leaves the panel. Scene copies whose B wiring lost its target (the main menu's pointed at a
+        // pause view that isn't there) fall back to Back().
+        if (focusController != null && !focusController.HasCancelHandler)
+        {
+            focusController.AddCancelListener(Back);
+        }
     }
 
     private void OnEnable()
@@ -224,6 +243,7 @@ public class SettingsPanelView : MonoBehaviour
         if (sfxVolumeSlider != null) sfxVolumeSlider.onValueChanged.RemoveListener(HandleSfxVolumeChanged);
         if (sensitivitySlider != null) sensitivitySlider.onValueChanged.RemoveListener(HandleSensitivityChanged);
         if (gamepadSensitivitySlider != null) gamepadSensitivitySlider.onValueChanged.RemoveListener(HandleGamepadSensitivityChanged);
+        if (stickDeadzoneSlider != null) stickDeadzoneSlider.onValueChanged.RemoveListener(HandleStickDeadzoneChanged);
         if (languageDropdown != null) languageDropdown.onValueChanged.RemoveListener(HandleLanguageChanged);
         if (fieldOfViewSlider != null) fieldOfViewSlider.onValueChanged.RemoveListener(HandleFieldOfViewChanged);
         if (maxRagdollsSlider != null) maxRagdollsSlider.onValueChanged.RemoveListener(HandleMaxRagdollsChanged);
@@ -242,6 +262,56 @@ public class SettingsPanelView : MonoBehaviour
         if (controlsTabButton != null) controlsTabButton.onClick.RemoveListener(ShowControlsTab);
         if (postProcessingTabButton != null) postProcessingTabButton.onClick.RemoveListener(ShowPostProcessingTab);
         if (tabActionMap != null) tabActionMap.Dispose();
+    }
+
+    /// <summary>
+    ///     Leaves the settings panel: back to the pause menu's buttons in game, back to the title screen on
+    ///     the main menu. Public so it can be wired as a persistent B / Back listener.
+    /// </summary>
+    public void Back()
+    {
+        if (RebindButtonView.AnyRebindActive)
+        {
+            return;
+        }
+        PauseMenuView pauseView = GetComponentInParent<PauseMenuView>(true);
+        if (pauseView != null)
+        {
+            pauseView.ShowMainButtons();
+            return;
+        }
+        Bladehold.UI.MainMenuManager mainMenu = FindFirstObjectByType<Bladehold.UI.MainMenuManager>();
+        if (mainMenu != null)
+        {
+            mainMenu.OnBackToTitle();
+            return;
+        }
+        gameObject.SetActive(false);
+    }
+
+    /// <summary>
+    ///     Clones the gamepad look sensitivity row (label, slider, typed value field, row highlight) into a
+    ///     Stick Dead Zone row right below it, so every existing settings panel copy gets the setting
+    ///     without regenerating its hierarchy. The row sits in an automatic-navigation list, so pad focus
+    ///     reaches it like its neighbours.
+    /// </summary>
+    private static Slider BuildStickDeadzoneRow(Slider template)
+    {
+        SliderValueField templateRow = template.GetComponentInParent<SliderValueField>();
+        Transform row = templateRow != null ? templateRow.transform : template.transform.parent;
+        if (row == null || row.parent == null)
+        {
+            return null;
+        }
+        GameObject clone = Instantiate(row.gameObject, row.parent);
+        clone.name = "Row Stick Dead Zone";
+        clone.transform.SetSiblingIndex(row.GetSiblingIndex() + 1);
+        LocalizedText label = clone.GetComponentInChildren<LocalizedText>(true);
+        if (label != null)
+        {
+            label.SetKey("settings.stick_deadzone");
+        }
+        return clone.GetComponentInChildren<Slider>(true);
     }
 
     private void ShowGeneralTab() => ShowTab(0);
@@ -343,6 +413,7 @@ public class SettingsPanelView : MonoBehaviour
         if (invertXToggle != null) invertXToggle.SetIsOnWithoutNotify(settings.InvertX);
         if (invertYToggle != null) invertYToggle.SetIsOnWithoutNotify(settings.InvertY);
         if (gamepadSensitivitySlider != null) gamepadSensitivitySlider.SetValueWithoutNotify(settings.GamepadSensitivity);
+        if (stickDeadzoneSlider != null) stickDeadzoneSlider.SetValueWithoutNotify(settings.StickDeadzone);
         if (languageDropdown != null) languageDropdown.SetValueWithoutNotify(LanguageCodeToIndex(settings.LanguageCode));
         if (postProcessingEnabledToggle != null) postProcessingEnabledToggle.SetIsOnWithoutNotify(settings.PostProcessingEnabled);
         if (postProcessingBloomSlider != null) postProcessingBloomSlider.SetValueWithoutNotify(settings.PostProcessingBloom);
@@ -508,6 +579,7 @@ public class SettingsPanelView : MonoBehaviour
     private void HandleSfxVolumeChanged(float value) => GameSettingsService.Instance?.SetSfxVolume(value);
     private void HandleSensitivityChanged(float value) => GameSettingsService.Instance?.SetSensitivity(value);
     private void HandleGamepadSensitivityChanged(float value) => GameSettingsService.Instance?.SetGamepadSensitivity(value);
+    private void HandleStickDeadzoneChanged(float value) => GameSettingsService.Instance?.SetStickDeadzone(value);
     private void HandleFieldOfViewChanged(float value) => GameSettingsService.Instance?.SetFieldOfView(value);
     private void HandleMaxRagdollsChanged(float value) => GameSettingsService.Instance?.SetMaxRagdolls(Mathf.RoundToInt(value));
     private void HandleGameSpeedChanged(float value) => GameSettingsService.Instance?.SetGameSpeed(value);

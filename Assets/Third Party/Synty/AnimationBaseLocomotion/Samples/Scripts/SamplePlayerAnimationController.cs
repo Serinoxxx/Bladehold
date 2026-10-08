@@ -129,21 +129,23 @@ namespace Synty.AnimationBaseLocomotion.Samples
         private float _cameraRotationOffset;
 
         [Header("Attack Settings")]
-        [Tooltip("Minimum time in seconds between melee attacks to prevent mid-swing interruption.")]
+        [Tooltip("Seconds after releasing a melee attack before another can start (prevents mid-swing interruption).")]
         [SerializeField]
         private float _attackCooldown = 0.5f;
 
+        // Bladehold: the cooldown runs from the release (the swing), not the press, and covers the whole hold.
         private float _lastAttackTime = -999f;
+        private bool _attackHeld;
 
-        /// <summary>Minimum time in seconds between melee attacks.</summary>
+        /// <summary>Seconds after a melee attack is released before another can start.</summary>
         public float AttackCooldown
         {
             get => _attackCooldown;
             set => _attackCooldown = Mathf.Max(0f, value);
         }
 
-        /// <summary>True if a melee attack was triggered recently and the cooldown has not elapsed yet.</summary>
-        public bool IsAttackOnCooldown => Time.time - _lastAttackTime < _attackCooldown;
+        /// <summary>True while a melee attack is held, or was released less than <see cref="AttackCooldown" /> ago.</summary>
+        public bool IsAttackOnCooldown => _attackHeld || Time.time - _lastAttackTime < _attackCooldown;
 
         #endregion
 
@@ -420,11 +422,17 @@ namespace Synty.AnimationBaseLocomotion.Samples
         public void ResetAttackCooldown()
         {
             _lastAttackTime = -999f;
+            _attackHeld = false;
             _animator.SetBool(_isHoldingAttackHash, false);
         }
 
         private void DeactivateAttack()
         {
+            if (_attackHeld)
+            {
+                _attackHeld = false;
+                _lastAttackTime = Time.time;
+            }
             _animator.SetBool(_isHoldingAttackHash, false);
         }
 
@@ -446,7 +454,7 @@ namespace Synty.AnimationBaseLocomotion.Samples
                 return;
             }
 
-            _lastAttackTime = Time.time;
+            _attackHeld = true;
             _animator.SetBool(_isHoldingAttackHash, true);
             _animator.SetTrigger(_startAttackHash);
         }
@@ -1429,7 +1437,7 @@ namespace Synty.AnimationBaseLocomotion.Samples
             CheckEnableLean();
             CalculateRotationalAdditives(_enableLean, _enableHeadTurn, _enableBodyTurn);
 
-            if (_animator.GetBool(_isHoldingAttackHash) && _inputReader != null && !_inputReader.IsAttackPressed)
+            if ((_attackHeld || _animator.GetBool(_isHoldingAttackHash)) && _inputReader != null && !_inputReader.IsAttackPressed)
             {
                 DeactivateAttack();
             }

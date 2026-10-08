@@ -45,6 +45,15 @@ public class SwingDirectionSelector : MonoBehaviour
     /// <summary>Direction of the swing in progress (or the last one).</summary>
     public SwingDirection Current { get; private set; } = SwingDirection.Right;
 
+    /// <summary>
+    ///     True when <see cref="Current" /> came from a deliberate camera look; false when no clear look was
+    ///     made and the swing just alternated sides. Read-only, for HUD feedback.
+    /// </summary>
+    public bool CurrentIsIntentional { get; private set; }
+
+    /// <summary>Raised after each <see cref="Latch" /> with the chosen direction (HUD feedback only).</summary>
+    public event System.Action<SwingDirection> Latched;
+
     private void OnValidate()
     {
         if (stats == null) stats = GetComponent<PlayerStats>();
@@ -137,6 +146,8 @@ public class SwingDirectionSelector : MonoBehaviour
         {
             Current = lastSideSwing == SwingDirection.Left ? SwingDirection.Right : SwingDirection.Left;
         }
+        CurrentIsIntentional = (lookUp >= config.pitchThreshold && lookUp > Mathf.Abs(yawDelta))
+                               || Mathf.Abs(yawDelta) >= config.yawThreshold;
 
         if (Current != SwingDirection.Overhead)
         {
@@ -144,6 +155,7 @@ public class SwingDirectionSelector : MonoBehaviour
         }
 
         animator.SetInteger(swingDirectionHash, (int)Current);
+        Latched?.Invoke(Current);
         return Current;
     }
 }

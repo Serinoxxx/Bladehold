@@ -556,6 +556,9 @@ public class SurvivorsSpawner : MonoBehaviour
             // Wave card modifiers (plan 15): skull HP multiplier and the clan buff.
             if (GameLoopManager.Instance != null) GameLoopManager.Instance.ApplyWaveModifiers(enemy);
 
+            // Hunter / Guard / Assault split (EnemyRoleConfigSO weights); specials keep their own targeting.
+            AITargetSelector.AssignSpawnRole(enemy);
+
             if (stats != null)
             {
                 float impulseChance = stats.GetValue(StatType.ImpulseGoblinChance);
@@ -915,6 +918,7 @@ public class SurvivorsSpawner : MonoBehaviour
         GameObject enemy = Instantiate(type.prefab, spawnPos, Quaternion.identity);
         EnemyDefinitionApplier.Apply(enemy, type.def);
         if (GameLoopManager.Instance != null) GameLoopManager.Instance.ApplyWaveModifiers(enemy);
+        AITargetSelector.AssignSpawnRole(enemy);
 
         Health health = enemy.GetComponent<Health>();
         if (health != null)

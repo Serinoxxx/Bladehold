@@ -787,6 +787,10 @@ MonoBehaviour:
   popupOffset: {x: 0, y: 1.5, z: 0}
   purchaseFeedback: {fileID: 1063422479178586436}
   deniedFeedback: {fileID: 2948844842632146677}
+  lowAmmoFraction: 0.25
+  lowAmmoIcon: {fileID: 21300000, guid: 1f11aa61a2425074b8368fc5ed575d70, type: 3}
+  lowAmmoTint: {r: 1, g: 0.75, b: 0.3, a: 1}
+  waypointOffset: {x: 0, y: 2, z: 0}
 --- !u!1001 &1585097131879788775
 PrefabInstance:
   m_ObjectHideFlags: 0
