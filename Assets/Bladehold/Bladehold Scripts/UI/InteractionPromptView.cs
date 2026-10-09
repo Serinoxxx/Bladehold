@@ -2,6 +2,7 @@ using MoreMountains.Feedbacks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 /// <summary>
 ///     The HUD's interact prompt (<c>InteractionPrompt.prefab</c>): a backing plate with the Interact
@@ -36,13 +37,19 @@ public class InteractionPromptView : MonoBehaviour
         }
         if (glyph == null) Debug.LogError($"[InteractionPromptView] {name}: glyph is not assigned.", this);
         if (deniedFeedback == null) Debug.LogError($"[InteractionPromptView] {name}: deniedFeedback is not assigned.", this);
+
+        TryBindGlyph();
     }
 
     public void Show(string text)
     {
-        gameObject.SetActive(true);
         TryBindGlyph();
+        gameObject.SetActive(true);
         if (!anyError && label != null && label.text != text) label.text = text;
+        if (transform is RectTransform rt)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
+        }
     }
 
     public void Hide()

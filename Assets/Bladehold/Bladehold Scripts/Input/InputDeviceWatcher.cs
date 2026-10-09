@@ -75,7 +75,8 @@ public static class InputDeviceWatcher
 
     private static void HandleActionChange(object actionOrMap, InputActionChange change)
     {
-        if (change != InputActionChange.ActionPerformed || !(actionOrMap is InputAction action))
+        if ((change != InputActionChange.ActionPerformed && change != InputActionChange.ActionStarted)
+            || !(actionOrMap is InputAction action))
         {
             return;
         }
