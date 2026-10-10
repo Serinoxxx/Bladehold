@@ -46,6 +46,7 @@
 - Replaced the Twin Fury meta perk with Arcane Reserve: start every run with an Arcane Core. If you owned Twin Fury, you now own Arcane Reserve
 - Left Bumper no longer dashes on a controller (B still does), since it now opens the Ultimate Wheel. The ultimate is no longer on Y, so it doesn't clash with Interact
 - Updated the Fire catapult to hurl a red, flaming boulder, and its rolling fireball is now a burning rock instead of a ball
+- Split the Controls settings into separate Keyboard & Mouse and Controller tabs
 
 ## [0.1.34] - 2026-10-06
 

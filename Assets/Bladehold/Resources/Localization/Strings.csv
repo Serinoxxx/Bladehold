@@ -471,6 +471,9 @@ settings.field_of_view,Settings row label,Field of View,Champ de vision,Campo vi
 settings.back,Settings back button,< Back,< Retour,< Indietro,< Zurück,< Atrás,< Назад,< 返回,< 戻る,< 뒤로
 settings.tab_general,Settings tab button,General,Général,Generale,Allgemein,General,Общие,常规,一般,일반
 settings.tab_controls,Settings tab button,Controls,Commandes,Comandi,Steuerung,Controles,Управление,控制,操作,조작
+settings.tab_keyboard,Settings tab button (keyboard and mouse options),Keyboard & Mouse,Clavier et souris,Tastiera e mouse,Tastatur & Maus,Teclado y ratón,Клавиатура и мышь,键盘和鼠标,キーボード＆マウス,키보드 및 마우스
+settings.tab_controller,Settings tab button (gamepad options),Controller,Manette,Controller,Controller,Mando,Геймпад,手柄,コントローラー,컨트롤러
+settings.section_pad_bindings,Settings section header (gamepad rebinds),Button Bindings,Boutons,Assegnazione pulsanti,Tastenbelegung,Asignación de botones,Назначение кнопок,按键绑定,ボタン割り当て,버튼 설정
 settings.header_kbm,Rebind grid column header,Keyboard / Mouse,Clavier / Souris,Tastiera / Mouse,Tastatur / Maus,Teclado / Ratón,Клавиатура / мышь,键盘/鼠标,キーボード／マウス,키보드/마우스
 settings.header_gamepad,Rebind grid column header,Gamepad,Manette,Gamepad,Gamepad,Mando,Геймпад,手柄,ゲームパッド,게임패드
 settings.reset_settings,Reset Settings button label,Reset Settings,Réinitialiser les réglages,Ripristina impostazioni,Einstellungen zurücksetzen,Restablecer ajustes,Сбросить настройки,重置设置,設定をリセット,설정 초기화

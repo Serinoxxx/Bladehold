@@ -47,3 +47,14 @@ Manual verification:
 - [ ] Try to charge while the horse is exhausted: the bar flashes red and bumps, and "Your mount is tired / [X] to rest, or eat some [carrot]" shows for about 2.5 s. The glyph matches the device (X on keyboard, D-pad up on pad) and follows rebinds.
 - [ ] Run stamina to zero mid-charge: the same flash and message appear.
 - [ ] **UI review (agent mockup):** size and position (root scale 1.8 on a 0.5-scale canvas), Texturina/Grenze text, the carrot icon is the orange-tinted `gi_carrot` silhouette (swap in a coloured carrot sprite if wanted), and the ember look (`ChargeEmber` is a plain 9 px square; a soft particle sprite might read better).
+## Slice 3.1: Keyboard & Mouse / Controller settings tabs
+
+Regenerated via `Bladehold > UI > Rebuild Settings Panel` (pause menu prefab + MainMenu). The dev scenes Bladehold Test Scene, Demo Scene and Enemy Zoo still have old copies; rebuild them with the open-scene menu item if you use them.
+
+Manual verification:
+- [ ] Pause > Settings shows four tabs; Q/E and LB/RB cycle through all four, and clicking each works.
+- [ ] Keyboard & Mouse: mouse sensitivity, invert toggles, keyboard/mouse bindings only. Rebinding a key still works and persists.
+- [ ] Controller: pad sensitivity, stick dead zone, invert toggles, gamepad bindings only. Rebinding a button works. D-pad navigation goes up and down the list and off the bottom to Reset Settings.
+- [ ] Toggling Invert Y in one tab shows it ticked in the other.
+- [ ] Main menu Settings shows the same four tabs.
+- [ ] "Keyboard & Mouse" fits its tab in every language (the label auto-shrinks).

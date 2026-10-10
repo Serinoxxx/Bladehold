@@ -39,6 +39,9 @@ public class RebindButtonView : MonoBehaviour
     [Header("Listening pulse")]
     [SerializeField] private float pulseSpeed = 6f;
 
+    [Tooltip("Horizontal anchor range (min, max) the remaining column takes when ShowSingleColumn hides the other. Matches SettingsPanelBuilder's single-device header.")]
+    [SerializeField] private Vector2 singleColumnAnchors = new Vector2(0.45f, 0.85f);
+
     private InputAction action;
     private int kbmBindingIndex = -1;
     private int gamepadBindingIndex = -1;
@@ -76,6 +79,25 @@ public class RebindButtonView : MonoBehaviour
             gamepadButton.onClick.RemoveListener(HandleGamepadClick);
             gamepadButton.onClick.AddListener(HandleGamepadClick);
             gamepadButton.interactable = gamepadBindingIndex >= 0;
+        }
+    }
+
+    /// <summary>
+    ///     For the split Keyboard &amp; Mouse / Controller tabs: hides the other device's column and
+    ///     re-anchors the kept one so a one-device list reads as label + single binding.
+    /// </summary>
+    public void ShowSingleColumn(bool gamepad)
+    {
+        Button keep = gamepad ? gamepadButton : kbmButton;
+        Button hide = gamepad ? kbmButton : gamepadButton;
+        if (hide != null)
+        {
+            hide.gameObject.SetActive(false);
+        }
+        if (keep != null && keep.transform is RectTransform rt)
+        {
+            rt.anchorMin = new Vector2(singleColumnAnchors.x, rt.anchorMin.y);
+            rt.anchorMax = new Vector2(singleColumnAnchors.y, rt.anchorMax.y);
         }
     }
 

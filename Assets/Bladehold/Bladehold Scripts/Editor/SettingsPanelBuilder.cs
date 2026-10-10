@@ -11,8 +11,9 @@ using UnityEngine.UI;
 /// <summary>
 ///     Rebuilds the visual hierarchy of every <see cref="SettingsPanelView" /> (Bladehold > UI > Rebuild
 ///     Settings Panel) into the styled, responsive layout: a centred dark window with a gold frame
-///     that stretches to the screen height, a title bar with Back, a General / Controls / Graphics
-///     tab bar with Q/E · LB/RB glyphs, one scrolling column of section-headed rows per tab, a
+///     that stretches to the screen height, a title bar with Back, a General / Keyboard &amp; Mouse /
+///     Controller / Graphics tab bar with Q/E · LB/RB glyphs (each device tab holds its own camera
+///     settings and a single-column binding list), one scrolling column of section-headed rows per tab, a
 ///     footer with pad hints and Reset / Delete Save, and a matching confirm dialog. Also regenerates
 ///     <c>RebindRow.prefab</c> (glyph columns). The panel's root GameObject — and with it
 ///     <see cref="SettingsPanelView" />, <see cref="MenuFocusController" /> and their cancel wiring —
@@ -182,7 +183,8 @@ public static class SettingsPanelBuilder
         tabsLayout.childForceExpandHeight = false;
         InputGlyph prevGlyph = Glyph("TabPrevGlyph", tabs, 44f);
         Button generalTab = BuildTab("GeneralTabButton", tabs, "settings.tab_general", "General", click);
-        Button controlsTab = BuildTab("ControlsTabButton", tabs, "settings.tab_controls", "Controls", click);
+        Button controlsTab = BuildTab("ControlsTabButton", tabs, "settings.tab_keyboard", "Keyboard & Mouse", click);
+        Button gamepadTab = BuildTab("GamepadTabButton", tabs, "settings.tab_controller", "Controller", click);
         Button graphicsTab = BuildTab("GraphicsTabButton", tabs, "settings.tab_graphics", "Graphics", click);
         InputGlyph nextGlyph = Glyph("TabNextGlyph", tabs, 44f);
 
@@ -205,22 +207,25 @@ public static class SettingsPanelBuilder
         Slider gameSpeed = SliderRow(generalList, "Game Speed", "settings.game_speed", 0.1f, 2f, false, 1, click);
         Slider ragdolls = SliderRow(generalList, "Max Ragdolls", "settings.max_ragdolls", 0f, 50f, true, 0, click);
 
-        // Controls
+        // Keyboard & Mouse
         RectTransform controls = ScrollTab("ControlsTabContent", body, out RectTransform controlsList);
         Section(controlsList, "settings.section_camera", "Camera");
         Slider sensitivity = SliderRow(controlsList, "Sensitivity", "settings.sensitivity", SaveData.MinMouseSensitivity, SaveData.MaxMouseSensitivity, false, 3, click);
-        Slider padSensitivity = SliderRow(controlsList, "Gamepad Look Sensitivity", "settings.gamepad_sensitivity", 30f, 360f, true, 0, click);
         Toggle invertX = ToggleRow(controlsList, "Invert X", "settings.invert_x", click);
         Toggle invertY = ToggleRow(controlsList, "Invert Y", "settings.invert_y", click);
         Section(controlsList, "settings.section_bindings", "Key Bindings");
-        BindingHeaderRow(controlsList);
-        RectTransform rebindList = NewUI("RebindList", controlsList);
-        var rebindLayout = rebindList.gameObject.AddComponent<VerticalLayoutGroup>();
-        rebindLayout.spacing = 4f;
-        rebindLayout.childControlWidth = true;
-        rebindLayout.childControlHeight = true;
-        rebindLayout.childForceExpandWidth = true;
-        rebindLayout.childForceExpandHeight = false;
+        BindingHeaderRow(controlsList, "settings.header_kbm", "Keyboard / Mouse");
+        RectTransform rebindList = RebindList(controlsList, "RebindList");
+
+        // Controller
+        RectTransform gamepad = ScrollTab("GamepadTabContent", body, out RectTransform gamepadList);
+        Section(gamepadList, "settings.section_camera", "Camera");
+        Slider padSensitivity = SliderRow(gamepadList, "Gamepad Look Sensitivity", "settings.gamepad_sensitivity", 30f, 360f, true, 0, click);
+        Toggle padInvertX = ToggleRow(gamepadList, "Invert X", "settings.invert_x", click);
+        Toggle padInvertY = ToggleRow(gamepadList, "Invert Y", "settings.invert_y", click);
+        Section(gamepadList, "settings.section_pad_bindings", "Button Bindings");
+        BindingHeaderRow(gamepadList, "settings.header_gamepad", "Gamepad");
+        RectTransform padRebindList = RebindList(gamepadList, "GamepadRebindList");
 
         // Graphics
         RectTransform graphics = ScrollTab("GraphicsTabContent", body, out RectTransform graphicsList);
@@ -254,9 +259,11 @@ public static class SettingsPanelBuilder
         var so = new SerializedObject(view);
         Set(so, "generalTabButton", generalTab);
         Set(so, "controlsTabButton", controlsTab);
+        Set(so, "gamepadTabButton", gamepadTab);
         Set(so, "postProcessingTabButton", graphicsTab);
         Set(so, "generalTabContent", general.gameObject);
         Set(so, "controlsTabContent", controls.gameObject);
+        Set(so, "gamepadTabContent", gamepad.gameObject);
         Set(so, "postProcessingTabContent", graphics.gameObject);
         Set(so, "tabPrevGlyph", prevGlyph);
         Set(so, "tabNextGlyph", nextGlyph);
@@ -268,6 +275,8 @@ public static class SettingsPanelBuilder
         Set(so, "gamepadSensitivitySlider", padSensitivity);
         Set(so, "invertXToggle", invertX);
         Set(so, "invertYToggle", invertY);
+        Set(so, "gamepadInvertXToggle", padInvertX);
+        Set(so, "gamepadInvertYToggle", padInvertY);
         Set(so, "languageDropdown", language);
         Set(so, "fieldOfViewSlider", fov);
         Set(so, "maxRagdollsSlider", ragdolls);
@@ -276,6 +285,8 @@ public static class SettingsPanelBuilder
         Set(so, "rebindRowPrefab", AssetDatabase.LoadAssetAtPath<RebindButtonView>(RebindRowPrefabPath));
         Set(so, "rebindGridAbove", invertY);
         Set(so, "rebindGridBelow", reset);
+        Set(so, "gamepadRebindListParent", padRebindList);
+        Set(so, "gamepadRebindGridAbove", padInvertY);
         Set(so, "postProcessingEnabledToggle", ppEnabled);
         Set(so, "postProcessingBloomSlider", bloom);
         Set(so, "postProcessingVignetteSlider", vignette);
@@ -636,13 +647,25 @@ public static class SettingsPanelBuilder
         return dropdown;
     }
 
-    private static void BindingHeaderRow(RectTransform list)
+    /// <summary>Single-device binding list header: "Action" plus one column header over the rows' single-column slot.</summary>
+    private static void BindingHeaderRow(RectTransform list, string deviceKey, string deviceEnglish)
     {
         RectTransform row = NewUI("BindingHeader", list);
         row.gameObject.AddComponent<LayoutElement>().preferredHeight = 40f;
         HeaderCell(row, "ActionHeader", "settings.header_action", "Action", 0f, RebindLabelMax, TextAlignmentOptions.Left, 20f);
-        HeaderCell(row, "KbmHeader", "settings.header_kbm", "Keyboard / Mouse", RebindKbmMin, RebindKbmMax, TextAlignmentOptions.Center, 0f);
-        HeaderCell(row, "GamepadHeader", "settings.header_gamepad", "Gamepad", RebindPadMin, RebindPadMax, TextAlignmentOptions.Center, 0f);
+        HeaderCell(row, "DeviceHeader", deviceKey, deviceEnglish, RebindSingleMin, RebindSingleMax, TextAlignmentOptions.Center, 0f);
+    }
+
+    private static RectTransform RebindList(RectTransform parent, string name)
+    {
+        RectTransform list = NewUI(name, parent);
+        var layout = list.gameObject.AddComponent<VerticalLayoutGroup>();
+        layout.spacing = 4f;
+        layout.childControlWidth = true;
+        layout.childControlHeight = true;
+        layout.childForceExpandWidth = true;
+        layout.childForceExpandHeight = false;
+        return list;
     }
 
     private static void HeaderCell(RectTransform row, string name, string key, string english, float min, float max, TextAlignmentOptions align, float inset)
@@ -662,6 +685,9 @@ public static class SettingsPanelBuilder
     private const float RebindKbmMax = 0.67f;
     private const float RebindPadMin = 0.69f;
     private const float RebindPadMax = 0.98f;
+    // Must match RebindButtonView.singleColumnAnchors.
+    private const float RebindSingleMin = 0.45f;
+    private const float RebindSingleMax = 0.85f;
 
     private static void BuildHintBar(RectTransform footer)
     {
@@ -868,7 +894,11 @@ public static class SettingsPanelBuilder
         Stretch(hot, -4f, -4f, -4f, -4f);
         Image hotImage = AddImage(hot, frameSmall, Gold, sliced: true, ppuMultiplier: 4f, raycast: false);
         TextMeshProUGUI label = Text(NewUI("Label", visual), english, headerFont, 24, TextOnDark, TextAlignmentOptions.Center);
-        Stretch(label.rectTransform);
+        Stretch(label.rectTransform, 10f, 10f, 0f, 0f);
+        label.enableAutoSizing = true; // "Keyboard & Mouse" and longer translations shrink to fit.
+        label.fontSizeMin = 16f;
+        label.fontSizeMax = 24f;
+        label.textWrappingMode = TextWrappingModes.NoWrap;
         Localize(label, key);
         RectTransform underline = NewUI("Underline", visual);
         underline.anchorMin = new Vector2(0.1f, 0f);

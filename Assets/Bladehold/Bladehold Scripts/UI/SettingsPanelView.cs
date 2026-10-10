@@ -6,26 +6,33 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
-///     Settings sub-panel shown from the pause menu, split into two tabs: <b>General</b> (audio
-///     sliders, sensitivity/invert controls, a field of view slider, max ragdolls) and
-///     <b>Controls</b> (camera sensitivity/invert plus a generically-built list of every remappable binding on the vendored
-///     Controls asset, one row per action with separate Keyboard/Mouse and Gamepad columns).
+///     Settings sub-panel shown from the pause menu, split into tabs: <b>General</b> (audio, language,
+///     game speed, max ragdolls), <b>Keyboard &amp; Mouse</b> (mouse sensitivity, invert, and the
+///     keyboard/mouse column of every remappable binding on the vendored Controls asset),
+///     <b>Controller</b> (pad look sensitivity, stick dead zone, invert, and the gamepad bindings) and
+///     <b>Graphics</b> (field of view and post processing). The Controller and Graphics tabs are
+///     optional: an older generated copy without a Controller tab keeps a single Controls tab whose
+///     rebind rows show both device columns side by side. Invert X/Y is one shared setting, so the
+///     two device tabs carry mirrored toggles.
 ///     Reset Settings (settings back to defaults, progress untouched) and Delete Save (progress
 ///     wiped, settings kept) sit below the tabs. Every control reads and writes through
 ///     <see cref="GameSettingsService" /> — this view never touches <see cref="SaveData" /> or the
 ///     vendored input asset directly. Refreshes from current settings whenever shown, always
-///     reopening on the General tab. An optional third <b>Graphics</b> tab (field of view and post
-///     processing) sits beside them. Tabs cycle with Q/E or LB/RB (glyphs shown either side of the
+///     reopening on the General tab. Tabs cycle with Q/E or LB/RB (glyphs shown either side of the
 ///     tab bar), and under a pad each tab switch focuses that tab's first control.
 /// </summary>
 public class SettingsPanelView : MonoBehaviour
 {
     [Header("Tabs")]
     [SerializeField] private Button generalTabButton;
+    [Tooltip("Keyboard & Mouse tab (the whole Controls tab on copies without a Controller tab).")]
     [SerializeField] private Button controlsTabButton;
+    [Tooltip("Optional Controller tab. When set, keyboard and gamepad bindings split across the two device tabs.")]
+    [SerializeField] private Button gamepadTabButton;
     [SerializeField] private Button postProcessingTabButton;
     [SerializeField] private GameObject generalTabContent;
     [SerializeField] private GameObject controlsTabContent;
+    [SerializeField] private GameObject gamepadTabContent;
     [SerializeField] private GameObject postProcessingTabContent;
     [SerializeField] private Color tabSelectedColor = new Color(0.831f, 0.776f, 0.639f, 1f);
     [SerializeField] private Color tabUnselectedColor = new Color(0.329f, 0.282f, 0.239f, 1f);
@@ -49,6 +56,9 @@ public class SettingsPanelView : MonoBehaviour
     [SerializeField] private Slider stickDeadzoneSlider;
     [SerializeField] private Toggle invertXToggle;
     [SerializeField] private Toggle invertYToggle;
+    [Tooltip("Optional: Controller-tab mirrors of Invert X/Y (same shared setting).")]
+    [SerializeField] private Toggle gamepadInvertXToggle;
+    [SerializeField] private Toggle gamepadInvertYToggle;
 
     [Header("Language")]
     [Tooltip("Optional: UI language picker. Options are built in code — 'Auto (System)' followed by every Loc.SupportedLanguages entry in its own native name.")]
@@ -67,6 +77,9 @@ public class SettingsPanelView : MonoBehaviour
     [SerializeField] private Selectable rebindGridAbove;
     [Tooltip("Optional: control below the rebind grid (pad Down from its last row lands here).")]
     [SerializeField] private Selectable rebindGridBelow;
+    [Tooltip("Optional: Controller-tab rebind list. When set, rebindListParent gets keyboard/mouse rows only and this gets gamepad rows only.")]
+    [SerializeField] private Transform gamepadRebindListParent;
+    [SerializeField] private Selectable gamepadRebindGridAbove;
 
     [Header("Post Processing")]
     [SerializeField] private Toggle postProcessingEnabledToggle;
@@ -80,6 +93,9 @@ public class SettingsPanelView : MonoBehaviour
     [SerializeField] private ConfirmDialog confirmDialog;
 
     private readonly List<RebindButtonView> rebindRows = new List<RebindButtonView>();
+    private readonly List<RebindButtonView> gamepadRebindRows = new List<RebindButtonView>();
+    private readonly List<Button> tabButtons = new List<Button>();
+    private readonly List<GameObject> tabContents = new List<GameObject>();
     private bool rebindRowsBuilt = false;
     private bool anyError = false;
     private InputActionMap tabActionMap;
@@ -173,6 +189,8 @@ public class SettingsPanelView : MonoBehaviour
         gameSpeedSlider.onValueChanged.AddListener(HandleGameSpeedChanged);
         if (invertXToggle != null) invertXToggle.onValueChanged.AddListener(HandleInvertXChanged);
         if (invertYToggle != null) invertYToggle.onValueChanged.AddListener(HandleInvertYChanged);
+        if (gamepadInvertXToggle != null) gamepadInvertXToggle.onValueChanged.AddListener(HandleInvertXChanged);
+        if (gamepadInvertYToggle != null) gamepadInvertYToggle.onValueChanged.AddListener(HandleInvertYChanged);
         
         if (postProcessingEnabledToggle != null) postProcessingEnabledToggle.onValueChanged.AddListener(HandlePostProcessingEnabledChanged);
         if (postProcessingBloomSlider != null) postProcessingBloomSlider.onValueChanged.AddListener(HandlePostProcessingBloomChanged);
@@ -183,7 +201,12 @@ public class SettingsPanelView : MonoBehaviour
         deleteSaveButton.onClick.AddListener(HandleDeleteSaveClicked);
         generalTabButton.onClick.AddListener(ShowGeneralTab);
         controlsTabButton.onClick.AddListener(ShowControlsTab);
+        if (gamepadTabButton != null) gamepadTabButton.onClick.AddListener(ShowGamepadTab);
         if (postProcessingTabButton != null) postProcessingTabButton.onClick.AddListener(ShowPostProcessingTab);
+        AddTab(generalTabButton, generalTabContent);
+        AddTab(controlsTabButton, controlsTabContent);
+        AddTab(gamepadTabButton, gamepadTabContent);
+        AddTab(postProcessingTabButton, postProcessingTabContent);
 
         tabActionMap = new InputActionMap("SettingsTabs");
         tabPrevAction = tabActionMap.AddAction("TabPrev", InputActionType.Button);
@@ -250,6 +273,8 @@ public class SettingsPanelView : MonoBehaviour
         if (gameSpeedSlider != null) gameSpeedSlider.onValueChanged.RemoveListener(HandleGameSpeedChanged);
         if (invertXToggle != null) invertXToggle.onValueChanged.RemoveListener(HandleInvertXChanged);
         if (invertYToggle != null) invertYToggle.onValueChanged.RemoveListener(HandleInvertYChanged);
+        if (gamepadInvertXToggle != null) gamepadInvertXToggle.onValueChanged.RemoveListener(HandleInvertXChanged);
+        if (gamepadInvertYToggle != null) gamepadInvertYToggle.onValueChanged.RemoveListener(HandleInvertYChanged);
 
         if (postProcessingEnabledToggle != null) postProcessingEnabledToggle.onValueChanged.RemoveListener(HandlePostProcessingEnabledChanged);
         if (postProcessingBloomSlider != null) postProcessingBloomSlider.onValueChanged.RemoveListener(HandlePostProcessingBloomChanged);
@@ -260,6 +285,7 @@ public class SettingsPanelView : MonoBehaviour
         if (deleteSaveButton != null) deleteSaveButton.onClick.RemoveListener(HandleDeleteSaveClicked);
         if (generalTabButton != null) generalTabButton.onClick.RemoveListener(ShowGeneralTab);
         if (controlsTabButton != null) controlsTabButton.onClick.RemoveListener(ShowControlsTab);
+        if (gamepadTabButton != null) gamepadTabButton.onClick.RemoveListener(ShowGamepadTab);
         if (postProcessingTabButton != null) postProcessingTabButton.onClick.RemoveListener(ShowPostProcessingTab);
         if (tabActionMap != null) tabActionMap.Dispose();
     }
@@ -314,17 +340,27 @@ public class SettingsPanelView : MonoBehaviour
         return clone.GetComponentInChildren<Slider>(true);
     }
 
-    private void ShowGeneralTab() => ShowTab(0);
-    private void ShowControlsTab() => ShowTab(1);
-    private void ShowPostProcessingTab() => ShowTab(2);
+    private void AddTab(Button button, GameObject content)
+    {
+        if (button != null && content != null)
+        {
+            tabButtons.Add(button);
+            tabContents.Add(content);
+        }
+    }
 
-    private int TabCount => postProcessingTabButton != null && postProcessingTabContent != null ? 3 : 2;
+    private void ShowGeneralTab() => ShowTab(tabContents.IndexOf(generalTabContent));
+    private void ShowControlsTab() => ShowTab(tabContents.IndexOf(controlsTabContent));
+    private void ShowGamepadTab() => ShowTab(tabContents.IndexOf(gamepadTabContent));
+    private void ShowPostProcessingTab() => ShowTab(tabContents.IndexOf(postProcessingTabContent));
+
+    private int TabCount => tabContents.Count;
 
     private void CycleTab(int direction)
     {
         int next = (currentTab + direction + TabCount) % TabCount;
         ShowTab(next);
-        Button tabButton = TabButton(next);
+        Button tabButton = tabButtons[next];
         UISelectableJuice juice = tabButton != null ? tabButton.GetComponent<UISelectableJuice>() : null;
         if (juice != null)
         {
@@ -333,19 +369,19 @@ public class SettingsPanelView : MonoBehaviour
         }
     }
 
-    private Button TabButton(int index) => index == 0 ? generalTabButton : index == 1 ? controlsTabButton : postProcessingTabButton;
-    private GameObject TabContent(int index) => index == 0 ? generalTabContent : index == 1 ? controlsTabContent : postProcessingTabContent;
-
     private void ShowTab(int index, bool instant = false)
     {
-        currentTab = index;
-        for (int i = 0; i < 3; i++)
+        if (index < 0 || index >= TabCount)
         {
-            GameObject content = TabContent(i);
-            if (content != null) content.SetActive(i == index);
-            TintTabButton(TabButton(i), i == index, instant);
+            return;
         }
-        FocusFirstControl(TabContent(index));
+        currentTab = index;
+        for (int i = 0; i < TabCount; i++)
+        {
+            tabContents[i].SetActive(i == index);
+            TintTabButton(tabButtons[i], i == index, instant);
+        }
+        FocusFirstControl(tabContents[index]);
     }
 
     /// <summary>Points pad focus (and the focus controller's default) at the tab's first navigable control.</summary>
@@ -412,6 +448,8 @@ public class SettingsPanelView : MonoBehaviour
         gameSpeedSlider.SetValueWithoutNotify(settings.GameSpeed);
         if (invertXToggle != null) invertXToggle.SetIsOnWithoutNotify(settings.InvertX);
         if (invertYToggle != null) invertYToggle.SetIsOnWithoutNotify(settings.InvertY);
+        if (gamepadInvertXToggle != null) gamepadInvertXToggle.SetIsOnWithoutNotify(settings.InvertX);
+        if (gamepadInvertYToggle != null) gamepadInvertYToggle.SetIsOnWithoutNotify(settings.InvertY);
         if (gamepadSensitivitySlider != null) gamepadSensitivitySlider.SetValueWithoutNotify(settings.GamepadSensitivity);
         if (stickDeadzoneSlider != null) stickDeadzoneSlider.SetValueWithoutNotify(settings.StickDeadzone);
         if (languageDropdown != null) languageDropdown.SetValueWithoutNotify(LanguageCodeToIndex(settings.LanguageCode));
@@ -476,9 +514,28 @@ public class SettingsPanelView : MonoBehaviour
         {
             foreach (RowSlot slot in BuildRowSlots(action))
             {
-                RebindButtonView row = Instantiate(rebindRowPrefab, rebindListParent);
-                row.Bind(action, slot.kbmIndex, slot.gamepadIndex, slot.label);
-                rebindRows.Add(row);
+                if (gamepadRebindListParent == null)
+                {
+                    RebindButtonView row = Instantiate(rebindRowPrefab, rebindListParent);
+                    row.Bind(action, slot.kbmIndex, slot.gamepadIndex, slot.label);
+                    rebindRows.Add(row);
+                    continue;
+                }
+                // Split tabs: one single-column row per device, and no row for a device the action has no binding on.
+                if (slot.kbmIndex >= 0)
+                {
+                    RebindButtonView row = Instantiate(rebindRowPrefab, rebindListParent);
+                    row.Bind(action, slot.kbmIndex, -1, slot.label);
+                    row.ShowSingleColumn(gamepad: false);
+                    rebindRows.Add(row);
+                }
+                if (slot.gamepadIndex >= 0)
+                {
+                    RebindButtonView row = Instantiate(rebindRowPrefab, gamepadRebindListParent);
+                    row.Bind(action, -1, slot.gamepadIndex, slot.label);
+                    row.ShowSingleColumn(gamepad: true);
+                    gamepadRebindRows.Add(row);
+                }
             }
         }
 
@@ -490,29 +547,41 @@ public class SettingsPanelView : MonoBehaviour
     ///     Explicit gamepad navigation over the generated rebind grid — Unity's automatic mode gets
     ///     lost in the label + two-button rows (it happily jumps columns diagonally). Each column
     ///     links vertically to the nearest enabled button; the two columns of a row link
-    ///     horizontally.
+    ///     horizontally. Split device tabs are single-column lists with no sideways links.
     /// </summary>
     private void WireRebindGridNavigation()
     {
+        if (gamepadRebindListParent != null)
+        {
+            for (int i = 0; i < rebindRows.Count; i++)
+            {
+                SetColumnNavigation(rebindRows[i].KbmButton, FindColumnNeighbor(rebindRows, i, -1, true, rebindGridAbove), FindColumnNeighbor(rebindRows, i, +1, true, rebindGridBelow), null, null);
+            }
+            for (int i = 0; i < gamepadRebindRows.Count; i++)
+            {
+                SetColumnNavigation(gamepadRebindRows[i].GamepadButton, FindColumnNeighbor(gamepadRebindRows, i, -1, false, gamepadRebindGridAbove), FindColumnNeighbor(gamepadRebindRows, i, +1, false, rebindGridBelow), null, null);
+            }
+            return;
+        }
         for (int i = 0; i < rebindRows.Count; i++)
         {
-            SetColumnNavigation(rebindRows[i].KbmButton, FindColumnNeighbor(i, -1, true), FindColumnNeighbor(i, +1, true), null, rebindRows[i].GamepadButton);
-            SetColumnNavigation(rebindRows[i].GamepadButton, FindColumnNeighbor(i, -1, false), FindColumnNeighbor(i, +1, false), rebindRows[i].KbmButton, null);
+            SetColumnNavigation(rebindRows[i].KbmButton, FindColumnNeighbor(rebindRows, i, -1, true, rebindGridAbove), FindColumnNeighbor(rebindRows, i, +1, true, rebindGridBelow), null, rebindRows[i].GamepadButton);
+            SetColumnNavigation(rebindRows[i].GamepadButton, FindColumnNeighbor(rebindRows, i, -1, false, rebindGridAbove), FindColumnNeighbor(rebindRows, i, +1, false, rebindGridBelow), rebindRows[i].KbmButton, null);
         }
     }
 
-    private Selectable FindColumnNeighbor(int rowIndex, int direction, bool kbmColumn)
+    private static Selectable FindColumnNeighbor(List<RebindButtonView> rows, int rowIndex, int direction, bool kbmColumn, Selectable offEnd)
     {
-        for (int i = rowIndex + direction; i >= 0 && i < rebindRows.Count; i += direction)
+        for (int i = rowIndex + direction; i >= 0 && i < rows.Count; i += direction)
         {
-            Button candidate = kbmColumn ? rebindRows[i].KbmButton : rebindRows[i].GamepadButton;
+            Button candidate = kbmColumn ? rows[i].KbmButton : rows[i].GamepadButton;
             if (candidate != null && candidate.interactable)
             {
                 return candidate;
             }
         }
         // Off either end of the grid: hand off to the controls around it.
-        return direction < 0 ? rebindGridAbove : rebindGridBelow;
+        return offEnd;
     }
 
     private static void SetColumnNavigation(Button button, Selectable up, Selectable down, Selectable left, Selectable right)
@@ -583,8 +652,19 @@ public class SettingsPanelView : MonoBehaviour
     private void HandleFieldOfViewChanged(float value) => GameSettingsService.Instance?.SetFieldOfView(value);
     private void HandleMaxRagdollsChanged(float value) => GameSettingsService.Instance?.SetMaxRagdolls(Mathf.RoundToInt(value));
     private void HandleGameSpeedChanged(float value) => GameSettingsService.Instance?.SetGameSpeed(value);
-    private void HandleInvertXChanged(bool value) => GameSettingsService.Instance?.SetInvertX(value);
-    private void HandleInvertYChanged(bool value) => GameSettingsService.Instance?.SetInvertY(value);
+    private void HandleInvertXChanged(bool value)
+    {
+        GameSettingsService.Instance?.SetInvertX(value);
+        if (invertXToggle != null) invertXToggle.SetIsOnWithoutNotify(value);
+        if (gamepadInvertXToggle != null) gamepadInvertXToggle.SetIsOnWithoutNotify(value);
+    }
+
+    private void HandleInvertYChanged(bool value)
+    {
+        GameSettingsService.Instance?.SetInvertY(value);
+        if (invertYToggle != null) invertYToggle.SetIsOnWithoutNotify(value);
+        if (gamepadInvertYToggle != null) gamepadInvertYToggle.SetIsOnWithoutNotify(value);
+    }
     
     private void HandlePostProcessingEnabledChanged(bool value) => GameSettingsService.Instance?.SetPostProcessingEnabled(value);
     private void HandlePostProcessingBloomChanged(float value) => GameSettingsService.Instance?.SetPostProcessingBloom(value);
@@ -606,6 +686,10 @@ public class SettingsPanelView : MonoBehaviour
                 settings.ResetToDefaults();
                 RefreshFromSettings();
                 foreach (RebindButtonView row in rebindRows)
+                {
+                    row.RefreshPathLabel();
+                }
+                foreach (RebindButtonView row in gamepadRebindRows)
                 {
                     row.RefreshPathLabel();
                 }
