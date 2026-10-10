@@ -20,8 +20,9 @@ Paths are relative to `Assets/Bladehold/Bladehold Scripts/`; line numbers are fr
   - Fix: while the last-used device is a gamepad, ignore pointer hover (or clear hover state when gamepad navigation starts); only the `EventSystem` selection drives the highlight. Pointer movement switches back to mouse mode.
   - Check every screen that shares the card view (war-banner/rest-area draft, `Fishing/UI/FishingDraftUI.cs`).
   - Verify: open a draft with a controller connected, no stray highlight; move the mouse, hover works again.
-- [ ] **1.2 Glyph missing on tower plot prompt the first time you build.**
-  - **Not reproduced 2026-10-10:** played Valley Stronghold on keyboard/mouse and forced gamepad. The plot prompt "Build Defence", the tutorial "[X] Build an Arrow Tower" hint, the build wheel's Cancel glyph and the built tower's "Upgrade" prompt all showed their glyph on the first build. Needs repro details from Lance: which scene, which glyph (HUD prompt, world marker, wheel) and which device. The only blank glyph seen was after a mid-play script reload, which players never hit.
+- [x] **1.2 Glyph missing on tower plot prompt the first time you build.**
+  - **Fixed 2026-10-10:** in the HUD the prompt's glyph is sized by its layout group (serialized 0×0). The first `Refresh` ran before any layout pass, so `InputGlyph.FitWidth` measured height 0 and wrote `LayoutElement.preferredWidth = 0`, collapsing the glyph until the next show re-ran it. `FitWidth` now falls back to the `LayoutElement`'s preferred height and never writes a zero width. Verified on a freshly instantiated HUD: width 84 (was 0).
+  - Earlier note: the first play-test didn't reproduce it, probably because the prompt had been laid out before the glyph bound.
   - Prompt UI: `UI/InteractionPromptView.cs` / `Input/InputGlyph.cs` / `Input/GlyphMapSO.cs`; plot: `Fort/TowerPlot.cs`.
   - Likely the glyph resolves before the active device / sprite asset is known (first enable), and only refreshes on device change. Fix: resolve on `OnEnable` and whenever the prompt text is (re)set.
   - Verify on keyboard and controller in a fresh scene load.

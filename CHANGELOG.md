@@ -22,6 +22,7 @@
 - Fixed tower and wall kills refilling your horse's charge meter in the tutorial
 - Fixed a second card being highlighted on draft and wave choice screens when playing with a controller
 - Fixed riding into enemies without charging knocking them flying; only a charge sends them flying now
+- Fixed the button icon missing from the Build Defence prompt the first time you walk up to a tower plot
 
 ### Balance Changes
 

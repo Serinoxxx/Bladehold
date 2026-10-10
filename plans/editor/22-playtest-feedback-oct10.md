@@ -10,9 +10,9 @@ Manual verification:
 - [ ] Move the mouse over a card: it lights on hover and the pad highlight goes away. Press a stick or d-pad: hover drops and pad focus comes back.
 - [ ] Pause menu buttons: no stray hover glow on the button under the hidden cursor while using the pad.
 
-## Slice 1.2: tower plot glyph (not reproduced)
+## Slice 1.2: tower plot glyph
 
-- [ ] Lance: note the scene, device and which glyph was blank (plot prompt, build wheel, tutorial hint) next time it happens.
+- [ ] Fresh scene load: walk up to an empty tower plot. "Build Defence" shows its key/button glyph the first time (keyboard and pad).
 
 ## Slice 1.3: red flaming catapult boulder
 

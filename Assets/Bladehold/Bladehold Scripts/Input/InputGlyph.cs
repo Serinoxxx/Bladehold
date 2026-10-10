@@ -311,14 +311,18 @@ public class InputGlyph : MonoBehaviour
     private void FitWidth(string label)
     {
         var rt = (RectTransform)transform;
+        var layout = GetComponent<LayoutElement>();
+        // Before the first layout pass a layout-driven glyph measures 0 tall; measuring then collapsed it to
+        // 0 wide until the next refresh (the blank first "Build Defence" prompt), so fall back to the layout size.
         float height = rt.rect.height > 0f ? rt.rect.height : rt.sizeDelta.y;
+        if (height <= 0f && layout != null) height = layout.preferredHeight;
+        if (height <= 0f) return;
         float width = height;
         if (!string.IsNullOrEmpty(label) && overlayText != null)
         {
             width = Mathf.Max(height, overlayText.GetPreferredValues(label, 9999f, height).x + stretchPadding);
         }
         rt.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
-        var layout = GetComponent<LayoutElement>();
         if (layout != null)
         {
             layout.preferredWidth = width;
