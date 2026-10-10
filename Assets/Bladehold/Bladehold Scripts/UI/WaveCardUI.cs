@@ -86,6 +86,9 @@ public class WaveCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
     private Action onClicked;
     private bool anyError;
     private bool validated;
+    private bool hovered;
+    private bool pointerInside;
+    private bool padFocused;
 
     public Button SelectButton => selectButton;
 
@@ -251,10 +254,54 @@ public class WaveCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
         onClicked?.Invoke();
     }
 
-    public void OnPointerEnter(PointerEventData eventData) => PlayHover(true);
-    public void OnPointerExit(PointerEventData eventData) => PlayHover(false);
-    public void OnSelect(BaseEventData eventData) => PlayHover(true);
-    public void OnDeselect(BaseEventData eventData) => PlayHover(false);
+    // Same rule as SurvivorsCardUI: under a pad the hidden cursor still sits mid-screen over the middle
+    // card, so only a keyboard/mouse-driven pointer lights a card; pad focus lights it otherwise.
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        pointerInside = true;
+        SetLit(!InputDeviceWatcher.GamepadActive, padFocused);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        pointerInside = false;
+        SetLit(false, padFocused);
+    }
+
+    public void OnSelect(BaseEventData eventData)
+    {
+        if (InputDeviceWatcher.GamepadActive) SetLit(hovered, true);
+    }
+
+    public void OnDeselect(BaseEventData eventData) => SetLit(hovered, false);
+
+    private void OnEnable()
+    {
+        InputDeviceWatcher.SchemeChanged += HandleSchemeChanged;
+    }
+
+    private void OnDisable()
+    {
+        InputDeviceWatcher.SchemeChanged -= HandleSchemeChanged;
+        hovered = false;
+        padFocused = false;
+        pointerInside = false;
+    }
+
+    private void HandleSchemeChanged(ControlScheme scheme)
+    {
+        bool gamepad = scheme == ControlScheme.Gamepad;
+        SetLit(pointerInside && !gamepad, gamepad && padFocused);
+    }
+
+    private void SetLit(bool nowHovered, bool nowFocused)
+    {
+        bool wasLit = hovered || padFocused;
+        hovered = nowHovered;
+        padFocused = nowFocused;
+        bool lit = hovered || padFocused;
+        if (lit != wasLit) PlayHover(lit);
+    }
 
     private void PlayHover(bool enter)
     {

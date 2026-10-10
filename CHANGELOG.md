@@ -20,6 +20,7 @@
 - Fixed being able to start the tutorial gate's next wave in the middle of a lesson; the wave prompt now says to finish the lesson first
 - Fixed the towers killing the goblins in the tutorial's horse charge lessons; they now hold fire so the kills are yours
 - Fixed tower and wall kills refilling your horse's charge meter in the tutorial
+- Fixed a second card being highlighted on draft and wave choice screens when playing with a controller
 
 ### Balance Changes
 

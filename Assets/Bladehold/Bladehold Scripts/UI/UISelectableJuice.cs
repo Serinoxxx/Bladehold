@@ -86,7 +86,7 @@ public class UISelectableJuice : MonoBehaviour,
     private void Update()
     {
         bool live = selectable == null || selectable.IsInteractable();
-        bool lit = live && (hovered || focused);
+        bool lit = live && ((hovered && !InputDeviceWatcher.GamepadActive) || focused);
         float targetScale = !live ? 1f : pressed ? pressScale : lit ? hoverScale : 1f;
         float t = 1f - Mathf.Exp(-easeSpeed * Time.unscaledDeltaTime);
 
@@ -113,7 +113,7 @@ public class UISelectableJuice : MonoBehaviour,
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (!hovered && !focused && Interactable && hoverFeedback != null)
+        if (!hovered && !focused && Interactable && hoverFeedback != null && !InputDeviceWatcher.GamepadActive)
         {
             hoverFeedback.PlayFeedbacks();
         }

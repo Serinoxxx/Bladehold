@@ -27,6 +27,7 @@ Every plan follows `/CLAUDE.md` (source of truth). Key rules: no visuals or fall
 | 19 | [Music](19-music.md) | Feature (requested during the freeze) | none |
 | 20 | [Playtest feedback 2026-10-06](20-playtest-feedback-oct.md) | Fix + polish (7 phases, one per session) | none |
 | 21 | [External tester feedback 2026-10-07](21-playtest-feedback-tester.md) | Fix + feature (6 phases; 5–6 are the Arcane Core ultimate redesign) | 16, 20 |
+| 22 | [Playtest feedback 2026-10-10](22-playtest-feedback-oct10.md) | Fix + feature (8 phases, small slices; 7 reworks wave cards, 8 adds the Putrid Horror) | 15 |
 
 ## Roadmap to Next Fest (Feb 27 2027)
 

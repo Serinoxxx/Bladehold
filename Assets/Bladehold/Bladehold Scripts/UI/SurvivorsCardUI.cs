@@ -48,6 +48,7 @@ public class SurvivorsCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     private Action onClickedCallback;
     private Action onBanishCallback;
     private bool hovered;
+    private bool pointerInside;
     private bool padFocused;
     private bool litWhenDisabled;
 
@@ -182,9 +183,25 @@ public class SurvivorsCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         onBanishCallback?.Invoke();
     }
 
-    public void OnPointerEnter(PointerEventData eventData) => SetLit(true, padFocused);
+    // The hidden cursor still sits mid-screen under a pad, so it "hovers" the middle card; only a
+    // pointer that keyboard/mouse is actually driving lights the card.
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        pointerInside = true;
+        SetLit(!InputDeviceWatcher.GamepadActive, padFocused);
+    }
 
-    public void OnPointerExit(PointerEventData eventData) => SetLit(false, padFocused);
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        pointerInside = false;
+        SetLit(false, padFocused);
+    }
+
+    private void HandleSchemeChanged(ControlScheme scheme)
+    {
+        bool gamepad = scheme == ControlScheme.Gamepad;
+        SetLit(pointerInside && !gamepad, gamepad && padFocused);
+    }
 
     /// <summary>
     ///     Pad focus lights the card exactly like a hover (glow fade-in, scale spring), so the focused draft is
@@ -204,13 +221,16 @@ public class SurvivorsCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     {
         // The modal hides with the card still lit; its glow and scale are left mid-state, so the next
         // draft fades it out on enable rather than showing a stale highlight.
+        InputDeviceWatcher.SchemeChanged -= HandleSchemeChanged;
         litWhenDisabled = hovered || padFocused;
         hovered = false;
         padFocused = false;
+        pointerInside = false;
     }
 
     private void OnEnable()
     {
+        InputDeviceWatcher.SchemeChanged += HandleSchemeChanged;
         if (litWhenDisabled && hoverExitFeedback != null)
         {
             hoverExitFeedback.PlayFeedbacks();
