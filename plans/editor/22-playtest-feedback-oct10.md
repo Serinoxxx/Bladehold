@@ -37,3 +37,13 @@ Manual verification:
 - [ ] Kills from the saddle (sword/bow) add no stamina. Kills on foot do (the bar on the HUD rises).
 - [ ] Carrots still refill. With the Bloodlust card, trample kills refund stamina.
 - [ ] Tutorial (Valley Stronghold) stamina step shows the new two-line hint and still completes.
+
+## Slices 2.2 + 2.3: centre charge bar and "mount is tired"
+
+Built via MCP: `Bladehold Prefabs/UI/ChargeStaminaCentre.prefab` (nested in `Bladehold HUD.prefab` > `Screen_HUD_Adventure_01/ScreenSpace`) and `ChargeEmber.prefab`.
+
+Manual verification:
+- [ ] Charge on the horse: a large stamina bar with a carrot icon fades in just below the centre of the screen, burns down with ember sparks off the fill edge, and fades out when the charge ends.
+- [ ] Try to charge while the horse is exhausted: the bar flashes red and bumps, and "Your mount is tired / [X] to rest, or eat some [carrot]" shows for about 2.5 s. The glyph matches the device (X on keyboard, D-pad up on pad) and follows rebinds.
+- [ ] Run stamina to zero mid-charge: the same flash and message appear.
+- [ ] **UI review (agent mockup):** size and position (root scale 1.8 on a 0.5-scale canvas), Texturina/Grenze text, the carrot icon is the orange-tinted `gi_carrot` silhouette (swap in a coloured carrot sprite if wanted), and the ember look (`ChargeEmber` is a plain 9 px square; a soft particle sprite might read better).

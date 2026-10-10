@@ -10,6 +10,8 @@
 - Added Arcane Cores, a new currency shown beside your gold and supply. Captains drop them (two from Nightmare captains and up), and the shop always sells them
 - Added the Arcane Fish at the fishing pond: one tough, glowing fish per visit that is worth an Arcane Core
 - Added an Ultimate Trial to the end of the tutorial arena: you get two free Arcane Cores to try both ultimates on a goblin horde. Any you don't use are taken back afterwards
+- Added a large charge bar in the middle of the screen that shows your horse burning carrot energy while charging
+- Added a "Your mount is tired" prompt when you try to charge without enough energy, telling you to rest or eat a carrot
 
 ### Fixes
 

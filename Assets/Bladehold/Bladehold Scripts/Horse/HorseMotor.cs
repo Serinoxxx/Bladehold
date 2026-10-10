@@ -81,6 +81,9 @@ public class HorseMotor : MonoBehaviour
     /// <summary>Raised when the player's trample kills an enemy (alive before the hit, dead after).</summary>
     public event System.Action<IDamageable> OnTrampleKill;
 
+    /// <summary>Raised when the rider asks for a charge the horse is too tired to give (sprint pressed while exhausted, or the pool emptying mid-charge).</summary>
+    public event System.Action OnChargeDenied;
+
     /// <summary>The horse's own Health, for the mount's damage forwarding and death handling.</summary>
     public Health Health => health;
 
@@ -340,6 +343,7 @@ public class HorseMotor : MonoBehaviour
     private void HandleSprintActivated()
     {
         sprintHeld = true;
+        if (IsExhausted) OnChargeDenied?.Invoke();
     }
 
     private void HandleSprintDeactivated()
@@ -474,6 +478,7 @@ public class HorseMotor : MonoBehaviour
             {
                 IsExhausted = true;
                 chargingNow = false;
+                OnChargeDenied?.Invoke();
             }
         }
         else

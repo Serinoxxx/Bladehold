@@ -646,6 +646,8 @@ hint.select,Control hint label (menus),Select,Choisir,Seleziona,Auswählen,Selec
 hint.navigate,Control hint label (menus),Navigate,Naviguer,Naviga,Navigieren,Navegar,Навигация,导航,移動,이동
 hud.mount.fallen,HUD status under the horse bars once the warhorse has died,Fallen: buy a new warhorse at the stall or shop,Tombé : achetez un nouveau destrier à l'écurie ou à la boutique,Caduto: compra un nuovo destriero alla stalla o al negozio,Gefallen: Kaufe im Stall oder Laden ein neues Schlachtross,Caído: compra un nuevo corcel en el establo o la tienda,Пал: купите нового боевого коня в конюшне или лавке,已阵亡：在马厩或商店购买新战马,倒れた：馬屋かショップで新しい軍馬を購入,쓰러짐: 마구간이나 상점에서 새 군마를 구입하세요
 hud.mount.charge_ready,HUD tag on the horse stamina bar when a Shift-charge can start,Charge ready,Charge prête,Carica pronta,Sturmangriff bereit,Carga lista,Атака готова,冲锋就绪,突撃準備完了,돌격 준비 완료
+hud.mount.tired_title,Centre charge bar: horse too tired to charge,Your mount is tired,,,,,,,,
+hud.mount.tired_rest,"Centre charge bar, after the Dismount glyph and before a carrot icon","to rest, or eat some",,,,,,,,
 hud.mount.summoning,Cast bar label while summoning the warhorse,Summoning Mount,,,,,,,,
 hud.mount.mounted,Cast bar label while riding a timed mount,Mounted,,,,,,,,
 hud.mount.summon_cancelled,Cast bar headline when a horse summon is interrupted,SUMMONING CANCELLED,,,,,,,,
