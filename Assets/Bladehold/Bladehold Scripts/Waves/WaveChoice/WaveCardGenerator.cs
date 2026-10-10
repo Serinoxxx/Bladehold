@@ -13,6 +13,18 @@ public struct WaveCardRollContext
     /// <summary>Shown on 3-skull cards; blank = a generic "clan captain" line.</summary>
     public string captainName;
     public bool isDemo;
+
+    // Enemy composition (plan 22): the roster the card's enemy list is rolled from, and the gating inputs.
+    /// <summary>The parsed enemy roster (<see cref="EnemyRosterSO.Enemies" />); null disables composition.</summary>
+    public System.Collections.Generic.IReadOnlyList<EnemyDefinition> roster;
+    /// <summary>The sector's fodder enemy id (scene override, else the pacing asset's).</summary>
+    public string fodderId;
+    /// <summary>Fraction of the crowd guaranteed to be fodder (the pacing asset's <c>fodderShare</c>).</summary>
+    public float fodderShare;
+    /// <summary>The wave's base kill quota (pacing × threat) before the card's skull multiplier; the composition's size.</summary>
+    public int baseKillQuota;
+    /// <summary>A scene's <see cref="SceneEnemyRoster" /> allow-list (null = threat gating decides eligibility).</summary>
+    public System.Collections.Generic.IReadOnlyList<string> allowedEnemyIds;
 }
 
 /// <summary>
@@ -114,6 +126,18 @@ public static class WaveCardGenerator
         WaveBonusOption option = rollBonus ? RollBonus(config, rng) : FindBonus(config, bonus);
         card.bonusType = option != null ? option.type : WaveBonusType.None;
         card.bonusAmount = BonusAmount(config, option, skulls, multiplier);
+
+        // Enemy composition (plan 22): the card chooses who you fight, rolled from the roster's threat/wave
+        // gating and scaled by the card's skull quota multiplier. The captain wave keeps its objective-driven
+        // spawns (empty composition), as do dev scenes / scenes with no roster passed in.
+        bool suppressComposition = objective != null &&
+            string.Equals(objective.id, DefeatCaptainObjective.Id, StringComparison.OrdinalIgnoreCase);
+        if (!suppressComposition && ctx.roster != null && ctx.roster.Count > 0 && ctx.baseKillQuota > 0)
+        {
+            int total = Mathf.Max(1, Mathf.RoundToInt(ctx.baseKillQuota * card.killQuotaMultiplier));
+            card.composition = WaveCompositionRoller.Roll(
+                ctx.roster, ctx.fodderId, ctx.fodderShare, ctx.wave, ctx.threat, total, ctx.allowedEnemyIds, rng);
+        }
         return card;
     }
 

@@ -6,6 +6,8 @@ This is a deliberate exception to the feature freeze in `README.md`: it *simplif
 
 Design calls (all answered 2026-09-27):
 
+> **Superseded by plan 22 Phase 7 (2026).** Wave cards now choose the *enemies* you fight (a rolled composition), and objectives become optional non-gating bonuses. Specifically: **stance is removed** (Defence/Offence no longer exist); **objectives no longer fail the wave** — a wave ends when its card's enemy composition is cleared (survival = reward), the gate is still the only run-failure state. The "Failure" and "Card mix" rows below (stance split, offence fail path) no longer apply; skulls, the clan modifier, the reward bundle and the gate-as-failure principle carry over. See `plans/22-playtest-feedback-oct10.md` Phase 7.
+
 | Question | Decision |
 |---|---|
 | Reward | **Bundle per card:** gold + supply + one bonus (draft pick / Goblin Blood / Orcish Metal / Troll Heart), all scaled by stance and skulls |

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using UnityEngine;
 
@@ -24,6 +25,33 @@ public class WaveCard
     public float killQuotaMultiplier = 1f;
     public bool hasCaptain;
     public string captainName;
+
+    [Header("Enemy composition (plan 22)")]
+    /// <summary>
+    ///     The enemies this wave spawns (plan 22): the card chooses who you fight. Rolled by
+    ///     <see cref="WaveCompositionRoller" /> from the roster's threat/wave gating. Empty = fall back
+    ///     to the old threat-gated kill quota (dev scenes, the captain wave, missing roster).
+    /// </summary>
+    public List<WaveEnemyEntry> composition = new List<WaveEnemyEntry>();
+
+    public bool HasComposition => composition != null && composition.Count > 0;
+
+    /// <summary>Total enemies the composition spawns (0 when empty).</summary>
+    public int TotalEnemies
+    {
+        get
+        {
+            int total = 0;
+            if (composition != null)
+            {
+                foreach (WaveEnemyEntry e in composition)
+                {
+                    if (e != null) total += Mathf.Max(0, e.count);
+                }
+            }
+            return total;
+        }
+    }
 
     [Header("Reward")]
     public float rewardMultiplier = 1f;
@@ -100,6 +128,22 @@ public class WaveCard
         string name = clan.name ?? "";
         if (name.StartsWith("Clan_", StringComparison.OrdinalIgnoreCase)) name = name.Substring(5);
         return name.ToLowerInvariant();
+    }
+}
+
+/// <summary>One enemy type and how many of it a <see cref="WaveCard" /> spawns (plan 22).</summary>
+[Serializable]
+public class WaveEnemyEntry
+{
+    public string enemyId;
+    [Min(0)] public int count;
+
+    public WaveEnemyEntry() { }
+
+    public WaveEnemyEntry(string enemyId, int count)
+    {
+        this.enemyId = enemyId;
+        this.count = count;
     }
 }
 

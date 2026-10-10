@@ -108,6 +108,12 @@ public class SurvivorsSpawner : MonoBehaviour
     private bool isInitialized = false;
     private bool anyError = false;
 
+    // Composition mode (plan 22): the wave card's exact enemy list drives spawning instead of the
+    // threat-gated weighted draw. The bag is the remaining ids to spawn, shuffled so types interleave.
+    private readonly List<string> compositionBag = new List<string>();
+    private int compositionIndex;
+    private bool compositionMode;
+
     public event Action OnWaveWiped;
 
     public int AliveCount => aliveCount;
@@ -263,6 +269,49 @@ public class SurvivorsSpawner : MonoBehaviour
     /// <summary>
     ///     Begins wave spawning for the given wave number with an optional enemy quota.
     /// </summary>
+    /// <summary>
+    ///     Plan 22: sets the exact enemy list the next <see cref="StartWave" /> spawns (the wave card's
+    ///     composition). Pass null or empty to clear it and fall back to the threat-gated weighted draw.
+    ///     In composition mode the spawner draws from this bag instead of <see cref="SelectSpawnTypeForWave" />,
+    ///     ignores objective spawn overrides and the continuous-spawn trickle, and the wave ends
+    ///     (<see cref="OnWaveWiped" />) once the bag is spent and the field is clear.
+    /// </summary>
+    public void SetWaveComposition(IReadOnlyList<WaveEnemyEntry> composition)
+    {
+        compositionBag.Clear();
+        compositionIndex = 0;
+        compositionMode = false;
+        if (composition == null) return;
+
+        foreach (WaveEnemyEntry entry in composition)
+        {
+            if (entry == null || string.IsNullOrEmpty(entry.enemyId)) continue;
+            for (int i = 0; i < entry.count; i++) compositionBag.Add(entry.enemyId);
+        }
+        if (compositionBag.Count == 0) return;
+
+        // Shuffle so types interleave instead of arriving in single-type blocks.
+        for (int i = compositionBag.Count - 1; i > 0; i--)
+        {
+            int j = UnityEngine.Random.Range(0, i + 1);
+            (compositionBag[i], compositionBag[j]) = (compositionBag[j], compositionBag[i]);
+        }
+        compositionMode = true;
+    }
+
+    /// <summary>The next spawnable type from the composition bag, skipping ids with no prefab; null when spent.</summary>
+    private SpawnType NextCompositionType()
+    {
+        while (compositionIndex < compositionBag.Count)
+        {
+            string id = compositionBag[compositionIndex++];
+            SpawnType type = spawnTypes.Find(t => t.def != null && string.Equals(t.def.id, id, StringComparison.OrdinalIgnoreCase));
+            if (type != null && type.prefab != null) return type;
+            Debug.LogWarning($"[SurvivorsSpawner] Composition enemy '{id}' has no spawnable type/prefab; skipping.");
+        }
+        return null;
+    }
+
     public void StartWave(int waveNumber, int enemyCount = 0)
     {
         InitializeIfNeeded();
@@ -391,7 +440,7 @@ public class SurvivorsSpawner : MonoBehaviour
     {
         get
         {
-            if (!isSpawningActive || GameLoopManager.Instance == null) return false;
+            if (!isSpawningActive || compositionMode || GameLoopManager.Instance == null) return false;
             ISurvivorsObjective objective = GameLoopManager.Instance.CurrentObjective;
             return objective is IRequiresContinuousSpawns && !objective.IsComplete && !objective.IsFailed;
         }
@@ -501,14 +550,17 @@ public class SurvivorsSpawner : MonoBehaviour
 
     private void SpawnEnemyForWave(int waveNumber)
     {
-        SpawnType selectedType = SelectSpawnTypeForWave(waveNumber);
+        // Composition mode (plan 22): the wave card's list decides who spawns; the golden-goblin and
+        // shielder-cap substitutions below only apply to the regular threat-gated draw.
+        SpawnType selectedType = compositionMode ? NextCompositionType() : SelectSpawnTypeForWave(waveNumber);
+        if (compositionMode && selectedType == null) return;
 
         if (stats == null && Player.Instance != null)
         {
             stats = Player.Instance.Stats;
         }
 
-        if (stats != null)
+        if (!compositionMode && stats != null)
         {
             float goldenChance = stats.GetValue(StatType.GoldenGoblinChance);
             if (goldenChance > 0f && UnityEngine.Random.value < goldenChance)
@@ -524,7 +576,7 @@ public class SurvivorsSpawner : MonoBehaviour
         if (selectedType == null || selectedType.prefab == null) return;
 
         // Extra safeguard: if a shielder was selected but is already at cap, swap to non-shielder
-        if (selectedType.isShielder && selectedType.AliveCount >= maxConcurrentShielders)
+        if (!compositionMode && selectedType.isShielder && selectedType.AliveCount >= maxConcurrentShielders)
         {
             SpawnType fallback = spawnTypes.Find(t => !t.isShielder) ?? spawnTypes[0];
             if (fallback != null && fallback.prefab != null && (!fallback.isShielder || fallback.AliveCount < maxConcurrentShielders))

@@ -90,7 +90,20 @@ Manual verification:
 - [ ] A strong overhead doesn't "kill" the dummy and strand the lesson (it revives).
 - [ ] Works on both keyboard/mouse and controller (direction is read from the camera turn, so both work).
 
-## Phase 6: Meta / Rest Area lag (shadow fix — visual review)
+## Slice 7.1: wave cards choose enemies (composition data model)
+
+Code only (no new SO assets): `WaveCard.composition` (`WaveEnemyEntry`), new `WaveCompositionRoller`, `WaveCardGenerator.Build` rolls the composition, `SurvivorsSpawner.SetWaveComposition`/`NextCompositionType`, `GameLoopManager` spawns it and ends the wave on `OnWaveWiped` (survival = reward), objective demoted to a non-gating bonus (`compositionWaveActive`). Reads the existing `RoundPacingConfigSO` (`fodderEnemyId`, `fodderShare`) and the enemy roster — nothing to wire. Composition is skipped on the captain wave and in scenes with no roster (dev scenes fall back to the old quota path).
+
+Manual verification (playtest — the card/HUD still show the objective until slices 7.3/7.4):
+- [ ] Play a sector wave with a wave card: the crowd that spawns matches a rolled mix (mostly fodder, some variety), and the **wave ends when you've cleared the crowd** rather than when the objective finishes.
+- [ ] Failing/ignoring the wave's objective no longer fails the wave — it just logs a "bonus objective" line and the wave still ends on clearing the enemies. The gate falling still ends the run.
+- [ ] Surviving the wave still grants the card's gold/supply/bonus reward.
+- [ ] The captain (final) wave is unchanged: it spawns the captain via its objective, no composition crowd.
+- [ ] Golden Goblin / suppress-spawn objectives still run their own spawns (no composition crowd on those waves).
+- [ ] A scene with a pinned `SceneEnemyRoster` only rolls enemies from that list; a dev scene with no roster still spawns the old threat-gated way.
+- [ ] Watch the console for `Composition enemy '<id>' has no spawnable type/prefab` warnings — any roster id with no prefab is skipped; add it to the prefab map if it should appear.
+
+
 
 Code/scene done headlessly via MCP: realtime additional-light shadows disabled in
 `Bladehold Meta Area Scene` (21 Point + 9 Spot, kept one bright Spot) and

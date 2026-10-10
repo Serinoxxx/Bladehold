@@ -58,6 +58,7 @@ public class GameLoopManager : MonoBehaviour
     private int targetKillsThisWave = 15;
     private ISurvivorsObjective currentObjective;
     private bool isWaveActive = false;
+    private bool compositionWaveActive = false;
     private bool isIntermission = false;
     private bool isPrep = false;
     private bool isChoosingCard = false;
@@ -202,6 +203,9 @@ public class GameLoopManager : MonoBehaviour
             objectiveManager.OnObjectiveFailed += HandleObjectiveFailed;
         }
 
+        // Composition mode (plan 22): clearing the rolled enemy list is what ends the wave.
+        if (spawner != null) spawner.OnWaveWiped += HandleWaveWiped;
+
         int initialWave = RunSession.CurrentWave > 0 ? RunSession.CurrentWave : 1;
         RunSession.CurrentWave = initialWave;
 
@@ -227,6 +231,21 @@ public class GameLoopManager : MonoBehaviour
         {
             objectiveManager.OnObjectiveCompleted -= HandleObjectiveCompleted;
             objectiveManager.OnObjectiveFailed -= HandleObjectiveFailed;
+        }
+
+        if (spawner != null) spawner.OnWaveWiped -= HandleWaveWiped;
+    }
+
+    /// <summary>
+    ///     Composition mode (plan 22): the rolled enemy list has been fully spawned and killed, so the wave
+    ///     is survived. Resolves it as a success (the gate falling ends the run separately).
+    /// </summary>
+    private void HandleWaveWiped()
+    {
+        if (compositionWaveActive && isWaveActive && !isResolving)
+        {
+            Debug.Log("[GameLoopManager] Composition wave cleared; resolving as survived.");
+            ResolveWave(true);
         }
     }
 
@@ -307,15 +326,37 @@ public class GameLoopManager : MonoBehaviour
     private WaveCardRollContext BuildRollContext(int wave)
     {
         CampaignNodeSO node = CurrentCampaignNode;
+        int threat = SectorThreat.Current;
+        IReadOnlyList<EnemyDefinition> roster = spawner != null && spawner.Roster != null ? spawner.Roster.Enemies : null;
         return new WaveCardRollContext
         {
             wave = wave,
-            threat = SectorThreat.Current,
+            threat = threat,
             lastObjectiveId = lastObjectiveId,
             nodeClan = node != null ? node.clanBuff : null,
             captainName = node != null ? node.captainName : null,
-            isDemo = DemoConfigSO.IsDemo
+            isDemo = DemoConfigSO.IsDemo,
+            roster = roster,
+            fodderId = SceneEnemyRoster.FodderOverride ?? (pacingConfig != null ? pacingConfig.fodderEnemyId : "goblin"),
+            fodderShare = pacingConfig != null ? pacingConfig.fodderShare : 0.6f,
+            baseKillQuota = pacingConfig != null ? pacingConfig.GetKillQuota(wave, threat) : 15 + (wave - 1) * 5,
+            allowedEnemyIds = BuildAllowedEnemyIds(roster)
         };
+    }
+
+    /// <summary>
+    ///     When a scene pins its roster (<see cref="SceneEnemyRoster" />), the ids the composition roller may
+    ///     draw from; null means threat gating decides eligibility instead.
+    /// </summary>
+    private IReadOnlyList<string> BuildAllowedEnemyIds(IReadOnlyList<EnemyDefinition> roster)
+    {
+        if (!SceneEnemyRoster.Active || roster == null) return null;
+        List<string> ids = new List<string>();
+        foreach (EnemyDefinition def in roster)
+        {
+            if (def != null && SceneEnemyRoster.Allows(def.id)) ids.Add(def.id);
+        }
+        return ids;
     }
 
     private void HandleWaveCardPicked(IReadOnlyList<WaveCard> offered, WaveCard picked)
@@ -490,21 +531,39 @@ public class GameLoopManager : MonoBehaviour
 
         StartWaveObjective(waveNumber, card);
 
-        if (currentObjective is GoblinRushObjective)
-        {
-            targetKillsThisWave = 999999;
-        }
-        else if (currentObjective is KillEnemiesObjective holdTheGate)
-        {
-            // Hold the Gate's kill target is the wave quota, so it scales with threat and skulls.
-            holdTheGate.SetRequiredKills(targetKillsThisWave);
-        }
+        // Composition mode (plan 22): the wave card's rolled enemy list drives spawning, and surviving it
+        // (the field clearing) ends the wave — the objective becomes an optional side-goal that no longer
+        // gates the wave. Skipped for the captain wave and objectives that run their own spawns.
+        bool useComposition = card != null && card.HasComposition && spawner != null
+            && !(currentObjective is ISuppressRegularSpawns)
+            && (currentObjective == null || currentObjective.ObjectiveId != CaptainObjectiveId);
+        compositionWaveActive = useComposition;
 
-        if (spawner != null)
+        if (useComposition)
         {
+            targetKillsThisWave = Mathf.Max(1, card.TotalEnemies);
+            spawner.SetWaveComposition(card.composition);
             spawner.StartWave(waveNumber, targetKillsThisWave);
-            // Golden Goblin: the objective is the only thing on the field.
-            if (currentObjective is ISuppressRegularSpawns) spawner.StopSpawning();
+        }
+        else
+        {
+            if (currentObjective is GoblinRushObjective)
+            {
+                targetKillsThisWave = 999999;
+            }
+            else if (currentObjective is KillEnemiesObjective holdTheGate)
+            {
+                // Hold the Gate's kill target is the wave quota, so it scales with threat and skulls.
+                holdTheGate.SetRequiredKills(targetKillsThisWave);
+            }
+
+            if (spawner != null)
+            {
+                spawner.SetWaveComposition(null);
+                spawner.StartWave(waveNumber, targetKillsThisWave);
+                // Golden Goblin: the objective is the only thing on the field.
+                if (currentObjective is ISuppressRegularSpawns) spawner.StopSpawning();
+            }
         }
 
         // A 3-skull card brings a captain (the Captain Assault objective spawns its own).
@@ -598,6 +657,12 @@ public class GameLoopManager : MonoBehaviour
     {
         if (obj is KillRemainingEnemiesObjective) return; // legacy cleanup objective; the rout replaces it
         if (!isWaveActive || isResolving) return;
+        // Composition mode (plan 22): the objective is an optional side-goal; clearing the field ends the wave.
+        if (compositionWaveActive)
+        {
+            Debug.Log($"[GameLoopManager] Bonus objective completed: {obj?.Title} (wave ends when the field is clear).");
+            return;
+        }
         Debug.Log($"[GameLoopManager] Objective Completed: {obj?.Title}");
         ResolveWave(true);
     }
@@ -605,6 +670,12 @@ public class GameLoopManager : MonoBehaviour
     private void HandleObjectiveFailed(ISurvivorsObjective obj)
     {
         if (!isWaveActive || isResolving) return;
+        // Composition mode (plan 22): a failed side-goal no longer fails the wave.
+        if (compositionWaveActive)
+        {
+            Debug.Log($"[GameLoopManager] Bonus objective failed: {obj?.Title} (wave continues).");
+            return;
+        }
         Debug.Log($"[GameLoopManager] Objective Failed: {obj?.Title}. No card reward.");
         ResolveWave(false);
     }
@@ -739,6 +810,7 @@ public class GameLoopManager : MonoBehaviour
     {
         if (!isWaveActive) return;
         isWaveActive = false;
+        compositionWaveActive = false;
         isResolving = false;
         int clearedWave = CurrentWave;
         WaveCard card = CurrentWaveCard;
