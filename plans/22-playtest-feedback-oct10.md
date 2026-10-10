@@ -21,14 +21,17 @@ Paths are relative to `Assets/Bladehold/Bladehold Scripts/`; line numbers are fr
   - Check every screen that shares the card view (war-banner/rest-area draft, `Fishing/UI/FishingDraftUI.cs`).
   - Verify: open a draft with a controller connected, no stray highlight; move the mouse, hover works again.
 - [ ] **1.2 Glyph missing on tower plot prompt the first time you build.**
+  - **Not reproduced 2026-10-10:** played Valley Stronghold on keyboard/mouse and forced gamepad. The plot prompt "Build Defence", the tutorial "[X] Build an Arrow Tower" hint, the build wheel's Cancel glyph and the built tower's "Upgrade" prompt all showed their glyph on the first build. Needs repro details from Lance: which scene, which glyph (HUD prompt, world marker, wheel) and which device. The only blank glyph seen was after a mid-play script reload, which players never hit.
   - Prompt UI: `UI/InteractionPromptView.cs` / `Input/InputGlyph.cs` / `Input/GlyphMapSO.cs`; plot: `Fort/TowerPlot.cs`.
   - Likely the glyph resolves before the active device / sprite asset is known (first enable), and only refreshes on device change. Fix: resolve on `OnEnable` and whenever the prompt text is (re)set.
   - Verify on keyboard and controller in a fresh scene load.
-- [ ] **1.3 Catapult projectile: red flaming boulder instead of a sphere.**
+- [x] **1.3 Catapult projectile: red flaming boulder instead of a sphere.**
+  - **Done 2026-10-10:** the Fire catapult's `RollingFireball.prefab` now uses the Synty `SM_Env_Rock_Round_03` mesh (spun by the existing roll code) with the new glowing-red `Materials/Mat_FireBoulder.mat` and a `Flames` child (`FX_Fireball_01`). The in-flight `CatapultBoulder.prefab` gets a red material, a `FireVisual` flame child and a fire-coloured trail through the new `CatapultProjectile.ApplyFireLook`, only for Fire-element catapults. Plain, Ice and Storm catapults keep the grey rock.
   - `Fort/CatapultProjectile.cs` + its prefab (and `CatapultStormCloud` if it reuses the mesh).
   - Swap the sphere mesh for a Synty rock/boulder mesh with a red/ember material, add a fire trail (particles on the prefab, not code-built) and a slow tumble. Use `find-and-import-assets` if no suitable rock/fire VFX exists.
   - Mostly prefab work: do it via Unity MCP; anything left goes in the editor checklist.
-- [ ] **1.4 Horse trample: smaller hitbox, no knockback unless charging.**
+- [x] **1.4 Horse trample: smaller hitbox, no knockback unless charging.**
+  - **Done 2026-10-10 (data only):** `HorseSO.asset` sets `cruiseKnockbackFraction` 0.5 → 0, so hits without a charge carry zero knockback, which `KnockbackReceiver` ignores. The trample box shrinks from half extents (0.8, 0.8, 1.2) at 2.19 ahead to (0.6, 0.8, 0.8) at 2.2: 1.2 m wide instead of 1.6 for a 0.84 m horse, reaching about 1 m past the nose instead of 1.3 m. The small cruise damage stays. The script defaults match. The knight AI's charge shares this box.
   - `Horse/HorseChargeDamage.cs` (`SetFactors` :155, knockback at :231) and `Horse/HorseSO.cs`.
   - Non-charging contact: `knockbackScale = 0` (keep or zero the small damage, decide in session; default: keep damage, zero knockback).
   - Shrink the trample trigger (collider on the horse prefab / SO radius). Verify against a crowd in Enemy Zoo.

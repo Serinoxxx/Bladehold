@@ -19,6 +19,16 @@ public class CatapultProjectile : MonoBehaviour
     [SerializeField] private CatapultStormCloud stormCloudPrefab;
     [SerializeField] private RollingFireball rollingFireballPrefab;
 
+    [Header("Fire look (Fire-element catapults)")]
+    [Tooltip("The boulder mesh renderer; gets Fire Boulder Material when the tower is Fire.")]
+    [SerializeField] private Renderer boulderRenderer;
+    [SerializeField] private Material fireBoulderMaterial;
+    [Tooltip("Inactive child (flame particles) switched on when the tower is Fire.")]
+    [SerializeField] private GameObject fireVisual;
+    [SerializeField] private TrailRenderer trail;
+    [Tooltip("Trail colour used instead of the smoke trail's own when the tower is Fire.")]
+    [SerializeField] private Gradient fireTrailGradient;
+
     private Vector3 startPoint;
     private Vector3 targetPoint;
     private float damageAmount;
@@ -37,6 +47,10 @@ public class CatapultProjectile : MonoBehaviour
         {
             Debug.LogError("[CatapultProjectile] explosionFeedback is not assigned on " + gameObject.name + ".", this);
         }
+        if (boulderRenderer == null || fireBoulderMaterial == null || fireVisual == null)
+        {
+            Debug.LogError("[CatapultProjectile] Fire look (boulderRenderer / fireBoulderMaterial / fireVisual) is not fully assigned on " + gameObject.name + ".", this);
+        }
     }
 
     public void SetElementalUpgrades(bool slipperyGround, bool stormCloud, bool rollingFireball)
@@ -44,6 +58,14 @@ public class CatapultProjectile : MonoBehaviour
         isSlipperyGround = slipperyGround;
         isStormCloud = stormCloud;
         isRollingFireball = rollingFireball;
+        if (rollingFireball) ApplyFireLook();
+    }
+
+    private void ApplyFireLook()
+    {
+        if (boulderRenderer != null && fireBoulderMaterial != null) boulderRenderer.sharedMaterial = fireBoulderMaterial;
+        if (fireVisual != null) fireVisual.SetActive(true);
+        if (trail != null && fireTrailGradient != null) trail.colorGradient = fireTrailGradient;
     }
 
     public void SetKnockback(float away, float up)

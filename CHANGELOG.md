@@ -21,8 +21,11 @@
 - Fixed the towers killing the goblins in the tutorial's horse charge lessons; they now hold fire so the kills are yours
 - Fixed tower and wall kills refilling your horse's charge meter in the tutorial
 - Fixed a second card being highlighted on draft and wave choice screens when playing with a controller
+- Fixed riding into enemies without charging knocking them flying; only a charge sends them flying now
 
 ### Balance Changes
+
+- Reduced the horse's trample area so it only hits enemies right in front of it
 
 ### General Changes
 
@@ -38,6 +41,7 @@
 - The shop no longer sells ultimates
 - Replaced the Twin Fury meta perk with Arcane Reserve: start every run with an Arcane Core. If you owned Twin Fury, you now own Arcane Reserve
 - Left Bumper no longer dashes on a controller (B still does), since it now opens the Ultimate Wheel. The ultimate is no longer on Y, so it doesn't clash with Interact
+- Updated the Fire catapult to hurl a red, flaming boulder, and its rolling fireball is now a burning rock instead of a ball
 
 ## [0.1.34] - 2026-10-06
 

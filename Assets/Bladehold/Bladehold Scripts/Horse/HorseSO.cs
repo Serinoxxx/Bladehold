@@ -84,9 +84,9 @@ public class HorseSO : ScriptableObject
     [Range(0f, 1f)]
     public float cruiseDamageFraction = 0.15f;
 
-    [Tooltip("Fraction of the trample's knockback applied while riding without charging.")]
+    [Tooltip("Fraction of the trample's knockback applied while riding without charging. 0 = only a charge knocks enemies back.")]
     [Range(0f, 1f)]
-    public float cruiseKnockbackFraction = 0.5f;
+    public float cruiseKnockbackFraction = 0f;
 
     [Tooltip("Fraction of current speed lost per victim while riding without charging — a horde bogs a cruising horse down.")]
     [Range(0f, 1f)]
@@ -116,10 +116,10 @@ public class HorseSO : ScriptableObject
     public float hitCooldownSeconds = 1f;
 
     [Tooltip("Half extents of the trample overlap box ahead of the horse.")]
-    public Vector3 hitBoxHalfExtents = new Vector3(1.2f, 1.2f, 1.6f);
+    public Vector3 hitBoxHalfExtents = new Vector3(0.6f, 0.8f, 0.8f);
 
     [Tooltip("How far ahead of the horse's origin the trample box is centred.")]
-    public float hitBoxForwardOffset = 1.8f;
+    public float hitBoxForwardOffset = 2.2f;
 
     [Header("Crowd (player mode)")]
     [Tooltip("Layers the ridden horse never physically collides with (excluded from its CharacterController) — it shoulders these aside instead. Defaults to Enemy | Ragdoll.")]

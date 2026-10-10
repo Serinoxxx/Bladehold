@@ -33,7 +33,7 @@ MonoBehaviour:
   hitSpeedLossFraction: 0
   hitSpeedLossPerResistance: 0
   cruiseDamageFraction: 0.15
-  cruiseKnockbackFraction: 0.5
+  cruiseKnockbackFraction: 0
   cruiseHitSpeedLossFraction: 0.15
   cruiseHitSpeedLossPerResistance: 0.02
   cruiseCrowdDragPerEnemy: 0.12
@@ -42,8 +42,8 @@ MonoBehaviour:
   damageType: 1
   knockbackForce: 7
   hitCooldownSeconds: 0.2
-  hitBoxHalfExtents: {x: 0.8, y: 0.8, z: 1.2}
-  hitBoxForwardOffset: 2.19
+  hitBoxHalfExtents: {x: 0.6, y: 0.8, z: 0.8}
+  hitBoxForwardOffset: 2.2
   crowdLayers:
     serializedVersion: 2
     m_Bits: 384
