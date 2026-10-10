@@ -45,6 +45,7 @@ public class ArmourPedestal : MonoBehaviour
     private UIThemeSO Theme => UITheme.For(this);
 
     private Interactable interactable;
+    private Camera cachedCamera;
     private Vector3 baseMountPosition;
     private GameObject spawnedModel;
     private Transform playerTransform;
@@ -111,7 +112,8 @@ public class ArmourPedestal : MonoBehaviour
         }
 
         // 2. Billboard world canvas towards camera
-        Camera cam = Camera.main;
+        if (cachedCamera == null) cachedCamera = Camera.main;
+        Camera cam = cachedCamera;
         if (cam != null && worldCanvas != null)
         {
             worldCanvas.transform.rotation = cam.transform.rotation;

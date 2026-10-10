@@ -42,6 +42,7 @@ public class MountPedestal : MonoBehaviour
     private UIThemeSO Theme => UITheme.For(this);
 
     private Interactable interactable;
+    private Camera cachedCamera;
     private Vector3 baseMountPosition;
     private GameObject spawnedModel;
     private Transform playerTransform;
@@ -93,7 +94,8 @@ public class MountPedestal : MonoBehaviour
             modelMountPoint.localPosition = baseMountPosition + Vector3.up * (Mathf.Sin(Time.time * 2.0f) * bobAmplitude);
         }
 
-        Camera cam = Camera.main;
+        if (cachedCamera == null) cachedCamera = Camera.main;
+        Camera cam = cachedCamera;
         if (cam != null && worldCanvas != null)
         {
             worldCanvas.transform.rotation = cam.transform.rotation;

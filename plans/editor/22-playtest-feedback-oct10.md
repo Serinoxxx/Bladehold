@@ -68,3 +68,44 @@ Code: `Player/ControllerAimAssist.cs`, `Player/AimAssistSO.cs`, config `Assets/B
 - [ ] Strength 0 in Settings > Controller turns it fully off; a wide window (15) grabs heads further off the crosshair.
 - [ ] Mouse aiming is unaffected.
 - [ ] Heads behind walls aren't assisted (if a wall layer is missed, add it to the asset's Occluder Layers).
+
+## Slice 5.1: directional-attack tutorial lesson
+
+Code: `Tutorial/DirectionalAttackStep.cs` (new step), `Damage.meleeSwingDirection` stamped by `DamageTrigger`, `PlayerAttack.CurrentSwingDirection`. Loc keys: `tutorial.directional`, `tutorial.directional_tip`, `tutorial.swing.overhead/right/left`.
+
+Scene wiring (Tutorial Dungeon — the dungeon scene with the existing melee lessons; find the `TutorialDirector` there):
+- [ ] Add a **training dummy** to the scene: any goblin/dummy prefab with a `Health`. Give it plenty of HP (the step revives it each lethal hit, so it won't die, but a high max avoids corpse flinch). Stand it in a clear practice spot with a `waypointTarget` anchor.
+- [ ] Add a GameObject with the **`DirectionalAttackStep`** component. Assign:
+  - `dummy` = the training dummy's `Health`.
+  - `stepId` = e.g. `Directional`.
+  - `waypointTarget` = the dummy (or an anchor by it).
+  - `hint.locKey` = `tutorial.directional`, `hint.actionName` = `Attack`.
+  - `secondaryHint.locKey` = `tutorial.directional_tip` (no glyph).
+- [ ] Insert the step into `TutorialDirector.steps` at the right point — after the basic quick/heavy attack lessons, before the bow step (or wherever the directional lesson reads best).
+- [ ] Wire the gated door: the step's `onStepCompleted` opens the next door / `TutorialGateOpener`, same pattern as the other lessons (or rely on the director's normal advance if there's no gate here).
+
+Manual verification:
+- [ ] Enter the lesson: the hint explains the three swings and the counter shows `• Overhead • Right • Left`.
+- [ ] Land an overhead (look up before swinging): its label turns green with a tick. Repeat for right (turn right) and left (turn left) — all three tick and the step completes, opening the door.
+- [ ] A strong overhead doesn't "kill" the dummy and strand the lesson (it revives).
+- [ ] Works on both keyboard/mouse and controller (direction is read from the camera turn, so both work).
+
+## Phase 6: Meta / Rest Area lag (shadow fix — visual review)
+
+Code/scene done headlessly via MCP: realtime additional-light shadows disabled in
+`Bladehold Meta Area Scene` (21 Point + 9 Spot, kept one bright Spot) and
+`Bladehold Rest Area Scene` (7 Point, kept the directional sun). `Camera.main` cached
+in the three Meta pedestal scripts. Before/after render counters are in
+`plans/22-playtest-feedback-oct10.md` slices 6.1/6.2.
+
+Visual review (the only human-only part):
+- [ ] Walk the Meta Area: with the 30 fill-light shadows off and one key Spot kept, the
+      scene still reads well — no flat/floating-character look that bothers you. If a
+      spot needs grounding, re-enable shadows on one nearby light (prefer a Spot, not a
+      Point) rather than all of them.
+- [ ] Walk the Rest Area: the sun still grounds the player/NPCs; the shop/well/draft
+      props don't look flat without their point-light shadows.
+- [ ] Optional, bigger follow-up: bake lighting for both scenes (Mixed + Subtractive is
+      already set) so static geometry gets baked shadows back for free — would let a few
+      key lights stay shadowed cheaply. Not required; the realtime-shadow cut already
+      lands the perf win.

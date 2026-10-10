@@ -13,9 +13,11 @@
 - Added a large charge bar in the middle of the screen that shows your horse burning carrot energy while charging
 - Added a "Your mount is tired" prompt when you try to charge without enough energy, telling you to rest or eat a carrot
 - Added controller aim assist for the bow and other ranged weapons, with Strength and Window sliders in Settings > Controller
+- Added a directional-attack lesson to the tutorial: practise overhead, right and left swings on a training dummy to open the next door
 
 ### Fixes
 
+- Improved performance in the Meta Area and Rest Area, which could feel laggy: removed a large pile of redundant real-time light shadows in both hubs (roughly halving the work the renderer does there) while keeping a key light for grounding
 - Fixed four mace draft cards (Concussive Impact, Earthshaker, Colossal Force and Seismic Quake) showing no icon
 - Fixed the tower build wheel showing each tower's supply cost twice
 - Fixed wall health bars clipping into the wall model; they now float clear above the wall

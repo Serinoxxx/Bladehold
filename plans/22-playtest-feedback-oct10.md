@@ -67,15 +67,22 @@ Paths are relative to `Assets/Bladehold/Bladehold Scripts/`; line numbers are fr
 
 ## Phase 5: Tutorial directional attacks
 
-- [ ] **5.1 Directional-attack lesson in the Tutorial Dungeon.**
+- [x] **5.1 Directional-attack lesson in the Tutorial Dungeon.**
+  - **Done 2026-10-11 (code):** new `Tutorial/DirectionalAttackStep.cs` tracks which of the three swings (overhead / right / left) have landed on a training dummy, shows a ticked counter line and completes when all three are in. Swing side now rides on the hit: `Damage.meleeSwingDirection` (nullable `SwingDirection`) is stamped in `DamageTrigger.BuildDamage` from the new `PlayerAttack.CurrentSwingDirection`, so the dummy reads direction straight off its own `OnDamaged` — no reaching into player internals. The dummy is kept alive through the lesson via `Health.TryPreventDeath` so a hard overhead can't end it early. Loc: `tutorial.directional`, `tutorial.directional_tip`, `tutorial.swing.overhead/right/left`. Scene dummy + door wiring and the step's place in `TutorialDirector.steps`: `plans/editor/22-playtest-feedback-oct10.md`.
   - `Tutorial/TutorialDirector.cs`, `TutorialStep.cs`, `TutorialHint.cs`, `TutorialGateOpener.cs`.
-  - New step: hint explaining **Overhead = extra damage, needs precision; Right = wide arc, slower; Left = quick, shorter range**. A training dummy tracks which directions have hit it (listen to the hit/`OnDamaged` with attack direction; add direction to `Damage` only if it's not already exposed), shows 3 ticks, and opens the next door when all 3 land.
-  - Localize the strings; the dummy and door wiring in the scene goes via Unity MCP / editor checklist.
 
 ## Phase 6: Meta and Rest Area lag
 
-- [ ] **6.1 Profile.** Use `unityMCP manage_profiler` (or the Profiler window) in `Bladehold Meta Area Scene` and `Bladehold Rest Area Scene`: CPU main thread, rendering (batches/shadow casters/realtime lights), GC alloc. Write findings into this slice.
-- [ ] **6.2 Fix the top offenders** found in 6.1 (likely candidates: realtime shadow-casting lights, un-baked lighting, per-frame `Find`/allocations in NPC/shop scripts, particle overdraw). Re-profile and record before/after frame times.
+- [x] **6.1 Profile.** Profiled both hub scenes in play mode via `unityMCP manage_profiler` (Render counters + FrameTimingManager). **Top offender in both: a pile of realtime shadow-casting additional lights with no baked lighting.** Neither scene has baked lightmap data (not in `Bladehold Scenes/` lightmap folders), and `MixedBakeMode` is Subtractive, so every Mixed light runs fully realtime; at runtime all lights report `lightmapBakeType=Realtime`.
+  - **Meta Area:** 32 lights, 30 shadow casters (21 Point + 9 Spot), main directional inactive. Baseline render counters: **Draw Calls 3981, Batches 3936, SetPass 359, Triangles 3.16M, Shadow Casters 2300.** The `Shadows.*` CPU counters (DrawSRPBatcher, ExecuteDrawShadows, CullShadowCasters…) dominated the main thread; main-thread frame ~26–30 ms in-editor. Point-light shadows are the worst (6 cube faces each).
+  - **Rest Area:** 10 lights, 8 shadow casters (7 Point + 1 Directional sun). Baseline: **Draw Calls 4395, Batches 4371, SetPass 257, Triangles 1.73M, Shadow Casters 2922.**
+  - Secondary (minor): the three Meta pedestals (`WeaponPedestal`/`MountPedestal`/`ArmourPedestal`) called `Camera.main` (a tagged Find + alloc) every frame to billboard their world canvas. No per-frame `Find`/alloc in the Rest Area shop/station scripts. No particle-overdraw hotspot found (10 particle systems each, none large).
+- [x] **6.2 Fix the top offenders.** Killed the realtime additional-light shadow explosion and cached the pedestal camera. Scene edits saved to the two `.unity` assets; C# compile-checked clean.
+  - **Meta Area:** disabled realtime shadows on all 21 Point + 9 Spot fill lights, kept one bright central Spot (intensity 50, single shadow map) for character grounding. **After: Draw Calls 1685 (−58%), Batches 1625 (−59%), SetPass 240, Triangles 1.40M (−56%), Shadow Casters ~0.** Main-thread frame ~25 ms.
+  - **Rest Area:** disabled realtime shadows on the 7 Point lights, kept the directional sun's soft shadow (whole-scene grounding). **After: Draw Calls 3058 (−30%), Batches 3038 (−30%), SetPass 145 (−44%), Triangles 0.91M (−47%), Shadow Casters 1757 (−40%, the single sun pass).**
+  - Secondary: `Camera.main` is now cached per pedestal (resolved lazily, re-resolved if null) in the three Meta pedestal scripts.
+  - Note: in-editor play-mode frame times are noisy (editor overhead, the profiler query itself spikes a frame); the Render counter reductions are the reliable before/after signal and translate directly to player builds.
+  - **Visual review needed** (lighting look with fewer shadows): see `plans/editor/22-playtest-feedback-oct10.md`.
 
 ## Phase 7: Wave cards choose enemies, objectives become optional
 
