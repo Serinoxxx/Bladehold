@@ -29,3 +29,11 @@ Manual verification:
 - [ ] Ride (no charge) into a goblin crowd: they get bumped and take light damage, but no one is knocked back or ragdolled.
 - [ ] Charge into a crowd: knockback and ragdolls as before. Enemies beside the horse but not in front are no longer hit.
 - [ ] The Mounted Knight's charge still connects with the player.
+
+## Slice 2.1: horse stamina sources
+
+Manual verification:
+- [ ] Mounted, not charging: the stamina bar doesn't refill on its own. Dismounted: banked stamina doesn't refill on its own either.
+- [ ] Kills from the saddle (sword/bow) add no stamina. Kills on foot do (the bar on the HUD rises).
+- [ ] Carrots still refill. With the Bloodlust card, trample kills refund stamina.
+- [ ] Tutorial (Valley Stronghold) stamina step shows the new two-line hint and still completes.

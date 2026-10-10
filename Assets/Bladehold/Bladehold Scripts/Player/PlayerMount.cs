@@ -30,8 +30,9 @@ using UnityEngine.InputSystem;
 ///     The summoned warhorse is ONE animal for the whole run (<see cref="RunSession.MountHealthFraction" />,
 ///     <see cref="RunSession.MountStaminaFraction" />): dismounting and re-summoning keeps its wounds and
 ///     its banked charge stamina, and when it dies it is gone (<see cref="RunSession.MountLost" />) until a
-///     Replacement Warhorse is bought at the Rest Area shop. Charge stamina is earned by the player's kills
-///     — full value on foot, <see cref="HorseSO.mountedKillStaminaFraction" /> from the saddle — and banks
+///     Replacement Warhorse is bought at the Rest Area shop. Charge stamina comes from carrots and the
+///     player's on-foot kills (<see cref="HorseSO.mountedKillStaminaFraction" />, default 0, from the saddle;
+///     Bloodlust adds trample kills) and banks
 ///     while dismounted, so fighting on foot builds the next trample. Loyal Steed (meta perk) saves the
 ///     horse from one lethal blow per run.
 /// </summary>
@@ -552,7 +553,7 @@ public class PlayerMount : MonoBehaviour
         }
         else
         {
-            // Banked stamina trickles back while on foot at the horse's passive rate.
+            // Banked stamina trickles back while on foot at the horse's passive rate (0 by default).
             HorseSO data = StaminaConfig;
             if (data != null && !RunSession.MountLost && data.maxStamina > 0f && RunSession.MountStaminaFraction < 1f)
             {

@@ -49,15 +49,15 @@ public class HorseSO : ScriptableObject
     [Tooltip("Stamina drained per second while actually charging (Shift held at charging speed).")]
     public float staminaDrainPerSecond = 25f;
 
-    [Tooltip("Passive stamina trickle per second while not charging. Kept small: stamina is earned by kills (Stamina Per Kill), so the charge is a burst you build up, not a cooldown.")]
-    public float staminaRegenPerSecond = 2f;
+    [Tooltip("Passive stamina trickle per second while not charging (mounted, or banked while on foot). 0 = stamina only comes from carrots and on-foot kills, so the charge is a burst you earn, not a cooldown.")]
+    public float staminaRegenPerSecond = 0f;
 
     [Tooltip("Stamina gained for each enemy the player kills on foot (scaled by the HorseStaminaGainMultiplier stat). Banked even while dismounted, so fighting on foot charges the next trample.")]
     public float staminaPerKill = 8f;
 
-    [Tooltip("Fraction of Stamina Per Kill earned for kills made from the saddle without trampling (mounted sword/bow). Trample kills earn nothing unless a card (Bloodlust) adds it.")]
+    [Tooltip("Fraction of Stamina Per Kill earned for kills made from the saddle without trampling (mounted sword/bow). 0 = riding earns nothing. Trample kills earn nothing unless a card (Bloodlust) adds it.")]
     [Range(0f, 1f)]
-    public float mountedKillStaminaFraction = 0.5f;
+    public float mountedKillStaminaFraction = 0f;
 
     [Tooltip("Fraction of Max Stamina an exhausted horse must recover before it can charge again — hysteresis so charging doesn't stutter on/off at empty.")]
     [Range(0f, 1f)]

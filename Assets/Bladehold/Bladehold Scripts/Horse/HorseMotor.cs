@@ -18,8 +18,8 @@ using UnityEngine.AI;
 ///     depends on the charge: riding without charging ("cruise") applies the Cruise fractions on
 ///     <see cref="HorseSO" /> (a light shove that bogs down in a crowd), while a Shift-charge hits at
 ///     full strength with the charging speed-loss / crowd-drag values (tuned to plough straight
-///     through). Charging drains stamina; stamina is earned mainly by kills (see
-///     <see cref="AddStamina" />, fed by <c>PlayerMount</c>), with only a small passive trickle, so
+///     through). Charging drains stamina; stamina comes only from carrots and on-foot kills (see
+///     <see cref="AddStamina" />, fed by <c>PlayerMount</c>) — no passive regen by default — so
 ///     the charge is a burst you build up rather than a cooldown. An emptied pool locks charging
 ///     until it recovers past <see cref="HorseSO.exhaustedRecoveryFraction" />.
 ///
@@ -465,8 +465,8 @@ public class HorseMotor : MonoBehaviour
         bool chargingNow = wantsCharge
             && Mathf.Abs(CurrentSpeed) >= horseData.chargeMinSpeedFraction * effectiveMaxSpeed;
 
-        // Stamina: charging drains, everything else regens. Hitting empty locks charging until the
-        // pool recovers past the hysteresis threshold, so it can't stutter on/off at zero.
+        // Stamina: charging drains; otherwise only the (default 0) passive regen applies. Hitting empty locks
+        // charging until the pool recovers past the hysteresis threshold, so it can't stutter on/off at zero.
         if (chargingNow)
         {
             Stamina = Mathf.Max(0f, Stamina - horseData.staminaDrainPerSecond * dt);

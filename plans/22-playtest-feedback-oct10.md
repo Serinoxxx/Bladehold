@@ -39,7 +39,8 @@ Paths are relative to `Assets/Bladehold/Bladehold Scripts/`; line numbers are fr
 
 ## Phase 2: Horse stamina ("carrot energy")
 
-- [ ] **2.1 Stamina sources while riding.**
+- [x] **2.1 Stamina sources while riding.**
+  - **Done 2026-10-10 (data + text):** `HorseSO.asset` sets `staminaRegenPerSecond` 2 → 0 (no passive regen mounted or banked on foot) and `mountedKillStaminaFraction` 0.5 → 0 (saddle kills earn nothing). Stamina now comes only from carrots, on-foot kills and Bloodlust trample kills (`HorseTrampleKillStamina`, base 0 confirmed). The code paths stay, so either value can be raised again. Script defaults and doc comments match. The tutorial `StaminaKills` hint (Strings.csv + Valley Stronghold fallback) now reads "Kills on foot refill charge stamina / Kills from the saddle don't - so do it on foot or eat carrots". An exhausted horse now stays exhausted until fed (35% threshold), which 2.3's "mount is tired" message covers. Damage on foot doesn't give stamina (it never did); only kills count.
   - Remove passive regen while mounted: `Horse/HorseMotor.cs:468-481` and the run-mount mirror in `Player/PlayerMount.cs:559`. Decide in session whether a dismissed/stabled horse still regens (default: no passive regen at all; carrots and on-foot combat only).
   - Trample kills (`HorseMotor.cs:651`, `StatType.HorseTrampleKillStamina`) must give 0 unless the draft perk raises the stat: confirm the base is 0.
   - On-foot kills/damage keep feeding stamina via `PlayerMount.cs:452` → `AddStamina`. Gate that path to *not mounted*.

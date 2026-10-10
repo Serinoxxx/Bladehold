@@ -27,6 +27,7 @@
 ### Balance Changes
 
 - Reduced the horse's trample area so it only hits enemies right in front of it
+- Removed the horse's passive stamina regeneration and stamina from kills made while riding; carrots and kills on foot now refill it
 
 ### General Changes
 
