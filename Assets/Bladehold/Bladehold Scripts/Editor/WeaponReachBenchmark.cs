@@ -3705,6 +3705,61 @@ public static class WeaponReachBenchmark
             }
         }
 
+        // 29. CONTROLLER AIM ASSIST: pull toward the head, capped, gated by strength and window
+        sb.AppendLine("\n### 29. CONTROLLER AIM ASSIST");
+        {
+            try
+            {
+                void Check(bool ok, string pass, string fail)
+                {
+                    sb.AppendLine(ok ? $"  - {pass} [PASSED]" : $"  - [FAIL] {fail}");
+                    if (ok) passedCount++; else failedCount++;
+                }
+
+                AimAssistSO aimCfg = Resources.Load<AimAssistSO>("AimAssist");
+                Check(aimCfg != null && aimCfg.enemyLayers.value != 0, "Resources/AimAssist config exists with enemy layers set",
+                    "Resources/AimAssist.asset missing or has no enemy layers: controller aim assist is off!");
+                if (aimCfg != null)
+                {
+                    const float dt = 1f / 60f;
+                    Vector3 camPos = Vector3.zero;
+                    Quaternion camRot = Quaternion.identity;
+                    // Head 3 deg right and 2 deg up of the crosshair, 20 m out.
+                    Vector3 head = Quaternion.Euler(-2f, 3f, 0f) * Vector3.forward * 20f;
+
+                    float yaw = 0f, pitch = 0f;
+                    bool assisted = ControllerAimAssist.AdjustLook(aimCfg, camPos, camRot, head, 1f, 6f, false, dt, ref yaw, ref pitch);
+                    Check(assisted && yaw > 0f && pitch < 0f, $"Idle stick drifts toward the head (yaw {yaw:F3}, pitch {pitch:F3} deg/frame)",
+                        $"Idle stick not pulled right and up toward the head: assisted={assisted}, yaw={yaw:F3}, pitch={pitch:F3}");
+                    float maxStep = aimCfg.maxPullDegreesPerSecond * dt;
+                    Check(new Vector2(yaw, pitch).magnitude <= maxStep + 1e-4f, "Pull stays under the per-second cap (never snaps)",
+                        $"Pull {new Vector2(yaw, pitch).magnitude:F3} deg exceeds cap {maxStep:F3}");
+
+                    float yawOff = 0f, pitchOff = 0f;
+                    bool off = ControllerAimAssist.AdjustLook(aimCfg, camPos, camRot, head, 0f, 6f, true, dt, ref yawOff, ref pitchOff);
+                    Check(!off && yawOff == 0f && pitchOff == 0f, "Strength 0 leaves look untouched", "Strength 0 still changed look input");
+
+                    float yawOut = 0f, pitchOut = 0f;
+                    bool outside = ControllerAimAssist.AdjustLook(aimCfg, camPos, camRot, head, 1f, 2f, true, dt, ref yawOut, ref pitchOut);
+                    Check(!outside && yawOut == 0f && pitchOut == 0f, "Head outside a 2 deg window is ignored", "Assist acted on a head outside its window");
+
+                    // Stick pushing away at full speed over a head dead centre: slowed, never reversed.
+                    Vector3 centred = Vector3.forward * 20f;
+                    float push = 3f, pushPitch = 0f;
+                    ControllerAimAssist.AdjustLook(aimCfg, camPos, camRot, centred, 1f, 6f, true, dt, ref push, ref pushPitch);
+                    Check(push > 0f && push < 3f, $"Stick over a head is slowed, not blocked (3 -> {push:F2} deg)",
+                        $"Stick over a head should be slowed but still move: got {push:F3} deg");
+
+                    // A small error is closed exactly, without overshooting past the head.
+                    Vector3 nearHead = Quaternion.Euler(0f, 0.05f, 0f) * Vector3.forward * 20f;
+                    float yawNear = 0f, pitchNear = 0f;
+                    ControllerAimAssist.AdjustLook(aimCfg, camPos, camRot, nearHead, 1f, 6f, true, 1f, ref yawNear, ref pitchNear);
+                    Check(yawNear > 0f && yawNear <= 0.0501f, "Pull stops at the head (no overshoot)", $"Pull overshot the head: {yawNear:F4} deg for a 0.05 deg error");
+                }
+            }
+            catch (Exception ex) { sb.AppendLine($"  - Section 29 exception: {ex.Message} [FAILED]"); failedCount++; }
+        }
+
         sb.AppendLine("\n=================================================");
         sb.AppendLine($"BENCHMARK COMPLETE: {passedCount} PASSED | {failedCount} FAILED");
         sb.AppendLine("=================================================");

@@ -50,6 +50,10 @@ public class PlayerCameraPivot : MonoBehaviour
     [Tooltip("SmoothDamp time on the pivot position while mounted — absorbs the riding animation's saddle bob so the camera tracks the horse's actual motion instead of jerking with the rider.")]
     [SerializeField] private float mountedPositionSmoothTime = 0.2f;
 
+    [Header("Controller aim assist")]
+    [Tooltip("Optional: slows and pulls gamepad look toward enemy heads while aiming. Auto-wired, or added on Start.")]
+    [SerializeField] private ControllerAimAssist aimAssist;
+
     private float yaw;
     private float pitch;
     private Vector3 smoothVelocity;
@@ -75,6 +79,15 @@ public class PlayerCameraPivot : MonoBehaviour
     /// <summary>Inverts vertical look (the vendored <c>_invertCamera</c>).</summary>
     public bool InvertY { get; set; }
 
+    /// <summary>Controller aim assist strength, 0 (off) to 1; <see cref="InputSettingsBinder" /> is the intended writer.</summary>
+    public float AimAssistStrength { get; set; } = 0.5f;
+
+    /// <summary>Controller aim assist window in degrees off the crosshair; <see cref="InputSettingsBinder" /> is the intended writer.</summary>
+    public float AimAssistWindow { get; set; } = 6f;
+
+    /// <summary>The aim assist driven by this pivot, or null.</summary>
+    public ControllerAimAssist AimAssist => aimAssist;
+
     private void OnValidate()
     {
         if (inputReader == null)
@@ -88,6 +101,10 @@ public class PlayerCameraPivot : MonoBehaviour
         if (mount == null)
         {
             mount = GetComponentInParent<PlayerMount>();
+        }
+        if (aimAssist == null)
+        {
+            aimAssist = GetComponent<ControllerAimAssist>();
         }
     }
 
@@ -109,6 +126,12 @@ public class PlayerCameraPivot : MonoBehaviour
             return;
         }
 
+        // Every scene's camera rig gets the assist without per-scene wiring; its config loads from Resources.
+        if (aimAssist == null)
+        {
+            aimAssist = GetComponent<ControllerAimAssist>();
+            if (aimAssist == null) aimAssist = gameObject.AddComponent<ControllerAimAssist>();
+        }
         // Mounted smoothing is optional flavor — no mount component just means on-foot smoothing always.
         if (mount == null && Player.Instance != null)
         {
@@ -139,9 +162,12 @@ public class PlayerCameraPivot : MonoBehaviour
         // convention), while a stick reports a held ±1 deflection that must be scaled by deltaTime
         // and its own deg/sec sensitivity or turn speed varies with framerate.
         Vector2 delta = inputReader._mouseDelta;
-        if (InputDeviceWatcher.GamepadActive)
+        bool gamepad = InputDeviceWatcher.GamepadActive;
+        bool stickHeld = false;
+        if (gamepad)
         {
             float magnitude = Mathf.Clamp01(delta.magnitude);
+            stickHeld = magnitude > 0.05f;
             float shaped = Mathf.Pow(magnitude, Mathf.Max(1f, gamepadResponseExponent));
             delta = (magnitude > 0f ? delta / magnitude : Vector2.zero) * (shaped * gamepadSensitivity * Time.deltaTime);
         }
@@ -149,9 +175,15 @@ public class PlayerCameraPivot : MonoBehaviour
         {
             delta *= sensitivity;
         }
-        yaw += delta.x * (InvertX ? -1f : 1f);
+        float yawDelta = delta.x * (InvertX ? -1f : 1f);
         // Vendored sign convention: not inverted means mouse-up looks up (pitch toward negative).
-        pitch += delta.y * (InvertY ? 1f : -1f);
+        float pitchDelta = delta.y * (InvertY ? 1f : -1f);
+        if (gamepad && aimAssist != null)
+        {
+            aimAssist.Apply(ref yawDelta, ref pitchDelta, AimAssistStrength, AimAssistWindow, stickHeld, Time.deltaTime);
+        }
+        yaw += yawDelta;
+        pitch += pitchDelta;
         pitch = Mathf.Clamp(pitch, tiltBounds.x, tiltBounds.y);
 
         // While mounted the follow target bobs with the riding animation; SmoothDamp filters that

@@ -148,6 +148,19 @@ public class SaveData
     public const float MinStickDeadzone = 0f;
     public const float MaxStickDeadzone = 0.5f;
 
+    /// <summary>
+    ///     Controller aim assist while aiming a ranged weapon (0 = off, 1 = full): how hard the view is
+    ///     slowed over, and pulled toward, an enemy's head. Applied via <see cref="InputSettingsBinder.ApplyAimAssist" />.
+    /// </summary>
+    public float aimAssistStrength = 0.5f;
+    public const float MinAimAssistStrength = 0f;
+    public const float MaxAimAssistStrength = 1f;
+
+    /// <summary>Aim assist window: how many degrees off the crosshair a head can be and still be assisted.</summary>
+    public float aimAssistWindow = 6f;
+    public const float MinAimAssistWindow = 2f;
+    public const float MaxAimAssistWindow = 15f;
+
     public bool postProcessingEnabled = true;
     public float postProcessingBloom = 1f;
     public float postProcessingVignette = 0.25f;
@@ -223,6 +236,8 @@ public class SaveData
         languageCode = other.languageCode;
         gamepadLookSensitivity = other.gamepadLookSensitivity;
         stickDeadzone = other.stickDeadzone;
+        aimAssistStrength = other.aimAssistStrength;
+        aimAssistWindow = other.aimAssistWindow;
         postProcessingEnabled = other.postProcessingEnabled;
         postProcessingBloom = other.postProcessingBloom;
         postProcessingVignette = other.postProcessingVignette;

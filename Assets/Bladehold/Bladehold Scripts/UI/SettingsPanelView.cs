@@ -54,6 +54,10 @@ public class SettingsPanelView : MonoBehaviour
     [SerializeField] private Slider gamepadSensitivitySlider;
     [Tooltip("Optional: thumbstick dead zone slider. When empty, a row is cloned from the Gamepad Look Sensitivity row at runtime.")]
     [SerializeField] private Slider stickDeadzoneSlider;
+    [Tooltip("Optional: controller aim assist strength. Cloned below the dead zone row at runtime when unassigned.")]
+    [SerializeField] private Slider aimAssistStrengthSlider;
+    [Tooltip("Optional: controller aim assist window (degrees). Cloned below the strength row at runtime when unassigned.")]
+    [SerializeField] private Slider aimAssistWindowSlider;
     [SerializeField] private Toggle invertXToggle;
     [SerializeField] private Toggle invertYToggle;
     [Tooltip("Optional: Controller-tab mirrors of Invert X/Y (same shared setting).")]
@@ -179,6 +183,24 @@ public class SettingsPanelView : MonoBehaviour
             if (deadzoneField != null) deadzoneField.DecimalPlaces = 2;
             stickDeadzoneSlider.onValueChanged.AddListener(HandleStickDeadzoneChanged);
         }
+        if (aimAssistStrengthSlider == null && stickDeadzoneSlider != null)
+        {
+            aimAssistStrengthSlider = CloneSliderRow(stickDeadzoneSlider, "Row Aim Assist Strength", "settings.aim_assist_strength");
+        }
+        if (aimAssistStrengthSlider != null)
+        {
+            ConfigureSlider(aimAssistStrengthSlider, SaveData.MinAimAssistStrength, SaveData.MaxAimAssistStrength, 2);
+            aimAssistStrengthSlider.onValueChanged.AddListener(HandleAimAssistStrengthChanged);
+        }
+        if (aimAssistWindowSlider == null && aimAssistStrengthSlider != null)
+        {
+            aimAssistWindowSlider = CloneSliderRow(aimAssistStrengthSlider, "Row Aim Assist Window", "settings.aim_assist_window");
+        }
+        if (aimAssistWindowSlider != null)
+        {
+            ConfigureSlider(aimAssistWindowSlider, SaveData.MinAimAssistWindow, SaveData.MaxAimAssistWindow, 1);
+            aimAssistWindowSlider.onValueChanged.AddListener(HandleAimAssistWindowChanged);
+        }
         if (languageDropdown != null)
         {
             BuildLanguageOptions();
@@ -267,6 +289,8 @@ public class SettingsPanelView : MonoBehaviour
         if (sensitivitySlider != null) sensitivitySlider.onValueChanged.RemoveListener(HandleSensitivityChanged);
         if (gamepadSensitivitySlider != null) gamepadSensitivitySlider.onValueChanged.RemoveListener(HandleGamepadSensitivityChanged);
         if (stickDeadzoneSlider != null) stickDeadzoneSlider.onValueChanged.RemoveListener(HandleStickDeadzoneChanged);
+        if (aimAssistStrengthSlider != null) aimAssistStrengthSlider.onValueChanged.RemoveListener(HandleAimAssistStrengthChanged);
+        if (aimAssistWindowSlider != null) aimAssistWindowSlider.onValueChanged.RemoveListener(HandleAimAssistWindowChanged);
         if (languageDropdown != null) languageDropdown.onValueChanged.RemoveListener(HandleLanguageChanged);
         if (fieldOfViewSlider != null) fieldOfViewSlider.onValueChanged.RemoveListener(HandleFieldOfViewChanged);
         if (maxRagdollsSlider != null) maxRagdollsSlider.onValueChanged.RemoveListener(HandleMaxRagdollsChanged);
@@ -321,7 +345,11 @@ public class SettingsPanelView : MonoBehaviour
     ///     without regenerating its hierarchy. The row sits in an automatic-navigation list, so pad focus
     ///     reaches it like its neighbours.
     /// </summary>
-    private static Slider BuildStickDeadzoneRow(Slider template)
+    private static Slider BuildStickDeadzoneRow(Slider template) =>
+        CloneSliderRow(template, "Row Stick Dead Zone", "settings.stick_deadzone");
+
+    /// <summary>Clones <paramref name="template" />'s row right below it with a new label key; returns the clone's slider.</summary>
+    private static Slider CloneSliderRow(Slider template, string rowName, string labelKey)
     {
         SliderValueField templateRow = template.GetComponentInParent<SliderValueField>();
         Transform row = templateRow != null ? templateRow.transform : template.transform.parent;
@@ -330,14 +358,28 @@ public class SettingsPanelView : MonoBehaviour
             return null;
         }
         GameObject clone = Instantiate(row.gameObject, row.parent);
-        clone.name = "Row Stick Dead Zone";
+        clone.name = rowName;
         clone.transform.SetSiblingIndex(row.GetSiblingIndex() + 1);
         LocalizedText label = clone.GetComponentInChildren<LocalizedText>(true);
         if (label != null)
         {
-            label.SetKey("settings.stick_deadzone");
+            label.SetKey(labelKey);
         }
-        return clone.GetComponentInChildren<Slider>(true);
+        Slider slider = clone.GetComponentInChildren<Slider>(true);
+        if (slider != null)
+        {
+            slider.onValueChanged.RemoveAllListeners();
+        }
+        return slider;
+    }
+
+    private static void ConfigureSlider(Slider slider, float min, float max, int decimals)
+    {
+        slider.wholeNumbers = false;
+        slider.minValue = min;
+        slider.maxValue = max;
+        SliderValueField field = slider.GetComponentInParent<SliderValueField>();
+        if (field != null) field.DecimalPlaces = decimals;
     }
 
     private void AddTab(Button button, GameObject content)
@@ -452,6 +494,8 @@ public class SettingsPanelView : MonoBehaviour
         if (gamepadInvertYToggle != null) gamepadInvertYToggle.SetIsOnWithoutNotify(settings.InvertY);
         if (gamepadSensitivitySlider != null) gamepadSensitivitySlider.SetValueWithoutNotify(settings.GamepadSensitivity);
         if (stickDeadzoneSlider != null) stickDeadzoneSlider.SetValueWithoutNotify(settings.StickDeadzone);
+        if (aimAssistStrengthSlider != null) aimAssistStrengthSlider.SetValueWithoutNotify(settings.AimAssistStrength);
+        if (aimAssistWindowSlider != null) aimAssistWindowSlider.SetValueWithoutNotify(settings.AimAssistWindow);
         if (languageDropdown != null) languageDropdown.SetValueWithoutNotify(LanguageCodeToIndex(settings.LanguageCode));
         if (postProcessingEnabledToggle != null) postProcessingEnabledToggle.SetIsOnWithoutNotify(settings.PostProcessingEnabled);
         if (postProcessingBloomSlider != null) postProcessingBloomSlider.SetValueWithoutNotify(settings.PostProcessingBloom);
@@ -649,6 +693,8 @@ public class SettingsPanelView : MonoBehaviour
     private void HandleSensitivityChanged(float value) => GameSettingsService.Instance?.SetSensitivity(value);
     private void HandleGamepadSensitivityChanged(float value) => GameSettingsService.Instance?.SetGamepadSensitivity(value);
     private void HandleStickDeadzoneChanged(float value) => GameSettingsService.Instance?.SetStickDeadzone(value);
+    private void HandleAimAssistStrengthChanged(float value) => GameSettingsService.Instance?.SetAimAssistStrength(value);
+    private void HandleAimAssistWindowChanged(float value) => GameSettingsService.Instance?.SetAimAssistWindow(value);
     private void HandleFieldOfViewChanged(float value) => GameSettingsService.Instance?.SetFieldOfView(value);
     private void HandleMaxRagdollsChanged(float value) => GameSettingsService.Instance?.SetMaxRagdolls(Mathf.RoundToInt(value));
     private void HandleGameSpeedChanged(float value) => GameSettingsService.Instance?.SetGameSpeed(value);

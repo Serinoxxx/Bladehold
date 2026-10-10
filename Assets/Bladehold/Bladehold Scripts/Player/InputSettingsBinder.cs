@@ -93,6 +93,14 @@ public class InputSettingsBinder : MonoBehaviour
         cameraPivot.InvertX = invert;
     }
 
+    /// <summary>Controller aim assist strength (0 = off, 1 = full) and window in degrees off the crosshair.</summary>
+    public void ApplyAimAssist(float strength, float windowDegrees)
+    {
+        if (anyError) return;
+        cameraPivot.AimAssistStrength = strength;
+        cameraPivot.AimAssistWindow = windowDegrees;
+    }
+
     /// <summary>The vendored Controls asset's Player action map, for enumerating/rebinding bindings.</summary>
     public InputActionMap GetRebindableActionMap()
     {

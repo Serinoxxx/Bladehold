@@ -58,6 +58,8 @@ public class GameSettingsService : MonoBehaviour
     public string LanguageCode => saveData.languageCode;
     public float GamepadSensitivity => saveData.gamepadLookSensitivity;
     public float StickDeadzone => saveData.stickDeadzone;
+    public float AimAssistStrength => saveData.aimAssistStrength;
+    public float AimAssistWindow => saveData.aimAssistWindow;
     public bool PostProcessingEnabled => saveData.postProcessingEnabled;
     public float PostProcessingBloom => saveData.postProcessingBloom;
     public float PostProcessingVignette => saveData.postProcessingVignette;
@@ -120,6 +122,7 @@ public class GameSettingsService : MonoBehaviour
             inputSettings.ApplyGamepadSensitivity(saveData.gamepadLookSensitivity);
             inputSettings.ApplyInvertX(saveData.invertLookX);
             inputSettings.ApplyInvertY(saveData.invertLookY);
+            inputSettings.ApplyAimAssist(saveData.aimAssistStrength, saveData.aimAssistWindow);
             inputSettings.LoadBindingOverridesFromJson(saveData.inputBindingOverridesJson);
         }
 
@@ -238,6 +241,30 @@ public class GameSettingsService : MonoBehaviour
         saveData.stickDeadzone = Mathf.Clamp(value, SaveData.MinStickDeadzone, SaveData.MaxStickDeadzone);
         ApplyStickDeadzone(saveData.stickDeadzone);
         Persist();
+    }
+
+    /// <summary>Controller aim assist strength (0 = off), see <see cref="SaveData.aimAssistStrength" />.</summary>
+    public void SetAimAssistStrength(float value)
+    {
+        saveData.aimAssistStrength = Mathf.Clamp(value, SaveData.MinAimAssistStrength, SaveData.MaxAimAssistStrength);
+        ApplyAimAssist();
+        Persist();
+    }
+
+    /// <summary>Controller aim assist window in degrees, see <see cref="SaveData.aimAssistWindow" />.</summary>
+    public void SetAimAssistWindow(float value)
+    {
+        saveData.aimAssistWindow = Mathf.Clamp(value, SaveData.MinAimAssistWindow, SaveData.MaxAimAssistWindow);
+        ApplyAimAssist();
+        Persist();
+    }
+
+    private void ApplyAimAssist()
+    {
+        if (Player.Instance != null && Player.Instance.InputSettings != null)
+        {
+            Player.Instance.InputSettings.ApplyAimAssist(saveData.aimAssistStrength, saveData.aimAssistWindow);
+        }
     }
 
     public void SetInvertX(bool value)

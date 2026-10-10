@@ -58,12 +58,12 @@ Paths are relative to `Assets/Bladehold/Bladehold Scripts/`; line numbers are fr
 
 ## Phase 4: Controller bow aim assist (depends on 3.1)
 
-- [ ] **4.1 Aim assist toward enemy heads.**
+- [x] **4.1 Aim assist toward enemy heads.** Done: `Player/ControllerAimAssist.cs` (added to the camera pivot on Start in every scene) + `Resources/AimAssist.asset` (`AimAssistSO`). Head = `VulnerableSpot` > head bone > collider top. Applies to every hold-aim weapon.
   - Bow code: `Player/PlayerBow.cs`, `Player/BowAimLook.cs`, `Player/BowAimCamera.cs`, tunables in `Player/BowSO.cs`.
   - Gamepad only. While aiming, find the best living enemy inside a screen-space window around the reticle (`Health.IsDead` filtered), target its head (Animator `HumanBodyBones.Head`, falling back to collider top), and apply a slowdown + pull of the look input toward it. Never snap; never through walls (line-of-sight check).
   - Defaults on a `ScriptableObject`; strength/window registered as settings.
-- [ ] **4.2 Settings sliders.** "Aim assist strength" (0 = off) and "Aim assist window" in the Controller tab (persisted in `SaveData`, bump `settingsVersion`).
-- [ ] **4.3 Mechanic check.** Add a `test-mechanic` assertion: with a dummy in the window, input is pulled toward the head; strength 0 means no change.
+- [x] **4.2 Settings sliders.** Done: rows cloned at runtime below Stick Dead Zone (every panel copy, no prefab regen); no `settingsVersion` bump needed (new fields default). "Aim assist strength" (0 = off) and "Aim assist window" in the Controller tab (persisted in `SaveData`, bump `settingsVersion`).
+- [x] **4.3 Mechanic check.** Done: benchmark section 29 tests the pure `ControllerAimAssist.AdjustLook` maths. Add a `test-mechanic` assertion: with a dummy in the window, input is pulled toward the head; strength 0 means no change.
 
 ## Phase 5: Tutorial directional attacks
 

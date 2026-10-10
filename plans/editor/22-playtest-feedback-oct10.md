@@ -58,3 +58,13 @@ Manual verification:
 - [ ] Toggling Invert Y in one tab shows it ticked in the other.
 - [ ] Main menu Settings shows the same four tabs.
 - [ ] "Keyboard & Mouse" fits its tab in every language (the label auto-shrinks).
+
+## Controller aim assist (4.1-4.3)
+
+Code: `Player/ControllerAimAssist.cs`, `Player/AimAssistSO.cs`, config `Assets/Bladehold/Resources/AimAssist.asset`, sliders cloned by `SettingsPanelView`.
+
+- [ ] Run **Bladehold/Benchmarks/Run Weapon Reach & Damage Benchmark** (from MainMenu); section 29 should pass.
+- [ ] Feel check with a pad: aim the bow near a goblin's head, the crosshair should slow over it and drift on; strafing targets should be easier to track. Tune `AimAssist.asset` (pull deg/s, slowdown) if too sticky or too weak.
+- [ ] Strength 0 in Settings > Controller turns it fully off; a wide window (15) grabs heads further off the crosshair.
+- [ ] Mouse aiming is unaffected.
+- [ ] Heads behind walls aren't assisted (if a wall layer is missed, add it to the asset's Occluder Layers).
