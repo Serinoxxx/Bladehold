@@ -15,7 +15,7 @@ public class DestroySiegeEnginesObjective : MonoBehaviour, ISurvivorsObjective, 
     [SerializeField] private int requiredCount = 3;
 
     [Header("Timer & Failure Configuration")]
-    [Tooltip("Fallback time limit in seconds when WaveObjectives.csv has no row for this objective (the row's timerSeconds wins). <= 0 means no time limit. Failing only loses the wave card reward.")]
+    [Tooltip("Fallback time limit in seconds when WaveObjectives.csv has no row for this objective (the row's timerSeconds wins). <= 0 means no time limit. Failing only loses the objective's bonus.")]
     [SerializeField] private float timeLimit = 120f;
 
     [Header("Prefab & Spawn Points")]
@@ -171,7 +171,7 @@ public class DestroySiegeEnginesObjective : MonoBehaviour, ISurvivorsObjective, 
     {
         if (!isActive || isComplete || isFailed) return;
 
-        // Failure only loses the wave card reward (plan 15): no gate penalty.
+        // Failure only loses the objective's bonus (plan 22): no gate penalty, the wave goes on.
         isFailed = true;
         isActive = false;
 

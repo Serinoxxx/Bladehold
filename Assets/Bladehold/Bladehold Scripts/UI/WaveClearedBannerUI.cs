@@ -137,7 +137,6 @@ public class WaveClearedBannerUI : MonoBehaviour
             gameLoop = GameLoopManager.Instance;
             gameLoop.OnWaveRewardGranted += HandleWaveRewardGranted;
             gameLoop.OnRoutStarted += HandleRoutStarted;
-            gameLoop.OnGateAssaultStarted += HandleGateAssaultStarted;
         }
 
         // If an objective was already active before Start (e.g. introductory objective), announce it
@@ -159,7 +158,6 @@ public class WaveClearedBannerUI : MonoBehaviour
         {
             gameLoop.OnWaveRewardGranted -= HandleWaveRewardGranted;
             gameLoop.OnRoutStarted -= HandleRoutStarted;
-            gameLoop.OnGateAssaultStarted -= HandleGateAssaultStarted;
         }
     }
 
@@ -191,27 +189,6 @@ public class WaveClearedBannerUI : MonoBehaviour
     {
         if (routBannerRoutine != null) StopCoroutine(routBannerRoutine);
         routBannerRoutine = StartCoroutine(ShowRoutBannerWhenFree(count, seconds));
-    }
-
-    // A failed objective sends the survivors at the gate: same follow-up slot as the rout banner.
-    private void HandleGateAssaultStarted(int count)
-    {
-        if (routBannerRoutine != null) StopCoroutine(routBannerRoutine);
-        routBannerRoutine = StartCoroutine(ShowGateAssaultBannerWhenFree());
-    }
-
-    private IEnumerator ShowGateAssaultBannerWhenFree()
-    {
-        float waited = 0f;
-        while (hideRoutine != null && waited < 1.5f)
-        {
-            waited += Time.unscaledDeltaTime;
-            yield return null;
-        }
-        routBannerRoutine = null;
-        if (gameLoop == null || !gameLoop.IsGateAssault) yield break;
-        ShowBanner(Loc.Get("wave.assault.banner_header", "THEY STORM THE GATE!"),
-            Loc.Get("wave.assault.banner_sub", "Cut them down before they break through"), 0, 0, isNewQuest: true);
     }
 
     private IEnumerator ShowRoutBannerWhenFree(int count, float seconds)

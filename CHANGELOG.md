@@ -41,6 +41,7 @@
 - Swapped the tutorial gate's preparation music for a calmer track
 - Your hero now waves to call the horse while summoning it
 - Battering rams are now enemies that wave cards can bring from wave 2 onward (at most one per wave), rather than a wave objective. The wave isn't over until the ram is broken
+- Wave objectives are now optional bonuses: completing one pays extra gold and supply, and failing one no longer fails the wave. A wave ends when you've beaten its enemies, and losing the gate is the only way to lose
 - Summoning your horse now plants you in place for a moment, so pressing it while running no longer cancels it straight away
 - A cancelled horse summon now says so on the cast bar in red, with the reason (you moved, you were hit, or you pressed it again)
 - The tutorial now tells you to stand still while summoning your horse

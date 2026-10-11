@@ -6,9 +6,10 @@ public interface IOverrideEnemySpawns
 }
 
 /// <summary>
-///     Marks an objective that needs enemies on the field until it resolves (wagon escort, battering
-///     ram): the wave can't end before the objective does, and once the kill quota has spawned the
-///     spawner keeps a trickle going instead of letting the field go empty.
+///     Marks an objective that needs enemies on the field until it resolves (wagon escort). Legacy quota
+///     waves only (composition waves end on their own enemies): the wave can't end before the objective
+///     does, and once the kill quota has spawned the spawner keeps a trickle going instead of letting the
+///     field go empty.
 /// </summary>
 public interface IRequiresContinuousSpawns
 {
@@ -89,7 +90,10 @@ public interface ISurvivorsObjective
     /// <summary>Fired when the objective successfully completes.</summary>
     event Action<ISurvivorsObjective> OnCompleted;
 
-    /// <summary>Fired when the objective fails (e.g. timeout expired).</summary>
+    /// <summary>
+    ///     Fired when the objective fails (e.g. timeout expired). Objectives are optional bonuses (plan 22):
+    ///     failing forfeits the bonus and clears the objective, never the wave.
+    /// </summary>
     event Action<ISurvivorsObjective> OnFailed;
 
     /// <summary>Initializes or activates the objective.</summary>

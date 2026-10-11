@@ -29,12 +29,12 @@ Every battle scene runs the same loop: `GameLoopManager` + `SurvivorsSpawner` + 
    - The selection rules live in `SectorSpawnRules` (pure code), shared with the balance sim so the two can't drift.
    - An `IOverrideEnemySpawns` objective (Goblin Rush) replaces the threat gating with its own id list.
    - **Per-scene enemy lists:** a `SceneEnemyRoster` in the scene (placed by the defense scene generator from the spec's `enemyRosterIds` / `fodderEnemyId`) replaces the threat gating with its list, so `minThreat` 0 rows can spawn there. `unlockWave`, `spawnChance` and `maxConcurrent` still apply, and its fodder id replaces goblin for the 60% floor. The Graveyard uses it for the four skeletons. An objective override only narrows a scene list; if they don't overlap, you get the scene's fodder.
-5. **Resolution**: the objective's `OnCompleted` or `OnFailed` ends the wave. The kill quota only sizes the spawns.
+5. **Resolution** (plan 22 Phase 7): a card with a rolled `composition` ends the wave when its enemies are all spawned and dead (`SurvivorsSpawner.OnWaveWiped`); the objective is an optional **bonus**. Completing it pays its `WaveObjectives.csv` `bonusGold`/`bonusSupply` (`GameLoopManager.OnBonusObjectiveCompleted`); failing it (timer, escape) just clears it 3 s later. Neither ends the wave. Legacy quota waves (the captain wave, scenes with no roster, `ISuppressRegularSpawns`) still end on the objective resolving, and a failed one counts as survived. The gate falling is the only way to lose.
    - Spawning stops and every straggler (and a card captain) **routs** (`Enemies/EnemyRout`: a short stun, then it flees to the nearest spawn point). After `routDurationSeconds` the rest despawn. Kills during the rout still pay.
    - A 45 s lightning backstop covers a stalled rout.
-   - **Defence** objectives can't fail: their risk is gate damage, and the gate falling ends the run (`Gate.OnAnyGateDestroyed`). Gate HP carries across sectors.
-   - **Offence** objectives fail on their timer or when the target escapes. Failure loses the card reward only.
-6. **Reward**: every wave pays a **weapon draft** (`WaveChoiceConfigSO.draftPicksPerWave`, 1), the build's guaranteed floor. On success the card's bundle comes first (gold, supply, then Goblin Blood / Orcish Metal / Troll Heart max HP), then the draft opens with the card's `draftRerolls` (a Reroll button on the modal that swaps all three cards). A failed objective loses the bundle and the rerolls but still pays the draft (`draftOnFailedWave`). Skulls buy more resources and rerolls, never extra picks. `DraftPick` is out of the bonus pool; the enum value and its `draftPicksBySkulls` path stay for a designer who re-adds it. `WaveClearedBannerUI` pops the reward line. Then, after `rewardPopupSeconds`, the next wave-card draw opens.
+   - The gate falling ends the run (`Gate.OnAnyGateDestroyed`). Gate HP carries across sectors.
+   - Timed objectives fail on their timer or when the target escapes; that only forfeits the bonus.
+6. **Reward**: every wave pays a **weapon draft** (`WaveChoiceConfigSO.draftPicksPerWave`, 1), the build's guaranteed floor. Surviving the wave pays the card's bundle first (gold, supply, then Goblin Blood / Orcish Metal / Troll Heart max HP), then the draft opens with the card's `draftRerolls` (a Reroll button on the modal that swaps all three cards). Waves no longer fail, so `draftOnFailedWave` is effectively unused. Skulls buy more resources and rerolls, never extra picks. `DraftPick` is out of the bonus pool; the enum value and its `draftPicksBySkulls` path stay for a designer who re-adds it. `WaveClearedBannerUI` pops the reward line. Then, after `rewardPopupSeconds`, the next wave-card draw opens.
 7. **Wave 5 is fixed**: `defeat_captain` (Captain Assault, `Objectives/DefeatCaptainObjective`). It spawns the node's captain at a tier set by sector threat (`GameLoopManager.CaptainTierForThreat`: Enraged at threat 1-2, Nightmare at 3-5, Omega at 6+), and killing the captain resolves the wave. If the objective is missing from the scene, the manager spawns the captain itself and falls back to a random objective.
 8. **Victory**: resolving wave 5 → the captain's draft (`draftAfterFinalWave`) → `TriggerVictory` → `DeathScreen.ShowVictory` → back to the Campaign Map.
 
@@ -43,7 +43,7 @@ Every battle scene runs the same loop: `GameLoopManager` + `SurvivorsSpawner` + 
 - Per kill: in-run gold, plus a chance of supply (bigger enemies give more). This is always kept, win or fail.
 - Wave clear: +30 supply (always kept), plus the regeneration / Special Herbs heals.
 - Every wave: one weapon draft (rerolls on 2+ skull cards that succeed).
-- A successful objective: the card's bundle. Offence pays ×1.5 and skulls pay ×1 / ×1.5 / ×2.25, all on `WaveChoiceConfigSO`.
+- Surviving the wave: the card's bundle. A completed bonus objective adds its CSV `bonusGold`/`bonusSupply`. Offence pays ×1.5 and skulls pay ×1 / ×1.5 / ×2.25, all on `WaveChoiceConfigSO`.
 
 ## Gotchas
 
@@ -51,7 +51,7 @@ Every battle scene runs the same loop: `GameLoopManager` + `SurvivorsSpawner` + 
 
 - The objective manager's 30 s cleanup timer is never counted down. `KillRemainingEnemiesObjective` (the old cleanup phase) is no longer started by the flow; the rout replaced it.
 - `WarBannerController`, `WaveUpgradePowerup` and the `WarBannerRewardSO`/`WarBannerConfigSO` assets are dead code since plan 15, kept until a playtest confirms (listed for deletion in `plans/editor/15-wave-choice.md`). `WarBannerClanSO` and `BannerDifficultyTier` are still live (card clans and captain tiers).
-- Wagon and ram objectives implement `IRequiresContinuousSpawns`: the wave can't end until they resolve, and once the quota is out the spawner trickles enemies (topping up to `objectiveTrickleMinAlive`, one per `objectiveTrickleInterval`) so the field never empties.
+- The wagon objective implements `IRequiresContinuousSpawns` (legacy quota waves only; composition waves ignore it): the wave can't end until it resolves, and once the quota is out the spawner trickles enemies (topping up to `objectiveTrickleMinAlive`, one per `objectiveTrickleInterval`) so the field never empties.
 - Hold the Gate (`KillEnemiesObjective`) is also `IRequiresContinuousSpawns`, plus `IKillQuotaObjective`: once the quota is out, the spawner re-opens `remainingToSpawn` by `KillsRemaining - aliveCount` at normal batch pacing instead of trickling. Deaths that don't count as kills (enemy-on-enemy, e.g. bomber blasts) would otherwise leave the counter short with an empty field.
 - A missing Captain Fraglob prefab (`captainPrefab`) logs an error and spawns Kombusta instead. No Fraglob prefab exists yet.
 - `GameLoopManager` still has an empty Second Wind stub in `HandlePlayerDied`.

@@ -6,7 +6,7 @@ using UnityEngine;
 ///     Survivors objective: Protect the supply wagon.
 ///     A slow moving cart rolls from a spawn point toward the gate along NavMesh only when the player
 ///     is inside its proximity circle. It must be delivered before the timer (<c>timerSeconds</c> of its
-///     <c>WaveObjectives.csv</c> row, 3:00) runs out, or the objective fails and the card reward is lost.
+///     <c>WaveObjectives.csv</c> row, 3:00) runs out, or the objective fails and its bonus is lost (the wave goes on).
 ///     The wagon has no health of its own, so the timer is the only way to fail.
 /// </summary>
 public class ProtectWagonObjective : MonoBehaviour, ISurvivorsObjective, IRequiresContinuousSpawns, IObjectivePreview, ITimedObjective

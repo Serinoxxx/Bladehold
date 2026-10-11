@@ -16,6 +16,8 @@ public class SectorSummary
     public int trollHeartHp;
     public int draftPicks;
     public int towerRefund;
+    /// <summary>Bonus objectives completed this sector (their gold/supply is folded into cardGold/cardSupply).</summary>
+    public int bonusObjectives;
     /// <summary>"Captain Kombusta (Nightmare)" per captain killed this sector.</summary>
     public readonly List<string> captainsDefeated = new List<string>();
 
@@ -31,5 +33,12 @@ public class SectorSummary
             case WaveBonusType.OrcishMetal: orcishMetal += card.bonusAmount; break;
             case WaveBonusType.TrollHeart: trollHeartHp += card.bonusAmount; break;
         }
+    }
+
+    public void RecordBonus(int gold, int supply)
+    {
+        bonusObjectives++;
+        cardGold += gold;
+        cardSupply += supply;
     }
 }

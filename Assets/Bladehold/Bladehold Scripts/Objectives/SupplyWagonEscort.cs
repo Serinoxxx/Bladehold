@@ -51,7 +51,7 @@ public class SupplyWagonEscort : MonoBehaviour
     [Tooltip("Delay in seconds after reaching the destination before playing the burst feedback.")]
     [SerializeField] private float burstDelay = 0.5f;
 
-    [Tooltip("MMF_Player played when the wagon reaches the destination and bursts (add a fanfare here). The payout is the wave card reward; the wagon drops no gold of its own.")]
+    [Tooltip("MMF_Player played when the wagon reaches the destination and bursts (add a fanfare here). The payout is the objective's bonus (WaveObjectives.csv); the wagon drops no gold of its own.")]
     [SerializeField] private MMF_Player arrivalFeedback;
 
     [Tooltip("Height / position offset for the burst VFX.")]

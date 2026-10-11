@@ -116,6 +116,17 @@ Manual verification:
 - [ ] Captain wave rout: a ram that's still alive stops rolling when the captain dies.
 - [ ] Stop the Battering Ram no longer shows up as a wave objective.
 
+## Slice 7.3: optional bonus objectives
+
+Code only: `WaveObjectives.csv` `bonusGold`/`bonusSupply` columns, `GameLoopManager.PayObjectiveBonus` / `ClearResolvedObjective`, gate-assault fail path removed. Nothing to wire. (The HUD still says "Quest completed/failed" rather than "Bonus" until slice 7.4.)
+
+Manual verification:
+- [ ] Complete a wave's objective (e.g. free every prisoner): a gold popup shows, gold/supply go up by the CSV bonus, the tracker clears ~3 s later, and the wave carries on until the enemies are dead.
+- [ ] Let a timed objective run out: no bonus, the leftover cages/engines vanish ~3 s later, the wave carries on, and surviving it still pays the card reward and draft.
+- [ ] No "THEY STORM THE GATE!" banner ever appears after a failed objective.
+- [ ] Captain wave: killing the captain still ends the sector as before.
+- [ ] Victory screen gold/supply totals include bonus payouts.
+
 
 
 Code/scene done headlessly via MCP: realtime additional-light shadows disabled in

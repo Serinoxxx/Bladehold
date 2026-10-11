@@ -3576,6 +3576,20 @@ public static class WeaponReachBenchmark
                     Check(csvErrors.Count == 0 && catalog.All.Count > 0, $"WaveObjectives.csv parses cleanly ({catalog.All.Count} rows)",
                         $"WaveObjectives.csv errors: {string.Join("; ", csvErrors)}");
 
+                    // Plan 22 slice 7.3: objectives are optional bonuses paying their CSV bonus columns.
+                    WaveObjectiveDefinition prisonersRow = catalog.Get("free_prisoners");
+                    WaveObjectiveDefinition holdRow = catalog.Get("kill_enemies");
+                    bool bonusOk = prisonersRow != null && prisonersRow.HasBonus && prisonersRow.bonusGold > 0
+                        && holdRow != null && !holdRow.HasBonus;
+                    var bonusMissing = new List<string>();
+                    foreach (WaveObjectiveDefinition row in catalog.All)
+                    {
+                        if (row.draftable && row.failRule != WaveFailRule.None && !row.HasBonus) bonusMissing.Add(row.id);
+                    }
+                    Check(bonusOk && bonusMissing.Count == 0,
+                        $"Bonus objectives: Free the Prisoners pays {prisonersRow?.bonusGold}g / {prisonersRow?.bonusSupply}s, Hold the Gate pays none, every failable draftable objective has a bonus",
+                        $"Bonus columns wrong (prisoners={prisonersRow?.bonusGold}/{prisonersRow?.bonusSupply}, holdHasBonus={holdRow?.HasBonus}, missing=[{string.Join(", ", bonusMissing)}])");
+
                     // Every draftable row must map to an objective component on the objectives prefab.
                     GameObject objectivesPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Bladehold/Bladehold Prefabs/Objectives/SurvivorsObjectives.prefab");
                     var prefabIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

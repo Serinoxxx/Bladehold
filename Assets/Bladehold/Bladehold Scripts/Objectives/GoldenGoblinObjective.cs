@@ -201,7 +201,7 @@ public class GoldenGoblinObjective : MonoBehaviour, ISurvivorsObjective, ISuppre
         }
     }
 
-    /// <summary>Timer ran out: the goblin gets away and the objective fails (the card reward is lost).</summary>
+    /// <summary>Timer ran out: the goblin gets away and the objective fails (its bonus is lost).</summary>
     private void HandleEscape()
     {
         if (!isActive || isComplete || isFailed) return;

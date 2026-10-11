@@ -46,7 +46,12 @@ public class WaveObjectiveDefinition
     public string failText;
     public string threatText;
 
+    // Plan 22: objectives are optional bonuses; completing one pays this on top of the card. Failing pays nothing.
+    public int bonusGold;
+    public int bonusSupply;
+
     public bool HasTimer => timerSeconds > 0f;
+    public bool HasBonus => bonusGold > 0 || bonusSupply > 0;
 
     public string TitleText => Loc.Get($"wave.obj.{locKey}.title", title);
     public string RuleText => Loc.Get($"wave.obj.{locKey}.rule", rule);
@@ -61,7 +66,7 @@ public class WaveObjectiveDefinition
 /// </summary>
 public class WaveObjectiveCatalog
 {
-    // Columns: id,stance,locKey,icon,timerSeconds,failRule,failParam,weight,minWave,minThreat,draftable,demoEnabled,title,rule,failText,threatText
+    // Columns: id,stance,locKey,icon,timerSeconds,failRule,failParam,weight,minWave,minThreat,draftable,demoEnabled,title,rule,failText,threatText,bonusGold,bonusSupply
     private const int RequiredColumns = 12;
 
     private readonly List<WaveObjectiveDefinition> rows = new List<WaveObjectiveDefinition>();
@@ -134,7 +139,9 @@ public class WaveObjectiveCatalog
             title = Col(12),
             rule = Col(13),
             failText = Col(14),
-            threatText = Col(15)
+            threatText = Col(15),
+            bonusGold = Mathf.Max(0, ParseInt(Col(16))),
+            bonusSupply = Mathf.Max(0, ParseInt(Col(17)))
         };
 
         if (string.IsNullOrEmpty(def.id))

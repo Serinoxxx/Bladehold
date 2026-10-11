@@ -110,8 +110,6 @@ public class GameLoopManager : MonoBehaviour
     /// <summary>True while something outside the loop (the tutorial) holds the Ready hold shut.</summary>
     public bool IsReadyBlocked => WaveStartGate.IsBlocked;
     public bool IsRouting => isRouting;
-    /// <summary>True while a failed objective's survivors are storming the gate (the wave stays open until they're dead).</summary>
-    public bool IsGateAssault { get; private set; }
     /// <summary>The enemies still fleeing during the rout (dead ones included until it ends). Empty otherwise.</summary>
     public IReadOnlyList<Health> RoutStragglers => routStragglers;
     /// <summary>Seconds left to hunt the stragglers down before they escape; 0 when not routing.</summary>
@@ -138,10 +136,17 @@ public class GameLoopManager : MonoBehaviour
     public event Action<int, bool, WaveCard> OnWaveResolved;
     /// <summary>Fired when a card reward is paid: the card and the one-line description shown in the popup.</summary>
     public event Action<WaveCard, string> OnWaveRewardGranted;
+    /// <summary>
+    ///     Fired when the wave's optional bonus objective is completed and paid: the objective, gold, supply and
+    ///     the one-line description ("+60 gold, +30 supply"). Failing a bonus objective fires nothing here.
+    /// </summary>
+    public event Action<ISurvivorsObjective, int, int, string> OnBonusObjectiveCompleted;
+
+    /// <summary>What this wave's bonus objective paid so far (0 when it's still open, failed or had no bonus).</summary>
+    public int BonusGoldThisWave { get; private set; }
+    public int BonusSupplyThisWave { get; private set; }
     /// <summary>Fired when the rout begins and the surviving enemies start fleeing: how many, and the seconds the player has to hunt them.</summary>
     public event Action<int, float> OnRoutStarted;
-    /// <summary>Fired when a failed objective sends the survivors at the gate instead of routing them: how many.</summary>
-    public event Action<int> OnGateAssaultStarted;
     /// <summary>Fired when the player picks from a wave draft: offered cards, the pick, seconds taken to decide.</summary>
     public event Action<IReadOnlyList<WaveCard>, WaveCard, float> OnWaveCardPicked;
 
@@ -525,6 +530,8 @@ public class GameLoopManager : MonoBehaviour
         isRouting = false;
         resolveWatchdog = 0f;
         activeCaptain = null;
+        BonusGoldThisWave = 0;
+        BonusSupplyThisWave = 0;
         SetStatus("");
 
         if (intermissionBanner != null) intermissionBanner.SetActive(false);
@@ -653,16 +660,23 @@ public class GameLoopManager : MonoBehaviour
         }
     }
 
+    // Plan 22 slice 7.3: an objective is an optional bonus. Completing it pays its WaveObjectives.csv bonus;
+    // failing it (timer, escape) just clears it. Neither ends nor fails the wave: a composition wave ends when
+    // its enemies are dead, and the gate falling is the only way to lose.
+    private const float ResolvedObjectiveClearDelay = 3f;
+
     private void HandleObjectiveCompleted(ISurvivorsObjective obj)
     {
         if (obj is KillRemainingEnemiesObjective) return; // legacy cleanup objective; the rout replaces it
         if (!isWaveActive || isResolving) return;
-        // Composition mode (plan 22): the objective is an optional side-goal; clearing the field ends the wave.
+        PayObjectiveBonus(obj);
         if (compositionWaveActive)
         {
             Debug.Log($"[GameLoopManager] Bonus objective completed: {obj?.Title} (wave ends when the field is clear).");
+            StartCoroutine(ClearResolvedObjective(obj));
             return;
         }
+        // Legacy quota waves (captain wave, scenes with no roster): the objective is still what ends the wave.
         Debug.Log($"[GameLoopManager] Objective Completed: {obj?.Title}");
         ResolveWave(true);
     }
@@ -670,14 +684,59 @@ public class GameLoopManager : MonoBehaviour
     private void HandleObjectiveFailed(ISurvivorsObjective obj)
     {
         if (!isWaveActive || isResolving) return;
-        // Composition mode (plan 22): a failed side-goal no longer fails the wave.
         if (compositionWaveActive)
         {
-            Debug.Log($"[GameLoopManager] Bonus objective failed: {obj?.Title} (wave continues).");
+            Debug.Log($"[GameLoopManager] Bonus objective failed: {obj?.Title} (no bonus; wave continues).");
+            StartCoroutine(ClearResolvedObjective(obj));
             return;
         }
-        Debug.Log($"[GameLoopManager] Objective Failed: {obj?.Title}. No card reward.");
-        ResolveWave(false);
+        // Legacy quota waves have nothing else to end them, so a failed objective ends the wave as survived
+        // (card reward kept, no bonus): only the gate can lose a wave now.
+        Debug.Log($"[GameLoopManager] Objective failed: {obj?.Title}. No bonus; the wave is survived.");
+        ResolveWave(true);
+    }
+
+    /// <summary>Pays the objective's CSV bonus (gold/supply) once, with popups and <see cref="OnBonusObjectiveCompleted" />.</summary>
+    private void PayObjectiveBonus(ISurvivorsObjective obj)
+    {
+        WaveObjectiveDefinition row = obj != null ? ObjectiveCsv.Row(obj.ObjectiveId) : null;
+        if (row == null || !row.HasBonus) return;
+
+        List<string> parts = new List<string>();
+        if (row.bonusGold > 0)
+        {
+            RunSession.AddInRunGold(row.bonusGold);
+            parts.Add(Loc.Get("wave.reward.gold", "+{0} gold").Replace("{0}", row.bonusGold.ToString(CultureInfo.InvariantCulture)));
+        }
+        if (row.bonusSupply > 0)
+        {
+            RunSession.AddInRunSupply(row.bonusSupply);
+            parts.Add(Loc.Get("wave.reward.supply", "+{0} supply").Replace("{0}", row.bonusSupply.ToString(CultureInfo.InvariantCulture)));
+        }
+        BonusGoldThisWave += row.bonusGold;
+        BonusSupplyThisWave += row.bonusSupply;
+        Summary.RecordBonus(row.bonusGold, row.bonusSupply);
+
+        if (Player.Instance != null && goldPopupPrefab != null && row.bonusGold > 0)
+        {
+            goldPopupPrefab.Spawn(Player.Instance.transform.position + new Vector3(0, 2f, 0), row.bonusGold);
+        }
+
+        string desc = string.Join(", ", parts);
+        OnBonusObjectiveCompleted?.Invoke(obj, row.bonusGold, row.bonusSupply, desc);
+        Debug.Log($"[GameLoopManager] Bonus objective reward: {desc}");
+    }
+
+    /// <summary>Clears a resolved bonus objective (leftover cages/engines, the tracker) after its banner has played.</summary>
+    private IEnumerator ClearResolvedObjective(ISurvivorsObjective obj)
+    {
+        int wave = CurrentWave;
+        yield return new WaitForSeconds(ResolvedObjectiveClearDelay);
+        if (objectiveManager != null && isWaveActive && CurrentWave == wave && objectiveManager.CurrentObjective == obj)
+        {
+            objectiveManager.StopActiveObjective();
+            if (currentObjective == obj) currentObjective = null;
+        }
     }
 
     /// <summary>Debug method: completes the active objective, which resolves the wave.</summary>
@@ -713,14 +772,6 @@ public class GameLoopManager : MonoBehaviour
             if (captainHealth != null && !captainHealth.IsDead && !stragglers.Contains(captainHealth)) stragglers.Add(captainHealth);
         }
         stragglers.RemoveAll(h => h == null || h.IsDead);
-
-        // A failed objective doesn't send them home: the survivors storm the gate instead, and the wave only
-        // resolves once they're cut down (or the gate falls, which ends the run on its own).
-        if (!success && stragglers.Count > 0 && Gate.NearestAlive(stragglers[0].transform.position) != null)
-        {
-            yield return GateAssaultRoutine(stragglers);
-            stragglers.Clear();
-        }
 
         if (stragglers.Count > 0)
         {
@@ -765,45 +816,6 @@ public class GameLoopManager : MonoBehaviour
         if (settle > 0f) yield return new WaitForSeconds(settle);
 
         ClearActiveWave(success);
-    }
-
-    private IEnumerator GateAssaultRoutine(List<Health> stragglers)
-    {
-        IsGateAssault = true;
-        foreach (Health h in stragglers)
-        {
-            if (h != null && h.TryGetComponent(out AITargetSelector selector)) selector.SetRole(EnemyRole.Assault);
-        }
-        OnGateAssaultStarted?.Invoke(stragglers.Count);
-
-        float maxSeconds = waveChoiceConfig != null ? waveChoiceConfig.gateAssaultMaxSeconds : 120f;
-        float t = 0f;
-        int shownAlive = -1;
-        while (t < maxSeconds)
-        {
-            int alive = 0;
-            foreach (Health h in stragglers) if (h != null && !h.IsDead) alive++;
-            if (alive == 0) break;
-            if (alive != shownAlive)
-            {
-                shownAlive = alive;
-                SetStatus(string.Format(Loc.Get("wave.status.gate_assault", "They're storming the gate! Cut them down: {0} left"), alive));
-            }
-            resolveWatchdog = 0f; // a real fight, not a stalled rout: this loop has its own backstop
-            t += Time.deltaTime;
-            yield return null;
-        }
-
-        if (t >= maxSeconds)
-        {
-            Debug.LogWarning("[GameLoopManager] Gate assault backstop expired; despawning the stragglers left.");
-            if (spawner != null) spawner.DespawnAllAliveEnemies();
-            foreach (Health h in stragglers)
-            {
-                if (h != null && !h.IsDead) Destroy(h.gameObject);
-            }
-        }
-        IsGateAssault = false;
     }
 
     private void ClearActiveWave(bool success)
