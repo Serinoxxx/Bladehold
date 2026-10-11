@@ -103,6 +103,19 @@ Manual verification (playtest — the card/HUD still show the objective until sl
 - [ ] A scene with a pinned `SceneEnemyRoster` only rolls enemies from that list; a dev scene with no roster still spawns the old threat-gated way.
 - [ ] Watch the console for `Composition enemy '<id>' has no spawnable type/prefab` warnings — any roster id with no prefab is skipped; add it to the prefab map if it should appear.
 
+## Slice 7.2: battering ram as a roster enemy
+
+Code done: `StopBatteringRamObjective` renamed in place (same GUID) to `Objectives/BatteringRamLane.cs` — the `SurvivorsObjectives.prefab` instance kept its `WagonSpawnPoint`/`GateDestinationPoint` refs (verified via MCP). `Enemies.csv` row `battering_ram` + `EnemyPrefabMap` entry → `Objectives/BatteringRam.prefab`. `stop_battering_ram` removed from `WaveObjectives.csv`. Benchmark 18D passes.
+
+Wiring:
+- [ ] Open `Bladehold Survivors Scene` and each generated defence scene: confirm a `BatteringRamLane` component exists with spawn + gate destination set. Scenes without a lane still work — rams spawn at a normal spawn point and roll at the nearest gate — but re-run **Generate Defense Scene** (or **Bladehold/Setup Battering Ram (Prefab + Lane)** for the Survivors scene) to get a proper lane.
+
+Manual verification:
+- [ ] From wave 2 on, a card sometimes rolls a Battering Ram (never more than one per wave). It spawns at the ram lane, goblins gather and push it, and it batters the gate for 50 per hit.
+- [ ] The wave doesn't end until the ram is destroyed; breaking it counts as a kill.
+- [ ] Captain wave rout: a ram that's still alive stops rolling when the captain dies.
+- [ ] Stop the Battering Ram no longer shows up as a wave objective.
+
 
 
 Code/scene done headlessly via MCP: realtime additional-light shadows disabled in

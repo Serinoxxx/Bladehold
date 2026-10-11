@@ -7,11 +7,13 @@ using UnityEngine;
 using UnityEngine.AI;
 
 /// <summary>
-///     Battering Ram entity for the "Stop the Battering Ram" objective.
+///     Battering Ram: a roster enemy (<c>battering_ram</c> in <c>Config/Enemies.csv</c>, plan 22) that a
+///     wave card can roll into its composition. <see cref="SurvivorsSpawner" /> spawns it at the scene's
+///     <see cref="BatteringRamLane" /> and it rolls for the lane's gate on its own.
 ///     Moves along NavMesh toward a target fortress gate only when enemies are in its proximity.
 ///     Once it reaches the gate, it plays a procedural ramming animation every 5 seconds, dealing
-///     50 damage at the point of impact with sound, VFX, and MMF_Player camera impulse.
-///     The player must destroy the 1000 HP ram to complete the objective.
+///     <c>gateDamage</c> (the CSV <c>damage</c> column) at the point of impact with sound, VFX, and
+///     MMF_Player camera impulse. Like any composition enemy, the wave isn't survived until it's destroyed.
 /// </summary>
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(Health))]
@@ -99,8 +101,43 @@ public class BatteringRam : MonoBehaviour
     private Quaternion initialLogLocalRot;
     private readonly Collider[] overlapBuffer = new Collider[32];
 
+    private static readonly List<BatteringRam> active = new List<BatteringRam>();
+
+    /// <summary>Every live ram in the scene (escorts pick the nearest rolling one).</summary>
+    public static IReadOnlyList<BatteringRam> Active => active;
+
+    /// <summary>The nearest live ram still rolling for the gate, or null.</summary>
+    public static BatteringRam NearestRolling(Vector3 from)
+    {
+        BatteringRam best = null;
+        float bestSqr = float.MaxValue;
+        foreach (BatteringRam ram in active)
+        {
+            if (ram == null || ram.isDestroyed || ram.hasReachedGate || !ram.isInitialized || ram.routed) continue;
+            float sqr = (ram.transform.position - from).sqrMagnitude;
+            if (sqr < bestSqr)
+            {
+                bestSqr = sqr;
+                best = ram;
+            }
+        }
+        return best;
+    }
+
+    private bool routed;
+
     public event Action<BatteringRam> OnDestroyed;
     public Health Health => health;
+    public float GateDamage => gateDamage;
+
+    /// <summary>
+    ///     Roster override (the CSV <c>damage</c> column via <see cref="EnemyDefinitionApplier" />): damage per
+    ///     ram impact on the gate. Applied right after Instantiate, before Start.
+    /// </summary>
+    public void SetDamage(float damage)
+    {
+        gateDamage = Mathf.Max(0f, damage);
+    }
     public bool IsPushed => isPushed;
     public int PusherCount => pusherCount;
     public bool HasReachedGate => hasReachedGate;
@@ -161,6 +198,7 @@ public class BatteringRam : MonoBehaviour
 
     private void OnEnable()
     {
+        if (!active.Contains(this)) active.Add(this);
         if (health == null) health = GetComponent<Health>();
         if (health != null)
         {
@@ -177,10 +215,28 @@ public class BatteringRam : MonoBehaviour
         UpdateVisualState();
         if (impactFeedback == null) Debug.LogError("[BatteringRam] impactFeedback is not assigned.", this);
         if (deathFeedback == null) Debug.LogError("[BatteringRam] deathFeedback is not assigned.", this);
+
+        // Roster spawns (wave composition, DevConsole, Enemy Zoo) aren't handed a destination: roll for the
+        // scene lane's gate, else the nearest gate. No gate at all (zoo, dev scenes) = it just sits there.
+        if (!isInitialized) AutoInitializeDestination();
+    }
+
+    private void AutoInitializeDestination()
+    {
+        BatteringRamLane lane = BatteringRamLane.Nearest(transform.position);
+        if (lane != null && lane.TryGetDestination(out Vector3 laneDest, out Gate laneGate))
+        {
+            InitializeDestination(laneDest, laneGate);
+            return;
+        }
+
+        Gate gate = Gate.NearestAlive(transform.position);
+        if (gate != null) InitializeDestination(gate.TargetPosition, gate);
     }
 
     private void OnDisable()
     {
+        active.Remove(this);
         if (health != null)
         {
             health.OnDamaged -= HandleDamaged;
@@ -190,6 +246,7 @@ public class BatteringRam : MonoBehaviour
 
     private void OnDestroy()
     {
+        active.Remove(this);
         if (health != null)
         {
             health.OnDamaged -= HandleDamaged;
@@ -239,12 +296,31 @@ public class BatteringRam : MonoBehaviour
     {
         if (!isInitialized || isDestroyed) return;
 
+        // The wave's rout (EnemyRout) owns the agent from here: stop ramming and let it roll away.
+        if (!routed && TryGetComponent(out EnemyRout _)) BeginRout();
+        if (routed) return;
+
         if (!hasReachedGate)
         {
             if (UpdateWallBreach()) return;
             CheckEnemyProximity();
             DriveMovement();
             CheckGateArrival();
+        }
+    }
+
+    private void BeginRout()
+    {
+        routed = true;
+        if (ramRoutine != null) StopCoroutine(ramRoutine);
+        if (wallRamRoutine != null) StopCoroutine(wallRamRoutine);
+        ramRoutine = null;
+        wallRamRoutine = null;
+        wallTarget = null;
+        if (ramLogTransform != null)
+        {
+            ramLogTransform.localPosition = initialLogLocalPos;
+            ramLogTransform.localRotation = initialLogLocalRot;
         }
     }
 

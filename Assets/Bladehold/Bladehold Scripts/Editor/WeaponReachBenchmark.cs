@@ -2347,8 +2347,8 @@ public static class WeaponReachBenchmark
             failedCount++;
         }
 
-        // 18. BATTERING RAM OBJECTIVE & ESCORT FORMATION
-        sb.AppendLine("\n### 18. BATTERING RAM OBJECTIVE & ESCORT FORMATION");
+        // 18. BATTERING RAM (ROSTER ENEMY) & ESCORT FORMATION
+        sb.AppendLine("\n### 18. BATTERING RAM (ROSTER ENEMY) & ESCORT FORMATION");
         try
         {
             GameObject ramGo = new GameObject("TestRam");
@@ -2405,6 +2405,58 @@ public static class WeaponReachBenchmark
 
             // Cleanup
             UnityEngine.Object.DestroyImmediate(ramGo);
+
+            // 18D (plan 22): the ram is a roster enemy. CSV damage → gate damage per impact, registered in
+            // the map/roster, and a wave composition rolls at most one (its maxConcurrent per-wave cap).
+            GameObject dmgRamGo = new GameObject("TestRamDamage");
+            BatteringRam dmgRam = dmgRamGo.AddComponent<BatteringRam>();
+            dmgRam.SetDamage(80f);
+            bool setDamageOk = Mathf.Approximately(dmgRam.GateDamage, 80f);
+            UnityEngine.Object.DestroyImmediate(dmgRamGo);
+
+            EnemyRosterSO ramRoster = AssetDatabase.LoadAssetAtPath<EnemyRosterSO>("Assets/Bladehold/Bladehold Scripts/Enemies/EnemyRosterSO.asset");
+            if (ramRoster != null) ramRoster.Reload();
+            EnemyDefinition ramDef = ramRoster != null ? ramRoster.Find("battering_ram") : null;
+            EnemyPrefabMapSO ramMap = AssetDatabase.LoadAssetAtPath<EnemyPrefabMapSO>("Assets/Bladehold/Bladehold Scripts/Enemies/EnemyPrefabMap.asset");
+            GameObject ramPrefab = ramMap != null ? ramMap.FindPrefab("battering_ram") : null;
+            bool rowOk = ramDef != null && ramDef.enabled && ramDef.minThreat > 0 && ramDef.maxConcurrent == 1
+                && ramDef.damage.HasValue && ramDef.damage.Value > 0f;
+            bool prefabOk = ramPrefab != null && ramPrefab.GetComponent<BatteringRam>() != null && ramPrefab.GetComponent<Health>() != null;
+
+            int maxRamsInWave = 0;
+            if (ramDef != null)
+            {
+                // Ram-heavy roster: the ram is the only variety type, so without the cap it'd take the whole remainder.
+                List<EnemyDefinition> capRoster = new List<EnemyDefinition>
+                {
+                    new EnemyDefinition { id = "goblin", enabled = true, minThreat = 1, unlockWave = 1, spawnChance = 1f },
+                    new EnemyDefinition { id = "battering_ram", enabled = true, minThreat = 1, unlockWave = 1, spawnChance = 1f, maxConcurrent = ramDef.maxConcurrent }
+                };
+                for (int seed = 0; seed < 50; seed++)
+                {
+                    List<WaveEnemyEntry> comp = WaveCompositionRoller.Roll(capRoster, "goblin", 0.6f, 3, 1, 30, null, new System.Random(seed));
+                    int rams = 0, total = 0;
+                    foreach (WaveEnemyEntry e in comp)
+                    {
+                        total += e.count;
+                        if (e.enemyId == "battering_ram") rams += e.count;
+                    }
+                    if (total != 30) maxRamsInWave = 999;
+                    maxRamsInWave = Mathf.Max(maxRamsInWave, rams);
+                }
+            }
+            bool capOk = ramDef != null && maxRamsInWave == ramDef.maxConcurrent;
+
+            if (setDamageOk && rowOk && prefabOk && capOk)
+            {
+                sb.AppendLine($"  - Ram as roster enemy: SetDamage → gate damage, battering_ram row (dmg {ramDef.damage.Value}, minThreat {ramDef.minThreat}) + prefab map entry, ≤1 ram per rolled wave. [PASSED]");
+                passedCount++;
+            }
+            else
+            {
+                sb.AppendLine($"  - [FAIL] Ram as roster enemy (setDamage={setDamageOk}, row={rowOk}, prefab={prefabOk}, cap={capOk}, maxRamsInWave={maxRamsInWave})");
+                failedCount++;
+            }
         }
         catch (Exception ex)
         {

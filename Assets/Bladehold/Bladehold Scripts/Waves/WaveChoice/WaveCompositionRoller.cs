@@ -11,7 +11,8 @@ using System.Collections.Generic;
 ///     The composition replaces the old threat-gated kill quota as the wave's spawn list: the card
 ///     chooses the fight. A fodder floor (<paramref name="fodderShare" />) guarantees the sector's basic
 ///     enemy still makes up most of the crowd; the remainder is a weighted draw (by each type's
-///     <see cref="EnemyDefinition.spawnChance" />) over the other unlocked types.
+///     <see cref="EnemyDefinition.spawnChance" />) over the other unlocked types, each capped per wave at its
+///     <see cref="EnemyDefinition.maxConcurrent" /> (so a wave rolls at most one battering ram).
 /// </summary>
 public static class WaveCompositionRoller
 {
@@ -77,14 +78,35 @@ public static class WaveCompositionRoller
             }
             else
             {
+                // Each type is capped at its maxConcurrent per wave (a composition spawns the whole crowd, and
+                // the bag ignores live caps): one ram, one troll, at most 3 brutes... Capped types leave the
+                // draw; once every variety type is capped, the rest of the crowd is fodder.
                 List<float> weights = new List<float>(pool.Count);
                 foreach (EnemyDefinition def in pool) weights.Add(def.spawnChance > 0f ? def.spawnChance : 0.0001f);
+                int overflow = 0;
                 for (int i = 0; i < remaining; i++)
                 {
+                    if (pool.Count == 0)
+                    {
+                        overflow = remaining - i;
+                        break;
+                    }
                     int idx = SectorSpawnRules.PickWeighted(weights, rng.NextDouble() * 0.999999);
                     if (idx < 0) idx = 0;
-                    string id = pool[idx].id;
-                    counts[id] = counts.TryGetValue(id, out int c) ? c + 1 : 1;
+                    EnemyDefinition picked = pool[idx];
+                    int n = counts.TryGetValue(picked.id, out int c) ? c + 1 : 1;
+                    counts[picked.id] = n;
+                    if (picked.maxConcurrent > 0 && n >= picked.maxConcurrent)
+                    {
+                        pool.RemoveAt(idx);
+                        weights.RemoveAt(idx);
+                    }
+                }
+
+                if (overflow > 0)
+                {
+                    EnemyDefinition fill = fodderDef ?? roster[0];
+                    if (fill != null) counts[fill.id] = counts.TryGetValue(fill.id, out int c) ? c + overflow : overflow;
                 }
             }
         }

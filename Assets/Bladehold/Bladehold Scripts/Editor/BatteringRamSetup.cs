@@ -17,7 +17,7 @@ public static class BatteringRamSetup
     private const string SurvivorsObjectivesPrefabPath = "Assets/Bladehold/Bladehold Prefabs/Objectives/SurvivorsObjectives.prefab";
     private const string SurvivorsScenePath = "Assets/Bladehold/Bladehold Scenes/Bladehold Survivors Scene.unity";
 
-    [MenuItem("Bladehold/Setup Battering Ram Objective")]
+    [MenuItem("Bladehold/Setup Battering Ram (Prefab + Lane)")]
     public static void Execute()
     {
         Debug.Log("[BatteringRamSetup] Starting Battering Ram setup...");
@@ -373,6 +373,11 @@ public static class BatteringRamSetup
         return savedPrefab;
     }
 
+    /// <summary>
+    ///     Plan 22: the ram is a roster enemy now, so the objectives prefab only needs its route. Ensures a
+    ///     <see cref="BatteringRamLane" /> beside the wagon objective, reusing the wagon's spawn/gate points
+    ///     when the lane has none.
+    /// </summary>
     public static void SetupSurvivorsObjectivesPrefab(GameObject ramPrefab)
     {
         using (var scope = new PrefabUtility.EditPrefabContentsScope(SurvivorsObjectivesPrefabPath))
@@ -383,70 +388,7 @@ public static class BatteringRamSetup
                 Debug.LogError("[BatteringRamSetup] Failed to load SurvivorsObjectives prefab contents");
                 return;
             }
-
-            ProtectWagonObjective wagonObj = root.GetComponentInChildren<ProtectWagonObjective>();
-            Transform spawnPoint = null;
-            Transform gateDest = null;
-            Sprite destIcon = null;
-
-            if (wagonObj != null)
-            {
-                SerializedObject wagonSo = new SerializedObject(wagonObj);
-                spawnPoint = wagonSo.FindProperty("wagonSpawnPoint").objectReferenceValue as Transform;
-                gateDest = wagonSo.FindProperty("gateDestinationPoint").objectReferenceValue as Transform;
-                destIcon = wagonSo.FindProperty("destinationWaypointIcon").objectReferenceValue as Sprite;
-            }
-
-            Sprite ramIcon = null;
-            DestroySiegeEnginesObjective siegeObj = root.GetComponentInChildren<DestroySiegeEnginesObjective>();
-            if (siegeObj != null)
-            {
-                SerializedObject siegeSo = new SerializedObject(siegeObj);
-                ramIcon = siegeSo.FindProperty("siegeEngineWaypointIcon").objectReferenceValue as Sprite;
-            }
-
-            StopBatteringRamObjective ramObjective = root.GetComponentInChildren<StopBatteringRamObjective>();
-            if (ramObjective == null)
-            {
-                // Attach to same GameObject as the other objectives
-                GameObject targetHolder = wagonObj != null ? wagonObj.gameObject : root;
-                ramObjective = targetHolder.AddComponent<StopBatteringRamObjective>();
-            }
-
-            SerializedObject ramObjSo = new SerializedObject(ramObjective);
-            ramObjSo.FindProperty("objectiveId").stringValue = "stop_battering_ram";
-            ramObjSo.FindProperty("title").stringValue = "Stop the Battering Ram";
-            ramObjSo.FindProperty("description").stringValue = "Destroy the battering ram before it breaches the gate!";
-            ramObjSo.FindProperty("batteringRamPrefab").objectReferenceValue = ramPrefab;
-            if (spawnPoint != null) ramObjSo.FindProperty("ramSpawnPoint").objectReferenceValue = spawnPoint;
-            if (gateDest != null) ramObjSo.FindProperty("gateDestinationPoint").objectReferenceValue = gateDest;
-            if (destIcon != null) ramObjSo.FindProperty("destinationWaypointIcon").objectReferenceValue = destIcon;
-            if (ramIcon != null) ramObjSo.FindProperty("ramWaypointIcon").objectReferenceValue = ramIcon;
-            ramObjSo.ApplyModifiedPropertiesWithoutUndo();
-
-            // Add to SurvivorsObjectiveManager repeatingObjectiveComponents
-            SurvivorsObjectiveManager objManager = root.GetComponentInChildren<SurvivorsObjectiveManager>();
-            if (objManager != null)
-            {
-                SerializedObject managerSo = new SerializedObject(objManager);
-                SerializedProperty repeatingList = managerSo.FindProperty("repeatingObjectiveComponents");
-                bool alreadyInList = false;
-                for (int i = 0; i < repeatingList.arraySize; i++)
-                {
-                    if (repeatingList.GetArrayElementAtIndex(i).objectReferenceValue == ramObjective)
-                    {
-                        alreadyInList = true;
-                        break;
-                    }
-                }
-                if (!alreadyInList)
-                {
-                    repeatingList.InsertArrayElementAtIndex(repeatingList.arraySize);
-                    repeatingList.GetArrayElementAtIndex(repeatingList.arraySize - 1).objectReferenceValue = ramObjective;
-                    managerSo.ApplyModifiedPropertiesWithoutUndo();
-                    Debug.Log("[BatteringRamSetup] Added StopBatteringRamObjective to SurvivorsObjectiveManager pool in prefab");
-                }
-            }
+            EnsureLane(root);
         }
         Debug.Log("[BatteringRamSetup] Successfully updated SurvivorsObjectives.prefab");
     }
@@ -459,71 +401,36 @@ public static class BatteringRamSetup
         if (!scene.IsValid()) return;
 
         SurvivorsObjectiveManager manager = Object.FindFirstObjectByType<SurvivorsObjectiveManager>();
-        if (manager != null)
+        if (manager == null) return;
+
+        EnsureLane(manager.gameObject);
+        EditorSceneManager.MarkSceneDirty(scene);
+        EditorSceneManager.SaveScene(scene);
+        Debug.Log("[BatteringRamSetup] Successfully updated and saved Bladehold Survivors Scene.unity");
+    }
+
+    private static void EnsureLane(GameObject root)
+    {
+        ProtectWagonObjective wagonObj = root.GetComponentInChildren<ProtectWagonObjective>();
+        BatteringRamLane lane = root.GetComponentInChildren<BatteringRamLane>();
+        if (lane == null)
         {
-            StopBatteringRamObjective ramObjective = manager.GetComponentInChildren<StopBatteringRamObjective>();
-            if (ramObjective == null)
-            {
-                ProtectWagonObjective wagonObj = manager.GetComponentInChildren<ProtectWagonObjective>();
-                GameObject holder = wagonObj != null ? wagonObj.gameObject : manager.gameObject;
-                ramObjective = holder.AddComponent<StopBatteringRamObjective>();
-            }
-
-            ProtectWagonObjective wagon = manager.GetComponentInChildren<ProtectWagonObjective>();
-            Transform spawnPoint = null;
-            Transform gateDest = null;
-            Sprite destIcon = null;
-
-            if (wagon != null)
-            {
-                SerializedObject wagonSo = new SerializedObject(wagon);
-                spawnPoint = wagonSo.FindProperty("wagonSpawnPoint").objectReferenceValue as Transform;
-                gateDest = wagonSo.FindProperty("gateDestinationPoint").objectReferenceValue as Transform;
-                destIcon = wagonSo.FindProperty("destinationWaypointIcon").objectReferenceValue as Sprite;
-            }
-
-            Sprite ramIcon = null;
-            DestroySiegeEnginesObjective siegeObj = manager.GetComponentInChildren<DestroySiegeEnginesObjective>();
-            if (siegeObj != null)
-            {
-                SerializedObject siegeSo = new SerializedObject(siegeObj);
-                ramIcon = siegeSo.FindProperty("siegeEngineWaypointIcon").objectReferenceValue as Sprite;
-            }
-
-            SerializedObject ramObjSo = new SerializedObject(ramObjective);
-            ramObjSo.FindProperty("objectiveId").stringValue = "stop_battering_ram";
-            ramObjSo.FindProperty("title").stringValue = "Stop the Battering Ram";
-            ramObjSo.FindProperty("description").stringValue = "Destroy the battering ram before it breaches the gate!";
-            ramObjSo.FindProperty("batteringRamPrefab").objectReferenceValue = ramPrefab;
-            if (spawnPoint != null) ramObjSo.FindProperty("ramSpawnPoint").objectReferenceValue = spawnPoint;
-            if (gateDest != null) ramObjSo.FindProperty("gateDestinationPoint").objectReferenceValue = gateDest;
-            if (destIcon != null) ramObjSo.FindProperty("destinationWaypointIcon").objectReferenceValue = destIcon;
-            if (ramIcon != null) ramObjSo.FindProperty("ramWaypointIcon").objectReferenceValue = ramIcon;
-            ramObjSo.ApplyModifiedPropertiesWithoutUndo();
-
-            SerializedObject managerSo = new SerializedObject(manager);
-            SerializedProperty repeatingList = managerSo.FindProperty("repeatingObjectiveComponents");
-            bool alreadyInList = false;
-            for (int i = 0; i < repeatingList.arraySize; i++)
-            {
-                if (repeatingList.GetArrayElementAtIndex(i).objectReferenceValue == ramObjective)
-                {
-                    alreadyInList = true;
-                    break;
-                }
-            }
-            if (!alreadyInList)
-            {
-                repeatingList.InsertArrayElementAtIndex(repeatingList.arraySize);
-                repeatingList.GetArrayElementAtIndex(repeatingList.arraySize - 1).objectReferenceValue = ramObjective;
-                managerSo.ApplyModifiedPropertiesWithoutUndo();
-                Debug.Log("[BatteringRamSetup] Added StopBatteringRamObjective to SurvivorsObjectiveManager in scene");
-            }
-
-            EditorSceneManager.MarkSceneDirty(scene);
-            EditorSceneManager.SaveScene(scene);
-            Debug.Log("[BatteringRamSetup] Successfully updated and saved Bladehold Survivors Scene.unity");
+            GameObject holder = wagonObj != null ? wagonObj.gameObject : root;
+            lane = holder.AddComponent<BatteringRamLane>();
         }
+
+        SerializedObject laneSo = new SerializedObject(lane);
+        if (wagonObj != null)
+        {
+            SerializedObject wagonSo = new SerializedObject(wagonObj);
+            SerializedProperty spawn = laneSo.FindProperty("ramSpawnPoint");
+            SerializedProperty gate = laneSo.FindProperty("gateDestinationPoint");
+            if (spawn.objectReferenceValue == null)
+                spawn.objectReferenceValue = wagonSo.FindProperty("wagonSpawnPoint").objectReferenceValue;
+            if (gate.objectReferenceValue == null)
+                gate.objectReferenceValue = wagonSo.FindProperty("gateDestinationPoint").objectReferenceValue;
+        }
+        laneSo.ApplyModifiedPropertiesWithoutUndo();
     }
 }
 #endif

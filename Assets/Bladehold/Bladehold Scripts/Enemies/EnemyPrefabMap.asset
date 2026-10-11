@@ -95,3 +95,5 @@ MonoBehaviour:
     prefab: {fileID: 940034811320357533, guid: 74a03cf338940f24987bf6be470c4d4a, type: 3}
   - id: spearman
     prefab: {fileID: 7334756547572888902, guid: 3eb75ff91505c7c47b2f005efc571353, type: 3}
+  - id: battering_ram
+    prefab: {fileID: 994022192464808381, guid: 70e6a39ad322d724aa58bbb69131708e, type: 3}

@@ -856,7 +856,7 @@ public static class DefenseSceneGenerator
             SetTransformArray(c, "spawnPoints", catRoot);
         foreach (var c in objectives.GetComponentsInChildren<ProtectWagonObjective>(true))
             SetRefs(c, ("wagonSpawnPoint", wsp), ("gateDestinationPoint", gdp));
-        foreach (var c in objectives.GetComponentsInChildren<StopBatteringRamObjective>(true))
+        foreach (var c in objectives.GetComponentsInChildren<BatteringRamLane>(true))
             SetRefs(c, ("ramSpawnPoint", rsp), ("gateDestinationPoint", gdp));
     }
 

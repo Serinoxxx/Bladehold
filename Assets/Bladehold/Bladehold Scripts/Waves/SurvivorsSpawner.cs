@@ -589,7 +589,7 @@ public class SurvivorsSpawner : MonoBehaviour
             }
         }
 
-        Vector3 spawnPos = ResolveSpawnPosition();
+        Vector3 spawnPos = ResolveSpawnPosition(selectedType, out Quaternion spawnRot);
         float indicatorDuration = pacingConfig != null ? pacingConfig.spawnTelegraphDuration : 3.0f;
 
         aliveCount++; // Reserve slot during telegraph
@@ -601,7 +601,7 @@ public class SurvivorsSpawner : MonoBehaviour
                 return;
             }
 
-            GameObject enemy = Instantiate(selectedType.prefab, spawnPos, Quaternion.identity);
+            GameObject enemy = Instantiate(selectedType.prefab, spawnPos, spawnRot);
 
             EnemyDefinitionApplier.Apply(enemy, selectedType.def);
 
@@ -800,6 +800,22 @@ public class SurvivorsSpawner : MonoBehaviour
         return best;
     }
 
+    /// <summary>
+    ///     Where a spawn of this type appears: a battering ram rolls in on the scene's <see cref="BatteringRamLane" />
+    ///     (facing down it); everything else uses the regular spawn points.
+    /// </summary>
+    private Vector3 ResolveSpawnPosition(SpawnType type, out Quaternion rotation)
+    {
+        rotation = Quaternion.identity;
+        if (type != null && type.prefab != null && type.prefab.GetComponent<BatteringRam>() != null
+            && BatteringRamLane.TryGetAnySpawn(out Vector3 lanePos, out Quaternion laneRot))
+        {
+            rotation = laneRot;
+            return lanePos;
+        }
+        return ResolveSpawnPosition();
+    }
+
     private Vector3 ResolveSpawnPosition()
     {
         if (spawnPoints != null && spawnPoints.Length > 0)
@@ -966,8 +982,9 @@ public class SurvivorsSpawner : MonoBehaviour
     {
         if (type == null || type.prefab == null) return null;
 
-        Vector3 spawnPos = position ?? ResolveSpawnPosition();
-        GameObject enemy = Instantiate(type.prefab, spawnPos, Quaternion.identity);
+        Quaternion spawnRot = Quaternion.identity;
+        Vector3 spawnPos = position ?? ResolveSpawnPosition(type, out spawnRot);
+        GameObject enemy = Instantiate(type.prefab, spawnPos, position.HasValue ? Quaternion.identity : spawnRot);
         EnemyDefinitionApplier.Apply(enemy, type.def);
         if (GameLoopManager.Instance != null) GameLoopManager.Instance.ApplyWaveModifiers(enemy);
         AITargetSelector.AssignSpawnRole(enemy);

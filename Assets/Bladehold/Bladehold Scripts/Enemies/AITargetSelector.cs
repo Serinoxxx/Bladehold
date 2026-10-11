@@ -181,8 +181,8 @@ public class AITargetSelector : MonoBehaviour
 
     /// <summary>
     ///     The active objective's object for Guards to hold (nearest cage, siege engine, the wagon), or false
-    ///     when the objective has none. The battering ram is excluded (Assault escorts it) and so is the
-    ///     golden goblin (its position is the quarry, not something to defend).
+    ///     when the objective has none. The golden goblin is excluded (its position is the quarry, not
+    ///     something to defend). The battering ram is an enemy, not an objective: Assault escorts it.
     /// </summary>
     public static bool TryGetGuardAnchor(Vector3 from, out Vector3 anchor)
     {
@@ -190,7 +190,7 @@ public class AITargetSelector : MonoBehaviour
         SurvivorsObjectiveManager manager = SurvivorsObjectiveManager.Instance;
         ISurvivorsObjective objective = manager != null ? manager.CurrentObjective : null;
         if (objective == null || !objective.IsActive) return false;
-        if (objective is StopBatteringRamObjective || objective is GoldenGoblinObjective) return false;
+        if (objective is GoldenGoblinObjective) return false;
 
         Vector3? position = objective.GetObjectiveTargetPosition(from);
         if (!position.HasValue) return false;
@@ -379,26 +379,16 @@ public class AITargetSelector : MonoBehaviour
     }
 
     /// <summary>
-    /// Checks if there is an active Battering Ram objective with an alive ram that hasn't reached the gate yet.
+    /// The nearest live battering ram still rolling for the gate (a wave-composition enemy, plan 22).
     /// Returns the escort/push formation position just ahead of the ram.
     /// </summary>
     private bool TryGetRamEscortTarget(out Vector3 escortTarget)
     {
         escortTarget = Vector3.zero;
-        if (SurvivorsObjectiveManager.Instance != null && SurvivorsObjectiveManager.Instance.CurrentObjective != null)
-        {
-            var currentObj = SurvivorsObjectiveManager.Instance.CurrentObjective;
-            if (currentObj.IsActive && currentObj is StopBatteringRamObjective ramObj)
-            {
-                BatteringRam ram = ramObj.CurrentRam;
-                if (ram != null && !ram.IsDestroyed && !ram.HasReachedGate)
-                {
-                    escortTarget = ram.GetEscortTargetPosition(transform.position, GetInstanceID());
-                    return true;
-                }
-            }
-        }
-        return false;
+        BatteringRam ram = BatteringRam.NearestRolling(transform.position);
+        if (ram == null) return false;
+        escortTarget = ram.GetEscortTargetPosition(transform.position, GetInstanceID());
+        return true;
     }
 
     private bool ShouldTargetPlayer()

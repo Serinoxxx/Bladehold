@@ -40,6 +40,7 @@
 - Lowered the default mouse sensitivity and gave the slider a finer 0.01 to 1 range (it can no longer be set to 0); saves on the old default move to the new one
 - Swapped the tutorial gate's preparation music for a calmer track
 - Your hero now waves to call the horse while summoning it
+- Battering rams are now enemies that wave cards can bring from wave 2 onward (at most one per wave), rather than a wave objective. The wave isn't over until the ram is broken
 - Summoning your horse now plants you in place for a moment, so pressing it while running no longer cancels it straight away
 - A cancelled horse summon now says so on the cast bar in red, with the reason (you moved, you were hit, or you pressed it again)
 - The tutorial now tells you to stand still while summoning your horse

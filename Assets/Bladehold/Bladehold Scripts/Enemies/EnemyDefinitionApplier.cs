@@ -56,6 +56,7 @@ public static class EnemyDefinitionApplier
             enemy.GetComponent<BulwarkAttack>()?.SetDamage(def.damage.Value);
             enemy.GetComponent<CaptainKombustaController>()?.SetDamage(def.damage.Value);
             enemy.GetComponent<CaptainMograController>()?.SetDamage(def.damage.Value);
+            enemy.GetComponent<BatteringRam>()?.SetDamage(def.damage.Value);
         }
         if (def.minGold.HasValue)
         {
@@ -92,7 +93,8 @@ public static class EnemyDefinitionApplier
         else
         {
             NavMeshAgent agent = enemy.GetComponent<NavMeshAgent>();
-            if (agent != null)
+            // The siege ram's wheels sit on its own agent offset; the -0.08 tweak is for character rigs.
+            if (agent != null && enemy.GetComponent<BatteringRam>() == null)
             {
                 agent.baseOffset = -0.08f;
             }
