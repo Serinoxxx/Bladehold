@@ -546,9 +546,9 @@ MonoBehaviour:
   m_fontSize: 36
   m_fontSizeBase: 36
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
-  m_fontSizeMax: 72
+  m_fontSizeMax: 32
   m_fontStyle: 0
   m_HorizontalAlignment: 1
   m_VerticalAlignment: 4096
@@ -605,7 +605,7 @@ MonoBehaviour:
   m_MinHeight: -1
   m_PreferredWidth: -1
   m_PreferredHeight: -1
-  m_FlexibleWidth: -1
+  m_FlexibleWidth: 1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
 --- !u!114 &7325379171905625892
@@ -2866,11 +2866,7 @@ MonoBehaviour:
   stanceBand: {fileID: 4888572626370714148}
   stanceIcon: {fileID: 8023391702231216226}
   leavesCoverChip: {fileID: 0}
-  leavesCoverText: {fileID: 0}
-  defenceSprite: {fileID: 21300000, guid: 981b04d1c63d48f4095e7c354aa08727, type: 3}
-  offenceSprite: {fileID: 21300000, guid: 970286c87a203f44b907114ac87aecb6, type: 3}
-  defenceColor: {r: 0.22, g: 0.42, b: 0.78, a: 1}
-  offenceColor: {r: 0.72, g: 0.16, b: 0.12, a: 1}
+  neutralBandColor: {r: 0.32, g: 0.27, b: 0.22, a: 1}
   titleText: {fileID: 4856124481429814759}
   skullImages:
   - {fileID: 1902504560047796160}
@@ -6165,9 +6161,9 @@ MonoBehaviour:
   m_fontSize: 30.5
   m_fontSizeBase: 30.5
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
-  m_fontSizeMax: 72
+  m_fontSizeMax: 30.5
   m_fontStyle: 0
   m_HorizontalAlignment: 1
   m_VerticalAlignment: 512

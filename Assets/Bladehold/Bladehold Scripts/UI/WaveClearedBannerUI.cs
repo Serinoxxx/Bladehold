@@ -164,18 +164,50 @@ public class WaveClearedBannerUI : MonoBehaviour
     private void HandleSurvivorsObjectiveStarted(ISurvivorsObjective obj)
     {
         if (obj == null) return;
+        WaveObjectiveDefinition bonus = BonusDefinition(obj);
+        if (bonus != null)
+        {
+            ShowBanner(Loc.Get("wave.bonus.banner_new", "BONUS OBJECTIVE"), JoinReward(obj.Title, bonus.BonusRewardText), 0, 0, isNewQuest: true);
+            return;
+        }
         ShowBanner(newQuestHeader, obj.Title, 0, 0, isNewQuest: true);
     }
 
     private void HandleSurvivorsObjectiveCleared(ISurvivorsObjective obj)
     {
+        WaveObjectiveDefinition bonus = BonusDefinition(obj);
+        if (bonus != null)
+        {
+            ShowBanner(Loc.Get("wave.bonus.banner_complete", "BONUS COMPLETE"), JoinReward(obj.Title, bonus.BonusRewardText), 0, 0, isNewQuest: false);
+            return;
+        }
         ShowBanner(questCompletedHeader, obj != null ? obj.Title : null, 0, 0, isNewQuest: false);
     }
 
     private void HandleSurvivorsObjectiveFailed(ISurvivorsObjective obj)
     {
+        if (BonusDefinition(obj) != null)
+        {
+            ShowBanner(Loc.Get("wave.bonus.banner_failed", "BONUS MISSED"), obj.Title, 0, 0, isNewQuest: false);
+            return;
+        }
         ShowBanner(questFailedHeader, obj != null ? obj.Title : null, 0, 0, isNewQuest: false);
     }
+
+    /// <summary>
+    ///     Plan 22: the wave objective is an optional bonus. Returns its CSV row when it pays one (so the
+    ///     banners say "bonus" and show the payout), else null for the old quest wording.
+    /// </summary>
+    private WaveObjectiveDefinition BonusDefinition(ISurvivorsObjective obj)
+    {
+        if (obj == null || gameLoop == null) return null;
+        WaveCard card = gameLoop.CurrentWaveCard;
+        if (card == null || card.objective == null || card.objective.id != obj.ObjectiveId) return null;
+        return card.objective.HasBonus ? card.objective : null;
+    }
+
+    private static string JoinReward(string title, string reward) =>
+        string.IsNullOrEmpty(reward) ? title : $"{title}  <color=#E8C35A>{reward}</color>";
 
     // Plan 15: the picked wave card paid out (after the rout).
     private void HandleWaveRewardGranted(WaveCard card, string description)

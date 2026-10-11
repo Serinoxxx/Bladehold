@@ -9,26 +9,24 @@ using UnityEngine.UI;
 /// <summary>
 ///     One between-wave choice card (plan 15), the view for <see cref="WaveCard" />. Instantiated from
 ///     <c>WaveCard.prefab</c> by <see cref="SurvivorsCardSelectUI.OpenWaveChoice" />; it only displays the
-///     card and forwards the click. Glance order top to bottom: stance band (colour + icon + title),
-///     timer, skulls, clan modifier, captain, reward bundle, variety bonus.
+///     card and forwards the click. Glance order top to bottom (plan 22): enemy count + composition band,
+///     optional bonus objective line, skulls, clan modifier, captain, reward bundle, variety bonus.
 /// </summary>
 public class WaveCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, ISelectHandler, IDeselectHandler
 {
     [Header("Card")]
     [SerializeField] private Button selectButton;
 
-    [Header("1. Stance")]
+    [Header("1. Band")]
     [SerializeField] private Image stanceBand;
+    [Tooltip("Hidden since plan 22 (cards no longer show offence/defence).")]
     [SerializeField] private Image stanceIcon;
-    [Tooltip("Offence only: the 'leaves tower cover' chip.")]
+    [Tooltip("Hidden since plan 22 (cards no longer show offence/defence).")]
     [SerializeField] private GameObject leavesCoverChip;
-    [SerializeField] private TMP_Text leavesCoverText;
-    [SerializeField] private Sprite defenceSprite;
-    [SerializeField] private Sprite offenceSprite;
-    [SerializeField] private Color defenceColor = new Color(0.22f, 0.42f, 0.78f, 1f);
-    [SerializeField] private Color offenceColor = new Color(0.72f, 0.16f, 0.12f, 1f);
+    [Tooltip("Tint for the title band now that it no longer shows a stance colour.")]
+    [SerializeField] private Color neutralBandColor = new Color(0.32f, 0.27f, 0.22f, 1f);
 
-    [Header("2. Objective")]
+    [Header("2. Enemies (title + composition)")]
     [SerializeField] private TMP_Text titleText;
 
     [Header("4. Skulls")]
@@ -50,8 +48,8 @@ public class WaveCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
     [SerializeField] private GameObject captainRow;
     [SerializeField] private TMP_Text captainText;
 
-    [Header("6. Timer")]
-    [Tooltip("Hidden on objectives with no time limit.")]
+    [Header("6. Bonus objective")]
+    [Tooltip("One line: 'Bonus: {objective} (m:ss)  +Xg +Ys'. Hidden when the objective has no timer and pays nothing.")]
     [SerializeField] private GameObject timerRow;
     [SerializeField] private TMP_Text timerText;
 
@@ -141,18 +139,22 @@ public class WaveCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
         onClicked = onPicked;
         if (anyError || card == null || card.objective == null) return;
 
-        bool offence = card.stance == WaveStance.Offence;
-        Color stanceColor = offence ? offenceColor : defenceColor;
-        if (stanceBand != null) stanceBand.color = stanceColor;
-        if (stanceIcon != null)
-        {
-            stanceIcon.sprite = offence ? offenceSprite : defenceSprite;
-            stanceIcon.enabled = stanceIcon.sprite != null;
-        }
-        if (leavesCoverChip != null) leavesCoverChip.SetActive(offence);
-        if (leavesCoverText != null) leavesCoverText.text = Loc.Get("wave.card.leaves_cover", "Leaves tower cover");
+        // Plan 22: the card is "who you fight", not offence vs defence. Stance stays in the data
+        // (the generator still rolls it) but the card no longer shows it.
+        if (stanceBand != null) stanceBand.color = neutralBandColor;
+        if (stanceIcon != null) stanceIcon.enabled = false;
+        if (leavesCoverChip != null) leavesCoverChip.SetActive(false);
 
-        titleText.text = card.objective.TitleText;
+        if (card.HasComposition)
+        {
+            SurvivorsSpawner spawner = SurvivorsSpawner.Instance;
+            string list = card.CompositionText(spawner != null ? spawner.Roster : null);
+            titleText.text = $"{card.EnemiesTitle.ToUpperInvariant()}\n<size=70%>{list}</size>";
+        }
+        else
+        {
+            titleText.text = card.objective.TitleText;
+        }
 
         Color tier = skullTierColors != null && skullTierColors.Length > 0
             ? skullTierColors[Mathf.Clamp(card.skulls, 1, skullTierColors.Length) - 1]
@@ -182,8 +184,10 @@ public class WaveCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
             captainText.text = $"<b>{Loc.Get("wave.card.captain_header", "Enemy Clan Captain")}</b>\n{line}";
         }
 
-        SetRowShown(timerRow, card.objective.HasTimer);
-        timerText.text = card.objective.HasTimer ? WaveCard.FormatSeconds(card.objective.timerSeconds) : "";
+        // The objective is an optional bonus (plan 22): one line with its name, timer and payout.
+        bool showBonusObjective = card.HasComposition ? card.objective.HasBonus || card.objective.HasTimer : card.objective.HasTimer;
+        SetRowShown(timerRow, showBonusObjective);
+        timerText.text = showBonusObjective ? BonusObjectiveLine(card) : "";
 
         if (rewardHeaderText != null) rewardHeaderText.text = Loc.Get("wave.card.reward", "REWARD");
         if (multiplierText != null) multiplierText.text = "×" + card.rewardMultiplier.ToString("0.##", CultureInfo.InvariantCulture);
@@ -231,6 +235,18 @@ public class WaveCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
         }
         row.SetActive(true);
         group.alpha = shown ? 1f : 0f;
+    }
+
+    private static string BonusObjectiveLine(WaveCard card)
+    {
+        WaveObjectiveDefinition obj = card.objective;
+        string timer = obj.HasTimer ? WaveCard.FormatSeconds(obj.timerSeconds) : "";
+        if (!card.HasComposition) return timer;
+        string line = Loc.Get("wave.card.bonus_objective", "<b>Bonus:</b> {0}").Replace("{0}", obj.TitleText);
+        if (timer.Length > 0) line += $" ({timer})";
+        string reward = obj.BonusRewardText;
+        if (reward.Length > 0) line += $"  <color=#E8C35A>{reward}</color>";
+        return line;
     }
 
     private Sprite BonusSprite(WaveBonusType type) => type switch

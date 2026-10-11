@@ -110,14 +110,28 @@ public class GameLoopManager : MonoBehaviour
     /// <summary>True while something outside the loop (the tutorial) holds the Ready hold shut.</summary>
     public bool IsReadyBlocked => WaveStartGate.IsBlocked;
     public bool IsRouting => isRouting;
+    /// <summary>True while the wave runs on its card's enemy list (plan 22): it ends when the field is clear, not on the objective.</summary>
+    public bool IsCompositionWave => compositionWaveActive && isWaveActive;
     /// <summary>The enemies still fleeing during the rout (dead ones included until it ends). Empty otherwise.</summary>
     public IReadOnlyList<Health> RoutStragglers => routStragglers;
     /// <summary>Seconds left to hunt the stragglers down before they escape; 0 when not routing.</summary>
     public float RoutSecondsLeft { get; private set; }
     /// <summary>3, 2, 1 during the pre-wave countdown; 0 otherwise.</summary>
     public int CountdownSeconds { get; private set; }
-    /// <summary>The upcoming wave's card objective title during prep, or blank.</summary>
-    public string UpcomingObjectiveTitle => isPrep && CurrentWaveCard != null && CurrentWaveCard.objective != null ? CurrentWaveCard.objective.TitleText : "";
+    /// <summary>
+    ///     During prep, what the picked card brings: "28 enemies · Bonus: Free the Prisoners" for a
+    ///     composition card (plan 22), the objective title otherwise; blank outside prep.
+    /// </summary>
+    public string UpcomingObjectiveTitle => isPrep && CurrentWaveCard != null && CurrentWaveCard.objective != null ? WaveCardHeadline(CurrentWaveCard) : "";
+
+    /// <summary>The card in one HUD line: enemy count plus its bonus objective, or the objective title for quota waves.</summary>
+    public static string WaveCardHeadline(WaveCard card)
+    {
+        if (card == null || card.objective == null) return "";
+        if (!card.HasComposition) return card.objective.TitleText;
+        if (!card.objective.HasBonus) return card.EnemiesTitle;
+        return $"{card.EnemiesTitle}  ·  " + Loc.Get("wave.hud.bonus", "Bonus: {0}").Replace("{0}", card.objective.TitleText);
+    }
     /// <summary>One-line HUD status for the between-wave phases (prompt, countdown, rout); empty during a wave.</summary>
     public string StatusText { get; private set; } = "";
 
@@ -944,12 +958,19 @@ public class GameLoopManager : MonoBehaviour
         Summary.RecordReward(card, draftPicks);
         string desc = string.Join(", ", parts);
         LastRewardDescription = desc;
+        // The bonus objective was paid when it was completed; the banner restates it so the total reads in one place.
+        string shown = desc;
+        string bonus = WaveObjectiveDefinition.FormatBonus(BonusGoldThisWave, BonusSupplyThisWave);
+        if (bonus.Length > 0)
+        {
+            shown += "\n" + Loc.Get("wave.reward.bonus_earned", "Bonus objective: {0}").Replace("{0}", bonus);
+        }
         if (rewardNotificationText != null)
         {
-            rewardNotificationText.text = $"{Loc.Get("wave.reward.header", "Wave Reward")}: {desc}";
+            rewardNotificationText.text = $"{Loc.Get("wave.reward.header", "Wave Reward")}: {shown}";
         }
         PlayRewardFeedback(card);
-        OnWaveRewardGranted?.Invoke(card, desc);
+        OnWaveRewardGranted?.Invoke(card, shown);
         Debug.Log($"[GameLoopManager] Wave card reward: {desc}");
 
         OpenDraftPicks(draftPicks, card.draftRerolls, onComplete);

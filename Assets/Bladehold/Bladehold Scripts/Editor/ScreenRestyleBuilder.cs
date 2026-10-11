@@ -180,9 +180,14 @@ public static class ScreenRestyleBuilder
         band.pixelsPerUnitMultiplier = 2f;
         K.Unthemed(band);
         R.Ink(R.Need<TMP_Text>(content, "StanceBand/Title"), UIColorRole.Text, UIFontRole.Header);
+        // Plan 22: the band holds "N ENEMIES" + the composition list, and the timer row a whole bonus line.
+        AutoSize(R.Need<TMP_Text>(content, "StanceBand/Title"), 18f, 30.5f);
 
         K.Paint(R.Need<Image>(content, "TimerRow/TimerIcon"), UIColorRole.TextDim);
         R.Ink(R.Need<TMP_Text>(content, "TimerRow/TimerText"), UIColorRole.Text, UIFontRole.Body);
+        AutoSize(R.Need<TMP_Text>(content, "TimerRow/TimerText"), 18f, 32f);
+        LayoutElement timerLe = R.Need<LayoutElement>(content, "TimerRow/TimerText");
+        if (timerLe != null) timerLe.flexibleWidth = 1f;
 
         foreach (Image skull in R.Need(content, "SkullRow").GetComponentsInChildren<Image>(true)) K.Unthemed(skull);
 
@@ -207,6 +212,14 @@ public static class ScreenRestyleBuilder
         SerializedProperty tiers = so.FindProperty("skullTierColors");
         if (tiers.arraySize > 0) tiers.GetArrayElementAtIndex(0).colorValue = K.Theme.Get(UIColorRole.Text);
         so.ApplyModifiedPropertiesWithoutUndo();
+    }
+
+    private static void AutoSize(TMP_Text text, float min, float max)
+    {
+        if (text == null) return;
+        text.enableAutoSizing = true;
+        text.fontSizeMin = min;
+        text.fontSizeMax = max;
     }
 
     private static void RestyleDraftModal(GameObject hud)

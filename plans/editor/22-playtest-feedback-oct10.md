@@ -127,6 +127,17 @@ Manual verification:
 - [ ] Captain wave: killing the captain still ends the sector as before.
 - [ ] Victory screen gold/supply totals include bonus payouts.
 
+## 7.4 Wave card + HUD UI
+
+Done in C#: `UI/WaveCardUI.cs` (enemy count + composition in the title band, bonus objective line in the old timer row, stance visuals hidden), `UI/ObjectiveTrackerUI.cs` ("Bonus:" header + payout, enemies left, "Survive the wave"), `UI/WaveClearedBannerUI.cs` (BONUS OBJECTIVE / COMPLETE / MISSED), `GameLoopManager.WaveCardHeadline` and the reward banner's bonus line. `WaveCard.prefab` title/timer text auto-size and the timer text stretches (also in `ScreenRestyleBuilder`).
+
+- [ ] **UI review (human):** open a wave choice at 16:9, 16:10 and ultrawide and check the three cards still line up row for row, the "35 ENEMIES" band and its composition list read cleanly (Texturina header, Grenze body), and the bonus line isn't cramped at its auto-sized minimum.
+- [ ] UI review: decide whether the composition wants per-enemy icons (Synty portraits) instead of text. The roster has no icon field yet, so that would need an `Enemies.csv`/roster icon column plus a small icon-row widget.
+- [ ] UI review: the band is now a neutral parchment tint (`neutralBandColor` on `WaveCardUI`). Tune the colour, or swap the unused `StanceIcon` slot for a generic enemy icon.
+- [ ] Gamepad: tab through the cards and check focus/hover still lights each card.
+- [ ] Play a wave: the tracker shows "[Bonus: … +60 gold +30 supply]", progress and "Enemies left"; after the bonus resolves it shows "[Survive the wave]"; the banners say BONUS COMPLETE / BONUS MISSED; the wave reward banner adds a "Bonus objective: …" line when one was earned.
+- [ ] Ready prompt "Next:" line reads e.g. "35 enemies · Bonus: Free the Prisoners".
+
 
 
 Code/scene done headlessly via MCP: realtime additional-light shadows disabled in

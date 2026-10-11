@@ -53,6 +53,32 @@ public class WaveCard
         }
     }
 
+    /// <summary>"28 enemies" headline for the card (plan 22).</summary>
+    public string EnemiesTitle => Loc.Get("wave.card.enemies_title", "{0} enemies").Replace("{0}", TotalEnemies.ToString(CultureInfo.InvariantCulture));
+
+    /// <summary>
+    ///     "24× Goblin, 4× Brute, 1× Battering Ram", largest group first. Names come from the roster's
+    ///     localized display name, falling back to the id when the roster or row is missing.
+    /// </summary>
+    public string CompositionText(EnemyRosterSO roster)
+    {
+        if (!HasComposition) return "";
+        var entries = new List<WaveEnemyEntry>();
+        foreach (WaveEnemyEntry e in composition)
+        {
+            if (e != null && e.count > 0 && !string.IsNullOrEmpty(e.enemyId)) entries.Add(e);
+        }
+        entries.Sort((a, b) => b.count.CompareTo(a.count));
+        var parts = new List<string>(entries.Count);
+        foreach (WaveEnemyEntry e in entries)
+        {
+            EnemyDefinition def = roster != null ? roster.Find(e.enemyId) : null;
+            string name = def != null && !string.IsNullOrEmpty(def.displayName) ? def.LocalizedDisplayName : e.enemyId;
+            parts.Add($"{e.count.ToString(CultureInfo.InvariantCulture)}× {name}");
+        }
+        return string.Join(", ", parts);
+    }
+
     [Header("Reward")]
     public float rewardMultiplier = 1f;
     public bool isFresh;

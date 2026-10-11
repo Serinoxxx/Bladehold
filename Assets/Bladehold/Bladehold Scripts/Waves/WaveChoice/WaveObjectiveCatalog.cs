@@ -57,6 +57,21 @@ public class WaveObjectiveDefinition
     public string RuleText => Loc.Get($"wave.obj.{locKey}.rule", rule);
     public string FailLineText => string.IsNullOrEmpty(failText) ? "" : Loc.Get($"wave.obj.{locKey}.fail", failText);
     public string ThreatLineText => string.IsNullOrEmpty(threatText) ? "" : Loc.Get($"wave.obj.{locKey}.threat", threatText);
+
+    /// <summary>"+60 gold +30 supply" for the completion bonus; blank when it pays nothing.</summary>
+    public string BonusRewardText => FormatBonus(bonusGold, bonusSupply);
+
+    public static string FormatBonus(int gold, int supply)
+    {
+        string text = "";
+        if (gold > 0) text = Loc.Get("wave.bonus.gold", "+{0} gold").Replace("{0}", gold.ToString(CultureInfo.InvariantCulture));
+        if (supply > 0)
+        {
+            string s = Loc.Get("wave.bonus.supply", "+{0} supply").Replace("{0}", supply.ToString(CultureInfo.InvariantCulture));
+            text = text.Length > 0 ? text + "  " + s : s;
+        }
+        return text;
+    }
 }
 
 /// <summary>
